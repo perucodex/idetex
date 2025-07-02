@@ -16,3 +16,6 @@ class ProductTemplate(models.Model):
     ], string='Weave Type')
     batch = fields.Char('Batch')
     memo = fields.Text('Memo')
+
+
+joe corrige
