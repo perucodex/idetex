@@ -21,11 +21,14 @@ Descripción del modulo para desarrollo de producto
     # any module necessary for this one to work correctly
     'depends': [
             'base',
+            'product',
+            'mrp',
         ],
 
     # always loaded
     'data': [
-        # 'security/ir.model.access.csv',
+        'security/ir.model.access.csv',
+        'views/mrp_routing_views.xml',
         'views/product_template_views.xml',
     ],
 }
