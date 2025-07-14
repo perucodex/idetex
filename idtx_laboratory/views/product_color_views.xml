@@ -18,7 +18,7 @@
                         </div>
                         <div class="oe_title">
                             <h1>
-                                <field name="name" readonly="1"/>
+                                <field name="name"/>
                             </h1>
                         </div>
                         <!-- <group>
@@ -40,14 +40,11 @@
                         <notebook>
                             <page name="recipe_page" string="Recipes">
                                 <field name="recipe_ids" nolabel="1">
-                                    <list>
+                                    <!-- <list>
                                         <field name="name"/>
                                         <field name="recipe_date"/>
                                         <field name="state"/>
-                                        <!-- <field name="thread_title"/>
-                                        <field name="comercial_thread_title"/>
-                                        <field name="percentage" widget="percentage"/> -->
-                                    </list>
+                                    </list> -->
                                 </field>
                             </page>
                         </notebook>

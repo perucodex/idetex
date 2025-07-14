@@ -7,6 +7,9 @@
             <field name="arch" type="xml">
                 <form string="Product Color">
                     <header>
+                        <button name="action_test" type="object" string="Test" class="oe_highlight" invisible="state != 'draft'"/>
+                        <button name="action_approve" type="object" string="Approve" class="oe_highlight" invisible="state != 'test'"/>
+                        <button name="action_return" type="object" string="Return" invisible="state == 'draft'"/>
                         <field name="state" widget="statusbar"/>
                     </header>
                     <sheet>
@@ -18,7 +21,11 @@
                         <group>
                             <group>
                                 <field name="recipe_date"/>
-                                <field name="color" widget="color"/>
+                                <field name="color_code"/>
+                                <field name="color_process_type"/>
+                                <field name="color_range"/>
+                                <field name="color_intensity" readonly="state == 'approved'"/>
+                                <!-- <field name="color" widget="color"/> -->
                                 <!-- <field name="weaving_type"/>
                                 <field name="product_description"/>
                                 <field name="equipment_id"/>
@@ -58,6 +65,7 @@
                 <list string="Color Recipe">
                     <field name="name"/>
                     <field name="recipe_date"/>
+                    <field name="color" widget="color"/>
                 </list>
             </field>
         </record>

@@ -20,6 +20,7 @@ Long description of module's purpose
     # any module necessary for this one to work correctly
     'depends': ['base',
                 'product',
+                'sale',
                 ],
 
     # always loaded
@@ -28,6 +29,7 @@ Long description of module's purpose
         'data/ir_sequence.xml',
         'views/color_recipe_views.xml',
         'views/product_color_views.xml',
+        'views/sale_order_line_views.xml',
         'views/menu.xml',
     ],
 }
