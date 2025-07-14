@@ -23,7 +23,13 @@
                         </div>
                         <notebook>
                             <page name="recipe_page" string="Recipes">
-                                <field name="recipe_ids" nolabel="1"/>
+                                <field name="recipe_ids" nolabel="1">
+                                    <!-- <list>
+                                        <field name="name"/>
+                                        <field name="recipe_date"/>
+                                        <field name="state"/>
+                                    </list> -->
+                                </field>
                             </page>
                         </notebook>
                     </sheet>

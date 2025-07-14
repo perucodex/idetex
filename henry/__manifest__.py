@@ -25,5 +25,8 @@ Long description of module's purpose
         # 'security/ir.model.access.csv',
         'views/product_template_views.xml',
     ],
+    'installable' :True,
+    'application' :True,
+    'license' : 'LGPL-3'
 }
 

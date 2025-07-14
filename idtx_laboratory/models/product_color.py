@@ -5,7 +5,7 @@ class ProductColor(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Product Color'
 
-    name = fields.Char('Name')
+    name = fields.Char('Name', tracking=True)
     recipe_ids = fields.One2many('color.recipe', 'product_color_id', string='Recipes')
     recipe_count = fields.Integer('Recipe Count', compute='_compute_recipe_count')
 
