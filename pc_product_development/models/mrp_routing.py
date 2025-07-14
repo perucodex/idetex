@@ -5,7 +5,7 @@ from odoo import api, fields, models
 class MrpRoutingWorkcenter(models.Model):
     _inherit = 'mrp.routing.workcenter'
     
-    operation_id = fields.Many2one('mrp.routing.workcenter.operation', string='Operation')
+    operation_id = fields.Many2one('mrp.routing.workcenter.operation', string='Operation Name')
 
     @api.onchange('operation_id')
     def _onchange_operation_id(self):
@@ -26,7 +26,14 @@ class MrpRoutingWorkcenterOperation(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Workcenter Operation'
 
-    name = fields.Char('Operation', required=True)
+    name = fields.Char('Name', required=True)
     workcenter_id = fields.Many2one('mrp.workcenter', 'Work Center', required=True, check_company=True, tracking=True)
     currency_id = fields.Many2one('res.currency', string='Currency')
     unit_price = fields.Monetary('Unit Price', currency_field='currency_id', tracking=True)
+    company_id = fields.Many2one(
+        'res.company',
+        string='Company',
+        default=lambda self: self.env.company,
+        index=True,
+        required=True
+    )

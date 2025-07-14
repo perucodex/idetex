@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data noupdate="1">
+    
+            <!-- groups="group_module_product_developer_user"  -->
+        <menuitem
+            id="laboratory_menu"
+            name="Laboratory"
+            web_icon="idtx_laboratory,static/description/icon.png">
+                <menuitem id="operations_menu" name="Operations" sequence="10">
+                    <menuitem id="product_color_menu" name="Product Color" action="product_color_action" sequence="10"/>
+                    <menuitem id="color_recipe_menu" name="Color Recipe" action="color_recipe_action" sequence="20"/>
+                </menuitem>
+                <!-- <menuitem id="product_menu" name="Products" sequence="20">
+                    <menuitem id="product_template_menu" name="Products" action="product_product_action_weaving" sequence="10"/>
+                </menuitem> -->
+        </menuitem>
+
+    </data>
+    
+
+</odoo>

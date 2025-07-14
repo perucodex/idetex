@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <record id="color_recipe_form_view" model="ir.ui.view">
+            <field name="name">color.recipe.form</field>
+            <field name="model">color.recipe</field>
+            <field name="arch" type="xml">
+                <form string="Product Color">
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="recipe_date"/>
+                                <!-- <field name="partner_id"/>
+                                <field name="weaving_type"/>
+                                <field name="product_description"/>
+                                <field name="equipment_id"/>
+                                <field name="needles"/> -->
+                            </group>
+                            <!-- <group>
+                                <field name="density"/>
+                                <field name="column_number"/>
+                                <field name="width"/>
+                                <field name="company_id" readonly="1" groups="base.group_multi_company"/>
+                            </group> -->
+                        </group>
+                        <notebook>
+                            <page name="recipe_page" string="Recipe">
+                                <!-- <field name="fiber_ids" nolabel="1">
+                                    <list>
+                                        <field name="system_type"/>
+                                        <field name="length"/>
+                                        <field name="weight"/>
+                                        <field name="thread_title"/>
+                                        <field name="comercial_thread_title"/>
+                                        <field name="percentage" widget="percentage"/>
+                                    </list>
+                                </field> -->
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="color_recipe_tree_view" model="ir.ui.view">
+            <field name="name">color.recipe.tree</field>
+            <field name="model">color.recipe</field>
+            <field name="arch" type="xml">
+                <list string="Color Recipe">
+                    <field name="name"/>
+                    <field name="recipe_date"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="color_recipe_action" model="ir.actions.act_window">
+            <field name="name">Color Recipe</field>
+            <field name="res_model">color.recipe</field>
+            <field name="view_mode">list,form</field>
+            <field name="view_id" ref="color_recipe_tree_view"/>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                Create a new color recipe
+              </p>
+            </field>
+        </record>
+
+</odoo>

@@ -16,6 +16,7 @@
                             <group>
                                 <field name="currency_id"/>
                                 <field name="unit_price"/>
+                                <field name="company_id" readonly="1" groups="base.group_multi_company"/>
                             </group>
                         </group>
                     </sheet>
@@ -33,6 +34,7 @@
                     <field name="workcenter_id"/>
                     <field name="currency_id"/>
                     <field name="unit_price"/>
+                    <field name="company_id" groups="base.group_multi_company" optional="hide" readonly="1"/>
                 </list>
             </field>
         </record>

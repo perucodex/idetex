@@ -1,4 +1,4 @@
-from odoo import fields, models
+from odoo import fields, models, api
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
@@ -16,3 +16,15 @@ class ProductTemplate(models.Model):
     ], string='Weave Type')
     batch = fields.Char('Batch')
     memo = fields.Text('Memo')
+    is_weaving = fields.Boolean('is_weaving', compute='_compute_is_weaving', store=True)
+
+    @api.depends('categ_id')
+    def _compute_is_weaving(self):
+        for rec in self:
+            category = rec.categ_id
+            rec.is_weaving = False
+            while category:
+                if category.is_weaving:
+                    rec.is_weaving = True
+                    break
+                category = category.parent_id

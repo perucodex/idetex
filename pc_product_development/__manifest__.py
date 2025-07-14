@@ -23,13 +23,21 @@ Descripción del modulo para desarrollo de producto
             'base',
             'product',
             'mrp',
+            'maintenance',
         ],
 
     # always loaded
     'data': [
+        'security/group_pd.xml',
         'security/ir.model.access.csv',
+        'data/ir_sequence_data.xml',
+        'data/product_category.xml',
+        'views/maintenance_equipment_views.xml',
         'views/mrp_routing_views.xml',
+        'views/product_analysis_views.xml',
+        # 'views/product_category_views.xml',
         'views/product_template_views.xml',
+        'views/menu.xml',
     ],
 }
 
