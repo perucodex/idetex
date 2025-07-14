@@ -5,8 +5,15 @@ class ColorRecipe(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Color Recipe'
 
+    product_color_id = fields.Many2one('product.color', 'Product Color')
     name = fields.Char('Name', copy=False, default=lambda self: _('New'))
     recipe_date = fields.Date('Recipe Date', default=fields.Date.context_today, copy=False)
+    color = fields.Char('Color')
+    state = fields.Selection([
+        ('draft', 'Draft'),
+        ('test', 'Test'),
+        ('approved', 'Approved'),
+    ], string='State', default='draft')
     
     #=== CRUD METHODS ===#
 
