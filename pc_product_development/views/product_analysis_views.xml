@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="product_analysis_form_view" model="ir.ui.view">
+            <field name="name">product.analysis.form</field>
+            <field name="model">product.analysis</field>
+            <field name="arch" type="xml">
+                <form string="Product Analysis">
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="analysis_date"/>
+                                <field name="partner_id"/>
+                                <field name="weaving_type"/>
+                                <field name="product_description"/>
+                                <field name="equipment_id"/>
+                                <field name="needles"/>
+                            </group>
+                            <group>
+                                <field name="density"/>
+                                <field name="column_number"/>
+                                <field name="width"/>
+                                <field name="company_id" readonly="1" groups="base.group_multi_company"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="fibers_page" string="Fibers">
+                                <field name="fiber_ids" nolabel="1">
+                                    <list>
+                                        <field name="system_type"/>
+                                        <field name="length"/>
+                                        <field name="weight"/>
+                                        <field name="thread_title"/>
+                                        <field name="comercial_thread_title"/>
+                                        <field name="percentage" widget="percentage"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="product_analysis_tree_view" model="ir.ui.view">
+            <field name="name">product.analysis.list</field>
+            <field name="model">product.analysis</field>
+            <field name="arch" type="xml">
+                <list string="Product Analysis">
+                    <field name="name"/>
+                    <field name="analysis_date"/>
+                    <field name="equipment_id"/>
+                    <field name="needles"/>
+                    <field name="column_number"/>
+                    <field name="width"/>
+                    <field name="company_id" groups="base.group_multi_company" optional="hide" readonly="1"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="analysis_fibe_form_view" model="ir.ui.view">
+            <field name="name">analysis.fiber.form</field>
+            <field name="model">analysis.fiber</field>
+            <field name="arch" type="xml">
+                <form string="Analysis Fiber">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="system_type"/>
+                                <field name="length"/>
+                                <field name="weight"/>
+                                <field name="thread_qty"/>
+                            </group>
+                            <group>
+                                <field name="thread_title"/>
+                                <field name="comercial_thread_title"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="measurements_page" string="Measures">
+                                <field name="line_ids" nolabel="1">
+                                    <list editable="bottom">
+                                        <field name="length"/>
+                                        <!-- <field name="weight"/>
+                                        <field name="thread_title"/>
+                                        <field name="comercial_thread_title"/>
+                                        <field name="percentage" widget="percentage"/> -->
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="product_analysis_action" model="ir.actions.act_window">
+            <field name="name">Product Analysis</field>
+            <field name="res_model">product.analysis</field>
+            <field name="view_mode">list,form</field>
+            <field name="view_id" ref="product_analysis_tree_view"/>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                Create a new product analysis
+              </p><p>
+                Product Analysis define that need to be done to realize a Product.
+                Each analysis is done from customer samples.
+              </p>
+            </field>
+        </record>
+
+    </data>
+</odoo>

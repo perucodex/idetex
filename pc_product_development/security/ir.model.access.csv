@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mrp_routing_workcenter_operation,mrp_routing_workcenter_operation,model_mrp_routing_workcenter_operation,base.group_user,1,1,1,1
+access_product_analysis,product_analysis,model_product_analysis,base.group_user,1,1,1,1
+access_analysis_fiber,analysis_fiber,model_analysis_fiber,base.group_user,1,1,1,1
+access_analysis_fiber_line,analysis_fiber_line,model_analysis_fiber_line,base.group_user,1,1,1,1
