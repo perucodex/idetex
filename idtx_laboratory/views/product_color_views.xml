@@ -18,37 +18,12 @@
                         </div>
                         <div class="oe_title">
                             <h1>
-                                <field name="name" readonly="1"/>
+                                <field name="name"/>
                             </h1>
                         </div>
-                        <!-- <group>
-                            <group>
-                                <field name="analysis_date"/>
-                                <field name="partner_id"/>
-                                <field name="weaving_type"/>
-                                <field name="product_description"/>
-                                <field name="equipment_id"/>
-                                <field name="needles"/>
-                            </group>
-                            <group>
-                                <field name="density"/>
-                                <field name="column_number"/>
-                                <field name="width"/>
-                                <field name="company_id" readonly="1" groups="base.group_multi_company"/>
-                            </group>
-                        </group> -->
                         <notebook>
                             <page name="recipe_page" string="Recipes">
-                                <field name="recipe_ids" nolabel="1">
-                                    <list>
-                                        <field name="name"/>
-                                        <field name="recipe_date"/>
-                                        <field name="state"/>
-                                        <!-- <field name="thread_title"/>
-                                        <field name="comercial_thread_title"/>
-                                        <field name="percentage" widget="percentage"/> -->
-                                    </list>
-                                </field>
+                                <field name="recipe_ids" nolabel="1"/>
                             </page>
                         </notebook>
                     </sheet>

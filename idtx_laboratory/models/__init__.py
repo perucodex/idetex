@@ -2,3 +2,4 @@
 
 from . import color_recipe
 from . import product_color
+from . import sale_order_line
