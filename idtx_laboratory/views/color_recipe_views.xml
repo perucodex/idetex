@@ -7,8 +7,8 @@
             <field name="arch" type="xml">
                 <form string="Product Color">
                     <header>
-                        <button name="action_test" type="object" string="Test" class="oe_highlight" invisible="state != 'draft'"/>
-                        <button name="action_approve" type="object" string="Approve" class="oe_highlight" invisible="state != 'test'"/>
+                        <!-- <button name="action_test" type="object" string="Test" class="oe_highlight" invisible="state != 'draft'"/> -->
+                        <button name="action_approve" type="object" string="Approve" class="oe_highlight" invisible="state != 'draft'"/>
                         <button name="action_return" type="object" string="Return" invisible="state == 'draft'"/>
                         <field name="state" widget="statusbar"/>
                     </header>
@@ -20,8 +20,8 @@
                         </div>
                         <group>
                             <group>
+                                <field name="lab_dev_id"/>
                                 <field name="partner_id" readonly="1"/>
-                                <field name="product_color_id" readonly="1"/>
                                 <field name="recipe_date"/>
                                 <field name="color_code"/>
                             </group>
@@ -37,13 +37,13 @@
                                 <field name="color_recipe_process_ids" nolabel="1">
                                     <list>
                                         <field name="sequence" widget="handle"/>
-                                        <field name="color_recipe_process_template_id"/>
+                                        <field name="base_process_id"/>
                                     </list>
                                     <form>
                                         <sheet>
                                             <group>
                                                 <group>
-                                                    <field name="color_recipe_process_template_id"/>
+                                                    <field name="base_process_id"/>
                                                 </group>
                                             </group>
                                             <notebook>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <record id="lab_dev_form_view" model="ir.ui.view">
+            <field name="name">lab.dev.form</field>
+            <field name="model">lab.dev</field>
+            <field name="arch" type="xml">
+                <form string="Lab Dev">
+                    <header>
+                        <field name="state" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <div name="button_box" class="oe_button_box">
+                            <button name="open_recipes"
+                                    class="oe_stat_button"
+                                    icon="fa-flask"
+                                    type="object"
+                                    invisible="not color_recipe_ids">
+                                    <field name="recipe_count" string="Recipes" widget="statinfo"/>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="lab_dev_date" readonly="1"/>
+                                <field name="sale_order_id" readonly="1"/>                              
+                            </group>
+                            <group>
+                                <field name="partner_id"/>
+                                <field name="product_id" readonly="1"/>                              
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="color_page" string="Colors">
+                                <field name="lab_dev_line_ids">
+                                    <list>
+                                        <field name="product_color_id"/>
+                                        <field name="color_recipe_ids"/>
+                                    </list>
+                                    <form>
+                                        <notebook>
+                                            <page name="recipe_page" string="Recipes">
+                                                <field name="color_recipe_ids"/>
+                                            </page>
+                                        </notebook>
+                                    </form>
+                                </field>
+                            </page>
+                            <!-- <page name="recipe_page" string="Recipes">
+                                <field name="color_recipe_ids"/>
+                            </page> -->
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="lab_dev_tree_view" model="ir.ui.view">
+            <field name="name">lab.dev.tree</field>
+            <field name="model">lab.dev</field>
+            <field name="arch" type="xml">
+                <list string="Lab Dev" create="0">
+                    <field name="name"/>
+                    <field name="lab_dev_line_ids"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="lab_dev_action" model="ir.actions.act_window">
+            <field name="name">Lab Dev</field>
+            <field name="res_model">lab.dev</field>
+            <field name="view_mode">list,form</field>
+            <field name="view_id" ref="lab_dev_tree_view"/>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                Create a new lab dev
+              </p>
+            </field>
+        </record>
+
+</odoo>

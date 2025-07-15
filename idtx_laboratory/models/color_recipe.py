@@ -1,13 +1,16 @@
 from odoo import models, fields, api, _
+from odoo.exceptions import UserError
 
 class ColorRecipe(models.Model):
     _name = 'color.recipe'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Color Recipe'
 
-    product_color_id = fields.Many2one('product.color', 'Product Color')
+    lab_dev_line_id = fields.Many2one('lab.dev.line', string='Lab Dev Line')
+    lab_dev_id = fields.Many2one(related='lab_dev_line_id.lab_dev_id')
+    product_color_id = fields.Many2one(related='lab_dev_line_id.product_color_id')
     name = fields.Char('Name', copy=False, default=lambda self: _('New'))
-    partner_id = fields.Many2one('res.partner', string='Customer')
+    partner_id = fields.Many2one(related='lab_dev_id.partner_id')
     recipe_date = fields.Date('Recipe Date', default=fields.Date.context_today, copy=False)
     color_code = fields.Char('Color Code', compute='_compute_color_code')
     color_process_type_id = fields.Many2one('color.process.type','Color Process Type')
@@ -36,17 +39,14 @@ class ColorRecipe(models.Model):
 
         return super().create(vals_list)
     
-    def action_test(self):
-        self.state = 'test'
-    
     def action_approve(self):
+        if any(cr.state == 'approved' for cr in self.lab_dev_line_id.lab_dev_id.color_recipe_ids.filtered(lambda cr: cr.product_color_id == self.product_color_id)):
+            raise UserError(_('You can\'t approve this recipe. Another recipe in the Lab Dev for color %s is already approved.') %self.lab_dev_line_id.product_color_id.name)
         self.state = 'approved'
 
     def action_return(self):
-        if self.state == 'test':
+        if self.state == 'approved':
             self.state = 'draft'
-        elif self.state == 'approved':
-            self.state = 'test'
 
     @api.onchange('color_process_type_id','color_range_id','color_intensity_id')
     def _onchange_color_code(self):

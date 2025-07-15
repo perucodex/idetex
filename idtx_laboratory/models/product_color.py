@@ -6,8 +6,9 @@ class ProductColor(models.Model):
     _description = 'Product Color'
 
     name = fields.Char('Name', tracking=True)
-    recipe_ids = fields.One2many('color.recipe', 'product_color_id', string='Recipes')
-    recipe_count = fields.Integer('Recipe Count', compute='_compute_recipe_count')
+    # lab_dev_ids = fields.One2many('lab.dev', 'product_color_id', string='Lab Devs')
+    # recipe_ids = fields.One2many(related='lab_dev_ids.color_recipe_ids')
+    # recipe_count = fields.Integer('Recipe Count', compute='_compute_recipe_count')
 
     def open_recipes(self):
         return self.recipe_ids._get_records_action(name=_("Recipes"))
