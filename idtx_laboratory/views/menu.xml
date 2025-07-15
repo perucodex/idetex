@@ -8,9 +8,16 @@
             name="Laboratory"
             web_icon="idtx_laboratory,static/description/icon.png">
                 <menuitem id="operations_menu" name="Operations" sequence="10">
-                    <menuitem id="color_recipe_menu2" name="Color Recipe 2" action="color_recipe_action" sequence="5"/>
                     <menuitem id="product_color_menu" name="Product Color" action="product_color_action" sequence="10"/>
                     <menuitem id="color_recipe_menu" name="Color Recipe" action="color_recipe_action" sequence="20"/>
+                </menuitem>
+                <menuitem id="settings_menu" name="Settings" sequence="20">
+                    <menuitem id="color_code_menu" name="Color Code" sequence="99">
+                        <menuitem id="color_process_type_menu" name="Color Process Type" action="color_process_type_action" sequence="10"/>
+                        <menuitem id="color_range_menu" name="Color Range" action="color_range_action" sequence="20"/>
+                        <menuitem id="color_intensity_menu" name="Color Intensity" action="color_intensity_action" sequence="30"/>
+                        <menuitem id="color_fiber_menu" name="Color Fiber" action="color_fiber_action" sequence="30"/>
+                    </menuitem>
                 </menuitem>
         </menuitem>
 

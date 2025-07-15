@@ -16,6 +16,7 @@ Long description of module's purpose
     # for the full list
     'category': 'Uncategorized',
     'version': '0.1',
+    'license': 'LGPL-3',
 
     # any module necessary for this one to work correctly
     'depends': ['base',
@@ -26,7 +27,12 @@ Long description of module's purpose
     # always loaded
     'data': [
         'security/ir.model.access.csv',
+        'data/color.fiber.csv',
+        'data/color.intensity.csv',
+        'data/color.process.type.csv',
+        'data/color.range.csv',
         'data/ir_sequence.xml',
+        'views/color_code_system_views.xml',
         'views/color_recipe_views.xml',
         'views/product_color_views.xml',
         'views/sale_order_line_views.xml',

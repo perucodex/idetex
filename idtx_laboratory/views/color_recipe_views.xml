@@ -20,16 +20,16 @@
                         </div>
                         <group>
                             <group>
+                                <field name="partner_id" readonly="1"/>
+                                <field name="product_color_id" readonly="1"/>
                                 <field name="recipe_date"/>
                                 <field name="color_code"/>
-                                <field name="color_process_type"/>
-                                <field name="color_range"/>
-                                <field name="color_intensity" readonly="state == 'approved'"/>
-                                <!-- <field name="color" widget="color"/> -->
-                                <!-- <field name="weaving_type"/>
-                                <field name="product_description"/>
-                                <field name="equipment_id"/>
-                                <field name="needles"/> -->
+                            </group>
+                            <group>
+                                <field name="color_process_type_id" readonly="state == 'approved'" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="fiber_id" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="color_range_id" readonly="state == 'approved'" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="color_intensity_id" readonly="state == 'approved'" options="{'no_create': True, 'no_open': True}"/>
                             </group>
                         </group>
                         <notebook>

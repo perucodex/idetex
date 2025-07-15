@@ -1,3 +1,8 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_product_color,product_color,model_product_color,base.group_user,1,1,1,1
 access_color_recipe,color_recipe,model_color_recipe,base.group_user,1,1,1,1
+access_color_code_system,color_code_system,model_color_code_system,base.group_user,1,1,1,1
+access_color_process_type,color_process_type,model_color_process_type,base.group_user,1,1,1,1
+access_color_range,color_range,model_color_range,base.group_user,1,1,1,1
+access_color_intensity,color_intensity,model_color_intensity,base.group_user,1,1,1,1
+access_color_fiber,color_fiber,model_color_fiber,base.group_user,1,1,1,1
