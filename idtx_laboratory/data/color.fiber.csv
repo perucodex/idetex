@@ -1,0 +1,12 @@
+id,code,name
+color_fiber_todas,"","TODAS"
+color_fiber_algodon,"","ALGODÓN"
+color_fiber_viscosa,"","VISCOSA"
+color_fiber_poliester,"","POLIESTER"
+color_fiber_algodon_viscosa,"","ALGODÓN / VISCOSA"
+color_fiber_poliester_algodon,"","POLIESTER / ALGODON"
+color_fiber_poliester_viscosa,"","POLIESTER / VISCOSA"
+color_fiber_poliamida_algodon,"","POLIAMIDA / ALGODÓN"
+color_fiber_poliamida,"","POLIAMIDA"
+color_fiber_acriclico,"","ACRILICO"
+color_fiber_polycotton,"","POLYCOTTON"
