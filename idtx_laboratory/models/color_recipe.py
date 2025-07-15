@@ -15,6 +15,7 @@ class ColorRecipe(models.Model):
     color_range_id = fields.Many2one('color.range','Color Range')
     color_intensity_id = fields.Many2one('color.intensity','Color Intensity')
     color = fields.Char('Color')
+    color_recipe_process_ids = fields.One2many('color.recipe.process', 'color_recipe_id', string='Color Recipe Process')
     state = fields.Selection([
         ('draft', 'Draft'),
         ('test', 'Test'),

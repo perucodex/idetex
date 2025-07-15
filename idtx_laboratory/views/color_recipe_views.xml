@@ -34,16 +34,33 @@
                         </group>
                         <notebook>
                             <page name="recipe_page" string="Recipe">
-                                <!-- <field name="fiber_ids" nolabel="1">
+                                <field name="color_recipe_process_ids" nolabel="1">
                                     <list>
-                                        <field name="system_type"/>
-                                        <field name="length"/>
-                                        <field name="weight"/>
-                                        <field name="thread_title"/>
-                                        <field name="comercial_thread_title"/>
-                                        <field name="percentage" widget="percentage"/>
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="color_recipe_process_template_id"/>
                                     </list>
-                                </field> -->
+                                    <form>
+                                        <sheet>
+                                            <group>
+                                                <group>
+                                                    <field name="color_recipe_process_template_id"/>
+                                                </group>
+                                            </group>
+                                            <notebook>
+                                                <page name="lines_page" string="Lines">
+                                                    <field name="color_recipe_process_line_ids" nolabel="1">
+                                                        <list editable="bottom">
+                                                            <field name="product_id"/>
+                                                            <field name="factor"/>
+                                                            <field name="uom"/>
+                                                            <field name="quantity"/>
+                                                        </list>
+                                                    </field>
+                                                </page>
+                                            </notebook>
+                                        </sheet>
+                                    </form>
+                                </field>
                             </page>
                         </notebook>
                     </sheet>

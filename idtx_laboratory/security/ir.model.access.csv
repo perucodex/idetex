@@ -6,3 +6,7 @@ access_color_process_type,color_process_type,model_color_process_type,base.group
 access_color_range,color_range,model_color_range,base.group_user,1,1,1,1
 access_color_intensity,color_intensity,model_color_intensity,base.group_user,1,1,1,1
 access_color_fiber,color_fiber,model_color_fiber,base.group_user,1,1,1,1
+access_color_recipe_process,color_recipe_process,model_color_recipe_process,base.group_user,1,1,1,1
+access_color_recipe_process_line,color_recipe_process_line,model_color_recipe_process_line,base.group_user,1,1,1,1
+access_color_recipe_process_template,color_recipe_process_template,model_color_recipe_process_template,base.group_user,1,1,1,1
+access_color_recipe_process_template_line,color_recipe_process_template_line,model_color_recipe_process_template_line,base.group_user,1,1,1,1

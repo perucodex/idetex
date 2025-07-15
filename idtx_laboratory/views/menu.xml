@@ -12,6 +12,9 @@
                     <menuitem id="color_recipe_menu" name="Color Recipe" action="color_recipe_action" sequence="20"/>
                 </menuitem>
                 <menuitem id="settings_menu" name="Settings" sequence="20">
+                    <menuitem id="color_process_base_template_menu" name="Process Base Template" sequence="10">
+                        <menuitem id="color_process_base_menu" name="Color Process Base" action="color_recipe_process_template_action" sequence="10"/>
+                    </menuitem>
                     <menuitem id="color_code_menu" name="Color Code" sequence="99">
                         <menuitem id="color_process_type_menu" name="Color Process Type" action="color_process_type_action" sequence="10"/>
                         <menuitem id="color_range_menu" name="Color Range" action="color_range_action" sequence="20"/>
