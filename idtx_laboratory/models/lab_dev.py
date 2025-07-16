@@ -52,4 +52,43 @@ class LabDevLine(models.Model):
 
     lab_dev_id = fields.Many2one('lab.dev', string='Lab Dev')
     product_color_id = fields.Many2one('product.color', 'Product Color')
+    color_code = fields.Char('Color Code') #, compute='_compute_color_code')
+    color_process_type_id = fields.Many2one('color.process.type','Color Process Type')
+    fiber_id = fields.Many2one(related='color_process_type_id.fiber_id')
+    color_range_id = fields.Many2one('color.range','Color Range')
+    color_intensity_id = fields.Many2one('color.intensity','Color Intensity')
+    color = fields.Char('Color')
     color_recipe_ids = fields.One2many('color.recipe', 'lab_dev_line_id', string='Recipes')
+
+    @api.onchange('color_process_type_id','color_range_id','color_intensity_id')
+    def _onchange_color_code(self):
+        for rec in self:
+            # Verifica que los tres campos requeridos estén presentes
+            if rec.color_process_type_id and rec.color_range_id and rec.color_intensity_id:
+                prefix = (rec.color_process_type_id.code or '') + \
+                        (rec.color_range_id.code or '') + \
+                        (rec.color_intensity_id.code or '')
+
+                # Busca los registros existentes con ese mismo prefijo
+                last_line = self.env['lab.dev.line'].search(
+                    [('color_code', 'like', f"{prefix}%")],
+                    order='color_code desc',
+                    limit=1
+                )
+
+                if last_line:
+                    last_counter_str = last_line.color_code[-4:]
+                    try:
+                        last_counter = int(last_counter_str)
+                    except ValueError:
+                        last_counter = 0
+                    next_counter = str(last_counter + 1).zfill(4)
+                else:
+                    next_counter = '0001'
+
+                # Asigna el nuevo código
+                rec.color_code = prefix + next_counter
+            else:
+                rec.color_code = (rec.color_process_type_id.code or '') + \
+                        (rec.color_range_id.code or '') + \
+                        (rec.color_intensity_id.code or '')

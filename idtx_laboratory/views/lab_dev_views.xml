@@ -39,9 +39,28 @@
                                 <field name="lab_dev_line_ids">
                                     <list>
                                         <field name="product_color_id"/>
+                                        <!-- <field name="color"/> -->
+                                        <field name="color_code"/>
+                                        <field name="color_process_type_id"/>
+                                        <field name="fiber_id"/>
+                                        <field name="color_range_id"/>
+                                        <field name="color_intensity_id"/>
                                         <field name="color_recipe_ids"/>
                                     </list>
                                     <form>
+                                        <group>
+                                            <group>
+                                                <field name="product_color_id"/>
+                                                <field name="color_code" readonly="1" force_save="1"/>
+                                                <field name="color"/>
+                                            </group>   
+                                            <group>
+                                                <field name="color_process_type_id" options="{'no_create': True, 'no_open': True}"/>
+                                                <field name="fiber_id" options="{'no_create': True, 'no_open': True}"/>
+                                                <field name="color_range_id" options="{'no_create': True, 'no_open': True}"/>
+                                                <field name="color_intensity_id" options="{'no_create': True, 'no_open': True}"/>
+                                            </group>                                            
+                                        </group>
                                         <notebook>
                                             <page name="recipe_page" string="Recipes">
                                                 <field name="color_recipe_ids"/>

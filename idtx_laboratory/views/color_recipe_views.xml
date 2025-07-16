@@ -20,17 +20,19 @@
                         </div>
                         <group>
                             <group>
-                                <field name="lab_dev_id"/>
-                                <field name="partner_id" readonly="1"/>
                                 <field name="recipe_date"/>
                                 <field name="color_code"/>
                             </group>
                             <group>
+                                <field name="lab_dev_id"/>
+                                <field name="partner_id" readonly="1"/>
+                            </group>
+                            <!-- <group>
                                 <field name="color_process_type_id" readonly="state == 'approved'" options="{'no_create': True, 'no_open': True}"/>
                                 <field name="fiber_id" options="{'no_create': True, 'no_open': True}"/>
                                 <field name="color_range_id" readonly="state == 'approved'" options="{'no_create': True, 'no_open': True}"/>
                                 <field name="color_intensity_id" readonly="state == 'approved'" options="{'no_create': True, 'no_open': True}"/>
-                            </group>
+                            </group> -->
                         </group>
                         <notebook>
                             <page name="recipe_page" string="Recipe">
@@ -76,6 +78,7 @@
                 <list string="Color Recipe">
                     <field name="name"/>
                     <field name="recipe_date"/>
+                    <field name="color_code"/>
                     <field name="color" widget="color"/>
                     <field name="color" string="Hex"/>
                     <field name="state"/>
