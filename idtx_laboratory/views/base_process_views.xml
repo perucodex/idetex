@@ -15,6 +15,10 @@
                         <group>
                             <group>
                                 <field name="code"/>
+                                <field name="time" widget="float_time"/>
+                                <field name="program"/>
+                            </group>
+                            <group>
                                 <field name="nc"/>
                                 <field name="lin_maq"/>
                                 <field name="codmaq"/>
@@ -43,9 +47,23 @@
                 <list string="Base Process">
                     <field name="name"/>
                     <field name="code"/>
+                    <field name="time" widget="float_time"/>
+                    <field name="program"/>
                     <field name="nc"/>
                     <field name="lin_maq"/>
                     <field name="codmaq"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="base_process_line_tree_view" model="ir.ui.view">
+            <field name="name">base.process.line.tree</field>
+            <field name="model">base.process.line</field>
+            <field name="arch" type="xml">
+                <list string="Base Process Line">
+                    <field name="product_id"/>
+                    <field name="factor"/>
+                    <field name="uom"/>
                 </list>
             </field>
         </record>

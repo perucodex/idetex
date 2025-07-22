@@ -5,14 +5,10 @@ class LabDev(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Laboratory Development'
 
-    # product_color_id = fields.Many2one('product.color', 'Product Color')
     name = fields.Char('Name', copy=False, default=lambda self: _('New'))
     lab_dev_date = fields.Date('Lab Dev Date', default=fields.Date.context_today)
-    # sale_order_line_id = fields.Many2one('sale.order.line', string='Sale Order Line')
-    # sale_order_id = fields.Many2one(related='sale_order_line_id.order_id')
-    sale_order_id = fields.Many2one('sale.order', string='Sale Order')
-    partner_id = fields.Many2one(related='sale_order_id.partner_id')
-    product_id = fields.Many2one('product.template','Product')
+    sale_order_id = fields.Many2one('sale.order', string='Sale Order', ondelete='restrict')
+    partner_id = fields.Many2one(related='sale_order_id.partner_id', ondelete='restrict')
     recipe_count = fields.Integer('Recipe Count', compute='_compute_recipe_count')
     volume = fields.Float('Volume')
     kilos = fields.Float('Kilos')
@@ -51,14 +47,43 @@ class LabDevLine(models.Model):
     _description = 'Laboratory Development Line'
 
     lab_dev_id = fields.Many2one('lab.dev', string='Lab Dev')
-    product_color_id = fields.Many2one('product.color', 'Product Color')
-    color_code = fields.Char('Color Code') #, compute='_compute_color_code')
-    color_process_type_id = fields.Many2one('color.process.type','Color Process Type')
-    fiber_id = fields.Many2one(related='color_process_type_id.fiber_id')
-    color_range_id = fields.Many2one('color.range','Color Range')
-    color_intensity_id = fields.Many2one('color.intensity','Color Intensity')
+    product_id = fields.Many2one('product.template','Product', ondelete='restrict')
+    color_name = fields.Char('Color Name')
+    color_code = fields.Char('Color Code')
     color = fields.Char('Color')
+    color_process_type_id = fields.Many2one('color.process.type','Color Process Type', ondelete='restrict')
+    fiber_id = fields.Many2one(related='color_process_type_id.fiber_id')
+    color_range_id = fields.Many2one('color.range','Color Range', ondelete='restrict')
+    color_intensity_id = fields.Many2one('color.intensity','Color Intensity', ondelete='restrict')
     color_recipe_ids = fields.One2many('color.recipe', 'lab_dev_line_id', string='Recipes')
+    bath_ratio = fields.Char('Bath Ratio')
+    state = fields.Selection([
+        ('process', 'Process'),
+        ('approved', 'Approved'),
+    ], string='State', default='process')
+
+    @api.onchange('sale_order_id')
+    def _onchange_sale_order_id(self):
+        if self.sale_order_id:
+            product_ids = self.sale_order_id.order_line.mapped('product_id.id')
+            return {
+                'domain': {
+                    'product_id': [('id', 'in', product_ids)],
+                }
+            }
+        return {
+            'domain': {
+                'product_id': [],
+            }
+        }
+    
+    # @api.depends('color_recipe_ids')
+    # def _compute_state(self):
+    #     for rec in self:
+    #         if any(recipe.state == 'approved' for recipe in rec.color_recipe_ids):
+    #             rec.state = 'approved'
+    #         else:
+    #             rec.state = 'process'
 
     @api.onchange('color_process_type_id','color_range_id','color_intensity_id')
     def _onchange_color_code(self):

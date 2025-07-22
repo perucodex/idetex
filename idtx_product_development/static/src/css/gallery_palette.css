@@ -1,0 +1,26 @@
+.gallery-palette-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px;
+}
+
+.gallery-item {
+    width: 50px;
+    text-align: center;
+}
+
+.gallery-item img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+}
+
+.img-name {
+    font-size: 12px;
+    color: #444;
+    margin-top: 5px;
+    display: block;
+}

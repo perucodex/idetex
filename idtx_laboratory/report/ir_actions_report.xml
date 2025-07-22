@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_color_recipe" model="ir.actions.report">
+        <field name="name">Color Recipe</field>
+        <field name="model">color.recipe</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">idtx_laboratory.report_color_recipe</field>
+        <field name="report_file">idtx_laboratory.report_color_recipe</field>
+        <field name="print_report_name">'Product Recipe - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_color_recipe"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

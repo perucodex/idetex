@@ -1,0 +1,15 @@
+<!-- views/fabric_design_gallery.xml -->
+<odoo>
+  <template id="fabric_design_gallery">
+    <div class="o_kanban_view o_kanban_gallery" style="display: flex; flex-direction: column; gap: 5px;">
+      <t t-foreach="env['fabric.image.palette'].search([])" t-as="img">
+        <div class="o_kanban_record" style="border: 1px solid #ccc; padding: 5px; background: white;">
+          <img t-att-src="'data:image/png;base64,%s' % img.image" style="width: 64px; height: 64px; object-fit: contain;"/>
+          <div class="text-center">
+            <t t-esc="img.name"/>
+          </div>
+        </div>
+      </t>
+    </div>
+  </template>
+</odoo>

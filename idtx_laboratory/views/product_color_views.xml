@@ -21,11 +21,18 @@
                                 <field name="name"/>
                             </h1>
                         </div>
-                        <notebook>
+                        <group>
+                            <group> 
+                                <field name="currency_id"/>
+                                <field name="unit_price"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>                            
+                        </group>
+                        <!-- <notebook>
                             <page name="labdev_page" string="Lab Dev">
-                                <!-- <field name="lab_dev_ids" readonly="1"/> -->
+                                <field name="lab_dev_ids" readonly="1"/>
                             </page>
-                        </notebook>
+                        </notebook> -->
                     </sheet>
                     <chatter/>
                 </form>
@@ -38,6 +45,9 @@
             <field name="arch" type="xml">
                 <list string="Product Color">
                     <field name="name"/>
+                    <field name="currency_id"/>
+                    <field name="unit_price"/>
+                    <field name="company_id" groups="base.group_multi_company" optional="hide" readonly="1"/>
                     <!-- <field name="recipe_ids"/> -->
                 </list>
             </field>

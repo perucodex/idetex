@@ -8,6 +8,8 @@ class BaseProcess(models.Model):
     color_recipe_id = fields.Many2one('color.recipe', string='Color Recipe')
     name = fields.Char('Name')
     code = fields.Char('Code')
+    time = fields.Float('Time')
+    program = fields.Char('Program')
     nc = fields.Integer('Nc')
     lin_maq = fields.Integer('Lin. Maq.')
     codmaq = fields.Char('Código de Máquina')

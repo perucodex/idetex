@@ -12,7 +12,7 @@ class ColorProcessType(models.Model):
     _inherit = 'color.code.system'
     _description = 'Color Process Type'
 
-    fiber_id = fields.Many2one('color.fiber', string='Fiber')
+    fiber_id = fields.Many2one('color.fiber', string='Fiber', ondelete='restrict')
 
 class ColorRange(models.Model):
     _name = 'color.range'

@@ -26,17 +26,22 @@ Long description of module's purpose
 
     # always loaded
     'data': [
+        'security/group_lab.xml',
         'security/ir.model.access.csv',
         'data/color.fiber.csv',
         'data/color.intensity.csv',
         'data/color.process.type.csv',
         'data/color.range.csv',
         'data/ir_sequence.xml',
+        'report/ir_actions_report.xml',
+        'report/report_color_recipe.xml',
         'views/base_process_views.xml',
         'views/color_code_system_views.xml',
         'views/color_recipe_views.xml',
         'views/lab_dev_views.xml',
         'views/product_color_views.xml',
+        'views/product_template_views.xml',
+        'views/res_config_settings_views.xml',
         'views/sale_order_line_views.xml',
         'views/menu.xml',
     ],

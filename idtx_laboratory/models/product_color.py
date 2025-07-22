@@ -6,14 +6,12 @@ class ProductColor(models.Model):
     _description = 'Product Color'
 
     name = fields.Char('Name', tracking=True)
-    # lab_dev_ids = fields.One2many('lab.dev', 'product_color_id', string='Lab Devs')
-    # recipe_ids = fields.One2many(related='lab_dev_ids.color_recipe_ids')
-    # recipe_count = fields.Integer('Recipe Count', compute='_compute_recipe_count')
-
-    def open_recipes(self):
-        return self.recipe_ids._get_records_action(name=_("Recipes"))
-    
-    @api.depends('recipe_ids')
-    def _compute_recipe_count(self):
-        for rec in self:
-            rec.recipe_count = len(rec.recipe_ids)
+    currency_id = fields.Many2one('res.currency', string='Currency')
+    unit_price = fields.Monetary('Unit Price', currency_field='currency_id')
+    company_id = fields.Many2one(
+        'res.company',
+        string='Company',
+        default=lambda self: self.env.company,
+        index=True,
+        required=True
+    )
