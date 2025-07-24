@@ -49,18 +49,5 @@ Descripción del modulo para desarrollo de producto
         'views/template.xml',
     ],
 
-    'assets': {
-        'web.assets_backend': [
-            'idtx_product_development/static/src/js/gallery_palette.js',
-            'idtx_product_development/static/src/js/structure_editor_component.js',
-            'idtx_product_development/static/src/js/structure_editor.js',
-            'idtx_product_development/static/src/xml/gallery_palette.xml',
-            'idtx_product_development/static/src/xml/structure_editor.xml',
-            'idtx_product_development/static/src/css/gallery_palette.css',
-            'idtx_product_development/static/src/css/structure_editor.css',
-        ],
-    }
-
-
 }
 

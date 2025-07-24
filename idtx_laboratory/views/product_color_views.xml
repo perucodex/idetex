@@ -23,16 +23,22 @@
                         </div>
                         <group>
                             <group> 
+                                <field name="price_type"/>
                                 <field name="currency_id"/>
-                                <field name="unit_price"/>
+                                <field name="unit_price" invisible="price_type == 'thr'"/>
                                 <field name="company_id" groups="base.group_multi_company"/>
                             </group>                            
                         </group>
-                        <!-- <notebook>
-                            <page name="labdev_page" string="Lab Dev">
-                                <field name="lab_dev_ids" readonly="1"/>
+                        <notebook invisible="price_type == 'col'">
+                            <page name="thread_page" string="Prices">
+                                <field name="thread_ids" readonly="1">
+                                    <list editable="bottom">
+                                        <field name="product_id"/>
+                                        <field name="unit_price"/>
+                                    </list>
+                                </field>
                             </page>
-                        </notebook> -->
+                        </notebook>
                     </sheet>
                     <chatter/>
                 </form>

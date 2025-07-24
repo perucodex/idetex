@@ -9,7 +9,7 @@ class ProductAnalysis(models.Model):
     analysis_date = fields.Date('Analysis Date')
     partner_id = fields.Many2one('res.partner', string='Customer', ondelete='restrict')
     product_description = fields.Char('Product Description')
-    equipment_id = fields.Many2one('maintenance.equipment', string='Equipment', ondelete='restrict')
+    equipment_id = fields.Many2one('maintenance.equipment.type', string='Equipment', ondelete='restrict')
     needles = fields.Integer(related='equipment_id.needles')
     gauge_id = fields.Many2one(related='equipment_id.gauge_id')
     diameter = fields.Integer(related='equipment_id.diameter')
@@ -31,7 +31,13 @@ class ProductAnalysis(models.Model):
     )
     notes = fields.Text('Notes')
     fiber_ids = fields.One2many('analysis.fiber', 'analysis_id', string='Fibers')
+    routing_ids = fields.One2many('analysis.routing.line', 'analysis_id', string='Lines')
     user_id = fields.Many2one('res.users','Prepared by',default=lambda self: self.env.user)
+    state = fields.Selection([
+        ('test', 'Test'),
+        ('done', 'Done'),
+        ('product', 'Product'),
+    ], string='state', default='test')
 
     @api.depends('needles','column_qty')
     def _compute_width(self):
@@ -66,11 +72,20 @@ class ProductAnalysis(models.Model):
 
         return super().create(vals_list)
     
+    def action_done(self):
+        self.state = 'done'
+
+    def action_product(self):
+        self.state = 'product'
+
+    def action_return(self):
+        self.state = 'done' if self.state == 'product' else 'test'
+    
 class AnalysisFiber(models.Model):
     _name = 'analysis.fiber'
     _description = 'Analysis Fibers'
 
-    analysis_id = fields.Many2one('product.analysis', string='Technical Sheet')
+    analysis_id = fields.Many2one('product.analysis', string='Product Analysis')
     sequence = fields.Integer('Sequence')
     system_type = fields.Selection([
         ('ne', 'Ne - Número inglés'),
@@ -78,12 +93,11 @@ class AnalysisFiber(models.Model):
         ('tex', 'Tex'),
         ('dtex', 'Decitex'),
         ('nm', 'Nm - Número métrico'),
-    ], string='System Type')
+    ], string='System Type', default='ne')
     length = fields.Float('Mesh Length', compute='_compute_length_average')
     weight = fields.Float('Weight', digits=(12,6))
     thread_qty = fields.Integer('Thread Quantity')
     thread_title = fields.Float('Thread Title', compute='_compute_thread_title')
-    # comercial_thread_title = fields.Char('Comercial Thread Title')
     product_template_id = fields.Many2one('product.template', string='Thread', domain=lambda self: [('categ_id', 'in', self.env.company.thread_category_ids.ids)])
     percentage = fields.Float('Percentage', compute='_compute_percentage')
     line_ids = fields.One2many('analysis.fiber.line', 'analysis_fiber_id', string='Lines')
@@ -132,3 +146,10 @@ class AnalysisFiberLine(models.Model):
 
     analysis_fiber_id = fields.Many2one('analysis.fiber', string='Analysis Fiber')
     length = fields.Float('Mesh Length')
+
+class AnalysisRouteLine(models.Model):
+    _name = 'analysis.routing.line'
+    _description = 'Analysis Routing Line'
+
+    analysis_id = fields.Many2one('product.analysis', string='Product Analysis')
+    operation_id = fields.Many2one('mrp.routing.workcenter.operation', string='Operation Name')

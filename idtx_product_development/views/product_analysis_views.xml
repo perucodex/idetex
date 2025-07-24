@@ -7,6 +7,12 @@
             <field name="model">product.analysis</field>
             <field name="arch" type="xml">
                 <form string="Product Analysis">
+                    <header>
+                        <button name="action_done" type="object" string="Done" class="oe_highlight" invisible="state != 'test'"/>
+                        <button name="action_product" type="object" string="Create TS &amp; Product" class="oe_highlight" invisible="state != 'done'"/>
+                        <button name="action_return" type="object" string="Return" invisible="state == 'test'"/>
+                        <field name="state" widget="statusbar"/>
+                    </header>
                     <sheet>
                         <div class="oe_title">
                             <h1>
@@ -44,18 +50,25 @@
                                 <field name="company_id" readonly="1" groups="base.group_multi_company"/>
                             </group>
                         </group>
+                        <label for="notes"/>
                         <field name="notes"/>
                         <notebook>
                             <page name="fibers_page" string="Fibers">
-                                <field name="fiber_ids" nolabel="1">
+                                <field name="fiber_ids">
                                     <list>
                                         <field name="system_type"/>
                                         <field name="length"/>
                                         <field name="weight"/>
                                         <field name="thread_title"/>
-                                        <!-- <field name="comercial_thread_title"/> -->
                                         <field name="product_template_id"/>
                                         <field name="percentage" widget="percentage"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page name="routing_page" string="Routing">
+                                <field name="routing_ids">
+                                    <list editable="bottom">
+                                        <field name="operation_id"/>
                                     </list>
                                 </field>
                             </page>
@@ -113,7 +126,7 @@
                         </group>
                         <notebook>
                             <page name="measurements_page" string="Measures">
-                                <field name="line_ids" nolabel="1">
+                                <field name="line_ids">
                                     <list editable="bottom">
                                         <field name="length"/>
                                     </list>

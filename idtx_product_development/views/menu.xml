@@ -32,6 +32,8 @@
                 </menuitem>
         </menuitem>
 
+        <menuitem id="equipment_type_action_menu" name="Equipment Type" action="action_maintenance_equipment_type" sequence="900" parent="maintenance.menu_equipment_form"/>
+
     </data>
     
 
