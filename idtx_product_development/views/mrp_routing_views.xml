@@ -14,11 +14,28 @@
                                 <field name="workcenter_id"/>
                             </group>
                             <group>
-                                <field name="currency_id"/>
-                                <field name="unit_price"/>
+                                <field name="currency_id" groups="idtx_product_development.group_module_product_development_manager"/>
+                                <field name="type_prices" groups="idtx_product_development.group_module_product_development_manager"/>
+                                <field name="unit_price" invisible = "type_prices == 'col'" groups="idtx_product_development.group_module_product_development_manager" />
                                 <field name="company_id" readonly="1" groups="base.group_multi_company"/>
                             </group>
                         </group>
+                        <notebook invisible = "type_prices == 'pp'" groups="idtx_product_development.group_module_product_development_manager">
+                            <page name="prices_page" string="Prices">
+                            <field name="product_color_price_ids">
+
+                                <!-- <field name="currency_id" invisible="1"/> -->
+                                <list editable="top">
+                                    <field name="product_color_id" />
+                                    <field name="unit_price" />
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list> 
+                            </field>
+                            
+                            
+
+                            </page>
+                        </notebook>
                     </sheet>
                     <chatter/>
                 </form>

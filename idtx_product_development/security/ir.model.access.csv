@@ -14,3 +14,4 @@ access_product_title,product_title,model_product_title,base.group_user,1,1,1,1
 access_fabric_structure,access_fabric_structure,model_fabric_structure,,1,1,1,1
 access_fabric_ligament,access_fabric_ligament,model_fabric_ligament,,1,1,1,1
 access_fabric_image_palette,access_fabric_image_palette,model_fabric_image_palette,,1,1,1,1
+access_product_color_price,access_product_color_price,model_product_color_price,,1,1,1,1

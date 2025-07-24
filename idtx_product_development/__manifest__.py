@@ -24,6 +24,7 @@ Descripción del modulo para desarrollo de producto
             'product',
             'mrp',
             'maintenance',
+            'idtx_laboratory',
         ],
 
     # always loaded

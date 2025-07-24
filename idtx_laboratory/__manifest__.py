@@ -22,7 +22,6 @@ Long description of module's purpose
     'depends': ['base',
                 'product',
                 'sale',
-                'idtx_product_development'
                 ],
 
     # always loaded

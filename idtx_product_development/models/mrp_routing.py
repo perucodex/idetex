@@ -37,3 +37,18 @@ class MrpRoutingWorkcenterOperation(models.Model):
         index=True,
         required=True
     )
+    type_prices = fields.Selection([
+        ('pp', 'Por Proceso'),
+        ('col', 'Por Color'),
+    ], string='Type Prices', default = 'pp')   
+
+    product_color_price_ids = fields.One2many('product.color.price', 'mrwo_id', string='product_color_price')
+
+class ProductColorPrice (models.Model):
+    _name = 'product.color.price'
+    _description = 'Product Color Price'
+
+    product_color_id = fields.Many2one('product.color', string='Product Color')
+    unit_price = fields.Monetary('Unit Price' , currency_field='currency_id')
+    mrwo_id = fields.Many2one('mrp.routing.workcenter.operation', string='mrp_rout_wngWorkcenter_operation')
+    currency_id = fields.Many2one(related='mrwo_id.currency_id')
