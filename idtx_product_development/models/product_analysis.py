@@ -1,5 +1,5 @@
 from odoo import models, fields, api, _
-
+from odoo.exceptions import UserError
 class ProductAnalysis(models.Model):
     _name = 'product.analysis'
     _inherit = ['mail.thread', 'mail.activity.mixin']
@@ -38,6 +38,10 @@ class ProductAnalysis(models.Model):
         ('done', 'Done'),
         ('product', 'Product'),
     ], string='state', default='test')
+    ligament_row = fields.Integer("Rows",default=0)
+    ligament_column = fields.Integer("Columns",default=0)
+    ligament_join_row_column = fields.Char("Union")
+    grid_data = fields.Text(string="Data Widget")
 
     @api.depends('needles','column_qty')
     def _compute_width(self):
@@ -80,6 +84,16 @@ class ProductAnalysis(models.Model):
 
     def action_return(self):
         self.state = 'done' if self.state == 'product' else 'test'
+    
+    def action_generate(self):
+        row = self.ligament_row
+        column = self.ligament_column
+        if not row or row <= 0:
+            raise UserError("Row number must be greater than 0")
+        if not column or column <= 0:
+            raise UserError("Column number must be greater than 0")
+        self.ligament_join_row_column = "%s, %s"%(row,column)
+        self.grid_data = ""
     
 class AnalysisFiber(models.Model):
     _name = 'analysis.fiber'

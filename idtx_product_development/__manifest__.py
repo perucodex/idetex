@@ -26,7 +26,12 @@ Descripción del modulo para desarrollo de producto
             'maintenance',
             'idtx_laboratory',
         ],
-
+    'assets': {
+        'web.assets_backend': [
+            'idtx_product_development/static/src/components/**/*',
+            'idtx_product_development/static/src/popup/**/*',
+        ],
+    },
     # always loaded
     'data': [
         'security/group_pd.xml',
@@ -46,8 +51,10 @@ Descripción del modulo para desarrollo de producto
         'views/product_code_system_views.xml',
         'views/product_template_views.xml',
         'views/res_config_settings_views.xml',
+        'views/configurate_svg_example.xml',
         'views/menu.xml',
         'views/template.xml',
+
     ],
 
 }
