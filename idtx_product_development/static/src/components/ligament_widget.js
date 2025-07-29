@@ -229,6 +229,107 @@ export class LigamentGridWidget extends Component {
     _getIdCell(cell_id){
         return parseInt(cell_id.split('_')[2]) + 1
     }
+
+    /**
+     * Maneja el evento dragstart en un SVG arrastrable (desde una celda de la cuadrícula).
+     * Almacena el ID del SVG y el ID de la celda de origen en el dataTransfer.
+     * @param {MouseEvent} ev - Evento de clic.
+     */
+    _onSVGDragStart(ev) {
+        const svg_id = ev.currentTarget.dataset.svgId;
+        const source_cell_id = ev.currentTarget.dataset.sourceCellId;
+        ev.dataTransfer.setData("application/json", JSON.stringify({ svg_id: svg_id, source_cell_id: source_cell_id }));
+        ev.currentTarget.classList.add('is-dragging');
+    }
+
+    /**
+     * Maneja el evento dragover en una celda de la cuadrícula.
+     * Previene el comportamiento por defecto para permitir el drop.
+     * @param {MouseEvent} ev - Evento de clic.
+     */
+    _onDragOverCell(ev) {
+        ev.preventDefault();
+        ev.currentTarget.classList.add('drag-over'); 
+    }
+    /**
+     * Maneja el evento dragleave en una celda de la cuadrícula.
+     * Elimina la clase de resaltado.
+     * @param {MouseEvent} ev - Evento de clic.
+     */
+    _onDragLeaveCell(ev) {
+        ev.currentTarget.classList.remove('drag-over');
+    }
+    /**
+     * Maneja el evento drop en una celda de la cuadrícula.
+     * Inserta el SVG en la celda de destino y limpia la celda de origen si es un movimiento.
+     * @param {MouseEvent} ev - Evento de clic.
+     */
+    async _onDropCell(ev) {
+        ev.preventDefault();
+        ev.currentTarget.classList.remove('drag-over'); 
+
+        const target_cell_id = ev.currentTarget.dataset.cellId;
+        let dragged_data;
+        try {
+            dragged_data = JSON.parse(ev.dataTransfer.getData("application/json"));
+        } catch (e) {
+            console.error("Error parsing dragged data:", e);
+            return; 
+        }
+
+        const svg_id = parseInt(dragged_data.svg_id);
+        const source_cell_id = dragged_data.source_cell_id;
+
+        if (isNaN(svg_id)) {
+            console.warn("SVG ID no validate:", dragged_data.svg_id);
+            return;
+        }
+
+        if (source_cell_id === target_cell_id) {
+            return;
+        }
+
+        let svg_content_to_set = null;
+
+        if (this.state.svg_cache[svg_id]) {
+            svg_content_to_set = this.state.svg_cache[svg_id].svg_content;
+        } else {
+            try {
+                const results = await this.rpc("/web/dataset/call_kw/configurate.svg.example/read", {
+                    model: 'configurate.svg.example',
+                    method: 'read',
+                    args: [[svg_id], ['name', 'svg_content']],
+                    kwargs: {},
+                });
+
+                if (results && results.length > 0) {
+                    const svg_record = results[0];
+                    this.state.svg_cache[svg_id] = svg_record; 
+                    svg_content_to_set = svg_record.svg_content;
+                } else {
+                    this.dialog.add(ConfirmationDialog, {
+                        body: this.env._t("No find SVG selected."),
+                        confirm: () => {},
+                        cancel: () => {},
+                        title: this.env._t("Error de SVG"),
+                    });
+                    return; 
+                }
+            } catch (error) {
+                console.error("Error to load SVG for drop:", error);
+                this.dialog.add(ConfirmationDialog, {
+                    body: this.env._t("Error to load SVG. Try again."),
+                    confirm: () => {},
+                    cancel: () => {},
+                    title: this.env._t("Error Drop"),
+                });
+                return; 
+            }
+        }
+
+        this._updateCellContentInState(target_cell_id, markup(svg_content_to_set)); 
+        this._updateGridData(target_cell_id, svg_id);
+    }
 }
 
 export const ConstLigamentGridWidget = {

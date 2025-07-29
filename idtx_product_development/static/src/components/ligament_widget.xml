@@ -16,10 +16,18 @@
                                             <div class="grid-cell relative group"
                                                 t-att-data-cell-id="cell.id"
                                                 t-on-click="(ev) => this._onCellClick(ev, cell.id)"
+                                                t-on-dragover.prevent="(ev) => this._onDragOverCell(ev)"
+                                                t-on-dragleave="(ev) => this._onDragLeaveCell(ev)"
+                                                t-on-drop.prevent="(ev) => this._onDropCell(ev)"
                                                 >
 
                                                 <t t-if="cell.svg_content">
-                                                    <div class="svg-placeholder" t-out="cell.svg_content"/>
+                                                    <div class="svg-placeholder" t-out="cell.svg_content"
+                                                        draggable="true"
+                                                        t-att-data-svg-id="cell.svg_id"
+                                                        t-att-data-source-cell-id="cell.id"
+                                                        t-on-dragstart="(ev) => this._onSVGDragStart(ev)"
+                                                    />
                                                     <button class="clear-cell-button btn btn-sm btn-danger rounded-full absolute top-1 right-1 opacity-0  transition-opacity duration-300"
                                                             title="Clean Cell"
                                                             t-on-click="_onClearCell"
