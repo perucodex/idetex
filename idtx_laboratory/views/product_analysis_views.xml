@@ -63,7 +63,7 @@
                         <field name="notes"/>
                         <notebook>
                             <page name="fibers_page" string="Fibers">
-                                <field name="fiber_ids">
+                                <field name="fiber_ids" readonly="state != 'test'">
                                     <list>
                                         <field name="system_type"/>
                                         <field name="length"/>
@@ -74,8 +74,8 @@
                                     </list>
                                 </field>
                             </page>
-                            <page name="routing_page" string="Routing">
-                                <field name="routing_ids">
+                            <page name="routing_page" string="Routing" readonly="state != 'test'">
+                                <field name="routing_ids" readonly="state != 'test'">
                                     <list editable="bottom">
                                         <field name="sequence" widget="handle"/>
                                         <field name="operation_id"/>
@@ -83,41 +83,41 @@
                                     </list>
                                 </field>
                             </page>
-                            <page name="technical_page" string="Technical Data">
+                            <page name="technical_page" string="Technical Data" readonly="state != 'test'">
                                 <group>
                                     <group>
-                                        <field name="ligament_row"/>
-                                        <field name="ligament_row"/>
-                                        <field name="ligament_row"/>
-                                        <field name="ligament_row"/>
-                                        <field name="ligament_row"/>
+                                        <field name="ligament_row" readonly="state != 'test'"/>
+                                        <field name="ligament_row" readonly="state != 'test'"/>
+                                        <field name="ligament_row" readonly="state != 'test'"/>
+                                        <field name="ligament_row" readonly="state != 'test'"/>
+                                        <field name="ligament_row" readonly="state != 'test'"/>
                                     </group>  
                                     <group>
-                                        <field name="ligament_row"/>
-                                        <field name="ligament_row"/>
-                                        <field name="ligament_row"/>
-                                        <field name="ligament_row"/>
-                                        <field name="ligament_row"/>
+                                        <field name="ligament_row" readonly="state != 'test'"/>
+                                        <field name="ligament_row" readonly="state != 'test'"/>
+                                        <field name="ligament_row" readonly="state != 'test'"/>
+                                        <field name="ligament_row" readonly="state != 'test'"/>
+                                        <field name="ligament_row" readonly="state != 'test'"/>
                                     </group>                                    
                                 </group>
                             </page>
                             <page name="ligament_page" string="Ligament Design Structure">
                                 <group>
                                     <group>
-                                        <field name="ligament_row"/>
-                                        <field name="ligament_column"/>
+                                        <field name="ligament_row" readonly="state != 'test'"/>
+                                        <field name="ligament_column" readonly="state != 'test'"/>
                                         <field name="grid_data" invisible="1" force_save="1"/>
-                                        <button string="Generate" name="action_generate" type="object" class="oe_highlight"/>
+                                        <button string="Generate" name="action_generate" type="object" class="oe_highlight" invisible="state != 'test'"/>
                                     </group>                                    
                                 </group>
                                 <div class="o_grid_ligament_widget_container">
-                                    <field name="ligament_join_row_column" widget="grid_ligament_widget" readonly="1"/>
+                                    <field name="ligament_join_row_column" widget="grid_ligament_widget" readonly="state != 'test'"/>
                                 </div>
                             </page>
                             <page name="other_page" string="Other Information">
                                 <group>
                                     <group>
-                                        <field name="user_id"/>
+                                        <field name="user_id" readonly="state != 'test'"/>
                                     </group>
                                 </group>
                             </page>

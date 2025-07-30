@@ -180,6 +180,9 @@ export class LigamentGridWidget extends Component {
      * @param {Object} svg_record - El registro del SVG seleccionado (id, name, svg_content).
      */
     _onSVGSelected(svg_record) {
+        if (this.props.readonly) {
+            return;
+        }
         if (this.state.current_cell_id) {
             this._updateCellContentInState(this.state.current_cell_id, svg_record.svg_content);
             this._updateGridData(this.state.current_cell_id, svg_record.id);
@@ -193,6 +196,9 @@ export class LigamentGridWidget extends Component {
      * @param {Object} svg_record - El registro del SVG seleccionado (id, name, svg_content).
      */
     _updateGridData(cell_id, svg_id) {
+        if (this.props.readonly) {
+            return;
+        }
         let grid_data_parsed = {};
         try {
             grid_data_parsed = JSON.parse(this.props.record.data.grid_data || '{}');
@@ -215,6 +221,9 @@ export class LigamentGridWidget extends Component {
      * @param {MouseEvent} ev - Evento de clic.
      */
     _onClearCell(ev) {
+        if (this.props.readonly) {
+            return;
+        }
         ev.stopPropagation();
         const cell_id = ev.currentTarget.dataset.cellId;
 
@@ -236,6 +245,9 @@ export class LigamentGridWidget extends Component {
      * @param {MouseEvent} ev - Evento de clic.
      */
     _onSVGDragStart(ev) {
+        if (this.props.readonly) {
+            return;
+        }
         const svg_id = ev.currentTarget.dataset.svgId;
         const source_cell_id = ev.currentTarget.dataset.sourceCellId;
         ev.dataTransfer.setData("application/json", JSON.stringify({ svg_id: svg_id, source_cell_id: source_cell_id }));
@@ -248,6 +260,9 @@ export class LigamentGridWidget extends Component {
      * @param {MouseEvent} ev - Evento de clic.
      */
     _onDragOverCell(ev) {
+        if (this.props.readonly) {
+            return;
+        }
         ev.preventDefault();
         ev.currentTarget.classList.add('drag-over'); 
     }
@@ -257,6 +272,9 @@ export class LigamentGridWidget extends Component {
      * @param {MouseEvent} ev - Evento de clic.
      */
     _onDragLeaveCell(ev) {
+        if (this.props.readonly) {
+            return;
+        }
         ev.currentTarget.classList.remove('drag-over');
     }
     /**
@@ -265,6 +283,9 @@ export class LigamentGridWidget extends Component {
      * @param {MouseEvent} ev - Evento de clic.
      */
     async _onDropCell(ev) {
+        if (this.props.readonly) {
+            return;
+        }
         ev.preventDefault();
         ev.currentTarget.classList.remove('drag-over'); 
 

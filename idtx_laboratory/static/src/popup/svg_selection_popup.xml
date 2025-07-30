@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates>
     <t t-name="SVGSelectionPopup">
-        <Dialog title.translate="Seleccionar SVG" size="'md'" >
+        <Dialog title.translate="Select Ligament" size="'md'">
             <div class="p-4">
                 <t t-if="state.loading">
                     <p class="text-center text-gray-500">Loading SVGs...</p>
                 </t>
                 <t t-elif="state.svgs.length === 0">
-                    <p class="text-center text-gray-500">No have SVGs available. Please, add records.</p>
+                    <p class="text-center text-gray-500">No SVGs availables. Please, add records.</p>
                 </t>
                 <t t-else="">
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">

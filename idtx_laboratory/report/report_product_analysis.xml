@@ -94,7 +94,7 @@
           </tbody>
         </table>
         
-        <div class="row">
+        <div class="row" style="page-break-inside: avoid; break-inside: avoid;">
           <!-- Columna de Notas: ocupa todo el espacio sobrante y parte el texto -->
           <div class="col text-break pe-4">
             <h4>Notes</h4>
@@ -103,14 +103,14 @@
           <!-- Columna de Ligamentos: ancho automático -->
           <div class="col-auto">
             <strong>Fabric Ligaments</strong>
-            <table class="table-borderless mt-2">
+            <table class="table-borderless mt-2" style="border:none; border-collapse: collapse;">
               <t t-foreach="doc.get_svg_grid()" t-as="row">
                 <tr>
                   <t t-foreach="row" t-as="cell">
-                    <td class="p-1">
-                      <t t-if="cell.get('svg0')"><div t-raw="cell.get('svg0')"/></t>
+                    <td style="border:none; padding:0;">
+                      <t t-if="cell.get('svg0')"><div style="zoom: 0.5;" t-raw="cell.get('svg0')"/></t>
                       <t t-else=""><div style="height:20px;">&#160;</div></t>
-                      <t t-if="cell.get('svg1')"><div t-raw="cell.get('svg1')"/></t>
+                      <t t-if="cell.get('svg1')"><div style="zoom: 0.5;" t-raw="cell.get('svg1')"/></t>
                       <t t-else=""><div style="height:20px;">&#160;</div></t>
                     </td>
                   </t>

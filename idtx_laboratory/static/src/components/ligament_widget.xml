@@ -28,15 +28,17 @@
                                                         t-att-data-source-cell-id="cell.id"
                                                         t-on-dragstart="(ev) => this._onSVGDragStart(ev)"
                                                     />
-                                                    <button class="clear-cell-button btn btn-sm btn-danger rounded-full absolute top-1 right-1 opacity-0  transition-opacity duration-300"
-                                                            title="Clean Cell"
-                                                            t-on-click="_onClearCell"
-                                                            t-att-data-cell-id="cell.id">
-                                                        X
-                                                    </button>
-                                                    <div class="cell-id-display absolute top-1 left-1 text-xs font-semibold text-gray-600 bg-gray-200 px-1 py-0.5 rounded">
+                                                    <t t-if="!props.readonly">
+                                                        <button class="clear-cell-button btn btn-sm btn-danger rounded-full absolute top-1 right-1 opacity-0  transition-opacity duration-300"
+                                                                title="Clean Cell"
+                                                                t-on-click="_onClearCell"
+                                                                t-att-data-cell-id="cell.id">
+                                                            X
+                                                        </button>
+                                                    </t>
+                                                    <!-- <div class="cell-id-display absolute top-1 left-1 text-xs font-semibold text-gray-600 bg-gray-200 px-1 py-0.5 rounded">
                                                         <t t-esc="this._getIdCell(cell.id)"/>
-                                                    </div>
+                                                    </div> -->
                                                 </t>
                                                 <t t-else="">
                                                     <div class="svg-placeholder empty"><t t-esc="this._getIdCell(cell.id)"/></div>

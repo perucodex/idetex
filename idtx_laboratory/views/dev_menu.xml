@@ -10,7 +10,6 @@
             web_icon="idtx_laboratory,static/description/icon_dev.png">
                 <menuitem id="dev_operations_menu" name="Operations" sequence="10">
                     <menuitem id="dev_product_analysis_menu" name="Product Analysis" action="product_analysis_action" sequence="10"/>
-                    <menuitem id="dev_fabric_structure_menu" name="Fabric Structure" action="action_fabric_structure" sequence="20"/>
                 </menuitem>
                 <menuitem id="dev_product_menu" name="Products" sequence="20">
                     <menuitem id="dev_weaving_template_menu" name="Weaving" action="product_product_action_weaving" sequence="10"/>

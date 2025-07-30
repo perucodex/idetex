@@ -162,11 +162,11 @@ class AnalysisFiber(models.Model):
     analysis_id = fields.Many2one('product.analysis', string='Product Analysis', ondelete='restrict')
     sequence = fields.Integer('Sequence')
     system_type = fields.Selection([
-        ('ne', 'Ne - Número inglés'),
+        ('ne', 'Número inglés'),
         ('dn', 'Denier'),
         ('tex', 'Tex'),
         ('dtex', 'Decitex'),
-        ('nm', 'Nm - Número métrico'),
+        ('nm', 'Número métrico'),
     ], string='System Type', default='ne')
     length = fields.Float('Mesh Length', compute='_compute_length_average')
     weight = fields.Float('Weight', digits=(12,6))
