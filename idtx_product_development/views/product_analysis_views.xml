@@ -9,11 +9,20 @@
                 <form string="Product Analysis">
                     <header>
                         <button name="action_done" type="object" string="Done" class="oe_highlight" invisible="state != 'test'"/>
-                        <button name="action_product" type="object" string="Create TS &amp; Product" class="oe_highlight" invisible="state != 'done'"/>
+                        <button name="action_product" type="object" string="Create Product" class="oe_highlight" invisible="state != 'done'" confirm="Are you sure you want to create the product ?"/>
                         <button name="action_return" type="object" string="Return" invisible="state == 'test'"/>
                         <field name="state" widget="statusbar"/>
                     </header>
                     <sheet>
+                        <div name="button_box" class="oe_button_box">
+                            <button name="open_product"
+                                    class="oe_stat_button"
+                                    icon="fa-dropbox"
+                                    type="object"
+                                    invisible="not product_id" string="Product">
+                                    <!-- <field name="product_count" string="Recipes" widget="statinfo"/> -->
+                            </button>
+                        </div>
                         <div class="oe_title">
                             <h1>
                                 <field name="name" readonly="1"/>
@@ -68,7 +77,9 @@
                             <page name="routing_page" string="Routing">
                                 <field name="routing_ids">
                                     <list editable="bottom">
+                                        <field name="sequence" widget="handle"/>
                                         <field name="operation_id"/>
+                                        <field name="workcenter_id"/>
                                     </list>
                                 </field>
                             </page>
@@ -77,23 +88,6 @@
                                     <group>
                                         <field name="user_id"/>
                                     </group>
-                                    <!-- <group>
-                                        <field name="density"/>
-                                    </group> -->
-                                </group>
-                            </page>
-                            <page name="ligament_page" string="Ligament Design Structure">
-                                <group>
-                                    <group>
-                                        <field name="ligament_row"/>
-                                        <field name="ligament_column"/>
-                                        <field name="grid_data" invisible="1" force_save="1"/>
-                                        <button string="Generate" name="action_generate" type="object" class="oe_highlight"/>
-                                    </group>
-                                    <div class="o_grid_ligament_widget_container">
-                                        <field name="ligament_join_row_column" widget="grid_ligament_widget"/>
-                                    </div>
-                                    
                                 </group>
                             </page>
                         </notebook>

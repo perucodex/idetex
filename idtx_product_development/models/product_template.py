@@ -19,6 +19,7 @@ class ProductTemplate(models.Model):
     is_weaving = fields.Boolean('is_weaving', compute='_compute_is_weaving_thread', store=True)
     is_thread = fields.Boolean('is_thread', compute='_compute_is_weaving_thread', store=True)
 
+    @api.model
     @api.depends('categ_id')
     def _compute_is_weaving_thread(self):
         for rec in self:

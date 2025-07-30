@@ -1,5 +1,5 @@
-from odoo import models, fields, api, _
-from odoo.exceptions import UserError
+from odoo import models, fields, api, _, Command
+
 class ProductAnalysis(models.Model):
     _name = 'product.analysis'
     _inherit = ['mail.thread', 'mail.activity.mixin']
@@ -38,10 +38,7 @@ class ProductAnalysis(models.Model):
         ('done', 'Done'),
         ('product', 'Product'),
     ], string='state', default='test')
-    ligament_row = fields.Integer("Rows",default=0)
-    ligament_column = fields.Integer("Columns",default=0)
-    ligament_join_row_column = fields.Char("Union")
-    grid_data = fields.Text(string="Data Widget")
+    product_id = fields.Many2one('product.template', string='Product', ondelete='restrict')
 
     @api.depends('needles','column_qty')
     def _compute_width(self):
@@ -80,26 +77,37 @@ class ProductAnalysis(models.Model):
         self.state = 'done'
 
     def action_product(self):
+        self.product_id.create({
+            'name': self.product_description,
+            'default_code': self.product_code,
+            'uom_id': self.env.ref('uom.product_uom_kgm').id,
+            'uom_po_id': self.env.ref('uom.product_uom_kgm').id,
+            'categ_id': self.env.company.weaving_category_ids[0].id if self.env.company.weaving_category_ids else False,
+            'route_ids': [Command.link(self.env.ref('mrp.route_warehouse0_manufacture').id)],
+        })
+        self.product_id.bom_ids.create({
+            'product_tmpl_id': self.product_id.id,
+            'product_uom_id': self.product_id.uom_id.id,
+            'bom_line_ids': [Command.create({'product_id': p.id}) for p in self.fiber_ids.product_template_id],
+            'operation_ids': [Command.create({
+                'name': ar.operation_id.name,
+                'operation_id': ar.operation_id.id,
+                'workcenter_id': ar.workcenter_id.id
+            }) for ar in self.routing_ids.sorted(key=lambda o: o.sequence)],
+        })
         self.state = 'product'
 
     def action_return(self):
         self.state = 'done' if self.state == 'product' else 'test'
     
-    def action_generate(self):
-        row = self.ligament_row
-        column = self.ligament_column
-        if not row or row <= 0:
-            raise UserError("Row number must be greater than 0")
-        if not column or column <= 0:
-            raise UserError("Column number must be greater than 0")
-        self.ligament_join_row_column = "%s, %s"%(row,column)
-        self.grid_data = ""
+    def open_product(self):
+        return self.product_id._get_records_action(name=_("Recipes"))
     
 class AnalysisFiber(models.Model):
     _name = 'analysis.fiber'
     _description = 'Analysis Fibers'
 
-    analysis_id = fields.Many2one('product.analysis', string='Product Analysis')
+    analysis_id = fields.Many2one('product.analysis', string='Product Analysis', ondelete='restrict')
     sequence = fields.Integer('Sequence')
     system_type = fields.Selection([
         ('ne', 'Ne - Número inglés'),
@@ -112,7 +120,7 @@ class AnalysisFiber(models.Model):
     weight = fields.Float('Weight', digits=(12,6))
     thread_qty = fields.Integer('Thread Quantity')
     thread_title = fields.Float('Thread Title', compute='_compute_thread_title')
-    product_template_id = fields.Many2one('product.template', string='Thread', domain=lambda self: [('categ_id', 'in', self.env.company.thread_category_ids.ids)])
+    product_template_id = fields.Many2one('product.template', string='Thread', domain=lambda self: [('categ_id', 'in', self.env.company.thread_category_ids.ids)], ondelete='restrict')
     percentage = fields.Float('Percentage', compute='_compute_percentage')
     line_ids = fields.One2many('analysis.fiber.line', 'analysis_fiber_id', string='Lines')
 
@@ -165,5 +173,7 @@ class AnalysisRouteLine(models.Model):
     _name = 'analysis.routing.line'
     _description = 'Analysis Routing Line'
 
+    sequence = fields.Integer('Sequence')
     analysis_id = fields.Many2one('product.analysis', string='Product Analysis')
-    operation_id = fields.Many2one('mrp.routing.workcenter.operation', string='Operation Name')
+    operation_id = fields.Many2one('mrp.routing.workcenter.operation', string='Operation Name', ondelete='restrict')
+    workcenter_id = fields.Many2one(related='operation_id.workcenter_id')

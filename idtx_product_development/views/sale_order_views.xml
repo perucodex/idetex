@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sale_order_view_form_inherit_dev" model="ir.ui.view">
+        <field name="name">sale.order.view.form.inherit.dev</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="idtx_laboratory.sale_order_view_form_inherit_lab"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_color_id']" position="attributes">
+                <attribute name="readonly">not is_weaving</attribute>
+                <attribute name="required">is_weaving</attribute>
+            </xpath>
+            <xpath expr="//field[@name='weaving_loss']" position="attributes">
+                <attribute name="readonly">not is_weaving</attribute>
+            </xpath>
+            <xpath expr="//field[@name='production_loss']" position="attributes">
+                <attribute name="readonly">not is_weaving</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

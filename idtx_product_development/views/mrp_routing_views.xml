@@ -22,18 +22,13 @@
                         </group>
                         <notebook invisible = "type_prices == 'pp'" groups="idtx_product_development.group_module_product_development_manager">
                             <page name="prices_page" string="Prices">
-                            <field name="product_color_price_ids">
-
-                                <!-- <field name="currency_id" invisible="1"/> -->
-                                <list editable="top">
-                                    <field name="product_color_id" />
-                                    <field name="unit_price" />
-                                    <field name="currency_id" column_invisible="1"/>
-                                </list> 
-                            </field>
-                            
-                            
-
+                                <field name="product_color_price_ids">
+                                    <list editable="bottom">
+                                        <field name="product_color_id" />
+                                        <field name="unit_price" />
+                                        <field name="currency_id" column_invisible="1"/>
+                                    </list> 
+                                </field>
                             </page>
                         </notebook>
                     </sheet>
@@ -99,13 +94,6 @@
               </p>
             </field>
         </record>
-
-
-        <!-- <menuitem id="menu_mrp_routing_operation_action"
-          action="mrp_routing_operation_action"
-          parent="mrp.menu_mrp_configuration"
-          groups="mrp.group_mrp_routings"
-          sequence="120"/> -->
 
     </data>
 </odoo>
