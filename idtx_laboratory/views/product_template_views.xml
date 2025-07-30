@@ -13,6 +13,32 @@
             </p>
         </field>
     </record>
+    
+    <record id="product_product_action_weaving" model="ir.actions.act_window">
+        <field name="name">Weaving</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">kanban,list,form,activity</field>
+        <field name="context">{'search_default_filter_weaving': 1}</field>
+        <field name="view_id" ref="product.product_template_tree_view"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new weaving product
+            </p>
+        </field>
+    </record>
+    
+    <record id="product_product_action_thread" model="ir.actions.act_window">
+        <field name="name">Thread</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">kanban,list,form,activity</field>
+        <field name="context">{'search_default_filter_thread': 1}</field>
+        <field name="view_id" ref="product.product_template_tree_view"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new thread product
+            </p>
+        </field>
+    </record>
 
     <record id="product_template_search_view_inherit_ld" model="ir.ui.view">
         <field name="name">product.template.search.inherit.ld</field>
@@ -21,6 +47,8 @@
         <field name="arch" type="xml">
             <filter name="filter_to_sell" position="after">
                 <filter string="Chemical" name="filter_chemical" domain="[('is_chemical','=',True)]"/>
+                <filter string="Weaving" name="filter_weaving" domain="[('is_weaving','=',True)]"/>
+                <filter string="Thread" name="filter_thread" domain="[('is_thread','=',True)]"/>
             </filter>
         </field>
     </record>

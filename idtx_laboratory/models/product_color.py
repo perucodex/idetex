@@ -6,8 +6,8 @@ class ProductColor(models.Model):
     _description = 'Product Color'
 
     name = fields.Char('Name', tracking=True)
-    currency_id = fields.Many2one('res.currency', string='Currency')
-    unit_price = fields.Monetary('Unit Price', currency_field='currency_id')
+    # currency_id = fields.Many2one('res.currency', string='Currency')
+    # unit_price = fields.Monetary('Unit Price', currency_field='currency_id')
     company_id = fields.Many2one(
         'res.company',
         string='Company',

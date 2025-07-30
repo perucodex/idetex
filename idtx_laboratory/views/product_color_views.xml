@@ -23,9 +23,9 @@
                         </div>
                         <group>
                             <group> 
-                                <field name="currency_id"/>
-                                <field name="unit_price" />
-                                <field name="company_id" groups="base.group_multi_company"/>
+                                <!-- <field name="currency_id"/>
+                                <field name="unit_price" /> -->
+                                <field name="company_id" readonly="1" groups="base.group_multi_company"/>
                             </group>                            
                         </group>
                     </sheet>
@@ -40,8 +40,8 @@
             <field name="arch" type="xml">
                 <list string="Product Color">
                     <field name="name"/>
-                    <field name="currency_id"/>
-                    <field name="unit_price"/>
+                    <!-- <field name="currency_id"/>
+                    <field name="unit_price"/> -->
                     <field name="company_id" groups="base.group_multi_company" optional="hide" readonly="1"/>
                     <!-- <field name="recipe_ids"/> -->
                 </list>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sale_order_view_form_inherit_lab" model="ir.ui.view">
+        <field name="name">sale.order.view.form.inherit.lab</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="after">
+                <div class="alert alert-warning" role="alert"
+                    invisible="weaving_warning == ''">
+                    <field name="weaving_warning"/>
+                </div>
+            </xpath>
+            <xpath expr="//notebook/page/field[@name='order_line']/list/field[@name='product_template_id']" position="after">
+                <field name="product_color_id" options="{'no_create': True, 'no_open': True}" required="is_weaving" readonly="not is_weaving"/>
+                <field name="weaving_loss" readonly="not is_weaving" optional="hide" widget="percentage"/>
+                <field name="production_loss" readonly="not is_weaving" optional="hide" widget="percentage"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

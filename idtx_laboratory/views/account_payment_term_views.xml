@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_payment_term_form_inherit" model="ir.ui.view">
+        <field name="name">account.payment.term.search.inherit</field>
+        <field name="model">account.payment.term</field>
+        <field name="inherit_id" ref="account.view_payment_term_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group/field[@name='company_id']" position="after">
+                <field name="financial_percentage" widget="percentage"/>
+            </xpath>
+            <!-- <field name="company_id" position="after">
+                <field name="financial_percentage" widget="percentage"/>
+            </field> -->
+        </field>
+    </record>
+
+</odoo>
+

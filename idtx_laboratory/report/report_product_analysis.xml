@@ -1,0 +1,150 @@
+<odoo>
+
+  <!-- QWeb Template -->
+  <template id="report_product_analysis_document">
+    <t t-call="web.external_layout">
+      <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)"/>
+      <div class="page">
+        <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+        <!-- Header -->
+        <h2 style="text-align:center;">Product Analysis</h2>
+        <h3 style="text-align:center;"><t t-esc="doc.name"/></h3>
+
+        <!-- Datos generales -->
+        <div class="row mb-4" id="informations">
+          <div class="col" name="informations_reference">
+              <strong>Customer:</strong>
+              <div t-field="doc.partner_id.name"></div>
+          </div>
+          <div class="col" name="informations_reference">
+              <strong>Analysis Date:</strong>
+              <div t-esc="doc.analysis_date.strftime('%m/%d/%Y')"></div>
+          </div>
+          <div class="col" name="informations_reference">
+              <strong>Fabric:</strong>
+              <div t-field="doc.product_description"></div>
+          </div>
+        </div>
+        <!-- Descripción de la tela -->
+        <div class="row mb-4" id="informations">
+          <div class="col text-center" name="fabric_title">
+              <strong>Fabric Description</strong>
+          </div>
+        </div>
+        <table class="table o_main_table table-borderless">
+          <thead>
+            <tr>
+              <th>Family</th>
+              <th>Columns Qty</th>
+              <th>Weight (gr/m²)</th>
+              <th>Needles</th>
+              <th>Gauge</th>
+              <th>Diameter</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><t t-esc="doc.product_family_id.name"/></td>
+              <td><t t-esc="doc.column_qty"/></td>
+              <td class="text-end"><t t-esc="doc.density"/></td>
+              <td class="text-end"><t t-esc="doc.needles"/></td>
+              <td><t t-esc="doc.gauge_id.name"/></td>
+              <td class="text-end"><t t-esc="doc.diameter"/></td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- Descripción del hilo -->
+        <div class="row mb-4" id="informations">
+          <div class="col text-center" name="thread_title">
+              <strong>Thread Description</strong>
+          </div>
+        </div>
+        <!-- Tabla principal de cabos -->
+        <table class="table o_main_table table-borderless">
+          <thead>
+            <tr>
+              <th>N°</th>
+              <th>Thread Code</th>
+              <th>Thread</th>
+              <th>System Type</th>
+              <th>Mesh Length</th>
+              <th>Weight</th>
+              <th>Thread Quantity</th>
+              <th>Thread Title</th>
+              <th>Percentage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <t t-foreach="doc.fiber_ids" t-as="line" t-key="line.id">
+              <tr>
+                <td><t t-esc="line.sequence + 1"/></td>
+                <td><t t-esc="line.product_template_id.default_code"/></td>
+                <td><t t-esc="line.product_template_id.name"/></td>
+                <td><span t-field="line.system_type"/></td>
+                <td class="text-end"><t t-esc="('%.2f' % line.length)"/></td>
+                <td class="text-end"><t t-esc="('%.6f' % line.weight)"/></td>
+                <td class="text-end"><t t-esc="line.thread_qty"/></td>
+                <td class="text-end"><t t-esc="('%.2f' % line.thread_title)"/></td>
+                <td class="text-end">
+                  <!-- <t t-esc="('%.2f %%' % (line.percentage * 100))"/> -->
+                  <t t-raw="'{:.2f} %'.format(line.percentage * 100)"/>
+                </td>
+              </tr>
+            </t>
+          </tbody>
+        </table>
+        
+        <div class="row">
+          <!-- Columna de Notas: ocupa todo el espacio sobrante y parte el texto -->
+          <div class="col text-break pe-4">
+            <h4>Notes</h4>
+            <p t-esc="doc.notes"/>
+          </div>
+          <!-- Columna de Ligamentos: ancho automático -->
+          <div class="col-auto">
+            <strong>Fabric Ligaments</strong>
+            <table class="table-borderless mt-2">
+              <t t-foreach="doc.get_svg_grid()" t-as="row">
+                <tr>
+                  <t t-foreach="row" t-as="cell">
+                    <td class="p-1">
+                      <t t-if="cell.get('svg0')"><div t-raw="cell.get('svg0')"/></t>
+                      <t t-else=""><div style="height:20px;">&#160;</div></t>
+                      <t t-if="cell.get('svg1')"><div t-raw="cell.get('svg1')"/></t>
+                      <t t-else=""><div style="height:20px;">&#160;</div></t>
+                    </td>
+                  </t>
+                </tr>
+              </t>
+            </table>
+          </div>
+        </div>
+
+        <br/>
+
+        <!-- Imagen de estructura -->
+        <!-- <div style="text-align:right;">
+          <img t-if="doc.diagram_image" t-att-src="'data:image/png;base64,%s' % doc.diagram_image.decode('utf-8')" style="width:300px;"/>
+        </div> -->
+
+        <p>
+          <strong><t t-esc="doc.user_id.name"/></strong> -
+          <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M:%S')"/>
+        </p>
+      </div>
+    </t>
+  </template>
+
+  <template id="report_product_analysis_raw">
+      <t t-call="web.html_container">
+          <t t-foreach="docs" t-as="doc">
+              <t t-call="idtx_laboratory.report_product_analysis_document" t-lang="doc.partner_id.lang"/>
+          </t>
+      </t>
+  </template>
+
+  <template id="report_product_analysis">
+      <t t-call="idtx_laboratory.report_product_analysis_raw"/>
+  </template>
+
+</odoo>
