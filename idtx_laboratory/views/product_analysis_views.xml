@@ -9,19 +9,23 @@
                 <form string="Product Analysis">
                     <header>
                         <button name="action_done" type="object" string="Done" class="oe_highlight" invisible="state != 'test'"/>
-                        <button name="action_product" type="object" string="Create Product" class="oe_highlight" invisible="state != 'done'" confirm="Are you sure you want to create the product ?"/>
-                        <button name="action_return" type="object" string="Return" invisible="state == 'test' or product_id"/>
+                        <button name="action_create_technical_sheet" type="object" string="Create Technical Sheet" class="oe_highlight" invisible="state != 'done'" confirm="Are you sure you want to create the technical sheet ?"/>
+                        <!-- <button name="action_product" type="object" string="Create Product" class="oe_highlight" invisible="state != 'done'" confirm="Are you sure you want to create the product ?"/> -->
+                        <button name="action_return" type="object" string="Return" invisible="state == 'test' or technical_sheet_id"/>
                         <field name="state" widget="statusbar"/>
                     </header>
                     <sheet>
                         <div name="button_box" class="oe_button_box">
-                            <button name="open_product"
+                            <!-- <button name="open_product"
                                     class="oe_stat_button"
                                     icon="fa-dropbox"
                                     type="object"
-                                    invisible="not product_id" string="Product">
-                                    <!-- <field name="product_count" string="Recipes" widget="statinfo"/> -->
-                            </button>
+                                    invisible="not product_id" string="Product"/> -->
+                            <button name="open_tech"
+                                    class="oe_stat_button"
+                                    icon="fa-microchip"
+                                    type="object"
+                                    invisible="not technical_sheet_id" string="Technical Sheet"/>
                         </div>
                         <div class="oe_title">
                             <h1>
@@ -83,24 +87,6 @@
                                     </list>
                                 </field>
                             </page>
-                            <page name="technical_page" string="Technical Data" readonly="state != 'test'">
-                                <group>
-                                    <group>
-                                        <field name="ligament_row" readonly="state != 'test'"/>
-                                        <field name="ligament_row" readonly="state != 'test'"/>
-                                        <field name="ligament_row" readonly="state != 'test'"/>
-                                        <field name="ligament_row" readonly="state != 'test'"/>
-                                        <field name="ligament_row" readonly="state != 'test'"/>
-                                    </group>  
-                                    <group>
-                                        <field name="ligament_row" readonly="state != 'test'"/>
-                                        <field name="ligament_row" readonly="state != 'test'"/>
-                                        <field name="ligament_row" readonly="state != 'test'"/>
-                                        <field name="ligament_row" readonly="state != 'test'"/>
-                                        <field name="ligament_row" readonly="state != 'test'"/>
-                                    </group>                                    
-                                </group>
-                            </page>
                             <page name="ligament_page" string="Ligament Design Structure">
                                 <group>
                                     <group>
@@ -121,6 +107,27 @@
                                     </group>
                                 </group>
                             </page>
+                            <!-- <page name="technical_page" string="Technical Data" invisible="state == 'test'">
+                                <group>
+                                    <group>
+                                        <field name="program"/>
+                                        <field name="fabric_composition"/>
+                                        <field name="atx"/>
+                                        <field name="density"/>
+                                        <field name="width"/>
+                                        <field name="gauge"/>
+                                    </group>
+                                    <group>
+                                        <field name="first_wash_shrinkage"/>
+                                        <field name="first_wash_twist"/>
+                                        <field name="yield_meter"/>
+                                        <field name="scrap" widget="percentage"/>
+                                        <field name="weave_type"/>
+                                        <field name="batch"/>
+                                    </group>
+                                    <field name="memo" nolabel="0"/>
+                                </group>
+                            </page> -->
                         </notebook>
                     </sheet>
                     <chatter/>
@@ -187,7 +194,7 @@
               <p class="o_view_nocontent_smiling_face">
                 Create a new Product Analysis
               </p><p>
-                Product Analysis define that need to be done to realize a Product.
+                Product Analysis define that need to be done to realize a Technical Sheet.
                 Each analysis is done from customer samples.
               </p>
             </field>

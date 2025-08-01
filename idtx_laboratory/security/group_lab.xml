@@ -57,5 +57,11 @@
             <field name="domain_force">[('company_id', 'parent_of', company_ids)]</field>
         </record>
 
+        <record id="technical_sheet_company_rule" model="ir.rule">
+            <field name="name">Technical Sheet multi-company</field>
+            <field name="model_id" ref="model_technical_sheet"/>
+            <field name="domain_force">[('company_id', 'parent_of', company_ids)]</field>
+        </record>
+
     </data>
 </odoo>

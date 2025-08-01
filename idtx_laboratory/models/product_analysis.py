@@ -8,7 +8,7 @@ class ProductAnalysis(models.Model):
     _description = 'Product Analysis'
 
     name = fields.Char('Name', required=True, copy=False, readonly=False, default=lambda self: _('New'))
-    analysis_date = fields.Date('Analysis Date')
+    analysis_date = fields.Date('Analysis Date', required=True, default=lambda self: fields.Date.context_today(self))
     partner_id = fields.Many2one('res.partner', string='Customer', ondelete='restrict')
     product_description = fields.Char('Product Description')
     equipment_id = fields.Many2one('maintenance.equipment.type', string='Equipment', ondelete='restrict')
@@ -17,8 +17,8 @@ class ProductAnalysis(models.Model):
     diameter = fields.Integer(related='equipment_id.diameter')
     feeders = fields.Integer(related='equipment_id.feeders')
     column_qty = fields.Integer('Column Qty')
-    width = fields.Float('Width', compute='_compute_width')
-    density = fields.Float('Density')
+    width = fields.Float('Analysis Width', compute='_compute_width')
+    density = fields.Integer('Analysis Density')
     product_appearance_id = fields.Many2one('product.appearance', string='Appearance', ondelete='restrict')
     product_family_id = fields.Many2one('product.family', string='Family', ondelete='restrict')
     product_fiber_id = fields.Many2one('product.fiber', string='Fiber', ondelete='restrict')
@@ -38,13 +38,13 @@ class ProductAnalysis(models.Model):
     state = fields.Selection([
         ('test', 'Test'),
         ('done', 'Done'),
-        ('product', 'Product'),
+        ('tech', 'Technical'),
     ], string='state', default='test')
-    product_id = fields.Many2one('product.template', string='Product')
     ligament_row = fields.Integer("Rows",default=0)
     ligament_column = fields.Integer("Columns",default=0)
     ligament_join_row_column = fields.Char("Union")
     grid_data = fields.Text(string="Data Widget")
+    technical_sheet_id = fields.Many2one('technical.sheet', string='Technical Sheet')
 
     @api.depends('needles','column_qty')
     def _compute_width(self):
@@ -54,8 +54,8 @@ class ProductAnalysis(models.Model):
             else:
                 rec.width = 0
 
-    @api.onchange('product_family_id','product_fiber_id','product_title_id','gauge_id','product_appearance_id')
-    def _onchange_color_code(self):
+    @api.onchange('product_family_id','product_fiber_id','product_title_id','gauge_id','product_appearance_id','width','density')
+    def _onchange_product_code(self):
         for rec in self:
             rec.product_code = (rec.product_family_id.code or '') + \
                     (rec.product_title_id.code or '') + \
@@ -82,32 +82,49 @@ class ProductAnalysis(models.Model):
     def action_done(self):
         self.state = 'done'
 
-    def action_product(self):
-        self.product_id = self.env['product.template'].create({
-            'name': self.product_description,
-            'default_code': self.product_code,
-            'uom_id': self.env.ref('uom.product_uom_kgm').id,
-            'uom_po_id': self.env.ref('uom.product_uom_kgm').id,
-            'categ_id': self.env.company.weaving_category_ids[0].id if self.env.company.weaving_category_ids else False,
-            'route_ids': [Command.link(self.env.ref('mrp.route_warehouse0_manufacture').id)],
+    def action_create_technical_sheet(self):
+        self.technical_sheet_id = self.env['technical.sheet'].create({
+            'analysis_id': self.id,
+            'fabric_composition': ' '.join([
+                f'{round(f.percentage * 100)}% {f.product_template_id.name}'
+                for f in self.fiber_ids
+            ]),
+            'density': self.density,
+            'width': self.width,
+            'gauge_id': self.gauge_id.id,
+            'analysis_id': self.id,
         })
-        self.product_id.bom_ids.create({
-            'product_tmpl_id': self.product_id.id,
-            'product_uom_id': self.product_id.uom_id.id,
-            'bom_line_ids': [Command.create({'product_id': p.id}) for p in self.fiber_ids.product_template_id],
-            'operation_ids': [Command.create({
-                'name': ar.operation_id.name,
-                'operation_id': ar.operation_id.id,
-                'workcenter_id': ar.workcenter_id.id
-            }) for ar in self.routing_ids.sorted(key=lambda o: o.sequence)],
-        })
-        self.state = 'product'
+        self.state = 'tech'
+
+    # def action_product(self):
+    #     self.product_id = self.env['product.template'].create({
+    #         'name': self.product_description,
+    #         'default_code': self.product_code,
+    #         'uom_id': self.env.ref('uom.product_uom_kgm').id,
+    #         'uom_po_id': self.env.ref('uom.product_uom_kgm').id,
+    #         'categ_id': self.env.company.weaving_category_ids[0].id if self.env.company.weaving_category_ids else False,
+    #         'route_ids': [Command.link(self.env.ref('mrp.route_warehouse0_manufacture').id)],
+    #     })
+    #     self.product_id.bom_ids.create({
+    #         'product_tmpl_id': self.product_id.id,
+    #         'product_uom_id': self.product_id.uom_id.id,
+    #         'bom_line_ids': [Command.create({'product_id': p.id}) for p in self.fiber_ids.product_template_id],
+    #         'operation_ids': [Command.create({
+    #             'name': ar.operation_id.name,
+    #             'operation_id': ar.operation_id.id,
+    #             'workcenter_id': ar.workcenter_id.id
+    #         }) for ar in self.routing_ids.sorted(key=lambda o: o.sequence)],
+    #     })
+    #     self.state = 'product'
 
     def action_return(self):
-        self.state = 'done' if self.state == 'product' else 'test'
+        self.state = 'done' if self.state == 'tech' else 'test'
     
-    def open_product(self):
-        return self.product_id._get_records_action(name=_("Recipes"))
+    # def open_product(self):
+    #     return self.product_id._get_records_action(name=_("Product"))
+
+    def open_tech(self):
+        return self.technical_sheet_id._get_records_action(name=_("Technical Sheet"))
     
     def action_generate(self):
         row = self.ligament_row
