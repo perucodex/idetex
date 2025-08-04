@@ -43,6 +43,7 @@ class TechnicalSheet(models.Model):
         ('prod', 'Product'),
     ], string='state', default='test')
     user_id = fields.Many2one('res.users','Prepared by',default=lambda self: self.env.user)
+    route_line_ids = fields.One2many('technical.route.line', 'technical_id', string='Route Line')
 
     @api.onchange('gauge_id','width','density')
     def _onchange_product_code(self):
@@ -79,8 +80,8 @@ class TechnicalSheet(models.Model):
             'route_ids': [Command.link(self.env.ref('mrp.route_warehouse0_manufacture').id)],
         })
         self.product_id.bom_ids.create({
-            'product_tmpl_id': self.analysis_id.product_id.id,
-            'product_uom_id': self.analysis_id.product_id.uom_id.id,
+            'product_tmpl_id': self.product_id.id,
+            'product_uom_id': self.product_id.uom_id.id,
             'bom_line_ids': [Command.create({'product_id': p.id}) for p in self.analysis_id.fiber_ids.product_template_id],
             'operation_ids': [Command.create({
                 'name': route.operation_id.name,
@@ -88,7 +89,7 @@ class TechnicalSheet(models.Model):
                 'workcenter_id': route.workcenter_id.id
             }) for route in self.analysis_id.routing_ids.sorted(key=lambda o: o.sequence)],
         })
-        self.state = 'product'
+        self.state = 'prod'
 
     def action_done(self):
         self.state = 'done'
@@ -98,3 +99,27 @@ class TechnicalSheet(models.Model):
 
     def open_product(self):
         return self.product_id._get_records_action(name=_("Product"))
+
+class TechnicalRouteLine(models.Model):
+    _name = 'technical.route.line'
+    _description = 'Technical Route Line'
+
+    sequence = fields.Integer('Sequence')
+    technical_id = fields.Many2one('technical.sheet', string='Technical Sheet')
+    operation_id = fields.Many2one('mrp.routing.workcenter.operation', string='Operation Name', ondelete='restrict')
+    workcenter_id = fields.Many2one(related='operation_id.workcenter_id')
+    line_parameter_ids = fields.One2many('route.line.parameter', 'technical_route_id', string='Line Parameter')
+    
+    @api.onchange('operation_id')
+    def _onchange_operation_id(self):
+        for rec in self:
+            rec.line_parameter_ids.unlink()
+            rec.line_parameter_ids = [Command.create({'name': param.name}) for param in rec.operation_id.parameter_ids]
+
+class RouteLineParameter(models.Model):
+    _name = 'route.line.parameter' 
+    _description = 'Route Line Parameter'
+
+    technical_route_id = fields.Many2one('technical.route.line', string='Technical Routing Line')
+    name = fields.Char('Parameter')
+    value = fields.Char('Value')

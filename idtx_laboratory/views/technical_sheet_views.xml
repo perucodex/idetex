@@ -57,11 +57,31 @@
                                     </group>
                                 </group>
                             </page>
-                            <page name="stenter_page" string="Stenter">
-                                <!-- aqui deben ir los procesos de acabado
-                                con sus respectivos parametros y ver
-                                la posibilidad de conectarse remotamente
-                                para introducir la data -->
+                            <page name="route_page" string="Routing">
+                                <field name="route_line_ids">
+                                    <list>
+                                        <field name="operation_id"/>
+                                        <field name="workcenter_id"/>
+                                    </list>
+                                    <form>
+                                        <group>
+                                            <group>
+                                                <field name="operation_id" readonly="line_parameter_ids"/>
+                                                <field name="workcenter_id"/>
+                                            </group>
+                                        </group>
+                                        <notebook>
+                                            <page name="param_page" string="Parameters">
+                                                <field name="line_parameter_ids">
+                                                    <list editable="bottom" create="0" delete="0">
+                                                        <field name="name" readonly="1" force_save="1"/>
+                                                        <field name="value"/>
+                                                    </list>
+                                                </field>
+                                            </page>
+                                        </notebook>
+                                    </form>
+                                </field>
                             </page>
                             <page name="other_page" string="Other Information">
                                 <group>

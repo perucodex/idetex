@@ -1,0 +1,13 @@
+id,operation_id:id,name
+1,mrp_wco_131,"Ancho de tela al ingreso"
+2,mrp_wco_131,"Densidad de tela al ingreso"
+3,mrp_wco_131,"Ancho del bastidor"
+4,mrp_wco_131,"Temperatura a termofijar"
+5,mrp_wco_131,"Velocidad para termofijar"
+6,mrp_wco_131,"Alimentación"
+7,mrp_wco_131,"Nivel de vaporizado"
+8,mrp_wco_131,"Tensión de ingreso"
+9,mrp_wco_131,"Ancho de tela a la salida"
+10,mrp_wco_131,"Densidad de tela a la salida"
+11,mrp_wco_131,"Quick Wash"
+12,mrp_wco_131,"Apariencia del tejido"

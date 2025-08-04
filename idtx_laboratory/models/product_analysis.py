@@ -87,12 +87,16 @@ class ProductAnalysis(models.Model):
             'analysis_id': self.id,
             'fabric_composition': ' '.join([
                 f'{round(f.percentage * 100)}% {f.product_template_id.name}'
-                for f in self.fiber_ids
+                for f in self.fiber_ids if f.product_template_id
             ]),
             'density': self.density,
             'width': self.width,
             'gauge_id': self.gauge_id.id,
             'analysis_id': self.id,
+            'route_line_ids': [Command.create({
+                'operation_id': route.operation_id.id,
+                'line_parameter_ids': [Command.create({'name': param.name}) for param in route.operation_id.parameter_ids],
+            }) for route in self.routing_ids]
         })
         self.state = 'tech'
 

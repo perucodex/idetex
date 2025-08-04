@@ -1,6 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <record id="paperformat_report_paper" model="report.paperformat">
+        <field name="name">Report Paper</field>
+        <field name="default" eval="False" />
+        <field name="format">A4</field>
+        <field name="page_height">0</field>
+        <field name="page_width">0</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">15</field>
+        <field name="margin_bottom">30</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_line" eval="False" />
+        <field name="header_spacing">15</field>
+        <field name="dpi">90</field>
+    </record>
+    
     <record id="action_report_color_recipe" model="ir.actions.report">
         <field name="name">Color Recipe</field>
         <field name="model">color.recipe</field>
@@ -8,6 +24,7 @@
         <field name="report_name">idtx_laboratory.report_color_recipe</field>
         <field name="report_file">idtx_laboratory.report_color_recipe</field>
         <field name="print_report_name">'Product Recipe - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="idtx_laboratory.paperformat_report_paper"/>
         <field name="binding_model_id" ref="model_color_recipe"/>
         <field name="binding_type">report</field>
     </record>
@@ -19,7 +36,20 @@
         <field name="report_name">idtx_laboratory.report_product_analysis</field>
         <field name="report_file">idtx_laboratory.report_product_analysis</field>
         <field name="print_report_name">'Product Analysis - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="idtx_laboratory.paperformat_report_paper"/>
         <field name="binding_model_id" ref="model_product_analysis"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <record id="action_report_technical_sheet" model="ir.actions.report">
+        <field name="name">Technical Sheet</field>
+        <field name="model">technical.sheet</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">idtx_laboratory.report_technical_sheet</field>
+        <field name="report_file">idtx_laboratory.report_technical_sheet</field>
+        <field name="print_report_name">'Technical Sheet - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="idtx_laboratory.paperformat_report_paper"/>
+        <field name="binding_model_id" ref="model_technical_sheet"/>
         <field name="binding_type">report</field>
     </record>
 

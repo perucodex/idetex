@@ -26,5 +26,8 @@ access_product_fiber,product_fiber,model_product_fiber,base.group_user,1,1,1,1
 access_product_gauge,product_gauge,model_product_gauge,base.group_user,1,1,1,1
 access_product_title,product_title,model_product_title,base.group_user,1,1,1,1
 access_product_color_price,access_product_color_price,model_product_color_price,base.group_user,1,1,1,1
+access_operation_parameter,access_operation_parameter,model_operation_parameter,base.group_user,1,1,1,1
 access_technical_sheet,access_technical_sheet,model_technical_sheet,base.group_user,1,1,1,1
+access_technical_route_line,access_technical_route_line,model_technical_route_line,base.group_user,1,1,1,1
+access_route_line_parameter,access_route_line_parameter,model_route_line_parameter,base.group_user,1,1,1,1
 access_configurate_svg_example,access_configurate_svg_example,model_configurate_svg_example,base.group_user,1,1,1,1

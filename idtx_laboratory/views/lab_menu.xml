@@ -6,7 +6,8 @@
         <menuitem
             id="laboratory_menu"
             name="Laboratory"
-            web_icon="idtx_laboratory,static/description/icon.png">
+            web_icon="idtx_laboratory,static/description/icon.png"
+            groups="idtx_laboratory.group_module_laboratory_manager">
                 <menuitem id="lab_operations_menu" name="Operations" sequence="10">
                     <menuitem id="lab_dev_menu" name="Lab Dev" action="lab_dev_action" sequence="10"/>
                     <menuitem id="lab_color_recipe_menu" name="Color Recipe" action="color_recipe_action" sequence="20"/>

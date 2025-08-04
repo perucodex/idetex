@@ -25,7 +25,7 @@ class ProductFiber(models.Model):
 class ProductGauge(models.Model):
     _name = 'product.gauge'
     _inherit = 'product.code.system'
-    _description = 'Product Gauge'
+    _description = 'Product Gauge'  
 
 class ProductAppearance(models.Model):
     _name = 'product.appearance'

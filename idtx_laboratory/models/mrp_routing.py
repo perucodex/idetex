@@ -28,7 +28,7 @@ class MrpRoutingWorkcenterOperation(models.Model):
 
     name = fields.Char('Name', required=True)
     workcenter_id = fields.Many2one('mrp.workcenter', 'Work Center', required=True, check_company=True)
-    currency_id = fields.Many2one('res.currency', string='Currency')
+    currency_id = fields.Many2one('res.currency', string='Currency', default=lambda self: self.env.ref('base.USD'))
     unit_price = fields.Monetary('Unit Price', currency_field='currency_id')
     company_id = fields.Many2one(
         'res.company',
@@ -41,8 +41,8 @@ class MrpRoutingWorkcenterOperation(models.Model):
         ('pp', 'Por Proceso'),
         ('col', 'Por Color'),
     ], string='Type Prices', default = 'pp')   
-
     product_color_price_ids = fields.One2many('product.color.price', 'mrwo_id', string='product_color_price')
+    parameter_ids = fields.One2many('operation.parameter', 'operation_id', string='Parameters')
 
 class ProductColorPrice (models.Model):
     _name = 'product.color.price'
@@ -52,3 +52,10 @@ class ProductColorPrice (models.Model):
     unit_price = fields.Monetary('Unit Price' , currency_field='currency_id')
     mrwo_id = fields.Many2one('mrp.routing.workcenter.operation', string='mrp_rout_wngWorkcenter_operation')
     currency_id = fields.Many2one(related='mrwo_id.currency_id')
+
+class OperationParameter(models.Model):
+    _name = 'operation.parameter'
+    _description = 'Operation Parameter'
+
+    operation_id = fields.Many2one('mrp.routing.workcenter.operation', string='Operation')
+    name = fields.Char('Name')

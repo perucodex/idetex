@@ -2,16 +2,43 @@
 
   <!-- QWeb Template -->
   <template id="report_product_analysis_document">
-    <t t-call="web.external_layout">
+    <t t-call="web.internal_layout">
       <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)"/>
       <div class="page">
         <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
         <!-- Header -->
-        <h2 style="text-align:center;">Product Analysis</h2>
-        <h3 style="text-align:center;"><t t-esc="doc.name"/></h3>
-
+        <div>
+            <div class="row mb8">
+                <div class="col-4">
+                    <img t-if="doc.company_id.logo" class="o_company_logo_big" t-att-src="image_data_uri(doc.company_id.logo)" alt="Logo"/>
+                </div>
+                <div class="col-8 text-end mb4">
+                    <div name="company_address" class="float-end mb4">
+                        <ul class="list-unstyled" name="company_address_list">
+                            <li>
+                              <span>
+                                <!-- <div class="bg-light border-1 rounded h-100 d-flex flex-column align-items-center justify-content-center p-4 w-100 opacity-75 text-muted text-center"> -->
+                                  <h4>Product Analysis</h4>
+                                  <h6><t t-esc="doc.name"/></h6>
+                                <!-- </div> -->
+                              </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- Datos generales -->
-        <div class="row mb-4" id="informations">
+        <table class="table o_main_table">
+          <tbody style="font-size: 0.8rem">
+            <tr>
+              <td style="background-color: #c2c2c2;"><span>Analysis Date:</span> <t t-esc="doc.analysis_date.strftime('%m/%d/%Y')"/></td>
+              <td style="background-color: #c2c2c2;"><span>Customer:</span> <t t-esc="doc.partner_id.name"/></td>
+              <td style="background-color: #c2c2c2;"><span>Fabric:</span> <t t-esc="doc.product_description"/></td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- <div class="row mb-4" id="informations">
           <div class="col" name="informations_reference">
               <strong>Customer:</strong>
               <div t-field="doc.partner_id.name"></div>
@@ -24,32 +51,32 @@
               <strong>Fabric:</strong>
               <div t-field="doc.product_description"></div>
           </div>
-        </div>
+        </div> -->
         <!-- Descripción de la tela -->
         <div class="row mb-4" id="informations">
           <div class="col text-center" name="fabric_title">
               <strong>Fabric Description</strong>
           </div>
         </div>
-        <table class="table o_main_table table-borderless">
-          <thead>
+        <table class="table o_main_table">
+          <thead style="font-size: 0.7rem">
             <tr>
-              <th>Family</th>
-              <th>Columns Qty</th>
-              <th>Weight (gr/m²)</th>
-              <th>Needles</th>
-              <th>Gauge</th>
-              <th>Diameter</th>
+              <th style="background-color: #c2c2c2;">Family</th>
+              <th style="background-color: #c2c2c2;">Columns Qty</th>
+              <th style="background-color: #c2c2c2;">Weight (gr/m²)</th>
+              <th style="background-color: #c2c2c2;">Needles</th>
+              <th style="background-color: #c2c2c2;">Gauge</th>
+              <th style="background-color: #c2c2c2;">Diameter</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody style="font-size: 0.7rem">
             <tr>
-              <td><t t-esc="doc.product_family_id.name"/></td>
-              <td><t t-esc="doc.column_qty"/></td>
-              <td class="text-end"><t t-esc="doc.density"/></td>
-              <td class="text-end"><t t-esc="doc.needles"/></td>
-              <td><t t-esc="doc.gauge_id.name"/></td>
-              <td class="text-end"><t t-esc="doc.diameter"/></td>
+              <td style="padding: 2px;"><t t-esc="doc.product_family_id.name"/></td>
+              <td style="padding: 2px;"><t t-esc="doc.column_qty"/></td>
+              <td class="text-end" style="padding: 2px;"><t t-esc="doc.density"/></td>
+              <td class="text-end" style="padding: 2px;"><t t-esc="doc.needles"/></td>
+              <td style="padding: 2px;"><t t-esc="doc.gauge_id.name"/></td>
+              <td class="text-end" style="padding: 2px;"><t t-esc="doc.diameter"/></td>
             </tr>
           </tbody>
         </table>
@@ -60,32 +87,32 @@
           </div>
         </div>
         <!-- Tabla principal de cabos -->
-        <table class="table o_main_table table-borderless">
-          <thead>
+        <table class="table o_main_table">
+          <thead style="font-size: 0.7rem">
             <tr>
-              <th>N°</th>
-              <th>Thread Code</th>
-              <th>Thread</th>
-              <th>System Type</th>
-              <th>Mesh Length</th>
-              <th>Weight</th>
-              <th>Thread Quantity</th>
-              <th>Thread Title</th>
-              <th>Percentage</th>
+              <th style="background-color: #c2c2c2;padding: 2px;">N°</th>
+              <th style="background-color: #c2c2c2;padding: 2px;">Thread Code</th>
+              <th style="background-color: #c2c2c2;padding: 2px;">Thread</th>
+              <th style="background-color: #c2c2c2;padding: 2px;">System Type</th>
+              <th style="background-color: #c2c2c2;padding: 2px;">Mesh Length</th>
+              <th style="background-color: #c2c2c2;padding: 2px;">Weight</th>
+              <th style="background-color: #c2c2c2;padding: 2px;">Thread Quantity</th>
+              <th style="background-color: #c2c2c2;padding: 2px;">Thread Title</th>
+              <th style="background-color: #c2c2c2;padding: 2px;">Percentage</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody style="font-size: 0.7rem">
             <t t-foreach="doc.fiber_ids" t-as="line" t-key="line.id">
               <tr>
-                <td><t t-esc="line.sequence + 1"/></td>
-                <td><t t-esc="line.product_template_id.default_code"/></td>
-                <td><t t-esc="line.product_template_id.name"/></td>
-                <td><span t-field="line.system_type"/></td>
-                <td class="text-end"><t t-esc="('%.2f' % line.length)"/></td>
-                <td class="text-end"><t t-esc="('%.6f' % line.weight)"/></td>
-                <td class="text-end"><t t-esc="line.thread_qty"/></td>
-                <td class="text-end"><t t-esc="('%.2f' % line.thread_title)"/></td>
-                <td class="text-end">
+                <td style="padding: 2px;"><t t-esc="line.sequence + 1"/></td>
+                <td style="padding: 2px;"><t t-esc="line.product_template_id.default_code"/></td>
+                <td style="padding: 2px;"><t t-esc="line.product_template_id.name"/></td>
+                <td style="padding: 2px;"><span t-field="line.system_type"/></td>
+                <td class="text-end" style="padding: 2px;"><t t-esc="('%.2f' % line.length)"/></td>
+                <td class="text-end" style="padding: 2px;"><t t-esc="('%.6f' % line.weight)"/></td>
+                <td class="text-end" style="padding: 2px;"><t t-esc="line.thread_qty"/></td>
+                <td class="text-end" style="padding: 2px;"><t t-esc="('%.2f' % line.thread_title)"/></td>
+                <td class="text-end" style="padding: 2px;">
                   <!-- <t t-esc="('%.2f %%' % (line.percentage * 100))"/> -->
                   <t t-raw="'{:.2f} %'.format(line.percentage * 100)"/>
                 </td>
@@ -101,31 +128,11 @@
             <p t-esc="doc.notes"/>
           </div>
           <!-- Columna de Ligamentos: ancho automático -->
-          <div class="col-auto">
-            <strong>Fabric Ligaments</strong>
-            <table class="table-borderless mt-2" style="border:none; border-collapse: collapse;">
-              <t t-foreach="doc.get_svg_grid()" t-as="row">
-                <tr>
-                  <t t-foreach="row" t-as="cell">
-                    <td style="border:none; padding:0;">
-                      <t t-if="cell.get('svg0')"><div style="zoom: 0.5;" t-raw="cell.get('svg0')"/></t>
-                      <t t-else=""><div style="height:20px;">&#160;</div></t>
-                      <t t-if="cell.get('svg1')"><div style="zoom: 0.5;" t-raw="cell.get('svg1')"/></t>
-                      <t t-else=""><div style="height:20px;">&#160;</div></t>
-                    </td>
-                  </t>
-                </tr>
-              </t>
-            </table>
-          </div>
+          <t t-set="grid" t-value="doc.get_svg_grid()"/>
+          <t t-call="idtx_laboratory.fabric_ligaments_table"/>
         </div>
 
         <br/>
-
-        <!-- Imagen de estructura -->
-        <!-- <div style="text-align:right;">
-          <img t-if="doc.diagram_image" t-att-src="'data:image/png;base64,%s' % doc.diagram_image.decode('utf-8')" style="width:300px;"/>
-        </div> -->
 
         <p>
           <strong><t t-esc="doc.user_id.name"/></strong> -
@@ -133,6 +140,31 @@
         </p>
       </div>
     </t>
+  </template>
+
+  <template id="fabric_ligaments_table">
+      <t>
+        <div class="col-auto">
+          <strong>Fabric Ligaments</strong>
+          <table>
+            <t t-set="counter" t-value="1"/>
+            <t t-foreach="grid" t-as="row">
+              <td rowspan="2" style="vertical-align: middle;"><t t-esc="counter"/></td>
+              <t t-set="counter" t-value="counter + 1"/>
+              <tr>
+                <t t-foreach="row" t-as="cell">
+                  <td style="border:none; padding:0;">
+                    <t t-if="cell.get('svg0')"><div style="zoom: 0.5;" t-raw="cell.get('svg0')"/></t>
+                    <t t-else=""><div style="height:20px;">&#160;</div></t>
+                    <t t-if="cell.get('svg1')"><div style="zoom: 0.5;" t-raw="cell.get('svg1')"/></t>
+                    <t t-else=""><div style="height:20px;">&#160;</div></t>
+                  </td>
+                </t>
+              </tr>
+            </t>
+          </table>
+        </div>
+      </t>
   </template>
 
   <template id="report_product_analysis_raw">

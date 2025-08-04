@@ -69,6 +69,7 @@
                             <page name="fibers_page" string="Fibers">
                                 <field name="fiber_ids" readonly="state != 'test'">
                                     <list>
+                                        <field name="sequence" widget="handle"/>
                                         <field name="system_type"/>
                                         <field name="length"/>
                                         <field name="weight"/>

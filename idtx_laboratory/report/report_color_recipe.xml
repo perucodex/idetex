@@ -73,20 +73,7 @@
             </t>
           </tbody>
         </table>
-
-        <!-- Observaciones -->
-        <!-- <h4>Observaciones</h4>
-        <p t-esc="doc.notes"/>
-
-        <br/> -->
-
-        <!-- Imagen de estructura -->
-        <!-- <div style="text-align:right;">
-          <img t-if="doc.diagram_image" t-att-src="'data:image/png;base64,%s' % doc.diagram_image.decode('utf-8')" style="width:300px;"/>
-        </div> -->
-
         <p>
-          <!-- <strong><t t-esc="doc.user_id.name"/></strong> - -->
           <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M:%S')"/>
         </p>
       </div>
