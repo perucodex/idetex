@@ -8,7 +8,7 @@
             id="product_development_menu"
             name="Product Dev"
             web_icon="idtx_laboratory,static/description/icon_dev.png"
-            groups="idtx_laboratory.group_module_product_development_manager">
+            groups="idtx_laboratory.group_module_product_development_manager,idtx_laboratory.group_module_product_development_user">
                 <menuitem id="dev_operations_menu" name="Operations" sequence="10">
                     <menuitem id="dev_product_analysis_menu" name="Product Analysis" action="product_analysis_action" sequence="10"/>
                     <menuitem id="dev_technical_sheet_menu" name="Technical Sheet" action="technical_sheet_action" sequence="20"/>

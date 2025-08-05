@@ -31,6 +31,8 @@ colors, technical sheets, coding, and customer quotes based on fibers, inputs, a
     'data': [
         'security/group_lab.xml',
         'security/ir.model.access.csv',
+        'data/base.process.csv',
+        'data/base.process.line.csv',
         'data/color.fiber.csv',
         'data/color.intensity.csv',
         'data/color.process.type.csv',

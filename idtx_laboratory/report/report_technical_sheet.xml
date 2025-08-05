@@ -116,7 +116,7 @@
           <!-- Columna de Notas: ocupa todo el espacio sobrante y parte el texto -->
           <div class="col text-break pe-4">
             <h4>Notes</h4>
-            <p t-esc="doc.analysis_id.notes"/>
+            <p t-esc="doc.notes"/>
           </div>
           <!-- Columna de Ligamentos: ancho automático -->
           <t t-set="grid" t-value="doc.analysis_id.get_svg_grid()"/>

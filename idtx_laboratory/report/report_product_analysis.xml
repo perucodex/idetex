@@ -149,7 +149,7 @@
           <table>
             <t t-set="counter" t-value="1"/>
             <t t-foreach="grid" t-as="row">
-              <td rowspan="2" style="vertical-align: middle;"><t t-esc="counter"/></td>
+              <td rowspan="2" style="vertical-align: middle;width: 10%;text-align: center;background-color: #c2c2c2;"><t t-esc="counter"/></td>
               <t t-set="counter" t-value="counter + 1"/>
               <tr>
                 <t t-foreach="row" t-as="cell">
