@@ -17,6 +17,13 @@ class ColorRecipe(models.Model):
     # color = fields.Char('Color')
     recipe_color_code = fields.Char('Recipe Color Code', readonly=True, copy=False)
     # last_color_code = fields.Char('Last Color Code')
+    company_id = fields.Many2one(
+        'res.company',
+        string='Company',
+        default=lambda self: self.env.company,
+        index=True,
+        required=True
+    )
     state = fields.Selection([
         ('test', 'Test'),
         ('approved', 'Approved'),

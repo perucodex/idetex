@@ -38,19 +38,24 @@
                                 <field name="partner_id"/>
                                 <field name="product_family_id" options="{'no_create': True, 'no_open': True}"/>
                                 <field name="product_description"/>
-                                <field name="equipment_id"/>
-                                <div class="pt-3 ps-4" style="border: 1px solid #ccc;">
+                                <field name="gauge_id" options="{'no_open': True}"/>
+                                <field name="needles"/>
+                                <field name="diameter"/>
+                                <field name="feeders"/>
+                                <!-- <field name="equipment_id"/> -->
+                                <!-- <div class="pt-3 ps-4" style="border: 1px solid #ccc;">
                                     <group>
                                         <group>
-                                            <field name="needles"/>
+                                            <field name="gauge_id" options="{'no_open': True}"/>
+                                            <field name="needles" force_save="1"/>
                                             <field name="gauge_id" options="{'no_open': True}"/>
                                         </group>
                                         <group>
-                                            <field name="diameter"/>
-                                            <field name="feeders"/>
+                                            <field name="diameter" force_save="1"/>
+                                            <field name="feeders" force_save="1"/>
                                         </group>
                                     </group>
-                                </div>
+                                </div> -->
                             </group>
                             <group>
                                 <field name="density"/>
@@ -143,7 +148,7 @@
                 <list string="Product Analysis">
                     <field name="name"/>
                     <field name="analysis_date"/>
-                    <field name="equipment_id"/>
+                    <field name="gauge_id"/>
                     <field name="needles"/>
                     <field name="column_qty"/>
                     <field name="width"/>

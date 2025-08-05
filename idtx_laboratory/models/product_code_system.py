@@ -27,6 +27,10 @@ class ProductGauge(models.Model):
     _inherit = 'product.code.system'
     _description = 'Product Gauge'  
 
+    needles = fields.Integer('Needles')
+    diameter = fields.Integer('Diameter')
+    feeders = fields.Integer('Feeders')
+
 class ProductAppearance(models.Model):
     _name = 'product.appearance'
     _inherit = 'product.code.system'

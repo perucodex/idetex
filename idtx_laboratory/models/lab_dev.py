@@ -14,6 +14,13 @@ class LabDev(models.Model):
     kilos = fields.Float('Kilos')
     lab_dev_line_ids = fields.One2many('lab.dev.line', 'lab_dev_id', string='Lab Dev Lines')
     color_recipe_ids = fields.One2many(related='lab_dev_line_ids.color_recipe_ids')
+    company_id = fields.Many2one(
+        'res.company',
+        string='Company',
+        default=lambda self: self.env.company,
+        index=True,
+        required=True
+    )
     state = fields.Selection([
         ('draft', 'Draft'),
         ('dev', 'Development'),

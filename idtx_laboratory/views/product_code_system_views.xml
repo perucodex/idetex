@@ -30,6 +30,9 @@
                 <list string="Product Gauge" editable="top">
                     <field name="code"/>
                     <field name="name"/>
+                    <field name="needles"/>
+                    <field name="diameter"/>
+                    <field name="feeders"/>
                 </list>
             </field>
         </record>

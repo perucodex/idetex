@@ -26,6 +26,7 @@
                             <group>
                                 <field name="lab_dev_id"/>
                                 <field name="partner_id" readonly="1"/>
+                                <field name="company_id" readonly="1" groups="base.group_multi_company"/>
                             </group>
                             <!-- <group>
                                 <field name="color_process_type_id" readonly="state == 'approved'" options="{'no_create': True, 'no_open': True}"/>
@@ -79,6 +80,7 @@
                     <field name="name"/>
                     <field name="recipe_date"/>
                     <field name="recipe_color_code"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
                     <!-- <field name="color" widget="color"/>
                     <field name="color" string="Hex"/> -->
                     <field name="state"/>

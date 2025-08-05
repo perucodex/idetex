@@ -11,11 +11,12 @@ class ProductAnalysis(models.Model):
     analysis_date = fields.Date('Analysis Date', required=True, default=lambda self: fields.Date.context_today(self))
     partner_id = fields.Many2one('res.partner', string='Customer', ondelete='restrict')
     product_description = fields.Char('Product Description')
-    equipment_id = fields.Many2one('maintenance.equipment.type', string='Equipment', ondelete='restrict')
-    needles = fields.Integer(related='equipment_id.needles')
-    gauge_id = fields.Many2one(related='equipment_id.gauge_id')
-    diameter = fields.Integer(related='equipment_id.diameter')
-    feeders = fields.Integer(related='equipment_id.feeders')
+    # equipment_id = fields.Many2one('maintenance.equipment.type', string='Equipment', ondelete='restrict')
+    gauge_id = fields.Many2one('product.gauge', string='Gauge')
+    needles = fields.Integer('Needles')
+    # gauge_id = fields.Many2one(related='gauge_id.gauge_id')
+    diameter = fields.Integer('Diameter')
+    feeders = fields.Integer('Feeders')
     column_qty = fields.Integer('Column Qty')
     width = fields.Float('Analysis Width', compute='_compute_width')
     density = fields.Integer('Analysis Density')
@@ -65,6 +66,13 @@ class ProductAnalysis(models.Model):
                     (str(int(rec.width)).replace('.','') or '') + \
                     (str(int(rec.density)).replace('.','') or '')
                 
+    @api.onchange('gauge_id')
+    def _onchange_gauge_id(self):
+        for rec in self:
+            rec.needles = rec.gauge_id.needles
+            rec.diameter = rec.gauge_id.diameter
+            rec.feeders = rec.gauge_id.feeders
+
     #=== CRUD METHODS ===#
 
     @api.model_create_multi
