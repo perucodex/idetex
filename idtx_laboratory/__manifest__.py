@@ -23,6 +23,7 @@ colors, technical sheets, coding, and customer quotes based on fibers, inputs, a
     'depends': ['base',
                 'product',
                 'sale',
+                'sale_stock',
                 'mrp',
                 'maintenance',
                 ],
