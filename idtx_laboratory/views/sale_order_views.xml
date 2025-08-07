@@ -5,14 +5,36 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']/button[@name='action_view_invoice']" position="after">
+                <button name="open_labdev"
+                        class="oe_stat_button"
+                        icon="fa-eyedropper"
+                        type="object"
+                        invisible="not lab_dev_id" string="Lab Dev"/>
+            </xpath>
+            <xpath expr="//header/button[@name='action_confirm'][1]" position="attributes">
+                <attribute name="invisible">state != 'sent' or not is_order</attribute>
+            </xpath>
+            <xpath expr="//header/button[@name='action_confirm'][2]" position="attributes">
+                <attribute name="invisible">state != 'draft' or not is_order</attribute>
+            </xpath>
+            <xpath expr="//header/button[@name='action_confirm'][1]" position="after">
+                <button name="create_labdev" data-hotkey="q" string="Create LabDev" type="object" context="{'validate_analytic': True}" invisible="state != 'sent' or lab_dev_id"/>
+                <button name="create_labdev" class="btn-primary" data-hotkey="q" string="Create LabDev" type="object" context="{'validate_analytic': True}" invisible="state != 'sale' or lab_dev_id"/>
+                <button name="action_create_order" class="btn-primary" data-hotkey="q" string="Create Order" type="object" context="{'validate_analytic': True}" invisible="state != 'sent' or is_order"/>
+            </xpath>
             <xpath expr="//header" position="after">
                 <div class="alert alert-warning" role="alert"
                     invisible="weaving_warning == ''">
                     <field name="weaving_warning"/>
                 </div>
+                <!-- <field name="is_order"/>
+                <field name="lab_dev_id"/> -->
             </xpath>
             <xpath expr="//notebook/page/field[@name='order_line']/list/field[@name='product_template_id']" position="after">
-                <field name="product_color_id" options="{'no_create': True, 'no_open': True}" required="is_weaving" readonly="not is_weaving"/>
+                <field name="product_color_id" options="{'no_create': True, 'no_open': True}" required="is_weaving" readonly="not is_weaving" column_invisible="parent.is_order"/>
+                <field name="labdev_color_name" column_invisible="not parent.is_order or parent.lab_dev_id" required="parent.is_order"/>
+                <field name="labdev_color_id" column_invisible="not parent.is_order or not parent.lab_dev_id" required="parent.is_order" domain="[('lab_dev_id', '=', parent.lab_dev_id)]"/>
                 <field name="weaving_loss" readonly="not is_weaving" optional="hide" widget="percentage"/>
                 <field name="production_loss" readonly="not is_weaving" optional="hide" widget="percentage"/>
             </xpath>

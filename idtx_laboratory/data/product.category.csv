@@ -1,0 +1,4 @@
+id,name,parent_id:id
+product_category_1,"Productos Químicos",product.product_category_all
+product_category_2,"Tejido",product.product_category_all
+product_category_3,"Hilado",product.product_category_all

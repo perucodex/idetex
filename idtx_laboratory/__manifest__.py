@@ -31,13 +31,18 @@ colors, technical sheets, coding, and customer quotes based on fibers, inputs, a
     'data': [
         'security/group_lab.xml',
         'security/ir.model.access.csv',
-        'data/base.process.csv',
-        'data/base.process.line.csv',
+        # Orden especial para nuevos registros
+        'data/product.category.csv',
+        'data/chemical_products.xml',
+        'data/base_process.xml',
+        'data/base_process_line.xml',
+        # Fin de orden especial
         'data/color.fiber.csv',
         'data/color.intensity.csv',
         'data/color.process.type.csv',
         'data/color.range.csv',
         'data/configurate.svg.example.csv',
+        'data/intial_company_categories.xml',
         'data/ir_sequence.xml',
         'data/mrp.workcenter.csv',
         'data/mrp.routing.workcenter.operation.csv',

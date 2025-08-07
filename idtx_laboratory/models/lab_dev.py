@@ -1,4 +1,5 @@
 from odoo import models, fields, api, _
+from odoo.osv import expression
 
 class LabDev(models.Model):
     _name = 'lab.dev'
@@ -25,7 +26,7 @@ class LabDev(models.Model):
         ('draft', 'Draft'),
         ('dev', 'Development'),
         ('approved', 'Approved'),
-    ], string='State')
+    ], string='State', default='draft')
 
     def open_recipes(self):
         return self.lab_dev_line_ids.color_recipe_ids._get_records_action(name=_("Recipes"), context={'group_by': 'product_color_id'})
@@ -52,6 +53,7 @@ class LabDev(models.Model):
 class LabDevLine(models.Model):
     _name = 'lab.dev.line'
     _description = 'Laboratory Development Line'
+    _rec_name = 'color_name'
 
     lab_dev_id = fields.Many2one('lab.dev', string='Lab Dev')
     product_id = fields.Many2one('product.template','Product', ondelete='restrict')
@@ -64,11 +66,12 @@ class LabDevLine(models.Model):
     color_intensity_id = fields.Many2one('color.intensity','Color Intensity', ondelete='restrict')
     color_recipe_ids = fields.One2many('color.recipe', 'lab_dev_line_id', string='Recipes')
     bath_ratio = fields.Char('Bath Ratio')
+    sale_order_line_id = fields.Many2one('sale.order.line', string='sale_order_line')
     state = fields.Selection([
         ('process', 'Process'),
         ('approved', 'Approved'),
     ], string='State', default='process')
-
+    
     @api.onchange('sale_order_id')
     def _onchange_sale_order_id(self):
         if self.sale_order_id:
@@ -83,6 +86,11 @@ class LabDevLine(models.Model):
                 'product_id': [],
             }
         }
+    
+    @api.onchange('saleorder_line_id','color_name')
+    def _onchange_saleorder_line_id(self):
+        self.sale_order_line_id.labdev_color_name = self.color_name
+        self.sale_order_line_id.labdev_color_id = self.id
     
     # @api.depends('color_recipe_ids')
     # def _compute_state(self):

@@ -1,5 +1,4 @@
 from odoo import models, fields, api, _
-from odoo.exceptions import UserError
 from odoo.tools import float_round
 
 class SaleOrderLine(models.Model):
@@ -10,6 +9,13 @@ class SaleOrderLine(models.Model):
     weaving_loss = fields.Float('Weaving Loss')
     production_loss = fields.Float('Production Loss')
     is_weaving = fields.Boolean(related='product_template_id.is_weaving', store=True)
+    labdev_color_name = fields.Char('Lab Dev Color Name')
+    labdev_color_id = fields.Many2one('lab.dev.line', string='Lab Dev Color ID')
+    lab_dev_id = fields.Many2one(related='order_id.lab_dev_id')
+
+    @api.onchange('labdev_color_id')
+    def _onchange_labdev_color_id(self):
+        self.labdev_color_name = self.labdev_color_id.color_name
 
     @api.depends('product_id', 'product_uom', 'product_uom_qty','product_color_id', 'weaving_loss', 'production_loss')
     def _compute_price_unit(self):

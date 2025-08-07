@@ -3,8 +3,10 @@ from odoo import models, fields, Command, api, _
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
     
+    is_order = fields.Boolean('is_order', default=False)
     lab_dev_id = fields.Many2one('lab.dev', string='Lab Dev')
     weaving_warning = fields.Text('weaving_warning', compute='_compute_weaving_warning')
+    # sale_order_id = fields.Many2one('sale.order', string='Sale Order')
 
     @api.onchange('payment_term_id','incoterm')
     def _onchange_payment_term_id(self):
@@ -15,9 +17,13 @@ class SaleOrder(models.Model):
     #     self.order_line._compute_price_unit()
     #     return res
 
-    def action_confirm(self):
-        res = super().action_confirm()
+    def action_create_order(self):
+        sale_order = self.copy({'is_order': True})
+        # self.sale_order_id = sale_order
+        self.state = 'sale'
+        return sale_order._get_records_action(name=_("Sale Order"))
 
+    def create_labdev(self):
         LabDev = self.env['lab.dev']
         today = fields.Date.context_today(self)
         # Crear una sola lab.dev para la orden
@@ -26,13 +32,15 @@ class SaleOrder(models.Model):
             'sale_order_id': self.id,
             'lab_dev_line_ids': [Command.create({
                  'product_id': line.product_id.id,
-                 'color_name': line.product_color_id.name,
+                 'color_name': line.labdev_color_name or line.product_color_id.name,
+                 'sale_order_line_id': line.id,
             }) for line in self.order_line]
         })
-
         self.lab_dev_id = lab_dev
-
-        return res
+        self.open_labdev()
+    
+    def open_labdev(self):
+        return self.lab_dev_id._get_records_action(name=_("Lab Dev"))
     
     @api.depends('order_line')
     def _compute_weaving_warning(self):
