@@ -15,7 +15,8 @@ export class LigamentGridWidget extends Component {
     static props = {
             record: Object, 
             name: String,   
-            readonly: Boolean, 
+            readonly: Boolean,
+            id: String, 
         ...standardWidgetProps,
     };
 
