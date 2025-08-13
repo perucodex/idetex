@@ -12,6 +12,7 @@
                             <group>
                                 <field name="name"/>
                                 <field name="workcenter_id"/>
+                                <field name="is_weaving"/>
                             </group>
                             <group>
                                 <field name="currency_id" groups="idtx_laboratory.group_module_product_development_manager"/>

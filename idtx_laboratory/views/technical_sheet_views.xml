@@ -40,25 +40,40 @@
                             <page name="weaving_page" string="Weaving">
                                 <group>
                                     <group>
-                                        <field name="program"/>
-                                        <field name="fabric_composition"/>
-                                        <field name="atx"/>
-                                        <field name="density"/>
-                                        <field name="width"/>
-                                        <field name="gauge_id"/>
+                                        <field name="program" readonly="state != 'test'"/>
+                                        <field name="fabric_composition" readonly="state != 'test'"/>
+                                        <field name="atx" readonly="state != 'test'"/>
+                                        <field name="density" readonly="state != 'test'"/>
+                                        <field name="width" readonly="state != 'test'"/>
+                                        <field name="gauge_id" readonly="state != 'test'"/>
                                     </group>
                                     <group>
-                                        <field name="first_wash_shrinkage"/>
-                                        <field name="first_wash_twist"/>
-                                        <field name="yield_meter"/>
-                                        <field name="scrap" widget="percentage"/>
-                                        <field name="weave_type"/>
-                                        <field name="batch"/>
+                                        <field name="first_wash_shrinkage" readonly="state != 'test'"/>
+                                        <field name="first_wash_twist" readonly="state != 'test'"/>
+                                        <field name="yield_meter" readonly="state != 'test'"/>
+                                        <field name="scrap" widget="percentage" readonly="state != 'test'"/>
+                                        <field name="weave_type" readonly="state != 'test'"/>
+                                        <field name="batch" readonly="state != 'test'"/>
                                     </group>
                                 </group>
                             </page>
+                            <page name="size_chart_page" string="Sizes" invisible="weave_type != 'rect'">
+                                <field name="size_chart_ids" readonly="state != 'test'">
+                                    <list editable="bottom">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="size"/>
+                                        <field name="length"/>
+                                        <field name="width"/>
+                                        <field name="needles"/>
+                                        <field name="ne"/>
+                                        <field name="plies"/>
+                                        <field name="tubular"/>
+                                        <field name="body"/>
+                                    </list>
+                                </field>
+                            </page>
                             <page name="route_page" string="Routing">
-                                <field name="route_line_ids">
+                                <field name="route_line_ids" readonly="state != 'test'">
                                     <list>
                                         <field name="operation_id"/>
                                         <field name="workcenter_id"/>

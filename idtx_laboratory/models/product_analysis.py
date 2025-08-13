@@ -93,6 +93,7 @@ class ProductAnalysis(models.Model):
     def action_create_technical_sheet(self):
         self.technical_sheet_id = self.env['technical.sheet'].create({
             'analysis_id': self.id,
+            'product_code': self.product_code,
             'fabric_composition': ' '.join([
                 f'{round(f.percentage * 100)}% {f.product_template_id.name}'
                 for f in self.fiber_ids if f.product_template_id
@@ -177,11 +178,15 @@ class ProductAnalysis(models.Model):
             for c in range(self.ligament_column or 0):
                 key0 = f"{r}_0_{c}"
                 key1 = f"{r}_1_{c}"
-                row.append({
-                    'svg0': svg_map.get(raw.get(key0), ""),
-                    'svg1': svg_map.get(raw.get(key1), ""),
-                })
-            grid.append(row)
+                map0 = svg_map.get(raw.get(key0), "")
+                map1 = svg_map.get(raw.get(key1), "")
+                if map0 or map1:
+                    row.append({
+                        'svg0': map0,#svg_map.get(raw.get(key0), ""),
+                        'svg1': map1,#svg_map.get(raw.get(key1), ""),
+                    })
+            if row:
+                grid.append(row)
         return grid
     
 class AnalysisFiber(models.Model):

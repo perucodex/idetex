@@ -22,13 +22,11 @@ class TechnicalSheet(models.Model):
     scrap = fields.Float('Scrap')
     weave_type = fields.Selection([
         ('open', 'Open'),
-        ('tubular', 'Tubular'),
+        ('tubu', 'Tubular'),
+        ('rect', 'Rectilinear'),
     ], string='Weave Type')
     batch = fields.Char('Batch')
     notes = fields.Text('Notes')
-    # Acabado
-    # Campos por agregar
-    # Data
     company_id = fields.Many2one(
         'res.company',
         string='Company',
@@ -43,6 +41,7 @@ class TechnicalSheet(models.Model):
         ('prod', 'Product'),
     ], string='state', default='test')
     user_id = fields.Many2one('res.users','Prepared by',default=lambda self: self.env.user)
+    size_chart_ids = fields.One2many('technical.size.line', 'technical_id', string='Size Chart')
     route_line_ids = fields.One2many('technical.route.line', 'technical_id', string='Route Line')
 
     @api.onchange('gauge_id','width','density')
@@ -71,13 +70,15 @@ class TechnicalSheet(models.Model):
         return super().create(vals_list)
     
     def action_product(self):
+        uom = self.env.ref('uom.product_uom_kgm') if self.weave_type != 'rect' else self.env.ref('uom.product_uom_unit')
         self.product_id = self.env['product.template'].create({
             'name': self.analysis_id.product_description,
             'default_code': self.product_code,
-            'uom_id': self.env.ref('uom.product_uom_kgm').id,
-            'uom_po_id': self.env.ref('uom.product_uom_kgm').id,
+            'uom_id': uom.id,
+            'uom_po_id': uom.id,
             'categ_id': self.env.company.weaving_category_ids[0].id if self.env.company.weaving_category_ids else False,
             'route_ids': [Command.link(self.env.ref('mrp.route_warehouse0_manufacture').id)],
+            'technical_sheet_id': self.id,
         })
         self.product_id.bom_ids.create({
             'product_tmpl_id': self.product_id.id,
@@ -86,7 +87,7 @@ class TechnicalSheet(models.Model):
             'operation_ids': [Command.create({
                 'name': route.operation_id.name,
                 'operation_id': route.operation_id.id,
-                'workcenter_id': route.workcenter_id.id
+                'workcenter_id': route.workcenter_id.id,
             }) for route in self.analysis_id.routing_ids.sorted(key=lambda o: o.sequence)],
         })
         self.state = 'prod'
@@ -100,12 +101,28 @@ class TechnicalSheet(models.Model):
     def open_product(self):
         return self.product_id._get_records_action(name=_("Product"))
 
+class TechnicalSizeLine(models.Model):
+    _name = 'technical.size.line'
+    _description = 'Technical Size Line'
+    _rec_name = 'size'
+
+    technical_id = fields.Many2one('technical.sheet', string='Technical Sheet')
+    sequence = fields.Integer('Sequence')
+    size = fields.Char('Size')
+    length = fields.Float('Length')
+    width = fields.Float('Width')
+    needles = fields.Integer('Needles')
+    ne = fields.Char('NE')
+    plies = fields.Integer('Plies')
+    tubular = fields.Float('Tubular')
+    body = fields.Float('Body')
+
 class TechnicalRouteLine(models.Model):
     _name = 'technical.route.line'
     _description = 'Technical Route Line'
 
-    sequence = fields.Integer('Sequence')
     technical_id = fields.Many2one('technical.sheet', string='Technical Sheet')
+    sequence = fields.Integer('Sequence')
     operation_id = fields.Many2one('mrp.routing.workcenter.operation', string='Operation Name', ondelete='restrict')
     workcenter_id = fields.Many2one(related='operation_id.workcenter_id')
     line_parameter_ids = fields.One2many('route.line.parameter', 'technical_route_id', string='Line Parameter')

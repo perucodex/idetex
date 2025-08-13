@@ -43,6 +43,7 @@ class MrpRoutingWorkcenterOperation(models.Model):
     ], string='Type Prices', default = 'pp')   
     product_color_price_ids = fields.One2many('product.color.price', 'mrwo_id', string='product_color_price')
     parameter_ids = fields.One2many('operation.parameter', 'operation_id', string='Parameters')
+    is_weaving = fields.Boolean('Is Weaving?')
 
 class ProductColorPrice (models.Model):
     _name = 'product.color.price'

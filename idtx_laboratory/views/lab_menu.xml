@@ -33,6 +33,7 @@
         <!-- Menu para laura en el modulo de ventas -->
         <menuitem id="sale_color_code_menu" name="Quotations" sequence="900" parent="sale.menu_sale_config">
             <menuitem id="sale_product_color_menu" name="Product Color" action="product_color_action" sequence="10"/>
+            <menuitem id="sale_mrp_routing_operation_action_menu" name="Workcenter Operations" action="mrp_routing_operation_action" sequence="20"/>
         </menuitem>
 
     </data>

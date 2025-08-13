@@ -34,11 +34,9 @@
                 </menuitem>
         </menuitem>
 
-        <!-- <menuitem id="equipment_type_action_menu" name="Equipment Type" action="action_maintenance_equipment_type" sequence="900" parent="maintenance.menu_equipment_form"/> -->
-
-
-        <!-- Menu para laura en el modulo de ventas -->
-        <menuitem id="sale_mrp_routing_operation_action_menu" name="Workcenter Operations" action="mrp_routing_operation_action" sequence="20" parent="idtx_laboratory.sale_color_code_menu"/>
+        <!-- Menu en modulo de producción -->
+        <menuitem id="wo_batch_menu" name="Workorder Batch" action="wo_batch_action" sequence="900" parent="mrp.menu_mrp_manufacturing"/>
+        <menuitem id="wo_rolls_menu" name="Workorder Rolls" action="wo_rolls_action" sequence="910" parent="mrp.menu_mrp_manufacturing"/>
 
     </data>
     

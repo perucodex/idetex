@@ -29,7 +29,7 @@ class LabDev(models.Model):
     ], string='State', default='draft')
 
     def open_recipes(self):
-        return self.lab_dev_line_ids.color_recipe_ids._get_records_action(name=_("Recipes"), context={'group_by': 'product_color_id'})
+        return self.lab_dev_line_ids.color_recipe_ids._get_records_action(name=_("Recipes"), context={'group_by': 'color_name'})
     
     @api.depends('lab_dev_line_ids')
     def _compute_recipe_count(self):

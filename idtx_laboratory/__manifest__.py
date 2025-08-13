@@ -72,11 +72,15 @@ colors, technical sheets, coding, and customer quotes based on fibers, inputs, a
         'views/res_config_settings_views.xml',
         'views/lab_menu.xml',
         'views/mrp_routing_views.xml',
+        'views/mrp_workorder_batch_views.xml',
+        'views/mrp_workorder_roll_views.xml',
+        'views/mrp_workorder_views.xml',
         'views/product_analysis_views.xml',
         'views/product_code_system_views.xml',
         'views/sale_order_views.xml',
         'views/technical_sheet_views.xml',
         'views/dev_menu.xml',
+        'wizard/split_roll_views.xml'
     ],
     
     'assets': {

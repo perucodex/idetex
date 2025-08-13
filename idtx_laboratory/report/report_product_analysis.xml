@@ -143,7 +143,7 @@
   </template>
 
   <template id="fabric_ligaments_table">
-      <t>
+      <t t-if="grid">
         <div class="col-auto">
           <strong>Fabric Ligaments</strong>
           <table>

@@ -71,19 +71,24 @@
               <td style="padding: 2px;">Scrap</td>
               <td style="padding: 2px;"><t t-esc="'{:.2f} %'.format(doc.scrap)"/></td>
               <td style="padding: 2px;">Weave type</td>
-              <td style="padding: 2px;"><t t-esc="doc.weave_type"/></td>
+              <td style="padding: 2px;"><span t-field="doc.weave_type"/></td>
               <td style="padding: 2px;">Batch</td>
               <td style="padding: 2px;"><t t-esc="doc.batch"/></td>
             </tr>
           </tbody>
         </table>
-        <!-- Descripción del hilo -->
-        <div class="row mb-4" id="informations">
-          <div class="col text-center" name="process">
-              <strong>Pocess</strong>
+
+        <!-- Imprime solo si es rutas -->
+        <t t-if="doc.route_line_ids">
+          <!-- Descripción del proceso -->
+          <div class="row mb-4" id="informations">
+            <div class="col text-center" name="process">
+                <strong>Pocess</strong>
+            </div>
           </div>
-        </div>
-        <!-- Tabla principal de cabos -->
+        </t>
+
+        <!-- Tabla principal de procesos -->
         <table class="table o_main_table">
           <t t-foreach="doc.route_line_ids" t-as="p" t-key="p.id">
             <thead style="font-size: 0.7rem">
@@ -112,6 +117,46 @@
           </t>
         </table>
         
+        <!-- Imprime solo si es rectilineo y tiene datos -->
+        <t t-if="doc.weave_type == 'rect' and doc.size_chart_ids">
+          <!-- Descripción del tallas -->
+          <div class="row mb-4" id="informations">
+            <div class="col text-center" name="process">
+                <strong>Rectilinear Size Chart</strong>
+            </div>
+          </div>
+
+          <!-- Tabla principal de rectilineos -->
+          <table class="table o_main_table">
+              <thead style="font-size: 0.7rem">
+                  <tr>
+                    <th style="background-color: #c2c2c2;">Size</th>
+                    <th style="background-color: #c2c2c2;">Length</th>
+                    <th style="background-color: #c2c2c2;">Width</th>
+                    <th style="background-color: #c2c2c2;">Needles</th>
+                    <th style="background-color: #c2c2c2;">NE</th>
+                    <th style="background-color: #c2c2c2;">Plies</th>
+                    <th style="background-color: #c2c2c2;">Tubular</th>
+                    <th style="background-color: #c2c2c2;">Body</th>
+                  </tr>
+              </thead>
+              <t t-foreach="doc.size_chart_ids" t-as="size_line" t-key="s.id">
+                <tbody style="font-size: 0.7rem">
+                    <tr>
+                        <td style="padding: 2px;"><strong><t t-esc="size_line.size"/></strong></td>
+                        <td style="padding: 2px;"><t t-esc="'{:.2f}'.format(size_line.length)"/></td>
+                        <td style="padding: 2px;"><t t-esc="'{:.2f}'.format(size_line.width)"/></td>
+                        <td style="padding: 2px;"><t t-esc="size_line.needles"/></td>
+                        <td style="padding: 2px;"><t t-esc="size_line.ne"/></td>
+                        <td style="padding: 2px;"><t t-esc="size_line.plies"/></td>
+                        <td style="padding: 2px;"><t t-esc="'{:.2f}'.format(size_line.tubular)"/></td>
+                        <td style="padding: 2px;"><t t-esc="'{:.2f}'.format(size_line.body)"/></td>
+                    </tr>
+                </tbody>
+              </t>
+          </table>
+        </t>
+
         <div class="row" style="page-break-inside: avoid; break-inside: avoid;">
           <!-- Columna de Notas: ocupa todo el espacio sobrante y parte el texto -->
           <div class="col text-break pe-4">
