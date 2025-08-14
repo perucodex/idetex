@@ -6,21 +6,17 @@ class SaleOrder(models.Model):
     is_order = fields.Boolean('is_order', default=False)
     lab_dev_id = fields.Many2one('lab.dev', string='Lab Dev')
     weaving_warning = fields.Text('weaving_warning', compute='_compute_weaving_warning')
-    # sale_order_id = fields.Many2one('sale.order', string='Sale Order')
+    sale_order_id = fields.Many2one('sale.order', string='Sale Order')
+    quotation_id = fields.Many2one('sale.order', string='Quotation')
 
     @api.onchange('payment_term_id','incoterm')
     def _onchange_payment_term_id(self):
         self.order_line._compute_price_unit()
-
-    # def action_update_taxes(self):
-    #     res = super().action_update_taxes()
-    #     self.order_line._compute_price_unit()
-    #     return res
-
+        
     def action_create_order(self):
         sale_order = self.copy({'is_order': True})
-        # self.sale_order_id = sale_order
-        self.state = 'sale'
+        sale_order.state = 'sale'
+        self.sale_order_id = sale_order
         return sale_order._get_records_action(name=_("Sale Order"))
 
     def create_labdev(self):

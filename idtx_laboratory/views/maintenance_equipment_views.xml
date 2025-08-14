@@ -7,8 +7,27 @@
             <field name="model">maintenance.equipment</field>
             <field name="inherit_id" ref="maintenance.hr_equipment_view_form"/>
             <field name="arch" type="xml">
-                <xpath expr="//field[@name='warranty_date']" position="after">
+                <!-- <xpath expr="//field[@name='warranty_date']" position="after">
                     <field name="maintenance_equipment_type_id"/>
+                </xpath> -->
+                <xpath expr="//notebook" position="inside">
+                    <page string="Printer Information" name="printer_information">
+                        <group>
+                            <group>
+                                <field name="equipment_ip" readonly="state == 'con'"/>
+                                <!-- <field name="user" readonly="state == 'con'"/> -->
+                            </group>
+                            <group>
+                                <!-- <field name="password" password="True" readonly="state == 'con'"/> -->
+                                <field name="state" invisible="1"/>
+                                <button name="connect" string="Conectar" type="object" class="btn-primary" invisible="state == 'con'"/>
+                                <button name="disconnect" string="Desconectar" type="object" class="btn-primary" invisible="state == 'not'"/>
+                            </group>
+                        </group>
+                        <group colspan="2">
+                            <field name="impresora_dashboard_dummy" widget="impresora_dashboard" nolabel="1" invisible="state == 'not'"/>
+                        </group>
+                    </page>
                 </xpath>
             </field>
         </record>

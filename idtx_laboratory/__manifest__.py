@@ -71,6 +71,7 @@ colors, technical sheets, coding, and customer quotes based on fibers, inputs, a
         'views/product_template_views.xml',
         'views/res_config_settings_views.xml',
         'views/lab_menu.xml',
+        'views/maintenance_equipment_views.xml',
         'views/mrp_routing_views.xml',
         'views/mrp_workorder_batch_views.xml',
         'views/mrp_workorder_roll_views.xml',
@@ -89,5 +90,10 @@ colors, technical sheets, coding, and customer quotes based on fibers, inputs, a
             'idtx_laboratory/static/src/popup/**/*',
         ],
     },
+
+    'qweb': [
+        'static/src/components/impresora_template_views.xml',
+    ],
+
 }
 

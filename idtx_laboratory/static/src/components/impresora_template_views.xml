@@ -1,0 +1,71 @@
+<templates xml:space="preserve">
+    <t t-name="idtx_laboratory.ImpresoraDashboard">
+        <div class="o_impresora_dashboard p-3">
+            <!-- <h2>📄 Trabajo en proceso</h2> -->
+
+            <t t-set="d" t-value="state.data"/>
+
+            <table style="width:100%;">
+                <tr>
+                    <td>
+                        <div class="mb-2">
+                            <p><b>Nombre:</b> <t t-esc="d.job_name || ''"/></p>
+                            <p><b>Estado:</b> <t t-esc="d.job_status || ''"/></p>
+                            <p><b>Metros impresos:</b> <t t-esc="d.printed_length || ''"/></p>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="mb-2">
+                            <p><b>Velocidad:</b> <t t-esc="d.average_speed || ''"/></p>
+                            <p><b>Requerido:</b> <t t-esc="d.requested_length || ''"/></p>
+                            <p><b>Tipo de Impresión:</b> <t t-esc="d.print_mode || ''"/></p>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Barra de progreso -->
+            <div style="background:#eee; border-radius:5px; overflow:hidden; width:100%; height:25px;" class="mb-3">
+                <t t-set="progress_style" t-value="`background:#4caf50; color:#fff; height:100%; text-align:center; line-height:25px; width:${d.job_progress || 0}%; transition: width 0.5s ease;`"/>
+                <div t-att-style="progress_style">
+                    <t t-esc="d.job_progress || 0"/>%
+                </div>
+            </div>
+
+
+            <!-- Consumo de tintas -->
+            <h3 class="mt-3">🖌️ Consumo de Tintas</h3>
+            <table class="table table-sm table-striped" t-if="d.inks">
+             <!-- t-if="d.inks or d.inks.length > 0"> -->
+                <thead>
+                    <tr>
+                        <th>Color</th>
+                        <th>Tipo</th>
+                        <th class="text-end">Para Imprimir (ml)</th>
+                        <th class="text-end">Para Limpieza (ml)</th>
+                        <th class="text-end">Total (ml)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="d.inks" t-as="ink" t-key="ink.color">
+                        <tr>
+                            <td>
+                                <span t-att-style="'color:' + (ink.rgbcolor) + '; font-weight:bold;'">⬤</span>
+                                <t t-esc="ink.color"/>
+                            </td>
+                            <td><t t-esc="ink.type"/></td>
+                            <td class="text-end"><t t-esc="(ink.ink_toprint or 0).toFixed(2)"/></td>
+                            <td class="text-end"><t t-esc="(ink.ink_toclean or 0).toFixed(2)"/></td>
+                            <td class="text-end"><t t-esc="(ink.ink_total or 0).toFixed(2)"/></td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+            
+            <!-- Mensaje de error -->
+            <div class="text-muted" t-if="state.error">
+                ⚠ <t t-esc="state.error"/>
+            </div>
+        </div>
+    </t>
+</templates>
