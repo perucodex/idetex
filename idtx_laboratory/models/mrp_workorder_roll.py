@@ -1,6 +1,5 @@
 from odoo import _, models, fields, api
 from odoo.exceptions import UserError
-import serial
 
 class MrpWorkorderRoll(models.Model):
     _name = "mrp.workorder.roll"
@@ -30,7 +29,7 @@ class MrpWorkorderRoll(models.Model):
     def _compute_roll_name(self):
         for rec in self:
             rec.name = rec.workorder_id.production_id.name + '-' + str(rec.sequence + 1).zfill(4)
-            rec.action_read_scale()
+            # rec.action_read_scale()
 
     def unlink(self):
         roll_names = ''
@@ -51,34 +50,3 @@ class MrpWorkorderRoll(models.Model):
             'target': 'new',
             'context': dict(self.env.context), #, active_ids=to_merge.ids),
         }
-    
-    def action_read_scale(self):
-        """Leer la balanza conectada al puerto COM1"""
-        try:
-            # Configura el puerto COM1
-            ser = serial.Serial(
-                port='COM1',
-                baudrate=9600,
-                bytesize=serial.EIGHTBITS,
-                parity=serial.PARITY_NONE,
-                stopbits=serial.STOPBITS_ONE,
-                timeout=2
-            )
-            if ser.is_open:
-                raw_data = ser.readline().decode(errors='ignore').strip()
-                ser.close()
-                # # Guardar el valor en el registro
-                # self.write({
-                #     'last_data': raw_data,
-                # })
-                # Si la balanza manda un número, actualizar el peso
-                try:
-                    weight = float(raw_data)
-                    self.write({'gross_weight': weight})
-                except ValueError:
-                    pass
-                return True
-            else:
-                raise Exception("No se pudo abrir el puerto COM1")
-        except Exception as e:
-            raise Exception(f"Error al leer la balanza: {str(e)}")

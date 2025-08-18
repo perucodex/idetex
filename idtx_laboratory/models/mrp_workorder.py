@@ -1,4 +1,6 @@
 from odoo import _, models, fields, api
+import requests
+from odoo.exceptions import UserError
 
 class MrpWorkorder(models.Model):
     _inherit = "mrp.workorder"
@@ -10,6 +12,7 @@ class MrpWorkorder(models.Model):
     roll_weight = fields.Float('Roll Weight', compute='_compute_progress')
     quantity = fields.Float('Quantity', compute='_compute_progress')
     progress = fields.Float('Progress')
+    equipment_ids = fields.Many2many('maintenance.equipment', string='Equipment')
 
     @api.depends('roll_ids')
     def _compute_progress(self):
@@ -29,3 +32,49 @@ class MrpWorkorder(models.Model):
     #         rec.name = rec.mrwo_id.name
     #         if rec.mrwo_id:
     #             rec.workcenter_id = rec.mrwo_id.workcenter_id
+    
+    def action_read_scale(self):
+        """Leer la balanza desde el endpoint Flask"""
+        try:
+            # Cambia la IP o hostname al de la PC donde corre Flask
+            url = "http://localhost:5001/peso"
+            resp = requests.get(url, timeout=3)
+            resp.raise_for_status()
+            data = resp.json()
+
+            if data.get("ok") and data.get("peso") is not None:
+                peso = 27.32#data["peso"]
+                self.qty_producing = sum(self.roll_ids.mapped('gross_weight'))
+                if peso:
+                    self.roll_ids.create({
+                        'sequence': len(self.roll_ids),
+                        'workorder_id': self.id,
+                        'gross_weight': peso,
+                        'net_weight': peso,
+                        'employee_id': self.employee_id,
+                    })
+                    return {
+                        'type': 'ir.actions.client',
+                        'tag': 'display_notification',
+                        'params': {
+                            'title': 'Peso leído',
+                            'message': f'Peso agregado: {peso} kg orden de fabricación {self.production_id.name}',
+                            'type': 'success',
+                            'sticky': False,
+                        }
+                    }
+                else:
+                    return {
+                        'type': 'ir.actions.client',
+                        'tag': 'display_notification',
+                        'params': {
+                            'title': 'Peso no leído',
+                            'message': f'No hay ningun peso en la balanza orden de fabricación {self.production_id.name}',
+                            'type': 'danger',
+                            'sticky': False,
+                        }
+                    }
+            else:
+                raise UserError("No se obtuvo un peso válido de la balanza")
+        except Exception as e:
+            raise UserError(f"Error al consultar balanza: {str(e)}")

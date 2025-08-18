@@ -26,6 +26,7 @@ colors, technical sheets, coding, and customer quotes based on fibers, inputs, a
                 'sale_stock',
                 'mrp',
                 'maintenance',
+                'mrp_workorder',
                 ],
 
     # always loaded
@@ -88,11 +89,16 @@ colors, technical sheets, coding, and customer quotes based on fibers, inputs, a
         'web.assets_backend': [
             'idtx_laboratory/static/src/components/**/*',
             'idtx_laboratory/static/src/popup/**/*',
+            # 'idtx_laboratory/static/src/widget/scale_widget.js',
+            # 'idtx_laboratory/static/src/widget/mrp_display_record.xml',
+            'idtx_laboratory/static/src/widget/scale_widget.xml',
+            # 'idtx_laboratory/static/src/widget/**/*',
         ],
     },
 
     'qweb': [
         'static/src/components/impresora_template_views.xml',
+        # 'static/src/widget/scale_widget.xml',
     ],
 
 }

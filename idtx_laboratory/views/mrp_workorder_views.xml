@@ -20,6 +20,9 @@
         <field name="model">mrp.workorder</field>
         <field name="inherit_id" ref="mrp.mrp_production_workorder_form_view_inherit"/>
         <field name="arch" type="xml">
+            <xpath expr="//field[@name='employee_assigned_ids']" position="after">
+                <field name="equipment_ids" widget="many2many_tags" domain="[('workcenter_id','=',workcenter_id)]"/>
+            </xpath>
             <xpath expr="//field[@name='qty_remaining']" position="after">
                 <field name="roll_weight" invisible="1"/>
                 <field name="progress" widget="progressbar"/>
@@ -31,6 +34,7 @@
                         <list editable="bottom" delete="0">
                             <field name="sequence" widget="handle"/>
                             <field name="name"/>
+                            <field name="employee_id"/>
                             <field name="uom_id"/>
                             <field name="technical_id" column_invisible="1"/>
                             <field name="size_id" column_invisible="parent.weave_type != 'rect'" required="parent.weave_type == 'rect'" domain="[('technical_id','=', technical_id)]" options="{'no_create': True, 'no_open': True}"/>
@@ -38,7 +42,8 @@
                             <field name="in_batch" column_invisible="1"/>
                             <field name="gross_weight" sum="Total" required="1" readonly="in_batch"/>
                             <field name="net_weight" sum="Total" required="1"/>
-                            <button name="unlink" icon="fa-trash" type="object" invisible="gross_weight"/>
+                            <button name="unlink" icon="fa-trash" type="object" invisible="gross_weight" title="Delete"/>
+                            <!-- <button name="action_read_scale" icon="fa-balance-scale" type="object" invisible="not gross_weight" title="Weight"/> -->
                         </list>
                     </field>
                 </page>

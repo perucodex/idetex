@@ -1,0 +1,19 @@
+Se debe instalar python en las maquinas que exponen servicios
+Luego se instala flask con pip
+python3 -m pip install flask pyserial
+luego se crea una tarea en windows para que inicie con el sistema
+Abre Programador de tareas → “Crear tarea”.
+General:
+    Nombre: BalanzaService
+    Marcar “Ejecutar tanto si el usuario inició sesión como si no”
+    Marcar “Ejecutar con los privilegios más altos”
+Desencadenadores:
+    “Al iniciar” (opcional: Agregar retraso de 30–60s).
+Acciones:
+    Programa/script: C:\balanza\venv\Scripts\python.exe
+    Agregar argumentos: C:\balanza\scale_server.py
+    Iniciar en: C:\balanza
+Condiciones: 
+    desmarca “Iniciar la tarea solo si el equipo está con CA”.
+Configuración: 
+    marcar “Reiniciar si se detiene inesperadamente”.

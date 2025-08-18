@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-inherit="mrp_workorder.MrpDisplayRecord" t-inherit-mode="extension">
+        <!-- Insertar progress debajo de la cantidad -->
+        <xpath expr="//div[hasclass('accordion')]" position="before">
+            <div class="o_mrp_progress_wrapper">
+                <div class="o_mrp_progress_bar" t-att-style="'width:' + record.component.progress + '%;'"></div>
+                <span class="o_mrp_progress_text"><t t-esc="record.component.progress"/>%</span>
+            </div>
+        </xpath>
+    </t>
+</templates>
