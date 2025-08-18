@@ -23,9 +23,9 @@ class MrpWorkorder(models.Model):
                 rec.progress = (rec.roll_weight / rec.qty_remaining) * 100 if rec.qty_remaining else 100
                 rec.quantity = 0
 
-    @api.onchange('mrwo_id')
-    def _onchange_mrwo_id(self):
-        for rec in self:
-            rec.name = rec.mrwo_id.name
-            if rec.mrwo_id:
-                rec.workcenter_id = rec.mrwo_id.workcenter_id
+    # @api.onchange('mrwo_id')
+    # def _onchange_mrwo_id(self):
+    #     for rec in self:
+    #         rec.name = rec.mrwo_id.name
+    #         if rec.mrwo_id:
+    #             rec.workcenter_id = rec.mrwo_id.workcenter_id

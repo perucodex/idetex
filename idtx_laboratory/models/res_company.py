@@ -18,13 +18,20 @@ class ResCompany(models.Model):
 
     def write(self, vals):
         res = super().write(vals)
+        all_products = self.env['product.template'].search([])
         if 'chemical_category_ids' in vals:
             products = self.env['product.template'].search([('categ_id','in',self.chemical_category_ids.ids)])
             products.is_chemical = True
+            no_chemical = all_products - products
+            no_chemical.is_chemical = False
         if 'weaving_category_ids' in vals:
             products = self.env['product.template'].search([('categ_id','in',self.weaving_category_ids.ids)])
             products.is_weaving = True
+            no_weaving = all_products - products
+            no_weaving.is_weaving = False
         if 'thread_category_ids' in vals:
             products = self.env['product.template'].search([('categ_id','in',self.thread_category_ids.ids)])
             products.is_thread = True
+            no_thread = all_products - products
+            no_thread.is_thread = False
         return res
