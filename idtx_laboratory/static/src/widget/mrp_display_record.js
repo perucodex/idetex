@@ -1,31 +1,47 @@
-// /** @odoo-module **/
-// import { patch } from "@web/core/utils/patch";
-// import { MrpDisplayRecord } from "@mrp_workorder/mrp_display/mrp_display_record";
+/** @odoo-module */
 
-// patch(MrpDisplayRecord.prototype, {
-//     get progressValue() {
-//         return this.props.record.data.progress || 0;
-//     },
-// });
+import { patch } from "@web/core/utils/patch";
+import { MrpDisplayRecord } from "@mrp_workorder/mrp_display/mrp_display_record";
 
-/** @odoo-module **/
+patch(MrpDisplayRecord.prototype, {
 
-import { MrpDisplayRecord } from "@mrp/components/mrp_display_record/mrp_display_record";
+    async validate() {
+        console.log("Entró");
+        return super.validate();
+    },    
 
-/**
- * Extensión de MrpDisplayRecord para agregar el getter progress
- */
-export class MrpDisplayRecordProgress extends MrpDisplayRecord {
-    /**
-     * Retorna el progreso de la orden de trabajo.
-     * Intenta primero record.progress, si no existe usa record.data.progress, si no 0
-     */
-    get progress() {
-        return this.record?.progress || this.record?.data?.progress || 0;
-    }
-}
+    async callAction(actionName) {
+        if (actionName !== "action_read_scale") {
+            console.log("No entró");
+            return this._super(...arguments);
+        }
+        try {
+            console.log("Entró");
+            // 1) Obtener IP interna desde el navegador (puede ser null si el navegador la oculta)
+            const internalIP = await getFirstPrivateIP(1500);
 
-// Sobrescribir el componente original para usar esta extensión
-MrpDisplayRecord.components = {
-    ...MrpDisplayRecord.components,
-};
+            // 2) Llamar a tu método Python y pasar IP en el contexto
+            //    (evitamos romper la firma del método con args posicionales)
+            const res = await this.orm.call(
+                "mrp.workorder",
+                "action_read_scale",
+                [this.props.record.resId],
+                { context: { client_internal_ip: internalIP } }
+            );
+
+            // 3) Notificación visual
+            const msgIP = internalIP || "no disponible (mDNS oculto)";
+            this.notification.add(
+                `Lectura de balanza OK. IP cliente: ${msgIP}`,
+                { type: "success" }
+            );
+
+            return res;
+        } catch (error) {
+            this.notification.add(
+                `Error al consultar balanza: ${error?.message || error}`,
+                { type: "danger" }
+            );
+        }
+    },
+});

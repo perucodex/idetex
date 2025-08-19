@@ -1,8 +1,8 @@
 from odoo import _, models, fields, api
 import requests
-from odoo.http import request
+# from odoo.http import request
+import socket
 from odoo.exceptions import UserError
-from odoo.addons.idtx_laboratory.controllers.ip_client import IpClient
 
 class MrpWorkorder(models.Model):
     _inherit = "mrp.workorder"
@@ -35,18 +35,24 @@ class MrpWorkorder(models.Model):
     #         if rec.mrwo_id:
     #             rec.workcenter_id = rec.mrwo_id.workcenter_id
     
-    def get_client_ip(self):
-        ctrl = IpClient()
-        result = ctrl.get_ip()
-        # request = self.env['ir.http'].request()
-        ip = request.httprequest.remote_addr #if request else '127.0.0.1'
-        return result
-    
+    def get_local_ip(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            # No se conecta realmente, solo fuerza a obtener la IP
+            s.connect(("8.8.8.8", 80))
+            ip = s.getsockname()[0]
+        except Exception:
+            ip = "127.0.0.1"
+        finally:
+            s.close()
+        return ip
+
     def action_read_scale(self):
         """Leer la balanza desde el endpoint Flask"""
         try:
             # Cambia la IP o hostname al de la PC donde corre Flask
-            url = f'http://{self.get_client_ip()}:5001/peso'
+            ip = self.get_local_ip()
+            url = f'http://{ip}:5001/peso'
             resp = requests.get(url, timeout=3)
             resp.raise_for_status()
             data = resp.json()
