@@ -89,15 +89,12 @@ colors, technical sheets, coding, and customer quotes based on fibers, inputs, a
         'web.assets_backend': [
             'idtx_laboratory/static/src/components/**/*',
             'idtx_laboratory/static/src/popup/**/*',
-            # 'idtx_laboratory/static/src/widget/scale_widget.js',
-            'idtx_laboratory/static/src/widget/**/*',
-            # 'idtx_laboratory/static/src/widget/**/*',
+            'idtx_laboratory/static/src/widget/scale_widget.js',
         ],
     },
 
     'qweb': [
         'static/src/components/impresora_template_views.xml',
-        # 'static/src/widget/scale_widget.xml',
     ],
 
 }
