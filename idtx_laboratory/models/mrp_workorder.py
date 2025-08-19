@@ -35,7 +35,10 @@ class MrpWorkorder(models.Model):
     #             rec.workcenter_id = rec.mrwo_id.workcenter_id
     
     def get_client_ip(self):
-        ip = request.httprequest.headers.get('X-Forwarded-For', request.httprequest.remote_addr) if request else '127.0.0.1'
+        ip = request.httprequest.headers.get('X-Forwarded-For', request.httprequest.remote_addr) #if request else '127.0.0.1'
+        print(request.httprequest.headers)
+        print(request.httprequest.headers.get('X-Forwarded-For'))
+        print(request.httprequest.headers.get('X-Forwarded-For', request.httprequest.remote_addr))
         return ip
     
     def action_read_scale(self):
