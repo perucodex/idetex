@@ -35,23 +35,20 @@ class MrpWorkorder(models.Model):
     #             rec.workcenter_id = rec.mrwo_id.workcenter_id
     
     def get_client_ip(self):
-        ip = request.httprequest.headers.get('X-Forwarded-For', request.httprequest.remote_addr) #if request else '127.0.0.1'
-        print('*****************************************************')
-        print('*****************************************************')
-        print('*****************************************************')
-        print(request.httprequest.headers)
-        print(request.httprequest.headers.get('X-Forwarded-For'))
-        print(request.httprequest.headers.get('X-Forwarded-For', request.httprequest.remote_addr))
-        print('*****************************************************')
-        print('*****************************************************')
-        print('*****************************************************')
+        forwarded_for = request.httprequest.headers.get("X-Forwarded-For")
+        if forwarded_for:
+            ip = forwarded_for.split(",")[-1].strip()
+        else:
+            ip = request.httprequest.remote_addr
         return ip
     
     def action_read_scale(self):
         """Leer la balanza desde el endpoint Flask"""
         try:
             # Cambia la IP o hostname al de la PC donde corre Flask
-            url = f'http://{self.get_client_ip()}:5001/peso'
+            ip = self.get_client_ip()
+            url = f'http://{ip}:5001/peso'
+            raise UserError(ip)
             resp = requests.get(url, timeout=3)
             resp.raise_for_status()
             data = resp.json()
