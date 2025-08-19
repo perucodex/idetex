@@ -14,8 +14,7 @@ patch(MrpDisplayRecord.prototype, {
             await this._rpc({
                 model: 'mrp.workorder',
                 method: 'action_read_scale',
-                kwargs: { client_ip: ip },
-                record: this.props.record.id,
+                args: [[this.props.record.id], ip],  // pasamos la IP como argumento
             });
 
         } catch (e) {
