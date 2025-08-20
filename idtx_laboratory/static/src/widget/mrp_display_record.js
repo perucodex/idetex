@@ -1,41 +1,41 @@
 /** @odoo-module **/
 
 import { patch } from "@web/core/utils/patch";
-import { MrpMenuDialog } from "@mrp_workorder/mrp_display/dialog/mrp_menu_dialog";
+import { MrpDisplayRecord } from "@mrp_workorder/mrp_display/mrp_display_record";
 
-patch(MrpMenuDialog.prototype, {
+patch(MrpDisplayRecord.prototype, {
+
     async readScaleWithClientIP() {
         try {
-            // Obtener IP del cliente desde el endpoint
-            const ip = await this._getClientIP();
-            if (!ip) {
-                console.error("No se recibió la IP del cliente");
-                return;
-            }
-            console.log("IP del cliente:", ip);
+            const ip = await this.getLocalIP();
+            console.log("IP interna del cliente:", ip);
 
-            // Llamar al método Python pasando la IP
+            // Llamamos a la función Python pasando la IP
             await this._rpc({
                 model: 'mrp.workorder',
                 method: 'action_read_scale',
-                args: [],
-                kwargs: { client_ip: ip },
-                record: this.props.record.id,
+                args: [[this.props.record.id], ip],  // pasamos la IP como argumento
             });
-        } catch (err) {
-            console.error("Error al leer balanza con IP del cliente:", err);
+
+        } catch (e) {
+            console.error("Error obteniendo IP interna:", e);
         }
     },
 
-    async _getClientIP() {
-        try {
-            const resp = await fetch('/ip_client');
-            if (!resp.ok) throw new Error("No se pudo obtener IP del cliente");
-            const text = await resp.text();
-            return text.trim();
-        } catch (err) {
-            console.error("Error obteniendo IP del cliente:", err);
-            return null;
-        }
-    },
+    getLocalIP() {
+        return new Promise((resolve, reject) => {
+            const pc = new RTCPeerConnection({iceServers: []});
+            pc.createDataChannel(""); // Necesario para Firefox
+            pc.createOffer().then(offer => pc.setLocalDescription(offer));
+            pc.onicecandidate = (event) => {
+                if (!event.candidate) return;
+                const ipMatch = /([0-9]{1,3}(\.[0-9]{1,3}){3})/.exec(event.candidate.candidate);
+                if (ipMatch) {
+                    resolve(ipMatch[1]);
+                    pc.close();
+                }
+            };
+        });
+    }
+
 });
