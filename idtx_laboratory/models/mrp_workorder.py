@@ -42,26 +42,14 @@ class MrpWorkorder(models.Model):
             ip = request.httprequest.remote_addr
         return ip
     
-    def action_read_scale(self, client_ip=None):
-        """Leer la balanza desde el endpoint Flask usando la IP del cliente"""
-        if not client_ip:
-            raise UserError("No se recibió la IP del cliente")
-
+    def action_read_scale(self):
+        """Leer la balanza desde el endpoint Flask"""
         try:
-            url = f'http://{client_ip}:5001/peso'
+            # Cambia la IP o hostname al de la PC donde corre Flask
+            url = f'http://{self.get_client_ip()}:5001/peso'
             resp = requests.get(url, timeout=3)
             resp.raise_for_status()
             data = resp.json()
-        #     ):
-        # """Leer la balanza desde el endpoint Flask"""
-        # try:
-        #     # Cambia la IP o hostname al de la PC donde corre Flask
-        #     ip = self.get_client_ip()
-        #     url = f'http://{ip}:5001/peso'
-        #     raise UserError(ip)
-        #     resp = requests.get(url, timeout=3)
-        #     resp.raise_for_status()
-        #     data = resp.json()
 
             if data.get("ok") and data.get("peso") is not None:
                 peso = 27.32#data["peso"]
