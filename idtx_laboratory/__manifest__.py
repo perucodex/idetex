@@ -89,7 +89,6 @@ colors, technical sheets, coding, and customer quotes based on fibers, inputs, a
         'web.assets_backend': [
             'idtx_laboratory/static/src/components/**/*',
             'idtx_laboratory/static/src/popup/**/*',
-            'idtx_laboratory/static/src/widget/mrp_display_record.js',
             'idtx_laboratory/static/src/widget/scale_widget.xml',
         ],
     },
