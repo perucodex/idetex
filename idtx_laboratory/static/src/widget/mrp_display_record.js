@@ -2,6 +2,7 @@
 
 import { patch } from "@web/core/utils/patch";
 import { MrpMenuDialog } from "@mrp_workorder/mrp_display/dialog/mrp_menu_dialog";
+import rpc from 'web.rpc';
 
 patch(MrpMenuDialog.prototype, {
     async readScaleWithClientIP() {
@@ -15,12 +16,12 @@ patch(MrpMenuDialog.prototype, {
             console.log("IP del cliente:", ip);
 
             // Llamar al método Python pasando la IP
-            await this._rpc({
+            await rpc.query({
                 model: 'mrp.workorder',
                 method: 'action_read_scale',
                 args: [],
                 kwargs: { client_ip: ip },
-                record: this.props.record.id,
+                context: { active_id: this.props.record.id },
             });
         } catch (err) {
             console.error("Error al leer balanza con IP del cliente:", err);
