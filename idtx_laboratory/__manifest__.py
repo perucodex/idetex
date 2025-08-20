@@ -82,14 +82,16 @@ colors, technical sheets, coding, and customer quotes based on fibers, inputs, a
         'views/sale_order_views.xml',
         'views/technical_sheet_views.xml',
         'views/dev_menu.xml',
-        'wizard/split_roll_views.xml'
+        'wizard/split_roll_views.xml',
     ],
     
     'assets': {
         'web.assets_backend': [
             'idtx_laboratory/static/src/components/**/*',
             'idtx_laboratory/static/src/popup/**/*',
-            'idtx_laboratory/static/src/widget/scale_widget.xml',
+            # "idtx_laboratory/static/src/widget/mrp_display_record.js",
+            # 'idtx_laboratory/static/src/widget/scale_widget.xml',
+            'idtx_laboratory/static/src/widget/**/*',
         ],
     },
 
