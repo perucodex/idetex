@@ -34,3 +34,4 @@ access_configurate_svg_example,access_configurate_svg_example,model_configurate_
 access_mrp_workorder_roll,mrp_workorder_roll,model_mrp_workorder_roll,base.group_user,1,1,1,1
 access_mrp_workorder_batch,mrp_workorder_batch,model_mrp_workorder_batch,base.group_user,1,1,1,1
 access_split_roll,split_roll,model_split_roll,base.group_user,1,1,1,1
+access_scale_registry,scale_registry,model_scale_registry,base.group_user,1,1,1,1

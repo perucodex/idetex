@@ -2,7 +2,7 @@
 <odoo>
 
     <record id="mrp_production_workorder_tree_editable_view_mo_form_lab_form" model="ir.ui.view">
-        <field name="name">mrp.production.work.order.list.editable.lab</field>
+        <field name="name">mrp.workorder.list.editable.lab</field>
         <field name="model">mrp.workorder</field>
         <field name="inherit_id" ref="mrp.mrp_production_workorder_tree_editable_view_mo_form"/>
         <field name="arch" type="xml">
@@ -26,6 +26,7 @@
             <xpath expr="//field[@name='qty_remaining']" position="after">
                 <field name="roll_weight" invisible="1"/>
                 <field name="progress" widget="progressbar"/>
+                <field name="weave_type"/>
             </xpath>
             <xpath expr="//notebook/page[@name='workorder_page_work_instruction']" position="after">
                 <page string="Rolls" name="rolls" invisible="not weaving_wo">
@@ -34,19 +35,24 @@
                         <list editable="bottom" delete="0">
                             <field name="sequence" widget="handle"/>
                             <field name="name"/>
+                            <field name="equipment_id"/>
                             <field name="employee_id"/>
                             <field name="uom_id"/>
                             <field name="technical_id" column_invisible="1"/>
                             <field name="size_id" column_invisible="parent.weave_type != 'rect'" required="parent.weave_type == 'rect'" domain="[('technical_id','=', technical_id)]" options="{'no_create': True, 'no_open': True}"/>
                             <field name="quantity" column_invisible="parent.weave_type != 'rect'" required="parent.weave_type == 'rect'"/>
                             <field name="in_batch" column_invisible="1"/>
-                            <field name="gross_weight" sum="Total" required="1" readonly="in_batch"/>
-                            <field name="net_weight" sum="Total" required="1"/>
-                            <button name="unlink" icon="fa-trash" type="object" invisible="gross_weight" title="Delete"/>
-                            <!-- <button name="action_read_scale" icon="fa-balance-scale" type="object" invisible="not gross_weight" title="Weight"/> -->
+                            <field name="gross_weight" sum="Total" required="1" column_invisible="parent.weave_type == 'rect'" readonly="in_batch"/>
+                            <field name="net_weight" sum="Total" required="1" column_invisible="parent.weave_type == 'rect'"/>
+                            <button name="unlink" icon="fa-trash" type="object" invisible="parent.weave_type == 'rect' or gross_weight" title="Delete"/>
+                            <button name="unlink" icon="fa-trash" type="object" invisible="parent.weave_type != 'rect' or quantity" title="Delete"/>
                         </list>
                     </field>
                 </page>
+            </xpath>
+            <!-- Insertamos weave_type en el formulario, aunque sea invisible -->
+            <xpath expr="//field[@name='duration_expected']" position="after">
+                <field name="weave_type" invisible="1"/>
             </xpath>
         </field>
     </record>

@@ -81,17 +81,27 @@ colors, technical sheets, coding, and customer quotes based on fibers, inputs, a
         'views/product_code_system_views.xml',
         'views/sale_order_views.xml',
         'views/technical_sheet_views.xml',
+        'views/scale_registry_views.xml',
         'views/dev_menu.xml',
         'wizard/split_roll_views.xml',
     ],
     
     'assets': {
+        # 'web.assets_qweb': [
+        #     'idtx_laboratory/static/src/widget/select_scale_dialog.xml',
+        # ],
         'web.assets_backend': [
             'idtx_laboratory/static/src/components/**/*',
             'idtx_laboratory/static/src/popup/**/*',
-            # "idtx_laboratory/static/src/widget/mrp_display_record.js",
-            # 'idtx_laboratory/static/src/widget/scale_widget.xml',
-            'idtx_laboratory/static/src/widget/**/*',
+            "idtx_laboratory/static/src/widget/mrp_display_record.js",
+            "idtx_laboratory/static/src/widget/mrp_display.js",
+            "idtx_laboratory/static/src/widget/mrp_menu_dialog.js",
+            'idtx_laboratory/static/src/widget/mrp_menu_dialog.xml',
+            'idtx_laboratory/static/src/widget/select_scale_dialog.js',
+            'idtx_laboratory/static/src/widget/select_scale_dialog.xml',
+            'idtx_laboratory/static/src/widget/select_size_dialog.js',
+            'idtx_laboratory/static/src/widget/select_size_dialog.xml',
+            # 'idtx_laboratory/static/src/widget/**/*',
         ],
     },
 

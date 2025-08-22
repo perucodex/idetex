@@ -17,19 +17,14 @@ class MrpWorkorderRoll(models.Model):
     in_batch = fields.Boolean('in_batch?', default=False)
     new_weight = fields.Float('Split new weight')
     weave_type = fields.Selection(related='workorder_id.weave_type')
+    equipment_id = fields.Many2one('maintenance.equipment', string='Equipment')
     employee_id = fields.Many2one('hr.employee', string='Employee')
-
-    # @api.model_create_multi
-    # def create(self, vals_list):
-    #     for vals in vals_list:
-    #         vals['name'] = str(self.sequence + 1).zfill(4)
-    #     return super().create(vals_list)
     
     @api.depends('sequence')
     def _compute_roll_name(self):
         for rec in self:
-            rec.name = rec.workorder_id.production_id.name + '-' + str(rec.sequence + 1).zfill(4)
-            # rec.action_read_scale()
+            rolls_count = len(rec.workorder_id.roll_ids)
+            rec.name = rec.equipment_id.name + '-' + str(rec.sequence + 1).zfill(4)
 
     def unlink(self):
         roll_names = ''
