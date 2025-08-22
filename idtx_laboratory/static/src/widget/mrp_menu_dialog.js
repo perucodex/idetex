@@ -28,7 +28,7 @@ patch(MrpMenuDialog.prototype, {
                 this.notification.add(result.message, { type: result.status });
             }
 
-            this.props.record.save();
+            await this.props.record.load(); 
             this.props.removeFromCache(this.props.record.resId);
             this.props.close();
         };

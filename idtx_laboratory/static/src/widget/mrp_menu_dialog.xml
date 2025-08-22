@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
-    <!-- <t t-inherit="mrp_workorder.MrpDisplayRecord" t-inherit-mode="extension">
+    <t t-inherit="mrp_workorder.MrpDisplayRecord" t-inherit-mode="extension">
         <xpath expr="//li[@t-if='this.displayRegisterProduction']" position="after">
             <li class="o_mrp_record_line list-group-item">
                 <t t-set="rawProgress" t-value="props.record.data.progress"/>
@@ -24,7 +24,7 @@
                 </div>
             </li>
         </xpath>
-    </t> -->
+    </t>
     <t t-inherit="mrp_workorder.MrpDisplayMenuDialog" t-inherit-mode="extension">
         <xpath expr="//div[hasclass('button_list')]/button[@name='displayInstructionsMenu']" position="after">
             <button t-if="props.record.resModel == 'mrp.workorder' and props.record.data.weave_type != 'rect'"
