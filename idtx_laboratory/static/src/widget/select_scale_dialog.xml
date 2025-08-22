@@ -5,9 +5,16 @@
             <div class="mt-4">
                 <h5 class="fw-bold">Employee</h5>
                 <select class="form-select fs-4" t-model="state.selectedEmployee">
-                    <option value="">-- Select an employee --</option>
                     <t t-foreach="employees" t-as="emp" t-key="emp.id">
                         <option t-att-value="emp.id" t-esc="emp.name"/>
+                    </t>
+                </select>
+            </div>
+            <div class="mt-4">
+                <h5 class="fw-bold">Equipment</h5>
+                <select class="form-select fs-4" t-model="state.selectedEquipment">
+                    <t t-foreach="equipments" t-as="eqp" t-key="eqp.id">
+                        <option t-att-value="eqp.id" t-esc="eqp.name"/>
                     </t>
                 </select>
             </div>

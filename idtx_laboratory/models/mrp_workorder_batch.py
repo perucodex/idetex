@@ -8,13 +8,10 @@ class MrpWorkorderBatch(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Mrp Workorder Batch'
 
+    workorder_id = fields.Many2one('mrp.workorder', string='Workorder')
+    sequence = fields.Integer('Sequence')
     name = fields.Char('Name', required=True, copy=False, readonly=False, default=lambda self: _('New'))
     batch_date = fields.Date('Batch Date', required=True, default=lambda self: fields.Date.context_today(self))
-    # production_type = fields.Selection([
-    #     ('dyeing', 'Dyeing'),
-    #     ('weaving', 'Weaving'),
-    #     ('finishing', 'Finishing'),       
-    # ], string='production_type')
     mrp_workcenter_operation_id = fields.Many2one('mrp.routing.workcenter.operation', string='Operation')
     workcenter_operation_id_domain = fields.Char(compute='_compute_workcenter_operation_id_domain')
     wo_roll_ids = fields.Many2many('mrp.workorder.roll', string='Batch Rolls')
@@ -55,6 +52,8 @@ class MrpWorkorderBatch(models.Model):
         self.state = 'batch'
 
     def unbuild_batch(self):
+        if self.workorder_id:
+            raise UserError(_('Can\'t unbild a batch already in use, production %s.') %self.workorder_id.production_id.name)
         for roll in self.wo_roll_ids:
             roll.in_batch = False
         self.state = 'unbuild'

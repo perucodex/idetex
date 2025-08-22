@@ -30,7 +30,7 @@ class SaleOrder(models.Model):
                  'product_id': line.product_id.id,
                  'color_name': line.labdev_color_name or line.product_color_id.name,
                  'sale_order_line_id': line.id,
-            }) for line in self.order_line]
+            }) for line in self.order_line.filtered(lambda l: l.product_id.is_weaving)]
         })
         self.lab_dev_id = lab_dev
         self.open_labdev()

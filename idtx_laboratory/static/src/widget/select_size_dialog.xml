@@ -2,6 +2,22 @@
 <templates xml:space="preserve">
     <t t-name="idtx_laboratory.SelectSizeDialog">
         <Dialog size="'md'" title="props.title" modalRef="modalRef">
+            <div class="mt-4">
+                <h5 class="fw-bold">Employee</h5>
+                <select class="form-select fs-4" t-model="state.selectedEmployee">
+                    <t t-foreach="employees" t-as="emp" t-key="emp.id">
+                        <option t-att-value="emp.id" t-esc="emp.name"/>
+                    </t>
+                </select>
+            </div>
+            <div class="mt-4">
+                <h5 class="fw-bold">Equipment</h5>
+                <select class="form-select fs-4" t-model="state.selectedEquipment">
+                    <t t-foreach="equipments" t-as="eqp" t-key="eqp.id">
+                        <option t-att-value="eqp.id" t-esc="eqp.name"/>
+                    </t>
+                </select>
+            </div>
             <div class="o_select_size_dialog w-100">
                 <div class="mb-3">
                     <label class="form-label fw-bold">Seleccione Talla:</label>

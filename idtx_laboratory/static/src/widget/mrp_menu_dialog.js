@@ -13,64 +13,121 @@ patch(MrpMenuDialog.prototype, {
         super.setup();
         this.orm = useService("orm");
         this.notification = useService("notification");
-        console.log("ID del Workorder:", this.props.record.data.id);
-        console.log("Nombre:", this.props.record.data.name);
-        console.log("Weave type:", this.props.record.data.weave_type);
-        console.log("Quantity Producing:", this.props.record.data.qty_producing);
-        console.log("State:", this.props.record.data.working_state);
     },
 
-    readScaleWithClientIP() {
+    async readScaleWithClientIP() {
         const _selectScale = async (payload) => {
             const result = await this.orm.call("mrp.workorder", "action_read_scale", [
                 [this.props.record.resId],
                 payload.scale_id,
                 payload.employee_id,
+                payload.equipment_id,
             ]);
 
             if (result) {
                 this.notification.add(result.message, { type: result.status });
             }
 
-            // refrescar el record
             this.props.record.save();
             this.props.removeFromCache(this.props.record.resId);
             this.props.close();
         };
 
+        let roll_resIds = [];
+        const roll_field = this.props.record.data.roll_ids;
+        if (Array.isArray(roll_field)) {
+            roll_resIds = roll_field;
+        } else if (roll_field?.resIds) {
+            roll_resIds = roll_field.resIds;
+        }
+        let defaultEmployee = "";
+        let defaultEquipment = "";
+        if (roll_resIds && roll_resIds.length) {
+            const rolls = await this.orm.searchRead(
+                "mrp.workorder.roll",
+                [["id", "in", roll_resIds]],
+                ["employee_id", "equipment_id", "sequence"]
+            );
+            if (rolls && rolls.length) {
+                const lastRoll = rolls.reduce((a, b) => ( (a.sequence || 0) >= (b.sequence || 0) ? a : b ));
+                if (lastRoll.employee_id) {
+                    defaultEmployee = lastRoll.employee_id[0];
+                }
+                if (lastRoll.equipment_id) {
+                    defaultEquipment = lastRoll.equipment_id[0];
+                }
+            }
+        };
+        
         const params = {
             title: _t("Select a scale"),
             confirm: _selectScale,
             radioMode: true,
             scales: this.props.params.scales,
-            employees: this.props.params.employees,
+            employee_ids: this.props.record.data.employee_assigned_ids.resIds,
+            equipment_ids: this.props.record.data.equipment_ids.resIds,
+            selectedEmployee: defaultEmployee || "",
+            selectedEquipment: defaultEquipment || "",
         };
 
         this.dialogService.add(SelectScaleDialog, params);
     },
 
-    createSizeRecord() {
+    async createSizeRecord() {
         const _createRecord = async (payload) => {
             const result = await this.orm.call(
                 "mrp.workorder",
                 "action_create_size_record",
-                [[this.props.record.resId], payload.size, payload.quantity]
-            );
+                [[this.props.record.resId], 
+                payload.size, 
+                payload.quantity,
+                payload.employee_id,
+                payload.equipment_id,
+            ]);
 
             if (result) {
                 this.notification.add(result.message, { type: result.status });
             }
 
-            // refrescar el record
             await this.props.record.load();
             this.props.removeFromCache(this.props.record.resId);
             this.props.close();
+        };
+
+        let roll_resIds = [];
+        const roll_field = this.props.record.data.roll_ids;
+        if (Array.isArray(roll_field)) {
+            roll_resIds = roll_field;
+        } else if (roll_field?.resIds) {
+            roll_resIds = roll_field.resIds;
+        }
+        let defaultEmployee = "";
+        let defaultEquipment = "";
+        if (roll_resIds && roll_resIds.length) {
+            const rolls = await this.orm.searchRead(
+                "mrp.workorder.roll",
+                [["id", "in", roll_resIds]],
+                ["employee_id", "equipment_id", "sequence"]
+            );
+            if (rolls && rolls.length) {
+                const lastRoll = rolls.reduce((a, b) => ( (a.sequence || 0) >= (b.sequence || 0) ? a : b ));
+                if (lastRoll.employee_id) {
+                    defaultEmployee = lastRoll.employee_id[0];
+                }
+                if (lastRoll.equipment_id) {
+                    defaultEquipment = lastRoll.equipment_id[0];
+                }
+            }
         };
 
         const params = {
             title: _t("Select size and quantity"),
             confirm: _createRecord,
             recordId: this.props.record.resId,
+            employee_ids: this.props.record.data.employee_assigned_ids.resIds,
+            equipment_ids: this.props.record.data.equipment_ids.resIds,
+            selectedEmployee: defaultEmployee || "",
+            selectedEquipment: defaultEquipment || "",
         };
 
         this.dialogService.add(SelectSizeDialog, params);

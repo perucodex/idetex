@@ -20,11 +20,10 @@ class MrpWorkorderRoll(models.Model):
     equipment_id = fields.Many2one('maintenance.equipment', string='Equipment')
     employee_id = fields.Many2one('hr.employee', string='Employee')
     
-    @api.depends('sequence')
+    @api.depends('equipment_id','employee_id','sequence')
     def _compute_roll_name(self):
         for rec in self:
-            rolls_count = len(rec.workorder_id.roll_ids)
-            rec.name = rec.equipment_id.name + '-' + str(rec.sequence + 1).zfill(4)
+            rec.name = str(rec.equipment_id.id).zfill(3) + str(rec.employee_id.id).zfill(3) +  str(rec.sequence + 1).zfill(3)
 
     def unlink(self):
         roll_names = ''

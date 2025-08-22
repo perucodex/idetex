@@ -71,7 +71,7 @@ colors, technical sheets, coding, and customer quotes based on fibers, inputs, a
         'views/product_color_views.xml',
         'views/product_template_views.xml',
         'views/res_config_settings_views.xml',
-        'views/lab_menu.xml',
+        'views/scale_registry_views.xml',
         'views/maintenance_equipment_views.xml',
         'views/mrp_routing_views.xml',
         'views/mrp_workorder_batch_views.xml',
@@ -81,9 +81,9 @@ colors, technical sheets, coding, and customer quotes based on fibers, inputs, a
         'views/product_code_system_views.xml',
         'views/sale_order_views.xml',
         'views/technical_sheet_views.xml',
-        'views/scale_registry_views.xml',
-        'views/dev_menu.xml',
         'wizard/split_roll_views.xml',
+        'views/dev_menu.xml',
+        'views/lab_menu.xml',
     ],
     
     'assets': {

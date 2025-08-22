@@ -9,8 +9,8 @@
                 <header>
                     <button name="create_batch" class="oe_highlight" string="Create Batch" type="object" invisible="state != 'draft' or not wo_roll_ids"/>
                     <button name="clear_rolls" string="Clear Rolls" type="object" invisible="state != 'draft' or not wo_roll_ids"/>
-                    <button name="unbuild_batch" class="oe_highlight" string="Unbuild Batch" type="object" invisible="state != 'batch'"/>
-                    <button name="rebuild_batch" class="oe_highlight" string="Rebuild Batch" type="object" invisible="state != 'unbuild'" groups="mrp.group_mrp_manager"/>
+                    <button name="unbuild_batch" class="oe_highlight" string="Unbuild Batch" type="object" invisible="state != 'batch' or workorder_id"/>
+                    <button name="rebuild_batch" class="oe_highlight" string="Rebuild Batch" type="object" invisible="state != 'unbuild' or workorder_id" groups="mrp.group_mrp_manager"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
@@ -23,7 +23,7 @@
                         <group>
                             <field name="batch_date" readonly="state != 'draft'"/>
                             <field name="mrp_workcenter_operation_id" domain="workcenter_operation_id_domain" options="{'no_create': True, 'no_open': True}" required="wo_roll_ids" readonly="state != 'draft'"/>
-                            <!-- <field name="production_type"/> -->
+                            <field name="workorder_id" readonly="1"/>
                         </group>
                     </group>
                     <notebook>
@@ -67,11 +67,11 @@
         <field name="name">mrp.workorder.batch.list</field>
         <field name="model">mrp.workorder.batch</field>
         <field name="arch" type="xml">
-            <list string="Batchs">
+            <list string="Batchs" decoration-success="workorder_id">
                 <field name="name"/>
                 <field name="batch_date"/>
+                <field name="workorder_id" readonly="1"/>
                 <field name="mrp_workcenter_operation_id"/>
-                <!-- <field name="production_type"/> -->
                 <field name="state" widget="badge" decoration-info="(state == 'batch')" decoration-danger="(state == 'unbuild')"/>
             </list>
         </field>

@@ -14,10 +14,13 @@ export class SelectScaleDialog extends ConfirmationDialog {
         body: { type: String, optional: true },
         scales: { type: Array, optional: true },
         employees: { type: Array, optional: true },
+        equipments: { type: Array, optional: true },
         disabled: { type: Array, optional: true },
         active: { type: Array, optional: true },
         radioMode: { type: Boolean, default: false, optional: true },
         showWarning: { type: Boolean, default: false, optional: true },
+        selectedEmployee: { type: [Number, String], optional: true },
+        selectedEquipment: { type: [Number, String], optional: true },
     };
 
     setup() {
@@ -27,9 +30,11 @@ export class SelectScaleDialog extends ConfirmationDialog {
         this.notification = useService("notification");
         this.scales = this.props.scales || [];
         this.employees = this.props.employees || [];
+        this.equipments = this.props.equipments || [];
         this.state = useState({
             activeScales: this.props.active ? [...this.props.active] : [],
-            selectedEmployee: "", 
+            selectedEmployee: this.props.selectedEmployee || "",
+            selectedEquipment: this.props.selectedEquipment || "",
         });
         this.isDisplayStandalone = isDisplayStandalone();
 
@@ -39,6 +44,9 @@ export class SelectScaleDialog extends ConfirmationDialog {
             }
             if (!this.employees.length) {
                 await this._loadEmployees();
+            }
+            if (!this.equipments.length) {
+                await this._loadEquipments();
             }
         });
     }
@@ -74,6 +82,7 @@ export class SelectScaleDialog extends ConfirmationDialog {
         const payload = {
             scale_id: this.state.activeScales[0] || false,
             employee_id: this.state.selectedEmployee || false,
+            equipment_id: this.state.selectedEquipment || false,
         };
         this.props.confirm(payload);
         this.props.close();
@@ -90,11 +99,22 @@ export class SelectScaleDialog extends ConfirmationDialog {
     }
 
     async _loadEmployees() {
-        const employee_ids = this.props.record.data.employee_assigned_ids || [];
+        const employee_ids = this.props.employee_ids || [];
         this.employees = await this.ormService.searchRead("hr.employee", [['id','in',employee_ids]], ["name"]);
         if (!this.employees.length) {
             this.notification.add(
                 _t("No employees are available, please assign one first to add it to the shop floor view"),
+                { type: "danger" }
+            );
+        }
+    }
+
+    async _loadEquipments() {
+        const equipment_ids = this.props.equipment_ids || [];
+        this.equipments = await this.ormService.searchRead("maintenance.equipment", [['id','in',equipment_ids]], ["name"]);
+        if (!this.equipments.length) {
+            this.notification.add(
+                _t("No equipments are available, please assign one first to add it to the shop floor view"),
                 { type: "danger" }
             );
         }
