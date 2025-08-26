@@ -22,10 +22,12 @@ colors, technical sheets, coding, and customer quotes based on fibers, inputs, a
     # any module necessary for this one to work correctly
     'depends': ['base',
                 'product',
-                'sale_stock',
+                'sale',
                 'sale_management',
-                'mrp_workorder',
+                'sale_stock',
+                'mrp',
                 'maintenance',
+                'mrp_workorder',
                 ],
 
     # always loaded
