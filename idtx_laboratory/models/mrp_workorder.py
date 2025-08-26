@@ -4,16 +4,16 @@ import requests
 class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'
 
-    mrwo_id = fields.Many2one('mrp.routing.workcenter.operation', string='Operation')
+    mrwo_id = fields.Many2one('mrp.routing.workcenter.operation', string='Operation LAB')
     roll_ids = fields.One2many('mrp.workorder.roll', 'workorder_id', string='Weaving Rolls')
     batch_ids = fields.One2many('mrp.workorder.batch', 'workorder_id', string='Batchs')
     # weaving_wo = fields.Boolean(related='mrwo_id.is_weaving')
     operation_type = fields.Selection(related='mrwo_id.operation_type')
     weave_type = fields.Selection(related='product_id.product_tmpl_id.technical_sheet_id.weave_type', store=True)
     roll_weight = fields.Float('Roll Weight', compute='_compute_progress')
-    quantity = fields.Float('Quantity', compute='_compute_progress')
+    quantity = fields.Float('Quantity LAB', compute='_compute_progress')
     progress = fields.Float('Progress')
-    equipment_ids = fields.Many2many('maintenance.equipment', string='Equipment')
+    equipment_ids = fields.Many2many('maintenance.equipment', string='Equipments')
     equipment_id = fields.Many2one('maintenance.equipment', string='Equipment')
 
     @api.depends('roll_ids','batch_ids')

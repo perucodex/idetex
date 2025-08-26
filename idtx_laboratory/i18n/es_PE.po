@@ -937,10 +937,15 @@ msgstr "Ingrese la cantidad"
 #: code:addons/idtx_laboratory/static/src/widget/select_scale_dialog.xml:0
 #: code:addons/idtx_laboratory/static/src/widget/select_size_dialog.xml:0
 #: model:ir.model.fields,field_description:idtx_laboratory.field_mrp_workorder__equipment_id
-#: model:ir.model.fields,field_description:idtx_laboratory.field_mrp_workorder__equipment_ids
 #: model:ir.model.fields,field_description:idtx_laboratory.field_mrp_workorder_roll__equipment_id
 msgid "Equipment"
 msgstr "Equipo"
+
+#. module: idtx_laboratory
+#. odoo-javascript
+#: model:ir.model.fields,field_description:idtx_laboratory.field_mrp_workorder__equipment_ids
+msgid "Equipments"
+msgstr "Equipos"
 
 #. module: idtx_laboratory
 #: model:ir.model.fields,field_description:idtx_laboratory.field_maintenance_equipment__equipment_ip
@@ -1792,10 +1797,14 @@ msgid "Open"
 msgstr "Abierto"
 
 #. module: idtx_laboratory
-#: model:ir.model.fields,field_description:idtx_laboratory.field_mrp_workorder__mrwo_id
 #: model:ir.model.fields,field_description:idtx_laboratory.field_mrp_workorder_batch__mrwo_id
 #: model:ir.model.fields,field_description:idtx_laboratory.field_operation_parameter__operation_id
 msgid "Operation"
+msgstr "Operación"
+
+#. module: idtx_laboratory
+#: model:ir.model.fields,field_description:idtx_laboratory.field_mrp_workorder__mrwo_id
+msgid "Operation LAB"
 msgstr "Operación"
 
 #. module: idtx_laboratory
@@ -2116,9 +2125,13 @@ msgstr "Calidad"
 
 #. module: idtx_laboratory
 #: model:ir.model.fields,field_description:idtx_laboratory.field_color_recipe_process_line__quantity
-#: model:ir.model.fields,field_description:idtx_laboratory.field_mrp_workorder__quantity
 #: model:ir.model.fields,field_description:idtx_laboratory.field_mrp_workorder_roll__quantity
 msgid "Quantity"
+msgstr "Cantidad"
+
+#. module: idtx_laboratory
+#: model:ir.model.fields,field_description:idtx_laboratory.field_mrp_workorder__quantity
+msgid "Quantity LAB"
 msgstr "Cantidad"
 
 #. module: idtx_laboratory
