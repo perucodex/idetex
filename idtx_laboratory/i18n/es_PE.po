@@ -1412,7 +1412,7 @@ msgstr "Longitud"
 #. module: idtx_laboratory
 #: model_terms:ir.ui.view,arch_db:idtx_laboratory.product_analysis_form_view
 msgid "Ligament Design Structure"
-msgstr "Diseño de estructura de ligamentos"
+msgstr "Ligamentos"
 
 #. module: idtx_laboratory
 #: model:ir.model.fields,field_description:idtx_laboratory.field_base_process__lin_maq
@@ -1505,7 +1505,7 @@ msgstr "Metros impresos:"
 #: model:ir.model,name:idtx_laboratory.model_configurate_svg_example
 #: model:ir.ui.menu,name:idtx_laboratory.configurate_svg_example_menu
 msgid "Models SVG Configurate"
-msgstr "Modelos SVG Configurate"
+msgstr "Configurar Modelos SVG"
 
 #. module: idtx_laboratory
 #: model:ir.model,name:idtx_laboratory.model_mrp_workorder_batch
@@ -2351,10 +2351,14 @@ msgid "Set up product development"
 msgstr "Configurar el desarrollo de productos"
 
 #. module: idtx_laboratory
-#: model:ir.actions.act_window,name:idtx_laboratory.action_idtx_laboratory_config
 #: model:ir.ui.menu,name:idtx_laboratory.dev_settings_menu
-#: model:ir.ui.menu,name:idtx_laboratory.lab_menu_settings_config
 #: model:ir.ui.menu,name:idtx_laboratory.lab_settings_menu
+msgid "Configuration"
+msgstr "Configuración"
+
+#. module: idtx_laboratory
+#: model:ir.actions.act_window,name:idtx_laboratory.action_idtx_laboratory_config
+#: model:ir.ui.menu,name:idtx_laboratory.lab_menu_settings_config
 msgid "Settings"
 msgstr "Ajustes"
 
@@ -2888,8 +2892,8 @@ msgstr "talla"
 #. module: idtx_laboratory
 #: model:ir.model.fields,field_description:idtx_laboratory.field_product_analysis__state
 #: model:ir.model.fields,field_description:idtx_laboratory.field_technical_sheet__state
-msgid "state"
-msgstr "estado"
+msgid "State"
+msgstr "Estado"
 
 #. module: idtx_laboratory
 #: model:ir.model.fields,field_description:idtx_laboratory.field_product_category__thread_company_categ_id

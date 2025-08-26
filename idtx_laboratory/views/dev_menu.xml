@@ -20,7 +20,7 @@
                 <menuitem id="dev_report_menu" name="Reports" sequence="30">
                     <!-- <menuitem id="product_template_menu" name="Products" action="product_product_action_weaving" sequence="10"/> -->
                 </menuitem>
-                <menuitem id="dev_settings_menu" name="Settings" sequence="200">
+                <menuitem id="dev_settings_menu" name="Configuration" sequence="200">
                     <!-- <menuitem id="menu_settings_config" name="Settings" action="action_idtx_product_development_config" groups="base.group_system" sequence="0"/> -->
                     <menuitem id="configurate_svg_example_menu" name="Models SVG Configurate" action="configurate_svg_example_action" sequence="10"/>
                     <menuitem id="dev_product_code_menu" name="Product Code" sequence="20">
@@ -37,6 +37,7 @@
         <menuitem id="wo_batch_menu" name="Workorder Batch" action="wo_batch_action" sequence="900" parent="mrp.menu_mrp_manufacturing"/>
         <menuitem id="wo_rolls_menu" name="Workorder Rolls" action="wo_rolls_action" sequence="910" parent="mrp.menu_mrp_manufacturing"/>
         <menuitem id="dev_mrp_routing_operation_action_menu" name="Workcenter Operations" action="mrp_routing_operation_action" sequence="900" parent="mrp.menu_mrp_configuration"/>
+        <menuitem id="menu_scale_registry" name="Scales" action="action_scale_registry" sequence="910" parent="mrp.menu_mrp_configuration"/>
 
     </data>
     

@@ -39,7 +39,7 @@ class TechnicalSheet(models.Model):
         ('test', 'Test'),
         ('done', 'Done'),
         ('prod', 'Product'),
-    ], string='state', default='test')
+    ], string='State', default='test')
     user_id = fields.Many2one('res.users','Prepared by',default=lambda self: self.env.user)
     size_chart_ids = fields.One2many('technical.size.line', 'technical_id', string='Size Chart')
     route_line_ids = fields.One2many('technical.route.line', 'technical_id', string='Route Line')

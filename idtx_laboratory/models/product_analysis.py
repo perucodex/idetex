@@ -38,7 +38,7 @@ class ProductAnalysis(models.Model):
         ('test', 'Test'),
         ('done', 'Done'),
         ('tech', 'Technical'),
-    ], string='state', default='test')
+    ], string='State', default='test')
     ligament_row = fields.Integer("Rows",default=0)
     ligament_column = fields.Integer("Columns",default=0)
     ligament_join_row_column = fields.Char("Union")
