@@ -60,7 +60,8 @@
             <field name="name">base.process.line.tree</field>
             <field name="model">base.process.line</field>
             <field name="arch" type="xml">
-                <list string="Base Process Line">
+                <list string="Base Process Line" edit="0" create="0">
+                    <field name="base_process_id"/>
                     <field name="product_id"/>
                     <field name="factor"/>
                     <field name="uom"/>
@@ -71,6 +72,13 @@
         <record id="base_process_action" model="ir.actions.act_window">
             <field name="name">Base Process</field>
             <field name="res_model">base.process</field>
+            <field name="view_mode">list,form</field>
+            <field name="view_id" ref="base_process_tree_view"/>
+        </record>
+
+        <record id="base_process_line_action" model="ir.actions.act_window">
+            <field name="name">Base Process Line</field>
+            <field name="res_model">base.process.line</field>
             <field name="view_mode">list,form</field>
             <field name="view_id" ref="base_process_tree_view"/>
         </record>

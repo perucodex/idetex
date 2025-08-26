@@ -20,6 +20,7 @@
                     <menuitem id="lab_product_color_menu" name="Product Color" action="product_color_action" sequence="10"/>
                     <menuitem id="lab_color_process_base_template_menu" name="Process Base Template" sequence="20">
                         <menuitem id="lab_color_process_base_menu" name="Color Process Base" action="base_process_action" sequence="10"/>
+                        <menuitem id="lab_color_process_line_base_menu" name="Process Base Line" action="base_process_line_action" sequence="20"/>
                     </menuitem>
                     <menuitem id="lab_color_code_menu" name="Color Code" sequence="30">
                         <menuitem id="lab_color_process_type_menu" name="Color Process Type" action="color_process_type_action" sequence="10"/>
