@@ -22,8 +22,9 @@
                     <group>
                         <group>
                             <field name="batch_date" readonly="state != 'draft'"/>
-                            <field name="mrp_workcenter_operation_id" domain="workcenter_operation_id_domain" options="{'no_create': True, 'no_open': True}" required="wo_roll_ids" readonly="state != 'draft'"/>
+                            <!-- <field name="mrp_workcenter_operation_id" domain="workcenter_operation_id_domain" options="{'no_create': True, 'no_open': True}" required="wo_roll_ids" readonly="state != 'draft'"/> -->
                             <field name="workorder_id" readonly="1"/>
+                            <field name="mrwo_id" readonly="1"/>
                         </group>
                     </group>
                     <notebook>
@@ -71,7 +72,7 @@
                 <field name="name"/>
                 <field name="batch_date"/>
                 <field name="workorder_id" readonly="1"/>
-                <field name="mrp_workcenter_operation_id"/>
+                <field name="mrwo_id"/>
                 <field name="state" widget="badge" decoration-info="(state == 'batch')" decoration-danger="(state == 'unbuild')"/>
             </list>
         </field>

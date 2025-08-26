@@ -40,8 +40,8 @@ patch(MrpMenuDialog.prototype, {
         } else if (roll_field?.resIds) {
             roll_resIds = roll_field.resIds;
         }
-        let defaultEmployee = "";
-        let defaultEquipment = "";
+        let defaultEmployee = this.props.record.data.employee_assigned_ids?.resIds?.[0] || "";
+        let defaultEquipment = this.props.record.data.equipment_ids?.resIds?.[0] || "";
         if (roll_resIds && roll_resIds.length) {
             const rolls = await this.orm.searchRead(
                 "mrp.workorder.roll",
@@ -66,8 +66,8 @@ patch(MrpMenuDialog.prototype, {
             scales: this.props.params.scales,
             employee_ids: this.props.record.data.employee_assigned_ids.resIds,
             equipment_ids: this.props.record.data.equipment_ids.resIds,
-            selectedEmployee: defaultEmployee || "",
-            selectedEquipment: defaultEquipment || "",
+            selectedEmployee: defaultEmployee,
+            selectedEquipment: defaultEquipment,
         };
 
         this.dialogService.add(SelectScaleDialog, params);
@@ -101,8 +101,8 @@ patch(MrpMenuDialog.prototype, {
         } else if (roll_field?.resIds) {
             roll_resIds = roll_field.resIds;
         }
-        let defaultEmployee = "";
-        let defaultEquipment = "";
+        let defaultEmployee = this.props.record.data.employee_assigned_ids?.resIds?.[0] || "";
+        let defaultEquipment = this.props.record.data.equipment_ids?.resIds?.[0] || "";
         if (roll_resIds && roll_resIds.length) {
             const rolls = await this.orm.searchRead(
                 "mrp.workorder.roll",

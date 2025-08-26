@@ -1,142 +1,142 @@
-id,workcenter_id,name,type_prices,unit_price,currency_id:id,is_weaving
-mrp_wco_1,"Estampado","EMPASTADO PP ESTAMPADO DIGITAL REACTIVO","pp",0.00,base.USD,False
-mrp_wco_2,"Tejeduría","RIB 2X1 FEED F/LYCRA","pp",1.50,base.USD,True
-mrp_wco_3,"Tejeduría","RIB 2X2 2 CABOS","pp",0.00,base.USD,True
-mrp_wco_4,"Tintorería","TERMOFIJADO TUBULAR","pp",0.00,base.USD,False
-mrp_wco_5,"Tejeduría","FRANELA","pp",0.00,base.USD,True
-mrp_wco_6,"Tejeduría","RECTILINEO CON RELIEVE CLOQUE","pp",10.10,base.USD,True
-mrp_wco_7,"Tejeduría","RECTILINEOS SIMPLE C/TIPPING","pp",0.00,base.USD,True
-mrp_wco_8,"Tejeduría","TEJIDO ESTRUCTURA 2 FONTURAS LISTADO INGENIERIA","pp",0.00,base.USD,True
-mrp_wco_9,"Tejeduría","INTERLOCK F/LYCRA","pp",0.00,base.USD,True
-mrp_wco_10,"Tejeduría","DURIA INTERLOCK SIMPLE 21/03/2025 12:04 TEJEDURIA INTERLOCK LYCRADO","pp",0.00,base.USD,True
-mrp_wco_11,"Tejeduría","RECTILINEOS OTTOMAN","pp",0.00,base.USD,True
-mrp_wco_12,"Tejeduría","PIQUE SIMPLE LYCRADO 36 O 40","pp",1.50,base.USD,True
-mrp_wco_13,"Tejeduría","RIB 2X1 INGENIERIA F/LYCRA","pp",0.00,base.USD,True
-mrp_wco_14,"Tejeduría","JERSEY VANISADO FEED","pp",0.00,base.USD,True
-mrp_wco_15,"Tejeduría","RIB 2X1 FEED","pp",1.80,base.USD,True
-mrp_wco_16,"Acabados","RESINADO LUXURY 1/2 RECETA","pp",0.00,base.USD,False
-mrp_wco_17,"Acabados","WICKING + BE SO COOL","pp",0.74,base.USD,False
-mrp_wco_18,"Tintorería","ANTIMICROBIAL","pp",1.00,base.USD,False
-mrp_wco_19,"Estampado","POLIMERIZADO","pp",0.00,base.USD,False
-mrp_wco_20,"Estampado","ESTAMPADO ROTATIVO PIGMENTO","pp",0.00,base.USD,False
-mrp_wco_21,"Tejeduría","JERSEY CALADO F/LYCRA","pp",0.00,base.USD,True
-mrp_wco_22,"Acabados","RESINADO LIBRE DE FORMALDEHIDO","pp",0.78,base.USD,False
-mrp_wco_23,"Acabados","RESINADO HIDRODUGO","pp",0.00,base.USD,False
-mrp_wco_24,"Tintorería","REMALLE TUBULAR CARA ADENTRO","pp",0.00,base.USD,False
-mrp_wco_25,"Tejeduría","INTERLOCK FEED","pp",0.00,base.USD,True
-mrp_wco_26,"Tejeduría","RIB PUNTO INGLES","pp",1.60,base.USD,True
-mrp_wco_27,"Tejeduría","JERSEY RANDOM","pp",0.00,base.USD,True
-mrp_wco_28,"Tejeduría","JERSEY F/LYCRA RANDOM","pp",0.00,base.USD,True
-mrp_wco_29,"Acabados","ACABADO HIDROFILO","pp",0.50,base.USD,False
-mrp_wco_30,"Tejeduría","PIQUE OXFORD","pp",0.00,base.USD,True
-mrp_wco_31,"Tejeduría","RIB 2X1 F/LYCRA","pp",0.00,base.USD,True
-mrp_wco_32,"Tejeduría","RIB 1X1 F/LYCRA","pp",0.00,base.USD,True
-mrp_wco_33,"Tejeduría","INTERLOCK INGENIERIA","pp",0.00,base.USD,True
-mrp_wco_34,"Tejeduría","CORDON TRENZADO","pp",0.00,base.USD,True
-mrp_wco_35,"Acabados","CERTIFICADO SUPIMA","pp",0.90,base.USD,False
-mrp_wco_36,"Tejeduría","INTERLOCK ACANALADO","pp",1.20,base.USD,True
-mrp_wco_37,"Tejeduría","JERSEY INGENIERIA F/LYCRA","pp",0.00,base.USD,True
-mrp_wco_38,"Acabados","WICKING","pp",0.40,base.USD,False
-mrp_wco_39,"Acabados","SUAVIZADO TUBULAR","pp",0.00,base.USD,False
-mrp_wco_40,"Acabados","CAMBIAR RESINADO LUXURY","pp",0.00,base.USD,False
-mrp_wco_41,"Acabados","CENTRIFUGADO","pp",0.50,base.USD,False
-mrp_wco_42,"Tejeduría","JERSEY F/LYCRA","pp",0.00,base.USD,True
-mrp_wco_43,"Tejeduría","JERSEY FEED F/LYCRA","pp",0.00,base.USD,True
-mrp_wco_44,"Acabados","ACABADO SOLO AGUA","pp",0.50,base.USD,False
-mrp_wco_45,"Tejeduría","FRENCH TERRY LYCRADO","pp",0.00,base.USD,True
-mrp_wco_46,"Acabados","LAVADO ROTOCLEAN","pp",1.00,base.USD,False
-mrp_wco_47,"Tejeduría","RIB 2X1 2 CABOS","pp",0.00,base.USD,True
-mrp_wco_48,"Tejeduría","F TERRY DIAGONAL","pp",0.90,base.USD,True
-mrp_wco_49,"Tejeduría","RIB 1X1 INGENIERIA F/LYCRA","pp",0.00,base.USD,True
-mrp_wco_50,"Tejeduría","JERSEY LYCRADO","pp",0.00,base.USD,True
-mrp_wco_51,"Tejeduría","INTERLOCK SIMPLE","pp",0.00,base.USD,True
-mrp_wco_52,"Tejeduría","INTERLOCK LYCRADO","pp",0.00,base.USD,True
-mrp_wco_53,"Tejeduría","INTERLOCK OXFORD COTTON/POLYESTER","pp",0.00,base.USD,True
-mrp_wco_54,"Tejeduría","JERSEY MINIJACQUARD","pp",0.00,base.USD,True
-mrp_wco_55,"Tejeduría","RIB MINIJACQUARD","pp",0.00,base.USD,True
-mrp_wco_56,"Tejeduría","RIB 1X1 50/1 LYCRADO","pp",1.00,base.USD,True
-mrp_wco_57,"Tejeduría","RIB OTTOMAN","pp",1.50,base.USD,True
-mrp_wco_58,"Tejeduría","PIQUE SIMPLE LYCRADO","pp",1.10,base.USD,True
-mrp_wco_59,"Tejeduría","RIB 1X1 CALADO","pp",1.10,base.USD,True
-mrp_wco_60,"Tintorería","PREPARADO","pp",0.30,base.USD,False
-mrp_wco_61,"Tintorería","LAVADO EN MAQUINA","pp",1.10,base.USD,False
-mrp_wco_62,"Estampado","VAPORIZADO","pp",0.00,base.USD,False
-mrp_wco_63,"Estampado","JABONADO","pp",0.00,base.USD,False
-mrp_wco_64,"Estampado","ESTAMPADO ROTATIVO DISCHARGE","pp",0.00,base.USD,False
-mrp_wco_65,"Estampado","ESTAMPADO DIGITAL REACTIVO","pp",0.00,base.USD,False
-mrp_wco_66,"Estampado","ESTAMPADO ROTATIVO REACTIVO","pp",0.00,base.USD,False
-mrp_wco_67,"Estampado","SECADO PPE","pp",0.00,base.USD,False
-mrp_wco_68,"Tejeduría","RIB CALADO","pp",0.00,base.USD,True
-mrp_wco_69,"Tejeduría","JERSEY CALADO","pp",0.00,base.USD,True
-mrp_wco_70,"Tejeduría","INTERLOCK 60","pp",0.00,base.USD,True
-mrp_wco_71,"Tejeduría","FELPA SIMPLE","pp",0.00,base.USD,True
-mrp_wco_72,"Acabados","TUNDIDO","pp",0.00,base.USD,False
-mrp_wco_73,"Acabados","TUNDIDO SOLO PUNTAS","pp",0.50,base.USD,False
-mrp_wco_74,"Tintorería","TEÑIDO 60/1","col",0.00,base.USD,False
-mrp_wco_75,"Tintorería","TEÑIDO 50/1","col",0.00,base.USD,False
-mrp_wco_76,"Tintorería","TEÑIDO 44/1","col",0.00,base.USD,False
-mrp_wco_77,"Tintorería","TEÑIDO 40/1","col",0.00,base.USD,False
-mrp_wco_78,"Tintorería","TEÑIDO 36/1","col",0.00,base.USD,False
-mrp_wco_79,"Tintorería","TEÑIDO 32/1","col",0.00,base.USD,False
-mrp_wco_80,"Acabados","ACABADO CON CORTE DE ORILLOS","pp",0.50,base.USD,False
-mrp_wco_81,"Acabados","SECADO TWILL","pp",1.00,base.USD,False
-mrp_wco_82,"Tejeduría","TWILL","pp",0.00,base.USD,True
-mrp_wco_83,"Acabados","SERVICIO DE DESENREDADO Y PLANCHADO","pp",6.50,base.USD,False
-mrp_wco_84,"Tejeduría","RETORCIDO","pp",0.50,base.USD,True
-mrp_wco_85,"Acabados","RESINADO 1/2 RECETA","pp",0.30,base.USD,False
-mrp_wco_86,"Tejeduría","JERSEY GAUZE","pp",1.20,base.USD,True
-mrp_wco_87,"Tejeduría","PIQUE LACOSTE","pp",1.20,base.USD,True
-mrp_wco_88,"Acabados","CAMBIAR LUX","pp",0.00,base.USD,False
-mrp_wco_89,"Acabados","ACABADO CON ENGOME Y CORTE DE ORILLOS","pp",0.50,base.USD,False
-mrp_wco_90,"Tejeduría","RECTILINEOS SIMPLE","pp",0.00,base.USD,True
-mrp_wco_91,"Tejeduría","JERSEY END ON END","pp",0.80,base.USD,True
-mrp_wco_92,"Tintorería","LAVADO","pp",1.50,base.USD,False
-mrp_wco_93,"Acabados","ACABADO LUBRICANTE DE COSTURA","pp",0.50,base.USD,False
-mrp_wco_94,"Tintorería","PPT","pp",1.30,base.USD,False
-mrp_wco_95,"Tejeduría","PIQUE SIMPLE","pp",0.60,base.USD,True
-mrp_wco_96,"Acabados","ACABADO SOLO SUAVIZANTE DE COSTURA","pp",0.50,base.USD,False
-mrp_wco_97,"Tejeduría","F TERRY SIMPLE","pp",0.80,base.USD,True
-mrp_wco_98,"Acabados","ACABADO TUBULAR","pp",0.50,base.USD,False
-mrp_wco_99,"Tejeduría","DOBLE FACE PIQUE","pp",1.30,base.USD,True
-mrp_wco_100,"Tejeduría","JERSEY FEED","pp",0.80,base.USD,True
-mrp_wco_101,"Tejeduría","RIB 1X1 FEED","pp",1.00,base.USD,True
-mrp_wco_102,"Acabados","HIDRO","pp",0.30,base.USD,False
-mrp_wco_103,"Tejeduría","RECTILINEOS OXFORD","pp",11.50,base.USD,True
-mrp_wco_104,"Tejeduría","RIB 1X1 VANISADO","pp",1.30,base.USD,True
-mrp_wco_105,"Tejeduría","RIB 1X1 LYCRADO","pp",0.70,base.USD,True
-mrp_wco_106,"Tintorería","PROTECTOR UV","pp",0.90,base.USD,False
-mrp_wco_107,"Tejeduría","RIB 1X1 2 CABOS","pp",0.00,base.USD,True
-mrp_wco_108,"Tejeduría","TEJIDO ESTRUCTURA 2 FONTURAS","pp",1.00,base.USD,True
-mrp_wco_109,"Tejeduría","TEJIDO ESTRUCTURA 1 FONTURA","pp",0.00,base.USD,True
-mrp_wco_110,"Tejeduría","FRANELA 3 HILOS","pp",0.00,base.USD,True
-mrp_wco_111,"Acabados","PERCHADO","pp",0.00,base.USD,False
-mrp_wco_112,"Tejeduría","JERSEY 2 CABOS","pp",0.00,base.USD,True
-mrp_wco_113,"Tejeduría","INTERLOCK 40 O 50","pp",0.90,base.USD,True
-mrp_wco_114,"Tejeduría","JERSEY FEED VERTICAL","pp",1.00,base.USD,True
-mrp_wco_115,"Acabados","ESMERILADO","pp",0.50,base.USD,False
-mrp_wco_116,"Tejeduría","F TERRY LYCRADO","pp",0.80,base.USD,True
-mrp_wco_117,"Tejeduría","RIB VARIGATED LYCRADO","pp",1.50,base.USD,True
-mrp_wco_118,"Tejeduría","WAFLE SIN LYCRA","pp",1.10,base.USD,True
-mrp_wco_119,"Tejeduría","RIB 1X1 SIN LYCRA","pp",0.70,base.USD,True
-mrp_wco_120,"Acabados","SANFORIZADO","pp",0.40,base.USD,False
-mrp_wco_121,"Acabados","ANTIFLUIDO","pp",1.60,base.USD,False
-mrp_wco_122,"Tintorería","DESMONTADO","pp",0.00,base.USD,False
-mrp_wco_123,"Acabados","LUXURY","pp",0.40,base.USD,False
-mrp_wco_124,"Acabados","RESINADO LANDS END","pp",0.60,base.USD,False
-mrp_wco_125,"Acabados","RESINADO","pp",0.40,base.USD,False
-mrp_wco_126,"Tejeduría","RIB VARIGATED POINTELLE","pp",1.50,base.USD,True
-mrp_wco_127,"Tejeduría","INTERLOCK MILANO","pp",1.50,base.USD,True
-mrp_wco_128,"Tejeduría","RIB FLAT BACK","pp",1.50,base.USD,True
-mrp_wco_129,"Tejeduría","RIB VARIGATED CALADO","pp",1.50,base.USD,True
-mrp_wco_130,"Tejeduría","JERSEY 50/1 LYCRADO","pp",0.90,base.USD,True
-mrp_wco_131,"Tintorería","TERMOFIJADO","pp",0.50,base.USD,False
-mrp_wco_132,"Tejeduría","WAFLE LYCRADO","pp",1.00,base.USD,True
-mrp_wco_133,"Acabados","COMPACTADO","pp",0.30,base.USD,False
-mrp_wco_134,"Tejeduría","DOBLE FACE MINIJACQUARD","pp",1.50,base.USD,True
-mrp_wco_135,"Tejeduría","RIB 2X1 SIMPLE","pp",1.00,base.USD,True
-mrp_wco_136,"Calidad","CONTROL DE CALIDAD","pp",0.00,base.USD,False
-mrp_wco_137,"Tejeduría","JERSEY VANISADO","pp",1.30,base.USD,True
-mrp_wco_138,"Acabados","ACABADO","pp",0.50,base.USD,False
-mrp_wco_139,"Acabados","SECADO","pp",0.50,base.USD,False
-mrp_wco_140,"Tintorería","TEÑIDO 10/1 AL 30/1","col",0.00,base.USD,False
-mrp_wco_141,"Tejeduría","JERSEY SIMPLE","pp",0.50,base.USD,True
+id,workcenter_id,name,type_prices,unit_price,currency_id:id
+mrp_wco_1,"Estampado","EMPASTADO PP ESTAMPADO DIGITAL REACTIVO","pp",0.00,base.USD
+mrp_wco_2,"Tejeduría","RIB 2X1 FEED F/LYCRA","pp",1.50,base.USD
+mrp_wco_3,"Tejeduría","RIB 2X2 2 CABOS","pp",0.00,base.USD
+mrp_wco_4,"Tintorería","TERMOFIJADO TUBULAR","pp",0.00,base.USD
+mrp_wco_5,"Tejeduría","FRANELA","pp",0.00,base.USD
+mrp_wco_6,"Tejeduría","RECTILINEO CON RELIEVE CLOQUE","pp",10.10,base.USD
+mrp_wco_7,"Tejeduría","RECTILINEOS SIMPLE C/TIPPING","pp",0.00,base.USD
+mrp_wco_8,"Tejeduría","TEJIDO ESTRUCTURA 2 FONTURAS LISTADO INGENIERIA","pp",0.00,base.USD
+mrp_wco_9,"Tejeduría","INTERLOCK F/LYCRA","pp",0.00,base.USD
+mrp_wco_10,"Tejeduría","DURIA INTERLOCK SIMPLE 21/03/2025 12:04 TEJEDURIA INTERLOCK LYCRADO","pp",0.00,base.USD
+mrp_wco_11,"Tejeduría","RECTILINEOS OTTOMAN","pp",0.00,base.USD
+mrp_wco_12,"Tejeduría","PIQUE SIMPLE LYCRADO 36 O 40","pp",1.50,base.USD
+mrp_wco_13,"Tejeduría","RIB 2X1 INGENIERIA F/LYCRA","pp",0.00,base.USD
+mrp_wco_14,"Tejeduría","JERSEY VANISADO FEED","pp",0.00,base.USD
+mrp_wco_15,"Tejeduría","RIB 2X1 FEED","pp",1.80,base.USD
+mrp_wco_16,"Acabados","RESINADO LUXURY 1/2 RECETA","pp",0.00,base.USD
+mrp_wco_17,"Acabados","WICKING + BE SO COOL","pp",0.74,base.USD
+mrp_wco_18,"Tintorería","ANTIMICROBIAL","pp",1.00,base.USD
+mrp_wco_19,"Estampado","POLIMERIZADO","pp",0.00,base.USD
+mrp_wco_20,"Estampado","ESTAMPADO ROTATIVO PIGMENTO","pp",0.00,base.USD
+mrp_wco_21,"Tejeduría","JERSEY CALADO F/LYCRA","pp",0.00,base.USD
+mrp_wco_22,"Acabados","RESINADO LIBRE DE FORMALDEHIDO","pp",0.78,base.USD
+mrp_wco_23,"Acabados","RESINADO HIDRODUGO","pp",0.00,base.USD
+mrp_wco_24,"Tintorería","REMALLE TUBULAR CARA ADENTRO","pp",0.00,base.USD
+mrp_wco_25,"Tejeduría","INTERLOCK FEED","pp",0.00,base.USD
+mrp_wco_26,"Tejeduría","RIB PUNTO INGLES","pp",1.60,base.USD
+mrp_wco_27,"Tejeduría","JERSEY RANDOM","pp",0.00,base.USD
+mrp_wco_28,"Tejeduría","JERSEY F/LYCRA RANDOM","pp",0.00,base.USD
+mrp_wco_29,"Acabados","ACABADO HIDROFILO","pp",0.50,base.USD
+mrp_wco_30,"Tejeduría","PIQUE OXFORD","pp",0.00,base.USD
+mrp_wco_31,"Tejeduría","RIB 2X1 F/LYCRA","pp",0.00,base.USD
+mrp_wco_32,"Tejeduría","RIB 1X1 F/LYCRA","pp",0.00,base.USD
+mrp_wco_33,"Tejeduría","INTERLOCK INGENIERIA","pp",0.00,base.USD
+mrp_wco_34,"Tejeduría","CORDON TRENZADO","pp",0.00,base.USD
+mrp_wco_35,"Acabados","CERTIFICADO SUPIMA","pp",0.90,base.USD
+mrp_wco_36,"Tejeduría","INTERLOCK ACANALADO","pp",1.20,base.USD
+mrp_wco_37,"Tejeduría","JERSEY INGENIERIA F/LYCRA","pp",0.00,base.USD
+mrp_wco_38,"Acabados","WICKING","pp",0.40,base.USD
+mrp_wco_39,"Acabados","SUAVIZADO TUBULAR","pp",0.00,base.USD
+mrp_wco_40,"Acabados","CAMBIAR RESINADO LUXURY","pp",0.00,base.USD
+mrp_wco_41,"Acabados","CENTRIFUGADO","pp",0.50,base.USD
+mrp_wco_42,"Tejeduría","JERSEY F/LYCRA","pp",0.00,base.USD
+mrp_wco_43,"Tejeduría","JERSEY FEED F/LYCRA","pp",0.00,base.USD
+mrp_wco_44,"Acabados","ACABADO SOLO AGUA","pp",0.50,base.USD
+mrp_wco_45,"Tejeduría","FRENCH TERRY LYCRADO","pp",0.00,base.USD
+mrp_wco_46,"Acabados","LAVADO ROTOCLEAN","pp",1.00,base.USD
+mrp_wco_47,"Tejeduría","RIB 2X1 2 CABOS","pp",0.00,base.USD
+mrp_wco_48,"Tejeduría","F TERRY DIAGONAL","pp",0.90,base.USD
+mrp_wco_49,"Tejeduría","RIB 1X1 INGENIERIA F/LYCRA","pp",0.00,base.USD
+mrp_wco_50,"Tejeduría","JERSEY LYCRADO","pp",0.00,base.USD
+mrp_wco_51,"Tejeduría","INTERLOCK SIMPLE","pp",0.00,base.USD
+mrp_wco_52,"Tejeduría","INTERLOCK LYCRADO","pp",0.00,base.USD
+mrp_wco_53,"Tejeduría","INTERLOCK OXFORD COTTON/POLYESTER","pp",0.00,base.USD
+mrp_wco_54,"Tejeduría","JERSEY MINIJACQUARD","pp",0.00,base.USD
+mrp_wco_55,"Tejeduría","RIB MINIJACQUARD","pp",0.00,base.USD
+mrp_wco_56,"Tejeduría","RIB 1X1 50/1 LYCRADO","pp",1.00,base.USD
+mrp_wco_57,"Tejeduría","RIB OTTOMAN","pp",1.50,base.USD
+mrp_wco_58,"Tejeduría","PIQUE SIMPLE LYCRADO","pp",1.10,base.USD
+mrp_wco_59,"Tejeduría","RIB 1X1 CALADO","pp",1.10,base.USD
+mrp_wco_60,"Tintorería","PREPARADO","pp",0.30,base.USD
+mrp_wco_61,"Tintorería","LAVADO EN MAQUINA","pp",1.10,base.USD
+mrp_wco_62,"Estampado","VAPORIZADO","pp",0.00,base.USD
+mrp_wco_63,"Estampado","JABONADO","pp",0.00,base.USD
+mrp_wco_64,"Estampado","ESTAMPADO ROTATIVO DISCHARGE","pp",0.00,base.USD
+mrp_wco_65,"Estampado","ESTAMPADO DIGITAL REACTIVO","pp",0.00,base.USD
+mrp_wco_66,"Estampado","ESTAMPADO ROTATIVO REACTIVO","pp",0.00,base.USD
+mrp_wco_67,"Estampado","SECADO PPE","pp",0.00,base.USD
+mrp_wco_68,"Tejeduría","RIB CALADO","pp",0.00,base.USD
+mrp_wco_69,"Tejeduría","JERSEY CALADO","pp",0.00,base.USD
+mrp_wco_70,"Tejeduría","INTERLOCK 60","pp",0.00,base.USD
+mrp_wco_71,"Tejeduría","FELPA SIMPLE","pp",0.00,base.USD
+mrp_wco_72,"Acabados","TUNDIDO","pp",0.00,base.USD
+mrp_wco_73,"Acabados","TUNDIDO SOLO PUNTAS","pp",0.50,base.USD
+mrp_wco_74,"Tintorería","TEÑIDO 60/1","col",0.00,base.USD
+mrp_wco_75,"Tintorería","TEÑIDO 50/1","col",0.00,base.USD
+mrp_wco_76,"Tintorería","TEÑIDO 44/1","col",0.00,base.USD
+mrp_wco_77,"Tintorería","TEÑIDO 40/1","col",0.00,base.USD
+mrp_wco_78,"Tintorería","TEÑIDO 36/1","col",0.00,base.USD
+mrp_wco_79,"Tintorería","TEÑIDO 32/1","col",0.00,base.USD
+mrp_wco_80,"Acabados","ACABADO CON CORTE DE ORILLOS","pp",0.50,base.USD
+mrp_wco_81,"Acabados","SECADO TWILL","pp",1.00,base.USD
+mrp_wco_82,"Tejeduría","TWILL","pp",0.00,base.USD
+mrp_wco_83,"Acabados","SERVICIO DE DESENREDADO Y PLANCHADO","pp",6.50,base.USD
+mrp_wco_84,"Tejeduría","RETORCIDO","pp",0.50,base.USD
+mrp_wco_85,"Acabados","RESINADO 1/2 RECETA","pp",0.30,base.USD
+mrp_wco_86,"Tejeduría","JERSEY GAUZE","pp",1.20,base.USD
+mrp_wco_87,"Tejeduría","PIQUE LACOSTE","pp",1.20,base.USD
+mrp_wco_88,"Acabados","CAMBIAR LUX","pp",0.00,base.USD
+mrp_wco_89,"Acabados","ACABADO CON ENGOME Y CORTE DE ORILLOS","pp",0.50,base.USD
+mrp_wco_90,"Tejeduría","RECTILINEOS SIMPLE","pp",0.00,base.USD
+mrp_wco_91,"Tejeduría","JERSEY END ON END","pp",0.80,base.USD
+mrp_wco_92,"Tintorería","LAVADO","pp",1.50,base.USD
+mrp_wco_93,"Acabados","ACABADO LUBRICANTE DE COSTURA","pp",0.50,base.USD
+mrp_wco_94,"Tintorería","PPT","pp",1.30,base.USD
+mrp_wco_95,"Tejeduría","PIQUE SIMPLE","pp",0.60,base.USD
+mrp_wco_96,"Acabados","ACABADO SOLO SUAVIZANTE DE COSTURA","pp",0.50,base.USD
+mrp_wco_97,"Tejeduría","F TERRY SIMPLE","pp",0.80,base.USD
+mrp_wco_98,"Acabados","ACABADO TUBULAR","pp",0.50,base.USD
+mrp_wco_99,"Tejeduría","DOBLE FACE PIQUE","pp",1.30,base.USD
+mrp_wco_100,"Tejeduría","JERSEY FEED","pp",0.80,base.USD
+mrp_wco_101,"Tejeduría","RIB 1X1 FEED","pp",1.00,base.USD
+mrp_wco_102,"Acabados","HIDRO","pp",0.30,base.USD
+mrp_wco_103,"Tejeduría","RECTILINEOS OXFORD","pp",11.50,base.USD
+mrp_wco_104,"Tejeduría","RIB 1X1 VANISADO","pp",1.30,base.USD
+mrp_wco_105,"Tejeduría","RIB 1X1 LYCRADO","pp",0.70,base.USD
+mrp_wco_106,"Tintorería","PROTECTOR UV","pp",0.90,base.USD
+mrp_wco_107,"Tejeduría","RIB 1X1 2 CABOS","pp",0.00,base.USD
+mrp_wco_108,"Tejeduría","TEJIDO ESTRUCTURA 2 FONTURAS","pp",1.00,base.USD
+mrp_wco_109,"Tejeduría","TEJIDO ESTRUCTURA 1 FONTURA","pp",0.00,base.USD
+mrp_wco_110,"Tejeduría","FRANELA 3 HILOS","pp",0.00,base.USD
+mrp_wco_111,"Acabados","PERCHADO","pp",0.00,base.USD
+mrp_wco_112,"Tejeduría","JERSEY 2 CABOS","pp",0.00,base.USD
+mrp_wco_113,"Tejeduría","INTERLOCK 40 O 50","pp",0.90,base.USD
+mrp_wco_114,"Tejeduría","JERSEY FEED VERTICAL","pp",1.00,base.USD
+mrp_wco_115,"Acabados","ESMERILADO","pp",0.50,base.USD
+mrp_wco_116,"Tejeduría","F TERRY LYCRADO","pp",0.80,base.USD
+mrp_wco_117,"Tejeduría","RIB VARIGATED LYCRADO","pp",1.50,base.USD
+mrp_wco_118,"Tejeduría","WAFLE SIN LYCRA","pp",1.10,base.USD
+mrp_wco_119,"Tejeduría","RIB 1X1 SIN LYCRA","pp",0.70,base.USD
+mrp_wco_120,"Acabados","SANFORIZADO","pp",0.40,base.USD
+mrp_wco_121,"Acabados","ANTIFLUIDO","pp",1.60,base.USD
+mrp_wco_122,"Tintorería","DESMONTADO","pp",0.00,base.USD
+mrp_wco_123,"Acabados","LUXURY","pp",0.40,base.USD
+mrp_wco_124,"Acabados","RESINADO LANDS END","pp",0.60,base.USD
+mrp_wco_125,"Acabados","RESINADO","pp",0.40,base.USD
+mrp_wco_126,"Tejeduría","RIB VARIGATED POINTELLE","pp",1.50,base.USD
+mrp_wco_127,"Tejeduría","INTERLOCK MILANO","pp",1.50,base.USD
+mrp_wco_128,"Tejeduría","RIB FLAT BACK","pp",1.50,base.USD
+mrp_wco_129,"Tejeduría","RIB VARIGATED CALADO","pp",1.50,base.USD
+mrp_wco_130,"Tejeduría","JERSEY 50/1 LYCRADO","pp",0.90,base.USD
+mrp_wco_131,"Tintorería","TERMOFIJADO","pp",0.50,base.USD
+mrp_wco_132,"Tejeduría","WAFLE LYCRADO","pp",1.00,base.USD
+mrp_wco_133,"Acabados","COMPACTADO","pp",0.30,base.USD
+mrp_wco_134,"Tejeduría","DOBLE FACE MINIJACQUARD","pp",1.50,base.USD
+mrp_wco_135,"Tejeduría","RIB 2X1 SIMPLE","pp",1.00,base.USD
+mrp_wco_136,"Calidad","CONTROL DE CALIDAD","pp",0.00,base.USD
+mrp_wco_137,"Tejeduría","JERSEY VANISADO","pp",1.30,base.USD
+mrp_wco_138,"Acabados","ACABADO","pp",0.50,base.USD
+mrp_wco_139,"Acabados","SECADO","pp",0.50,base.USD
+mrp_wco_140,"Tintorería","TEÑIDO 10/1 AL 30/1","col",0.00,base.USD
+mrp_wco_141,"Tejeduría","JERSEY SIMPLE","pp",0.50,base.USD

@@ -73,6 +73,7 @@ class TechnicalSheet(models.Model):
         uom = self.env.ref('uom.product_uom_kgm') if self.weave_type != 'rect' else self.env.ref('uom.product_uom_unit')
         self.product_id = self.env['product.template'].create({
             'name': self.analysis_id.product_description,
+            'is_storable': True,
             'default_code': self.product_code,
             'uom_id': uom.id,
             'uom_po_id': uom.id,

@@ -6,8 +6,9 @@ class MrpWorkorder(models.Model):
 
     mrwo_id = fields.Many2one('mrp.routing.workcenter.operation', string='Operation')
     roll_ids = fields.One2many('mrp.workorder.roll', 'workorder_id', string='Weaving Rolls')
-    batch_ids = fields.One2many('mrp.workorder.batch', 'workorder_id', string='Weaving Rolls')
-    weaving_wo = fields.Boolean(related='mrwo_id.is_weaving')
+    batch_ids = fields.One2many('mrp.workorder.batch', 'workorder_id', string='Batchs')
+    # weaving_wo = fields.Boolean(related='mrwo_id.is_weaving')
+    operation_type = fields.Selection(related='mrwo_id.operation_type')
     weave_type = fields.Selection(related='product_id.product_tmpl_id.technical_sheet_id.weave_type', store=True)
     roll_weight = fields.Float('Roll Weight', compute='_compute_progress')
     quantity = fields.Float('Quantity', compute='_compute_progress')
@@ -18,23 +19,29 @@ class MrpWorkorder(models.Model):
     @api.depends('roll_ids','batch_ids')
     def _compute_progress(self):
         for rec in self:
-            if rec.weave_type == 'rect':
-                rec.quantity = sum(rec.roll_ids.mapped('quantity'))
-                rec.progress = (rec.quantity / rec.qty_remaining) * 100 if rec.qty_remaining else 100
-                rec.roll_weight = 0
-            else:
-                rec.roll_weight = sum(rec.roll_ids.mapped('gross_weight'))
-                rec.progress = (rec.roll_weight / rec.qty_remaining) * 100 if rec.qty_remaining else 100
-                rec.quantity = 0
-            if rec.batch_ids:
-                if sum(rec.batch_ids.wo_roll_ids.mapped('quantity')) > 0:
-                    rec.quantity = sum(rec.batch_ids.wo_roll_ids.mapped('quantity'))
+            if rec.operation_type == 'weaving':
+                if rec.weave_type == 'rect':
+                    rec.quantity = sum(rec.roll_ids.mapped('quantity'))
                     rec.progress = (rec.quantity / rec.qty_remaining) * 100 if rec.qty_remaining else 100
                     rec.roll_weight = 0
-                else:        
-                    rec.roll_weight = sum(rec.batch_ids.wo_roll_ids.mapped('gross_weight'))
+                else:
+                    rec.roll_weight = sum(rec.roll_ids.mapped('gross_weight'))
                     rec.progress = (rec.roll_weight / rec.qty_remaining) * 100 if rec.qty_remaining else 100
                     rec.quantity = 0
+            # elif rec.operation_type == 'dyeing':
+            #     if rec.batch_ids:
+            #         if sum(rec.batch_ids.wo_roll_ids.mapped('gross_weight')) > 0:
+            #             rec.roll_weight = sum(rec.batch_ids.wo_roll_ids.mapped('gross_weight'))
+            #             rec.progress = (rec.roll_weight / rec.qty_remaining) * 100 if rec.qty_remaining else 100
+            #             rec.quantity = 0
+            #         else:
+            #             rec.quantity = sum(rec.batch_ids.wo_roll_ids.mapped('quantity'))
+            #             rec.progress = (rec.quantity / rec.qty_remaining) * 100 if rec.qty_remaining else 100
+            #             rec.roll_weight = 0
+            else:
+                rec.quantity = 0
+                rec.roll_weight = 0
+                rec.progress = 0
 
     def action_read_scale(self, id, employee_id, equipment_id):
         '''Leer la balanza desde el endpoint Flask'''

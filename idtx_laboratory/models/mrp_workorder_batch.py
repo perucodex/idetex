@@ -9,18 +9,23 @@ class MrpWorkorderBatch(models.Model):
     _description = 'Mrp Workorder Batch'
 
     workorder_id = fields.Many2one('mrp.workorder', string='Workorder')
+    mrwo_id = fields.Many2one(related='workorder_id.mrwo_id')
     sequence = fields.Integer('Sequence')
     name = fields.Char('Name', required=True, copy=False, readonly=False, default=lambda self: _('New'))
     batch_date = fields.Date('Batch Date', required=True, default=lambda self: fields.Date.context_today(self))
-    mrp_workcenter_operation_id = fields.Many2one('mrp.routing.workcenter.operation', string='Operation')
-    workcenter_operation_id_domain = fields.Char(compute='_compute_workcenter_operation_id_domain')
     wo_roll_ids = fields.Many2many('mrp.workorder.roll', string='Batch Rolls')
+    total_weight = fields.Float('Total', compute='_compute_total_weight')
     state = fields.Selection([
         ('draft', 'Draft'),
         ('batch', 'Batch'),
         ('unbuild', 'Unbuild'),
     ], string='State', default='draft')
 
+    def _compute_total_weight(self):
+        for rec in self:
+            if rec.wo_roll_ids:
+                rec.total_weight = sum(rec.wo_roll_ids.mapped('gross_weight'))
+    
     #=== CRUD METHODS ===#
 
     @api.model_create_multi
@@ -35,14 +40,8 @@ class MrpWorkorderBatch(models.Model):
 
         return super().create(vals_list)
     
-    @api.onchange('wo_roll_ids')
-    def _onchange_wo_roll_ids(self):
-        if not self.wo_roll_ids:
-            self.mrp_workcenter_operation_id = False
-    
     def clear_rolls(self):
         self.wo_roll_ids = [Command.clear()]
-        self.mrp_workcenter_operation_id = False
     
     def create_batch(self):
         if any(roll.in_batch for roll in self.wo_roll_ids):
@@ -64,13 +63,3 @@ class MrpWorkorderBatch(models.Model):
         for roll in self.wo_roll_ids:
             roll.in_batch = True
         self.state = 'batch'
-
-    @api.depends('wo_roll_ids')
-    def _compute_workcenter_operation_id_domain(self):
-        operations = self.env['mrp.routing.workcenter.operation']
-        for roll in self.wo_roll_ids:
-            if not operations:
-                operations += roll.workorder_id.production_id.workorder_ids.mrwo_id
-            else:
-                operations &= roll.workorder_id.production_id.workorder_ids.mrwo_id
-        self.workcenter_operation_id_domain = str([('id','in',operations.ids),('is_weaving','=',False)])

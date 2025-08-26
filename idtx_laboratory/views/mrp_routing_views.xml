@@ -12,7 +12,7 @@
                             <group>
                                 <field name="name"/>
                                 <field name="workcenter_id"/>
-                                <field name="is_weaving"/>
+                                <field name="operation_type"/>
                             </group>
                             <group>
                                 <field name="currency_id" groups="idtx_laboratory.group_module_product_development_manager"/>
@@ -78,6 +78,9 @@
             <field name="model">mrp.workcenter</field>
             <field name="inherit_id" ref="mrp.mrp_workcenter_view"/>
             <field name="arch" type="xml">
+                <xpath expr="//field[@name='name']" position="after">
+                    <field name="operation_type"/>
+                </xpath>
                 <xpath expr="//button[@name='action_show_operations']" position="after">
                     <button type="object" name="action_show_workcenter_operations" invisible="not has_routing_lines" context="{'default_workcenter_id': id}" class="oe_stat_button" icon="fa-cog">
                         <div class="o_stat_info">

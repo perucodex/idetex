@@ -41,4 +41,12 @@
         <field name="company_id" eval="False"/>
     </record>
 
+    <record id="seq_mrp_workorder_roll" model="ir.sequence">
+        <field name="name">Roll</field>
+        <field name="code">mrp.workorder.roll</field>
+        <field name="prefix">%(y)s%(month)s</field>
+        <field name="padding">6</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
 </odoo>

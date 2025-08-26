@@ -7,7 +7,7 @@ patch(MrpDisplayAction.prototype, {
     get fieldsStructure() {
         let result = super.fieldsStructure;
         result["mrp.workorder"].push('progress');
-        result["mrp.workorder"].push('weaving_wo');
+        result["mrp.workorder"].push('operation_type');
         result["mrp.workorder"].push('weave_type');
         result["mrp.workorder"].push('employee_id');
         result["mrp.workorder"].push('equipment_ids');

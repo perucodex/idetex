@@ -7,7 +7,7 @@ class MrpWorkorderRoll(models.Model):
 
     workorder_id = fields.Many2one('mrp.workorder', string='Workorder')
     sequence = fields.Integer('Sequence')
-    name = fields.Char('Number', compute='_compute_roll_name', store=True)
+    name = fields.Char('Number') #, compute='_compute_roll_name', store=True)
     uom_id = fields.Many2one(related='workorder_id.product_id.product_tmpl_id.uom_id')
     technical_id = fields.Many2one(related='workorder_id.product_id.product_tmpl_id.technical_sheet_id')
     size_id = fields.Many2one('technical.size.line', string='size')
@@ -20,11 +20,19 @@ class MrpWorkorderRoll(models.Model):
     equipment_id = fields.Many2one('maintenance.equipment', string='Equipment')
     employee_id = fields.Many2one('hr.employee', string='Employee')
     
-    @api.depends('equipment_id','employee_id','sequence')
-    def _compute_roll_name(self):
-        for rec in self:
-            rec.name = str(rec.equipment_id.id).zfill(3) + str(rec.employee_id.id).zfill(3) +  str(rec.sequence + 1).zfill(3)
+    # @api.depends('equipment_id','employee_id','sequence')
+    # def _compute_roll_name(self):
+    #     for rec in self:
+    #         rec.name = str(rec.equipment_id.id).zfill(3) + str(rec.employee_id.id).zfill(3) +  str(rec.sequence + 1).zfill(3)
 
+    #=== CRUD METHODS ===#
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            vals['name'] = self.env['ir.sequence'].with_company(vals.get('company_id')).next_by_code('mrp.workorder.roll')
+        return super().create(vals_list)
+    
     def unlink(self):
         roll_names = ''
         for rec in self:

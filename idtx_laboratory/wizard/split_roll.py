@@ -16,10 +16,10 @@ class SplitRoll(models.TransientModel):
         roll = self.env['mrp.workorder.roll'].browse(self.env.context.get('active_id'))
         if roll.weave_type == 'rect':
             res['old_quantity'] = roll.quantity
-            res['new_quantity'] = roll.quantity / 2
+            res['new_quantity'] = round(roll.quantity / 2, 2)
         else:
             res['old_weight'] = roll.gross_weight
-            res['new_weight'] = roll.gross_weight / 2
+            res['new_weight'] = round(roll.gross_weight / 2, 2)
         return res
 
     def split_roll(self):
@@ -41,9 +41,11 @@ class SplitRoll(models.TransientModel):
             new_quantity = round(roll.gross_quantity - self.new_quantity, 2)
             roll.copy({
                 'name': f'{prefix}-{str(next_number).zfill(3)}',
-                'quantity': self.new_quantity,
+                'quantity': new_quantity,
+                'equipment_id': roll.equipment_id.id,
+                'employee_id': roll.employee_id.id,
             })
-            roll.quantity = new_quantity
+            roll.quantity = self.new_quantity
         else:
             if self.old_weight <= self.new_weight:
                 raise UserError(_('New weight can\'t be greather than gross weight.'))
@@ -61,8 +63,10 @@ class SplitRoll(models.TransientModel):
             new_weight = round(roll.gross_weight - self.new_weight, 2)
             roll.copy({
                 'name': f'{prefix}-{str(next_number).zfill(3)}',
-                'net_weight': self.new_weight,
-                'gross_weight': self.new_weight,
+                'net_weight': new_weight,
+                'gross_weight': new_weight,
+                'equipment_id': roll.equipment_id.id,
+                'employee_id': roll.employee_id.id,
             })
-            roll.net_weight = new_weight
-            roll.gross_weight = new_weight
+            roll.net_weight = self.new_weight
+            roll.gross_weight = self.new_weight
