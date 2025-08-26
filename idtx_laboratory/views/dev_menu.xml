@@ -22,9 +22,8 @@
                 </menuitem>
                 <menuitem id="dev_settings_menu" name="Settings" sequence="200">
                     <!-- <menuitem id="menu_settings_config" name="Settings" action="action_idtx_product_development_config" groups="base.group_system" sequence="0"/> -->
-                    <menuitem id="dev_mrp_routing_operation_action_menu" name="Workcenter Operations" action="mrp_routing_operation_action" sequence="10"/>
-                    <menuitem id="configurate_svg_example_menu" name="Models SVG Configurate" action="configurate_svg_example_action" sequence="20"/>
-                    <menuitem id="dev_product_code_menu" name="Product Code" sequence="30">
+                    <menuitem id="configurate_svg_example_menu" name="Models SVG Configurate" action="configurate_svg_example_action" sequence="10"/>
+                    <menuitem id="dev_product_code_menu" name="Product Code" sequence="20">
                         <menuitem id="dev_product_appearance_action_menu" name="Appearance" action="product_appearance_action" sequence="10"/>
                         <menuitem id="dev_product_family_action_menu" name="Family" action="product_family_action" sequence="20"/>
                         <menuitem id="dev_product_fiber_action_menu" name="Fiber" action="product_fiber_action" sequence="30"/>
@@ -37,8 +36,8 @@
         <!-- Menu en modulo de producción -->
         <menuitem id="wo_batch_menu" name="Workorder Batch" action="wo_batch_action" sequence="900" parent="mrp.menu_mrp_manufacturing"/>
         <menuitem id="wo_rolls_menu" name="Workorder Rolls" action="wo_rolls_action" sequence="910" parent="mrp.menu_mrp_manufacturing"/>
+        <menuitem id="dev_mrp_routing_operation_action_menu" name="Workcenter Operations" action="mrp_routing_operation_action" sequence="900" parent="mrp.menu_mrp_configuration"/>
 
     </data>
     
-
 </odoo>

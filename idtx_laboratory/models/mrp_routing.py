@@ -38,8 +38,8 @@ class MrpRoutingWorkcenterOperation(models.Model):
         required=True
     )
     type_prices = fields.Selection([
-        ('pp', 'Por Proceso'),
-        ('col', 'Por Color'),
+        ('pp', 'By Process'),
+        ('col', 'By Color'),
     ], string='Type Prices', default = 'pp')   
     product_color_price_ids = fields.One2many('product.color.price', 'mrwo_id', string='product_color_price')
     parameter_ids = fields.One2many('operation.parameter', 'operation_id', string='Parameters')

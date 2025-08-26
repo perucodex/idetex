@@ -22,11 +22,10 @@ colors, technical sheets, coding, and customer quotes based on fibers, inputs, a
     # any module necessary for this one to work correctly
     'depends': ['base',
                 'product',
-                'sale',
                 'sale_stock',
-                'mrp',
-                'maintenance',
+                'sale_management',
                 'mrp_workorder',
+                'maintenance',
                 ],
 
     # always loaded
@@ -35,9 +34,9 @@ colors, technical sheets, coding, and customer quotes based on fibers, inputs, a
         'security/ir.model.access.csv',
         # Orden especial para nuevos registros
         'data/product.category.csv',
-        'data/chemical_products.xml',
-        'data/base_process.xml',
-        'data/base_process_line.xml',
+        # 'data/chemical_products.xml',
+        # 'data/base_process.xml',
+        # 'data/base_process_line.xml',
         # Fin de orden especial
         'data/color.fiber.csv',
         'data/color.intensity.csv',

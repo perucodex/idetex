@@ -54,8 +54,24 @@
                     <field name="workcenter_id"/>
                     <field name="currency_id"/>
                     <field name="unit_price"/>
-                    <field name="company_id" groups="base.group_multi_company" optional="hide" readonly="1"/>
+                    <field name="company_id" groups="base.group_multi_company" optional="hide"/>
                 </list>
+            </field>
+        </record>
+
+        <record id="mrp_routing_workcenter_operation_view_search" model="ir.ui.view">
+            <field name="name">mrp.routing.workcenter.operation.view.search</field>
+            <field name="model">mrp.routing.workcenter.operation</field>
+            <field name="arch" type="xml">
+                <search string="">
+                    <field name="name"/>
+                    <field name="workcenter_id"/>
+                    <field name="currency_id"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Workcenter" name="group_by_workcenter" domain="[]" context="{'group_by': 'workcenter_id'}"/>
+                    </group>
+                </search>
             </field>
         </record>
 

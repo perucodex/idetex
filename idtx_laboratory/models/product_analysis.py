@@ -11,10 +11,8 @@ class ProductAnalysis(models.Model):
     analysis_date = fields.Date('Analysis Date', required=True, default=lambda self: fields.Date.context_today(self))
     partner_id = fields.Many2one('res.partner', string='Customer', ondelete='restrict')
     product_description = fields.Char('Product Description')
-    # equipment_id = fields.Many2one('maintenance.equipment.type', string='Equipment', ondelete='restrict')
     gauge_id = fields.Many2one('product.gauge', string='Gauge')
     needles = fields.Integer('Needles')
-    # gauge_id = fields.Many2one(related='gauge_id.gauge_id')
     diameter = fields.Integer('Diameter')
     feeders = fields.Integer('Feeders')
     column_qty = fields.Integer('Column Qty')
@@ -196,11 +194,11 @@ class AnalysisFiber(models.Model):
     analysis_id = fields.Many2one('product.analysis', string='Product Analysis', ondelete='restrict')
     sequence = fields.Integer('Sequence')
     system_type = fields.Selection([
-        ('ne', 'Número inglés'),
+        ('ne', 'English number'),
         ('dn', 'Denier'),
         ('tex', 'Tex'),
         ('dtex', 'Decitex'),
-        ('nm', 'Número métrico'),
+        ('nm', 'Metric number'),
     ], string='System Type', default='ne')
     length = fields.Float('Mesh Length', compute='_compute_length_average')
     weight = fields.Float('Weight', digits=(12,6))

@@ -15,7 +15,7 @@ class MaintenanceEquipment(models.Model):
         ('con', 'Connected'),
         ('not', 'Not connected'),
     ], string='State', default='not')
-    impresora_dashboard_dummy = fields.Char(string="Dashboard Impresora", compute="_compute_impresora_dashboard")
+    impresora_dashboard_dummy = fields.Char(string="Printer Dashboard", compute="_compute_impresora_dashboard")
 
     def _compute_impresora_dashboard(self):
         for rec in self:

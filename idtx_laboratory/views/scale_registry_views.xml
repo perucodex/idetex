@@ -11,7 +11,7 @@
     </record>
 
     <record id="action_scale_registry" model="ir.actions.act_window">
-        <field name="name">Balanza</field>
+        <field name="name">Scale</field>
         <field name="res_model">scale.registry</field>
         <field name="view_mode">list,form</field>
     </record>

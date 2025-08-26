@@ -12,7 +12,7 @@ class BaseProcess(models.Model):
     program = fields.Char('Program')
     nc = fields.Integer('Nc')
     lin_maq = fields.Integer('Lin. Maq.')
-    codmaq = fields.Char('Código de Máquina')
+    codmaq = fields.Char('Machine Code')
     base_process_line_ids = fields.One2many('base.process.line', 'base_process_id', string='Color Process Line')
 
 class BaseProcessLine(models.Model):

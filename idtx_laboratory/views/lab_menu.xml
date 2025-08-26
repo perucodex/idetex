@@ -28,7 +28,7 @@
                         <menuitem id="lab_color_intensity_menu" name="Color Intensity" action="color_intensity_action" sequence="30"/>
                         <menuitem id="lab_color_fiber_menu" name="Color Fiber" action="color_fiber_action" sequence="40"/>
                     </menuitem>
-                    <menuitem id="menu_scale_registry" name="Balanzas" action="action_scale_registry" sequence="40"/>
+                    <menuitem id="menu_scale_registry" name="Scales" action="action_scale_registry" sequence="40"/>
                 </menuitem>
         </menuitem>
 

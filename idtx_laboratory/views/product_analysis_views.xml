@@ -42,20 +42,6 @@
                                 <field name="needles"/>
                                 <field name="diameter"/>
                                 <field name="feeders"/>
-                                <!-- <field name="equipment_id"/> -->
-                                <!-- <div class="pt-3 ps-4" style="border: 1px solid #ccc;">
-                                    <group>
-                                        <group>
-                                            <field name="gauge_id" options="{'no_open': True}"/>
-                                            <field name="needles" force_save="1"/>
-                                            <field name="gauge_id" options="{'no_open': True}"/>
-                                        </group>
-                                        <group>
-                                            <field name="diameter" force_save="1"/>
-                                            <field name="feeders" force_save="1"/>
-                                        </group>
-                                    </group>
-                                </div> -->
                             </group>
                             <group>
                                 <field name="density"/>
@@ -113,27 +99,6 @@
                                     </group>
                                 </group>
                             </page>
-                            <!-- <page name="technical_page" string="Technical Data" invisible="state == 'test'">
-                                <group>
-                                    <group>
-                                        <field name="program"/>
-                                        <field name="fabric_composition"/>
-                                        <field name="atx"/>
-                                        <field name="density"/>
-                                        <field name="width"/>
-                                        <field name="gauge"/>
-                                    </group>
-                                    <group>
-                                        <field name="first_wash_shrinkage"/>
-                                        <field name="first_wash_twist"/>
-                                        <field name="yield_meter"/>
-                                        <field name="scrap" widget="percentage"/>
-                                        <field name="weave_type"/>
-                                        <field name="batch"/>
-                                    </group>
-                                    <field name="memo" nolabel="0"/>
-                                </group>
-                            </page> -->
                         </notebook>
                     </sheet>
                     <chatter/>
@@ -148,12 +113,36 @@
                 <list string="Product Analysis">
                     <field name="name"/>
                     <field name="analysis_date"/>
+                    <field name="partner_id"/>
+                    <field name="product_description"/>
                     <field name="gauge_id"/>
-                    <field name="needles"/>
-                    <field name="column_qty"/>
                     <field name="width"/>
-                    <field name="company_id" groups="base.group_multi_company" optional="hide" readonly="1"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="state" widget="badge" decoration-info="state == 'done'" decoration-success="state == 'tech'"/>
                 </list>
+            </field>
+        </record>
+
+        <record id="product_analysis_view_search" model="ir.ui.view">
+            <field name="name">product.analysis.view.search</field>
+            <field name="model">product.analysis</field>
+            <field name="arch" type="xml">
+                <search string="Search Product Analysis">
+                    <field name="name"/>
+                    <field name="analysis_date"/>
+                    <field name="partner_id"/>
+                    <field name="product_description"/>
+                    <field name="gauge_id"/>
+                    <filter name="test" string="Test" domain="[('state','=','test')]"/>
+                    <filter name="done" string="Done" domain="[('state','=','done')]"/>
+                    <filter name="tech" string="Technical Sheet" domain="[('state','=','tech')]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Analysis Date" name="group_by_analysis_date" domain="[]" context="{'group_by': 'analysis_date'}"/>
+                        <filter string="Customer" name="group_by_partner" domain="[]" context="{'group_by': 'partner_id'}"/>
+                        <filter string="Product Description" name="group_by_product_description" domain="[]" context="{'group_by': 'product_description'}"/>
+                        <filter string="Gauge" name="group_by_gauge_id" domain="[]" context="{'group_by': 'gauge_id'}"/>
+                    </group>
+                </search>
             </field>
         </record>
 
@@ -172,7 +161,6 @@
                             </group>
                             <group>
                                 <field name="thread_title"/>
-                                <!-- <field name="comercial_thread_title"/> -->
                                 <field name="product_template_id" options="{'no_create': True, 'no_open': True}"/>
                             </group>
                         </group>

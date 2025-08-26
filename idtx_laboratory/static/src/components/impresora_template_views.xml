@@ -9,16 +9,16 @@
                 <tr>
                     <td>
                         <div class="mb-2">
-                            <p><b>Nombre:</b> <t t-esc="d.job_name || ''"/></p>
-                            <p><b>Estado:</b> <t t-esc="d.job_status || ''"/></p>
-                            <p><b>Metros impresos:</b> <t t-esc="d.printed_length || ''"/></p>
+                            <p><b>Name:</b> <t t-esc="d.job_name || ''"/></p>
+                            <p><b>State:</b> <t t-esc="d.job_status || ''"/></p>
+                            <p><b>Printed meters:</b> <t t-esc="d.printed_length || ''"/></p>
                         </div>
                     </td>
                     <td>
                         <div class="mb-2">
-                            <p><b>Velocidad:</b> <t t-esc="d.average_speed || ''"/></p>
-                            <p><b>Requerido:</b> <t t-esc="d.requested_length || ''"/></p>
-                            <p><b>Tipo de Impresión:</b> <t t-esc="d.print_mode || ''"/></p>
+                            <p><b>Speed:</b> <t t-esc="d.average_speed || ''"/></p>
+                            <p><b>Required:</b> <t t-esc="d.requested_length || ''"/></p>
+                            <p><b>Printing Type:</b> <t t-esc="d.print_mode || ''"/></p>
                         </div>
                     </td>
                 </tr>
@@ -34,15 +34,15 @@
 
 
             <!-- Consumo de tintas -->
-            <h3 class="mt-3">🖌️ Consumo de Tintas</h3>
+            <h3 class="mt-3">🖌️ Ink Consumption</h3>
             <table class="table table-sm table-striped" t-if="d.inks">
              <!-- t-if="d.inks or d.inks.length > 0"> -->
                 <thead>
                     <tr>
                         <th>Color</th>
-                        <th>Tipo</th>
-                        <th class="text-end">Para Imprimir (ml)</th>
-                        <th class="text-end">Para Limpieza (ml)</th>
+                        <th>Type</th>
+                        <th class="text-end">To Print (ml)</th>
+                        <th class="text-end">To Clean (ml)</th>
                         <th class="text-end">Total (ml)</th>
                     </tr>
                 </thead>

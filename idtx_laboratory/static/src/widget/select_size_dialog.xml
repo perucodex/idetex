@@ -20,7 +20,7 @@
             </div>
             <div class="o_select_size_dialog w-100">
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Seleccione Talla:</label>
+                    <label class="form-label fw-bold">Select Size:</label>
                     <select class="form-select" t-model="state.selectedSize">
                         <option value="" selected="selected">
                             <t t-esc="'Select a size...'"/>

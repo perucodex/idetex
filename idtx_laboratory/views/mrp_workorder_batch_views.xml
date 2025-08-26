@@ -73,7 +73,7 @@
                 <field name="batch_date"/>
                 <field name="workorder_id" readonly="1"/>
                 <field name="mrwo_id"/>
-                <field name="state" widget="badge" decoration-info="(state == 'batch')" decoration-danger="(state == 'unbuild')"/>
+                <field name="state" widget="badge" decoration-info="state == 'batch'" decoration-danger="state == 'unbuild'"/>
             </list>
         </field>
     </record>

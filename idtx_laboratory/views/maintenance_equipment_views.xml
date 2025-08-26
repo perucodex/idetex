@@ -20,8 +20,8 @@
                             <group>
                                 <!-- <field name="password" password="True" readonly="state == 'con'"/> -->
                                 <field name="state" invisible="1"/>
-                                <button name="connect" string="Conectar" type="object" class="btn-primary" invisible="state == 'con'"/>
-                                <button name="disconnect" string="Desconectar" type="object" class="btn-primary" invisible="state == 'not'"/>
+                                <button name="connect" string="Connect" type="object" class="btn-primary" invisible="state == 'con'"/>
+                                <button name="disconnect" string="Disconnect" type="object" class="btn-primary" invisible="state == 'not'"/>
                             </group>
                         </group>
                         <group colspan="2">
