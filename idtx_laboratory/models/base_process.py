@@ -20,6 +20,7 @@ class BaseProcessLine(models.Model):
     _description = 'Base Process'
 
     base_process_id = fields.Many2one('base.process', string='Color Recipe Process Template')
+    name = fields.Char('Name')
     product_id = fields.Many2one('product.template', string='Product')
     factor = fields.Float('Factor', digits=(12,5))
     uom = fields.Selection([
