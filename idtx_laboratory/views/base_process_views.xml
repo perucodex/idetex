@@ -69,6 +69,22 @@
             </field>
         </record>
 
+        <record id="base_process_line_search_view" model="ir.ui.view">
+            <field name="name">base.process.line.search</field>
+            <field name="model">base.process.line</field>
+            <field name="arch" type="xml">
+                <search string="Search Base Process Line">
+                    <field name="base_process_id"/>
+                    <field name="product_id"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Base Process" name="group_by_process" domain="[]" context="{'group_by': 'base_process_id'}"/>
+                        <filter string="Product" name="group_by_product" domain="[]" context="{'group_by': 'product_id'}"/>
+                        <filter string="Factor" name="group_by_factor" domain="[]" context="{'group_by': 'factor'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
         <record id="base_process_action" model="ir.actions.act_window">
             <field name="name">Base Process</field>
             <field name="res_model">base.process</field>
@@ -81,6 +97,7 @@
             <field name="res_model">base.process.line</field>
             <field name="view_mode">list</field>
             <field name="view_id" ref="base_process_line_tree_view"/>
+            <field name="context">{'search_default_group_by_process': 1}</field>
         </record>
 
 </odoo>
