@@ -9,6 +9,9 @@ class SaleOrderLine(models.Model):
     weaving_loss = fields.Float('Weaving Loss')
     production_loss = fields.Float('Production Loss')
     is_weaving = fields.Boolean(related='product_template_id.is_weaving', store=True)
+    technical_sheet_id = fields.Many2one(related='product_template_id.technical_sheet_id', store=True)
+    is_size = fields.Boolean('Is size?', compute='_compute_is_size', store=True)
+    size_ids = fields.Many2many('technical.size.line', string='Size')
     labdev_color_name = fields.Char('Lab Dev Color Name')
     labdev_color_id = fields.Many2one('lab.dev.line', string='Lab Dev Color ID')
     lab_dev_id = fields.Many2one(related='order_id.lab_dev_id')
@@ -17,7 +20,12 @@ class SaleOrderLine(models.Model):
     def _onchange_labdev_color_id(self):
         self.labdev_color_name = self.labdev_color_id.color_name
 
-    @api.depends('product_id', 'product_uom', 'product_uom_qty','product_color_id', 'weaving_loss', 'production_loss')
+    @api.depends('product_id','product_template_id')
+    def _compute_is_size(self):
+        for rec in self:
+            rec.is_size = True if rec.technical_sheet_id.weave_type == 'rect' else False
+
+    @api.depends('product_id', 'product_template_id', 'product_uom', 'product_uom_qty','product_color_id', 'weaving_loss', 'production_loss')
     def _compute_price_unit(self):
         res = super()._compute_price_unit()
         for line in self:

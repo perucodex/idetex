@@ -1891,7 +1891,7 @@ msgstr "Porcentaje"
 #: model:ir.model.fields,field_description:idtx_laboratory.field_technical_size_line__plies
 #: model_terms:ir.ui.view,arch_db:idtx_laboratory.report_technical_sheet_document
 msgid "Plies"
-msgstr ""
+msgstr "Cabos"
 
 #. module: idtx_laboratory
 #: model:ir.model.fields.selection,name:idtx_laboratory.selection__mrp_routing_workcenter_operation__type_prices__col

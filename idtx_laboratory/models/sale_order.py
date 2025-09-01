@@ -4,7 +4,7 @@ class SaleOrder(models.Model):
     _inherit = 'sale.order'
     
     is_order = fields.Boolean('is_order', default=False)
-    lab_dev_id = fields.Many2one('lab.dev', string='Lab Dev', copy=False)
+    lab_dev_id = fields.Many2one('lab.dev', string='Lab Dev')
     weaving_warning = fields.Text('weaving_warning', compute='_compute_weaving_warning')
     sale_order_id = fields.Many2one('sale.order', string='Sale Order')
     quotation_id = fields.Many2one('sale.order', string='Quotation')

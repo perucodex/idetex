@@ -6,6 +6,7 @@ import { MrpDisplayAction } from "@mrp_workorder/mrp_display/mrp_display_action"
 patch(MrpDisplayAction.prototype, {
     get fieldsStructure() {
         let result = super.fieldsStructure;
+        result["mrp.workorder"].push('state');
         result["mrp.workorder"].push('progress');
         result["mrp.workorder"].push('operation_type');
         result["mrp.workorder"].push('weave_type');

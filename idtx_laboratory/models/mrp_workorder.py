@@ -43,44 +43,44 @@ class MrpWorkorder(models.Model):
                 rec.roll_weight = 0
                 rec.progress = 0
 
-    def action_read_scale(self, id, employee_id, equipment_id):
+    def action_read_scale(self, id, employee_id, equipment_id, manual_weight=None):
         '''Leer la balanza desde el endpoint Flask'''
         '''Los parametros vienen de JavaScript'''
-        client_ip = self.env['scale.registry'].browse(id).ip
         try:
-            # Cambia la IP o hostname al de la PC donde corre Flask
-            url = f'http://{client_ip}:5001/peso'
-            resp = requests.get(url, timeout=3)
-            resp.raise_for_status()
-            data = resp.json()
-
-            if data.get('ok') and data.get('peso') is not None:
-                peso = 27.77#data['peso']
-                if peso:
-                    self.roll_ids.create({
-                        'sequence': len(self.roll_ids),
-                        'workorder_id': self.id,
-                        'gross_weight': peso,
-                        'net_weight': peso,
-                        'employee_id': int(employee_id),
-                        'equipment_id': int(equipment_id),
-                    })
-                    self.qty_producing = sum(self.roll_ids.mapped('gross_weight'))
-                    return {
-                        'status': 'success',
-                        'peso': peso,
-                        'message': f'Peso agregado: {peso} kg orden de fabricación {self.production_id.name}'
-                    }
-                else:
-                    self.qty_producing = sum(self.roll_ids.mapped('gross_weight'))
-                    return {
-                        'status': 'danger',
-                        'message': f'No hay ningún peso en la balanza orden de fabricación {self.production_id.name}'
-                    }
+            if round(manual_weight,2):
+                peso = float(round(manual_weight,2))
             else:
-                return {'status': 'danger', 'message': 'No se obtuvo un peso válido de la balanza'}
+            # Cambia la IP o hostname al de la PC donde corre Flask
+                client_ip = self.env['scale.registry'].browse(id).ip
+                url = f'http://{client_ip}:5001/peso'
+                resp = requests.get(url, timeout=3)
+                resp.raise_for_status()
+                data = resp.json()
+
+                if data.get('ok') and data.get('peso') is not None:
+                    peso = 27.77#data['peso']
+                else:
+                    return {'status': 'danger', 'message': _('No communication with the scale')}
+            if peso:
+                self.roll_ids.create({
+                    'sequence': len(self.roll_ids),
+                    'workorder_id': self.id,
+                    'gross_weight': peso,
+                    'net_weight': peso,
+                    'employee_id': int(employee_id),
+                    'equipment_id': int(equipment_id),
+                })
+                self.qty_producing = sum(self.roll_ids.mapped('gross_weight'))
+                return {
+                    'status': 'success',
+                    'peso': peso,
+                    'message': _(f'Added weight: {peso} kg production order {self.production_id.name}'),
+                }
+            else:
+                self.qty_producing = sum(self.roll_ids.mapped('gross_weight'))
+                return {'status': 'danger', 'message': _('No weight was provided')}
         except Exception as e:
-            return {'status': 'danger', 'message': f'Error al consultar balanza: {str(e)}'}
+            return {'status': 'danger', 'message': _(f'Error: {str(e)}')}
         
     def get_available_sizes(self):
         '''Devuelve las tallas (size_chart_ids) del producto relacionado'''

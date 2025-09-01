@@ -4,7 +4,7 @@
         <xpath expr="//li[@t-if='this.displayRegisterProduction']" position="after">
             <li class="o_mrp_record_line list-group-item">
                 <t t-set="rawProgress" t-value="props.record.data.progress"/>
-                <t t-set="pct" t-value="rawProgress > 1 ? rawProgress : Math.round(rawProgress * 100)"/>
+                <t t-set="pct" t-value="rawProgress > 1 ? rawProgress : Math.round(rawProgress)"/>
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="fw-bold">Progress</span>
                     <span t-esc="pct + '%'"/>
@@ -32,27 +32,27 @@
     </t>
     <t t-inherit="mrp_workorder.MrpDisplayMenuDialog" t-inherit-mode="extension">
         <xpath expr="//div[hasclass('button_list')]/button[@name='displayInstructionsMenu']" position="after">
-            <button t-if="props.record.resModel == 'mrp.workorder' and props.record.data.operation_type == 'weaving' and props.record.data.weave_type != 'rect'"
+            <button t-if="props.record.resModel == 'mrp.workorder' and props.record.data.state == 'progress' and props.record.data.operation_type == 'weaving' and props.record.data.weave_type !== 'rect'"
                     class="btn btn-success d-flex justify-content-between align-items-center p-3 fs-3"
                     t-on-click="() => this.readScaleWithClientIP(props.record.resId)">
                 Add Roll <i class="oi oi-chevron-right"/>
             </button>
-            <button t-if="props.record.resModel == 'mrp.workorder' and props.record.data.operation_type == 'weaving' and props.record.data.weave_type == 'rect'"
+            <button t-if="props.record.resModel == 'mrp.workorder' and props.record.data.state == 'progress' and props.record.data.operation_type == 'weaving' and props.record.data.weave_type === 'rect'"
                     class="btn btn-success d-flex justify-content-between align-items-center p-3 fs-3"
                     t-on-click="() => this.createSizeRecord(props.record.resId)">
                 Add Size <i class="oi oi-chevron-right"/>
             </button>
-            <button t-if="props.record.resModel == 'mrp.workorder' and props.record.data.operation_type == 'dyeing'"
+            <button t-if="props.record.resModel == 'mrp.workorder' and props.record.data.state == 'progress' and props.record.data.operation_type == 'dyeing'"
                     class="btn btn-success d-flex justify-content-between align-items-center p-3 fs-3"
                     t-on-click="() => this.createSizeRecord(props.record.resId)">
                 Dye Fabric <i class="oi oi-chevron-right"/>
             </button>
-            <button t-if="props.record.resModel == 'mrp.workorder' and props.record.data.operation_type == 'printing'"
+            <button t-if="props.record.resModel == 'mrp.workorder' and props.record.data.state == 'progress' and props.record.data.operation_type == 'printing'"
                     class="btn btn-success d-flex justify-content-between align-items-center p-3 fs-3"
                     t-on-click="() => this.createSizeRecord(props.record.resId)">
                 Print Fabric <i class="oi oi-chevron-right"/>
             </button>
-            <button t-if="props.record.resModel == 'mrp.workorder' and props.record.data.operation_type == 'finishing'"
+            <button t-if="props.record.resModel == 'mrp.workorder' and props.record.data.state == 'progress' and props.record.data.operation_type == 'finishing'"
                     class="btn btn-success d-flex justify-content-between align-items-center p-3 fs-3"
                     t-on-click="() => this.createSizeRecord(props.record.resId)">
                 Finish Fabric <i class="oi oi-chevron-right"/>

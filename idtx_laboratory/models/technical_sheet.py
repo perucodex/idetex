@@ -89,7 +89,7 @@ class TechnicalSheet(models.Model):
                 'name': route.operation_id.name,
                 'operation_id': route.operation_id.id,
                 'workcenter_id': route.workcenter_id.id,
-            }) for route in self.analysis_id.routing_ids.sorted(key=lambda o: o.sequence)],
+            }) for route in self.route_line_ids.sorted(key=lambda o: o.sequence)],
         })
         self.state = 'prod'
 

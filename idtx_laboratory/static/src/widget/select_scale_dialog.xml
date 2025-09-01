@@ -21,14 +21,39 @@
             <div class="o_select_scale_dialog w-100">
                 <t t-foreach="scales" t-as="scale" t-key="scale.id">
                     <div class="form-check py-2 fs-3 pointer-cursor" t-on-click="() => this.selectScale(scale)">
-                        <input t-att-type="props.radioMode ? 'radio' : 'checkbox'" t-att-name="scale.name" class="form-check-input" t-att-checked="active"/>
+                        <input t-att-type="props.radioMode ? 'radio' : 'checkbox'" t-att-name="scale.equipment_name" class="form-check-input" t-att-checked="state.selectedMode === 'scale' and state.selectedScaleId === scale.id"/>
                         <label class="form-check-label">
-                            <t t-out="scale.name"/>
+                            <t t-out="scale.equipment_name"/>
                         </label>
                     </div>
                 </t>
+
+                <!-- Radio: Manual -->
+                <div class="form-check py-2 fs-3 pointer-cursor" t-on-click="() => this.selectManual()">
+                <input type="radio" name="scaleChoice" class="form-check-input"
+                        t-att-checked="state.selectedMode === 'manual'"/>
+                <label class="form-check-label">Manual</label>
+                </div>
+
+                <!-- Input de peso manual -->
+                <div t-if="state.selectedMode === 'manual'" class="mt-3">
+                <input type="text" class="form-control fs-4"
+                        placeholder="Enter weight (kg)"
+                        inputmode="decimal"
+                        pattern="^[0-9]*\.?[0-9]+$"
+                        t-on-input="onManualInput"
+                        t-on-keydown="onInputKeyDown"
+                        t-att-value="state.manualWeight"
+                        t-ref="manualInput"/>
+                </div>
+
                 <t t-set-slot="footer">
-                    <button class="btn btn-primary" t-att-class="{'disabled': props.radioMode &amp;&amp; !state.activeScales.length}" t-on-click="confirm">Confirm</button>
+                    <button class="btn btn-primary"
+                            t-att-disabled="!isConfirmEnabled"
+                            t-on-click="confirm">
+                        Confirm
+                    </button>
+                    <!-- <button class="btn btn-primary" t-att-class="{'disabled': props.radioMode &amp;&amp; !state.activeScales.length}" t-on-click="confirm">Confirm</button> -->
                     <a t-if="!isDisplayStandalone &amp;&amp; !props.radioMode" class="btn btn-secondary" t-attf-href="/scoped_app?app_id=mrp_shop_floor&amp;path=scoped_app/shop-floor&amp;app_name={{appName}}" target="_blank">Install App</a>
                 </t>
             </div>

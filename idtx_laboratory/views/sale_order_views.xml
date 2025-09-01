@@ -32,9 +32,11 @@
                 <field name="lab_dev_id"/> -->
             </xpath>
             <xpath expr="//notebook/page/field[@name='order_line']/list/field[@name='product_template_id']" position="after">
+                <field name="technical_sheet_id" column_invisible="1"/>
                 <field name="product_color_id" options="{'no_create': True, 'no_open': True}" required="is_weaving" readonly="not is_weaving" column_invisible="parent.is_order"/>
-                <field name="labdev_color_name" column_invisible="not parent.is_order or parent.lab_dev_id" required="parent.is_order"/>
-                <field name="labdev_color_id" column_invisible="not parent.is_order or not parent.lab_dev_id" required="parent.is_order" domain="[('lab_dev_id', '=', parent.lab_dev_id)]"/>
+                <field name="size_ids" options="{'no_create': True, 'no_open': True}" required="is_size" readonly="not is_size" column_invisible="not parent.is_order" domain="[('technical_id','=',technical_sheet_id)]" widget="many2many_tags"/>
+                <field name="labdev_color_name" column_invisible="not parent.is_order or parent.lab_dev_id" required="parent.is_order and not parent.lab_dev_id"/>
+                <field name="labdev_color_id" options="{'no_create': True, 'no_open': True}" column_invisible="not parent.is_order or not parent.lab_dev_id" required="parent.is_order and parent.lab_dev_id" domain="[('lab_dev_id', '=', parent.lab_dev_id)]"/>
                 <field name="weaving_loss" readonly="not is_weaving" optional="hide" widget="percentage"/>
                 <field name="production_loss" readonly="not is_weaving" optional="hide" widget="percentage"/>
             </xpath>

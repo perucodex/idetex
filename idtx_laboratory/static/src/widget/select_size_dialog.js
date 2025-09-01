@@ -13,6 +13,8 @@ export class SelectSizeDialog extends ConfirmationDialog {
         recordId: { type: Number },
         employees: { type: Array, optional: true },
         equipments: { type: Array, optional: true },
+        employee_ids: { type: Array, optional: true },
+        equipment_ids: { type: Array, optional: true },
         selectedEmployee: { type: [Number, String], optional: true },
         selectedEquipment: { type: [Number, String], optional: true },
     };
@@ -49,12 +51,20 @@ export class SelectSizeDialog extends ConfirmationDialog {
     }
 
     confirm() {
+        if (!this.state.selectedEmployee) {
+            this.notification.add(_t("You must select an employee."), { type: "danger" });
+            return;
+        }
+        if (!this.state.selectedEquipment) {
+            this.notification.add(_t("You must select an equipment."), { type: "danger" });
+            return;
+        }
         if (this.state.selectedSize && this.state.quantity > 0) {
             this.props.confirm({
                 size: this.state.selectedSize,
                 quantity: this.state.quantity,
-                employee_id: this.state.selectedEmployee || false,
-                equipment_id: this.state.selectedEquipment || false,
+                employee_id: this.state.selectedEmployee,
+                equipment_id: this.state.selectedEquipment,
             });
         } else {
             this.notification.add(_t("You must select a size and quantity."), { type: "danger" });

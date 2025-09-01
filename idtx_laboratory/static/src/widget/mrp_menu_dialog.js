@@ -22,6 +22,7 @@ patch(MrpMenuDialog.prototype, {
                 payload.scale_id,
                 payload.employee_id,
                 payload.equipment_id,
+                payload.manual_weight,
             ]);
 
             if (result) {
