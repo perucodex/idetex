@@ -9,6 +9,7 @@ class TechnicalSheet(models.Model):
     technical_date = fields.Date('Technical Date', required=True, default=lambda self: fields.Date.context_today(self))
     analysis_id = fields.Many2one('product.analysis', string='Product Analysis', ondelete='restrict')
     product_code = fields.Char('Product Code', readonly=True, copy=False)
+    partner_id = fields.Many2one('res.partner', string='Customer', ondelete='restrict')
     # Tejido
     program = fields.Char('Program')
     fabric_composition = fields.Char('Fabric Composition')
@@ -20,11 +21,7 @@ class TechnicalSheet(models.Model):
     first_wash_twist = fields.Char('First Wash Twist')
     yield_meter = fields.Float('Yield')
     scrap = fields.Float('Scrap')
-    weave_type = fields.Selection([
-        ('open', 'Open'),
-        ('tubu', 'Tubular'),
-        ('rect', 'Rectilinear'),
-    ], string='Weave Type')
+    weave_type = fields.Selection(related='analysis_id.weave_type', store=True)
     batch = fields.Char('Batch')
     notes = fields.Text('Notes')
     company_id = fields.Many2one(
@@ -43,6 +40,17 @@ class TechnicalSheet(models.Model):
     user_id = fields.Many2one('res.users','Prepared by',default=lambda self: self.env.user)
     size_chart_ids = fields.One2many('technical.size.line', 'technical_id', string='Size Chart')
     route_line_ids = fields.One2many('technical.route.line', 'technical_id', string='Route Line')
+
+    @api.depends('order_line.invoice_lines')
+    def _get_boms(self):
+        # The invoice_ids are obtained thanks to the invoice lines of the SO
+        # lines, and we also search for possible refunds created directly from
+        # existing invoices. This is necessary since such a refund is not
+        # directly linked to the SO.
+        for order in self:
+            invoices = order.order_line.invoice_lines.move_id.filtered(lambda r: r.move_type in ('out_invoice', 'out_refund'))
+            order.invoice_ids = invoices
+            order.invoice_count = len(invoices)
 
     @api.onchange('gauge_id','width','density')
     def _onchange_product_code(self):
@@ -69,38 +77,11 @@ class TechnicalSheet(models.Model):
 
         return super().create(vals_list)
     
-    def action_product(self):
-        uom = self.env.ref('uom.product_uom_kgm') if self.weave_type != 'rect' else self.env.ref('uom.product_uom_unit')
-        self.product_id = self.env['product.template'].create({
-            'name': self.analysis_id.product_description,
-            'is_storable': True,
-            'default_code': self.product_code,
-            'uom_id': uom.id,
-            'uom_po_id': uom.id,
-            'categ_id': self.env.company.weaving_category_ids[0].id if self.env.company.weaving_category_ids else False,
-            'route_ids': [Command.link(self.env.ref('mrp.route_warehouse0_manufacture').id)],
-            'technical_sheet_id': self.id,
-        })
-        self.product_id.bom_ids.create({
-            'product_tmpl_id': self.product_id.id,
-            'product_uom_id': self.product_id.uom_id.id,
-            'bom_line_ids': [Command.create({'product_id': p.id}) for p in self.analysis_id.fiber_ids.product_template_id],
-            'operation_ids': [Command.create({
-                'name': route.operation_id.name,
-                'operation_id': route.operation_id.id,
-                'workcenter_id': route.workcenter_id.id,
-            }) for route in self.route_line_ids.sorted(key=lambda o: o.sequence)],
-        })
-        self.state = 'prod'
-
     def action_done(self):
         self.state = 'done'
 
     def action_return(self):
         self.state = 'done' if self.state == 'prod' else 'test'
-
-    def open_product(self):
-        return self.product_id._get_records_action(name=_("Product"))
 
 class TechnicalSizeLine(models.Model):
     _name = 'technical.size.line'

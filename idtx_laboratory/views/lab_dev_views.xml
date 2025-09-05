@@ -49,8 +49,9 @@
                                     <form>
                                         <group>
                                             <group>
-                                                <field name="state"/> 
-                                                <field name="product_id" readonly="color_recipe_ids"/>  
+                                                <field name="state" readonly="1"/> 
+                                                <field name="available_product_ids" invisible="1"/> 
+                                                <field name="product_id" readonly="color_recipe_ids" domain="[('id', 'in', available_product_ids)]"/>  
                                                 <field name="color_name" readonly="color_recipe_ids"/>
                                                 <field name="color_code" readonly="1" force_save="1"/>
                                             </group>   

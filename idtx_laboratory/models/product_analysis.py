@@ -11,10 +11,17 @@ class ProductAnalysis(models.Model):
     analysis_date = fields.Date('Analysis Date', required=True, default=lambda self: fields.Date.context_today(self))
     partner_id = fields.Many2one('res.partner', string='Customer', ondelete='restrict')
     product_description = fields.Char('Product Description')
+    ficha = fields.Char('Ficha')
+    codpro = fields.Char('CodigoProductoBD')
     gauge_id = fields.Many2one('product.gauge', string='Gauge')
     needles = fields.Integer('Needles')
     diameter = fields.Integer('Diameter')
     feeders = fields.Integer('Feeders')
+    weave_type = fields.Selection([
+        ('open', 'Open'),
+        ('tubu', 'Tubular'),
+        ('rect', 'Rectilinear'),
+    ], string='Weave Type')
     column_qty = fields.Integer('Column Qty')
     width = fields.Float('Analysis Width', compute='_compute_width')
     density = fields.Integer('Analysis Density')
@@ -23,6 +30,7 @@ class ProductAnalysis(models.Model):
     product_fiber_id = fields.Many2one('product.fiber', string='Fiber', ondelete='restrict')
     product_title_id = fields.Many2one('product.title', string='Title', ondelete='restrict')
     product_code = fields.Char('Product Code', readonly=True, copy=False)
+    product_id = fields.Many2one('product.template', string='Product')
     company_id = fields.Many2one(
         'res.company',
         string='Company',
@@ -31,19 +39,26 @@ class ProductAnalysis(models.Model):
         required=True
     )
     notes = fields.Text('Notes')
-    fiber_ids = fields.One2many('analysis.fiber', 'analysis_id', string='Fibers')
+    # fiber_ids = fields.One2many('analysis.fiber', 'analysis_id', string='Fibers')
+    weaving_data_ids = fields.One2many('analysis.weaving.data', 'analysis_id', string='Weaving Data')
     routing_ids = fields.One2many('analysis.routing.line', 'analysis_id', string='Lines')
     user_id = fields.Many2one('res.users','Prepared by',default=lambda self: self.env.user)
     state = fields.Selection([
         ('test', 'Test'),
-        ('done', 'Done'),
-        ('tech', 'Technical'),
+        ('prod', 'Product'),
     ], string='State', default='test')
     ligament_row = fields.Integer("Rows",default=0)
     ligament_column = fields.Integer("Columns",default=0)
     ligament_join_row_column = fields.Char("Union")
     grid_data = fields.Text(string="Data Widget")
-    technical_sheet_id = fields.Many2one('technical.sheet', string='Technical Sheet')
+    # technical_sheet_id = fields.Many2one('technical.sheet', string='Technical Sheet')
+    technical_sheet_count = fields.Integer(string="Technical Sheet Count", compute='_get_technical_sheets')
+    technical_sheet_ids = fields.One2many('technical.sheet', 'analysis_id', string='Technical Sheet')
+
+    @api.depends('technical_sheet_ids')
+    def _get_technical_sheets(self):
+        for rec in self:
+            rec.technical_sheet_count = len(rec.technical_sheet_ids)
 
     @api.depends('needles','column_qty')
     def _compute_width(self):
@@ -85,57 +100,77 @@ class ProductAnalysis(models.Model):
 
         return super().create(vals_list)
     
+    def action_product(self):
+        uom = self.env.ref('uom.product_uom_kgm') if self.weave_type != 'rect' else self.env.ref('uom.product_uom_unit')
+        self.product_id = self.env['product.template'].create({
+            'name': self.product_description,
+            'is_storable': True,
+            'default_code': self.product_code,
+            'uom_id': uom.id,
+            'uom_po_id': uom.id,
+            'categ_id': self.env.company.weaving_category_ids[0].id if self.env.company.weaving_category_ids else False,
+            'route_ids': [Command.link(self.env.ref('mrp.route_warehouse0_manufacture').id)],
+            'analysis_id': self.id,
+        })
+        # self.product_id.bom_ids.create({
+        #     'product_tmpl_id': self.product_id.id,
+        #     'product_uom_id': self.product_id.uom_id.id,
+        #     'bom_line_ids': [Command.create({'product_id': p.id}) for p in self.analysis_id.fiber_ids.product_template_id],
+        #     'operation_ids': [Command.create({
+        #         'name': route.operation_id.name,
+        #         'operation_id': route.operation_id.id,
+        #         'workcenter_id': route.workcenter_id.id,
+        #     }) for route in self.route_line_ids.sorted(key=lambda o: o.sequence)],
+        # })
+        self.state = 'prod'
+
+    def action_create_technical_sheet(self):
+        for rec in self.weaving_data_ids.filtered(lambda w: not w.technical_sheet_id):
+            rec.technical_sheet_id = self.env['technical.sheet'].create({
+                'analysis_id': self.id,
+                'product_code': self.product_code,
+                'partner_id': rec.partner_id.id,
+                'fabric_composition': ' '.join([
+                    f'{round(f.percentage * 100)}% {f.product_template_id.name}'
+                    for f in rec.fiber_ids if f.product_template_id
+                ]),
+                'density': self.density,
+                'width': self.width,
+                'gauge_id': self.gauge_id.id,
+                'route_line_ids': [Command.create({
+                    'operation_id': route.operation_id.id,
+                    'line_parameter_ids': [Command.create({'name': param.name}) for param in route.operation_id.parameter_ids],
+                }) for route in self.routing_ids]
+            })
+            self.technical_sheet_ids += rec.technical_sheet_id
+            bom_id = self.env['mrp.bom'].create({
+                'product_tmpl_id': self.product_id.id,
+                'product_uom_id': self.product_id.uom_id.id,
+                'bom_line_ids': [Command.create({'product_id': p.id, 'operation_id': 1}) for p in rec.fiber_ids.product_template_id],
+                'code': rec.stylo,
+                'technical_sheet_id': rec.technical_sheet_id.id,
+                'operation_ids': [Command.create({
+                    'name': route.operation_id.name,
+                    'operation_id': route.operation_id.id,
+                    'workcenter_id': route.workcenter_id.id,
+                }) for route in self.routing_ids.sorted(key=lambda r: r.sequence)],
+            })
+            self.product_id.bom_ids += bom_id
+
     def action_done(self):
         self.state = 'done'
 
-    def action_create_technical_sheet(self):
-        self.technical_sheet_id = self.env['technical.sheet'].create({
-            'analysis_id': self.id,
-            'product_code': self.product_code,
-            'fabric_composition': ' '.join([
-                f'{round(f.percentage * 100)}% {f.product_template_id.name}'
-                for f in self.fiber_ids if f.product_template_id
-            ]),
-            'density': self.density,
-            'width': self.width,
-            'gauge_id': self.gauge_id.id,
-            'analysis_id': self.id,
-            'route_line_ids': [Command.create({
-                'operation_id': route.operation_id.id,
-                'line_parameter_ids': [Command.create({'name': param.name}) for param in route.operation_id.parameter_ids],
-            }) for route in self.routing_ids]
-        })
-        self.state = 'tech'
-
-    # def action_product(self):
-    #     self.product_id = self.env['product.template'].create({
-    #         'name': self.product_description,
-    #         'default_code': self.product_code,
-    #         'uom_id': self.env.ref('uom.product_uom_kgm').id,
-    #         'uom_po_id': self.env.ref('uom.product_uom_kgm').id,
-    #         'categ_id': self.env.company.weaving_category_ids[0].id if self.env.company.weaving_category_ids else False,
-    #         'route_ids': [Command.link(self.env.ref('mrp.route_warehouse0_manufacture').id)],
-    #     })
-    #     self.product_id.bom_ids.create({
-    #         'product_tmpl_id': self.product_id.id,
-    #         'product_uom_id': self.product_id.uom_id.id,
-    #         'bom_line_ids': [Command.create({'product_id': p.id}) for p in self.fiber_ids.product_template_id],
-    #         'operation_ids': [Command.create({
-    #             'name': ar.operation_id.name,
-    #             'operation_id': ar.operation_id.id,
-    #             'workcenter_id': ar.workcenter_id.id
-    #         }) for ar in self.routing_ids.sorted(key=lambda o: o.sequence)],
-    #     })
-    #     self.state = 'product'
-
     def action_return(self):
-        self.state = 'done' if self.state == 'tech' else 'test'
-    
-    # def open_product(self):
-    #     return self.product_id._get_records_action(name=_("Product"))
+        self.product_id.bom_ids.unlink()
+        self.product_id.unlink()
+        self.technical_sheet_ids.unlink()
+        self.state = 'test'
 
     def open_tech(self):
-        return self.technical_sheet_id._get_records_action(name=_("Technical Sheet"))
+        return self.technical_sheet_ids._get_records_action(name=_("Technical Sheet"))
+    
+    def open_product(self):
+        return self.product_id._get_records_action(name=_("Product"))
     
     def action_generate(self):
         row = self.ligament_row
@@ -148,15 +183,6 @@ class ProductAnalysis(models.Model):
         self.grid_data = ''
 
     def get_svg_grid(self):
-        """
-        Devuelve una lista de filas, donde cada fila es una lista de celdas,
-        y cada celda es un dict con 'svg0' y 'svg1' (contenido SVG o cadena vacía).
-        Ejemplo de retorno:
-        [
-          [ {'svg0': '<svg...>', 'svg1': ''}, {...}, ... ],  # fila 0
-          [ {...}, {...}, ... ],                             # fila 1
-        ]
-        """
         self.ensure_one()
         try:
             raw = json.loads(self.grid_data or "{}")
@@ -187,11 +213,38 @@ class ProductAnalysis(models.Model):
                 grid.append(row)
         return grid
     
+class AnalysisWeavingData(models.Model):
+    _name = 'analysis.weaving.data'
+    _description = 'Analysis Weaving Data'
+
+    analysis_id = fields.Many2one('product.analysis', string='Product Analysis', ondelete='restrict')
+    partner_id = fields.Many2one('res.partner', string='Customer', ondelete='restrict')
+    stylo = fields.Char('Stylo')
+    fiber_ids = fields.One2many('analysis.fiber', 'weaving_data_id', string='Fibers')
+    technical_sheet_id = fields.Many2one('technical.sheet', string='Technical Sheet')
+    notes = fields.Text('Weaving Notes')
+
+    @api.onchange('analysis_id')
+    def _onchange_analysis_id(self):
+        if self.analysis_id and self.analysis_id.partner_id and not self.partner_id:
+            self.partner_id = self.analysis_id.partner_id
+    
+    def open_tech(self):
+        return self.technical_sheet_id._get_records_action(name=_("Technical Sheet"))
+    
+    def print_analysis_report(self):
+        return self.env.ref('idtx_laboratory.action_report_product_analysis').report_action(self)
+    
+    def unlink(self):
+        self.technical_sheet_id.unlink()
+        return super().unlink()
+    
 class AnalysisFiber(models.Model):
     _name = 'analysis.fiber'
     _description = 'Analysis Fibers'
 
-    analysis_id = fields.Many2one('product.analysis', string='Product Analysis', ondelete='restrict')
+    # analysis_id = fields.Many2one('product.analysis', string='Product Analysis', ondelete='restrict')
+    weaving_data_id = fields.Many2one('analysis.weaving.data', string='Weaving Data Parent')
     sequence = fields.Integer('Sequence')
     system_type = fields.Selection([
         ('ne', 'English number'),
@@ -242,7 +295,7 @@ class AnalysisFiber(models.Model):
     def _compute_percentage(self):
         for rec in self:
             if rec.weight:
-                rec.percentage = rec.weight / sum(rec.analysis_id.fiber_ids.mapped('weight'))
+                rec.percentage = rec.weight / sum(rec.weaving_data_id.fiber_ids.mapped('weight'))
             else:
                 rec.percentage = 0
 

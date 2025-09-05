@@ -3,14 +3,14 @@
   <!-- QWeb Template -->
   <template id="report_product_analysis_document">
     <t t-call="web.internal_layout">
-      <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)"/>
+      <t t-set="doc" t-value="doc.with_context(lang=doc.analysis_id.partner_id.lang)"/>
       <div class="page">
         <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
         <!-- Header -->
         <div>
             <div class="row mb8">
                 <div class="col-4">
-                    <img t-if="doc.company_id.logo" class="o_company_logo_big" t-att-src="image_data_uri(doc.company_id.logo)" alt="Logo"/>
+                    <img t-if="doc.analysis_id.company_id.logo" class="o_company_logo_big" t-att-src="image_data_uri(doc.analysis_id.company_id.logo)" alt="Logo"/>
                 </div>
                 <div class="col-8 text-end mb4">
                     <div name="company_address" class="float-end mb4">
@@ -19,7 +19,7 @@
                               <span>
                                 <!-- <div class="bg-light border-1 rounded h-100 d-flex flex-column align-items-center justify-content-center p-4 w-100 opacity-75 text-muted text-center"> -->
                                   <h4>Product Analysis</h4>
-                                  <h6><t t-esc="doc.name"/></h6>
+                                  <h6><t t-esc="doc.analysis_id.name"/></h6>
                                 <!-- </div> -->
                               </span>
                             </li>
@@ -32,9 +32,9 @@
         <table class="table o_main_table">
           <tbody style="font-size: 0.8rem">
             <tr>
-              <td style="background-color: #c2c2c2;"><span>Analysis Date:</span> <t t-esc="doc.analysis_date.strftime('%m/%d/%Y')"/></td>
-              <td style="background-color: #c2c2c2;"><span>Customer:</span> <t t-esc="doc.partner_id.name"/></td>
-              <td style="background-color: #c2c2c2;"><span>Fabric:</span> <t t-esc="doc.product_description"/></td>
+              <td style="background-color: #c2c2c2;"><span>Analysis Date:</span> <t t-esc="doc.analysis_id.analysis_date.strftime('%m/%d/%Y')"/></td>
+              <td style="background-color: #c2c2c2;"><span>Customer:</span> <t t-esc="doc.analysis_id.partner_id.name"/></td>
+              <td style="background-color: #c2c2c2;"><span>Fabric:</span> <t t-esc="doc.analysis_id.product_description"/></td>
             </tr>
           </tbody>
         </table>
@@ -71,12 +71,12 @@
           </thead>
           <tbody style="font-size: 0.7rem">
             <tr>
-              <td style="padding: 2px;"><t t-esc="doc.product_family_id.name"/></td>
-              <td style="padding: 2px;"><t t-esc="doc.column_qty"/></td>
-              <td class="text-end" style="padding: 2px;"><t t-esc="doc.density"/></td>
-              <td class="text-end" style="padding: 2px;"><t t-esc="doc.needles"/></td>
-              <td style="padding: 2px;"><t t-esc="doc.gauge_id.name"/></td>
-              <td class="text-end" style="padding: 2px;"><t t-esc="doc.diameter"/></td>
+              <td style="padding: 2px;"><t t-esc="doc.analysis_id.product_family_id.name"/></td>
+              <td style="padding: 2px;"><t t-esc="doc.analysis_id.column_qty"/></td>
+              <td class="text-end" style="padding: 2px;"><t t-esc="doc.analysis_id.density"/></td>
+              <td class="text-end" style="padding: 2px;"><t t-esc="doc.analysis_id.needles"/></td>
+              <td style="padding: 2px;"><t t-esc="doc.analysis_id.gauge_id.name"/></td>
+              <td class="text-end" style="padding: 2px;"><t t-esc="doc.analysis_id.diameter"/></td>
             </tr>
           </tbody>
         </table>
@@ -125,17 +125,17 @@
           <!-- Columna de Notas: ocupa todo el espacio sobrante y parte el texto -->
           <div class="col text-break pe-4">
             <h4>Notes</h4>
-            <p t-esc="doc.notes"/>
+            <p t-esc="doc.analysis_id.notes"/>
           </div>
           <!-- Columna de Ligamentos: ancho automático -->
-          <t t-set="grid" t-value="doc.get_svg_grid()"/>
+          <t t-set="grid" t-value="doc.analysis_id.get_svg_grid()"/>
           <t t-call="idtx_laboratory.fabric_ligaments_table"/>
         </div>
 
         <br/>
 
         <p>
-          <strong><t t-esc="doc.user_id.name"/></strong> -
+          <strong><t t-esc="doc.analysis_id.user_id.name"/></strong> -
           <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M:%S')"/>
         </p>
       </div>
@@ -170,7 +170,7 @@
   <template id="report_product_analysis_raw">
       <t t-call="web.html_container">
           <t t-foreach="docs" t-as="doc">
-              <t t-call="idtx_laboratory.report_product_analysis_document" t-lang="doc.partner_id.lang"/>
+              <t t-call="idtx_laboratory.report_product_analysis_document" t-lang="doc.analysis_id.partner_id.lang"/>
           </t>
       </t>
   </template>

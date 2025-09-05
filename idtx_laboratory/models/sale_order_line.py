@@ -1,5 +1,6 @@
 from odoo import models, fields, api, _
 from odoo.tools import float_round
+from odoo.exceptions import UserError
 
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
@@ -9,27 +10,56 @@ class SaleOrderLine(models.Model):
     weaving_loss = fields.Float('Weaving Loss')
     production_loss = fields.Float('Production Loss')
     is_weaving = fields.Boolean(related='product_template_id.is_weaving', store=True)
-    technical_sheet_id = fields.Many2one(related='product_template_id.technical_sheet_id', store=True)
-    is_size = fields.Boolean('Is size?', compute='_compute_is_size', store=True)
-    size_ids = fields.Many2many('technical.size.line', string='Size')
-    labdev_color_name = fields.Char('Lab Dev Color Name')
-    labdev_color_id = fields.Many2one('lab.dev.line', string='Lab Dev Color ID')
+    analysis_id = fields.Many2one('product_template_id.analysis_id')
+    bom_id = fields.Many2one('mrp.bom', string='Bom')
+    operation_ids = fields.Many2many('mrp.routing.workcenter.operation', string='Operations')
+    # technical_sheet_id = fields.Many2one(related='bom_id.technical_sheet_id', store=True)
+    # is_size = fields.Boolean('Is size?', compute='_compute_is_size', store=True)
+    # size_ids = fields.Many2many('technical.size.line', string='Size')
+    # labdev_color_name = fields.Char('Lab Dev Color Name')
+    # labdev_color_id = fields.Many2one('lab.dev.line', string='Lab Dev Color ID')
     lab_dev_id = fields.Many2one(related='order_id.lab_dev_id')
+    available_operation_ids = fields.Many2many(
+        'mrp.routing.workcenter.operation',
+        compute='_compute_available_operations',
+        string='Available Operations'
+    )
 
-    @api.onchange('labdev_color_id')
-    def _onchange_labdev_color_id(self):
-        self.labdev_color_name = self.labdev_color_id.color_name
+    @api.depends('bom_id')
+    def _compute_available_operations(self):
+        for record in self:
+            products = self.env['mrp.routing.workcenter.operation'].search([])
+            if record.bom_id:
+                products = record.bom_id.operation_ids.mapped('operation_id').ids
+            record.available_operation_ids = products
+    
+    @api.onchange('bom_id')
+    def _onchange_bom_id(self):
+        for rec in self:
+            rec.operation_ids = rec.bom_id.operation_ids.mapped('operation_id').ids
+
+    # @api.onchange('labdev_color_id')
+    # def _onchange_labdev_color_id(self):
+    #     self.labdev_color_name = self.labdev_color_id.color_name
+
+    # @api.depends('product_id','product_template_id')
+    # def _compute_is_size(self):
+    #     for rec in self:
+    #         rec.is_size = True if rec.technical_sheet_id.weave_type == 'rect' else False
 
     @api.depends('product_id','product_template_id')
     def _compute_is_size(self):
         for rec in self:
-            rec.is_size = True if rec.technical_sheet_id.weave_type == 'rect' else False
+            if not rec.product_template_id.bom_ids and rec.product_template_id.is_weaving:
+                raise UserError(_('This product does not have any bom. Please check with product development.'))
+            else:
+                rec.bom_id = rec.product_template_id.bom_ids[0]
 
-    @api.depends('product_id', 'product_template_id', 'product_uom', 'product_uom_qty','product_color_id', 'weaving_loss', 'production_loss')
+    @api.depends('product_id', 'product_template_id', 'product_uom', 'product_uom_qty','product_color_id', 'weaving_loss', 'production_loss','bom_id','operation_ids')
     def _compute_price_unit(self):
         res = super()._compute_price_unit()
-        for line in self:
-            # Diferenciar si es un producto tejido para calcular su precio
+        # Diferenciar si es un producto tejido para calcular su precio
+        for line in self.filtered(lambda l: l.is_weaving):
             if line.product_template_id.bom_ids:
                 line.price_unit = line._get_weaving_price_unit()
                 line.technical_price_unit = line.price_unit
@@ -39,7 +69,10 @@ class SaleOrderLine(models.Model):
         self.ensure_one()
         price_list = []
         # Precio de Insumos
-        bom_id = self.product_template_id.bom_ids[0]
+        if not self.bom_id:
+            bom_id = self.product_template_id.bom_ids[0]
+        else:
+            bom_id = self.bom_id
         currency = self.order_id.pricelist_id.currency_id
         self.weaving_warning = ''
         for bom_line in bom_id.bom_line_ids.filtered(lambda l: l.product_tmpl_id.categ_id in self.env.company.thread_category_ids):
@@ -66,15 +99,15 @@ class SaleOrderLine(models.Model):
             price = float_round(bom_line_price * factor / (1 - self.weaving_loss), 2)
             price_list.append(price)
         # Precio de Operaciones
-        for operation in bom_id.operation_ids:
-            if operation.operation_id.type_prices == 'col':
-                operation_color_line = operation.operation_id.product_color_price_ids.search([('product_color_id','=',self.product_color_id.id),('mrwo_id','=', operation.operation_id.id)])
+        for operation in self.operation_ids:
+            if operation.type_prices == 'col':
+                operation_color_line = operation.product_color_price_ids.search([('product_color_id','=',self.product_color_id.id),('mrwo_id','=', operation.id)])
                 if operation_color_line:
                     price = operation_color_line.unit_price
             else:
-                price = operation.operation_id.unit_price
+                price = operation.unit_price
             # Convertimos si es en otra moneda
-            src_currency = operation.operation_id.currency_id
+            src_currency = operation.currency_id
             if src_currency != currency:
                 price = src_currency._convert(price, currency, self.env.company, fields.Date.context_today(self), round=False)
             price_list.append(price)

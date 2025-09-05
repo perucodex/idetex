@@ -29,7 +29,7 @@ class LabDev(models.Model):
     ], string='State', default='draft')
 
     def open_recipes(self):
-        return self.lab_dev_line_ids.color_recipe_ids._get_records_action(name=_("Recipes"), context={'group_by': 'color_name'})
+        return self.lab_dev_line_ids.color_recipe_ids._get_records_action(name=_('Recipes'), context={'group_by': 'color_name'})
     
     @api.depends('lab_dev_line_ids')
     def _compute_recipe_count(self):
@@ -41,12 +41,12 @@ class LabDev(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
-            if vals.get('name', _("New")) == _("New"):
+            if vals.get('name', _('New')) == _('New'):
                 seq_date = fields.Datetime.context_timestamp(
                     self, fields.Datetime.to_datetime(vals['lab_dev_date'])
                 ) if 'lab_dev_date' in vals else None
                 vals['name'] = self.env['ir.sequence'].with_company(vals.get('company_id')).next_by_code(
-                    'lab.dev', sequence_date=seq_date) or _("New")
+                    'lab.dev', sequence_date=seq_date) or _('New')
 
         return super().create(vals_list)
     
@@ -71,26 +71,39 @@ class LabDevLine(models.Model):
         ('process', 'Process'),
         ('approved', 'Approved'),
     ], string='State', default='process')
+    available_product_ids = fields.Many2many(
+        'product.template',
+        compute='_compute_available_products',
+        string='Available Products'
+    )
+
+    @api.depends('lab_dev_id.sale_order_id')
+    def _compute_available_products(self):
+        for record in self:
+            products = self.env['product.template'].search([('is_weaving','=', True)])
+            if record.lab_dev_id.sale_order_id:
+                products = record.lab_dev_id.sale_order_id.order_line.mapped('product_template_id').ids
+            record.available_product_ids = products
     
-    @api.onchange('sale_order_id')
-    def _onchange_sale_order_id(self):
-        if self.sale_order_id:
-            product_ids = self.sale_order_id.order_line.mapped('product_id.id')
-            return {
-                'domain': {
-                    'product_id': [('id', 'in', product_ids)],
-                }
-            }
-        return {
-            'domain': {
-                'product_id': [],
-            }
-        }
+    # @api.onchange('lab_dev_id')
+    # def _onchange_sale_order_id(self):
+    #     if self.lab_dev_id.sale_order_id:
+    #         product_ids = self.lab_dev_id.sale_order_id.order_line.mapped('product_id.id')
+    #         return {
+    #             'domain': {
+    #                 'product_id': [('id', 'in', product_ids)],
+    #             }
+    #         }
+    #     return {
+    #         'domain': {
+    #             'product_id': [],
+    #         }
+    #     }
     
-    @api.onchange('saleorder_line_id','color_name')
-    def _onchange_saleorder_line_id(self):
-        self.sale_order_line_id.labdev_color_name = self.color_name
-        self.sale_order_line_id.labdev_color_id = self.id
+    # @api.onchange('saleorder_line_id','color_name')
+    # def _onchange_saleorder_line_id(self):
+    #     self.sale_order_line_id.labdev_color_name = self.color_name
+    #     self.sale_order_line_id.labdev_color_id = self.id
     
     # @api.depends('color_recipe_ids')
     # def _compute_state(self):
@@ -111,7 +124,7 @@ class LabDevLine(models.Model):
 
                 # Busca los registros existentes con ese mismo prefijo
                 last_line = self.env['lab.dev.line'].search(
-                    [('color_code', 'like', f"{prefix}%")],
+                    [('color_code', 'like', f'{prefix}%')],
                     order='color_code desc',
                     limit=1
                 )

@@ -9,7 +9,7 @@ class MrpWorkorder(models.Model):
     batch_ids = fields.One2many('mrp.workorder.batch', 'workorder_id', string='Batchs')
     # weaving_wo = fields.Boolean(related='mrwo_id.is_weaving')
     operation_type = fields.Selection(related='mrwo_id.operation_type')
-    weave_type = fields.Selection(related='product_id.product_tmpl_id.technical_sheet_id.weave_type', store=True)
+    weave_type = fields.Selection(related='product_id.product_tmpl_id.analysis_id.weave_type', store=True)
     roll_weight = fields.Float('Roll Weight', compute='_compute_progress')
     quantity = fields.Float('Quantity LAB', compute='_compute_progress')
     progress = fields.Float('Progress')

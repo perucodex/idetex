@@ -9,7 +9,7 @@ class MrpWorkorderRoll(models.Model):
     sequence = fields.Integer('Sequence')
     name = fields.Char('Number') #, compute='_compute_roll_name', store=True)
     uom_id = fields.Many2one(related='workorder_id.product_id.product_tmpl_id.uom_id')
-    technical_id = fields.Many2one(related='workorder_id.product_id.product_tmpl_id.technical_sheet_id')
+    technical_id = fields.Many2one(related='workorder_id.production_id.bom_id.technical_sheet_id')
     size_id = fields.Many2one('technical.size.line', string='size')
     quantity = fields.Integer('Quantity')
     gross_weight = fields.Float('Gross Weight')

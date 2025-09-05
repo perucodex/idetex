@@ -9,6 +9,7 @@ from . import color_recipe
 from . import configurate_svg_example
 from . import lab_dev
 from . import maintenance_equipment
+from . import mrp_bom
 from . import mrp_production
 from . import mrp_routing
 from . import mrp_workcenter

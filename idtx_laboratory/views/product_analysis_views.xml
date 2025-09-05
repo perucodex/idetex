@@ -8,24 +8,26 @@
             <field name="arch" type="xml">
                 <form string="Product Analysis">
                     <header>
-                        <button name="action_done" type="object" string="Done" class="oe_highlight" invisible="state != 'test'"/>
-                        <button name="action_create_technical_sheet" type="object" string="Create Technical Sheet" class="oe_highlight" invisible="state != 'done'" confirm="Are you sure you want to create the technical sheet ?"/>
-                        <!-- <button name="action_product" type="object" string="Create Product" class="oe_highlight" invisible="state != 'done'" confirm="Are you sure you want to create the product ?"/> -->
-                        <button name="action_return" type="object" string="Return" invisible="state == 'test' or technical_sheet_id"/>
+                        <!-- <button name="action_done" type="object" string="Done" class="oe_highlight" invisible="state != 'test'"/> -->
+                        <button name="action_create_technical_sheet" type="object" string="Create Technical Sheet" class="oe_highlight" invisible="state != 'prod'" confirm="Are you sure you want to create the technical sheet ?"/>
+                        <button name="action_product" type="object" string="Create Product" class="oe_highlight" invisible="state != 'test' or product_id" confirm="Are you sure you want to create the product ?"/>
+                        <button name="action_return" type="object" string="Return" invisible="state == 'test' or technical_sheet_ids"/>
                         <field name="state" widget="statusbar"/>
                     </header>
                     <sheet>
                         <div name="button_box" class="oe_button_box">
-                            <!-- <button name="open_product"
+                            <button name="open_product"
                                     class="oe_stat_button"
                                     icon="fa-dropbox"
                                     type="object"
-                                    invisible="not product_id" string="Product"/> -->
+                                    invisible="not product_id" string="Product"/>
                             <button name="open_tech"
                                     class="oe_stat_button"
                                     icon="fa-microchip"
                                     type="object"
-                                    invisible="not technical_sheet_id" string="Technical Sheet"/>
+                                    invisible="technical_sheet_count == 0">
+                                    <field name="technical_sheet_count" widget="statinfo" string="Technical Sheets"/>
+                            </button>
                         </div>
                         <div class="oe_title">
                             <h1>
@@ -34,22 +36,23 @@
                         </div>
                         <group>
                             <group>
-                                <field name="analysis_date"/>
-                                <field name="partner_id"/>
-                                <field name="product_family_id" options="{'no_create': True, 'no_open': True}"/>
-                                <field name="product_description"/>
-                                <field name="gauge_id" options="{'no_open': True}"/>
-                                <field name="needles"/>
-                                <field name="diameter"/>
-                                <field name="feeders"/>
+                                <field name="analysis_date" readonly="state != 'test'"/>
+                                <field name="partner_id" readonly="state != 'test'"/>
+                                <field name="product_description" readonly="state != 'test'"/>
+                                <field name="product_family_id" options="{'no_create': True, 'no_open': True}" readonly="state != 'test'"/>
+                                <field name="product_appearance_id" options="{'no_create': True, 'no_open': True}" readonly="state != 'test'"/>
+                                <field name="product_fiber_id" options="{'no_create': True, 'no_open': True}" readonly="state != 'test'"/>
+                                <field name="product_title_id" options="{'no_create': True, 'no_open': True}" readonly="state != 'test'"/>
+                                <field name="weave_type" readonly="state != 'test'"/>
                             </group>
                             <group>
-                                <field name="density"/>
-                                <field name="column_qty"/>
-                                <field name="width"/>
-                                <field name="product_appearance_id" options="{'no_create': True, 'no_open': True}"/>
-                                <field name="product_fiber_id" options="{'no_create': True, 'no_open': True}"/>
-                                <field name="product_title_id" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="gauge_id" options="{'no_open': True}" readonly="state != 'test'"/>
+                                <field name="needles" readonly="state != 'test'"/>
+                                <field name="diameter" readonly="state != 'test'"/>
+                                <field name="feeders" readonly="state != 'test'"/>
+                                <field name="density" readonly="state != 'test'"/>
+                                <field name="column_qty" readonly="state != 'test'"/>
+                                <field name="width" readonly="state != 'test'"/>
                                 <field name="product_code" readonly="1" force_save="1"/>
                                 <field name="company_id" readonly="1" groups="base.group_multi_company"/>
                             </group>
@@ -57,18 +60,8 @@
                         <label for="notes"/>
                         <field name="notes"/>
                         <notebook>
-                            <page name="fibers_page" string="Fibers">
-                                <field name="fiber_ids" readonly="state != 'test'">
-                                    <list>
-                                        <field name="sequence" widget="handle"/>
-                                        <field name="system_type"/>
-                                        <field name="length"/>
-                                        <field name="weight"/>
-                                        <field name="thread_title"/>
-                                        <field name="product_template_id"/>
-                                        <field name="percentage" widget="percentage"/>
-                                    </list>
-                                </field>
+                            <page name="weaving_data_page" string="Weaving Data">
+                                <field name="weaving_data_ids" readonly="state != 'prod'"/>
                             </page>
                             <page name="routing_page" string="Routing" readonly="state != 'test'">
                                 <field name="routing_ids" readonly="state != 'test'">
@@ -118,7 +111,7 @@
                     <field name="gauge_id"/>
                     <field name="width"/>
                     <field name="company_id" groups="base.group_multi_company"/>
-                    <field name="state" widget="badge" decoration-info="state == 'done'" decoration-success="state == 'tech'"/>
+                    <field name="state" widget="badge" decoration-success="state == 'prod'"/>
                 </list>
             </field>
         </record>
@@ -129,20 +122,78 @@
             <field name="arch" type="xml">
                 <search string="Search Product Analysis">
                     <field name="name"/>
-                    <field name="analysis_date"/>
+                    <field name="product_id"/>
                     <field name="partner_id"/>
                     <field name="product_description"/>
+                    <field name="analysis_date"/>
                     <field name="gauge_id"/>
+                    <field name="density"/>
                     <filter name="test" string="Test" domain="[('state','=','test')]"/>
-                    <filter name="done" string="Done" domain="[('state','=','done')]"/>
-                    <filter name="tech" string="Technical Sheet" domain="[('state','=','tech')]"/>
+                    <filter name="prod" string="Product" domain="[('state','=','prod')]"/>
+                    <!-- <filter name="tech" string="Technical Sheet" domain="[('state','=','tech')]"/> -->
                     <group expand="0" string="Group By">
                         <filter string="Analysis Date" name="group_by_analysis_date" domain="[]" context="{'group_by': 'analysis_date'}"/>
+                        <filter string="Product" name="group_by_product" domain="[]" context="{'group_by': 'product_id'}"/>
                         <filter string="Customer" name="group_by_partner" domain="[]" context="{'group_by': 'partner_id'}"/>
                         <filter string="Product Description" name="group_by_product_description" domain="[]" context="{'group_by': 'product_description'}"/>
                         <filter string="Gauge" name="group_by_gauge_id" domain="[]" context="{'group_by': 'gauge_id'}"/>
+                        <filter string="Density" name="group_by_density" domain="[]" context="{'group_by': 'density'}"/>
                     </group>
                 </search>
+            </field>
+        </record>
+
+        <record id="analysis_weaving_data_view_form" model="ir.ui.view">
+            <field name="name">analysis.weaving.data.view.form</field>
+            <field name="model">analysis.weaving.data</field>
+            <field name="arch" type="xml">
+                <form string="Weaving Data">
+                    <header>
+                        <!-- <button name="action_create_technical_sheet" type="object" string="Create Technical Sheet" class="oe_highlight" invisible="technical_sheet_id"/> -->
+                        <button name="open_tech" type="object" string="Open Technical Sheet" class="oe_highlight" invisible="not technical_sheet_id"/>
+                        <button name="print_analysis_report" type="object" icon="fa-print" string="Print Analysis"/>
+                    </header>
+                    <sheet>
+                        <group>    
+                            <group>
+                                <field name="partner_id"/>
+                                <field name="stylo"/>
+                            </group>
+                            <group>
+                                <field name="technical_sheet_id" readonly="1" invisible="not technical_sheet_id"/>
+                            </group>
+                            <label for="notes"/>
+                            <field name="notes"/>
+                        </group>
+                        <notebook>
+                            <page name="fibers_page" string="Fibers">
+                                <field name="fiber_ids">
+                                    <list>
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="system_type"/>
+                                        <field name="length"/>
+                                        <field name="weight"/>
+                                        <field name="thread_title"/>
+                                        <field name="product_template_id"/>
+                                        <field name="percentage" widget="percentage"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="analysis_weaving_data_view_tree" model="ir.ui.view">
+            <field name="name">analysis.weaving.data.view.tree</field>
+            <field name="model">analysis.weaving.data</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="partner_id"/>
+                    <field name="stylo"/>
+                    <field name="technical_sheet_id"/>
+                </list>
             </field>
         </record>
 
@@ -176,6 +227,33 @@
                     </sheet>
                     <chatter/>
                 </form>
+            </field>
+        </record>
+
+        <record id="analysis_fiber_tree_view" model="ir.ui.view">
+            <field name="name">analysis.fiber.list</field>
+            <field name="model">analysis.fiber</field>
+            <field name="arch" type="xml">
+                <list string="Fibers">
+                    <field name="system_type"/>
+                    <field name="length"/>
+                    <field name="weight"/>
+                    <field name="thread_title"/>
+                    <field name="product_template_id"/>
+                    <field name="percentage" widget="percentage"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="analysis_routing_line_tree_view" model="ir.ui.view">
+            <field name="name">analysis.routing.line.list</field>
+            <field name="model">analysis.routing.line</field>
+            <field name="arch" type="xml">
+                <list string="Routing Lines">
+                    <field name="analysis_id"/>
+                    <field name="operation_id"/>
+                    <field name="workcenter_id"/>
+                </list>
             </field>
         </record>
 

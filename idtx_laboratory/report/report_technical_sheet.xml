@@ -3,7 +3,7 @@
   <!-- QWeb Template -->
   <template id="report_technical_sheet_document">
     <t t-call="web.internal_layout">
-      <t t-set="doc" t-value="doc.with_context(lang=doc.analysis_id.partner_id.lang)"/>
+      <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)"/>
       <div class="page">
         <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
         <!-- Header -->
@@ -33,7 +33,7 @@
           <tbody style="font-size: 0.8rem">
             <tr>
               <td style="background-color: #c2c2c2;"><span>Technical Date:</span> <t t-esc="doc.technical_date.strftime('%m/%d/%Y')"/></td>
-              <td style="background-color: #c2c2c2;"><span>Customer:</span> <t t-esc="doc.analysis_id.partner_id.name"/></td>
+              <td style="background-color: #c2c2c2;"><span>Customer:</span> <t t-esc="doc.partner_id.name"/></td>
             </tr>
             <tr>
               <td style="background-color: #c2c2c2;"><span>Code:</span> <t t-esc="doc.product_id.default_code"/></td>
@@ -171,7 +171,7 @@
         <br/>
 
         <p>
-          <strong><t t-esc="doc.analysis_id.user_id.name"/></strong> -
+          <strong><t t-esc="doc.user_id.name"/></strong> -
           <t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M:%S')"/>
         </p>
       </div>
@@ -181,7 +181,7 @@
   <template id="report_technical_sheet_raw">
       <t t-call="web.html_container">
           <t t-foreach="docs" t-as="doc">
-              <t t-call="idtx_laboratory.report_technical_sheet_document" t-lang="doc.analysis_id.partner_id.lang"/>
+              <t t-call="idtx_laboratory.report_technical_sheet_document" t-lang="doc.partner_id.lang"/>
           </t>
       </t>
   </template>
