@@ -6,9 +6,15 @@ import binascii
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 
+# ENCRYPTION_KEY = 'b17335883b1008d8d0c8bb50601f333b16759cc329d2e3050f9c8ae1b8a4d6bf'
+# KEY = binascii.unhexlify(ENCRYPTION_KEY)
+# BS = AES.block_size
+
+# ---------- tus claves ----------
 ENCRYPTION_KEY = 'b17335883b1008d8d0c8bb50601f333b16759cc329d2e3050f9c8ae1b8a4d6bf'
+METHOD = 'AES-256-CBC'
 KEY = binascii.unhexlify(ENCRYPTION_KEY)
-BS = AES.block_size
+BS  = AES.block_size          # 16 bytes
 
 _logger = logging.getLogger(__name__)
 
@@ -52,11 +58,12 @@ class MySQLConnector:
         self.execute_query(sql, tuple(values.values()))
         _logger.info("Registro insertado en %s: %s", table, values)
 
+    # ---------- cifrado compatible ----------
     @staticmethod
-    def encrypt_data(plaintext: str) -> str:
+    def encrypt_data(data: str) -> str:
         iv = os.urandom(BS)
         cipher = AES.new(KEY, AES.MODE_CBC, iv)
-        ct = cipher.encrypt(pad(plaintext.encode('utf-8'), BS))
+        ct = cipher.encrypt(pad(data.encode('utf-8'), BS))
         return base64.b64encode(iv + ct).decode('ascii')
 
     @staticmethod
