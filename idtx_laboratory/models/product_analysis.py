@@ -54,7 +54,7 @@ class ProductAnalysis(models.Model):
     # technical_sheet_id = fields.Many2one('technical.sheet', string='Technical Sheet')
     technical_sheet_count = fields.Integer(string="Technical Sheet Count", compute='_get_technical_sheets')
     technical_sheet_ids = fields.One2many('technical.sheet', 'analysis_id', string='Technical Sheet')
-
+    
     @api.depends('technical_sheet_ids')
     def _get_technical_sheets(self):
         for rec in self:
@@ -146,7 +146,6 @@ class ProductAnalysis(models.Model):
             bom_id = self.env['mrp.bom'].create({
                 'product_tmpl_id': self.product_id.id,
                 'product_uom_id': self.product_id.uom_id.id,
-                'bom_line_ids': [Command.create({'product_id': p.id, 'operation_id': 1}) for p in rec.fiber_ids.product_template_id],
                 'code': rec.stylo,
                 'technical_sheet_id': rec.technical_sheet_id.id,
                 'operation_ids': [Command.create({
@@ -154,7 +153,11 @@ class ProductAnalysis(models.Model):
                     'operation_id': route.operation_id.id,
                     'workcenter_id': route.workcenter_id.id,
                 }) for route in self.routing_ids.sorted(key=lambda r: r.sequence)],
+                'bom_line_ids': [Command.create({'product_id': p.id}) for p in rec.fiber_ids.product_template_id.product_variant_id],
             })
+            # Consumir el hilo en tejeduria
+            for l in bom_id.bom_line_ids:
+                l.operation_id = bom_id.operation_ids[:1]
             self.product_id.bom_ids += bom_id
 
     def action_done(self):

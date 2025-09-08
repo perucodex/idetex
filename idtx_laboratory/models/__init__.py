@@ -7,6 +7,7 @@ from . import color_code_system
 from . import color_recipe_process
 from . import color_recipe
 from . import configurate_svg_example
+from . import covatex
 from . import lab_dev
 from . import maintenance_equipment
 from . import mrp_bom

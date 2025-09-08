@@ -1,4 +1,8 @@
 from odoo import models, fields, api, _, Command
+from .covatex import MySQLConnector
+import logging
+
+_logger = logging.getLogger(__name__)
 
 class TechnicalSheet(models.Model):
     _name = 'technical.sheet'
@@ -40,6 +44,37 @@ class TechnicalSheet(models.Model):
     user_id = fields.Many2one('res.users','Prepared by',default=lambda self: self.env.user)
     size_chart_ids = fields.One2many('technical.size.line', 'technical_id', string='Size Chart')
     route_line_ids = fields.One2many('technical.route.line', 'technical_id', string='Route Line')
+
+    def action_fetch_from_mysql(self):
+
+        connector = MySQLConnector(
+            host="170.233.144.110",
+            user="root",
+            password="Server01",
+            database="covatex_prueba"
+        )
+        _logger.info("clave1:******************************" + MySQLConnector.decrypt_data('X9vPTUu4s85CrJqn7IilfudhiMVlBvKN0mqx9yrhjQyL91VOKWyV/GQROQ5zqWlH'))
+        values = {
+            'id_usuarios': 23,
+            'fecha': fields.Date.context_today(self),
+            'articulo': MySQLConnector.encrypt_data(self.analysis_id.product_description),
+            'programa': MySQLConnector.encrypt_data(self.program),
+            'composicion_tela': MySQLConnector.encrypt_data(self.fabric_composition),
+            'atx': MySQLConnector.encrypt_data(self.atx),
+            'densidad': MySQLConnector.encrypt_data(str(self.density)),
+            'ancho': MySQLConnector.encrypt_data(str(self.width)),
+            'primera_lav_encog': '',
+            'primera_lav_revir': '',
+            'rendimiento': '',
+            'merma': '',
+            'tipo_tejido': MySQLConnector.encrypt_data('ABIERTO' if self.weave_type == 'open' else 'TUBULAR'),
+            'tipo_operacion': MySQLConnector.encrypt_data('VENTA'),
+            'partida': '',
+            'galga': '',
+            'observacion': '',
+            'cantidad_procesos': '',
+        }
+        connector.insert("rutas", values)
 
     @api.depends('order_line.invoice_lines')
     def _get_boms(self):
