@@ -13,6 +13,11 @@ class SaleOrder(models.Model):
         ('service', 'Service'),
     ], string='Sale Type', default='sale')
 
+    @api.onchange('sale_type')
+    def _onchange_sale_type(self):
+        for rec in self:
+            rec.order_line._onchange_bom_id()
+
     @api.onchange('payment_term_id','incoterm')
     def _onchange_payment_term_id(self):
         self.order_line._compute_price_unit()

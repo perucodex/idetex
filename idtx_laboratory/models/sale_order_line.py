@@ -1,4 +1,4 @@
-from odoo import models, fields, api, _
+from odoo import models, fields, api, _, Command
 from odoo.tools import float_round
 from odoo.exceptions import UserError
 
@@ -36,7 +36,8 @@ class SaleOrderLine(models.Model):
     @api.onchange('bom_id')
     def _onchange_bom_id(self):
         for rec in self:
-            rec.operation_ids = rec.bom_id.operation_ids.mapped('operation_id').ids
+            rec.operation_ids = [Command.clear()]
+            rec.operation_ids = rec.bom_id.operation_ids.sorted(key=lambda r: r.sequence).mapped('operation_id').ids
 
     # @api.onchange('labdev_color_id')
     # def _onchange_labdev_color_id(self):
@@ -47,20 +48,23 @@ class SaleOrderLine(models.Model):
     #     for rec in self:
     #         rec.is_size = True if rec.technical_sheet_id.weave_type == 'rect' else False
 
-    @api.depends('product_id','product_template_id')
-    def _compute_is_size(self):
-        for rec in self:
-            if not rec.product_template_id.bom_ids and rec.product_template_id.is_weaving:
-                raise UserError(_('This product does not have any bom. Please check with product development.'))
-            else:
-                rec.bom_id = rec.product_template_id.bom_ids[0]
+    # @api.depends('product_id','product_template_id')
+    # def _compute_is_size(self):
+    #     for rec in self:
+    #         if not rec.product_template_id.bom_ids and rec.product_template_id.is_weaving:
+    #             raise UserError(_('This product does not have any bom. Please check with product development.'))
+    #         else:
+    #             rec.bom_id = rec.product_template_id.bom_ids[0]
 
     @api.depends('product_id', 'product_template_id', 'product_uom', 'product_uom_qty','product_color_id', 'weaving_loss', 'production_loss','bom_id','operation_ids')
     def _compute_price_unit(self):
         res = super()._compute_price_unit()
         # Diferenciar si es un producto tejido para calcular su precio
         for line in self.filtered(lambda l: l.is_weaving):
-            if line.product_template_id.bom_ids:
+            if not line.product_template_id.bom_ids:
+                raise UserError(_('This product does not have any bom. Please check with product development.'))
+            else:
+                line.bom_id = line.product_template_id.bom_ids[0]
                 line.price_unit = line._get_weaving_price_unit()
                 line.technical_price_unit = line.price_unit
         return res
