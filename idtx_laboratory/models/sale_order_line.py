@@ -101,7 +101,7 @@ class SaleOrderLine(models.Model):
         # Precio de Operaciones
         for operation in self.operation_ids:
             if operation.type_prices == 'col':
-                operation_color_line = operation.product_color_price_ids.search([('product_color_id','=',self.product_color_id.id),('mrwo_id','=', operation.id)])
+                operation_color_line = operation.product_color_price_ids.search([('product_color_id','=',self.product_color_id.id),('mrwo_id','=', operation._origin.   id)])
                 if operation_color_line:
                     price = operation_color_line.unit_price
             else:
