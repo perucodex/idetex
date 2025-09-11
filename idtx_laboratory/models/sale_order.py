@@ -8,6 +8,7 @@ class SaleOrder(models.Model):
     weaving_warning = fields.Text('weaving_warning', compute='_compute_weaving_warning')
     sale_order_id = fields.Many2one('sale.order', string='Sale Order')
     quotation_id = fields.Many2one('sale.order', string='Quotation')
+    applicant_id = fields.Many2one('res.partner', string='Applicant')
     sale_type = fields.Selection([
         ('sale', 'Sale'),
         ('service', 'Service'),
@@ -16,6 +17,7 @@ class SaleOrder(models.Model):
     @api.onchange('sale_type')
     def _onchange_sale_type(self):
         for rec in self:
+            rec.order_line._onchange_product_or_color()
             rec.order_line._onchange_bom_id()
 
     @api.onchange('payment_term_id','incoterm')
@@ -65,7 +67,7 @@ class SaleOrder(models.Model):
                                 uom=bom_line.product_uom_id,
                                 date=line._get_order_date(),
                             )
-                            if not pricelist_item_id:
+                            if not pricelist_item_id and order.partner_id:
                                 order.weaving_warning += _(('Product %s has product %s on its bom and does not have a price in %s price list. The price is obtained from its own sale price.') %( line.product_id.product_tmpl_id.name, bom_line.product_id.product_tmpl_id.name, order.pricelist_id.name)) + '\n'
                         for operation in bom_id.operation_ids:
                             if operation.operation_id.type_prices == 'col':

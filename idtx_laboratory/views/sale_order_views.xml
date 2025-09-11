@@ -18,8 +18,12 @@
             <xpath expr="//header/button[@name='action_confirm'][2]" position="attributes">
                 <attribute name="invisible">state != 'draft' or not is_order</attribute>
             </xpath> -->
+            
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="applicant_id" required="1" readonly="state == 'sale'" domain="[('parent_id','=',partner_id)]"/>
+            </xpath>
             <xpath expr="//field[@name='payment_term_id']" position="before">
-                <field name="sale_type" required="1" readonly="state == 'sale'"/>
+                <field name="sale_type" required="1" readonly="state == 'sale'" options="{'no_create': True, 'no_open': True}"/>
             </xpath>
             <xpath expr="//header/button[@name='action_confirm'][1]" position="after">
                 <!-- <button name="create_labdev" data-hotkey="q" string="Create LabDev" type="object" context="{'validate_analytic': True}" invisible="state != 'sent' or lab_dev_id"/> -->
@@ -45,6 +49,12 @@
                 <field name="weaving_loss" readonly="not is_weaving" optional="hide" widget="percentage"/>
                 <field name="production_loss" readonly="not is_weaving" optional="hide" widget="percentage"/>
             </xpath>
+
+            <xpath expr="//notebook/page/field[@name='order_line']/list/field[@name='price_unit']" position="after">
+                <field name="price_items" column_invisible="1"/>
+                <widget name="price_items_widget" width="20px"/>
+            </xpath>
+
         </field>
     </record>
 </odoo>

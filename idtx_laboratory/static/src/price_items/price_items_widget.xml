@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="idtx_laboratory.PriceItemsWidget">
+        <a t-on-click="showPopover"
+            t-att-class="props.record.data.is_weaving ? 'fa fa-edit cursor-pointer ml-1' : 'd-none'"
+            title="Editar precios por ítem"/>
+    </t>
+
+    <t t-name="idtx_laboratory.PriceItemsPopover">
+        <div class="p-3" style="min-width: 250px;">
+            <h6>Edit prices</h6>
+            <table class="table table-sm">
+                <tbody>
+                    <tr t-foreach="items" t-as="item" t-key="item.key">
+                        <td><t t-esc="item.key"/></td>
+                        <td>
+                            <input type="text"
+                                class="form-control form-control-sm w-auto text-end"
+                                inputmode="decimal"
+                                pattern="^[0-9]*\.?[0-9]+$"
+                                t-att-value="item.value"
+                                t-att-readonly="ui.readonly"
+                                t-on-input="!ui.readonly and ((ev) => onNumberInput(ev, item))"/>
+                        </td>
+                    </tr>
+                    <tr class="fw-bold">
+                        <td>Total</td>
+                        <td><t t-esc="total.toFixed(2)"/></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="text-end">
+                <button class="btn btn-primary btn-sm" t-on-click="save" t-if="!ui.readonly">Save</button>
+            </div>
+        </div>
+    </t>
+
+</templates>

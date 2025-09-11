@@ -24,7 +24,7 @@ class TechnicalSheet(models.Model):
     first_wash_shrinkage = fields.Char('First Wash Shrinkage')
     first_wash_twist = fields.Char('First Wash Twist')
     yield_meter = fields.Float('Yield')
-    scrap = fields.Float('Scrap')
+    scrap = fields.Float('Scrap', default=1.00)
     weave_type = fields.Selection(related='analysis_id.weave_type', store=True)
     batch = fields.Char('Batch')
     notes = fields.Text('Notes')
@@ -53,29 +53,29 @@ class TechnicalSheet(models.Model):
             password="Server01",
             database="prueba_covatex"
         )
-        _logger.info("clave1:******************************" + MySQLConnector.decrypt_data('X9vPTUu4s85CrJqn7IilfudhiMVlBvKN0mqx9yrhjQyL91VOKWyV/GQROQ5zqWlH'))
-        print(str(round(self.density, 2)))
+        # _logger.info("clave1:******************************" + MySQLConnector.decrypt_data('X9vPTUu4s85CrJqn7IilfudhiMVlBvKN0mqx9yrhjQyL91VOKWyV/GQROQ5zqWlH'))
+        # print(str(round(self.density, 2)))
         values = {
             'id_usuarios': 23,
             'fecha': fields.Date.context_today(self),
-            'articulo': MySQLConnector.encrypt_data(self.analysis_id.product_description),
-            'cod_articulo': MySQLConnector.encrypt_data(self.analysis_id.product_code),
-            'cod_cliente': MySQLConnector.encrypt_data(str(self.partner_id.id)),
-            'programa': MySQLConnector.encrypt_data(self.program),
-            'composicion_tela': MySQLConnector.encrypt_data(self.fabric_composition),
-            'atx': MySQLConnector.encrypt_data(self.atx),
-            'densidad': MySQLConnector.encrypt_data(str(round(self.density, 2))),
-            'ancho': MySQLConnector.encrypt_data(str(round(self.width, 2))),
+            'articulo': MySQLConnector.encrypt_data(self.analysis_id.product_description or ''),
+            'cod_articulo': MySQLConnector.encrypt_data(self.analysis_id.product_code or ''),
+            'cod_cliente': MySQLConnector.encrypt_data(str(self.partner_id.id) or ''),
+            'programa': MySQLConnector.encrypt_data(self.program or ''),
+            'composicion_tela': MySQLConnector.encrypt_data(self.fabric_composition or ''),
+            'atx': MySQLConnector.encrypt_data(self.atx or ''),
+            'densidad': MySQLConnector.encrypt_data(str(round(self.density, 2)) or ''),
+            'ancho': MySQLConnector.encrypt_data(str(round(self.width, 2)) or ''),
             'primera_lav_encog': MySQLConnector.encrypt_data(self.first_wash_shrinkage or ''),
             'primera_lav_revir': MySQLConnector.encrypt_data(self.first_wash_twist or ''),
-            'rendimiento': MySQLConnector.encrypt_data(str(self.yield_meter)),
-            'merma': MySQLConnector.encrypt_data(str(self.scrap)),
+            'rendimiento': MySQLConnector.encrypt_data(str(self.yield_meter) or ''),
+            'merma': MySQLConnector.encrypt_data(str(self.scrap) or ''),
             'tipo_tejido': MySQLConnector.encrypt_data('ABIERTO' if self.weave_type == 'open' else 'TUBULAR'),
             'tipo_operacion': MySQLConnector.encrypt_data('VENTA'),
             'partida': MySQLConnector.encrypt_data(self.batch or ''),
             'galga': MySQLConnector.encrypt_data(self.analysis_id.gauge_id.code or ''),
             'observacion': MySQLConnector.encrypt_data(self.notes or ''),
-            'cantidad_procesos': MySQLConnector.encrypt_data(str(len(self.route_line_ids))),
+            'cantidad_procesos': MySQLConnector.encrypt_data(str(len(self.route_line_ids)) or ''),
             'hilanderia': MySQLConnector.encrypt_data(''),
         }
         connector.insert("rutas", values)

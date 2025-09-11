@@ -94,6 +94,7 @@ colors, technical sheets, coding, and customer quotes based on fibers, inputs, a
         'web.assets_backend': [
             'idtx_laboratory/static/src/components/**/*',
             'idtx_laboratory/static/src/popup/**/*',
+            'idtx_laboratory/static/src/price_items/**/*',
             # "idtx_laboratory/static/src/widget/mrp_display_record.js",
             # "idtx_laboratory/static/src/widget/mrp_display.js",
             # "idtx_laboratory/static/src/widget/mrp_menu_dialog.js",
