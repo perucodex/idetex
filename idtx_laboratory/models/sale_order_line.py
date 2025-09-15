@@ -11,7 +11,7 @@ class SaleOrderLine(models.Model):
     weaving_loss = fields.Float('Weaving Loss')
     production_loss = fields.Float('Production Loss')
     is_weaving = fields.Boolean(related='product_template_id.is_weaving', store=True)
-    analysis_id = fields.Many2one('product_template_id.analysis_id')
+    analysis_id = fields.Many2one(related='product_template_id.analysis_id')
     bom_id = fields.Many2one('mrp.bom', string='Bom')
     operation_ids = fields.Many2many('mrp.routing.workcenter', string='Operations')
     # technical_sheet_id = fields.Many2one(related='bom_id.technical_sheet_id', store=True)
@@ -60,8 +60,8 @@ class SaleOrderLine(models.Model):
     #         else:
     #             rec.bom_id = rec.product_template_id.bom_ids[0]
 
-    # def js_compute_price_unit(self):
-    #     self._compute_price_unit()
+    def js_compute_price_unit(self):
+        self._compute_price_unit()
 
     @api.onchange('product_id','product_color_id','operation_ids')
     def _onchange_product_or_color(self):
@@ -86,12 +86,12 @@ class SaleOrderLine(models.Model):
             price_dict = json.loads(self.price_items or '{}')
         except (json.JSONDecodeError, TypeError):
             price_dict = {}
+        # Precio de Insumos
+        if not self.bom_id:
+            bom_id = self.product_template_id.bom_ids[0]
+        else:
+            bom_id = self.bom_id
         if not price_dict:
-            # Precio de Insumos
-            if not self.bom_id:
-                bom_id = self.product_template_id.bom_ids[0]
-            else:
-                bom_id = self.bom_id
             currency = self.order_id.pricelist_id.currency_id
             self.weaving_warning = ''
             for bom_line in bom_id.bom_line_ids.filtered(lambda l: l.product_tmpl_id.categ_id in self.env.company.thread_category_ids):
@@ -135,10 +135,10 @@ class SaleOrderLine(models.Model):
         # Suma total de insumos y procesos
         total = float_round(sum(price_dict.values()), 2) if price_dict else 0
         # Aplicamos la merma de producción
-        total = float_round(total / (1 - self.production_loss), 2)
+        total = float_round(total / (1 - bom_id.technical_sheet_id.scrap), 2)
         # Agregamos el porcentaje de financiamiento desde la forma de pago
         if self.order_id.payment_term_id.financial_percentage:
-            total *= 1 + self.order_id.payment_term_id.financial_percentage
+            total = float_round(total * (1 + self.order_id.payment_term_id.financial_percentage), 2)
         # Agregamos el monto del incoterm
         if self.order_id.incoterm and self.order_id.incoterm.unit_price:
             total += self.order_id.incoterm.unit_price

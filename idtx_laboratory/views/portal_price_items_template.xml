@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <template id="sale_price_items_preview" name="Items personalizados">
+            <t t-call="portal.portal_layout">
+                <t t-set="o_portal_fullwidth_alert" groups="sales_team.group_sale_salesman">
+                    <t t-call="portal.portal_back_in_edit_mode"/>
+                </t>
+                <div class="container">
+                    <!-- botón flotante -->
+                    <div class="row align-items-center mb-3">
+                        <div class="col">
+                            <h1>Sale Order: <t t-esc="order.name"/></h1>
+                            <h3>Customer: <t t-esc="order.partner_id.name"/></h3>
+                        </div>      
+                        <div class="col-auto">
+                            <div id="screenshot-btn" class="text-end m-3">
+                                <button class="btn btn-outline-primary btn-lg" title="Capturar pantalla completa">📷</button>
+                            </div>
+                        </div>              
+                    </div>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Color</th>
+                                <th class="text-end">Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="order.order_line" t-as="line">
+                                <td><span t-field="line.name"/></td>
+                                <td><span t-field="line.product_color_id.name"/></td>
+                                <td class="text-end"><span t-field="line.price_unit"/></td>
+                                <t t-set="items" t-value="line.price_items and json.loads(line.price_items) or {}"/>
+                                <t t-set="items_total" t-value="0"/>
+                                <tr t-foreach="items.items()" t-as="item" class="table-light">
+                                    <td class="ps-4 text-muted"><t t-esc="item[0]"/></td>
+                                    <td class="text-end text-muted"/>
+                                    <td class="text-end text-muted"><t t-esc="item[1]"/></td>
+                                    <t t-set="items_total" t-value="items_total + float(item[1])"/>
+                                </tr>
+                                <tr class="table-light" t-if="line.bom_id.technical_sheet_id.scrap &gt; 0">
+                                    <td class="ps-4 text-muted">Production Loss</td>
+                                    <td class="text-end text-muted"/>
+                                    <td class="text-end text-muted"><t t-esc="round(items_total * line.bom_id.technical_sheet_id.scrap, 2)"/></td>
+                                    <t t-set="items_total" t-value="round(items_total / (1 - line.bom_id.technical_sheet_id.scrap), 2)"/>
+                                </tr>
+                                <tr class="table-light" t-if="line.order_id.payment_term_id.financial_percentage &gt; 0">
+                                    <td class="ps-4 text-muted"><span t-field="line.order_id.payment_term_id.name"/></td>
+                                    <td class="text-end text-muted"/>
+                                    <td class="text-end text-muted"><t t-esc="round(items_total * line.order_id.payment_term_id.financial_percentage, 2)"/></td>
+                                </tr>
+                                <tr class="table-light" t-if="line.order_id.incoterm.unit_price &gt; 0">
+                                    <td class="ps-4 text-muted"><span t-field="line.order_id.incoterm"/></td>
+                                    <td class="text-end text-muted"/>
+                                    <td class="text-end text-muted"><t t-esc="line.order_id.incoterm.unit_price"/></td>
+                                </tr>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+            <!-- Librería html2canvas (CDN) -->
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+            <script>
+                document.getElementById('screenshot-btn').addEventListener('click', async () => {
+                    try {
+                        const canvas = await html2canvas(document.body, {
+                            backgroundColor: '#fff',
+                            scale: 2,
+                            useCORS: true,
+                            scrollX: 0,
+                            scrollY: -window.scrollY   // captura desde el principio
+                        });
+
+                        canvas.toBlob(async (blob) => {
+                            if (!blob) return;
+                            await navigator.clipboard.write([
+                                new ClipboardItem({'image/png': blob})
+                            ]);
+                            alert('Imagen copiada al portapapeles');
+                        }, 'image/png');
+
+                    } catch (err) {
+                        console.error(err);
+                        alert('No se pudo copiar la imagen');
+                    }
+                });
+            </script>
+        </template>
+        
+</odoo>

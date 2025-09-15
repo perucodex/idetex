@@ -5,7 +5,6 @@ import { usePopover } from "@web/core/popover/popover_hook";
 import { Component, useState } from "@odoo/owl";
 import { standardWidgetProps } from "@web/views/widgets/standard_widget_props";
 import { registry } from "@web/core/registry";
-import { useRecordObserver } from "@web/model/relational_model/utils";
 
 // ---------- POPOVER ----------
 class PriceItemsPopover extends Component {
@@ -85,9 +84,20 @@ class PriceItemsWidget extends Component {
 
     async _onSave(dict) {
         const record = this.props.record;
-        await record.update({ price_items: JSON.stringify(dict) });
-        const total = Object.values(dict).reduce((acc, v) => acc + (parseFloat(v) || 0), 0);
-        await record.update({ price_unit: total });
+        const jsonStr = JSON.stringify(dict);
+        await record.update({ price_items: jsonStr });
+        await this.orm.write(
+            "sale.order.line",
+            [record.resId],
+            { price_items: jsonStr }
+        );
+        await this.orm.call(
+            "sale.order.line",
+            "js_compute_price_unit",
+            [record.resId],
+            { context: record.context }
+        );
+        await record.load();
     }
 }
 

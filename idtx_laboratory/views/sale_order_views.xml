@@ -29,6 +29,7 @@
                 <!-- <button name="create_labdev" data-hotkey="q" string="Create LabDev" type="object" context="{'validate_analytic': True}" invisible="state != 'sent' or lab_dev_id"/> -->
                 <button name="create_labdev" class="btn-primary" data-hotkey="q" string="Create LabDev" type="object" context="{'validate_analytic': True}" invisible="lab_dev_id"/>
                 <!-- <button name="action_create_order" class="btn-primary" data-hotkey="q" string="Create Order" type="object" context="{'validate_analytic': True}" invisible="state != 'sent' or is_order"/> -->
+                <button name="action_price_preview" type="object" string="Prices" class="btn-secondary" groups="base.group_user"/>
             </xpath>
             <xpath expr="//header" position="after">
                 <div class="alert alert-warning" role="alert"

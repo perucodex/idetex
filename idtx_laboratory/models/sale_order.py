@@ -74,3 +74,12 @@ class SaleOrder(models.Model):
                                 operation_color_line = operation.operation_id.product_color_price_ids.search([('product_color_id','=',line.product_color_id.id),('mrwo_id','=', operation.operation_id.id)])
                                 if not operation_color_line:
                                     order.weaving_warning += (_('The type prices of %s operation is by color. The color %s does not exists in the operation color list of product %s.') %(operation.operation_id.name, line.product_color_id.name, line.product_id.product_tmpl_id.name)) + '\n'
+
+    def action_price_preview(self):
+        self.ensure_one()
+        url = self.get_portal_url(suffix='/price_items')  # solo un suffix
+        return {
+            'type': 'ir.actions.act_url',
+            'target': 'self',
+            'url': url,
+        }

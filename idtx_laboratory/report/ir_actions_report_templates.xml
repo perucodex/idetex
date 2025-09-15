@@ -10,6 +10,12 @@
                 <span t-if="line.product_color_id" t-field="line.product_color_id.name"/>
             </td>
         </xpath>
+        <xpath expr="//div[@id='informations']" position="inside">
+            <div t-if="doc.applicant_id.name" class="col">
+                <strong>Applicant</strong>
+                <div t-field="doc.applicant_id.name">Mitchell Admin</div>
+            </div>
+        </xpath>
     </template>
     
 </odoo>
