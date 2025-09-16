@@ -67,7 +67,7 @@ class SaleOrderLine(models.Model):
     def _onchange_product_or_color(self):
         self.price_items = '{}'
 
-    @api.depends('product_id', 'product_template_id', 'product_uom', 'product_uom_qty','product_color_id', 'weaving_loss', 'production_loss','bom_id','operation_ids')
+    @api.depends('product_id', 'product_template_id', 'product_uom_id', 'product_uom_qty','product_color_id', 'weaving_loss', 'production_loss','bom_id','operation_ids')
     def _compute_price_unit(self):
         res = super()._compute_price_unit()
         # Diferenciar si es un producto tejido para calcular su precio

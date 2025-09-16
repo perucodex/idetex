@@ -1,5 +1,4 @@
 from odoo import models, fields, api, _
-from odoo.osv import expression
 
 class LabDev(models.Model):
     _name = 'lab.dev'

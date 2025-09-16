@@ -5,7 +5,7 @@
         <xpath expr="//th[@name='th_description']" position="after">
             <th name="th_color" class="text-start">Color</th>
         </xpath>
-        <xpath expr="//td[@name='td_name']" position="after">
+        <xpath expr="//td[@name='td_product_name']" position="after">
             <td name="td_product_color" class="text-start">
                 <span t-if="line.product_color_id" t-field="line.product_color_id.name"/>
             </td>

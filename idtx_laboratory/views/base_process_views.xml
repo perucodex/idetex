@@ -68,7 +68,7 @@
                 </list>
             </field>
         </record>
-
+        
         <record id="base_process_line_search_view" model="ir.ui.view">
             <field name="name">base.process.line.search</field>
             <field name="model">base.process.line</field>
@@ -76,7 +76,7 @@
                 <search string="Search Base Process Line">
                     <field name="base_process_id"/>
                     <field name="product_id"/>
-                    <group expand="0" string="Group By">
+                    <group>
                         <filter string="Base Process" name="group_by_process" domain="[]" context="{'group_by': 'base_process_id'}"/>
                         <filter string="Product" name="group_by_product" domain="[]" context="{'group_by': 'product_id'}"/>
                         <filter string="Factor" name="group_by_factor" domain="[]" context="{'group_by': 'factor'}"/>

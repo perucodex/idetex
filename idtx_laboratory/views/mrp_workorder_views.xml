@@ -28,7 +28,7 @@
                 <field name="progress" widget="progressbar"/>
                 <field name="operation_type"/>
             </xpath>
-            <xpath expr="//notebook/page[@name='workorder_page_work_instruction']" position="after">
+            <xpath expr="//notebook" position="inside">
                 <page string="Rolls" name="rolls" invisible="operation_type != 'weaving'">
                     <field name="weave_type" invisible="1"/>
                     <field name="roll_ids" readonly="state != 'progress'">

@@ -68,7 +68,7 @@
                     <field name="workcenter_id"/>
                     <field name="currency_id"/>
                     <field name="company_id" groups="base.group_multi_company"/>
-                    <group expand="0" string="Group By">
+                    <group>
                         <filter string="Workcenter" name="group_by_workcenter" domain="[]" context="{'group_by': 'workcenter_id'}"/>
                     </group>
                 </search>

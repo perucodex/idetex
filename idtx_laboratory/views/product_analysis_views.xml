@@ -131,7 +131,7 @@
                     <filter name="test" string="Test" domain="[('state','=','test')]"/>
                     <filter name="prod" string="Product" domain="[('state','=','prod')]"/>
                     <!-- <filter name="tech" string="Technical Sheet" domain="[('state','=','tech')]"/> -->
-                    <group expand="0" string="Group By">
+                    <group>
                         <filter string="Analysis Date" name="group_by_analysis_date" domain="[]" context="{'group_by': 'analysis_date'}"/>
                         <filter string="Product" name="group_by_product" domain="[]" context="{'group_by': 'product_id'}"/>
                         <filter string="Customer" name="group_by_partner" domain="[]" context="{'group_by': 'partner_id'}"/>

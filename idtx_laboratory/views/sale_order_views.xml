@@ -12,13 +12,6 @@
                         type="object"
                         invisible="not lab_dev_id" string="Lab Dev"/>
             </xpath>
-            <!-- <xpath expr="//header/button[@name='action_confirm'][1]" position="attributes">
-                <attribute name="invisible">state != 'sent' or not is_order</attribute>
-            </xpath>
-            <xpath expr="//header/button[@name='action_confirm'][2]" position="attributes">
-                <attribute name="invisible">state != 'draft' or not is_order</attribute>
-            </xpath> -->
-            
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="applicant_id" required="1" readonly="state == 'sale'" domain="[('parent_id','=',partner_id)]"/>
             </xpath>
@@ -26,9 +19,7 @@
                 <field name="sale_type" required="1" readonly="state == 'sale'" options="{'no_create': True, 'no_open': True}"/>
             </xpath>
             <xpath expr="//header/button[@name='action_confirm'][1]" position="after">
-                <!-- <button name="create_labdev" data-hotkey="q" string="Create LabDev" type="object" context="{'validate_analytic': True}" invisible="state != 'sent' or lab_dev_id"/> -->
                 <button name="create_labdev" class="btn-primary" data-hotkey="q" string="Create LabDev" type="object" context="{'validate_analytic': True}" invisible="lab_dev_id"/>
-                <!-- <button name="action_create_order" class="btn-primary" data-hotkey="q" string="Create Order" type="object" context="{'validate_analytic': True}" invisible="state != 'sent' or is_order"/> -->
                 <button name="action_price_preview" type="object" string="Prices" class="btn-secondary" groups="base.group_user"/>
             </xpath>
             <xpath expr="//header" position="after">
@@ -36,17 +27,12 @@
                     invisible="weaving_warning == ''">
                     <field name="weaving_warning"/>
                 </div>
-                <!-- <field name="is_order"/>
-                <field name="lab_dev_id"/> -->
             </xpath>
             <xpath expr="//notebook/page/field[@name='order_line']/list/field[@name='product_template_id']" position="after">
                 <field name="available_operation_ids" column_invisible="1"/>
                 <field name="product_color_id" options="{'no_create': True}" required="is_weaving" readonly="not is_weaving or state == 'sale'"/>
-                <!-- <field name="size_ids" options="{'no_create': True}" required="is_size" readonly="not is_size" column_invisible="not parent.is_order" domain="[('technical_id','=',analysis_id)]" widget="many2many_tags"/> -->
                 <field name="bom_id" options="{'no_create': True}" required="is_weaving" readonly="not is_weaving or state == 'sale'" domain="[('product_tmpl_id','=',product_template_id)]" optional="hide"/>
                 <field name="operation_ids" options="{'no_create': True}" required="parent.sale_type == 'service'" readonly="not is_weaving or state == 'sale' or parent.sale_type == 'sale'" domain="[('id','in',available_operation_ids)]" widget="many2many_tags" force_save="1"/>
-                <!-- <field name="labdev_color_name" column_invisible="not parent.is_order or parent.lab_dev_id" required="parent.is_order and not parent.lab_dev_id"/> -->
-                <!-- <field name="labdev_color_id" options="{'no_create': True, 'no_open': True}" column_invisible="not parent.is_order or not parent.lab_dev_id" required="parent.is_order and parent.lab_dev_id" domain="[('lab_dev_id', '=', parent.lab_dev_id)]"/> -->
                 <field name="weaving_loss" readonly="not is_weaving" optional="hide" widget="percentage"/>
                 <field name="production_loss" readonly="not is_weaving" optional="hide" widget="percentage"/>
             </xpath>
