@@ -28,16 +28,16 @@ class MrpWorkorder(models.Model):
                     rec.roll_weight = sum(rec.roll_ids.mapped('gross_weight'))
                     rec.progress = (rec.roll_weight / rec.qty_remaining) * 100 if rec.qty_remaining else 100
                     rec.quantity = 0
-            # elif rec.operation_type == 'dyeing':
-            #     if rec.batch_ids:
-            #         if sum(rec.batch_ids.wo_roll_ids.mapped('gross_weight')) > 0:
-            #             rec.roll_weight = sum(rec.batch_ids.wo_roll_ids.mapped('gross_weight'))
-            #             rec.progress = (rec.roll_weight / rec.qty_remaining) * 100 if rec.qty_remaining else 100
-            #             rec.quantity = 0
-            #         else:
-            #             rec.quantity = sum(rec.batch_ids.wo_roll_ids.mapped('quantity'))
-            #             rec.progress = (rec.quantity / rec.qty_remaining) * 100 if rec.qty_remaining else 100
-            #             rec.roll_weight = 0
+            elif rec.operation_type == 'dyeing':
+                if rec.batch_ids:
+                    if sum(rec.batch_ids.wo_roll_ids.mapped('gross_weight')) > 0:
+                        rec.roll_weight = sum(rec.batch_ids.wo_roll_ids.mapped('gross_weight'))
+                        rec.progress = (rec.roll_weight / rec.qty_remaining) * 100 if rec.qty_remaining else 100
+                        rec.quantity = 0
+                    else:
+                        rec.quantity = sum(rec.batch_ids.wo_roll_ids.mapped('quantity'))
+                        rec.progress = (rec.quantity / rec.qty_remaining) * 100 if rec.qty_remaining else 100
+                        rec.roll_weight = 0
             else:
                 rec.quantity = 0
                 rec.roll_weight = 0
