@@ -17,8 +17,8 @@ msgstr ""
 
 #. module: idtx_laboratory
 #: model:ir.actions.report,print_report_name:idtx_laboratory.action_report_product_analysis
-msgid "'Product Analysis - %s' % (object.name)"
-msgstr "'Análisis de producto -%s' % (object.name)"
+msgid "'Product Analysis - %s - %s' % (object.analysis_id.name, object.stylo)"
+msgstr "'Análisis de producto - %s - %s' % (object.analysis_id.name, object.stylo)"
 
 #. module: idtx_laboratory
 #: model:ir.actions.report,print_report_name:idtx_laboratory.action_report_color_recipe

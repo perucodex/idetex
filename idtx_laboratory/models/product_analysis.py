@@ -107,7 +107,6 @@ class ProductAnalysis(models.Model):
             'is_storable': True,
             'default_code': self.product_code,
             'uom_id': uom.id,
-            'uom_po_id': uom.id,
             'categ_id': self.env.company.weaving_category_ids[0].id if self.env.company.weaving_category_ids else False,
             'route_ids': [Command.link(self.env.ref('mrp.route_warehouse0_manufacture').id)],
             'analysis_id': self.id,

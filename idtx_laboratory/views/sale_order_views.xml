@@ -32,7 +32,7 @@
                 <field name="available_operation_ids" column_invisible="1"/>
                 <field name="product_color_id" options="{'no_create': True}" required="is_weaving" readonly="not is_weaving or state == 'sale'"/>
                 <field name="bom_id" options="{'no_create': True}" required="is_weaving" readonly="not is_weaving or state == 'sale'" domain="[('product_tmpl_id','=',product_template_id)]" optional="hide"/>
-                <field name="operation_ids" options="{'no_create': True}" required="parent.sale_type == 'service'" readonly="not is_weaving or state == 'sale' or parent.sale_type == 'sale'" domain="[('id','in',available_operation_ids)]" widget="many2many_tags" force_save="1"/>
+                <field name="operation_ids" options="{'no_create': True}" required="parent.sale_type == 'service'" readonly="not is_weaving or state == 'sale' or parent.sale_type == 'sale'" domain="[('id','in',available_operation_ids)]" widget="many2many_tags" force_save="1" optional="hide"/>
                 <field name="weaving_loss" readonly="not is_weaving" optional="hide" widget="percentage"/>
                 <field name="production_loss" readonly="not is_weaving" optional="hide" widget="percentage"/>
             </xpath>
