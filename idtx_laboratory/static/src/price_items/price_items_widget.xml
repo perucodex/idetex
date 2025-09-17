@@ -2,9 +2,11 @@
 <templates xml:space="preserve">
 
     <t t-name="idtx_laboratory.PriceItemsWidget">
-        <a t-on-click="showPopover"
-            t-att-class="props.record.data.is_weaving ? 'fa fa-edit cursor-pointer ml-1' : 'd-none'"
-            title="Editar precios por ítem"/>
+        <t t-if="props.record and props.record.resId">
+            <a t-on-click="showPopover"
+                t-att-class="props.record.data.is_weaving ? 'fa fa-edit cursor-pointer ml-1' : 'd-none'"
+                title="Editar precios por ítem"/>
+        </t>
     </t>
 
     <t t-name="idtx_laboratory.PriceItemsPopover">
@@ -19,14 +21,14 @@
                                 class="form-control form-control-sm w-auto text-end"
                                 inputmode="decimal"
                                 pattern="^[0-9]*\.?[0-9]+$"
-                                t-att-value="item.value"
+                                t-model="item.value"
                                 t-att-readonly="ui.readonly"
-                                t-on-input="!ui.readonly and ((ev) => onNumberInput(ev, item))"/>
+                                t-on-input="!ui.readonly and ((ev) => this.onNumberInput(ev, item))"/>
                         </td>
                     </tr>
                     <tr class="fw-bold">
                         <td>Total</td>
-                        <td><t t-esc="total.toFixed(2)"/></td>
+                        <td class="text-end"><t t-esc="total.toFixed(2)"/></td>
                     </tr>
                 </tbody>
             </table>

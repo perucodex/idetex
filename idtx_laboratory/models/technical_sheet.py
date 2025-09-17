@@ -24,7 +24,7 @@ class TechnicalSheet(models.Model):
     first_wash_shrinkage = fields.Char('First Wash Shrinkage')
     first_wash_twist = fields.Char('First Wash Twist')
     yield_meter = fields.Float('Yield')
-    scrap = fields.Float('Scrap', default=1.00)
+    scrap = fields.Float('Scrap', default=0.01)
     weave_type = fields.Selection(related='analysis_id.weave_type', store=True)
     batch = fields.Char('Batch')
     notes = fields.Text('Notes')

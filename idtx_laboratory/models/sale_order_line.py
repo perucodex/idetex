@@ -67,7 +67,7 @@ class SaleOrderLine(models.Model):
     def _onchange_product_or_color(self):
         self.price_items = '{}'
 
-    @api.depends('product_id', 'product_template_id', 'product_uom_id', 'product_uom_qty','product_color_id', 'weaving_loss', 'production_loss','bom_id','operation_ids')
+    @api.depends('product_id', 'product_template_id', 'product_uom_id', 'product_uom_qty','product_color_id', 'weaving_loss', 'production_loss','bom_id','operation_ids','order_id.payment_term_id','order_id.incoterm')
     def _compute_price_unit(self):
         res = super()._compute_price_unit()
         # Diferenciar si es un producto tejido para calcular su precio
@@ -130,16 +130,64 @@ class SaleOrderLine(models.Model):
                 if src_currency != currency:
                     price = src_currency._convert(price, currency, self.env.company, fields.Date.context_today(self), round=False)
                 price_dict.update({operation.operation_id.name : price})
-            # Guarda la información de los precios en el campo
-            self.price_items = json.dumps(price_dict)
+            # # Suma total de insumos y procesos
+            # total = float_round(sum(price_dict.values()), 2) if price_dict else 0
+            # # Aplicamos la merma de producción
+            # total = float_round(total / (1 - bom_id.technical_sheet_id.scrap), 2)
+            # price = float_round(total * bom_id.technical_sheet_id.scrap, 2)
+            # price_dict.update({_('Production Loss: %s %%' % (bom_id.technical_sheet_id.scrap * 100)) : price})
+            # # Agregamos el porcentaje de financiamiento desde la forma de pago
+            # if self.order_id.payment_term_id.financial_percentage:
+            #     total = float_round(total * (1 + self.order_id.payment_term_id.financial_percentage), 2)
+            #     price = float_round(total * self.order_id.payment_term_id.financial_percentage, 2)
+            #     price_dict.update({_('Financial Percentage: %s %%') % (self.order_id.payment_term_id.financial_percentage * 100) : price})
+            # # Agregamos el monto del incoterm
+            # if self.order_id.incoterm and self.order_id.incoterm.unit_price:
+            #     total += self.order_id.incoterm.unit_price
+            #     price = self.order_id.incoterm.unit_price
+            #     price_dict.update({_('Incoterm: ') + self.order_id.incoterm.code : price})
+        # else:
+        
+        # 1. Eliminar cualquier registro previo de merma de producción
+        for key in list(price_dict.keys()):
+            if key.startswith(_('Production Loss:')):
+                price_dict.pop(key, None)
+            if key.startswith(_('Financial Percentage:')):
+                price_dict.pop(key, None)
+            if key.startswith(_('Incoterm:')):
+                price_dict.pop(key, None)
+
         # Suma total de insumos y procesos
         total = float_round(sum(price_dict.values()), 2) if price_dict else 0
-        # Aplicamos la merma de producción
-        total = float_round(total / (1 - bom_id.technical_sheet_id.scrap), 2)
-        # Agregamos el porcentaje de financiamiento desde la forma de pago
-        if self.order_id.payment_term_id.financial_percentage:
-            total = float_round(total * (1 + self.order_id.payment_term_id.financial_percentage), 2)
-        # Agregamos el monto del incoterm
+
+        # ---- Merma de producción (se sincroniza siempre) ----
+        scrap = self.weaving_loss or bom_id.technical_sheet_id.scrap
+        production_loss_key = _('Production Loss: %.2f %%' % float_round(scrap * 100, 2))
+        # Volver a añadir si corresponde
+        if scrap:
+            price = float_round(total * scrap, 2)
+            total = float_round(total / (1 - scrap), 2)
+            price_dict.update({production_loss_key: price})
+        
+        # ---- Terminos de pago (se sincroniza siempre) ----
+        financial_key = _('Financial Percentage: %.2f %%') % (self.order_id.payment_term_id.financial_percentage * 100)
+        # Volver a añadir si corresponde
+        if self.order_id.payment_term_id and self.order_id.payment_term_id.financial_percentage:
+            price = float_round(total * self.order_id.payment_term_id.financial_percentage, 2)
+            total += float_round(total * (1 + self.order_id.payment_term_id.financial_percentage), 2)
+            price_dict.update({financial_key: price})
+
+        # ---- Incoterm (se sincroniza siempre) ----
+        incoterm_key = _('Incoterm: ') + (self.order_id.incoterm.code if self.order_id.incoterm else '')
+        # Volver a añadir si corresponde
         if self.order_id.incoterm and self.order_id.incoterm.unit_price:
-            total += self.order_id.incoterm.unit_price
+            # total += self.order_id.incoterm.unit_price
+            price_dict.update({incoterm_key: self.order_id.incoterm.unit_price})
+
+        # Suma total de otra vez para verificar si se agregaron o se quitaron registros al sincronizar
+        total = float_round(sum(price_dict.values()), 2) if price_dict else 0
+
+        # Guarda la información de los precios en el campo
+        self.price_items = json.dumps(price_dict)
+
         return float_round(total, 2)
