@@ -7,7 +7,13 @@
         <field name="inherit_id" ref="product.product_template_form_view"/>
         <field name="arch" type="xml">
             <xpath expr="//div[@name='button_box']" position="inside">
-                <button name="open_analysis" type="object" icon="fa-microchip" string="Techincal Sheet" invisible="not analysis_id"/>
+                <button name="open_analysis"
+                        class="oe_stat_button"
+                        icon="fa-microchip"
+                        type="object"
+                        invisible="technical_sheet_count == 0">
+                        <field name="technical_sheet_count" widget="statinfo" string="Technical Sheets"/>
+                </button>
             </xpath>
         </field>
     </record>
