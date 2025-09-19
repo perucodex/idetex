@@ -1,0 +1,11 @@
+id,code,name
+color_intensity_0,"0","BLANCOS"
+color_intensity_1,"1","CLAROS (0.0 A 0.5% COL)"
+color_intensity_2,"2","MEDIOS (0.5 A 1.0% COL)"
+color_intensity_3,"3","OSCUROS (1.0 A 4.0% COL)"
+color_intensity_4,"4","INTENSOS (4.0 A 5.0% COL)"
+color_intensity_5,"5","ESPECIALES (MAS DE 5% Y COLORANTES ESPECIALES)"
+color_intensity_H,"H","HEATHER"
+color_intensity_M,"M","MELANGE"
+color_intensity_T,"T","LISTADOS"
+color_intensity_V,"V","LAVADO"

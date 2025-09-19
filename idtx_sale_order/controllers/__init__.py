@@ -1,0 +1,1 @@
+from . import prices_portal

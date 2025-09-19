@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <record id="product_color_tree_view" model="ir.ui.view">
+            <field name="name">product.color.tree</field>
+            <field name="model">product.color</field>
+            <field name="arch" type="xml">
+                <list string="Product Color">
+                    <field name="name"/>
+                    <field name="company_id" groups="base.group_multi_company" optional="hide" readonly="1"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="product_color_action" model="ir.actions.act_window">
+            <field name="name">Product Color</field>
+            <field name="res_model">product.color</field>
+            <field name="view_mode">list</field>
+            <field name="view_id" ref="product_color_tree_view"/>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                Create a new product color
+              </p>
+            </field>
+        </record>
+
+</odoo>

@@ -1,0 +1,2120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+  <data>
+    <record id="base_process_1" model="base.process">
+      <field name="name">SOLO COLORES TMD</field>
+    </record>
+    <record id="base_process_2" model="base.process">
+      <field name="name">ACABADO PPT</field>
+    </record>
+    <record id="base_process_3" model="base.process">
+      <field name="name">AP MODAL TOC</field>
+    </record>
+    <record id="base_process_4" model="base.process">
+      <field name="name">ALGODON HUMEDO COLO</field>
+    </record>
+    <record id="base_process_5" model="base.process">
+      <field name="name">PRUEVA DE SAL</field>
+    </record>
+    <record id="base_process_6" model="base.process">
+      <field name="name">TOC COLORES</field>
+    </record>
+    <record id="base_process_7" model="base.process">
+      <field name="name">TOC BLANCOS</field>
+    </record>
+    <record id="base_process_8" model="base.process">
+      <field name="name">GAMUZA-INTER(COLORE)</field>
+    </record>
+    <record id="base_process_9" model="base.process">
+      <field name="name">GAM-RIB-INTER(BLANC)</field>
+    </record>
+    <record id="base_process_10" model="base.process">
+      <field name="name">INTER.LISTADO CHUCO</field>
+    </record>
+    <record id="base_process_11" model="base.process">
+      <field name="name">VISCOSA HUMEDO</field>
+    </record>
+    <record id="base_process_12" model="base.process">
+      <field name="name">VISVOSA LAVADO SECO</field>
+    </record>
+    <record id="base_process_13" model="base.process">
+      <field name="name">POLYCOTTON TN ALGOD</field>
+    </record>
+    <record id="base_process_14" model="base.process">
+      <field name="name">POLYCOTTON TN 2 FIB</field>
+    </record>
+    <record id="base_process_15" model="base.process">
+      <field name="name">SUAVIS ALFALINA BC</field>
+    </record>
+    <record id="base_process_16" model="base.process">
+      <field name="name">HIDROSEDAL</field>
+    </record>
+    <record id="base_process_17" model="base.process">
+      <field name="name">DISCHARGE HUMEDO</field>
+    </record>
+    <record id="base_process_18" model="base.process">
+      <field name="name">ACABADO PPT</field>
+    </record>
+    <record id="base_process_19" model="base.process">
+      <field name="name">ACABADO LUXURY</field>
+    </record>
+    <record id="base_process_20" model="base.process">
+      <field name="name">NEUT.BLANCO S/ANT</field>
+    </record>
+    <record id="base_process_21" model="base.process">
+      <field name="name">TOC COLORES</field>
+    </record>
+    <record id="base_process_22" model="base.process">
+      <field name="name">FELPA PLUS SECO</field>
+    </record>
+    <record id="base_process_23" model="base.process">
+      <field name="name">Blan-Neutr-Teñ40x60</field>
+    </record>
+    <record id="base_process_24" model="base.process">
+      <field name="name">Teñ R Esp 40x60 CHT</field>
+    </record>
+    <record id="base_process_25" model="base.process">
+      <field name="name">POLYESTER 75/72 HUM</field>
+    </record>
+    <record id="base_process_26" model="base.process">
+      <field name="name">RB</field>
+    </record>
+    <record id="base_process_27" model="base.process">
+      <field name="name">POLYESTER 150/44 HUM</field>
+    </record>
+    <record id="base_process_28" model="base.process">
+      <field name="name">RIP IMPALA HUMEDO</field>
+    </record>
+    <record id="base_process_29" model="base.process">
+      <field name="name">JABONADO POLYVISCOSA</field>
+    </record>
+    <record id="base_process_30" model="base.process">
+      <field name="name">BLANQUEO MODAL</field>
+    </record>
+    <record id="base_process_31" model="base.process">
+      <field name="name">PERCHADO ESMERILADO</field>
+    </record>
+    <record id="base_process_32" model="base.process">
+      <field name="name">TERMOBLANQUEADO ACA</field>
+    </record>
+    <record id="base_process_33" model="base.process">
+      <field name="name">EMPASTADO DIGITAL</field>
+    </record>
+    <record id="base_process_34" model="base.process">
+      <field name="name">ACAB TOPY TOP SA.</field>
+    </record>
+    <record id="base_process_35" model="base.process">
+      <field name="name">VISCOSA 2 FASE/ HUM</field>
+    </record>
+    <record id="base_process_36" model="base.process">
+      <field name="name">ACABADO LUBRICANTE</field>
+    </record>
+    <record id="base_process_37" model="base.process">
+      <field name="name">ACABADO PPT SECO</field>
+    </record>
+    <record id="base_process_38" model="base.process">
+      <field name="name">NEUTRALIZADO</field>
+    </record>
+    <record id="base_process_39" model="base.process">
+      <field name="name">Blanq/TeñNav40x80x60</field>
+    </record>
+    <record id="base_process_40" model="base.process">
+      <field name="name">TeñPol/LAvRed/IsoTer</field>
+    </record>
+    <record id="base_process_41" model="base.process">
+      <field name="name">TeñPol/LAvRed/IsoMir</field>
+    </record>
+    <record id="base_process_42" model="base.process">
+      <field name="name">TeñPolSimult/LAvRed</field>
+    </record>
+    <record id="base_process_43" model="base.process">
+      <field name="name">Teñ/Pes Dianix Fran</field>
+    </record>
+    <record id="base_process_44" model="base.process">
+      <field name="name">ACABADO GRASO</field>
+    </record>
+    <record id="base_process_45" model="base.process">
+      <field name="name">Lav/Estap/Reac/Monos</field>
+    </record>
+    <record id="base_process_46" model="base.process">
+      <field name="name">Blan115-TePoly-Lavrd</field>
+    </record>
+    <record id="base_process_47" model="base.process">
+      <field name="name">MODAL / LANA</field>
+    </record>
+    <record id="base_process_48" model="base.process">
+      <field name="name">Teñ IsoGO+2 Jabx60</field>
+    </record>
+    <record id="base_process_49" model="base.process">
+      <field name="name">HIDROSEDAL F/Y HUME</field>
+    </record>
+    <record id="base_process_50" model="base.process">
+      <field name="name">RESINADO VISCOSA Ó O</field>
+    </record>
+    <record id="base_process_51" model="base.process">
+      <field name="name">TEÑ 135 PÉS+Lav Red</field>
+    </record>
+    <record id="base_process_52" model="base.process">
+      <field name="name">TEÑ ALG DYSTAR LICIT</field>
+    </record>
+    <record id="base_process_53" model="base.process">
+      <field name="name">TEÑIDO POLY RIB NUCL</field>
+    </record>
+    <record id="base_process_54" model="base.process">
+      <field name="name">(TÑ 1FIBRA ALGODON)</field>
+    </record>
+    <record id="base_process_55" model="base.process">
+      <field name="name">TEÑ135PES/LAVRED FRA</field>
+    </record>
+    <record id="base_process_56" model="base.process">
+      <field name="name">TEÑALG NUCLEO DYSTA</field>
+    </record>
+    <record id="base_process_57" model="base.process">
+      <field name="name">LUBR.COSTURA-HIDRO</field>
+    </record>
+    <record id="base_process_58" model="base.process">
+      <field name="name">TÑ 2 FIBRAS ALG-POLY</field>
+    </record>
+    <record id="base_process_59" model="base.process">
+      <field name="name">(COLOR) ALG/ VISC</field>
+    </record>
+    <record id="base_process_60" model="base.process">
+      <field name="name">POLYCOTON 1 FIBRAS</field>
+    </record>
+    <record id="base_process_61" model="base.process">
+      <field name="name">(BLANCO) ALG/ VIS</field>
+    </record>
+    <record id="base_process_62" model="base.process">
+      <field name="name">PARA ARTICULO 100%</field>
+    </record>
+    <record id="base_process_63" model="base.process">
+      <field name="name">ANTIP 0.5(0.1%)</field>
+    </record>
+    <record id="base_process_64" model="base.process">
+      <field name="name">ANTIPILLING 1.0(0.2)</field>
+    </record>
+    <record id="base_process_65" model="base.process">
+      <field name="name">ANTIPILLING 1.5(0.3)</field>
+    </record>
+    <record id="base_process_66" model="base.process">
+      <field name="name">ANTIPI. MUESTRA</field>
+    </record>
+    <record id="base_process_67" model="base.process">
+      <field name="name">ANTIPILL 0.75(0.15%)</field>
+    </record>
+    <record id="base_process_68" model="base.process">
+      <field name="name">RECETA ALGODON</field>
+    </record>
+    <record id="base_process_69" model="base.process">
+      <field name="name">PRUEVA FUNCION ESPEA</field>
+    </record>
+    <record id="base_process_70" model="base.process">
+      <field name="name">JABONADO DYESTAR</field>
+    </record>
+    <record id="base_process_71" model="base.process">
+      <field name="name">ANTIPILLING 0.5(0.1)</field>
+    </record>
+    <record id="base_process_72" model="base.process">
+      <field name="name">ANTIPILLING 1.0(0.2)</field>
+    </record>
+    <record id="base_process_73" model="base.process">
+      <field name="name">ANTIPILLING 1.5(0.3)</field>
+    </record>
+    <record id="base_process_74" model="base.process">
+      <field name="name">ANTIPILLING 0.5(0.5)</field>
+    </record>
+    <record id="base_process_75" model="base.process">
+      <field name="name">ANTIPILLING1.0(0.2)</field>
+    </record>
+    <record id="base_process_76" model="base.process">
+      <field name="name">ANTIPILLING 1.5(0.3)</field>
+    </record>
+    <record id="base_process_77" model="base.process">
+      <field name="name">CORTE Y ENGOME ORILL</field>
+    </record>
+    <record id="base_process_78" model="base.process">
+      <field name="name">RSEY 24/1 SUPIMA REA</field>
+    </record>
+    <record id="base_process_79" model="base.process">
+      <field name="name">Resinado Intensidad</field>
+    </record>
+    <record id="base_process_80" model="base.process">
+      <field name="name">resinado bajar inten</field>
+    </record>
+    <record id="base_process_81" model="base.process">
+      <field name="name">Interlock 44/1 Pima</field>
+    </record>
+    <record id="base_process_82" model="base.process">
+      <field name="name">Jersey 36/1 TMD L.E.</field>
+    </record>
+    <record id="base_process_83" model="base.process">
+      <field name="name">ACABADO WICKIN SECO</field>
+    </record>
+    <record id="base_process_84" model="base.process">
+      <field name="name">Jersey 24/1 supima</field>
+    </record>
+    <record id="base_process_85" model="base.process">
+      <field name="name">Acabado sobre hum w</field>
+    </record>
+    <record id="base_process_86" model="base.process">
+      <field name="name">Resinado Wickin Fuze</field>
+    </record>
+    <record id="base_process_87" model="base.process">
+      <field name="name">RECETA ALGODON SECO</field>
+    </record>
+    <record id="base_process_88" model="base.process">
+      <field name="name">LAVADO VISCOSA</field>
+    </record>
+    <record id="base_process_89" model="base.process">
+      <field name="name">LAVADO-NAYLON</field>
+    </record>
+    <record id="base_process_90" model="base.process">
+      <field name="name">Receta subir Inten</field>
+    </record>
+    <record id="base_process_91" model="base.process">
+      <field name="name">LAVADO VISCOSA</field>
+    </record>
+    <record id="base_process_92" model="base.process">
+      <field name="name">Receta para Amarills</field>
+    </record>
+    <record id="base_process_93" model="base.process">
+      <field name="name">Receta para Limpiar</field>
+    </record>
+    <record id="base_process_94" model="base.process">
+      <field name="name">LAVADO REDUCTIVO</field>
+    </record>
+    <record id="base_process_95" model="base.process">
+      <field name="name">LAV.30/1-60/2 100%</field>
+    </record>
+    <record id="base_process_96" model="base.process">
+      <field name="name">TEÑIDO PES CATIONICO</field>
+    </record>
+    <record id="base_process_97" model="base.process">
+      <field name="name">TEÑIDO DISPERSO</field>
+    </record>
+    <record id="base_process_98" model="base.process">
+      <field name="name">TEÑIDO CATIONICO</field>
+    </record>
+    <record id="base_process_99" model="base.process">
+      <field name="name">LAV JET BLACK DYSTAR</field>
+    </record>
+    <record id="base_process_100" model="base.process">
+      <field name="name">LAVADO.RIB APM</field>
+    </record>
+    <record id="base_process_101" model="base.process">
+      <field name="name">LAV.0XLV0002</field>
+    </record>
+    <record id="base_process_102" model="base.process">
+      <field name="name">LAVADO. ALG. DYSTAR</field>
+    </record>
+    <record id="base_process_103" model="base.process">
+      <field name="name">RECETA PARA BAJAR</field>
+    </record>
+    <record id="base_process_104" model="base.process">
+      <field name="name">Lav.Frio+Teñdo 2 alc</field>
+    </record>
+    <record id="base_process_105" model="base.process">
+      <field name="name">LAVADO VISCOSA  HIDR</field>
+    </record>
+    <record id="base_process_106" model="base.process">
+      <field name="name">LAVADO ANIONICO</field>
+    </record>
+    <record id="base_process_107" model="base.process">
+      <field name="name">LAVADOS GENER 60X30</field>
+    </record>
+    <record id="base_process_108" model="base.process">
+      <field name="name">Lavado JetBlack TMD</field>
+    </record>
+    <record id="base_process_109" model="base.process">
+      <field name="name">Lavado JetBlack Modl</field>
+    </record>
+    <record id="base_process_110" model="base.process">
+      <field name="name">LavJet-TeñJet bl cht</field>
+    </record>
+    <record id="base_process_111" model="base.process">
+      <field name="name">LAVADO DESMIN. 80X20</field>
+    </record>
+    <record id="base_process_112" model="base.process">
+      <field name="name">LavjetBlack-isoterm</field>
+    </record>
+    <record id="base_process_113" model="base.process">
+      <field name="name">ACABADO ALGODON HUME</field>
+    </record>
+    <record id="base_process_114" model="base.process">
+      <field name="name">POLYESTER 150/144</field>
+    </record>
+    <record id="base_process_115" model="base.process">
+      <field name="name">LAV.MELANGE(4N10162)</field>
+    </record>
+    <record id="base_process_116" model="base.process">
+      <field name="name">LAVADOS GENER 80X20</field>
+    </record>
+    <record id="base_process_117" model="base.process">
+      <field name="name">LAVADO  MQ.03/10/12</field>
+    </record>
+    <record id="base_process_118" model="base.process">
+      <field name="name">TR. BLANQUEO OPTICO</field>
+    </record>
+    <record id="base_process_119" model="base.process">
+      <field name="name">LAVADO11/14/23/24/25</field>
+    </record>
+    <record id="base_process_120" model="base.process">
+      <field name="name">B .Q. DE HILOS</field>
+    </record>
+    <record id="base_process_121" model="base.process">
+      <field name="name">NEUT. BQ. HILOS</field>
+    </record>
+    <record id="base_process_122" model="base.process">
+      <field name="name">BLANQUEO QSI</field>
+    </record>
+    <record id="base_process_123" model="base.process">
+      <field name="name">NEUT. TÑ. HILOS</field>
+    </record>
+    <record id="base_process_124" model="base.process">
+      <field name="name">PERCHADO ALGODON</field>
+    </record>
+    <record id="base_process_125" model="base.process">
+      <field name="name">INTERLOOC PIMA</field>
+    </record>
+    <record id="base_process_126" model="base.process">
+      <field name="name">1 JABONADO HILOS</field>
+    </record>
+    <record id="base_process_127" model="base.process">
+      <field name="name">BQ.ART. LIVIANO 3/9</field>
+    </record>
+    <record id="base_process_128" model="base.process">
+      <field name="name">ACAVADO HILOS</field>
+    </record>
+    <record id="base_process_129" model="base.process">
+      <field name="name">RECETA ALTERNA</field>
+    </record>
+    <record id="base_process_130" model="base.process">
+      <field name="name">BQ.ART.PESADO 3/9</field>
+    </record>
+    <record id="base_process_131" model="base.process">
+      <field name="name">JERSEY 30/1 EST PIGO</field>
+    </record>
+    <record id="base_process_132" model="base.process">
+      <field name="name">BLANQUEO VISCOSA</field>
+    </record>
+    <record id="base_process_133" model="base.process">
+      <field name="name">Blaq110x30\Thio\Pil</field>
+    </record>
+    <record id="base_process_134" model="base.process">
+      <field name="name">RESINADO VISCOSA</field>
+    </record>
+    <record id="base_process_135" model="base.process">
+      <field name="name">BQ.VISC.ACTIVADOR</field>
+    </record>
+    <record id="base_process_136" model="base.process">
+      <field name="name">BQ.VISCOSA 3/3TURQ.</field>
+    </record>
+    <record id="base_process_137" model="base.process">
+      <field name="name">HIDRO BLANCO 1/2 RCT</field>
+    </record>
+    <record id="base_process_138" model="base.process">
+      <field name="name">RET.ACAB/DESMONTADO</field>
+    </record>
+    <record id="base_process_139" model="base.process">
+      <field name="name">BQ.MELANGE 0LM00001</field>
+    </record>
+    <record id="base_process_140" model="base.process">
+      <field name="name">LAVADO MQ 07/21/22</field>
+    </record>
+    <record id="base_process_141" model="base.process">
+      <field name="name">BQ AGUA OXIGENADA</field>
+    </record>
+    <record id="base_process_142" model="base.process">
+      <field name="name">PERCHADO ALGODON</field>
+    </record>
+    <record id="base_process_143" model="base.process">
+      <field name="name">SOLO PPT VISCOSA ALG</field>
+    </record>
+    <record id="base_process_144" model="base.process">
+      <field name="name">ANTIPILLING 1.0(0.2)</field>
+    </record>
+    <record id="base_process_145" model="base.process">
+      <field name="name">ANTIPILLING 1.5(0.3)</field>
+    </record>
+    <record id="base_process_146" model="base.process">
+      <field name="name">PERCHADO /ESMERILADO</field>
+    </record>
+    <record id="base_process_147" model="base.process">
+      <field name="name">TEÑ 60-2 JAB-FIJ CHT</field>
+    </record>
+    <record id="base_process_148" model="base.process">
+      <field name="name">Teñ IsoQSI+2Jab Avit</field>
+    </record>
+    <record id="base_process_149" model="base.process">
+      <field name="name">ANTIPILLING FEED 501</field>
+    </record>
+    <record id="base_process_150" model="base.process">
+      <field name="name">BLANCO VISCOSA 4/6</field>
+    </record>
+    <record id="base_process_151" model="base.process">
+      <field name="name">JERSEY 30/1 FANTASIA</field>
+    </record>
+    <record id="base_process_152" model="base.process">
+      <field name="name">ACABADO SOBR SECO AA</field>
+    </record>
+    <record id="base_process_153" model="base.process">
+      <field name="name">ACABADO SBR SC PIMA</field>
+    </record>
+    <record id="base_process_154" model="base.process">
+      <field name="name">TERMOBLANQUEADO</field>
+    </record>
+    <record id="base_process_155" model="base.process">
+      <field name="name">BLANCO VISCOSA 10/6</field>
+    </record>
+    <record id="base_process_156" model="base.process">
+      <field name="name">BQ.MELANGE 3H2O 3CO3</field>
+    </record>
+    <record id="base_process_157" model="base.process">
+      <field name="name">ALGODON DECO</field>
+    </record>
+    <record id="base_process_158" model="base.process">
+      <field name="name">BLANCO VISCOSA 6/6</field>
+    </record>
+    <record id="base_process_159" model="base.process">
+      <field name="name">VISCOSA 2DO PASE</field>
+    </record>
+    <record id="base_process_160" model="base.process">
+      <field name="name">SUAV. LAV. VISCOSA</field>
+    </record>
+    <record id="base_process_161" model="base.process">
+      <field name="name">PROCESO LAVADO BQ.</field>
+    </record>
+    <record id="base_process_162" model="base.process">
+      <field name="name">LAVADO-TEÑIDO GO</field>
+    </record>
+    <record id="base_process_163" model="base.process">
+      <field name="name">Neutr Teñd.+2 Jabona</field>
+    </record>
+    <record id="base_process_164" model="base.process">
+      <field name="name">Lavado Caustificado</field>
+    </record>
+    <record id="base_process_165" model="base.process">
+      <field name="name">ACABADO LUBRICANTE A</field>
+    </record>
+    <record id="base_process_166" model="base.process">
+      <field name="name">ACABADO VISCOSA HUME</field>
+    </record>
+    <record id="base_process_167" model="base.process">
+      <field name="name">ACABADO PPT</field>
+    </record>
+    <record id="base_process_168" model="base.process">
+      <field name="name">LAVADO ESTAMPADO ALG</field>
+    </record>
+    <record id="base_process_169" model="base.process">
+      <field name="name">LAVADO ESTAMPADO</field>
+    </record>
+    <record id="base_process_170" model="base.process">
+      <field name="name">LAV.CON ASUNGAL 58</field>
+    </record>
+    <record id="base_process_171" model="base.process">
+      <field name="name">TEÑ 60 AVITERA MARIN</field>
+    </record>
+    <record id="base_process_172" model="base.process">
+      <field name="name">JABONADO AMPLEX</field>
+    </record>
+    <record id="base_process_173" model="base.process">
+      <field name="name">LAVADO ESTANPADO POL</field>
+    </record>
+    <record id="base_process_174" model="base.process">
+      <field name="name">LAVADO ESTAMPADO</field>
+    </record>
+    <record id="base_process_175" model="base.process">
+      <field name="name">LAVADO CON HIDRO/SOD</field>
+    </record>
+    <record id="base_process_176" model="base.process">
+      <field name="name">WICKIN SECO</field>
+    </record>
+    <record id="base_process_177" model="base.process">
+      <field name="name">LAVADO AMPLEX JN-DG</field>
+    </record>
+    <record id="base_process_178" model="base.process">
+      <field name="name">LAVADO ESTAM AMPLEX</field>
+    </record>
+    <record id="base_process_179" model="base.process">
+      <field name="name">ISOPON SBT</field>
+    </record>
+    <record id="base_process_180" model="base.process">
+      <field name="name">WICKING SECO POLY.</field>
+    </record>
+    <record id="base_process_181" model="base.process">
+      <field name="name">ACABADO DE PERCHADO</field>
+    </record>
+    <record id="base_process_182" model="base.process">
+      <field name="name">2 fibra 75%DE COT</field>
+    </record>
+    <record id="base_process_183" model="base.process">
+      <field name="name">Blan/Thio/int 110/45</field>
+    </record>
+    <record id="base_process_184" model="base.process">
+      <field name="name">TEÑ/ISO/HP+NEUTR</field>
+    </record>
+    <record id="base_process_185" model="base.process">
+      <field name="name">ACABADO ESMERILADO</field>
+    </record>
+    <record id="base_process_186" model="base.process">
+      <field name="name">ANTIPILLING FINAL</field>
+    </record>
+    <record id="base_process_187" model="base.process">
+      <field name="name">JAB 60° DYSTAR</field>
+    </record>
+    <record id="base_process_188" model="base.process">
+      <field name="name">ANTIPILLING 1.0(0.2%</field>
+    </record>
+    <record id="base_process_189" model="base.process">
+      <field name="name">ANTIPILLING 1.5(0.3)</field>
+    </record>
+    <record id="base_process_190" model="base.process">
+      <field name="name">Teñido 40/60 MFD</field>
+    </record>
+    <record id="base_process_191" model="base.process">
+      <field name="name">ACABADOS ESTAMPADOS</field>
+    </record>
+    <record id="base_process_192" model="base.process">
+      <field name="name">Teñido Medio CemMig</field>
+    </record>
+    <record id="base_process_193" model="base.process">
+      <field name="name">TEÑ/ISO/HP+NEUTR</field>
+    </record>
+    <record id="base_process_194" model="base.process">
+      <field name="name">RECETA ESTAMPADO ESP</field>
+    </record>
+    <record id="base_process_195" model="base.process">
+      <field name="name">BLANQUEO TEÑIDO SIMU</field>
+    </record>
+    <record id="base_process_196" model="base.process">
+      <field name="name">TEÑIDO SIMULTANEO</field>
+    </record>
+    <record id="base_process_197" model="base.process">
+      <field name="name">Teñido Simulta Medio</field>
+    </record>
+    <record id="base_process_198" model="base.process">
+      <field name="name">Blanqueo 115°x 10¨</field>
+    </record>
+    <record id="base_process_199" model="base.process">
+      <field name="name">Teñido Medio Camel</field>
+    </record>
+    <record id="base_process_200" model="base.process">
+      <field name="name">TEÑIDO ACERO ALI</field>
+    </record>
+    <record id="base_process_201" model="base.process">
+      <field name="name">Teñido Simult 3 alca</field>
+    </record>
+    <record id="base_process_202" model="base.process">
+      <field name="name">NEUTRALIZADO SIMULTE</field>
+    </record>
+    <record id="base_process_203" model="base.process">
+      <field name="name">BLANQUEO TEÑIDO ISOT</field>
+    </record>
+    <record id="base_process_204" model="base.process">
+      <field name="name">Blanqueo Franela 22</field>
+    </record>
+    <record id="base_process_205" model="base.process">
+      <field name="name">RECETA PERU FASHION</field>
+    </record>
+    <record id="base_process_206" model="base.process">
+      <field name="name">TEÑIDO ALGODON 22</field>
+    </record>
+    <record id="base_process_207" model="base.process">
+      <field name="name">BLANQUEO CON OPTICO</field>
+    </record>
+    <record id="base_process_208" model="base.process">
+      <field name="name">Teñ/Pe/Co/Simul/DYST</field>
+    </record>
+    <record id="base_process_209" model="base.process">
+      <field name="name">Teñido Simult 2 alca</field>
+    </record>
+    <record id="base_process_210" model="base.process">
+      <field name="name">RECETA HILANDERIA SO</field>
+    </record>
+    <record id="base_process_211" model="base.process">
+      <field name="name">ACABADO VISC/MOD HUM</field>
+    </record>
+    <record id="base_process_212" model="base.process">
+      <field name="name">HILANDERIA LYCRA</field>
+    </record>
+    <record id="base_process_213" model="base.process">
+      <field name="name">BlanqQuim+Teñi Iso 2</field>
+    </record>
+    <record id="base_process_214" model="base.process">
+      <field name="name">BlanqQuim+TeñiIso3Al</field>
+    </record>
+    <record id="base_process_215" model="base.process">
+      <field name="name">BlanqQuim+TeñiMig 2l</field>
+    </record>
+    <record id="base_process_216" model="base.process">
+      <field name="name">BlanqQuim+TeñiMig 3A</field>
+    </record>
+    <record id="base_process_217" model="base.process">
+      <field name="name">BlanqQuim+TeñAzul 3A</field>
+    </record>
+    <record id="base_process_218" model="base.process">
+      <field name="name">BlanqQuim+TeñMig3Al</field>
+    </record>
+    <record id="base_process_219" model="base.process">
+      <field name="name">ACABADO ESTAMPADO</field>
+    </record>
+    <record id="base_process_220" model="base.process">
+      <field name="name">Blanqui-Neutr-TeñVis</field>
+    </record>
+    <record id="base_process_221" model="base.process">
+      <field name="name">BlanQ+neu+LvAni+Tñtq</field>
+    </record>
+    <record id="base_process_222" model="base.process">
+      <field name="name">HUMECTADO TERMOFIJA.</field>
+    </record>
+    <record id="base_process_223" model="base.process">
+      <field name="name">HUMECTADO TERM.</field>
+    </record>
+    <record id="base_process_224" model="base.process">
+      <field name="name">Lav 80x20-Teñisot2Al</field>
+    </record>
+    <record id="base_process_225" model="base.process">
+      <field name="name">TR. MARR/PLO/VMIL</field>
+    </record>
+    <record id="base_process_226" model="base.process">
+      <field name="name">TR. MARR/PLOM/VMIL</field>
+    </record>
+    <record id="base_process_227" model="base.process">
+      <field name="name">Blan115x10+Neut+TñPl</field>
+    </record>
+    <record id="base_process_228" model="base.process">
+      <field name="name">Blan115x10-Neut-LvRd</field>
+    </record>
+    <record id="base_process_229" model="base.process">
+      <field name="name">Blan115x10-Teñpol-Lv</field>
+    </record>
+    <record id="base_process_230" model="base.process">
+      <field name="name">Blan115x10-Teñpol</field>
+    </record>
+    <record id="base_process_231" model="base.process">
+      <field name="name">SECADO 1° PASE HUM</field>
+    </record>
+    <record id="base_process_232" model="base.process">
+      <field name="name">TR. TUQ/V.JADE</field>
+    </record>
+    <record id="base_process_233" model="base.process">
+      <field name="name">TR. TURQ/V.JADE</field>
+    </record>
+    <record id="base_process_234" model="base.process">
+      <field name="name">TR. RSP/W5R MIGR</field>
+    </record>
+    <record id="base_process_235" model="base.process">
+      <field name="name">TR. TUQ/V.JADE/SAL</field>
+    </record>
+    <record id="base_process_236" model="base.process">
+      <field name="name">TR. TUQ/V.JADE CARB</field>
+    </record>
+    <record id="base_process_237" model="base.process">
+      <field name="name">TR. C03 OSCURO</field>
+    </record>
+    <record id="base_process_238" model="base.process">
+      <field name="name">TERMOFIJADO RAMA</field>
+    </record>
+    <record id="base_process_239" model="base.process">
+      <field name="name">TR.NEGRO</field>
+    </record>
+    <record id="base_process_240" model="base.process">
+      <field name="name">TR.NEGROS</field>
+    </record>
+    <record id="base_process_241" model="base.process">
+      <field name="name">TR.C03 2 PARTES OSC</field>
+    </record>
+    <record id="base_process_242" model="base.process">
+      <field name="name">POLYCOTTON 2 FIBRAS</field>
+    </record>
+    <record id="base_process_243" model="base.process">
+      <field name="name">TEÑIDO DIRECTO</field>
+    </record>
+    <record id="base_process_244" model="base.process">
+      <field name="name">FELPA PLUSH SECO</field>
+    </record>
+    <record id="base_process_245" model="base.process">
+      <field name="name">ACABADO DISCHARGE SE</field>
+    </record>
+    <record id="base_process_246" model="base.process">
+      <field name="name">NEUTRA. TUQ/V.JADE</field>
+    </record>
+    <record id="base_process_247" model="base.process">
+      <field name="name">JABO. TUQ/V.JADE</field>
+    </record>
+    <record id="base_process_248" model="base.process">
+      <field name="name">TÑ. BLANCO NILON</field>
+    </record>
+    <record id="base_process_249" model="base.process">
+      <field name="name">TÑ.NYLON OSC</field>
+    </record>
+    <record id="base_process_250" model="base.process">
+      <field name="name">TEÑIDO VISCOSA NYLON</field>
+    </record>
+    <record id="base_process_251" model="base.process">
+      <field name="name">LAVADO 40/1 Y 50/1</field>
+    </record>
+    <record id="base_process_252" model="base.process">
+      <field name="name">TIN HILADO EASTMAN</field>
+    </record>
+    <record id="base_process_253" model="base.process">
+      <field name="name">TÑ.POL/LEVL CL-MD-OS</field>
+    </record>
+    <record id="base_process_254" model="base.process">
+      <field name="name">TÑ.POL135x30/BLA90x0</field>
+    </record>
+    <record id="base_process_255" model="base.process">
+      <field name="name">TÑ.POLYSTE PARA ALG</field>
+    </record>
+    <record id="base_process_256" model="base.process">
+      <field name="name">TÑ.POLYSTE.CL-MD-OSC</field>
+    </record>
+    <record id="base_process_257" model="base.process">
+      <field name="name">1 LAV.REDCTV ALGODON</field>
+    </record>
+    <record id="base_process_258" model="base.process">
+      <field name="name">1 LAV.REDCTV TURQ</field>
+    </record>
+    <record id="base_process_259" model="base.process">
+      <field name="name">NEUT.POLY DOBLE FIBR</field>
+    </record>
+    <record id="base_process_260" model="base.process">
+      <field name="name">LAVADO TREDUCTIVO</field>
+    </record>
+    <record id="base_process_261" model="base.process">
+      <field name="name">Lav Reduc Teñ Iso Sa</field>
+    </record>
+    <record id="base_process_262" model="base.process">
+      <field name="name">TÑ.POLYSTE.CL-MD-OSC</field>
+    </record>
+    <record id="base_process_263" model="base.process">
+      <field name="name">RESINADO RIB 5x4</field>
+    </record>
+    <record id="base_process_264" model="base.process">
+      <field name="name">FIJADO HILOS</field>
+    </record>
+    <record id="base_process_265" model="base.process">
+      <field name="name">FIJADO 1% A 2.5%</field>
+    </record>
+    <record id="base_process_266" model="base.process">
+      <field name="name">ACABADO ULTRAVIOLETA</field>
+    </record>
+    <record id="base_process_267" model="base.process">
+      <field name="name">REBAJE HIDRO 50</field>
+    </record>
+    <record id="base_process_268" model="base.process">
+      <field name="name">RETIRAR ACABADO-R</field>
+    </record>
+    <record id="base_process_269" model="base.process">
+      <field name="name">RETIRAR ACAB VISCOSA</field>
+    </record>
+    <record id="base_process_270" model="base.process">
+      <field name="name">RETIRADO ACAB ALOODO</field>
+    </record>
+    <record id="base_process_271" model="base.process">
+      <field name="name">RETIR. ACAB. SOLO</field>
+    </record>
+    <record id="base_process_272" model="base.process">
+      <field name="name">RETIRAR FIJADOR</field>
+    </record>
+    <record id="base_process_273" model="base.process">
+      <field name="name">REBAJE (130ºCX20')</field>
+    </record>
+    <record id="base_process_274" model="base.process">
+      <field name="name">ACAB.HILOS-COLORES</field>
+    </record>
+    <record id="base_process_275" model="base.process">
+      <field name="name">ACAB.HILOS-BLANC-CLA</field>
+    </record>
+    <record id="base_process_276" model="base.process">
+      <field name="name">ACAB.HILOS-POLYSTER</field>
+    </record>
+    <record id="base_process_277" model="base.process">
+      <field name="name">ACAB.PRENDAS NYLON</field>
+    </record>
+    <record id="base_process_278" model="base.process">
+      <field name="name">ACABADO RUCOBAC</field>
+    </record>
+    <record id="base_process_279" model="base.process">
+      <field name="name">ACAB.TELA -FRANELA</field>
+    </record>
+    <record id="base_process_280" model="base.process">
+      <field name="name">SUAV. MODAL - VISCOS</field>
+    </record>
+    <record id="base_process_281" model="base.process">
+      <field name="name">SUAV MODAL JET BLACK</field>
+    </record>
+    <record id="base_process_282" model="base.process">
+      <field name="name">BQ.ART.NORMAL LIVIA.</field>
+    </record>
+    <record id="base_process_283" model="base.process">
+      <field name="name">REISNADO JERSEY 24/1</field>
+    </record>
+    <record id="base_process_284" model="base.process">
+      <field name="name">REC PREV SEC PARA R</field>
+    </record>
+    <record id="base_process_285" model="base.process">
+      <field name="name">THIOTAN R PA</field>
+    </record>
+    <record id="base_process_286" model="base.process">
+      <field name="name">PROTEC SOLAR UV</field>
+    </record>
+    <record id="base_process_287" model="base.process">
+      <field name="name">DESCARGA TURQUEZA</field>
+    </record>
+    <record id="base_process_288" model="base.process">
+      <field name="name">RECE ESP PIQUE LACOC</field>
+    </record>
+    <record id="base_process_289" model="base.process">
+      <field name="name">JERSEY VISCOSA/MODAA</field>
+    </record>
+    <record id="base_process_290" model="base.process">
+      <field name="name">Recat.Algod-Amarill</field>
+    </record>
+    <record id="base_process_291" model="base.process">
+      <field name="name">ALDODON,VISCOSA,VOXT</field>
+    </record>
+    <record id="base_process_292" model="base.process">
+      <field name="name">SUAVIZADO INTENSO</field>
+    </record>
+    <record id="base_process_293" model="base.process">
+      <field name="name">RECETA 106</field>
+    </record>
+    <record id="base_process_294" model="base.process">
+      <field name="name">RECETA 107</field>
+    </record>
+    <record id="base_process_295" model="base.process">
+      <field name="name">RECETA 108</field>
+    </record>
+    <record id="base_process_296" model="base.process">
+      <field name="name">SECADO CON WELLIN 28</field>
+    </record>
+    <record id="base_process_297" model="base.process">
+      <field name="name">RECETA TACTO ALTO</field>
+    </record>
+    <record id="base_process_298" model="base.process">
+      <field name="name">RECETA 110</field>
+    </record>
+    <record id="base_process_299" model="base.process">
+      <field name="name">RECETA 111</field>
+    </record>
+    <record id="base_process_300" model="base.process">
+      <field name="name">BQ. VISCOSA CARB.</field>
+    </record>
+    <record id="base_process_301" model="base.process">
+      <field name="name">RECETA 112</field>
+    </record>
+    <record id="base_process_302" model="base.process">
+      <field name="name">BQ.ART. LIVIANO 3/9</field>
+    </record>
+    <record id="base_process_303" model="base.process">
+      <field name="name">BQ-. VISCOSA ALPA. C</field>
+    </record>
+    <record id="base_process_304" model="base.process">
+      <field name="name">NEUTRALIZADO MUESTRA</field>
+    </record>
+    <record id="base_process_305" model="base.process">
+      <field name="name">BQ. .MODAL 2/3</field>
+    </record>
+    <record id="base_process_306" model="base.process">
+      <field name="name">LAVADO 50/1Y 40/1</field>
+    </record>
+    <record id="base_process_307" model="base.process">
+      <field name="name">ACABADO HIDRO COLORS</field>
+    </record>
+    <record id="base_process_308" model="base.process">
+      <field name="name">RECETA 114</field>
+    </record>
+    <record id="base_process_309" model="base.process">
+      <field name="name">RECETA 115</field>
+    </record>
+    <record id="base_process_310" model="base.process">
+      <field name="name">TALLER DE CONFECCIOU</field>
+    </record>
+    <record id="base_process_311" model="base.process">
+      <field name="name">BLANCO VISC 10/6-LIN</field>
+    </record>
+    <record id="base_process_312" model="base.process">
+      <field name="name">RECETA 117</field>
+    </record>
+    <record id="base_process_313" model="base.process">
+      <field name="name">SUAV.FRANELA.NEGRO</field>
+    </record>
+    <record id="base_process_314" model="base.process">
+      <field name="name">RECETA 119</field>
+    </record>
+    <record id="base_process_315" model="base.process">
+      <field name="name">F TERRY 30/20 C/L4 M</field>
+    </record>
+    <record id="base_process_316" model="base.process">
+      <field name="name">RECETA/MEJORA TACTO</field>
+    </record>
+    <record id="base_process_317" model="base.process">
+      <field name="name">LAVADO ESTANPADO POL</field>
+    </record>
+    <record id="base_process_318" model="base.process">
+      <field name="name">OPCION 2 COD 120</field>
+    </record>
+    <record id="base_process_319" model="base.process">
+      <field name="name">Teñ Migr 80-60 Ricco</field>
+    </record>
+    <record id="base_process_320" model="base.process">
+      <field name="name">LAV.DYSTAR</field>
+    </record>
+    <record id="base_process_321" model="base.process">
+      <field name="name">LAVADO-NEGRO-VISCOSA</field>
+    </record>
+    <record id="base_process_322" model="base.process">
+      <field name="name">Neu Jabon Riccard</field>
+    </record>
+    <record id="base_process_323" model="base.process">
+      <field name="name">Teñ Isoterma-Pilling</field>
+    </record>
+    <record id="base_process_324" model="base.process">
+      <field name="name">Lav Jet Black</field>
+    </record>
+    <record id="base_process_325" model="base.process">
+      <field name="name">DESCRUDE 60x20/80x20</field>
+    </record>
+    <record id="base_process_326" model="base.process">
+      <field name="name">Neutralizado Desc Rc</field>
+    </record>
+    <record id="base_process_327" model="base.process">
+      <field name="name">FRANELA 20/10 PERCHN</field>
+    </record>
+    <record id="base_process_328" model="base.process">
+      <field name="name">RECETA 104 SIN GRASO</field>
+    </record>
+    <record id="base_process_329" model="base.process">
+      <field name="name">RESINADO INTER 44/1</field>
+    </record>
+    <record id="base_process_330" model="base.process">
+      <field name="name">Teñ Jet Black Ricca</field>
+    </record>
+    <record id="base_process_331" model="base.process">
+      <field name="name">TR.VISC CLARO 1 SAL</field>
+    </record>
+    <record id="base_process_332" model="base.process">
+      <field name="name">TR.VISC. JET BLACK</field>
+    </record>
+    <record id="base_process_333" model="base.process">
+      <field name="name">TR. VISC.OSCUR 2 SAL</field>
+    </record>
+    <record id="base_process_334" model="base.process">
+      <field name="name">TR. VISC. OSC 01 SAL</field>
+    </record>
+    <record id="base_process_335" model="base.process">
+      <field name="name">TEÑ JET BLACK TMD</field>
+    </record>
+    <record id="base_process_336" model="base.process">
+      <field name="name">TEÑ JET BLACK MODAL</field>
+    </record>
+    <record id="base_process_337" model="base.process">
+      <field name="name">TR. VISC.VOLCANIC</field>
+    </record>
+    <record id="base_process_338" model="base.process">
+      <field name="name">RECETA REVOLUCION CL</field>
+    </record>
+    <record id="base_process_339" model="base.process">
+      <field name="name">RECETA 132</field>
+    </record>
+    <record id="base_process_340" model="base.process">
+      <field name="name">TR.VIS.CL/ME/OS.SULF</field>
+    </record>
+    <record id="base_process_341" model="base.process">
+      <field name="name">RECETA 133</field>
+    </record>
+    <record id="base_process_342" model="base.process">
+      <field name="name">ACAB COLORES-HIDRO</field>
+    </record>
+    <record id="base_process_343" model="base.process">
+      <field name="name">RECETA 135</field>
+    </record>
+    <record id="base_process_344" model="base.process">
+      <field name="name">TÑ POLYVISCOSA 1BAÑO</field>
+    </record>
+    <record id="base_process_345" model="base.process">
+      <field name="name">RECETA 136</field>
+    </record>
+    <record id="base_process_346" model="base.process">
+      <field name="name">RECETA 137</field>
+    </record>
+    <record id="base_process_347" model="base.process">
+      <field name="name">RECETA 138</field>
+    </record>
+    <record id="base_process_348" model="base.process">
+      <field name="name">RECETA 139</field>
+    </record>
+    <record id="base_process_349" model="base.process">
+      <field name="name">JERSEY 20/1 POLYCOT</field>
+    </record>
+    <record id="base_process_350" model="base.process">
+      <field name="name">RECETA 140</field>
+    </record>
+    <record id="base_process_351" model="base.process">
+      <field name="name">TR.VIS.TUQ/V.JADE</field>
+    </record>
+    <record id="base_process_352" model="base.process">
+      <field name="name">RECETA 141</field>
+    </record>
+    <record id="base_process_353" model="base.process">
+      <field name="name">RECETA 142</field>
+    </record>
+    <record id="base_process_354" model="base.process">
+      <field name="name">RECETA 143</field>
+    </record>
+    <record id="base_process_355" model="base.process">
+      <field name="name">RECETA 144</field>
+    </record>
+    <record id="base_process_356" model="base.process">
+      <field name="name">RECETA 145</field>
+    </record>
+    <record id="base_process_357" model="base.process">
+      <field name="name">RECETA 146</field>
+    </record>
+    <record id="base_process_358" model="base.process">
+      <field name="name">RECETA 147</field>
+    </record>
+    <record id="base_process_359" model="base.process">
+      <field name="name">RECETA 148</field>
+    </record>
+    <record id="base_process_360" model="base.process">
+      <field name="name">RECETA 149</field>
+    </record>
+    <record id="base_process_361" model="base.process">
+      <field name="name">JERSEY 24/1 SUPYMA</field>
+    </record>
+    <record id="base_process_362" model="base.process">
+      <field name="name">RECETA PSYCHO BUNNYC</field>
+    </record>
+    <record id="base_process_363" model="base.process">
+      <field name="name">RECETA 151</field>
+    </record>
+    <record id="base_process_364" model="base.process">
+      <field name="name">1/2  RESI LUX J/CRU</field>
+    </record>
+    <record id="base_process_365" model="base.process">
+      <field name="name">JERSEY 30/1 F/L 20 T</field>
+    </record>
+    <record id="base_process_366" model="base.process">
+      <field name="name">RECETA 154</field>
+    </record>
+    <record id="base_process_367" model="base.process">
+      <field name="name">RECETA PREV ACABADO</field>
+    </record>
+    <record id="base_process_368" model="base.process">
+      <field name="name">ACABADO LUXURI</field>
+    </record>
+    <record id="base_process_369" model="base.process">
+      <field name="name">ACABADO SOBR SECO AA</field>
+    </record>
+    <record id="base_process_370" model="base.process">
+      <field name="name">RESINADO 100% PIMA</field>
+    </record>
+    <record id="base_process_371" model="base.process">
+      <field name="name">ACAB SECO SIN COMPAT</field>
+    </record>
+    <record id="base_process_372" model="base.process">
+      <field name="name">JERSEY 24/1 SUPYMA</field>
+    </record>
+    <record id="base_process_373" model="base.process">
+      <field name="name">RECETA LUXUR ALG/PIM</field>
+    </record>
+    <record id="base_process_374" model="base.process">
+      <field name="name">PARA MEJORAR ENCOGIO</field>
+    </record>
+    <record id="base_process_375" model="base.process">
+      <field name="name">RESINADO 100%PIMA</field>
+    </record>
+    <record id="base_process_376" model="base.process">
+      <field name="name">REISNA PARA AMARILLA</field>
+    </record>
+    <record id="base_process_377" model="base.process">
+      <field name="name">RESINADO LUXURI</field>
+    </record>
+    <record id="base_process_378" model="base.process">
+      <field name="name">RESINADO JESREY 40/1</field>
+    </record>
+    <record id="base_process_379" model="base.process">
+      <field name="name">TÑ.POLYSTE.CL-MD-OSC</field>
+    </record>
+    <record id="base_process_380" model="base.process">
+      <field name="name">1 LAV.REDCTV 1%-3%</field>
+    </record>
+    <record id="base_process_381" model="base.process">
+      <field name="name">RESINA CON LUBRICA</field>
+    </record>
+    <record id="base_process_382" model="base.process">
+      <field name="name">RECETA 202</field>
+    </record>
+    <record id="base_process_383" model="base.process">
+      <field name="name">RECETA 203</field>
+    </record>
+    <record id="base_process_384" model="base.process">
+      <field name="name">REC PROP NV ACIDO GO</field>
+    </record>
+    <record id="base_process_385" model="base.process">
+      <field name="name">RECETA 205</field>
+    </record>
+    <record id="base_process_386" model="base.process">
+      <field name="name">RECETA 206</field>
+    </record>
+    <record id="base_process_387" model="base.process">
+      <field name="name">RECETA IDROFILA</field>
+    </record>
+    <record id="base_process_388" model="base.process">
+      <field name="name">RECETA208</field>
+    </record>
+    <record id="base_process_389" model="base.process">
+      <field name="name">RECETA HIDROFILA</field>
+    </record>
+    <record id="base_process_390" model="base.process">
+      <field name="name">THERMOFIJADO</field>
+    </record>
+    <record id="base_process_391" model="base.process">
+      <field name="name">JERSEY NAZCA 30/ F O</field>
+    </record>
+    <record id="base_process_392" model="base.process">
+      <field name="name">PLUS JERSEY PPT 20/1</field>
+    </record>
+    <record id="base_process_393" model="base.process">
+      <field name="name">BQ-. VISCOSA ALPA. C</field>
+    </record>
+    <record id="base_process_394" model="base.process">
+      <field name="name">LAVADO 50/1Y 40/1</field>
+    </record>
+    <record id="base_process_395" model="base.process">
+      <field name="name">B .Q. DE HILOS</field>
+    </record>
+    <record id="base_process_396" model="base.process">
+      <field name="name">JABONADO. TÑ. HILOS</field>
+    </record>
+    <record id="base_process_397" model="base.process">
+      <field name="name">RECETA 212</field>
+    </record>
+    <record id="base_process_398" model="base.process">
+      <field name="name">NEUT.BIO.DESCRUDE</field>
+    </record>
+    <record id="base_process_399" model="base.process">
+      <field name="name">NEUT.BQ.SIN AP.</field>
+    </record>
+    <record id="base_process_400" model="base.process">
+      <field name="name">NEUT.BQ.ANTP/100 ALG</field>
+    </record>
+    <record id="base_process_401" model="base.process">
+      <field name="name">UV 60° X 30</field>
+    </record>
+    <record id="base_process_402" model="base.process">
+      <field name="name">NEUT.DESC POLYCO</field>
+    </record>
+    <record id="base_process_403" model="base.process">
+      <field name="name">Neutralizado de Dese</field>
+    </record>
+    <record id="base_process_404" model="base.process">
+      <field name="name">NEUTRAL. ALG. SAL/SL</field>
+    </record>
+    <record id="base_process_405" model="base.process">
+      <field name="name">NEUTRALIZADO VISCOSA</field>
+    </record>
+    <record id="base_process_406" model="base.process">
+      <field name="name">NEU.TURQUESA ALG/VIS</field>
+    </record>
+    <record id="base_process_407" model="base.process">
+      <field name="name">NEUT.BQ.ALGO POLICOT</field>
+    </record>
+    <record id="base_process_408" model="base.process">
+      <field name="name">NEUTRAL. ALG. SALMUR</field>
+    </record>
+    <record id="base_process_409" model="base.process">
+      <field name="name">NEUT.BQ.TURQUEZA</field>
+    </record>
+    <record id="base_process_410" model="base.process">
+      <field name="name">BLANCO OPT.4/6 ART.P</field>
+    </record>
+    <record id="base_process_411" model="base.process">
+      <field name="name">BLANCO OPT.6/6 ART.P</field>
+    </record>
+    <record id="base_process_412" model="base.process">
+      <field name="name">BLANCO OPT.8/6 ART.P</field>
+    </record>
+    <record id="base_process_413" model="base.process">
+      <field name="name">BQ.MELANGE 00BM0029</field>
+    </record>
+    <record id="base_process_414" model="base.process">
+      <field name="name">BLANCO VISC 6/2 HIL</field>
+    </record>
+    <record id="base_process_415" model="base.process">
+      <field name="name">BLANC OPT.10/6 ART P</field>
+    </record>
+    <record id="base_process_416" model="base.process">
+      <field name="name">NEUT.VISC. BLANCO</field>
+    </record>
+    <record id="base_process_417" model="base.process">
+      <field name="name">PROP MEJ ACIDO GRASO</field>
+    </record>
+    <record id="base_process_418" model="base.process">
+      <field name="name">ANTIQUIEBRE</field>
+    </record>
+    <record id="base_process_419" model="base.process">
+      <field name="name">TEÑIDO AZUGRE 40-80</field>
+    </record>
+    <record id="base_process_420" model="base.process">
+      <field name="name">TÑ ISOTR COLOR CLARO</field>
+    </record>
+    <record id="base_process_421" model="base.process">
+      <field name="name">Tñ ISOTR.COLOR OS/MD</field>
+    </record>
+    <record id="base_process_422" model="base.process">
+      <field name="name">NEUT.TÑ-AZUFRE</field>
+    </record>
+    <record id="base_process_423" model="base.process">
+      <field name="name">JAB-TÑ- AZUFRE</field>
+    </record>
+    <record id="base_process_424" model="base.process">
+      <field name="name">OXIDACION-TÑ-AZUFRE</field>
+    </record>
+    <record id="base_process_425" model="base.process">
+      <field name="name">TEÑ MIGR.80-60 2 SAL</field>
+    </record>
+    <record id="base_process_426" model="base.process">
+      <field name="name">TEÑ MIGR.80-60 CLARO</field>
+    </record>
+    <record id="base_process_427" model="base.process">
+      <field name="name">Teñido Isoter 3 Carb</field>
+    </record>
+    <record id="base_process_428" model="base.process">
+      <field name="name">Teñi Isote FRANELA</field>
+    </record>
+    <record id="base_process_429" model="base.process">
+      <field name="name">TEÑ MIGR.80-60 2 SAL</field>
+    </record>
+    <record id="base_process_430" model="base.process">
+      <field name="name">DESC-TEÑID-JAB AGA</field>
+    </record>
+    <record id="base_process_431" model="base.process">
+      <field name="name">Blan 115x10+Neutra</field>
+    </record>
+    <record id="base_process_432" model="base.process">
+      <field name="name">TINTURA COLOR ZEN</field>
+    </record>
+    <record id="base_process_433" model="base.process">
+      <field name="name">CARBO+JAB COLOR ZEN</field>
+    </record>
+    <record id="base_process_434" model="base.process">
+      <field name="name">TEÑ ISOTE ALCALIGENO</field>
+    </record>
+    <record id="base_process_435" model="base.process">
+      <field name="name">BLANQUEO BIO NEUTRA</field>
+    </record>
+    <record id="base_process_436" model="base.process">
+      <field name="name">Teñido Isort - Pilln</field>
+    </record>
+    <record id="base_process_437" model="base.process">
+      <field name="name">Tñ ISOT.COL CLAR/OSC</field>
+    </record>
+    <record id="base_process_438" model="base.process">
+      <field name="name">Tñ ISOTR.3 ALC SALM</field>
+    </record>
+    <record id="base_process_439" model="base.process">
+      <field name="name">Teñido Isoter 3 Carb</field>
+    </record>
+    <record id="base_process_440" model="base.process">
+      <field name="name">CURVA DYSTAR ROUGE</field>
+    </record>
+    <record id="base_process_441" model="base.process">
+      <field name="name">Teñ Iso/Levaf 3 Car</field>
+    </record>
+    <record id="base_process_442" model="base.process">
+      <field name="name">TR. 0.5 -4 A MAS</field>
+    </record>
+    <record id="base_process_443" model="base.process">
+      <field name="name">TR. MARR/PLOM/VMIL</field>
+    </record>
+    <record id="base_process_444" model="base.process">
+      <field name="name">THERMOFIJADO DESENGS</field>
+    </record>
+    <record id="base_process_445" model="base.process">
+      <field name="name">TR. TUQ/V.JADE</field>
+    </record>
+    <record id="base_process_446" model="base.process">
+      <field name="name">TR. TURQ/V.JADE</field>
+    </record>
+    <record id="base_process_447" model="base.process">
+      <field name="name">TÑ TURQ SALM 2 CARB</field>
+    </record>
+    <record id="base_process_448" model="base.process">
+      <field name="name">TÑ TURQ 1 SAL ADEL 2</field>
+    </record>
+    <record id="base_process_449" model="base.process">
+      <field name="name">TR. RSP/W5R MIGR</field>
+    </record>
+    <record id="base_process_450" model="base.process">
+      <field name="name">TR. TUQ/V.JADE/SAL</field>
+    </record>
+    <record id="base_process_451" model="base.process">
+      <field name="name">ANTIPILL 0.75(0.15%)</field>
+    </record>
+    <record id="base_process_452" model="base.process">
+      <field name="name">TR. TUQ/V.JADE CARB</field>
+    </record>
+    <record id="base_process_453" model="base.process">
+      <field name="name">TR.ART/PESA C03.OSC</field>
+    </record>
+    <record id="base_process_454" model="base.process">
+      <field name="name">ACABADO GRASO</field>
+    </record>
+    <record id="base_process_455" model="base.process">
+      <field name="name">TR.NEGRO</field>
+    </record>
+    <record id="base_process_456" model="base.process">
+      <field name="name">TEÑIDO MUESTRA</field>
+    </record>
+    <record id="base_process_457" model="base.process">
+      <field name="name">ANTIPILLING 1.5(0.3)</field>
+    </record>
+    <record id="base_process_458" model="base.process">
+      <field name="name">Teñido 40/60 MFD</field>
+    </record>
+    <record id="base_process_459" model="base.process">
+      <field name="name">TR. TURQ/V 3 sal</field>
+    </record>
+    <record id="base_process_460" model="base.process">
+      <field name="name">DESCRUDE 80 30</field>
+    </record>
+    <record id="base_process_461" model="base.process">
+      <field name="name">LavDesg/Blanq/Noir</field>
+    </record>
+    <record id="base_process_462" model="base.process">
+      <field name="name">TeñPol/LAvRed/Iso</field>
+    </record>
+    <record id="base_process_463" model="base.process">
+      <field name="name">1/2LAV REDCTV 0.5-1%</field>
+    </record>
+    <record id="base_process_464" model="base.process">
+      <field name="name">2LAV.REDTVO CON CYCL</field>
+    </record>
+    <record id="base_process_465" model="base.process">
+      <field name="name">TeñPol/LAvRed</field>
+    </record>
+    <record id="base_process_466" model="base.process">
+      <field name="name">Blanq/THIO/RAYO/PILL</field>
+    </record>
+    <record id="base_process_467" model="base.process">
+      <field name="name">FIJADO 2.5% A MAS</field>
+    </record>
+    <record id="base_process_468" model="base.process">
+      <field name="name">FIJADO NYLON</field>
+    </record>
+    <record id="base_process_469" model="base.process">
+      <field name="name">LAVADO ESTAMPADO ALG</field>
+    </record>
+    <record id="base_process_470" model="base.process">
+      <field name="name">ACAB.HILO-COLOR-MED</field>
+    </record>
+    <record id="base_process_471" model="base.process">
+      <field name="name">TÑ.POLYSTE.LICITACI</field>
+    </record>
+    <record id="base_process_472" model="base.process">
+      <field name="name">Teñ Elastano Dystar</field>
+    </record>
+    <record id="base_process_473" model="base.process">
+      <field name="name">BQ Algodon 85x30 TNC</field>
+    </record>
+    <record id="base_process_474" model="base.process">
+      <field name="name">NEUTRALI.2 JABONADOS</field>
+    </record>
+    <record id="base_process_475" model="base.process">
+      <field name="name">Blanq/THIO/RAYO/PILL</field>
+    </record>
+    <record id="base_process_476" model="base.process">
+      <field name="name">RECETA 300</field>
+    </record>
+    <record id="base_process_477" model="base.process">
+      <field name="name">Blanq Fibra 52</field>
+    </record>
+    <record id="base_process_478" model="base.process">
+      <field name="name">Blanq 110x30 Protec</field>
+    </record>
+    <record id="base_process_479" model="base.process">
+      <field name="name">ALGOD.HUMEDO DYESTAR</field>
+    </record>
+    <record id="base_process_480" model="base.process">
+      <field name="name">BQ-. VISCOSA ALPA. C</field>
+    </record>
+    <record id="base_process_481" model="base.process">
+      <field name="name">BQ.40/1Y50/1.INVADIN</field>
+    </record>
+    <record id="base_process_482" model="base.process">
+      <field name="name">NEUT.BQ.C/ANTIP.TURQ</field>
+    </record>
+    <record id="base_process_483" model="base.process">
+      <field name="name">BQ.40/Y50/1 ART.PESA</field>
+    </record>
+    <record id="base_process_484" model="base.process">
+      <field name="name">BQ.40/Y50/1 PES-NEGR</field>
+    </record>
+    <record id="base_process_485" model="base.process">
+      <field name="name">NEUTR ALP CLEAN</field>
+    </record>
+    <record id="base_process_486" model="base.process">
+      <field name="name">NEUTR.VISC.DYESTAR</field>
+    </record>
+    <record id="base_process_487" model="base.process">
+      <field name="name">Blan80X60+TeñiIso3Al</field>
+    </record>
+    <record id="base_process_488" model="base.process">
+      <field name="name">TR.CL-MED.OSC.INT</field>
+    </record>
+    <record id="base_process_489" model="base.process">
+      <field name="name">TR. MARR/PLO/VMIL</field>
+    </record>
+    <record id="base_process_490" model="base.process">
+      <field name="name">TR. TURQ/V.JADE</field>
+    </record>
+    <record id="base_process_491" model="base.process">
+      <field name="name">TR. RSP/W5R  60</field>
+    </record>
+    <record id="base_process_492" model="base.process">
+      <field name="name">TR. C03 OSCURO</field>
+    </record>
+    <record id="base_process_493" model="base.process">
+      <field name="name">TR.NEGRO DYSTAR</field>
+    </record>
+    <record id="base_process_494" model="base.process">
+      <field name="name">TR.NEGROS DYSTAR</field>
+    </record>
+    <record id="base_process_495" model="base.process">
+      <field name="name">NEUTRA.POLY. SINLAVA</field>
+    </record>
+    <record id="base_process_496" model="base.process">
+      <field name="name">NEUTRALIZADO POLY.</field>
+    </record>
+    <record id="base_process_497" model="base.process">
+      <field name="name">NEUTR. POLY. NEGROS</field>
+    </record>
+    <record id="base_process_498" model="base.process">
+      <field name="name">JERSEY 24/1 HUMEDO</field>
+    </record>
+    <record id="base_process_499" model="base.process">
+      <field name="name">FIJADO LAV.0XLT0009</field>
+    </record>
+    <record id="base_process_500" model="base.process">
+      <field name="name">TR. 0.5 -4 A MAS</field>
+    </record>
+    <record id="base_process_501" model="base.process">
+      <field name="name">RESINA JERSEY 24/1</field>
+    </record>
+    <record id="base_process_502" model="base.process">
+      <field name="name">PRUEVA</field>
+    </record>
+    <record id="base_process_503" model="base.process">
+      <field name="name">LAVADO 60x20 POLICOT</field>
+    </record>
+    <record id="base_process_504" model="base.process">
+      <field name="name">Tñ ISOTER POLICOTTON</field>
+    </record>
+    <record id="base_process_505" model="base.process">
+      <field name="name">NEUTRA POLICOTTON N</field>
+    </record>
+    <record id="base_process_506" model="base.process">
+      <field name="name">Teñido Isoter 2 Carb</field>
+    </record>
+    <record id="base_process_507" model="base.process">
+      <field name="name">Teñ 80-60 sal ade 3</field>
+    </record>
+    <record id="base_process_508" model="base.process">
+      <field name="name">Teñ MIgr Franela EKO</field>
+    </record>
+    <record id="base_process_509" model="base.process">
+      <field name="name">BQ TMD TURQUEZA</field>
+    </record>
+    <record id="base_process_510" model="base.process">
+      <field name="name">BQ ART LIVIANO TURQ</field>
+    </record>
+    <record id="base_process_511" model="base.process">
+      <field name="name">B.Q. TMD</field>
+    </record>
+    <record id="base_process_512" model="base.process">
+      <field name="name">LAVADO EXTRACTIVO</field>
+    </record>
+    <record id="base_process_513" model="base.process">
+      <field name="name">BQ.ART.PESADO 3/9</field>
+    </record>
+    <record id="base_process_514" model="base.process">
+      <field name="name">BQ.ART.LIVIANO 3/8</field>
+    </record>
+    <record id="base_process_515" model="base.process">
+      <field name="name">BQ.ART.PASADO 2/9 NE</field>
+    </record>
+    <record id="base_process_516" model="base.process">
+      <field name="name">NEUT ALP CLEAN.TURQ</field>
+    </record>
+    <record id="base_process_517" model="base.process">
+      <field name="name">BQ.ART.PESADO 3/9</field>
+    </record>
+    <record id="base_process_518" model="base.process">
+      <field name="name">BlanqQuim+TeñiIso3Al</field>
+    </record>
+    <record id="base_process_519" model="base.process">
+      <field name="name">NEUT.TR.CL.MED.OSCAC</field>
+    </record>
+    <record id="base_process_520" model="base.process">
+      <field name="name">TR.CL.MED.OSC-HIDRO</field>
+    </record>
+    <record id="base_process_521" model="base.process">
+      <field name="name">TR. MARR/PLO/VMIL</field>
+    </record>
+    <record id="base_process_522" model="base.process">
+      <field name="name">TR. TURQ/V.JADE</field>
+    </record>
+    <record id="base_process_523" model="base.process">
+      <field name="name">Teñ Azuli Franela</field>
+    </record>
+    <record id="base_process_524" model="base.process">
+      <field name="name">Teñidos Azuli 40-60</field>
+    </record>
+    <record id="base_process_525" model="base.process">
+      <field name="name">TR. RSP/W5R MIGR</field>
+    </record>
+    <record id="base_process_526" model="base.process">
+      <field name="name">TEÑ ROYAL ALG + NEUT</field>
+    </record>
+    <record id="base_process_527" model="base.process">
+      <field name="name">Teñ Royal 40-60</field>
+    </record>
+    <record id="base_process_528" model="base.process">
+      <field name="name">TR.C03.OSC-HIDRO 50</field>
+    </record>
+    <record id="base_process_529" model="base.process">
+      <field name="name">TR.NEGROS-HIDRO 50</field>
+    </record>
+    <record id="base_process_530" model="base.process">
+      <field name="name">TR.NEGROS-HIDRO</field>
+    </record>
+    <record id="base_process_531" model="base.process">
+      <field name="name">NEUT.CYCLANON ECO</field>
+    </record>
+    <record id="base_process_532" model="base.process">
+      <field name="name">LAVADO NEU+ CYCLAN</field>
+    </record>
+    <record id="base_process_533" model="base.process">
+      <field name="name">FIJADO TURQUEZA 3%</field>
+    </record>
+    <record id="base_process_534" model="base.process">
+      <field name="name">RECETA 505</field>
+    </record>
+    <record id="base_process_535" model="base.process">
+      <field name="name">BQ ARTICULO PIMA</field>
+    </record>
+    <record id="base_process_536" model="base.process">
+      <field name="name">BQ-AZUFRE</field>
+    </record>
+    <record id="base_process_537" model="base.process">
+      <field name="name">BLNQUEO NAVA</field>
+    </record>
+    <record id="base_process_538" model="base.process">
+      <field name="name">BLNQUEO VISCOSA /MOD</field>
+    </record>
+    <record id="base_process_539" model="base.process">
+      <field name="name">NEUT.BQ.DYSTAR.S.ANT</field>
+    </record>
+    <record id="base_process_540" model="base.process">
+      <field name="name">BQ.ALG.DYESTAR</field>
+    </record>
+    <record id="base_process_541" model="base.process">
+      <field name="name">BQ QUIMICO 98x30</field>
+    </record>
+    <record id="base_process_542" model="base.process">
+      <field name="name">BQ.ART.NORMAL LIVIA.</field>
+    </record>
+    <record id="base_process_543" model="base.process">
+      <field name="name">DESCR 80x30/Neutra</field>
+    </record>
+    <record id="base_process_544" model="base.process">
+      <field name="name">BQ.DE POLI -ALGO</field>
+    </record>
+    <record id="base_process_545" model="base.process">
+      <field name="name">Descrude 80x15 Neutr</field>
+    </record>
+    <record id="base_process_546" model="base.process">
+      <field name="name">PREVIO SOFT</field>
+    </record>
+    <record id="base_process_547" model="base.process">
+      <field name="name">Blan 110*30 lacoste</field>
+    </record>
+    <record id="base_process_548" model="base.process">
+      <field name="name">BQ.ART.NORMAL LIVIA.</field>
+    </record>
+    <record id="base_process_549" model="base.process">
+      <field name="name">BQ.QM.NORMAL 90x30</field>
+    </record>
+    <record id="base_process_550" model="base.process">
+      <field name="name">BQ.QM.NORMAL 85x30</field>
+    </record>
+    <record id="base_process_551" model="base.process">
+      <field name="name">BQ.cottotencel85X30</field>
+    </record>
+    <record id="base_process_552" model="base.process">
+      <field name="name">BQ.QM.90X20 COLTEX</field>
+    </record>
+    <record id="base_process_553" model="base.process">
+      <field name="name">BLANCO OPT. 4/6</field>
+    </record>
+    <record id="base_process_554" model="base.process">
+      <field name="name">BLANCO OPT. 6/6</field>
+    </record>
+    <record id="base_process_555" model="base.process">
+      <field name="name">BLANCO OPT. 40 D.</field>
+    </record>
+    <record id="base_process_556" model="base.process">
+      <field name="name">BQ - AZUFRE</field>
+    </record>
+    <record id="base_process_557" model="base.process">
+      <field name="name">BQ.ART.NORMAL LIVIA.</field>
+    </record>
+    <record id="base_process_558" model="base.process">
+      <field name="name">BLANCO OPTICO 10/6</field>
+    </record>
+    <record id="base_process_559" model="base.process">
+      <field name="name">2 BLANCO OPTICO 10/6</field>
+    </record>
+    <record id="base_process_560" model="base.process">
+      <field name="name">BLANQUEO OPTICO RAF</field>
+    </record>
+    <record id="base_process_561" model="base.process">
+      <field name="name">2 BLANCO OPTICO 10/6</field>
+    </record>
+    <record id="base_process_562" model="base.process">
+      <field name="name">BLANCO OPTICO 110*30</field>
+    </record>
+    <record id="base_process_563" model="base.process">
+      <field name="name">BLANCO OPTICO COLTEX</field>
+    </record>
+    <record id="base_process_564" model="base.process">
+      <field name="name">TR.CL.MED.OSC.INT</field>
+    </record>
+    <record id="base_process_565" model="base.process">
+      <field name="name">TR. TURQ/V.JADE</field>
+    </record>
+    <record id="base_process_566" model="base.process">
+      <field name="name">TR. RSP/W5R MIGR</field>
+    </record>
+    <record id="base_process_567" model="base.process">
+      <field name="name">TR. 0.5 -4 A MAS</field>
+    </record>
+    <record id="base_process_568" model="base.process">
+      <field name="name">PRUEBA</field>
+    </record>
+    <record id="base_process_569" model="base.process">
+      <field name="name">FIJADO TURQUEZA 4%</field>
+    </record>
+    <record id="base_process_570" model="base.process">
+      <field name="name">BQ.ART. LIVIANO 3/9</field>
+    </record>
+    <record id="base_process_571" model="base.process">
+      <field name="name">B.Q ALGODON DYESTAR</field>
+    </record>
+    <record id="base_process_572" model="base.process">
+      <field name="name">BIO DESCRUDE-NEGROS</field>
+    </record>
+    <record id="base_process_573" model="base.process">
+      <field name="name">TR. TURQ/V.JADE</field>
+    </record>
+    <record id="base_process_574" model="base.process">
+      <field name="name">1/2 RESINA PARA LACT</field>
+    </record>
+    <record id="base_process_575" model="base.process">
+      <field name="name">INTERLOOCK 44/1 SUPI</field>
+    </record>
+    <record id="base_process_576" model="base.process">
+      <field name="name">RESINADO LUXURI</field>
+    </record>
+    <record id="base_process_577" model="base.process">
+      <field name="name">JERSEY 24/1 SUPIMA A</field>
+    </record>
+    <record id="base_process_578" model="base.process">
+      <field name="name">BQ.ART. LIVIANO 3/9</field>
+    </record>
+    <record id="base_process_579" model="base.process">
+      <field name="name">BQ.ART.PESADO 3/9</field>
+    </record>
+    <record id="base_process_580" model="base.process">
+      <field name="name">RESINADO COLOR BLANO</field>
+    </record>
+    <record id="base_process_581" model="base.process">
+      <field name="name">RESINADO BAJAR INTED</field>
+    </record>
+    <record id="base_process_582" model="base.process">
+      <field name="name">RESINADO PARA AMARIR</field>
+    </record>
+    <record id="base_process_583" model="base.process">
+      <field name="name">YERSEY 36/1 TMD</field>
+    </record>
+    <record id="base_process_584" model="base.process">
+      <field name="name">NEUTRALIZADO DE BLAO</field>
+    </record>
+    <record id="base_process_585" model="base.process">
+      <field name="name">SOBRE HUMEDO WECKYN</field>
+    </record>
+    <record id="base_process_586" model="base.process">
+      <field name="name">RESINADO WICKING/FUH</field>
+    </record>
+    <record id="base_process_587" model="base.process">
+      <field name="name">RECETA BAJAR INTENSD</field>
+    </record>
+    <record id="base_process_588" model="base.process">
+      <field name="name">LAVADO ANIONICO</field>
+    </record>
+    <record id="base_process_589" model="base.process">
+      <field name="name">Neut/98x10/JabSeifol</field>
+    </record>
+    <record id="base_process_590" model="base.process">
+      <field name="name">Neut/80x10/JabAmplex</field>
+    </record>
+    <record id="base_process_591" model="base.process">
+      <field name="name">Neutr/Jabo Ampl/Desc</field>
+    </record>
+    <record id="base_process_592" model="base.process">
+      <field name="name">NEUTR.2 JABONSEIFOL</field>
+    </record>
+    <record id="base_process_593" model="base.process">
+      <field name="name">Neutr/Jabon70FraClar</field>
+    </record>
+    <record id="base_process_594" model="base.process">
+      <field name="name">Neut/Jab70FraMED/OSC</field>
+    </record>
+    <record id="base_process_595" model="base.process">
+      <field name="name">NEUTR.2 JABONAMPLEX</field>
+    </record>
+    <record id="base_process_596" model="base.process">
+      <field name="name">NEUTRALIZADO ACIDO</field>
+    </record>
+    <record id="base_process_597" model="base.process">
+      <field name="name">PROCESO SUNFIX HP</field>
+    </record>
+    <record id="base_process_598" model="base.process">
+      <field name="name">RECETA 801</field>
+    </record>
+    <record id="base_process_599" model="base.process">
+      <field name="name">NEUT.TUQ/2 JAB.-ALG/</field>
+    </record>
+    <record id="base_process_600" model="base.process">
+      <field name="name">JAB.TUQ/V.JADE-ALG</field>
+    </record>
+    <record id="base_process_601" model="base.process">
+      <field name="name">NEUTR. RSP/W-5R MIG</field>
+    </record>
+    <record id="base_process_602" model="base.process">
+      <field name="name">JABO. RSP/W-5R MIG</field>
+    </record>
+    <record id="base_process_603" model="base.process">
+      <field name="name">ACIDO+JABON 85X7 MCF</field>
+    </record>
+    <record id="base_process_604" model="base.process">
+      <field name="name">JABO. TUQ/V.JADE SAL</field>
+    </record>
+    <record id="base_process_605" model="base.process">
+      <field name="name">NEUT.DYESTAR</field>
+    </record>
+    <record id="base_process_606" model="base.process">
+      <field name="name">JAB.ART.PESADO-ALGOD</field>
+    </record>
+    <record id="base_process_607" model="base.process">
+      <field name="name">JAB.ART.PES-TURQ-ALG</field>
+    </record>
+    <record id="base_process_608" model="base.process">
+      <field name="name">JAB/VISC CL-MED-OSC</field>
+    </record>
+    <record id="base_process_609" model="base.process">
+      <field name="name">RECETA 802</field>
+    </record>
+    <record id="base_process_610" model="base.process">
+      <field name="name">NEUT.TR.VIS.SULFATO</field>
+    </record>
+    <record id="base_process_611" model="base.process">
+      <field name="name">JABONADO DENRAWN LIV</field>
+    </record>
+    <record id="base_process_612" model="base.process">
+      <field name="name">JAB.LAV.ESTAM.RTIVO</field>
+    </record>
+    <record id="base_process_613" model="base.process">
+      <field name="name">RECETA PRUEBA</field>
+    </record>
+    <record id="base_process_614" model="base.process">
+      <field name="name">JAB.ART.PESADO-ALGOD</field>
+    </record>
+    <record id="base_process_615" model="base.process">
+      <field name="name">DESMONTADO</field>
+    </record>
+    <record id="base_process_616" model="base.process">
+      <field name="name">JABONADO TEXTERGE</field>
+    </record>
+    <record id="base_process_617" model="base.process">
+      <field name="name">JABONADO ISOPON SRA</field>
+    </record>
+    <record id="base_process_618" model="base.process">
+      <field name="name">Jabonado Franela</field>
+    </record>
+    <record id="base_process_619" model="base.process">
+      <field name="name">RECETA AGA WHITE</field>
+    </record>
+    <record id="base_process_620" model="base.process">
+      <field name="name">JABON PARA SSR</field>
+    </record>
+    <record id="base_process_621" model="base.process">
+      <field name="name">Jabonador PH 6.5-7.5</field>
+    </record>
+    <record id="base_process_622" model="base.process">
+      <field name="name">JABONAMPLEX106 C/M/O</field>
+    </record>
+    <record id="base_process_623" model="base.process">
+      <field name="name">JABONAMPLEX106 IN-ES</field>
+    </record>
+    <record id="base_process_624" model="base.process">
+      <field name="name">RECETA 804</field>
+    </record>
+    <record id="base_process_625" model="base.process">
+      <field name="name">REC NEGRO AGA AMAZON</field>
+    </record>
+    <record id="base_process_626" model="base.process">
+      <field name="name">RECETA NEON</field>
+    </record>
+    <record id="base_process_627" model="base.process">
+      <field name="name">RESINADO JERSEY 24/S</field>
+    </record>
+    <record id="base_process_628" model="base.process">
+      <field name="name">RECETA PROVICIONAL A</field>
+    </record>
+    <record id="base_process_629" model="base.process">
+      <field name="name">RESINADO ESPECIAL CS</field>
+    </record>
+    <record id="base_process_630" model="base.process">
+      <field name="name">ANTIBACTERIAL</field>
+    </record>
+    <record id="base_process_631" model="base.process">
+      <field name="name">LAV.REDUCT LYCRA.PES</field>
+    </record>
+    <record id="base_process_632" model="base.process">
+      <field name="name">JAB.SOLO POLYESTER</field>
+    </record>
+    <record id="base_process_633" model="base.process">
+      <field name="name">DESCARGA TODOS LOS C</field>
+    </record>
+    <record id="base_process_634" model="base.process">
+      <field name="name">REC PARA INTENCIDAD</field>
+    </record>
+    <record id="base_process_635" model="base.process">
+      <field name="name">REC PARA AMARILLAR</field>
+    </record>
+    <record id="base_process_636" model="base.process">
+      <field name="name">RECETA LACOST 36/1</field>
+    </record>
+    <record id="base_process_637" model="base.process">
+      <field name="name">JERSEY LACOST</field>
+    </record>
+    <record id="base_process_638" model="base.process">
+      <field name="name">TÑ.PES.BLANCO</field>
+    </record>
+    <record id="base_process_639" model="base.process">
+      <field name="name">RESINADO 36/1 PIMA O</field>
+    </record>
+    <record id="base_process_640" model="base.process">
+      <field name="name">RECETA JERSEY 36/1 R</field>
+    </record>
+    <record id="base_process_641" model="base.process">
+      <field name="name">JERSEY 36/1 LACOST S</field>
+    </record>
+    <record id="base_process_642" model="base.process">
+      <field name="name">REC EXCL LACOST 36/1</field>
+    </record>
+    <record id="base_process_643" model="base.process">
+      <field name="name">RECETA BAJAR Y LIMPR</field>
+    </record>
+    <record id="base_process_644" model="base.process">
+      <field name="name">RECETA ALTERNA MANU</field>
+    </record>
+    <record id="base_process_645" model="base.process">
+      <field name="name">RECETA ALT TEX MONOS</field>
+    </record>
+    <record id="base_process_646" model="base.process">
+      <field name="name">CORRIDA NOIR DE LACL</field>
+    </record>
+    <record id="base_process_647" model="base.process">
+      <field name="name">RESINADO ESPECIAL</field>
+    </record>
+    <record id="base_process_648" model="base.process">
+      <field name="name">HUMECTANTE/DESENGRAE</field>
+    </record>
+    <record id="base_process_649" model="base.process">
+      <field name="name">PARA MARMAX PEDIDO O</field>
+    </record>
+    <record id="base_process_650" model="base.process">
+      <field name="name">LAVADO  M. 01 Y 06</field>
+    </record>
+    <record id="base_process_651" model="base.process">
+      <field name="name">LAVADO  M. 01 Y 02</field>
+    </record>
+    <record id="base_process_652" model="base.process">
+      <field name="name">LAVADO  MQ. 03 Y 04</field>
+    </record>
+    <record id="base_process_653" model="base.process">
+      <field name="name">LAVADO  MQ. 15 Y 16</field>
+    </record>
+    <record id="base_process_654" model="base.process">
+      <field name="name">LAVADO  MQ.08/19/20</field>
+    </record>
+    <record id="base_process_655" model="base.process">
+      <field name="name">LAVADO  MQ.03/10/12</field>
+    </record>
+    <record id="base_process_656" model="base.process">
+      <field name="name">LAVADO  MQ.05 Y 18</field>
+    </record>
+    <record id="base_process_657" model="base.process">
+      <field name="name">LAVADO MAQUINA BIANI</field>
+    </record>
+    <record id="base_process_658" model="base.process">
+      <field name="name">LAVADO11/14/23/24/25</field>
+    </record>
+    <record id="base_process_659" model="base.process">
+      <field name="name">LAVADO  MQ.17</field>
+    </record>
+    <record id="base_process_660" model="base.process">
+      <field name="name">LAVADO  MQ.07/21/22</field>
+    </record>
+    <record id="base_process_661" model="base.process">
+      <field name="name">LAVADO MAQUINA 29</field>
+    </record>
+    <record id="base_process_662" model="base.process">
+      <field name="name">LAVADO 26/27</field>
+    </record>
+    <record id="base_process_663" model="base.process">
+      <field name="name">LAVADO MQ 09</field>
+    </record>
+    <record id="base_process_664" model="base.process">
+      <field name="name">LAVADO MQ MS 11</field>
+    </record>
+    <record id="base_process_665" model="base.process">
+      <field name="name">LAV.MQ 1 Y 2POLI P4</field>
+    </record>
+    <record id="base_process_666" model="base.process">
+      <field name="name">LAV.MQ.3 Y 4 POLI P4</field>
+    </record>
+    <record id="base_process_667" model="base.process">
+      <field name="name">LAV. MQ.5 POLI. P4</field>
+    </record>
+    <record id="base_process_668" model="base.process">
+      <field name="name">LAVADO MAQ. 3-4</field>
+    </record>
+    <record id="base_process_669" model="base.process">
+      <field name="name">LAVADO MQ 12</field>
+    </record>
+    <record id="base_process_670" model="base.process">
+      <field name="name">LAVADO MQ 32</field>
+    </record>
+    <record id="base_process_671" model="base.process">
+      <field name="name">LAVADO MQ BZ36</field>
+    </record>
+    <record id="base_process_672" model="base.process">
+      <field name="name">LAVADO MQ 34-35</field>
+    </record>
+    <record id="base_process_673" model="base.process">
+      <field name="name">LAVADO MAQUINA P8</field>
+    </record>
+    <record id="base_process_674" model="base.process">
+      <field name="name">LAVADO MAQUINA MQ 1</field>
+    </record>
+    <record id="base_process_675" model="base.process">
+      <field name="name">LAVADO MQ 01-02-08</field>
+    </record>
+    <record id="base_process_676" model="base.process">
+      <field name="name">LAVADO MQ 18 Y 19</field>
+    </record>
+    <record id="base_process_677" model="base.process">
+      <field name="name">LAVADO MAQU BZ 38-07</field>
+    </record>
+    <record id="base_process_678" model="base.process">
+      <field name="name">LAVADO MQ 20</field>
+    </record>
+    <record id="base_process_679" model="base.process">
+      <field name="name">LAVADO FONGS 16 Y 17</field>
+    </record>
+    <record id="base_process_680" model="base.process">
+      <field name="name">LAV MAQ BZ36</field>
+    </record>
+    <record id="base_process_681" model="base.process">
+      <field name="name">PASIVADO OXALICO</field>
+    </record>
+    <record id="base_process_682" model="base.process">
+      <field name="name">LAVADO X FIJ MAQ.1/6</field>
+    </record>
+    <record id="base_process_683" model="base.process">
+      <field name="name">LAVADO X FIJ MAQ.2/4</field>
+    </record>
+    <record id="base_process_684" model="base.process">
+      <field name="name">LAVADO X FIJ MAQ.9</field>
+    </record>
+    <record id="base_process_685" model="base.process">
+      <field name="name">LAVADO X FIJ. 15/16</field>
+    </record>
+    <record id="base_process_686" model="base.process">
+      <field name="name">LAV.X FI.MA.8/19/20</field>
+    </record>
+    <record id="base_process_687" model="base.process">
+      <field name="name">LAV.X FI.MA.3/10/12</field>
+    </record>
+    <record id="base_process_688" model="base.process">
+      <field name="name">LAV.X FIJ.MAQ.05/18</field>
+    </record>
+    <record id="base_process_689" model="base.process">
+      <field name="name">LAV.X FI.11/14/24/25</field>
+    </record>
+    <record id="base_process_690" model="base.process">
+      <field name="name">LAV.X FIJA.MAQ,21/7</field>
+    </record>
+    <record id="base_process_691" model="base.process">
+      <field name="name">LAV.X FIJA.MAQ,26/27</field>
+    </record>
+    <record id="base_process_692" model="base.process">
+      <field name="name">LAV.X FIJ.MAQ.28</field>
+    </record>
+    <record id="base_process_693" model="base.process">
+      <field name="name">LAVA.X.OPTICO MQ.29</field>
+    </record>
+    <record id="base_process_694" model="base.process">
+      <field name="name">LAVA.X.OPTICO MQ.2/4</field>
+    </record>
+    <record id="base_process_695" model="base.process">
+      <field name="name">LAVA.X.OPTICO MQ.11</field>
+    </record>
+    <record id="base_process_696" model="base.process">
+      <field name="name">LA.X.OPTICO.MA. 12</field>
+    </record>
+    <record id="base_process_697" model="base.process">
+      <field name="name">LA.X.OPT.MAQ 05 Y 37</field>
+    </record>
+    <record id="base_process_698" model="base.process">
+      <field name="name">LA.X.OPTICO MA.26/27</field>
+    </record>
+    <record id="base_process_699" model="base.process">
+      <field name="name">LA.X.OPT.MA.18 Y 19</field>
+    </record>
+    <record id="base_process_700" model="base.process">
+      <field name="name">LA.X.OPTICO MA.5/18</field>
+    </record>
+    <record id="base_process_701" model="base.process">
+      <field name="name">L.X OP11/14/23/24/25</field>
+    </record>
+    <record id="base_process_702" model="base.process">
+      <field name="name">LAV X OPTICO MAQ 17</field>
+    </record>
+    <record id="base_process_703" model="base.process">
+      <field name="name">LAV.X OPT. BZ37/P05</field>
+    </record>
+    <record id="base_process_704" model="base.process">
+      <field name="name">LAV.X OPT. MAQ.28</field>
+    </record>
+    <record id="base_process_705" model="base.process">
+      <field name="name">LV X OPTIC BZ38 BZ7</field>
+    </record>
+  </data>
+</odoo>

@@ -1,0 +1,10 @@
+id,code,name,needles,diameter,feeders
+product_gauge_12,"12","Galga 12",2516,28,60
+product_gauge_14,"14","Galga 14",2516,28,60
+product_gauge_16,"16","Galga 16",2516,28,60
+product_gauge_18,"18","Galga 18",2516,28,60
+product_gauge_20,"20","Galga 20",2516,28,60
+product_gauge_22,"22","Galga 22",2516,28,60
+product_gauge_24,"24","Galga 24",2516,28,60
+product_gauge_28,"28","Galga 28",2813,30,75
+product_gauge_32,"32","Galga 32",2976,34,90

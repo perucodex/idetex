@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="mrp_production_workorder_form_view_inherit_dev_form" model="ir.ui.view">
+        <field name="name">mrp.work.order.form.dev</field>
+        <field name="model">mrp.workorder</field>
+        <field name="inherit_id" ref="mrp.mrp_production_workorder_form_view_inherit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='qty_remaining']" position="after">
+                <field name="roll_weight" invisible="1"/>
+                <field name="progress" widget="progressbar"/>
+                <field name="operation_type"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Rolls" name="rolls" invisible="operation_type != 'weaving'">
+                    <field name="weave_type" invisible="1"/>
+                    <field name="roll_ids" readonly="state != 'progress'">
+                        <list editable="bottom" delete="0">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="equipment_id" domain="[('id','in',parent.equipment_ids)]" required="1"/>
+                            <field name="employee_id" domain="[('id','in',parent.employee_assigned_ids)]" required="1"/>
+                            <field name="uom_id"/>
+                            <field name="technical_id" column_invisible="1"/>
+                            <field name="size_id" column_invisible="parent.weave_type != 'rect'" required="parent.weave_type == 'rect'" domain="[('technical_id','=', technical_id)]" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="quantity" column_invisible="parent.weave_type != 'rect'" required="parent.weave_type == 'rect'"/>
+                            <field name="in_batch" column_invisible="1"/>
+                            <field name="gross_weight" sum="Total" required="1" column_invisible="parent.weave_type == 'rect'" readonly="in_batch"/>
+                            <field name="net_weight" sum="Total" required="1" column_invisible="parent.weave_type == 'rect'"/>
+                            <button name="unlink" icon="fa-trash" type="object" invisible="parent.weave_type == 'rect' or gross_weight" title="Delete"/>
+                            <button name="unlink" icon="fa-trash" type="object" invisible="parent.weave_type != 'rect' or quantity" title="Delete"/>
+                        </list>
+                    </field>
+                </page>
+                <page string="Batchs" name="batchs" invisible="operation_type == 'weaving'">
+                    <field name="batch_ids" widget="many2many" readonly="state != 'progress'" domain="[('state','=','batch'),('workorder_id','=',False)]" options="{'no_create': True}">
+                        <list editable="bottom" delete="0">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name" readonly="1"/>
+                            <field name="batch_date" readonly="1"/>
+                            <field name="workorder_id" readonly="1"/>
+                            <field name="mrwo_id" readonly="1"/>
+                            <!-- <field name="mrp_workcenter_operation_id" readonly="1"/> -->
+                            <field name="total_weight" sum="Total" readonly="1"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+    
+</odoo>

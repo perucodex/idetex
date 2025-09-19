@@ -1,0 +1,17 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_product_analysis,product_analysis,model_product_analysis,base.group_user,1,1,1,1
+access_analysis_weaving_data,analysis_weaving_data,model_analysis_weaving_data,base.group_user,1,1,1,1
+access_analysis_fiber,analysis_fiber,model_analysis_fiber,base.group_user,1,1,1,1
+access_analysis_fiber_line,analysis_fiber_line,model_analysis_fiber_line,base.group_user,1,1,1,1
+access_analysis_routing_line,analysis_routing_line,model_analysis_routing_line,base.group_user,1,1,1,1
+access_product_code_system,product_code_system,model_product_code_system,base.group_user,1,1,1,1
+access_product_appearance,product_appearance,model_product_appearance,base.group_user,1,1,1,1
+access_product_family,product_family,model_product_family,base.group_user,1,1,1,1
+access_product_fiber,product_fiber,model_product_fiber,base.group_user,1,1,1,1
+access_product_gauge,product_gauge,model_product_gauge,base.group_user,1,1,1,1
+access_product_title,product_title,model_product_title,base.group_user,1,1,1,1
+access_technical_sheet,access_technical_sheet,model_technical_sheet,base.group_user,1,1,1,1
+access_technical_size_line,access_technical_size_line,model_technical_size_line,base.group_user,1,1,1,1
+access_technical_route_line,access_technical_route_line,model_technical_route_line,base.group_user,1,1,1,1
+access_route_line_parameter,access_route_line_parameter,model_route_line_parameter,base.group_user,1,1,1,1
+access_configurate_svg_example,access_configurate_svg_example,model_configurate_svg_example,base.group_user,1,1,1,1

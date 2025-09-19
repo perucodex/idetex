@@ -18,18 +18,6 @@
                                         <field name="chemical_category_ids" widget="many2many_tags"/>
                                     </div>
                                 </div>
-                                <div class="content-group">
-                                    <div class="row mt16">
-                                        <label string="Weaving Categories" for="weaving_category_ids" class="col-lg-3 o_light_label"/>
-                                        <field name="weaving_category_ids" widget="many2many_tags"/>
-                                    </div>
-                                </div>
-                                <div class="content-group">
-                                    <div class="row mt16">
-                                        <label string="Thread Categories" for="thread_category_ids" class="col-lg-3 o_light_label"/>
-                                        <field name="thread_category_ids" widget="many2many_tags"/>
-                                    </div>
-                                </div>
                             </setting>
                         </block>
                     </app>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="mrp_workorder_batch_form" model="ir.ui.view">
+        <field name="name">mrp.workorder.batch.form</field>
+        <field name="model">mrp.workorder.batch</field>
+        <field name="arch" type="xml">
+            <form string="Batch">
+                <header>
+                    <button name="create_batch" class="oe_highlight" string="Create Batch" type="object" invisible="state != 'draft' or not wo_roll_ids"/>
+                    <button name="clear_rolls" string="Clear Rolls" type="object" invisible="state != 'draft' or not wo_roll_ids"/>
+                    <button name="unbuild_batch" class="oe_highlight" string="Unbuild Batch" type="object" invisible="state != 'batch' or workorder_id"/>
+                    <button name="rebuild_batch" class="oe_highlight" string="Rebuild Batch" type="object" invisible="state != 'unbuild' or workorder_id" groups="mrp.group_mrp_manager"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="batch_date" readonly="state != 'draft'"/>
+                            <!-- <field name="mrp_workcenter_operation_id" domain="workcenter_operation_id_domain" options="{'no_create': True, 'no_open': True}" required="wo_roll_ids" readonly="state != 'draft'"/> -->
+                            <field name="workorder_id" readonly="1"/>
+                            <field name="mrwo_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="roll_page" string="Rolls">
+                            <field name="wo_roll_ids" domain="[('in_batch','=',False)]" readonly="state != 'draft'">
+                                <list create="0">
+                                    <field name="workorder_id"/>
+                                    <field name="name"/>
+                                    <field name="uom_id"/>
+                                    <!-- <field name="size_id"/> -->
+                                    <field name="quantity" sum="Total"/>
+                                    <field name="net_weight" sum="Total"/>
+                                    <field name="gross_weight" sum="Total"/>
+                                    <button name="split" type="object" class="oe_highlight" string="Split" column_invisible="parent.state != 'draft'"/>
+                                </list>
+                                <form>
+                                    <group>
+                                        <field name="workorder_id" readonly="1"/>
+                                        <group>
+                                            <field name="name" readonly="1"/>
+                                            <field name="uom_id" readonly="1"/>
+                                            <!-- <field name="size_id" readonly="1"/> -->
+                                        </group>
+                                        <group>
+                                            <field name="quantity" readonly="1"/>
+                                            <field name="net_weight" readonly="1"/>
+                                            <field name="gross_weight" readonly="1"/>
+                                        </group>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="wo_batch_tree_view" model="ir.ui.view">
+        <field name="name">mrp.workorder.batch.list</field>
+        <field name="model">mrp.workorder.batch</field>
+        <field name="arch" type="xml">
+            <list string="Batchs" decoration-success="workorder_id">
+                <field name="name"/>
+                <field name="batch_date"/>
+                <field name="workorder_id" readonly="1"/>
+                <field name="mrwo_id"/>
+                <field name="state" widget="badge" decoration-info="state == 'batch'" decoration-danger="state == 'unbuild'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="mrp_workorder_batch_view_search" model="ir.ui.view">
+        <field name="name">mrp.workorder.batch.view.search</field>
+        <field name="model">mrp.workorder.batch</field>
+        <field name="arch" type="xml">
+            <search string="Search Batch">
+                <field name="name"/>
+                <field name="batch_date"/>
+                <filter name='draft' string="Draft" domain="[('state','=','draft')]"/>
+                <filter name='batch' string="Batch" domain="[('state','=','batch')]"/>
+                <filter name='unbuild' string="Unbuild" domain="[('state','=','unbuild')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="wo_batch_action" model="ir.actions.act_window">
+        <field name="name">Batchs</field>
+        <field name="res_model">mrp.workorder.batch</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="wo_batch_tree_view"/>
+        <field name="context">{'search_default_draft': True, 'search_default_batch': True}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+            Create a new Batchs
+            </p><p>
+            Batchs define that need to be done to group rolls for production.
+            Each batch is done from weaving rolls.
+            </p>
+        </field>
+    </record>
+
+    <record id="mrp_workorder_roll_view_tree" model="ir.ui.view">
+        <field name="name">mrp.workorder.roll.view.tree</field>
+        <field name="model">mrp.workorder.roll</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0">
+                <field name="workorder_id"/>
+                <field name="name"/>
+                <field name="uom_id"/>
+                <!-- <field name="size_id"/> -->
+                <field name="quantity" sum="Total"/>
+                <field name="net_weight" sum="Total"/>
+                <field name="gross_weight" sum="Total"/>
+            </list>
+        </field>
+    </record>
+    
+</odoo>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="base.main_company" model="res.company">
+            <field name="chemical_category_ids" eval="[(4, ref('product_categ_1'))]"/>
+            <field name="weaving_category_ids" eval="[(4, ref('product_categ_2'))]"/>
+            <field name="thread_category_ids" eval="[(4, ref('product_categ_3'))]"/>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,19 @@
+<odoo>
+    <record id="view_scale_registry_tree" model="ir.ui.view">
+        <field name="name">scale.registry.tree</field>
+        <field name="model">scale.registry</field>
+        <field name="arch" type="xml">
+            <list editable="top">
+                <field name="equipment_id"/>
+                <field name="ip"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_scale_registry" model="ir.actions.act_window">
+        <field name="name">Scale</field>
+        <field name="res_model">scale.registry</field>
+        <field name="view_mode">list</field>
+    </record>
+
+</odoo>

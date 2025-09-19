@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+    <t t-name="LigamentGridWidget">
+        
+            <div id="grid_ligament_container" class="grid-container" t-att-class="{ 'has-grid-structure': state.grid_structure.length > 0 }">
+                <t t-if="state.grid_structure.length > 0">
+                    <t t-foreach="state.grid_structure" t-as="row" t-key="row_index">
+                        <!-- 1.  Saber si es primera o última fila -->
+                        <t t-set="is_first_row" t-value="row_index == 0"/>
+                        <t t-set="is_last_row"  t-value="row_index == state.grid_structure.length - 1"/>
+                        <div class="grid-subrow">
+                            <div class="row-number-display">
+                                <t t-esc="row_index + 1"/>
+                            </div>
+                            <div class="grid-subrows-wrapper">
+                                <t t-foreach="row" t-as="subrow" t-key="subrow_index">
+                                    <div class="grid-row">
+                                        <t t-foreach="subrow" t-as="cell" t-key="cell.id">
+                                            <div class="grid-cell relative group"
+                                                t-att-class="{
+                                                    'align-bottom': is_first_row,
+                                                    'align-top':    is_last_row
+                                                }"
+                                                t-att-style="cell.svg_content ? 'z-index: 1;' : 'z-index: 0;'"
+                                                t-att-data-cell-id="cell.id"
+                                                t-on-click="(ev) => this._onCellClick(ev, cell.id)"
+                                                t-on-dragover.prevent="(ev) => this._onDragOverCell(ev)"
+                                                t-on-dragleave="(ev) => this._onDragLeaveCell(ev)"
+                                                t-on-drop.prevent="(ev) => this._onDropCell(ev)"
+                                                >
+
+                                                <t t-if="cell.svg_content">
+                                                    <div class="svg-placeholder" t-out="cell.svg_content"
+                                                        draggable="true"
+                                                        t-att-data-svg-id="cell.svg_id"
+                                                        t-att-data-source-cell-id="cell.id"
+                                                        t-on-dragstart="(ev) => this._onSVGDragStart(ev)"
+                                                    />
+                                                    <t t-if="!props.readonly">
+                                                        <button class="clear-cell-button btn btn-sm btn-danger rounded-full absolute top-1 right-1 opacity-0  transition-opacity duration-300"
+                                                                title="Clean Cell"
+                                                                t-on-click="_onClearCell"
+                                                                t-att-data-cell-id="cell.id">
+                                                            X
+                                                        </button>
+                                                    </t>
+                                                </t>
+                                                <t t-else="">
+                                                    <div class="svg-placeholder empty">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 200 200">
+                                                            <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+                                                                font-size="14" fill="#9e9e9e">
+                                                                <t t-esc="this._getIdCell(cell.id)"/>
+                                                            </text>
+                                                        </svg>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>    
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </div>
+    </t>
+</templates>

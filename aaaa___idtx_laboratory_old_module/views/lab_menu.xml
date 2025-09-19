@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data noupdate="1">
+    
+        <menuitem
+            id="laboratory_menu"
+            name="Laboratory"
+            web_icon="idtx_laboratory,static/description/icon.png"
+            groups="idtx_laboratory.group_module_laboratory_manager,idtx_laboratory.group_module_laboratory_user">
+                <menuitem id="lab_operations_menu" name="Operations" sequence="10">
+                    <menuitem id="lab_dev_menu" name="Lab Dev" action="lab_dev_action" sequence="10"/>
+                    <menuitem id="lab_color_recipe_menu" name="Color Recipe" action="color_recipe_action" sequence="20"/>
+                </menuitem>
+                <menuitem id="lab_product_menu" name="Products" sequence="20">
+                    <menuitem id="lab_chemical_template_menu" name="Chemical" action="product_product_action_chemical" sequence="10"/>
+                </menuitem>
+                <menuitem id="lab_settings_menu" name="Configuration" sequence="200">
+                    <menuitem id="lab_menu_settings_config" name="Settings" action="action_idtx_laboratory_config" groups="base.group_system" sequence="0"/>
+                    <menuitem id="lab_product_color_menu" name="Product Color" action="product_color_action" sequence="10"/>
+                    <menuitem id="lab_color_process_base_template_menu" name="Process Base Template" sequence="20">
+                        <menuitem id="lab_color_process_base_menu" name="Color Process Base" action="base_process_action" sequence="10"/>
+                        <menuitem id="lab_color_process_line_base_menu" name="Process Base Line" action="base_process_line_action" sequence="20"/>
+                    </menuitem>
+                    <menuitem id="lab_color_code_menu" name="Color Code" sequence="30">
+                        <menuitem id="lab_color_process_type_menu" name="Color Process Type" action="color_process_type_action" sequence="10"/>
+                        <menuitem id="lab_color_range_menu" name="Color Range" action="color_range_action" sequence="20"/>
+                        <menuitem id="lab_color_intensity_menu" name="Color Intensity" action="color_intensity_action" sequence="30"/>
+                        <menuitem id="lab_color_fiber_menu" name="Color Fiber" action="color_fiber_action" sequence="40"/>
+                    </menuitem>
+                </menuitem>
+        </menuitem>
+
+        <!-- Menu para laura en el modulo de ventas -->
+        <menuitem id="sale_color_code_menu" name="Quotations" sequence="900" parent="sale.menu_sale_config">
+            <menuitem id="sale_product_color_menu" name="Product Color" action="product_color_action" sequence="10"/>
+            <menuitem id="sale_mrp_routing_operation_action_menu" name="Workcenter Operations" action="mrp_routing_operation_action" sequence="20"/>
+        </menuitem>
+
+    </data>
+    
+
+</odoo>
