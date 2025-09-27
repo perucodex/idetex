@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="idtx_mrp_shop.SelectBatchDialog">
+        <Dialog size="'md'" title="props.title" modalRef="modalRef">
+            <div class="mt-4">
+                <h5 class="fw-bold">Employee</h5>
+                <select class="form-select fs-4" t-model="state.selectedEmployee">
+                    <t t-foreach="employees" t-as="emp" t-key="emp.id">
+                        <option t-att-value="emp.id" t-esc="emp.name"/>
+                    </t>Many2OneAvatarEmployeeField
+                </select>
+            </div>
+            <!-- <div class="mt-4">
+                <h5 class="fw-bold">Equipment</h5>
+                <select class="form-select fs-4" t-model="state.selectedEquipment">
+                    <t t-foreach="equipments" t-as="eqp" t-key="eqp.id">
+                        <option t-att-value="eqp.id" t-esc="eqp.name"/>
+                    </t>
+                </select>
+            </div> -->
+            <div class="mt-4">
+                <h5 class="fw-bold">Batch</h5>
+                <select class="form-select fs-4" t-model="state.selectedBatchId">
+                    <t t-foreach="batchs" t-as="batch" t-key="batch.id">
+                        <option t-att-value="batch.id" t-esc="batch.name"/>
+                    </t>
+                </select>
+            </div>
+            <div class="o_select_batch_dialog w-100">
+                <t t-set-slot="footer">
+                    <button class="btn btn-primary"
+                            t-att-disabled="!state.selectedBatchId"
+                            t-on-click="confirm">
+                        Confirm
+                    </button>
+                </t>
+            </div>
+        </Dialog>
+    </t>
+</templates>

@@ -33,10 +33,19 @@ Gestiona la carga de precios y productos en tus cotizaciones
         'report/ir_actions_report_templates.xml',
         'views/account_incoterms_views.xml',
         'views/account_payment_term_views.xml',
+        'views/mrp_production_views.xml',
         'views/mrp_routing_views.xml',
         'views/portal_price_items_template.xml',
         'views/product_color_views.xml',
         'views/sale_order_views.xml',
+        'views/sale_quotation_views.xml',
     ],
+    
+    'assets': {
+        'web.assets_backend': [
+            'idtx_sale_order/static/src/price_items/**/*',
+        ],
+    },
+
 }
 

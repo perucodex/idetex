@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_mrp_production_additional_workorder_wizard_inherit" model="ir.ui.view">
+        <field name="name">MRP Additional Workorder Inherit</field>
+        <field name="model">mrp_production.additional.workorder</field>
+        <field name="inherit_id" ref="mrp_workorder.view_mrp_production_additional_workorder_wizard"/>
+        <field name="arch" type="xml">
+            <field name="name" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </field>
+            <field name="workcenter_id" position="before">
+                <field name="add_mrwo_id"/>
+            </field>
+        </field>
+    </record>
+</odoo>

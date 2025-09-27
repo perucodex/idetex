@@ -40,6 +40,7 @@
                 <list string="Routing Work Centers Operations" multi_edit="1" sample="1">
                     <field name="name"/>
                     <field name="workcenter_id"/>
+                    <field name="operation_type"/>
                     <field name="company_id" groups="base.group_multi_company" optional="hide"/>
                 </list>
             </field>
@@ -52,9 +53,11 @@
                 <search string="">
                     <field name="name"/>
                     <field name="workcenter_id"/>
+                    <field name="operation_type"/>
                     <field name="company_id" groups="base.group_multi_company"/>
                     <group>
                         <filter string="Workcenter" name="group_by_workcenter" domain="[]" context="{'group_by': 'workcenter_id'}"/>
+                        <filter string="Operation Type" name="group_by_operation_type" domain="[]" context="{'group_by': 'operation_type'}"/>
                     </group>
                 </search>
             </field>

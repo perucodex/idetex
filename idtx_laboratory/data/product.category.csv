@@ -1,2 +1,5 @@
-id,name
-product_categ_3,"Productos Químicos"
+id,name,parent_id:id
+product_categ_3,"Productos Químicos",
+product_categ_4,"Sales",product_categ_3
+product_categ_5,"Carbonatos",product_categ_3
+product_categ_6,"Sodas",product_categ_3

@@ -11,7 +11,7 @@ class CustomerPortalCustom(CustomerPortal):
         order_sudo = self._document_check_access('sale.order', order_id, access_token=access_token)
         backend_url = f'/odoo/action-{order_sudo._get_portal_return_action().id}/{order_sudo.id}'
         return request.render(
-            'idtx_laboratory.sale_price_items_preview',
+            'idtx_sale_order.sale_price_items_preview',
             {
                 'order': order_sudo, 
                 'access_token': access_token,

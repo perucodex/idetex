@@ -4,6 +4,7 @@ import { patch } from "@web/core/utils/patch";
 import { MrpMenuDialog } from "@mrp_workorder/mrp_display/dialog/mrp_menu_dialog";
 import { SelectScaleDialog } from "./select_scale_dialog";
 import { SelectSizeDialog } from "./select_size_dialog";
+import { SelectBatchDialog } from "./select_batch_dialog";
 import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
 
@@ -134,17 +135,56 @@ patch(MrpMenuDialog.prototype, {
         this.dialogService.add(SelectSizeDialog, params);
     },
 
-    async openWorkOrder() {
-        const id = this.props.record.resId;
+    async registerDyeBatch() {
+        const _createRecord = async (payload) => {
+            const result = await this.orm.call(
+                "mrp.workorder",
+                "action_create_registry_record",
+                [[this.props.record.resId], 
+                payload.batch_id,
+            ]);
 
-        await this.action.doAction({
-            type: "ir.actions.act_window",
-            res_model: "mrp.workorder",
-            views: [[false, "form"]],
-            res_id: id,
-        });
+            if (result) {
+                this.notification.add(result.message, { type: result.status });
+            }
 
-        this.props.close();
+            await this.props.record.load();
+            this.props.removeFromCache(this.props.record.resId);
+
+            await this.action.doAction({
+                type: "ir.actions.act_window",
+                res_model: "batch.registry",
+                views: [[false, "form"]],
+                res_id: result,
+            });
+
+            this.props.close();
+        };
+
+        const params = {
+            title: _t("Select batch"),
+            confirm: _createRecord,
+            recordId: this.props.record.resId,
+        };
+
+        this.dialogService.add(SelectBatchDialog, params);
     }
 
 });
+
+
+
+//     async openWorkOrder() {
+//         const id = this.props.record.resId;
+
+//         await this.action.doAction({
+//             type: "ir.actions.act_window",
+//             res_model: "mrp.workorder",
+//             views: [[false, "form"]],
+//             res_id: id,
+//         });
+
+//         this.props.close();
+//     }
+
+// });

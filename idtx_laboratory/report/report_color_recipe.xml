@@ -22,7 +22,7 @@
           </div>
           <div class="col border border-black p-2" name="informations_reference">
               <strong>Product:</strong>
-              <div t-field="doc.lab_dev_line_id.product_id.name"></div>
+              <div t-field="doc.lab_dev_line_id.product_id.display_name"></div>
           </div>
           <div class="col border border-black p-2" name="informations_reference">
               <strong>Color Code:</strong>
@@ -51,8 +51,8 @@
           <tbody>
             <t t-foreach="doc.color_recipe_process_ids" t-as="line" t-key="line.id">  
                 <tr>
-                    <td style="background-color: #C4C4C4;"><t t-esc="line.base_process_id.code"/></td>
-                    <td style="background-color: #C4C4C4;"><t t-esc="line.base_process_id.name"/></td>
+                    <!-- <td style="background-color: #C4C4C4;"><t t-esc="line.base_process_id.code"/></td> -->
+                    <td style="background-color: #C4C4C4;" colspan="2"><t t-esc="line.base_process_id.name"/></td>
                     <t t-if="line.base_process_id.time">
                         <td style="background-color: #C4C4C4;">Time: <t t-esc="line.base_process_id.time" t-options="{'widget': 'float_time'}"/></td>
                     </t>

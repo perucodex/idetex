@@ -39,8 +39,8 @@ class MrpWorkorderRoll(models.Model):
             'name': _('Divide Roll'),
             'view_mode': 'form',
             'res_model': 'split.roll',
-            'views': [(self.env.ref('idtx_laboratory.split_roll_form').id, 'form')],
+            'views': [(self.env.ref('idtx_mrp.split_roll_form').id, 'form')],
             'type': 'ir.actions.act_window',
             'target': 'new',
-            'context': dict(self.env.context), #, active_ids=to_merge.ids),
+            'context': dict(self.env.context)
         }

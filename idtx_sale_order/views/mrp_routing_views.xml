@@ -5,7 +5,7 @@
         <record id="mrp_routing_workcenter_operation_form_view_inherit" model="ir.ui.view">
             <field name="name">mrp.routing.workcenter.form.inherit</field>
             <field name="model">mrp.routing.workcenter.operation</field>
-            <field name="inherit_id" ref="idtx_product_development.mrp_routing_workcenter_operation_form_view"/>
+            <field name="inherit_id" ref="idtx_mrp.mrp_routing_workcenter_operation_form_view"/>
             <field name="arch" type="xml">
                 <field name="company_id" position="before">
                     <field name="currency_id" groups="idtx_product_development.group_module_product_development_manager"/>
@@ -29,7 +29,7 @@
         <record id="mrp_routing_workcenter_operation_tree_view_inherit" model="ir.ui.view">
             <field name="name">mrp.routing.workcenter.list.inherit</field>
             <field name="model">mrp.routing.workcenter.operation</field>
-            <field name="inherit_id" ref="idtx_product_development.mrp_routing_workcenter_operation_tree_view"/>
+            <field name="inherit_id" ref="idtx_mrp.mrp_routing_workcenter_operation_tree_view"/>
             <field name="arch" type="xml">
                 <field name="workcenter_id" position="after">
                     <field name="currency_id"/>
@@ -41,7 +41,7 @@
         <record id="mrp_routing_workcenter_operation_view_search_inherit" model="ir.ui.view">
             <field name="name">mrp.routing.workcenter.operation.view.search.inherit</field>
             <field name="model">mrp.routing.workcenter.operation</field>
-            <field name="inherit_id" ref="idtx_product_development.mrp_routing_workcenter_operation_view_search"/>
+            <field name="inherit_id" ref="idtx_mrp.mrp_routing_workcenter_operation_view_search"/>
             <field name="arch" type="xml">
                 <field name="workcenter_id" position="after">
                     <field name="currency_id"/>

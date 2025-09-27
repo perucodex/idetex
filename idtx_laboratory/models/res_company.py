@@ -8,6 +8,9 @@ class ResCompany(models.Model):
     def write(self, vals):
         res = super().write(vals)
         if 'chemical_category_ids' in vals:
-            products = self.env['product.template'].search([('categ_id','in',self.chemical_category_ids.ids)])
+            all_products = self.env['product.template'].search([])
+            products = self.env['product.template'].search([('categ_id','child_of',self.chemical_category_ids.ids)])
             products.is_chemical = True
+            diff = all_products - products
+            diff.is_chemical = False
         return res

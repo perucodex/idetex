@@ -832,14 +832,14 @@
       <field name="default_code">800106</field>
       <field name="uom_id" ref="uom.product_uom_kgm"/>
       <field name="is_chemical" eval="True"/>
-      <field name="categ_id" ref="idtx_laboratory.product_categ_3"/>
+      <field name="categ_id" ref="idtx_laboratory.product_categ_5"/>
     </record>
     <record id="product_template_product_120" model="product.template">
       <field name="name">BICARBONATO DE SODIO</field>
       <field name="default_code">#3</field>
       <field name="uom_id" ref="uom.product_uom_kgm"/>
       <field name="is_chemical" eval="True"/>
-      <field name="categ_id" ref="idtx_laboratory.product_categ_3"/>
+      <field name="categ_id" ref="idtx_laboratory.product_categ_5"/>
     </record>
     <record id="product_template_product_121" model="product.template">
       <field name="name">BIOREDUCTOR S/L</field>
@@ -888,21 +888,21 @@
       <field name="default_code">800108</field>
       <field name="uom_id" ref="uom.product_uom_kgm"/>
       <field name="is_chemical" eval="True"/>
-      <field name="categ_id" ref="idtx_laboratory.product_categ_3"/>
+      <field name="categ_id" ref="idtx_laboratory.product_categ_5"/>
     </record>
     <record id="product_template_product_128" model="product.template">
       <field name="name">CARBONATO SODIO LIVI ALEMA</field>
       <field name="default_code">#2</field>
       <field name="uom_id" ref="uom.product_uom_kgm"/>
       <field name="is_chemical" eval="True"/>
-      <field name="categ_id" ref="idtx_laboratory.product_categ_3"/>
+      <field name="categ_id" ref="idtx_laboratory.product_categ_5"/>
     </record>
     <record id="product_template_product_129" model="product.template">
       <field name="name">CARBONATO SODIO LIVI ALEMA</field>
       <field name="default_code">900001</field>
       <field name="uom_id" ref="uom.product_uom_kgm"/>
       <field name="is_chemical" eval="True"/>
-      <field name="categ_id" ref="idtx_laboratory.product_categ_3"/>
+      <field name="categ_id" ref="idtx_laboratory.product_categ_5"/>
     </record>
     <record id="product_template_product_130" model="product.template">
       <field name="name">CARRIER ECO SQM</field>
@@ -5199,49 +5199,49 @@
       <field name="default_code">800200</field>
       <field name="uom_id" ref="uom.product_uom_kgm"/>
       <field name="is_chemical" eval="True"/>
-      <field name="categ_id" ref="idtx_laboratory.product_categ_3"/>
+      <field name="categ_id" ref="idtx_laboratory.product_categ_4"/>
     </record>
     <record id="product_template_product_744" model="product.template">
       <field name="name">SAL TEXTIL </field>
       <field name="default_code">#1</field>
       <field name="uom_id" ref="uom.product_uom_kgm"/>
       <field name="is_chemical" eval="True"/>
-      <field name="categ_id" ref="idtx_laboratory.product_categ_3"/>
+      <field name="categ_id" ref="idtx_laboratory.product_categ_4"/>
     </record>
     <record id="product_template_product_745" model="product.template">
       <field name="name">SAL TEXTIL CHINA</field>
       <field name="default_code">890106</field>
       <field name="uom_id" ref="uom.product_uom_kgm"/>
       <field name="is_chemical" eval="True"/>
-      <field name="categ_id" ref="idtx_laboratory.product_categ_3"/>
+      <field name="categ_id" ref="idtx_laboratory.product_categ_4"/>
     </record>
     <record id="product_template_product_746" model="product.template">
       <field name="name">SAL TEXTIL CHINA (TRAID)</field>
       <field name="default_code">800113</field>
       <field name="uom_id" ref="uom.product_uom_kgm"/>
       <field name="is_chemical" eval="True"/>
-      <field name="categ_id" ref="idtx_laboratory.product_categ_3"/>
+      <field name="categ_id" ref="idtx_laboratory.product_categ_4"/>
     </record>
     <record id="product_template_product_747" model="product.template">
       <field name="name">SAL TEXTIL INGLESA (NAVA)</field>
       <field name="default_code">800112</field>
       <field name="uom_id" ref="uom.product_uom_kgm"/>
       <field name="is_chemical" eval="True"/>
-      <field name="categ_id" ref="idtx_laboratory.product_categ_3"/>
+      <field name="categ_id" ref="idtx_laboratory.product_categ_4"/>
     </record>
     <record id="product_template_product_748" model="product.template">
       <field name="name">SAL TEXTIL SPL</field>
       <field name="default_code">890012</field>
       <field name="uom_id" ref="uom.product_uom_kgm"/>
       <field name="is_chemical" eval="True"/>
-      <field name="categ_id" ref="idtx_laboratory.product_categ_3"/>
+      <field name="categ_id" ref="idtx_laboratory.product_categ_4"/>
     </record>
     <record id="product_template_product_749" model="product.template">
       <field name="name">SAL TEXTIL SPL</field>
       <field name="default_code">#8</field>
       <field name="uom_id" ref="uom.product_uom_kgm"/>
       <field name="is_chemical" eval="True"/>
-      <field name="categ_id" ref="idtx_laboratory.product_categ_3"/>
+      <field name="categ_id" ref="idtx_laboratory.product_categ_4"/>
     </record>
     <record id="product_template_product_750" model="product.template">
       <field name="name">SANITIZED TH 22-27</field>
@@ -5591,35 +5591,35 @@
       <field name="default_code">#9</field>
       <field name="uom_id" ref="uom.product_uom_kgm"/>
       <field name="is_chemical" eval="True"/>
-      <field name="categ_id" ref="idtx_laboratory.product_categ_3"/>
+      <field name="categ_id" ref="idtx_laboratory.product_categ_6"/>
     </record>
     <record id="product_template_product_800" model="product.template">
       <field name="name">SODA CAUSTICA LIQ. AL 50%</field>
       <field name="default_code">800116</field>
       <field name="uom_id" ref="uom.product_uom_kgm"/>
       <field name="is_chemical" eval="True"/>
-      <field name="categ_id" ref="idtx_laboratory.product_categ_3"/>
+      <field name="categ_id" ref="idtx_laboratory.product_categ_6"/>
     </record>
     <record id="product_template_product_801" model="product.template">
       <field name="name">SODA CAUSTICA LIQUIDA 38ºb</field>
       <field name="default_code">800115</field>
       <field name="uom_id" ref="uom.product_uom_kgm"/>
       <field name="is_chemical" eval="True"/>
-      <field name="categ_id" ref="idtx_laboratory.product_categ_3"/>
+      <field name="categ_id" ref="idtx_laboratory.product_categ_6"/>
     </record>
     <record id="product_template_product_802" model="product.template">
       <field name="name">SODA CAUSTICA LIQUIDA 50%</field>
       <field name="default_code">#10</field>
       <field name="uom_id" ref="uom.product_uom_kgm"/>
       <field name="is_chemical" eval="True"/>
-      <field name="categ_id" ref="idtx_laboratory.product_categ_3"/>
+      <field name="categ_id" ref="idtx_laboratory.product_categ_6"/>
     </record>
     <record id="product_template_product_803" model="product.template">
       <field name="name">SODA CAUSTICA MICROPERLAS</field>
       <field name="default_code">800117</field>
       <field name="uom_id" ref="uom.product_uom_kgm"/>
       <field name="is_chemical" eval="True"/>
-      <field name="categ_id" ref="idtx_laboratory.product_categ_3"/>
+      <field name="categ_id" ref="idtx_laboratory.product_categ_6"/>
     </record>
     <record id="product_template_product_804" model="product.template">
       <field name="name">SODYECRON AZUL MARINO RD</field>

@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="batch_registry_form_view" model="ir.ui.view">
+        <field name="name">batch.registry.form</field>
+        <field name="model">batch.registry</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_register" type="object" string="Register" class="oe_highlight" invisible="state == 'done'" confirm="Are you sure you want to register batch process?"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="workorder_id" domain="[('operation_type','=','dyeing')]" required="1" readonly="state == 'done'"/>
+                            <field name="registry_date" readonly="1" invisible="not registry_date" force_save="1"/>
+                            <field name="partner_id" readonly="1" force_save="1"/>
+                        </group>
+                        <group>
+                            <field name="color_name" readonly="1" force_save="1"/>
+                            <field name="color_code" readonly="1" force_save="1"/>
+                            <field name="employee_id" required="1" readonly="state == 'done'"/>
+                            <field name="equipment_id" required="1" readonly="state == 'done'"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="recipe_page" string="Recipe Values">
+                            <group>
+                                <group>
+                                    <field name="weight"/>
+                                    <field name="bath_ratio" readonly="state == 'done'"/>
+                                    <field name="abs_factor" readonly="state == 'done'"/>
+                                </group>
+                                <group>
+                                    <field name="recipe_salt"/>
+                                    <field name="recipe_carbonate"/>
+                                    <field name="recipe_soda"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page name="volume_page" string="Volume">
+                            <group>
+                                <group>
+                                    <field name="total_volume"/>
+                                    <field name="alkalis_volume" readonly="1" force_save="1"/>
+                                    <field name="start_salt"/>
+                                    <field name="brine_qty"/>
+                                </group>
+                                <group>
+                                    <field name="dyes_volume" readonly="1" force_save="1"/>
+                                    <field name="start_brine"/>
+                                    <field name="salt_qty"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page name="measure_page" string="Measure Control">
+                            <group>
+                                <group>
+                                    <field name="hydrophilicity" readonly="state == 'done'"/>
+                                    <field name="peroxide_residual" readonly="state == 'done'"/>
+                                    <field name="hardness_dyeing_water" readonly="state == 'done'"/>
+                                </group>
+                                <group>
+                                    <field name="antipilling_ph" readonly="state == 'done'"/>
+                                    <field name="dye_ph" readonly="state == 'done'"/>
+                                    <field name="previous_ph" readonly="state == 'done'"/>
+                                    <field name="neutralized_ph" readonly="state == 'done'"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page name="regulations_page" string="Regulations">
+                            <group col="3" string="Speed">
+                                <group>
+                                    <field name="pump_speed" readonly="state == 'done'"/>
+                                </group>
+                                <group>
+                                    <field name="reel_speed" readonly="state == 'done'"/>
+                                </group>
+                                <group>
+                                    <field name="hydrovary" readonly="state == 'done'"/>
+                                </group>
+                            </group>
+                            <group col="6" string="Rope speed Mt/min">
+                                <group>
+                                    <field name="rope1" readonly="state == 'done'"/>
+                                </group>
+                                <group>
+                                    <field name="rope2" readonly="state == 'done'"/>
+                                </group>
+                                <group>
+                                    <field name="rope3" readonly="state == 'done'"/>
+                                </group>
+                                <group>
+                                    <field name="rope4" readonly="state == 'done'"/>
+                                </group>
+                                <group>
+                                    <field name="rope5" readonly="state == 'done'"/>
+                                </group>
+                                <group>
+                                    <field name="rope6" readonly="state == 'done'"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page name="intensity_page" string="Intensity">
+                            <group col="2">
+                                <group>
+                                    <field name="salt_measurement" readonly="state == 'done'"/>
+                                </group>
+                                <group>
+                                    <field name="water_batches" readonly="state == 'done'"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group>
+                                    <field name="actual_volume"/>
+                                    <field name="total_tanq_volume"/>
+                                </group>
+                                <group>
+                                    <field name="final_volume"/>
+                                    <field name="volume_variation"/>
+                                </group>
+                            </group>
+                            <widget name="web_ribbon" title="Missing Water" bg_color="text-bg-danger" invisible="ribbon_message != '1'"/>
+                            <widget name="web_ribbon" title="Add Salt and Alkali" bg_color="text-bg-danger" invisible="ribbon_message != '2'"/>
+                            <group col="1">
+                                <field name="message" style="color: red;"/>
+                            </group>
+                            <group col="3" string="Calculation to Add">
+                                <group>
+                                    <field name="add_salt"/>
+                                </group>
+                                <group>
+                                    <field name="add_carbonate"/>
+                                </group>
+                                <group>
+                                    <field name="add_soda"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page name="curve_page" string="Dyeing Curve">
+                            <group>
+                                <group col="2">
+                                    <field name="tipo_proceso" readonly="state == 'done'"/>
+                                </group>
+                                <group>
+                                    <field name="imagen_proceso" widget="image" options="{'size': [141, 250]}" invisible="not imagen_proceso"/>
+                                </group>
+                                <group col="2">
+                                    <!-- <group> -->
+                                    <field name="ph_poly" readonly="state == 'done'"/>
+                                </group>
+                                <group>
+                                    <field name="red_wash" readonly="state == 'done'"/>
+                                </group>
+                            <!-- </group> -->
+                            </group>
+                            <group col="4" string="pH Measurement">
+                                <group>
+                                    <field name="before_carb" readonly="state == 'done'"/>
+                                    <field name="neutralization" readonly="state == 'done'"/>
+                                </group>
+                                <group>
+                                    <field name="first_carb" readonly="state == 'done'"/>
+                                    <field name="soaping" readonly="state == 'done'"/>
+                                </group>
+                                <group>
+                                    <field name="second_carb" readonly="state == 'done'"/>
+                                    <field name="discharge" readonly="state == 'done'"/>
+                                </group>
+                                <group>
+                                    <field name="exhaustion" readonly="state == 'done'"/>
+                                </group>
+                            </group>
+                            <label for="notes"/>
+                            <field name="notes" readonly="state == 'done'"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="batch_registry_tree_view" model="ir.ui.view">
+        <field name="name">batch.registry.tree</field>
+        <field name="model">batch.registry</field>
+        <field name="arch" type="xml">
+            <list>
+                <!-- <field name="batch_id"/> -->
+                <field name="workorder_id"/>
+                <field name="registry_date"/>
+                <field name="employee_id"/>
+                <field name="equipment_id"/>
+                <field name="color_name"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'"/>
+            </list>
+        </field>
+    </record>
+    
+    <record id="batch_registry_action" model="ir.actions.act_window">
+        <field name="name">Batch Registry</field>
+        <field name="res_model">batch.registry</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="batch_registry_tree_view"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+            Create a new registry for a batch
+            </p>
+        </field>
+    </record>
+
+
+</odoo>

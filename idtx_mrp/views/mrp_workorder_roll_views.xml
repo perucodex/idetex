@@ -12,7 +12,6 @@
                             <field name="workorder_id" readonly="1"/>
                             <field name="name" readonly="1"/>
                             <field name="uom_id"/>
-                            <!-- <field name="size_id"/> -->
                         </group>
                         <group>
                             <field name="quantity" readonly="1" invisible="not quantity"/>
@@ -32,8 +31,6 @@
             <search string="Search Roll">
                 <field name="workorder_id"/>
                 <field name="name"/>
-                <!-- <filter name='weaving' string="Weaving" domain="[('weave_type','!=','rect')]"/>
-                <filter name='rect' string="Rectilinear" domain="[('weave_type','=','rect')]"/> -->
             </search>
         </field>
     </record>
@@ -43,7 +40,6 @@
         <field name="res_model">mrp.workorder.roll</field>
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="mrp_workorder_roll_view_tree"/>
-        <!-- <field name="context">{'search_default_draft': True, 'search_default_roll': True}</field> -->
     </record>
 
     <record id="mrp_workorder_roll_view_tree" model="ir.ui.view">
@@ -54,7 +50,6 @@
                 <field name="workorder_id"/>
                 <field name="name"/>
                 <field name="uom_id"/>
-                <!-- <field name="size_id"/> -->
                 <field name="quantity" sum="Total"/>
                 <field name="net_weight" sum="Total"/>
                 <field name="gross_weight" sum="Total"/>

@@ -16,8 +16,8 @@
                 <div t-field="doc.applicant_id.name">Mitchell Admin</div>
             </div>
         </xpath>
-        <xpath expr="//div[@name='so_total_summary']//table[hasclass('o_total_table')]" position="attributes">
-            <attribute name="t-if">doc.state not in ['draft', 'sent']</attribute>
+        <xpath expr="//div[@name='so_total_summary']" position="attributes">
+            <attribute name="t-if">not doc.is_quote</attribute>
         </xpath>
     </template>
     

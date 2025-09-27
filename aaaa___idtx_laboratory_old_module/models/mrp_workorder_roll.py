@@ -20,11 +20,6 @@ class MrpWorkorderRoll(models.Model):
     equipment_id = fields.Many2one('maintenance.equipment', string='Equipment')
     employee_id = fields.Many2one('hr.employee', string='Employee')
     
-    # @api.depends('equipment_id','employee_id','sequence')
-    # def _compute_roll_name(self):
-    #     for rec in self:
-    #         rec.name = str(rec.equipment_id.id).zfill(3) + str(rec.employee_id.id).zfill(3) +  str(rec.sequence + 1).zfill(3)
-
     #=== CRUD METHODS ===#
 
     @api.model_create_multi
@@ -50,5 +45,5 @@ class MrpWorkorderRoll(models.Model):
             'views': [(self.env.ref('idtx_laboratory.split_roll_form').id, 'form')],
             'type': 'ir.actions.act_window',
             'target': 'new',
-            'context': dict(self.env.context), #, active_ids=to_merge.ids),
+            'context': dict(self.env.context),
         }

@@ -22,16 +22,22 @@ luego armar las partidas
     # any module necessary for this one to work correctly
     'depends': [
             'idtx_product_development',
+            'idtx_sale_order',
         ],
 
     # always loaded
     'data': [
-        # 'security/ir.model.access.csv',
+        'security/ir.model.access.csv',
+        'views/batch_registry_views.xml',
+        'views/maintenance_equipment_views.xml',
+        'views/mrp_menu.xml',
+        'views/mrp_workorder_batch_views.xml',
     ],
     
     'assets': {
         'web.assets_backend': [
             'idtx_mrp_shop/static/src/shop/**/*',
+            # 'idtx_mrp_shop/static/src/images/**/*',
         ],
     },
 }

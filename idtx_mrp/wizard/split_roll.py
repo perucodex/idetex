@@ -39,12 +39,12 @@ class SplitRoll(models.TransientModel):
                 roll.name = f'{prefix}-{str(next_number).zfill(3)}'
                 next_number += 1
             new_quantity = round(roll.gross_quantity - self.new_quantity, 2)
-            roll.copy({
-                'name': f'{prefix}-{str(next_number).zfill(3)}',
+            new_roll = roll.copy({
                 'quantity': new_quantity,
                 'equipment_id': roll.equipment_id.id,
                 'employee_id': roll.employee_id.id,
             })
+            new_roll.name = f'{prefix}-{str(next_number).zfill(3)}'
             roll.quantity = self.new_quantity
         else:
             if self.old_weight <= self.new_weight:
@@ -61,12 +61,12 @@ class SplitRoll(models.TransientModel):
                 roll.name = f'{prefix}-{str(next_number).zfill(3)}'
                 next_number += 1
             new_weight = round(roll.gross_weight - self.new_weight, 2)
-            roll.copy({
-                'name': f'{prefix}-{str(next_number).zfill(3)}',
+            new_roll = roll.copy({
                 'net_weight': new_weight,
                 'gross_weight': new_weight,
                 'equipment_id': roll.equipment_id.id,
                 'employee_id': roll.employee_id.id,
             })
+            new_roll.name = f'{prefix}-{str(next_number).zfill(3)}'
             roll.net_weight = self.new_weight
             roll.gross_weight = self.new_weight

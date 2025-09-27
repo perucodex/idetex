@@ -71,6 +71,8 @@ class ColorRecipe(models.Model):
         if any(cr.state == 'approved' for cr in self.lab_dev_line_id.lab_dev_id.color_recipe_ids.filtered(lambda cr: cr.color_name == self.color_name)):
             raise UserError(_('You can\'t approve this recipe. Another recipe in the Lab Dev for color %s is already approved.') %self.lab_dev_line_id.color_name)
         self.state = 'approved'
+        self.lab_dev_line_id.state = 'approved'
+        self.lab_dev_line_id.write({'state': 'approved'})
         # self.lab_dev_line_id.state = 'approved'
         # self.color_code = self.color_code[:-4]
 
@@ -80,11 +82,11 @@ class ColorRecipe(models.Model):
         self.lab_dev_line_id.state = 'process'
             # self.color_code = self.last_color_code
 
-    @api.onchange('state')
-    def _onchange_state(self):
-        for rec in self:
-            if rec.state == 'approved':
-                rec.lab_dev_line_id.state = 'approved'
+    # @api.onchange('state')
+    # def _onchange_state(self):
+    #     for rec in self:
+    #         if rec.state == 'approved':
+    #             rec.lab_dev_line_id.state = 'approved'
 
     def action_adjust_recipe(self):
         self.ensure_one()

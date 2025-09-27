@@ -37,37 +37,36 @@
                         <notebook>
                             <page name="color_page" string="Colors">
                                 <field name="lab_dev_line_ids">
-                                    <list>
+                                    <list delete="0" create="0">
                                         <field name="product_id"/>  
                                         <field name="color_name"/>
                                         <field name="color_code"/>
                                         <field name="color" widget="color"/>
                                         <field name="color" string="Hex"/>
                                         <field name="color_recipe_ids"/>
-                                        <field name="state" widget="badge"/>
+                                        <field name="state" widget="badge" decoration-success="state == 'approved'"/>
                                     </list>
                                     <form>
                                         <group>
                                             <group>
-                                                <field name="state" readonly="1"/> 
                                                 <field name="available_product_ids" invisible="1"/> 
-                                                <field name="product_id" readonly="color_recipe_ids" domain="[('id', 'in', available_product_ids)]"/>  
-                                                <field name="color_name" readonly="color_recipe_ids"/>
+                                                <field name="product_id" readonly="1" domain="[('id', 'in', available_product_ids)]" force_save="1"/>  
+                                                <field name="color_name" readonly="1" force_save="1"/>
                                                 <field name="color_code" readonly="1" force_save="1"/>
                                             </group>   
                                             <group>
-                                                <field name="color" widget="color" readonly="color_recipe_ids"/>
-                                                <field name="color" string="Hex" readonly="color_recipe_ids"/>
-                                                <field name="bath_ratio" readonly="color_recipe_ids"/>
+                                                <field name="color" widget="color" readonly="color_recipe_ids" force_save="1"/>
+                                                <field name="color" string="Hex" readonly="color_recipe_ids" force_save="1"/>
+                                                <field name="bath_ratio" readonly="color_recipe_ids" force_save="1"/>
                                             </group>   
                                             <group colspan="2" string="Color Code Composition">
                                                 <group>
-                                                    <field name="color_process_type_id" options="{'no_create': True, 'no_open': True}" readonly="color_recipe_ids"/>
+                                                    <field name="color_process_type_id" options="{'no_create': True, 'no_open': True}" readonly="color_recipe_ids" force_save="1"/>
                                                     <field name="fiber_id" options="{'no_create': True, 'no_open': True}" readonly="color_recipe_ids"/>
                                                 </group>   
                                                 <group>
-                                                    <field name="color_range_id" options="{'no_create': True, 'no_open': True}" readonly="color_recipe_ids"/>
-                                                    <field name="color_intensity_id" options="{'no_create': True, 'no_open': True}" readonly="color_recipe_ids"/>
+                                                    <field name="color_range_id" options="{'no_create': True, 'no_open': True}" readonly="color_recipe_ids" force_save="1"/>
+                                                    <field name="color_intensity_id" options="{'no_create': True, 'no_open': True}" readonly="color_recipe_ids" force_save="1"/>
                                                 </group>   
                                             </group>                                            
                                         </group>

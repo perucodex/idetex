@@ -8,10 +8,15 @@ class ResCompany(models.Model):
 
     def write(self, vals):
         res = super().write(vals)
+        all_products = self.env['product.template'].search([])
         if 'weaving_category_ids' in vals:
-            products = self.env['product.template'].search([('categ_id','in',self.weaving_category_ids.ids),('company_id','=', self.id)])
+            products = self.env['product.template'].search([('categ_id','child_of',self.weaving_category_ids.ids)])
             products.is_weaving = True
+            diff = all_products - products
+            diff.is_weaving = False
         if 'thread_category_ids' in vals:
-            products = self.env['product.template'].search([('categ_id','in',self.thread_category_ids.ids),('company_id','=', self.id)])
+            products = self.env['product.template'].search([('categ_id','in',self.thread_category_ids.ids)])
             products.is_thread = True
+            diff = all_products - products
+            diff.is_thread = False
         return res

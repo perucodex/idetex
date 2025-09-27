@@ -11,14 +11,15 @@ class ColorRecipeProcess(models.Model):
 
     @api.onchange('base_process_id')
     def _onchange_base_process_id(self):
+        lines = self.base_process_id.base_process_line_ids
         self.color_recipe_process_line_ids.unlink()
         self.color_recipe_process_line_ids = [Command.create({
             'color_recipe_process_id': self.id,
             'product_id': line.product_id.id,
             'factor': line.factor,
             'uom': line.uom,
-            'quantity': (self.color_recipe_id.lab_dev_id.volume * line.factor) if line.uom == 'por' else (self.color_recipe_id.lab_dev_id.kilos * line.factor),
-        }) for line in self.base_process_id.base_process_line_ids]
+            # 'quantity': (self.color_recipe_id.lab_dev_id.volume * line.factor) if line.uom == 'por' else (self.color_recipe_id.lab_dev_id.kilos * line.factor),
+        }) for line in lines]
 
 class ColorRecipeProcessLine(models.Model):
     _name = 'color.recipe.process.line'
@@ -32,4 +33,4 @@ class ColorRecipeProcessLine(models.Model):
         ('por', '%'),
         ('gxl', 'Gr/L'),
     ], string='Uom', default='gxl')
-    quantity = fields.Float('Quantity', digits=(12,3))
+    # quantity = fields.Float('Quantity', digits=(12,3))

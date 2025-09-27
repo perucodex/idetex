@@ -13,6 +13,7 @@ patch(MrpDisplayAction.prototype, {
         result["mrp.workorder"].push('employee_id');
         result["mrp.workorder"].push('equipment_ids');
         result["mrp.workorder"].push('roll_ids');
+        result["mrp.workorder"].push('batch_ids');
         return (result);
     }
 });

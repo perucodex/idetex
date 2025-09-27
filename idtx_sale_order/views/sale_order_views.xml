@@ -5,39 +5,67 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
+            <!-- Botón Confirm con id="action_confirm" -->
+            <xpath expr="//button[@id='action_confirm']" position="attributes">
+                <attribute name="invisible">state != 'sent' or is_quote</attribute>
+            </xpath>
+            <!-- Botón Confirm sin id (el otro) -->
+            <xpath expr="//button[@name='action_confirm'][@type='object'][not(@id)]" position="attributes">
+                <attribute name="invisible">state != 'draft' or is_quote</attribute>
+            </xpath>
             <xpath expr="//div[@name='button_box']/button[@name='action_view_invoice']" position="after">
                 <button name="open_labdev"
                         class="oe_stat_button"
                         icon="fa-eyedropper"
                         type="object"
                         invisible="not lab_dev_id" string="Lab Dev"/>
+                <button name="open_productions"
+                        class="oe_stat_button"
+                        icon="fa-gear"
+                        type="object"
+                        invisible="production_count == 0">
+                        <field name="production_count" string="Productions" widget="statinfo"/>
+                </button>
+                <button name="open_sales"
+                        class="oe_stat_button"
+                        icon="fa-money"
+                        type="object"
+                        invisible="sale_count == 0">
+                        <field name="sale_count" string="Sales" widget="statinfo"/>
+                </button>
             </xpath>
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="applicant_id" required="1" readonly="state == 'sale'" domain="[('parent_id','=',partner_id)]"/>
             </xpath>
             <xpath expr="//field[@name='payment_term_id']" position="before">
-                <field name="sale_type" required="1" readonly="state == 'sale'" options="{'no_create': True, 'no_open': True}"/>
+                <field name="sale_type" required="1" readonly="state == 'sale'" options="{'no_create': True, 'no_open': True}" invisible="not is_quote"/>
             </xpath>
             <xpath expr="//header/button[@name='action_confirm'][1]" position="after">
-                <button name="create_labdev" class="btn-primary" data-hotkey="q" string="Create LabDev" type="object" context="{'validate_analytic': True}" invisible="lab_dev_id"/>
-                <button name="action_price_preview" type="object" string="Prices" class="btn-secondary" groups="base.group_user"/>
+                <button name="create_labdev" class="btn-primary" data-hotkey="q" string="Create LabDev" type="object" context="{'validate_analytic': True}" invisible="lab_dev_id or is_quote"/>
+                <button name="action_create_sale_order" type="object" string="Sale Order" class="btn-primary" groups="base.group_user" invisible="state != 'sent' or not is_quote"/>
+                <button name="action_price_preview" type="object" string="Prices" class="btn-secondary" groups="base.group_user" invisible="not is_quote"/>
             </xpath>
             <xpath expr="//header" position="after">
                 <div class="alert alert-warning" role="alert"
-                    invisible="weaving_warning == ''">
+                    invisible="weaving_warning == '' or not is_quote">
                     <field name="weaving_warning"/>
                 </div>
             </xpath>
             <xpath expr="//notebook/page/field[@name='order_line']/list/field[@name='product_template_id']" position="after">
                 <field name="available_operation_ids" column_invisible="1"/>
-                <field name="product_color_id" options="{'no_create': True}" required="is_weaving" readonly="not is_weaving or state == 'sale'"/>
-                <field name="bom_id" options="{'no_create': True}" required="is_weaving" readonly="not is_weaving or state == 'sale'" domain="[('product_tmpl_id','=',product_template_id)]" optional="hide"/>
-                <field name="operation_ids" options="{'no_create': True}" required="parent.sale_type == 'service'" readonly="not is_weaving or state == 'sale' or parent.sale_type == 'sale'" domain="[('id','in',available_operation_ids)]" widget="many2many_tags" force_save="1" optional="hide"/>
-                <field name="weaving_loss" readonly="not is_weaving" optional="hide" widget="percentage"/>
-                <field name="production_loss" readonly="not is_weaving" optional="hide" widget="percentage"/>
+                <field name="product_color_id" options="{'no_create': True}" required="is_weaving" readonly="not is_weaving"/>
+                 <!-- column_invisible="not parent.is_quote"/> -->
+                <field name="has_approved_lab_line" column_invisible="1"/>
+                <field name="color_name" required="is_weaving and not parent.lab_dev_id" readonly="not is_weaving" column_invisible="parent.is_quote or parent.lab_dev_id"/>
+                <field name="color_name" required="is_weaving and not parent.lab_dev_id" readonly="not is_weaving" column_invisible="parent.is_quote or not parent.lab_dev_id" widget="badge" decoration-success="has_approved_lab_line" decoration-danger="not has_approved_lab_line"/>
+                <field name="bom_id" options="{'no_create': True}" required="is_weaving" readonly="not is_weaving" domain="[('product_tmpl_id','=',product_template_id)]" optional="hide" column_invisible="not parent.is_quote"/>
+                <field name="operation_ids" options="{'no_create': True}" required="parent.sale_type == 'service'" readonly="not is_weaving or parent.sale_type == 'sale'" domain="[('id','in',available_operation_ids)]" widget="many2many_tags" force_save="1" optional="hide" column_invisible="not parent.is_quote"/>
+                <field name="weaving_loss" readonly="not is_weaving" optional="hide" widget="percentage" column_invisible="not parent.is_quote"/>
+                <field name="production_loss" readonly="not is_weaving" optional="hide" widget="percentage" column_invisible="not parent.is_quote"/>
             </xpath>
 
             <xpath expr="//notebook/page/field[@name='order_line']/list/field[@name='price_unit']" position="after">
+                <field name="parent_is_quote" column_invisible="1"/>    
                 <field name="price_items" column_invisible="1"/>
                 <widget name="price_items_widget" width="20px"/>
             </xpath>

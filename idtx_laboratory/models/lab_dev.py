@@ -64,8 +64,8 @@ class LabDevLine(models.Model):
     color_range_id = fields.Many2one('color.range','Color Range', ondelete='restrict')
     color_intensity_id = fields.Many2one('color.intensity','Color Intensity', ondelete='restrict')
     color_recipe_ids = fields.One2many('color.recipe', 'lab_dev_line_id', string='Recipes')
-    bath_ratio = fields.Char('Bath Ratio')
-    sale_order_line_id = fields.Many2one('sale.order.line', string='sale_order_line')
+    bath_ratio = fields.Integer('Bath Ratio')
+    sale_order_line_id = fields.Many2one('sale.order.line', string='Sale Order Line')
     state = fields.Selection([
         ('process', 'Process'),
         ('approved', 'Approved'),
@@ -84,34 +84,6 @@ class LabDevLine(models.Model):
                 products = record.lab_dev_id.sale_order_id.order_line.mapped('product_template_id').ids
             record.available_product_ids = products
     
-    # @api.onchange('lab_dev_id')
-    # def _onchange_sale_order_id(self):
-    #     if self.lab_dev_id.sale_order_id:
-    #         product_ids = self.lab_dev_id.sale_order_id.order_line.mapped('product_id.id')
-    #         return {
-    #             'domain': {
-    #                 'product_id': [('id', 'in', product_ids)],
-    #             }
-    #         }
-    #     return {
-    #         'domain': {
-    #             'product_id': [],
-    #         }
-    #     }
-    
-    # @api.onchange('saleorder_line_id','color_name')
-    # def _onchange_saleorder_line_id(self):
-    #     self.sale_order_line_id.labdev_color_name = self.color_name
-    #     self.sale_order_line_id.labdev_color_id = self.id
-    
-    # @api.depends('color_recipe_ids')
-    # def _compute_state(self):
-    #     for rec in self:
-    #         if any(recipe.state == 'approved' for recipe in rec.color_recipe_ids):
-    #             rec.state = 'approved'
-    #         else:
-    #             rec.state = 'process'
-
     @api.onchange('color_process_type_id','color_range_id','color_intensity_id')
     def _onchange_color_code(self):
         for rec in self:

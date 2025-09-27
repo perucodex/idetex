@@ -3,21 +3,34 @@ from odoo import models, fields, Command, api, _
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
     
-    lab_dev_id = fields.Many2one('lab.dev', string='Lab Dev')
+    lab_dev_id = fields.Many2one('lab.dev', string='Lab Dev', copy=False)
     weaving_warning = fields.Text('weaving_warning', compute='_compute_weaving_warning')
-    sale_order_id = fields.Many2one('sale.order', string='Sale Order')
+    sale_order_ids = fields.One2many('sale.order', 'quotation_id', string='Sale Orders')
     quotation_id = fields.Many2one('sale.order', string='Quotation')
     applicant_id = fields.Many2one('res.partner', string='Applicant')
     sale_type = fields.Selection([
         ('sale', 'Sale'),
         ('service', 'Service'),
     ], string='Sale Type', default='sale')
+    production_count = fields.Integer('Production Count', compute='_compute_production_count')
+    sale_count = fields.Integer('Sales Count', compute='_compute_sale_count')
+    is_quote = fields.Boolean('is_quote')
+
+    @api.depends('order_line.production_id')
+    def _compute_production_count(self):
+        for rec in self:
+            rec.production_count = len(rec.order_line.production_id)
+
+    @api.depends('sale_order_ids')
+    def _compute_sale_count(self):
+        for rec in self:
+            rec.sale_count = len(rec.sale_order_ids)
 
     @api.onchange('sale_type')
     def _onchange_sale_type(self):
         for rec in self:
-            rec.order_line._onchange_product_or_color()
             rec.order_line._onchange_bom_id()
+            rec.order_line._onchange_product_or_color()
 
     @api.onchange('payment_term_id','incoterm')
     def _onchange_payment_term_id(self):
@@ -32,7 +45,7 @@ class SaleOrder(models.Model):
             'sale_order_id': self.id,
             'lab_dev_line_ids': [Command.create({
                  'product_id': line.product_template_id.id,
-                 'color_name': line.product_color_id.name,
+                 'color_name': line.color_name or line.product_color_id.name,
                  'sale_order_line_id': line.id,
             }) for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving)]
         }
@@ -42,6 +55,12 @@ class SaleOrder(models.Model):
     
     def open_labdev(self):
         return self.lab_dev_id._get_records_action(name=_("Lab Dev"))
+    
+    def open_productions(self):
+        return self.order_line.production_id._get_records_action(name=_("Productions"))
+    
+    def open_sales(self):
+        return self.sale_order_ids._get_records_action(name=_("Sale Orders"))
     
     @api.depends('order_line','partner_id','pricelist_id')
     def _compute_weaving_warning(self):
@@ -76,3 +95,33 @@ class SaleOrder(models.Model):
             'target': 'self',
             'url': url,
         }
+    
+    def action_confirm(self):
+        res = super().action_confirm()
+        for rec in self:
+            for line in rec.order_line:
+                if line.product_uom_qty and line.product_id.is_weaving:
+                    # Si es un servicio o se quitaron algunas operaciones guardamos la diferencia para quitarlas
+                    operations_to_delete = line.bom_id.operation_ids.operation_id - line.operation_ids.operation_id
+                    prd = self.env['mrp.production'].create({
+                        'product_tmpl_id': line.product_id.product_tmpl_id.id,
+                        'product_qty': line.product_uom_qty,
+                        'bom_id': line.bom_id.id,
+                        'sale_order_line_id': line.id,
+                    })
+                    wo_to_delete = prd.workorder_ids.filtered(lambda wo: wo.mrwo_id in operations_to_delete)
+                    wo_to_delete.unlink()
+                    line.production_id = prd
+                    prd.action_confirm()
+        return res
+    
+    def action_create_sale_order(self):
+        self.ensure_one()
+        sale_order = self.copy({
+                'quotation_id': self.id,
+                'is_quote': False,
+                'order_line': False,
+            })
+        self.sale_order_ids = [Command.link(sale_order.id)]
+        return self.sale_order_ids._get_records_action(name=_("Sale Orders"))
+        

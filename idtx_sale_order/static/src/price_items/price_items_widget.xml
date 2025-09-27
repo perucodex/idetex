@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="idtx_laboratory.PriceItemsWidget">
+        <t t-if="props.record and props.record.resId and props.record.data.parent_is_quote">
+            <a t-on-click="showPopover"
+                t-att-class="props.record.data.is_weaving ? 'fa fa-edit cursor-pointer ml-1' : 'd-none'"
+                title="Editar precios por ítem"/>
+        </t>
+    </t>
+
+    <t t-name="idtx_laboratory.PriceItemsPopover">
+        <div class="p-3" style="min-width: 250px;">
+            <h4>Edit prices</h4>
+            <div style="max-height: 40vh; overflow-y: auto;">
+                <table class="table table-sm">
+                    <tbody>
+                        <tr t-foreach="items" t-as="item" t-key="item.key">
+                            <td><t t-esc="item.key"/></td>
+                            <td class="text-end">
+                                <t t-if="item.key.startsWith('Production Loss') or item.key.startsWith('Financial Percentage') or item.key.startsWith('Incoterm')">
+                                    <t t-esc="item.value.toFixed(2)"/>
+                                </t>
+                                <t t-else="">
+                                    <input type="text"
+                                        class="form-control form-control-sm w-auto text-end"
+                                        inputmode="decimal"
+                                        pattern="^[0-9]*\.?[0-9]+$"
+                                        t-model="item.value"
+                                        t-att-readonly="ui.readonly"
+                                        t-on-input="!ui.readonly and ((ev) => this.onNumberInput(ev, item))"/>
+                                </t>
+                            </td>
+                        </tr>
+                        <tr class="fw-bold">
+                            <h4>
+                                <td>Total</td>
+                            </h4>
+                            <td class="text-end"><h4><t t-esc="total.toFixed(2)"/></h4></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-end">
+                <button class="btn btn-primary btn-sm" t-on-click="save" t-if="!ui.readonly">Save</button>
+            </div>
+        </div>
+    </t>
+
+</templates>

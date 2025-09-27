@@ -1,64 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <record id="mrp_workorder_roll_form" model="ir.ui.view">
-        <field name="name">mrp.workorder.roll.form</field>
+    <record id="mrp_workorder_roll_form_inherit" model="ir.ui.view">
+        <field name="name">mrp.workorder.roll.form.inherit</field>
         <field name="model">mrp.workorder.roll</field>
+        <field name="inherit_id" ref="idtx_mrp.mrp_workorder_roll_form"/>
         <field name="arch" type="xml">
-            <form string="Roll">
-                <sheet>
-                    <group>
-                        <group>
-                            <field name="workorder_id" readonly="1"/>
-                            <field name="name" readonly="1"/>
-                            <field name="uom_id"/>
-                            <field name="size_id"/>
-                        </group>
-                        <group>
-                            <field name="quantity" readonly="1" invisible="not quantity"/>
-                            <field name="net_weight" readonly="1"/>
-                            <field name="gross_weight" readonly="1"/>
-                        </group>
-                    </group>
-                </sheet>
-            </form>
+            <field name="uom_id" position="after">
+                <field name="size_id"/>
+            </field>
         </field>
     </record>
-    
-    <record id="mrp_workorder_roll_view_search" model="ir.ui.view">
-        <field name="name">mrp.workorder.roll.view.search</field>
+
+    <record id="mrp_workorder_roll_view_search_inherit" model="ir.ui.view">
+        <field name="name">mrp.workorder.roll.view.search.inherit</field>
         <field name="model">mrp.workorder.roll</field>
+        <field name="inherit_id" ref="idtx_mrp.mrp_workorder_roll_view_search"/>
         <field name="arch" type="xml">
-            <search string="Search Roll">
-                <field name="workorder_id"/>
-                <field name="name"/>
+            <field name="name" position="after">
                 <filter name='weaving' string="Weaving" domain="[('weave_type','!=','rect')]"/>
                 <filter name='rect' string="Rectilinear" domain="[('weave_type','=','rect')]"/>
-            </search>
+            </field>
         </field>
     </record>
 
-    <record id="wo_rolls_action" model="ir.actions.act_window">
-        <field name="name">Rolls</field>
-        <field name="res_model">mrp.workorder.roll</field>
-        <field name="view_mode">list,form</field>
-        <field name="view_id" ref="mrp_workorder_roll_view_tree"/>
-        <!-- <field name="context">{'search_default_draft': True, 'search_default_roll': True}</field> -->
-    </record>
-
-    <record id="mrp_workorder_roll_view_tree" model="ir.ui.view">
-        <field name="name">mrp.workorder.roll.view.tree</field>
+    <record id="mrp_workorder_roll_view_tree_inherit" model="ir.ui.view">
+        <field name="name">mrp.workorder.roll.view.tree.inherit</field>
         <field name="model">mrp.workorder.roll</field>
+        <field name="inherit_id" ref="idtx_mrp.mrp_workorder_roll_view_tree"/>
         <field name="arch" type="xml">
-            <list create="0" edit="0">
-                <field name="workorder_id"/>
-                <field name="name"/>
-                <field name="uom_id"/>
+            <field name="uom_id" position="after">
                 <field name="size_id"/>
-                <field name="quantity" sum="Total"/>
-                <field name="net_weight" sum="Total"/>
-                <field name="gross_weight" sum="Total"/>
-            </list>
+            </field>
         </field>
     </record>
     

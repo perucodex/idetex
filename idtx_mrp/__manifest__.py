@@ -22,9 +22,7 @@ Módulo base para los desarrollos de producción para empresas textiles
     'depends': [
             'base',
             'portal',
-            'mrp',
             'mrp_workorder',
-            'maintenance',
             'mrp_maintenance',
         ],
 
@@ -39,6 +37,8 @@ Módulo base para los desarrollos de producción para empresas textiles
         'views/mrp_workorder_roll_views.xml',
         'views/mrp_workorder_views.xml',
         'views/scale_registry_views.xml',
+        'wizard/additional_workorder_views.xml',
+        'wizard/split_roll_views.xml',
         'views/mrp_menu.xml',
     ],
     'demo': [

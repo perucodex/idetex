@@ -111,16 +111,6 @@ class ProductAnalysis(models.Model):
             'route_ids': [Command.link(self.env.ref('mrp.route_warehouse0_manufacture').id)],
             'analysis_id': self.id,
         })
-        # self.product_id.bom_ids.create({
-        #     'product_tmpl_id': self.product_id.id,
-        #     'product_uom_id': self.product_id.uom_id.id,
-        #     'bom_line_ids': [Command.create({'product_id': p.id}) for p in self.analysis_id.fiber_ids.product_template_id],
-        #     'operation_ids': [Command.create({
-        #         'name': route.operation_id.name,
-        #         'operation_id': route.operation_id.id,
-        #         'workcenter_id': route.workcenter_id.id,
-        #     }) for route in self.route_line_ids.sorted(key=lambda o: o.sequence)],
-        # })
         self.state = 'prod'
 
     def action_create_technical_sheet(self):
@@ -155,8 +145,14 @@ class ProductAnalysis(models.Model):
                 'bom_line_ids': [Command.create({'product_id': p.id}) for p in rec.fiber_ids.product_template_id.product_variant_id],
             })
             # Consumir el hilo en tejeduria
-            for l in bom_id.bom_line_ids:
-                l.operation_id = bom_id.operation_ids[:1]
+            weaving_operation = bom_id.operation_ids.filtered(lambda o: o.operation_id.workcenter_id.operation_type == 'weaving')
+            if weaving_operation:
+                for l in bom_id.bom_line_ids:
+                    l.operation_id = weaving_operation
+            else:
+                # Si hay productos para tejer y no se encontró un proceso de tejido
+                if bom_id.bom_line_ids:
+                    raise UserError(_('There is no weaving operation in bom. Please check your product routing!'))
             self.product_id.bom_ids += bom_id
 
     def action_done(self):
