@@ -35,13 +35,6 @@
         </field>
     </record>
 
-    <record id="wo_rolls_action" model="ir.actions.act_window">
-        <field name="name">Rolls</field>
-        <field name="res_model">mrp.workorder.roll</field>
-        <field name="view_mode">list,form</field>
-        <field name="view_id" ref="mrp_workorder_roll_view_tree"/>
-    </record>
-
     <record id="mrp_workorder_roll_view_tree" model="ir.ui.view">
         <field name="name">mrp.workorder.roll.view.tree</field>
         <field name="model">mrp.workorder.roll</field>
@@ -55,6 +48,13 @@
                 <field name="gross_weight" sum="Total"/>
             </list>
         </field>
+    </record>
+
+    <record id="wo_rolls_action" model="ir.actions.act_window">
+        <field name="name">Rolls</field>
+        <field name="res_model">mrp.workorder.roll</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="mrp_workorder_roll_view_tree"/>
     </record>
     
 </odoo>
