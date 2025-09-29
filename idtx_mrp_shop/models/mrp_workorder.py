@@ -47,20 +47,21 @@ class MrpWorkorder(models.Model):
         self.roll_ids.create({
             'sequence': len(self.roll_ids),
             'workorder_id': self.id,
-            'employee_id': self.employee_id.id,
             'size_id': size_id,
             'quantity': quantity,
             'employee_id': employee_id,
             'equipment_id': equipment_id,
         })
 
-    def action_create_registry_record(self, batch_id): #, employee_id, equipment_id):
+    def action_create_registry_record(self, batch_id, employee_id, equipment_id):
         prd = self.production_id
         recipe = prd.color_recipe_id
         ldl = recipe.lab_dev_line_id
         br = self.env['batch.registry'].create({
             'batch_id': batch_id,
             'workorder_id': self.id,
+            'employee_id': employee_id,
+            'equipment_id': equipment_id,
             'bath_ratio': ldl.bath_ratio,
             'color_name': ldl.color_name,
             'color_code': ldl.color_code,

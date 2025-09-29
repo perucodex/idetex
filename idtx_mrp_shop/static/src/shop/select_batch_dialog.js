@@ -10,9 +10,12 @@ export class SelectBatchDialog extends ConfirmationDialog {
     static template = "idtx_mrp_shop.SelectBatchDialog";
     static props = {
         ...ConfirmationDialog.props,
-        batchs: { type: Array, optional: true },
         recordId: { type: Number, optional: true },
+        batchs: { type: Array, optional: true },
+        employees: { type: Array, optional: true },
+        equipments: { type: Array, optional: true },
         selectedEmployee: { type: [Number, String], optional: true },   
+        selectedEquipment: { type: [Number, String], optional: true },
     };
 
     setup() {
@@ -22,9 +25,11 @@ export class SelectBatchDialog extends ConfirmationDialog {
         this.notification = useService("notification");
         this.batchs = this.props.batchs || [];
         this.employees = this.props.employees || [];
+        this.equipments = this.props.equipments || [];
         this.state = useState({
             batchs: [],
             selectedEmployee: "",
+            selectedEquipment: "",
         });
 
         onWillStart(async () => {
@@ -33,6 +38,9 @@ export class SelectBatchDialog extends ConfirmationDialog {
             }
             if (!this.employees.length) {
                 await this._loadEmployees();
+            }
+            if (!this.equipments.length) {
+                await this._loadEquipments();
             }
         });
     }
@@ -50,9 +58,14 @@ export class SelectBatchDialog extends ConfirmationDialog {
             this.notification.add(_t("You must select an employee."), { type: "danger" });
             return;
         }
+        if (!this.state.selectedEquipment) {
+            this.notification.add(_t("You must select an equipment."), { type: "danger" });
+            return;
+        }
         const payload = {
             batch_id: this.state.selectedBatchId,
             employee_id: this.state.selectedEmployee || false,
+            equipment_id: this.state.selectedEquipment || false,
         };
         this.props.confirm(payload);
         this.props.close();
@@ -87,6 +100,30 @@ export class SelectBatchDialog extends ConfirmationDialog {
         if (!this.batchs.length) {
             this.notification.add(
                 _t("No batchs are available, please create one first to add it to the shop floor view"),
+                { type: "danger" }
+            );
+        }
+    }
+
+    async _loadEquipments() {
+        const workcenterId = await this.ormService.searchRead(
+            "ir.model.data",
+            [['name', '=', 'mrp_wc_2'], ['module', '=', 'idtx_mrp']],
+            ['res_id']
+        ).then(data => data[0]?.res_id || false);
+
+        if (!workcenterId) {
+            this.notification.add(
+                _t("Workcenter_id 'Tintorería' not found. Please check the external ID."),
+                { type: "danger" }
+            );
+            return;
+        }
+
+        this.equipments = await this.ormService.searchRead("maintenance.equipment", [['workcenter_id','in',workcenterId]], ["name"]);
+        if (!this.equipments.length) {
+            this.notification.add(
+                _t("No equipments are available, please assign one first to add it to the shop floor view"),
                 { type: "danger" }
             );
         }

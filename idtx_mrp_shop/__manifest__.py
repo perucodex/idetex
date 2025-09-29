@@ -27,6 +27,7 @@ luego armar las partidas
 
     # always loaded
     'data': [
+        'data/hr_department.xml',
         'security/ir.model.access.csv',
         'views/batch_registry_views.xml',
         'views/maintenance_equipment_views.xml',

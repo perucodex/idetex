@@ -141,7 +141,9 @@ patch(MrpMenuDialog.prototype, {
                 "mrp.workorder",
                 "action_create_registry_record",
                 [[this.props.record.resId], 
-                payload.batch_id,
+                payload.batch_id, 
+                payload.employee_id, 
+                payload.equipment_id,
             ]);
 
             if (result) {
