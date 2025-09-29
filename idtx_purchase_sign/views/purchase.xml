@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+		<record id="user_sign_purchase" model="ir.ui.view">
+			<field name="name">user.sign.purchase</field>
+			<field name="model">res.users</field>
+			<field name="inherit_id" ref="base.view_users_form"/>
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='signature']" position="after" >
+                    <field name="signature_image" widget="image"/>
+                </xpath>
+			</field>
+		</record>
+
+		<record id="user_sign_purchase_modif" model="ir.ui.view">
+			<field name="name">user.sign.purchase.modif</field>
+			<field name="model">res.users</field>
+			<field name="inherit_id" ref="base.view_users_form_simple_modif"/>
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='signature']" position="after" >
+                    <field name="signature_image" widget="image"/>
+                </xpath>
+			</field>
+		</record>
+
+        <template id="purchase_digital_sign" inherit_id="purchase.report_purchaseorder_document">
+            <xpath expr="//div[@id='total']" position="after">
+                <div t-if="o.user_id.signature_image" class="mt-4 ml64 mr4" name="signature">
+                    <div class="offset-8">
+                        <strong>Signature</strong>
+                    </div>
+                    <div class="offset-8">
+                        <img t-att-src="image_data_uri(o.user_id.signature_image)" style="max-height: 4cm; max-width: 8cm;"/>
+                    </div>
+                    <div class="offset-8 text-center">
+                        <p t-field="o.user_id.name"/>
+                    </div>
+                </div>
+            </xpath>
+        </template>
+        
+        <template id="purchase_digital_sign_rfq" inherit_id="purchase.report_purchasequotation_document">
+            <xpath expr="//table[hasclass('table')]" position="after">
+                <div t-if="o.user_id.signature_image" class="mt-4 ml64 mr4" name="signature">
+                    <div class="offset-8">
+                        <strong>Signature</strong>
+                    </div>
+                    <div class="offset-8">
+                        <img t-att-src="image_data_uri(o.user_id.signature_image)" style="max-height: 4cm; max-width: 8cm;"/>
+                    </div>
+                    <div class="offset-8 text-center">
+                        <p t-field="o.user_id.name"/>
+                    </div>
+                </div>
+            </xpath>
+        </template>
+    </data>
+
+</odoo>
