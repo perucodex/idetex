@@ -53,7 +53,7 @@
             </xpath>
             <xpath expr="//notebook/page/field[@name='order_line']/list/field[@name='product_template_id']" position="after">
                 <field name="available_operation_ids" column_invisible="1"/>
-                <field name="product_color_id" options="{'no_create': True}" required="is_weaving" readonly="not is_weaving"/>
+                <field name="product_color_id" options="{'no_create': True}" required="is_weaving" readonly="not is_weaving or not parent.is_quote"/>
                  <!-- column_invisible="not parent.is_quote"/> -->
                 <field name="has_approved_lab_line" column_invisible="1"/>
                 <field name="color_name" required="is_weaving and not parent.lab_dev_id" readonly="not is_weaving" column_invisible="parent.is_quote or parent.lab_dev_id"/>

@@ -120,7 +120,6 @@ class SaleOrder(models.Model):
         sale_order = self.copy({
                 'quotation_id': self.id,
                 'is_quote': False,
-                'order_line': False,
             })
         self.sale_order_ids = [Command.link(sale_order.id)]
         return self.sale_order_ids._get_records_action(name=_("Sale Orders"))
