@@ -2,18 +2,42 @@ $o-box-border:        1.5px solid #555;
 $o-box-border-light:  1px solid #bbb;
 $o-header-bg:         #f3f3f3;
 $o-row-stripe:        #fafafa;
+    
+.o_info_small {
+    font-size: 9px;          // tamaño deseado
+    line-height: 1.2;
+
+    strong {                // etiquetas “Buyer”, “Order Date”, etc.
+        font-size: 10px;
+    }
+}
+
+.o_small_text {
+    font-size: 8px !important;
+    line-height: 1.1;
+
+    strong {               // etiqueta “Payment Terms:”
+        font-size: 8.5px;
+    }
+}
+
+.o_table_boxed_purchase h2 {
+    font-size: 22px;   /* cambia a tu gusto */
+    line-height: 1.2;
+    margin-bottom: 10px;
+}
 
 .o_table_boxed_purchase {
     
-    .article {
-        font-size: 9px;
-        line-height: 1.2;
-    }
+    // .article {
+    //     font-size: 14px;
+    //     line-height: 1.2;
+    // }
 
     // ---------- HEADER / FOOTER ----------
     .header {
         margin-bottom: 20px;
-        font-size: 8.5px;
+        font-size: 12px;
         .row > div { padding: 0; }
         h4 { margin: 0; font-weight: 700; }
     }
@@ -29,7 +53,7 @@ $o-row-stripe:        #fafafa;
 
     // ---------- TABLE WRAPPER ----------
     table.table {
-        font-size: 8.5px;
+        font-size: 10px;
         border-collapse: separate;
         border-spacing: 0;
         width: 100%;
@@ -40,8 +64,8 @@ $o-row-stripe:        #fafafa;
             content: "";
             position: absolute;
             top: 0; right: 0; bottom: 0; left: 0;
-            border: $o-box-border;
-            border-radius: 8px;
+            // border: $o-box-border;
+            // border-radius: 8px;
             pointer-events: none;
         }
 

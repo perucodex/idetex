@@ -12,6 +12,38 @@
             <attribute name="style">display:none !important;</attribute>
             <attribute name="class">d-print-none col-3 bm-2</attribute>
         </xpath>
+        <xpath expr="//div[@id='informations']" position="attributes">
+            <attribute name="class">row mb-4 o_info_small</attribute>
+        </xpath>
+        <!-- 1) ELIMINAMOS todo lo que está después del total -->
+        <xpath expr="//div[@id='total']/following-sibling::*" position="replace"/>
+        <xpath expr="//div[hasclass('oe_structure')][2]/following-sibling::*" position="replace"/>
+        <xpath expr="//span[@t-field='o.payment_term_id']" position="replace"/>
+
+        <!-- 2) INSERTAMOS nuestro bloque compacto -->
+        <xpath expr="//div[@id='total']" position="after">
+            <div class="row mt-4">
+                <!-- Columna izquierda: Notes + Payment Terms -->
+                <div class="col-8 d-flex flex-column o_small_text">
+                    <div>
+                        <strong>Notes:</strong>
+                        <p t-field="o.note" class="row mb-4 o_info_small"/>
+                    </div>
+                    <div class="mt-2">
+                        <strong>Payment Terms: </strong>
+                        <span t-field="o.payment_term_id" class="ms-1 o_info_small"/>
+                    </div>
+                </div>
+
+                <!-- Columna derecha: firma -->
+                <div class="col-4 align-self-start">
+                    <div t-if="o.user_id.signature_image" class="text-center" name="signature">
+                        <img t-att-src="image_data_uri(o.user_id.signature_image)"
+                            style="max-height: 4cm; max-width: 8cm;"/>
+                    </div>
+                </div>
+            </div>
+        </xpath>
     </template>
     
 </odoo>

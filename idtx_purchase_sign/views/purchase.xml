@@ -24,7 +24,7 @@
 		</record>
 
         <template id="purchase_digital_sign" inherit_id="purchase.report_purchaseorder_document">
-            <xpath expr="//div[@id='total']" position="after">
+            <!-- <xpath expr="//div[@id='total']" position="after">
                 <div t-if="o.user_id.signature_image" class="mt-4 ml64 mr4" name="signature">
                     <div class="offset-8">
                         <strong>Signature</strong>
@@ -34,6 +34,39 @@
                     </div>
                     <div class="offset-8 text-center">
                         <p t-field="o.user_id.name"/>
+                    </div>
+                </div>
+            </xpath> -->
+            <!-- 1) Eliminamos TODO lo que estaba después del div #total -->
+            <xpath expr="//div[@id='total']/following-sibling::*" position="replace">
+                <!-- vacío: lo re-crearemos a continuación -->
+            </xpath>
+
+            <!-- 2) Insertamos nuestro bloque limpio -->
+            <xpath expr="//div[@id='total']" position="after">
+                <div class="row mt-4">
+                    <!-- Columna izquierda: Notes + Payment Terms -->
+                    <div class="col-8 d-flex flex-column">
+                        <div>
+                            <strong>Notes:</strong>
+                            <p t-field="o.note"/>
+                        </div>
+                        <div class="mt-2">
+                            <strong>Payment Terms:</strong>
+                            <span t-field="o.payment_term_id"/>
+                        </div>
+                    </div>
+
+                    <!-- Columna derecha: firma -->
+                    <div class="col-4 align-self-start">
+                        <div t-if="o.user_id.signature_image" class="text-center" name="signature">
+                            <!-- <strong>Signature</strong> -->
+                            <br/>
+                            <img t-att-src="image_data_uri(o.user_id.signature_image)"
+                                style="max-height: 4cm; max-width: 8cm;"/>
+                            <br/>
+                            <!-- <span t-field="o.user_id.name"/> -->
+                        </div>
                     </div>
                 </div>
             </xpath>
