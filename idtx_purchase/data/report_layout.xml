@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="report_layout_idtx" model="report.layout">
+            <field name="name">IDTX</field>
+            <field name="sequence">9</field>
+            <field name="view_id" ref="idtx_purchase.external_layout_idtx"/>
+        </record>
+
+    </data>
+</odoo>

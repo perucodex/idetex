@@ -1,0 +1,120 @@
+$o-box-border:        1.5px solid #555;
+$o-box-border-light:  1px solid #bbb;
+$o-header-bg:         #f3f3f3;
+$o-row-stripe:        #fafafa;
+
+.o_table_boxed_purchase {
+    
+    .article {
+        font-size: 9px;
+        line-height: 1.2;
+    }
+
+    // ---------- HEADER / FOOTER ----------
+    .header {
+        margin-bottom: 20px;
+        font-size: 8.5px;
+        .row > div { padding: 0; }
+        h4 { margin: 0; font-weight: 700; }
+    }
+
+    .footer {
+        margin-top: 30px;
+        text-align: center;
+        font-size: 11px;
+        color: #666;
+        border-top: 1px solid #ddd;
+        padding-top: 8px;
+    }
+
+    // ---------- TABLE WRAPPER ----------
+    table.table {
+        font-size: 8.5px;
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+        position: relative;
+
+        // outside full border + rounded
+        &::before {
+            content: "";
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            border: $o-box-border;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+        thead {
+            text-transform: uppercase;
+            background: $o-header-bg;
+
+            th {
+                padding-top:    3px !important;
+                padding-bottom: 3px !important;
+                padding: 10px 8px;
+                font-weight: 700;
+                border-bottom: $o-box-border;
+                border-right: $o-box-border-light;
+
+                &:last-child { border-right: none; }
+                &:first-child { border-top-left-radius: 8px; }
+                &:last-child  { border-top-right-radius: 8px; }
+            }
+        }
+
+        tbody {
+            tr {
+                border-bottom: 1px solid #e0e0e0;
+
+                &:nth-child(even) td {
+                    background: $o-row-stripe;
+                }
+
+                &.o_line_section td,
+                &.is-subtotal td {
+                    // border-top: $o-box-border;
+                    // border-bottom: $o-box-border;
+                    font-weight: 600;
+                    background: #eee !important;
+                }
+
+                td {
+                    padding-top:    3px !important;
+                    padding-bottom: 3px !important;
+                    padding: 8px;
+                    border-right: $o-box-border-light;
+                    vertical-align: top;
+
+                    &:last-child { border-right: none; }
+                }
+            }
+
+            tr:last-child td:first-child { border-bottom-left-radius: 8px; }
+            tr:last-child td:last-child  { border-bottom-right-radius: 8px; }
+        }
+    }
+
+    // ---------- TOTALS BOX ----------
+    .o_total_table {
+        width: 100%;
+        margin-top: 15px;
+        border: $o-box-border;
+        border-radius: 8px;
+        background: #fff;
+
+        td {
+            border: none;
+            padding: 6px 10px;
+        }
+
+        .o_total {
+            font-weight: 700;
+            border-top: 2px solid #333;
+        }
+    }
+
+    // ---------- SMALL PRINT ----------
+    .text-muted.small { font-size: 10px; }
+
+}

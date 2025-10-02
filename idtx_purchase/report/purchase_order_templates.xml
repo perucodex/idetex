@@ -13,5 +13,5 @@
             <attribute name="class">d-print-none col-3 bm-2</attribute>
         </xpath>
     </template>
-
+    
 </odoo>
