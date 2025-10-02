@@ -12,4 +12,10 @@
         </field>
     </record>
 
+    <menuitem id="menu_payment_terms_purchase"
+            name="Términos de Pago"
+            parent="purchase.menu_purchase_config"
+            action="account.action_payment_term_form"
+            groups="purchase.group_purchase_manager"/>
+
 </odoo>
