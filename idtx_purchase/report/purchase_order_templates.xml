@@ -22,7 +22,7 @@
 
         <!-- 2) INSERTAMOS nuestro bloque compacto -->
         <xpath expr="//div[@id='total']" position="after">
-            <div class="row mt-4">
+            <div class="row mt-4 purchase-order">
                 <!-- Columna izquierda: Notes + Payment Terms -->
                 <div class="col-8 d-flex flex-column o_small_text">
                     <div>

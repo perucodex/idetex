@@ -2,9 +2,15 @@ $o-box-border:        1.5px solid #555;
 $o-box-border-light:  1px solid #bbb;
 $o-header-bg:         #f3f3f3;
 $o-row-stripe:        #fafafa;
-    
+
+/*  REPORTE DE COMPRA – TEXTO PEQUEÑO  */
+.o_report_layout_idtx * {
+    font-size: 10px !important;
+    line-height: 1.2 !important;
+}
+
 .o_info_small {
-    font-size: 9px;          // tamaño deseado
+    font-size: 10px;          // tamaño deseado
     line-height: 1.2;
 
     strong {                // etiquetas “Buyer”, “Order Date”, etc.
@@ -13,7 +19,7 @@ $o-row-stripe:        #fafafa;
 }
 
 .o_small_text {
-    font-size: 8px !important;
+    font-size: 10px !important;
     line-height: 1.1;
 
     strong {               // etiqueta “Payment Terms:”
@@ -29,6 +35,12 @@ $o-row-stripe:        #fafafa;
 
 .o_table_boxed_purchase {
     
+    #informations {
+        border: 1px solid #505050;   /* o #ccc, o el color que uses */
+        border-radius: 8px;       /* mantén los bordes redondeados */
+        padding: 0.6rem 1rem;     /* opcional: ajusta el relleno si quieres */
+    }
+
     // .article {
     //     font-size: 14px;
     //     line-height: 1.2;
@@ -47,7 +59,7 @@ $o-row-stripe:        #fafafa;
         text-align: center;
         font-size: 11px;
         color: #666;
-        border-top: 1px solid #ddd;
+        border-top: 1px solid #505050;
         padding-top: 8px;
     }
 
@@ -89,7 +101,7 @@ $o-row-stripe:        #fafafa;
 
         tbody {
             tr {
-                border-bottom: 1px solid #e0e0e0;
+                border-bottom: 1px solid #505050;
 
                 &:nth-child(even) td {
                     background: $o-row-stripe;
@@ -134,7 +146,7 @@ $o-row-stripe:        #fafafa;
 
         .o_total {
             font-weight: 700;
-            border-top: 2px solid #333;
+            border-top: 2px solid #505050;
         }
     }
 
