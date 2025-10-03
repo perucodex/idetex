@@ -92,10 +92,10 @@
         </div>
     </template>
 
-    <template id="styles_company_report_inherit" inherit_id="web.styles_company_report">
+    <!-- <template id="styles_company_report_inherit" inherit_id="web.styles_company_report">
         <xpath expr="//t[@t-foreach='company_ids']" position="inside">
             <t t-elif="layout == 'idtx_purchase.external_layout_idtx'">
-                &amp;.o_report_layout_bubble {
+                &amp;.o_report_layout_idtx {
                     #informations {
                         border-color: <t t-esc='secondary'/>;
                         background-color: mix(white, <t t-esc='secondary'/>, 92%);
@@ -112,6 +112,6 @@
                 }
             </t>
         </xpath>
-    </template>
+    </template> -->
 
 </odoo>

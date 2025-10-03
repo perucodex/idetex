@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-03 15:20+0000\n"
-"PO-Revision-Date: 2025-10-03 15:20+0000\n"
+"POT-Creation-Date: 2025-10-03 17:30+0000\n"
+"PO-Revision-Date: 2025-10-03 17:30+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -16,8 +16,49 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: idtx_purchase
+#: model_terms:ir.ui.view,arch_db:idtx_purchase.styles_company_report_inherit
+msgid ""
+"&amp;.o_report_layout_idtx {\n"
+"                    #informations {\n"
+"                        border-color:"
+msgstr ""
+
+#. module: idtx_purchase
 #: model_terms:ir.ui.view,arch_db:idtx_purchase.external_layout_idtx
 msgid "(document name)"
+msgstr ""
+
+#. module: idtx_purchase
+#: model_terms:ir.ui.view,arch_db:idtx_purchase.styles_company_report_inherit
+msgid ""
+");\n"
+"\n"
+"                        strong {\n"
+"                            color: preview-color-contrast("
+msgstr ""
+
+#. module: idtx_purchase
+#: model_terms:ir.ui.view,arch_db:idtx_purchase.styles_company_report_inherit
+msgid ""
+", 92%);\n"
+"                    }\n"
+"\n"
+"                    thead th, #total .o_total td {\n"
+"                        background-color:"
+msgstr ""
+
+#. module: idtx_purchase
+#: model_terms:ir.ui.view,arch_db:idtx_purchase.styles_company_report_inherit
+msgid ""
+";\n"
+"                        background-color: mix(white,"
+msgstr ""
+
+#. module: idtx_purchase
+#: model_terms:ir.ui.view,arch_db:idtx_purchase.styles_company_report_inherit
+msgid ""
+";\n"
+"                        color: preview-color-contrast("
 msgstr ""
 
 #. module: idtx_purchase

@@ -23,6 +23,7 @@ Muestra fechas de orden y de aprobación en reporte y vista
 
     # always loaded
     'data': [
+        'data/product_data.xml',
         'security/ir.model.access.csv',
         # 'security/payment_term_access.xml',
         'report/report_templates.xml',

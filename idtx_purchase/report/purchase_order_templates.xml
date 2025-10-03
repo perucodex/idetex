@@ -21,29 +21,29 @@
         <xpath expr="//span[@t-field='o.payment_term_id']" position="replace"/>
 
         <!-- 2) INSERTAMOS nuestro bloque compacto -->
-        <xpath expr="//div[@id='total']" position="after">
-            <div class="row mt-4 purchase-order">
+        <!-- <xpath expr="//div[@id='total']" position="after">
+            <div class="row mt-4 purchase-order"> -->
                 <!-- Columna izquierda: Notes + Payment Terms -->
-                <div class="col-8 d-flex flex-column o_small_text">
+                <!-- <div class="col-8 d-flex flex-column o_small_text">
                     <div>
-                        <strong>Notes:</strong>
+                        <strong>Notas:</strong>
                         <p t-field="o.note" class="row mb-4 o_info_small"/>
                     </div>
                     <div class="mt-2">
-                        <strong>Payment Terms: </strong>
+                        <strong>Términos de Pago: </strong>
                         <span t-field="o.payment_term_id" class="ms-1 o_info_small"/>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- Columna derecha: firma -->
-                <div class="col-4 align-self-start">
+                <!-- <div class="col-4 align-self-start">
                     <div t-if="o.user_id.signature_image" class="text-center" name="signature">
                         <img t-att-src="image_data_uri(o.user_id.signature_image)"
                             style="max-height: 4cm; max-width: 8cm;"/>
                     </div>
                 </div>
             </div>
-        </xpath>
+        </xpath> -->
     </template>
     
 </odoo>
