@@ -50,9 +50,22 @@
                                 <field name="needles" readonly="state != 'test'"/>
                                 <field name="diameter" readonly="state != 'test'"/>
                                 <field name="feeders" readonly="state != 'test'"/>
-                                <field name="density" readonly="state != 'test'"/>
+                                <label for="density"/>
+                                <div name="density" class="o_row">
+                                    <field name="density" readonly="state != 'test'"/>
+                                    <span class="ms-1 oe_inline">gm</span>
+                                </div>
                                 <field name="column_qty" readonly="state != 'test'"/>
-                                <field name="width" readonly="state != 'test'"/>
+                                <label for="width"/>
+                                <div name="width" class="o_row">
+                                    <field name="width" readonly="1" force_save="1"/>
+                                    <span class="ms-1 oe_inline">cm</span>
+                                </div>
+                                <label for="standard_width"/>
+                                <div name="standard_width" class="o_row">
+                                    <field name="standard_width" readonly="state != 'test'"/>
+                                    <span class="ms-1 oe_inline">cm</span>
+                                </div>
                                 <field name="product_code" readonly="1" force_save="1"/>
                                 <field name="company_id" readonly="1" groups="base.group_multi_company"/>
                             </group>

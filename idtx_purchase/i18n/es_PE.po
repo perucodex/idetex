@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-01 14:46+0000\n"
-"PO-Revision-Date: 2025-10-01 14:46+0000\n"
+"POT-Creation-Date: 2025-10-03 15:07+0000\n"
+"PO-Revision-Date: 2025-10-03 15:07+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -16,22 +16,71 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: idtx_purchase
+#: model_terms:ir.ui.view,arch_db:idtx_purchase.external_layout_idtx
+msgid "(document name)"
+msgstr ""
+
+#. module: idtx_purchase
+#: model_terms:ir.ui.view,arch_db:idtx_purchase.external_layout_idtx
+msgid "<strong>Company address block</strong>"
+msgstr ""
+
+#. module: idtx_purchase
+#: model_terms:ir.ui.view,arch_db:idtx_purchase.external_layout_idtx
+msgid "<strong>Company details block</strong>"
+msgstr ""
+
+#. module: idtx_purchase
 #: model_terms:ir.ui.view,arch_db:idtx_purchase.report_purchaseorder_document_inherit
-msgid "<strong>Approved Date:</strong>"
-msgstr "<strong>Fecha de Confirmación:</strong>"
+msgid "<strong>Notes:</strong>"
+msgstr "<strong>Notas:</strong>"
 
 #. module: idtx_purchase
 #: model_terms:ir.ui.view,arch_db:idtx_purchase.report_purchaseorder_document_inherit
 msgid "<strong>Order Date:</strong>"
 msgstr "<strong>Fecha de Orden:</strong>"
 
-#. module: purchase
-#: model:ir.model.fields,field_description:purchase.field_purchase_order__date_order
-#: model_terms:ir.ui.view,arch_db:purchase.portal_my_purchase_rfqs
-msgid "Order Deadline"
-msgstr "Fecha de Orden"
+#. module: idtx_purchase
+#: model_terms:ir.ui.view,arch_db:idtx_purchase.report_purchaseorder_document_inherit
+msgid "<strong>Payment Terms: </strong>"
+msgstr "<strong>Términos de Pago: </strong>"
 
-#. module: purchase
-#: model_terms:ir.ui.view,arch_db:purchase.report_purchaseorder_document
-msgid "<strong>Order Deadline:</strong>"
-msgstr "<strong>Fecha de Orden:</strong>"
+#. module: idtx_purchase
+#: model_terms:ir.ui.view,arch_db:idtx_purchase.external_layout_idtx
+msgid "Company tagline"
+msgstr ""
+
+#. module: idtx_purchase
+#: model_terms:ir.ui.view,arch_db:idtx_purchase.external_layout_idtx
+msgid "Contains the company address."
+msgstr ""
+
+#. module: idtx_purchase
+#: model_terms:ir.ui.view,arch_db:idtx_purchase.external_layout_idtx
+msgid "Contains the company details."
+msgstr ""
+
+#. module: idtx_purchase
+#: model_terms:ir.ui.view,arch_db:idtx_purchase.external_layout_idtx
+msgid "Logo"
+msgstr ""
+
+#. module: idtx_purchase
+#: model_terms:ir.ui.view,arch_db:idtx_purchase.external_layout_idtx
+msgid "Page <span class=\"page\"/> / <span class=\"topage\"/>"
+msgstr ""
+
+#. module: idtx_purchase
+#: model_terms:ir.ui.view,arch_db:idtx_purchase.external_layout_idtx
+msgid "Tax ID"
+msgstr ""
+
+#. module: idtx_purchase
+#: model:ir.ui.menu,name:idtx_purchase.menu_payment_terms_purchase
+msgid "Payment Terms"
+msgstr "Términos de Pago"
+
+#. module: idtx_purchase
+#: model_terms:ir.ui.view,arch_db:idtx_purchase.external_layout_idtx
+msgid "US12345671"
+msgstr ""
