@@ -72,12 +72,37 @@
               <td style="padding: 2px;"><t t-esc="'{:.2f} %'.format(doc.scrap)"/></td>
               <td style="padding: 2px;">Weave type</td>
               <td style="padding: 2px;"><span t-field="doc.weave_type"/></td>
-              <td style="padding: 2px;">Batch</td>
-              <td style="padding: 2px;"><t t-esc="doc.batch"/></td>
+              <td style="padding: 2px;">Mesh Lenght</td>
+              <td style="padding: 2px;"><t t-esc="doc.mesh_length"/></td>
             </tr>
           </tbody>
         </table>
-
+        <table class="table o_main_table">
+          <tbody style="font-size: 0.7rem">
+            <tr> <td colspan="6" class="text-center" style="padding:4px;"><strong>Datos de Crudo</strong></td></tr>
+            <tr>
+              <td style="padding: 2px;">Width</td>
+              <td style="padding: 2px;"><t t-esc="doc.raw_width"/></td>
+              <td style="padding: 2px;">Density</td>
+              <td style="padding: 2px;"><t t-esc="doc.raw_density"/></td>
+              <td style="padding: 2px;">Widening</td>
+              <td style="padding: 2px;"><t t-esc="doc.raw_widening"/></td>
+            </tr>
+          </tbody>
+        </table>
+        <table class="table o_main_table">
+          <tbody style="font-size: 0.7rem">
+            <tr> <td colspan="6" class="text-center" style="padding:4px;"><strong>Datos de Acabado</strong></td></tr>
+            <tr>
+              <td style="padding: 2px;">Width</td>
+              <td style="padding: 2px;"><t t-esc="doc.finish_width"/></td>
+              <td style="padding: 2px;">Density</td>
+              <td style="padding: 2px;"><t t-esc="doc.finish_density"/></td>
+              <td style="padding: 2px;">Yield</td>
+              <td style="padding: 2px;"><t t-esc="doc.finish_yield"/></td>
+            </tr>
+          </tbody>
+        </table>
         <!-- Imprime solo si es rutas -->
         <t t-if="doc.route_line_ids">
           <!-- Descripción del proceso -->
@@ -165,7 +190,7 @@
           </div>
           <!-- Columna de Ligamentos: ancho automático -->
           <t t-set="grid" t-value="doc.analysis_id.get_svg_grid()"/>
-          <t t-call="idtx_laboratory.fabric_ligaments_table"/>
+          <t t-call="idtx_product_development.fabric_ligaments_table"/>
         </div>
 
         <br/>
@@ -181,13 +206,13 @@
   <template id="report_technical_sheet_raw">
       <t t-call="web.html_container">
           <t t-foreach="docs" t-as="doc">
-              <t t-call="idtx_laboratory.report_technical_sheet_document" t-lang="doc.partner_id.lang"/>
+              <t t-call="idtx_product_development.report_technical_sheet_document" t-lang="doc.partner_id.lang"/>
           </t>
       </t>
   </template>
 
   <template id="report_technical_sheet">
-      <t t-call="idtx_laboratory.report_technical_sheet_raw"/>
+      <t t-call="idtx_product_development.report_technical_sheet_raw"/>
   </template>
 
 </odoo>

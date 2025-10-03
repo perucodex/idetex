@@ -15,6 +15,7 @@ class TechnicalSheet(models.Model):
     product_code = fields.Char('Product Code', readonly=True, copy=False)
     partner_id = fields.Many2one('res.partner', string='Customer', ondelete='restrict')
     # Tejido
+    stylo = fields.Char('Stylo')
     program = fields.Char('Program')
     fabric_composition = fields.Char('Fabric Composition')
     atx = fields.Char('ATX')
@@ -26,7 +27,15 @@ class TechnicalSheet(models.Model):
     yield_meter = fields.Float('Yield')
     scrap = fields.Float('Scrap', default=0.01)
     weave_type = fields.Selection(related='analysis_id.weave_type', store=True)
-    batch = fields.Char('Batch')
+    mesh_length = fields.Float('Mesh Length')
+    # Datos de crudo
+    raw_width = fields.Float('Width')
+    raw_density = fields.Float('Density')
+    raw_widening = fields.Float('Widening')
+    # Datos de acabado
+    finish_width = fields.Float('Width')
+    finish_density = fields.Float('Density')
+    finish_yield = fields.Float('Yield')
     notes = fields.Text('Notes')
     company_id = fields.Many2one(
         'res.company',
@@ -79,17 +88,6 @@ class TechnicalSheet(models.Model):
     #         'hilanderia': MySQLConnector.encrypt_data(''),
     #     }
     #     connector.insert("rutas", values)
-
-    @api.depends('order_line.invoice_lines')
-    def _get_boms(self):
-        # The invoice_ids are obtained thanks to the invoice lines of the SO
-        # lines, and we also search for possible refunds created directly from
-        # existing invoices. This is necessary since such a refund is not
-        # directly linked to the SO.
-        for order in self:
-            invoices = order.order_line.invoice_lines.move_id.filtered(lambda r: r.move_type in ('out_invoice', 'out_refund'))
-            order.invoice_ids = invoices
-            order.invoice_count = len(invoices)
 
     @api.onchange('gauge_id','width','density')
     def _onchange_product_code(self):

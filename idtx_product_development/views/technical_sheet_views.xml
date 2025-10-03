@@ -42,9 +42,10 @@
                         <field name="notes"/>
                         <notebook>
                             <page name="weaving_page" string="Weaving">
-                                <group>
+                                <group string="Product Data">
                                     <group>
                                         <field name="program" readonly="state != 'test'"/>
+                                        <field name="stylo" readonly="1" force_save="1"/>
                                         <field name="fabric_composition" readonly="state != 'test'"/>
                                         <field name="atx" readonly="state != 'test'"/>
                                         <field name="density" readonly="state != 'test'"/>
@@ -57,7 +58,17 @@
                                         <field name="yield_meter" readonly="state != 'test'"/>
                                         <field name="scrap" widget="percentage" readonly="state != 'test'"/>
                                         <field name="weave_type" readonly="state != 'test'" force_save="1"/>
-                                        <field name="batch" readonly="state != 'test'"/>
+                                        <field name="mesh_length" readonly="state != 'test'"/>
+                                    </group>
+                                    <group string="Raw Data">
+                                        <field name="raw_width" readonly="state != 'test'"/>
+                                        <field name="raw_density" readonly="state != 'test'"/>
+                                        <field name="raw_widening" readonly="state != 'test'"/>
+                                    </group>
+                                    <group string="Finishing Data">
+                                        <field name="finish_width" readonly="state != 'test'"/>
+                                        <field name="finish_density" readonly="state != 'test'"/>
+                                        <field name="finish_yield" readonly="state != 'test'"/>
                                     </group>
                                 </group>
                             </page>
@@ -133,7 +144,7 @@
                     <field name="first_wash_twist"/>
                     <field name="scrap" widget="percentage"/>
                     <field name="weave_type"/>
-                    <field name="batch"/>
+                    <field name="mesh_length"/>
                     <field name="company_id" groups="base.group_multi_company" optional="hide" readonly="1"/>
                 </list>
             </field>

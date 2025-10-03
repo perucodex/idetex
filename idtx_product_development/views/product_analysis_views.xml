@@ -77,6 +77,9 @@
                                 <field name="weaving_data_ids" readonly="state != 'prod'"/>
                             </page>
                             <page name="routing_page" string="Routing" readonly="state != 'test'">
+                                <group string="Routing Template">
+                                    <field name="mrp_base_process_id" readonly="state != 'test'"/>
+                                </group>
                                 <field name="routing_ids" readonly="state != 'test'">
                                     <list editable="bottom">
                                         <field name="sequence" widget="handle"/>

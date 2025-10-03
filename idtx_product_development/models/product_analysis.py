@@ -55,6 +55,21 @@ class ProductAnalysis(models.Model):
     # technical_sheet_id = fields.Many2one('technical.sheet', string='Technical Sheet')
     technical_sheet_count = fields.Integer(string="Technical Sheet Count", compute='_get_technical_sheets')
     technical_sheet_ids = fields.One2many('technical.sheet', 'analysis_id', string='Technical Sheet')
+    mrp_base_process_id = fields.Many2one('mrp.base.process', string='Base Process')
+
+    @api.onchange('mrp_base_process_id')
+    def _onchange_mrp_base_process_id(self):
+        if not self.mrp_base_process_id:
+            self.routing_ids = [Command.clear()]
+            return
+        commands = [Command.clear()]
+        commands += [
+            Command.create({
+                'operation_id': line.operation_id.id,
+            })
+            for line in self.mrp_base_process_id.process_ids
+        ]
+        self.routing_ids = commands
     
     @api.depends('technical_sheet_ids')
     def _get_technical_sheets(self):
@@ -77,8 +92,8 @@ class ProductAnalysis(models.Model):
                     (rec.product_fiber_id.code or '') + \
                     (rec.gauge_id.code or '') + \
                     (rec.product_appearance_id.code or '') + \
-                    (str(int(rec.width)).replace('.','') or '') + \
-                    (str(int(rec.density)).replace('.','') or '')
+                    (str(int(rec.standard_width)) or '') + \
+                    (str(int(rec.density)) or '')
                 
     @api.onchange('gauge_id')
     def _onchange_gauge_id(self):
@@ -125,8 +140,9 @@ class ProductAnalysis(models.Model):
                     for f in rec.fiber_ids if f.product_template_id
                 ]),
                 'density': self.density,
-                'width': self.width,
+                'width': self.standard_width,
                 'gauge_id': self.gauge_id.id,
+                'stylo': rec.stylo,
                 'route_line_ids': [Command.create({
                     'operation_id': route.operation_id.id,
                     'line_parameter_ids': [Command.create({'name': param.name}) for param in route.operation_id.parameter_ids],

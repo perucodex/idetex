@@ -129,7 +129,7 @@
           </div>
           <!-- Columna de Ligamentos: ancho automático -->
           <t t-set="grid" t-value="doc.analysis_id.get_svg_grid()"/>
-          <t t-call="idtx_laboratory.fabric_ligaments_table"/>
+          <t t-call="idtx_product_development.fabric_ligaments_table"/>
         </div>
 
         <br/>
@@ -170,13 +170,13 @@
   <template id="report_product_analysis_raw">
       <t t-call="web.html_container">
           <t t-foreach="docs" t-as="doc">
-              <t t-call="idtx_laboratory.report_product_analysis_document" t-lang="doc.analysis_id.partner_id.lang"/>
+              <t t-call="idtx_product_development.report_product_analysis_document" t-lang="doc.analysis_id.partner_id.lang"/>
           </t>
       </t>
   </template>
 
   <template id="report_product_analysis">
-      <t t-call="idtx_laboratory.report_product_analysis_raw"/>
+      <t t-call="idtx_product_development.report_product_analysis_raw"/>
   </template>
 
 </odoo>

@@ -11,22 +11,10 @@ class ColorRecipeProcess(models.Model):
 
     @api.onchange('base_process_id')
     def _onchange_base_process_id(self):
-        # lines = self.base_process_id.base_process_line_ids
-        # self.color_recipe_process_line_ids.unlink()
-        # self.color_recipe_process_line_ids = [Command.create({
-        #     'color_recipe_process_id': self.id,
-        #     'product_id': line.product_id.id,
-        #     'factor': line.factor,
-        #     'uom': line.uom,
-        #     # 'quantity': (self.color_recipe_id.lab_dev_id.volume * line.factor) if line.uom == 'por' else (self.color_recipe_id.lab_dev_id.kilos * line.factor),
-        # }) for line in lines]
         if not self.base_process_id:
             self.color_recipe_process_line_ids = [Command.clear()]
             return
-
-        # 1º comando: vacía (desvincula + borra) las líneas anteriores
         commands = [Command.clear()]
-        # 2º comando: crea las líneas del nuevo proceso
         commands += [
             Command.create({
                 'product_id': line.product_id.id,

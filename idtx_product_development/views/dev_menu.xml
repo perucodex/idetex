@@ -21,7 +21,8 @@
                 <menuitem id="dev_settings_menu" name="Configuration" sequence="200">
                     <menuitem id="dev_menu_settings_config" name="Settings" action="action_idtx_product_development_config" groups="base.group_system" sequence="0"/>
                     <menuitem id="configurate_svg_example_menu" name="Models SVG Configurate" action="configurate_svg_example_action" sequence="10"/>
-                    <menuitem id="dev_product_code_menu" name="Product Code" sequence="20">
+                    <menuitem id="mrp_base_operation_menu" name="Mrp Base Process" action="mrp_base_process_action" sequence="20"/>
+                    <menuitem id="dev_product_code_menu" name="Product Code" sequence="30">
                         <menuitem id="dev_product_appearance_action_menu" name="Appearance" action="product_appearance_action" sequence="10"/>
                         <menuitem id="dev_product_family_action_menu" name="Family" action="product_family_action" sequence="20"/>
                         <menuitem id="dev_product_fiber_action_menu" name="Fiber" action="product_fiber_action" sequence="30"/>
