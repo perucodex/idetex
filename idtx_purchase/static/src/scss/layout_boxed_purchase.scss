@@ -4,10 +4,10 @@ $o-header-bg:         #f3f3f3;
 $o-row-stripe:        #fafafa;
 
 /*  REPORTE DE COMPRA – TEXTO PEQUEÑO  */
-.o_report_layout_idtx * {
-    font-size: 10px !important;
-    line-height: 1.2 !important;
-}
+// .o_report_layout_idtx * {
+//     font-size: 10px !important;
+//     line-height: 1.2 !important;
+// }
 
 .o_info_small {
     font-size: 10px;          // tamaño deseado
@@ -35,17 +35,38 @@ $o-row-stripe:        #fafafa;
 
 .o_table_boxed_purchase {
     
+    div[name="address"] {          /* único bloque que contiene la dirección */
+        font-size: 9px !important;
+        line-height: 1.1 !important;
+
+        strong, span, p, div {     /* cualquier texto dentro */
+            font-size: 9px !important;
+        }
+    }
+
+    div[name="information_block"] {  /* shipping address */
+        font-size: 9px !important;
+        line-height: 1.1 !important;
+
+        strong, span, p, div {
+            font-size: 9px !important;
+        }
+
+        /* si quieres también quitar el recuadro de shipping */
+        .bg-light.border-1.rounded {
+            border: none !important;
+            background: transparent !important;
+            padding: 0 !important;
+            opacity: 1 !important;
+        }
+    }
+
     #informations {
         border: 1px solid #505050;   /* o #ccc, o el color que uses */
         border-radius: 8px;       /* mantén los bordes redondeados */
         padding: 0.6rem 1rem;     /* opcional: ajusta el relleno si quieres */
     }
-
-    // .article {
-    //     font-size: 14px;
-    //     line-height: 1.2;
-    // }
-
+    
     // ---------- HEADER / FOOTER ----------
     .header {
         margin-bottom: 20px;
