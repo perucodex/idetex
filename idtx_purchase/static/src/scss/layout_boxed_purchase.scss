@@ -76,8 +76,8 @@ $o-row-stripe:        #fafafa;
             content: "";
             position: absolute;
             top: 0; right: 0; bottom: 0; left: 0;
-            // border: $o-box-border;
-            // border-radius: 8px;
+            border: $o-box-border;
+            border-radius: 8px;
             pointer-events: none;
         }
 
@@ -109,8 +109,8 @@ $o-row-stripe:        #fafafa;
 
                 &.o_line_section td,
                 &.is-subtotal td {
-                    // border-top: $o-box-border;
-                    // border-bottom: $o-box-border;
+                    border-top: $o-box-border;
+                    border-bottom: $o-box-border;
                     font-weight: 600;
                     background: #eee !important;
                 }
