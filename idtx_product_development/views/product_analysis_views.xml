@@ -36,23 +36,23 @@
                         </div>
                         <group>
                             <group>
-                                <field name="analysis_date" readonly="state != 'test'"/>
-                                <field name="partner_id" readonly="state != 'test'"/>
-                                <field name="product_description" readonly="state != 'test'"/>
-                                <field name="product_family_id" options="{'no_create': True, 'no_open': True}" readonly="state != 'test'"/>
-                                <field name="product_appearance_id" options="{'no_create': True, 'no_open': True}" readonly="state != 'test'"/>
-                                <field name="product_fiber_id" options="{'no_create': True, 'no_open': True}" readonly="state != 'test'"/>
-                                <field name="product_title_id" options="{'no_create': True, 'no_open': True}" readonly="state != 'test'"/>
-                                <field name="weave_type" readonly="state != 'test'"/>
+                                <field name="analysis_date" required="1" readonly="state != 'test'"/>
+                                <field name="partner_id" required="1" readonly="state != 'test'"/>
+                                <field name="product_description" required="1" readonly="state != 'test'"/>
+                                <field name="product_family_id" required="1" options="{'no_create': True, 'no_open': True}" readonly="state != 'test'"/>
+                                <field name="product_appearance_id" required="1" options="{'no_create': True, 'no_open': True}" readonly="state != 'test'"/>
+                                <field name="product_fiber_id" required="1" options="{'no_create': True, 'no_open': True}" readonly="state != 'test'"/>
+                                <field name="product_title_id" required="1" options="{'no_create': True, 'no_open': True}" readonly="state != 'test'"/>
+                                <field name="weave_type" required="1" readonly="state != 'test'"/>
                             </group>
                             <group>
-                                <field name="gauge_id" options="{'no_open': True}" readonly="state != 'test'"/>
+                                <field name="gauge_id" required="1" options="{'no_open': True}" readonly="state != 'test'"/>
                                 <field name="needles" readonly="state != 'test'"/>
                                 <field name="diameter" readonly="state != 'test'"/>
                                 <field name="feeders" readonly="state != 'test'"/>
                                 <label for="density"/>
                                 <div name="density" class="o_row">
-                                    <field name="density" readonly="state != 'test'"/>
+                                    <field name="density" required="1" readonly="state != 'test'"/>
                                     <span class="ms-1 oe_inline">gm</span>
                                 </div>
                                 <field name="column_qty" readonly="state != 'test'"/>
@@ -63,7 +63,7 @@
                                 </div>
                                 <label for="standard_width"/>
                                 <div name="standard_width" class="o_row">
-                                    <field name="standard_width" readonly="state != 'test'"/>
+                                    <field name="standard_width" required="1" readonly="state != 'test'"/>
                                     <span class="ms-1 oe_inline">cm</span>
                                 </div>
                                 <field name="product_code" readonly="1" force_save="1"/>

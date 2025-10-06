@@ -57,6 +57,15 @@ class ProductAnalysis(models.Model):
     technical_sheet_ids = fields.One2many('technical.sheet', 'analysis_id', string='Technical Sheet')
     mrp_base_process_id = fields.Many2one('mrp.base.process', string='Base Process')
 
+    _check_standard_width = models.Constraint(
+        'CHECK(standard_width > 0)',
+        'Standard width should be grather than zero.',
+    )
+    _check_density = models.Constraint(
+        'CHECK(density > 0)',
+        'Density should be grather than zero.',
+    )
+
     @api.onchange('mrp_base_process_id')
     def _onchange_mrp_base_process_id(self):
         if not self.mrp_base_process_id:
@@ -84,7 +93,7 @@ class ProductAnalysis(models.Model):
             else:
                 rec.width = 0
 
-    @api.onchange('product_family_id','product_fiber_id','product_title_id','gauge_id','product_appearance_id','width','density')
+    @api.onchange('product_family_id','product_fiber_id','product_title_id','gauge_id','product_appearance_id','standard_width','density')
     def _onchange_product_code(self):
         for rec in self:
             rec.product_code = (rec.product_family_id.code or '') + \
