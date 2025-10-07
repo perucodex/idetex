@@ -1,4 +1,5 @@
 from odoo import models, fields, api, _
+from odoo.exceptions import UserError
 
 class LabDev(models.Model):
     _name = 'lab.dev'
@@ -49,12 +50,17 @@ class LabDev(models.Model):
 
         return super().create(vals_list)
     
+    def unlink(self):
+        if any(r.state == 'approved' for r in self.lab_dev_line_ids.color_recipe_ids):
+            raise UserError(_('Can\'t delete a lab dev with recipes in approved state.'))
+        return super().unlink()
+    
 class LabDevLine(models.Model):
     _name = 'lab.dev.line'
     _description = 'Laboratory Development Line'
     _rec_name = 'color_name'
 
-    lab_dev_id = fields.Many2one('lab.dev', string='Lab Dev')
+    lab_dev_id = fields.Many2one('lab.dev', string='Lab Dev', ondelete='cascade')
     product_id = fields.Many2one('product.template','Product', ondelete='restrict')
     color_name = fields.Char('Color Name')
     color_code = fields.Char('Color Code')

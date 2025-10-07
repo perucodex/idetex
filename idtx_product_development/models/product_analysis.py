@@ -155,7 +155,7 @@ class ProductAnalysis(models.Model):
                 'route_line_ids': [Command.create({
                     'operation_id': route.operation_id.id,
                     'line_parameter_ids': [Command.create({'name': param.name}) for param in route.operation_id.parameter_ids],
-                }) for route in self.routing_ids]
+                }) for route in self.routing_ids.sorted(key=lambda r: r.sequence)]
             })
             self.technical_sheet_ids += rec.technical_sheet_id
             bom_id = self.env['mrp.bom'].create({
@@ -171,14 +171,16 @@ class ProductAnalysis(models.Model):
                 'bom_line_ids': [Command.create({'product_id': p.id}) for p in rec.fiber_ids.product_template_id.product_variant_id],
             })
             # Consumir el hilo en tejeduria
-            weaving_operation = bom_id.operation_ids.filtered(lambda o: o.operation_id.workcenter_id.operation_type == 'weaving')
-            if weaving_operation:
-                for l in bom_id.bom_line_ids:
-                    l.operation_id = weaving_operation
-            else:
-                # Si hay productos para tejer y no se encontró un proceso de tejido
-                if bom_id.bom_line_ids:
-                    raise UserError(_('There is no weaving operation in bom. Please check your product routing!'))
+            # Solo si existe un producto de hilado
+            if any(p.is_thread for p in rec.fiber_ids.product_template_id.product_variant_id):
+                weaving_operation = bom_id.operation_ids.filtered(lambda o: o.operation_id.workcenter_id.operation_type == 'weaving')
+                if weaving_operation:
+                    for l in bom_id.bom_line_ids:
+                        l.operation_id = weaving_operation
+                else:
+                    # Si hay productos para tejer y no se encontró un proceso de tejido
+                    if bom_id.bom_line_ids:
+                        raise UserError(_('There is no weaving operation in bom. Please check your product routing!'))
             self.product_id.bom_ids += bom_id
 
     def action_done(self):

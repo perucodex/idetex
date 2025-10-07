@@ -7,8 +7,9 @@ class ColorRecipe(models.Model):
     _description = 'Color Recipe'
 
     name = fields.Char('Name', copy=False, default=lambda self: _('New'))
-    lab_dev_line_id = fields.Many2one('lab.dev.line', string='Lab Dev Line')
+    lab_dev_line_id = fields.Many2one('lab.dev.line', string='Lab Dev Line', ondelete='cascade')
     lab_dev_id = fields.Many2one(related='lab_dev_line_id.lab_dev_id')
+    product_id = fields.Many2one(related='lab_dev_line_id.sale_order_line_id.product_id')
     color_code = fields.Char(related='lab_dev_line_id.color_code')
     color_name = fields.Char(related='lab_dev_line_id.color_name')
     partner_id = fields.Many2one(related='lab_dev_id.partner_id')
@@ -62,7 +63,6 @@ class ColorRecipe(models.Model):
 
                     new_suffix = str(last_number + 1 + counter).zfill(3)
                     vals['recipe_color_code'] = f'{prefix}-{new_suffix}'
-                    # vals['last_color_code'] = f'{prefix}-{new_suffix}'
                     counter += 1
 
         return super().create(vals_list)
@@ -99,3 +99,8 @@ class ColorRecipe(models.Model):
             'res_id': new_recipe.id,
             'target': 'current',
         }
+
+    def unlink(self):
+        if self.state == 'approved':
+            raise UserError(_('Can\'t delete a recipe in approved state.'))
+        return super().unlink()

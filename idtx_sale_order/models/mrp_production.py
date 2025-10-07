@@ -1,16 +1,31 @@
 # -*- coding: utf-8 -*-
 
-from odoo import fields, models
+from odoo import fields, models, api, _
+from odoo.exceptions import UserError
 
 class MrpProduction(models.Model):
     _inherit = 'mrp.production'
 
     sale_order_line_id = fields.Many2one('sale.order.line', string='Sale Order Line')
     color_recipe_id = fields.Many2one('color.recipe', string='Color Recipe', compute='_compute_color_recipe')
+    manual_recipe = fields.Boolean('manual_recipe', default=False)
+    manual_color_recipe_id = fields.Many2one('color.recipe', string='Manual Color Recipe')
 
+    @api.depends('manual_color_recipe_id')
     def _compute_color_recipe(self):
         for rec in self:
-            if rec.sale_order_line_id:
-                rec.color_recipe_id = rec.sale_order_line_id.lab_dev_id.lab_dev_line_ids.filtered(lambda l: l.sale_order_line_id == rec.sale_order_line_id).color_recipe_ids.filtered(lambda l: l.state == 'approved')
+            if rec.manual_color_recipe_id:
+                rec.color_recipe_id = rec.manual_color_recipe_id
             else:
-                rec.color_recipe_id = False
+                if rec.sale_order_line_id:
+                    rec.color_recipe_id = rec.sale_order_line_id.lab_dev_id.lab_dev_line_ids.filtered(lambda l: l.sale_order_line_id == rec.sale_order_line_id).color_recipe_ids.filtered(lambda l: l.state == 'approved')
+                else:
+                    rec.color_recipe_id = False
+
+    def action_confirm(self):
+        if not self.color_recipe_id:
+            raise UserError(_('Production must have a recipe.'))
+        return super().color_recipe_id()
+    
+    def action_manual(self):
+        self.manual_recipe = not self.manual_recipe
