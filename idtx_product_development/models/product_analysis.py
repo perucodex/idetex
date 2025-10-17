@@ -130,6 +130,7 @@ class ProductAnalysis(models.Model):
         self.product_id = self.env['product.template'].create({
             'name': self.product_description,
             'is_storable': True,
+            'tracking': 'lot',
             'default_code': self.product_code,
             'uom_id': uom.id,
             'categ_id': self.env.company.weaving_category_ids[0].id if self.env.company.weaving_category_ids else False,

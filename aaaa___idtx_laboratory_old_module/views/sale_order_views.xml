@@ -10,7 +10,7 @@
                         class="oe_stat_button"
                         icon="fa-eyedropper"
                         type="object"
-                        invisible="not lab_dev_id" string="Lab Dev"/>
+                        invisible="not lab_dev_ids" string="Lab Dev"/>
             </xpath>
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="applicant_id" required="1" readonly="state == 'sale'" domain="[('parent_id','=',partner_id)]"/>

@@ -1,9 +1,10 @@
 from odoo import models, fields, Command, api, _
+from odoo.exceptions import UserError
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
     
-    lab_dev_id = fields.Many2one('lab.dev', string='Lab Dev', copy=False)
+    lab_dev_ids = fields.Many2many('lab.dev', string='Lab Dev', copy=False, tracking=True)
     weaving_warning = fields.Text('weaving_warning', compute='_compute_weaving_warning')
     sale_order_ids = fields.One2many('sale.order', 'quotation_id', string='Sale Orders')
     quotation_id = fields.Many2one('sale.order', string='Quotation')
@@ -15,6 +16,13 @@ class SaleOrder(models.Model):
     production_count = fields.Integer('Production Count', compute='_compute_production_count')
     sale_count = fields.Integer('Sales Count', compute='_compute_sale_count')
     is_quote = fields.Boolean('is_quote')
+    # is_manual_lab_dev = fields.Boolean('is_manual_lab_dev', default=False)
+    lab_dev_count = fields.Integer(string="Technical Sheet Count", compute='_compute_lab_dev_count')
+    
+    @api.depends('lab_dev_ids')
+    def _compute_lab_dev_count(self):
+        for rec in self:
+            rec.lab_dev_count = len(rec.lab_dev_ids)
 
     @api.depends('order_line.production_id')
     def _compute_production_count(self):
@@ -36,25 +44,35 @@ class SaleOrder(models.Model):
     def _onchange_payment_term_id(self):
         self.order_line._compute_price_unit()
 
+    @api.onchange('lab_dev_ids')
+    def _onchange_lab_dev_ids(self):
+        for line in self.order_line:
+            ld_line = self.lab_dev_ids._origin.lab_dev_line_ids.filtered(lambda l: l.sale_order_line_id == line._origin)
+            if ld_line:
+                line.lab_dev_line_id = ld_line
+            else:
+                line.lab_dev_line_id = False
+
     def create_labdev(self):
-        LabDev = self.env['lab.dev']
+        if any(not line.color_name for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving)):
+            raise UserError(_('Can\'t create Lab Dev some lines have no color name.'))
         today = fields.Date.context_today(self)
-        # Crear una sola lab.dev para la orden
         data = {
             'lab_dev_date': today,
             'sale_order_id': self.id,
+            'partner_id': self.partner_id.id,
             'lab_dev_line_ids': [Command.create({
                  'product_id': line.product_template_id.id,
                  'color_name': line.color_name or line.product_color_id.name,
                  'sale_order_line_id': line.id,
             }) for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving)]
         }
-        lab_dev = LabDev.create(data)
-        self.lab_dev_id = lab_dev
+        lab_dev = self.env['lab.dev'].create(data)
+        self.lab_dev_ids = [Command.link(lab_dev.id)]
         self.open_labdev()
     
     def open_labdev(self):
-        return self.lab_dev_id._get_records_action(name=_("Lab Dev"))
+        return self.lab_dev_ids._get_records_action(name=_("Lab Dev"))
     
     def open_productions(self):
         return self.order_line.production_id._get_records_action(name=_("Productions"))
@@ -89,7 +107,7 @@ class SaleOrder(models.Model):
 
     def action_price_preview(self):
         self.ensure_one()
-        url = self.get_portal_url(suffix='/price_items')  # solo un suffix
+        url = self.get_portal_url(suffix='/price_items')
         return {
             'type': 'ir.actions.act_url',
             'target': 'self',
@@ -123,4 +141,12 @@ class SaleOrder(models.Model):
             })
         self.sale_order_ids = [Command.link(sale_order.id)]
         return self.sale_order_ids._get_records_action(name=_("Sale Orders"))
+    
+    def action_cancel(self):
+        res = super().action_cancel()
+        self.order_line.production_id.with_context(delete_from_sale_order=True).unlink() 
+        return res
         
+    # def manual_labdev(self):
+    #     self.ensure_one()
+    #     self.is_manual_lab_dev = not self.is_manual_lab_dev

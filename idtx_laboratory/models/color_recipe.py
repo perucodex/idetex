@@ -9,7 +9,7 @@ class ColorRecipe(models.Model):
     name = fields.Char('Name', copy=False, default=lambda self: _('New'))
     lab_dev_line_id = fields.Many2one('lab.dev.line', string='Lab Dev Line', ondelete='cascade')
     lab_dev_id = fields.Many2one(related='lab_dev_line_id.lab_dev_id')
-    product_id = fields.Many2one(related='lab_dev_line_id.sale_order_line_id.product_id')
+    product_id = fields.Many2one(related='lab_dev_line_id.product_id')
     color_code = fields.Char(related='lab_dev_line_id.color_code')
     color_name = fields.Char(related='lab_dev_line_id.color_name')
     partner_id = fields.Many2one(related='lab_dev_id.partner_id')
@@ -68,7 +68,7 @@ class ColorRecipe(models.Model):
         return super().create(vals_list)
     
     def action_approve(self):
-        if any(cr.state == 'approved' for cr in self.lab_dev_line_id.lab_dev_id.color_recipe_ids.filtered(lambda cr: cr.color_name == self.color_name)):
+        if any(cr.state == 'approved' for cr in self.lab_dev_line_id.color_recipe_ids.filtered(lambda cr: cr.color_name == self.color_name)):
             raise UserError(_('You can\'t approve this recipe. Another recipe in the Lab Dev for color %s is already approved.') %self.lab_dev_line_id.color_name)
         self.state = 'approved'
         self.lab_dev_line_id.state = 'approved'
@@ -79,7 +79,7 @@ class ColorRecipe(models.Model):
     def action_return(self):
         # if self.state == 'approved':
         self.state = 'test'
-        self.lab_dev_line_id.state = 'process'
+        self.lab_dev_line_id.state = self.state
             # self.color_code = self.last_color_code
 
     # @api.onchange('state')

@@ -15,7 +15,7 @@ class SaleOrderLine(models.Model):
     analysis_id = fields.Many2one(related='product_template_id.analysis_id')
     bom_id = fields.Many2one('mrp.bom', string='Bom')
     operation_ids = fields.Many2many('mrp.routing.workcenter', string='Operations')
-    lab_dev_id = fields.Many2one(related='order_id.lab_dev_id', store=True)
+    # lab_dev_ids = fields.Many2many(related='order_id.lab_dev_ids', store=True)
     available_operation_ids = fields.Many2many(
         'mrp.routing.workcenter',
         compute='_compute_available_operations',
@@ -30,10 +30,11 @@ class SaleOrderLine(models.Model):
         compute='_compute_has_approved_lab_line',
         store=False,
     )
+    lab_dev_line_id = fields.Many2one('lab.dev.line', string='Lab Dev Line')
     
     def _compute_has_approved_lab_line(self):
         for line in self:
-            line.has_approved_lab_line = bool(len(line.lab_dev_id.lab_dev_line_ids.filtered(lambda l: l.sale_order_line_id.id == line.id and l.state == 'approved')))
+            line.has_approved_lab_line = bool(len(line.lab_dev_line_id.filtered(lambda l: l.state == 'approved')))
 
     @api.depends('bom_id')
     def _compute_available_operations(self):
@@ -57,6 +58,11 @@ class SaleOrderLine(models.Model):
     def _onchange_product_or_color(self):
         self.price_items = '{}'
         self._compute_price_unit()
+
+    @api.onchange('lab_dev_line_id')
+    def _onchange_lab_dev_line_id(self):
+        self.color_name = self.lab_dev_line_id.color_name
+        self._compute_has_approved_lab_line()
 
     @api.depends('product_id', 'product_template_id', 'product_uom_id', 'product_uom_qty','product_color_id', 'weaving_loss', 'production_loss','bom_id','operation_ids','order_id.payment_term_id','order_id.incoterm')
     def _compute_price_unit(self):

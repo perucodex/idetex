@@ -1,5 +1,6 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
+from odoo.fields import Domain
 
 class LabDev(models.Model):
     _name = 'lab.dev'
@@ -9,7 +10,7 @@ class LabDev(models.Model):
     name = fields.Char('Name', copy=False, default=lambda self: _('New'))
     lab_dev_date = fields.Date('Lab Dev Date', default=fields.Date.context_today)
     sale_order_id = fields.Many2one('sale.order', string='Sale Order', ondelete='restrict')
-    partner_id = fields.Many2one(related='sale_order_id.partner_id', ondelete='restrict')
+    partner_id = fields.Many2one('res.partner', 'Customer', ondelete='restrict')
     recipe_count = fields.Integer('Recipe Count', compute='_compute_recipe_count')
     volume = fields.Float('Volume')
     kilos = fields.Float('Kilos')
@@ -50,14 +51,10 @@ class LabDev(models.Model):
 
         return super().create(vals_list)
     
-    def unlink(self):
-        if any(r.state == 'approved' for r in self.lab_dev_line_ids.color_recipe_ids):
-            raise UserError(_('Can\'t delete a lab dev with recipes in approved state.'))
-        return super().unlink()
-    
 class LabDevLine(models.Model):
     _name = 'lab.dev.line'
     _description = 'Laboratory Development Line'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _rec_name = 'color_name'
 
     lab_dev_id = fields.Many2one('lab.dev', string='Lab Dev', ondelete='cascade')
@@ -71,23 +68,41 @@ class LabDevLine(models.Model):
     color_intensity_id = fields.Many2one('color.intensity','Color Intensity', ondelete='restrict')
     color_recipe_ids = fields.One2many('color.recipe', 'lab_dev_line_id', string='Recipes')
     bath_ratio = fields.Integer('Bath Ratio')
+    sale_order_id = fields.Many2one(related='lab_dev_id.sale_order_id')
     sale_order_line_id = fields.Many2one('sale.order.line', string='Sale Order Line')
     state = fields.Selection([
-        ('process', 'Process'),
+        ('test', 'Test'),
         ('approved', 'Approved'),
-    ], string='State', default='process')
+    ], string='State', default='test')
     available_product_ids = fields.Many2many(
         'product.template',
         compute='_compute_available_products',
         string='Available Products'
     )
+    display_name = fields.Char(
+            string='Display Name',
+            compute='_compute_display_name',
+            store=True,
+        )
 
-    @api.depends('lab_dev_id.sale_order_id')
+    @api.depends('color_code', 'color_name')
+    def _compute_display_name(self):
+        for rec in self:
+            rec.display_name = f"[{rec.color_code or ''}] {rec.color_name or ''}".strip()
+        
+    @api.model
+    def name_search(self, name='', domain=None, operator='ilike', limit=100):
+        base_domain = Domain(domain or Domain.TRUE)
+        if name:
+            base_domain &= Domain('color_code', operator, name) | Domain('color_name', operator, name)
+        return [(rec.id, rec.display_name) for rec in self.search(base_domain, limit=limit)]
+    
+    @api.depends('sale_order_id')
     def _compute_available_products(self):
         for record in self:
             products = self.env['product.template'].search([('is_weaving','=', True)])
-            if record.lab_dev_id.sale_order_id:
-                products = record.lab_dev_id.sale_order_id.order_line.mapped('product_template_id').ids
+            if record.sale_order_id:
+                products = record.sale_order_id.order_line.product_template_id.filtered(lambda p: p.is_weaving).ids
             record.available_product_ids = products
     
     @api.onchange('color_process_type_id','color_range_id','color_intensity_id')
@@ -122,3 +137,8 @@ class LabDevLine(models.Model):
                 rec.color_code = (rec.color_process_type_id.code or '') + \
                         (rec.color_range_id.code or '') + \
                         (rec.color_intensity_id.code or '')
+                
+    def unlink(self):
+        if any(r.state == 'approved' for r in self.color_recipe_ids):
+            raise UserError(_('Can\'t delete a lab dev with recipes in approved state.'))
+        return super().unlink()

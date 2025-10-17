@@ -20,7 +20,7 @@
                         </div>
                         <group>
                             <group>
-                                <field name="recipe_date"/>
+                                <field name="recipe_date" readonly="state == 'approved'"/>
                                 <field name="product_id"/>
                                 <field name="color_name"/>
                                 <field name="recipe_color_code"/>
@@ -30,16 +30,10 @@
                                 <field name="partner_id" readonly="1"/>
                                 <field name="company_id" readonly="1" groups="base.group_multi_company"/>
                             </group>
-                            <!-- <group>
-                                <field name="color_process_type_id" readonly="state == 'approved'" options="{'no_create': True, 'no_open': True}"/>
-                                <field name="fiber_id" options="{'no_create': True, 'no_open': True}"/>
-                                <field name="color_range_id" readonly="state == 'approved'" options="{'no_create': True, 'no_open': True}"/>
-                                <field name="color_intensity_id" readonly="state == 'approved'" options="{'no_create': True, 'no_open': True}"/>
-                            </group> -->
                         </group>
                         <notebook>
                             <page name="recipe_page" string="Recipe">
-                                <field name="color_recipe_process_ids" nolabel="1">
+                                <field name="color_recipe_process_ids" nolabel="1" readonly="state == 'approved'">
                                     <list>
                                         <field name="sequence" widget="handle"/>
                                         <field name="base_process_id"/>
@@ -58,7 +52,6 @@
                                                             <field name="product_id"/>
                                                             <field name="factor"/>
                                                             <field name="uom"/>
-                                                            <!-- <field name="quantity"/> -->
                                                         </list>
                                                     </field>
                                                 </page>
@@ -81,11 +74,11 @@
                 <list string="Color Recipe">
                     <field name="name"/>
                     <field name="recipe_date"/>
+                    <field name="product_id"/>
+                    <field name="color_name"/>
                     <field name="recipe_color_code"/>
                     <field name="company_id" groups="base.group_multi_company"/>
-                    <!-- <field name="color" widget="color"/>
-                    <field name="color" string="Hex"/> -->
-                    <field name="state"/>
+                    <field name="state" widget="badge" decoration-success="state == 'approved'"/>
                 </list>
             </field>
         </record>

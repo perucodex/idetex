@@ -46,10 +46,10 @@ class TechnicalSheet(models.Model):
     )
     product_id = fields.Many2one('product.template', string='Product')
     state = fields.Selection([
-        ('test', 'Test'),
+        ('draft', 'Draft'),
         ('done', 'Done'),
-        ('prod', 'Product'),
-    ], string='State', default='test')
+        ('prod', 'Production'),
+    ], string='State', default='draft')
     user_id = fields.Many2one('res.users','Prepared by',default=lambda self: self.env.user)
     size_chart_ids = fields.One2many('technical.size.line', 'technical_id', string='Size Chart')
     route_line_ids = fields.One2many('technical.route.line', 'technical_id', string='Route Line')
@@ -118,7 +118,7 @@ class TechnicalSheet(models.Model):
         self.state = 'done'
 
     def action_return(self):
-        self.state = 'done' if self.state == 'prod' else 'test'
+        self.state = 'done' if self.state == 'prod' else 'draft'
 
 class TechnicalSizeLine(models.Model):
     _name = 'technical.size.line'
