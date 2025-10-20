@@ -57,6 +57,7 @@ class MrpWorkorder(models.Model):
         prd = self.production_id
         recipe = prd.color_recipe_id
         ldl = recipe.lab_dev_line_id
+        batch = self.env['mrp.workorder.batch'].search([('id','=', batch_id)])
         br = self.env['batch.registry'].create({
             'batch_id': batch_id,
             'workorder_id': self.id,
@@ -68,4 +69,8 @@ class MrpWorkorder(models.Model):
             'partner_id': ldl.lab_dev_id.partner_id.id,
         })
         br._onchange_workorder_id()
-        return br.id
+        return {
+            'status': 'success',
+            'batchId': br.id,
+            'message': _(f'Registry created for batch {batch.name}'),
+        }

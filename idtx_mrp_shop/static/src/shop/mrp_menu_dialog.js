@@ -136,40 +136,47 @@ patch(MrpMenuDialog.prototype, {
     },
 
     async registerDyeBatch() {
-        const _createRecord = async (payload) => {
-            const result = await this.orm.call(
-                "mrp.workorder",
-                "action_create_registry_record",
-                [[this.props.record.resId], 
-                payload.batch_id, 
-                payload.employee_id, 
-                payload.equipment_id,
-            ]);
+        // 1. Abrimos el segundo diálogo y esperamos su resultado
+        const result = await new Promise(resolve => {
+            const _createRecord = async (payload) => {
+                const res = await this.orm.call(
+                    "mrp.workorder",
+                    "action_create_registry_record",
+                    [[this.props.record.resId], payload.batch_id, payload.employee_id, payload.equipment_id]
+                );
 
-            if (result) {
-                this.notification.add(result.message, { type: result.status });
-            }
+                if (res) {
+                    this.notification.add(res.message, { type: res.status });
+                }
+                await this.props.record.load();
+                this.props.removeFromCache(this.props.record.resId);
 
-            await this.props.record.load();
-            this.props.removeFromCache(this.props.record.resId);
+                resolve(res); // <-- devolvemos el resultado
+            };
 
+            document.activeElement?.blur?.();
+            this.dialogService.add(SelectBatchDialog, {
+                title: _t("Select batch"),
+                confirm: _createRecord,
+                recordId: this.props.record.resId,
+            });
+        });
+
+        // 2. Cerramos el primer diálogo
+        this.props.close();
+
+        // 3. Esperamos un tick para estabilizar el DOM
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        // 4. Abrimos el formulario con el resultado
+        if (result && result.batchId) {
             await this.action.doAction({
                 type: "ir.actions.act_window",
                 res_model: "batch.registry",
                 views: [[false, "form"]],
-                res_id: result,
+                res_id: result.batchId,
             });
-
-            this.props.close();
-        };
-
-        const params = {
-            title: _t("Select batch"),
-            confirm: _createRecord,
-            recordId: this.props.record.resId,
-        };
-
-        this.dialogService.add(SelectBatchDialog, params);
+        }
     }
 
 });
