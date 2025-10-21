@@ -53,7 +53,7 @@
             </xpath>
             <xpath expr="//header" position="after">
                 <div class="alert alert-warning" role="alert"
-                    invisible="weaving_warning == '' or not is_quote">
+                    invisible="not weaving_warning">
                     <field name="weaving_warning"/>
                 </div>
             </xpath>

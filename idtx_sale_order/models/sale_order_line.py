@@ -61,7 +61,8 @@ class SaleOrderLine(models.Model):
 
     @api.onchange('lab_dev_line_id')
     def _onchange_lab_dev_line_id(self):
-        self.color_name = self.lab_dev_line_id.color_name
+        # self.color_name = self.lab_dev_line_id.color_name
+        
         self._compute_has_approved_lab_line()
 
     @api.depends('product_id', 'product_template_id', 'product_uom_id', 'product_uom_qty','product_color_id', 'weaving_loss', 'production_loss','bom_id','operation_ids','order_id.payment_term_id','order_id.incoterm')
@@ -110,7 +111,7 @@ class SaleOrderLine(models.Model):
                         )
                     else:
                         bom_line_price = self.env.company.currency_id._convert(bom_line.product_id.list_price, currency, self.env.company, fields.Date.context_today(self), round=False)
-                    price = float_round(bom_line_price  / (1 - self.weaving_loss), 2)
+                    price = bom_line_price
                     if bom_line.operation_id.id in self.operation_ids._origin.ids:
                         price_dict.update({bom_line.product_id.name : price})
                 # Precio de Operaciones

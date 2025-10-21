@@ -104,6 +104,10 @@ class SaleOrder(models.Model):
                                 operation_color_line = operation.operation_id.product_color_price_ids.search([('product_color_id','=',line.product_color_id.id),('mrwo_id','=', operation.operation_id.id)])
                                 if not operation_color_line:
                                     order.weaving_warning += (_('The type prices of %s operation is by color. The color %s does not exists in the operation color list of product %s.') %(operation.operation_id.name, line.product_color_id.name, line.product_id.product_tmpl_id.name)) + '\n'
+                for line in order.order_line:
+                    if line.lab_dev_line_id:
+                        if line.color_name.upper() != line.lab_dev_line_id.color_name.upper():
+                            order.weaving_warning += (_('Product %s color %s does not match lab color name %s.') %(line.product_id.product_tmpl_id.name, line.color_name, line.lab_dev_line_id.color_name)) + '\n'
 
     def action_price_preview(self):
         self.ensure_one()
