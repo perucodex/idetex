@@ -14,7 +14,7 @@ class MrpProduction(models.Model):
     @api.depends('manual_color_recipe_id','sale_order_line_id')
     def _compute_color_recipe(self):
         for rec in self:
-            if rec.manual_color_recipe_id:
+            if rec.manual_recipe:
                 color_recipe_id = rec.manual_color_recipe_id
             else:
                 if rec.sale_order_line_id:

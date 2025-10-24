@@ -37,6 +37,7 @@ Gestiona la carga de precios y productos en tus cotizaciones
         'views/mrp_routing_views.xml',
         'views/portal_price_items_template.xml',
         'views/product_color_views.xml',
+        'views/res_company_views.xml',
         'views/sale_order_views.xml',
         'views/sale_quotation_views.xml',
     ],

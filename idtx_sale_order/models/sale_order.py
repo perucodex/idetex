@@ -15,9 +15,15 @@ class SaleOrder(models.Model):
     ], string='Sale Type', default='sale')
     production_count = fields.Integer('Production Count', compute='_compute_production_count')
     sale_count = fields.Integer('Sales Count', compute='_compute_sale_count')
-    is_quote = fields.Boolean('is_quote')
+    is_quote = fields.Boolean('is_quote', default=True)
     # is_manual_lab_dev = fields.Boolean('is_manual_lab_dev', default=False)
     lab_dev_count = fields.Integer(string="Technical Sheet Count", compute='_compute_lab_dev_count')
+    is_company_produce = fields.Boolean('is_company_produce', compute='_compute_is_company_produce')
+
+    @api.depends('company_id')
+    def _compute_is_company_produce(self):
+        for rec in self:
+            rec.is_company_produce = self.company_id.is_company_produce
     
     @api.depends('lab_dev_ids')
     def _compute_lab_dev_count(self):
@@ -105,9 +111,12 @@ class SaleOrder(models.Model):
                                 if not operation_color_line:
                                     order.weaving_warning += (_('The type prices of %s operation is by color. The color %s does not exists in the operation color list of product %s.') %(operation.operation_id.name, line.product_color_id.name, line.product_id.product_tmpl_id.name)) + '\n'
                 for line in order.order_line:
-                    if line.lab_dev_line_id:
+                    if line.lab_dev_line_id and line.color_name:
                         if line.color_name.upper() != line.lab_dev_line_id.color_name.upper():
                             order.weaving_warning += (_('Product %s color %s does not match lab color name %s.') %(line.product_id.product_tmpl_id.name, line.color_name, line.lab_dev_line_id.color_name)) + '\n'
+                    else:
+                        if not line.color_name:
+                            line.color_name = line.lab_dev_line_id.color_name
 
     def action_price_preview(self):
         self.ensure_one()
@@ -119,6 +128,9 @@ class SaleOrder(models.Model):
         }
     
     def action_confirm(self):
+        for rec in self:
+            if not rec.lab_dev_ids:
+                raise UserError(_('Cant\'t confirm sale order without LD'))
         res = super().action_confirm()
         for rec in self:
             for line in rec.order_line:
@@ -150,7 +162,3 @@ class SaleOrder(models.Model):
         res = super().action_cancel()
         self.order_line.production_id.with_context(delete_from_sale_order=True).unlink() 
         return res
-        
-    # def manual_labdev(self):
-    #     self.ensure_one()
-    #     self.is_manual_lab_dev = not self.is_manual_lab_dev

@@ -1,4 +1,5 @@
 from odoo import models, fields, api, _, Command
+from odoo.exceptions import UserError
 # from .covatex import MySQLConnector
 import logging
 
@@ -116,6 +117,31 @@ class TechnicalSheet(models.Model):
     
     def action_done(self):
         self.state = 'done'
+        analysis_line = self.analysis_id.weaving_data_ids.filtered(lambda w: w.technical_sheet_id == self)
+        bom_id = self.env['mrp.bom'].create({
+            'product_tmpl_id': self.product_id.id,
+            'product_uom_id': self.product_id.uom_id.id,
+            'code': analysis_line.stylo,
+            'technical_sheet_id': self.id,
+            'operation_ids': [Command.create({
+                'name': route.operation_id.name,
+                'operation_id': route.operation_id.id,
+                'workcenter_id': route.workcenter_id.id,
+            }) for route in self.analysis_id.routing_ids.sorted(key=lambda r: r.sequence)],
+            'bom_line_ids': [Command.create({'product_id': f.product_template_id.product_variant_id.id, 'product_qty': f.percentage}) for f in analysis_line.fiber_ids],
+        })
+        # Consumir el hilo en tejeduria
+        # Solo si existe un producto de hilado
+        if any(p.is_thread for p in analysis_line.fiber_ids.product_template_id.product_variant_id):
+            weaving_operation = bom_id.operation_ids.filtered(lambda o: o.operation_id.workcenter_id.operation_type == 'weaving')
+            if weaving_operation:
+                for l in bom_id.bom_line_ids:
+                    l.operation_id = weaving_operation
+            else:
+                # Si hay productos para tejer y no se encontró un proceso de tejido
+                if bom_id.bom_line_ids:
+                    raise UserError(_('There is no weaving operation in bom. Please check your product routing!'))
+        self.product_id.bom_ids += bom_id
 
     def action_return(self):
         self.state = 'done' if self.state == 'prod' else 'draft'

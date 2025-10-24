@@ -44,6 +44,7 @@
             <field name="arch" type="xml">
                 <search string="">
                     <field name="name"/>
+                    <field name="process_ids" string="Operation" filter_domain="[('process_ids.operation_id', 'ilike', self)]"/>
                 </search>
             </field>
         </record>
@@ -53,7 +54,7 @@
             <field name="model">mrp.base.process.line</field>
             <field name="arch" type="xml">
                 <list string="Mrp Base Process Line" editable="top">
-                    <field name="name"/>
+                    <field name="operation_id"/>
                 </list>
             </field>
         </record>
@@ -63,7 +64,7 @@
             <field name="model">mrp.base.process.line</field>
             <field name="arch" type="xml">
                 <search string="">
-                    <field name="name"/>
+                    <field name="operation_id"/>
                 </search>
             </field>
         </record>

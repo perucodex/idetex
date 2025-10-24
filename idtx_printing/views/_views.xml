@@ -1,0 +1,33 @@
+<!-- <?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_new_module_tree" model="ir.ui.view">
+            <field name="name">new.module.list</field>
+            <field name="model">new.module</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="field_1"/>
+                    <field name="field_2"/>
+                    <field name="field_3"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_new_module_form" model="ir.ui.view">
+            <field name="name">new.module.form</field>
+            <field name="model">new.module</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group>
+                        <field name="field_1"/>
+                        <field name="field_2"/>
+                        <field name="field_3"/>
+                    </group>
+                    <chatter reload_on_attachment="True"/>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo> -->

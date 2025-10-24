@@ -68,14 +68,16 @@ class SaleOrderLine(models.Model):
     @api.depends('product_id', 'product_template_id', 'product_uom_id', 'product_uom_qty','product_color_id', 'weaving_loss', 'production_loss','bom_id','operation_ids','order_id.payment_term_id','order_id.incoterm')
     def _compute_price_unit(self):
         res = super()._compute_price_unit()
-        # Diferenciar si es un producto tejido para calcular su precio
-        for line in self.filtered(lambda l: l.is_weaving):
-            if not line.product_template_id.bom_ids:
-                raise UserError(_('This product does not have any bom. Please check with product development.'))
-            else:
-                line.bom_id = line.product_template_id.bom_ids[0]
-                line.price_unit = line.get_weaving_price_unit()
-                line.technical_price_unit = line.price_unit
+        #Solo calcula el precio si la compañía produce
+        if self.company_id.is_company_produce:
+            # Diferenciar si es un producto tejido para calcular su precio
+            for line in self.filtered(lambda l: l.is_weaving):
+                if not line.product_template_id.bom_ids:
+                    raise UserError(_('This product does not have any bom. Please check with product development.'))
+                else:
+                    line.bom_id = line.product_template_id.bom_ids[0]
+                    line.price_unit = line.get_weaving_price_unit()
+                    line.technical_price_unit = line.price_unit
         return res
     
     def get_weaving_price_unit(self):
