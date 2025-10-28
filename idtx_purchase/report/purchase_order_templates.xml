@@ -44,6 +44,19 @@
                 </div>
             </div>
         </xpath>
+        <!-- 1. Agregar columna en el encabezado -->
+        <xpath expr="//th[@name='th_discount']" position="after">
+            <th name="th_price_unit_discounted" class="text-end" t-if="any(line.discount for line in o.order_line if not line.display_type)">
+                <strong>Precio Desc.</strong>
+            </th>
+        </xpath>
+
+        <!-- Crear la columna correspondiente en el tbody -->
+        <xpath expr="//table[contains(@class,'o_main_table')]//tbody//tr[not(contains(@class,'o_line_section')) and not(contains(@class,'o_line_note'))]//td[position()=4]" position="after">
+            <td class="text-end" t-if="any(line.discount for line in o.order_line if not line.display_type)">
+                <span t-field="line.price_unit_discounted"/>
+            </td>
+        </xpath>
     </template>
     
 </odoo>

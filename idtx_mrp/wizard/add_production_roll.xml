@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_batch_add_wizard_form" model="ir.ui.view">
+        <field name="name">batch.add.wizard.form</field>
+        <field name="model">batch.add.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Add Rolls">
+                <group>
+                    <!-- <field name="line_ids" nolabel="1" widget="one2many">
+                        <list editable="bottom" string="Lines"> -->
+                            <field name="batch_id" required="1"/>
+                            <field name="all_products" invisible="1"/>
+                            <field name="count_products" invisible="1"/>
+                            <field name="product_id" required="1" readonly="count_products &lt;= 1" domain="[('id','in', all_products)]"/>
+                            <field name="quantity"/>
+                            <field name="gross_weight"/>
+                            <field name="net_length"/>
+                        <!-- </list>
+                    </field> -->
+                </group>
+                <footer>
+                    <button name="action_add_and_continue" type="object" string="Save and new" class="btn-primary"/>
+                    <button name="action_add" type="object" string="Save and close" class="btn-secondary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

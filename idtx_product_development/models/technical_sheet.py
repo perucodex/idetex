@@ -1,4 +1,5 @@
-from odoo import models, fields, api, _, Command
+from odoo import models, fields, api, _
+from odoo.fields import Command
 from odoo.exceptions import UserError
 # from .covatex import MySQLConnector
 import logging

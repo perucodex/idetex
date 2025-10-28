@@ -5,6 +5,7 @@
     
         <menuitem id="wo_batch_menu" name="Workorder Batch" action="wo_batch_action" sequence="900" parent="mrp.menu_mrp_manufacturing"/>
         <menuitem id="wo_rolls_menu" name="Workorder Rolls" action="wo_rolls_action" sequence="910" parent="mrp.menu_mrp_manufacturing"/>
+        <menuitem id="mrp_rolls_menu" name="Production Rolls" action="mrp_rolls_action" sequence="920" parent="mrp.menu_mrp_manufacturing"/>
         <menuitem id="dev_mrp_routing_operation_action_menu" name="Workcenter Operations" action="mrp_routing_operation_action" sequence="900" parent="mrp.menu_mrp_configuration"/>
         <menuitem id="menu_scale_registry" name="Scales" action="action_scale_registry" sequence="910" parent="mrp.menu_mrp_configuration"/>
 

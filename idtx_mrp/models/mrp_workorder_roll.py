@@ -8,6 +8,7 @@ class MrpWorkorderRoll(models.Model):
     workorder_id = fields.Many2one('mrp.workorder', string='Workorder')
     sequence = fields.Integer('Sequence')
     name = fields.Char('Number')
+    product_id = fields.Many2one(related='workorder_id.product_id.product_tmpl_id')
     uom_id = fields.Many2one(related='workorder_id.product_id.product_tmpl_id.uom_id')
     quantity = fields.Integer('Quantity')
     gross_weight = fields.Float('Gross Weight')

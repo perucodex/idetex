@@ -31,6 +31,7 @@
                                 <list create="0">
                                     <field name="workorder_id"/>
                                     <field name="name"/>
+                                    <field name="product_id"/>
                                     <field name="uom_id"/>
                                     <field name="quantity" sum="Total"/>
                                     <field name="net_weight" sum="Total"/>
@@ -65,6 +66,9 @@
         <field name="model">mrp.workorder.batch</field>
         <field name="arch" type="xml">
             <list string="Batchs" decoration-success="mrwo_id">
+                <header>
+                    <button name="%(action_batch_add_wizard)d" type="action" string="Agregar en lote"/>
+                </header>
                 <field name="name"/>
                 <field name="batch_date"/>
                 <field name="mrwo_id"/>

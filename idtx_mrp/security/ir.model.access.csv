@@ -1,7 +1,9 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mrp_production_roll,mrp_production_roll,model_mrp_production_roll,base.group_user,1,1,1,1
 access_mrp_routing_workcenter_operation,mrp_routing_workcenter_operation,model_mrp_routing_workcenter_operation,base.group_user,1,1,1,1
 access_mrp_workorder_roll,mrp_workorder_roll,model_mrp_workorder_roll,base.group_user,1,1,1,1
 access_mrp_workorder_batch,mrp_workorder_batch,model_mrp_workorder_batch,base.group_user,1,1,1,1
 access_split_roll,split_roll,model_split_roll,base.group_user,1,1,1,1
 access_operation_parameter,access_operation_parameter,model_operation_parameter,base.group_user,1,1,1,1
 access_scale_registry,scale_registry,model_scale_registry,base.group_user,1,1,1,1
+access_batch_add_wizard,batch_add_wizard,model_batch_add_wizard,base.group_user,1,1,1,1

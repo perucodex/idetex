@@ -11,6 +11,7 @@
                         <group>
                             <field name="workorder_id" readonly="1"/>
                             <field name="name" readonly="1"/>
+                            <field name="product_id"/>
                             <field name="uom_id"/>
                         </group>
                         <group>
@@ -31,6 +32,7 @@
             <search string="Search Roll">
                 <field name="workorder_id"/>
                 <field name="name"/>
+                <field name="product_id"/>
             </search>
         </field>
     </record>
@@ -42,6 +44,7 @@
             <list create="0" edit="0">
                 <field name="workorder_id"/>
                 <field name="name"/>
+                <field name="product_id"/>
                 <field name="uom_id"/>
                 <field name="quantity" sum="Total"/>
                 <field name="net_weight" sum="Total"/>

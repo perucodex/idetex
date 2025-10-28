@@ -5,3 +5,4 @@ class PurchaseOrderLine(models.Model):
 
     # Cambiamos los digito solo para compras
     price_unit = fields.Float(digits='Product Price Custom Purchase')
+    price_unit_discounted = fields.Float(digits='Product Price Custom Purchase')

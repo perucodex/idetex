@@ -9,6 +9,9 @@
             <xpath expr="//field[@name='date_order']" position="attributes">
                 <attribute name="invisible">0</attribute>
             </xpath>
+            <xpath expr="//notebook/page[@name='products']/field[@name='order_line']/list/field[@name='discount']" position="after">
+                <field name="price_unit_discounted" readonly="qty_invoiced != 0" optional="hide"/>
+            </xpath>
         </field>
     </record>
 
