@@ -11,6 +11,7 @@ class MrpProductionRoll(models.Model):
     name = fields.Char('Number')
     product_id = fields.Many2one(related='production_id.product_id.product_tmpl_id')
     uom_id = fields.Many2one(related='production_id.product_id.product_tmpl_id.uom_id')
+    lot_id = fields.Many2one('stock.lot', 'Lot')
     quantity = fields.Integer('Quantity')
     gross_weight = fields.Float('Gross Weight')
     net_weight = fields.Float('Net Weight')

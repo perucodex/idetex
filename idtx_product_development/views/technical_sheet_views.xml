@@ -90,6 +90,7 @@
                             <page name="route_page" string="Routing">
                                 <field name="route_line_ids" readonly="state != 'draft'">
                                     <list>
+                                        <field name="sequence" widget="handle"/>
                                         <field name="operation_id"/>
                                         <field name="workcenter_id"/>
                                     </list>

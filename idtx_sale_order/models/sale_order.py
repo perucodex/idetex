@@ -56,8 +56,8 @@ class SaleOrder(models.Model):
             ld_line = self.lab_dev_ids._origin.lab_dev_line_ids.filtered(lambda l: l.sale_order_line_id == line._origin)
             if ld_line:
                 line.lab_dev_line_id = ld_line
-            else:
-                line.lab_dev_line_id = False
+            # else:
+            #     line.lab_dev_line_id = False
 
     def create_labdev(self):
         if any(not line.color_name for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving)):

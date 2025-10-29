@@ -61,8 +61,6 @@ class SaleOrderLine(models.Model):
 
     @api.onchange('lab_dev_line_id')
     def _onchange_lab_dev_line_id(self):
-        # self.color_name = self.lab_dev_line_id.color_name
-        
         self._compute_has_approved_lab_line()
 
     @api.depends('product_id', 'product_template_id', 'product_uom_id', 'product_uom_qty','product_color_id', 'weaving_loss', 'production_loss','bom_id','operation_ids','order_id.payment_term_id','order_id.incoterm')

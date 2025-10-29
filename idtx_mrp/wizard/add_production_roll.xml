@@ -9,7 +9,7 @@
                 <group>
                     <!-- <field name="line_ids" nolabel="1" widget="one2many">
                         <list editable="bottom" string="Lines"> -->
-                            <field name="batch_id" required="1"/>
+                            <field name="batch_id" required="1" readonly="1"/>
                             <field name="all_products" invisible="1"/>
                             <field name="count_products" invisible="1"/>
                             <field name="product_id" required="1" readonly="count_products &lt;= 1" domain="[('id','in', all_products)]"/>

@@ -128,7 +128,7 @@ class TechnicalSheet(models.Model):
                 'name': route.operation_id.name,
                 'operation_id': route.operation_id.id,
                 'workcenter_id': route.workcenter_id.id,
-            }) for route in self.analysis_id.routing_ids.sorted(key=lambda r: r.sequence)],
+            }) for route in self.route_line_ids.sorted(key=lambda r: r.sequence)],
             'bom_line_ids': [Command.create({'product_id': f.product_template_id.product_variant_id.id, 'product_qty': f.percentage}) for f in analysis_line.fiber_ids],
         })
         # Consumir el hilo en tejeduria

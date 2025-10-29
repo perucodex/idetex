@@ -34,10 +34,10 @@ class MrpProduction(models.Model):
         new_lots = []
         if len(self.finished_move_line_ids) == 1:
             delete_line = self.finished_move_line_ids
-            for counter, roll in enumerate(self.roll_ids):
-                lot = self.env['stock.lot'].create({'name': roll.batch_id.name + '-' + str(counter + 1).zfill(3), 'product_id': delete_line.product_id.id})
-                new_lines += delete_line.copy({'quantity': roll.gross_weight, 'lot_id': lot.id})
-                new_lots += lot
+            for roll in self.roll_ids:
+                # lot = self.env['stock.lot'].create({'name': roll.batch_id.name + '-' + str(counter + 1).zfill(3), 'product_id': delete_line.product_id.id})
+                new_lines += delete_line.copy({'quantity': roll.gross_weight, 'lot_id': roll.lot_id.id})
+                new_lots += roll.lot_id
             self.finished_move_line_ids = [Command.link(l.id) for l in new_lines]
             self.product_qty = sum(self.roll_ids.mapped('gross_weight'))
             delete_line.unlink()
