@@ -75,7 +75,7 @@ class BatchAddWizard(models.TransientModel):
 
                     ^FO10,100
                     ^BQN,2,10
-                    ^FDPPPPP{roll.product_id.barcode} {roll.lot_id.name.replace('-','')} Q{str(int(roll.gross_weight * 100)).zfill(4)}E^FS
+                    ^FDLA,01{roll.product_id.barcode}3102{str(int(roll.gross_weight * 100)).zfill(6)}10{roll.lot_id.name}^FS
 
                     ^FO300,110
                     ^A0N,22,22

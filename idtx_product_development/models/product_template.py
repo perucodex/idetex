@@ -1,4 +1,5 @@
 from odoo import fields, models, api, _
+import hashlib
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
@@ -21,7 +22,7 @@ class ProductTemplate(models.Model):
 
     def open_analysis(self):
         return self.analysis_id.technical_sheet_ids._get_records_action(name=_("Technical Sheets"))
-    
+        
 class ProductProduct(models.Model):
     _inherit = 'product.product'
 
