@@ -26,6 +26,9 @@
             <xpath expr="//field[@name='default_code']" position="attributes">
                 <attribute name="readonly">is_weaving</attribute>
             </xpath>
+            <xpath expr="//field[@name='barcode']" position="attributes">
+                <attribute name="readonly">is_weaving</attribute>
+            </xpath>
         </field>
     </record>
     

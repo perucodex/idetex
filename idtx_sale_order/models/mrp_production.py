@@ -18,7 +18,6 @@ class MrpProduction(models.Model):
                 color_recipe_id = rec.manual_color_recipe_id
             else:
                 if rec.sale_order_line_id:
-                    # color_recipe_id = rec.sale_order_line_id.lab_dev_ids.lab_dev_line_ids.filtered(lambda l: l.sale_order_line_id == rec.sale_order_line_id).color_recipe_ids.filtered(lambda l: l.state == 'approved')
                     color_recipe_id = rec.sale_order_line_id.lab_dev_line_id.color_recipe_ids.filtered(lambda l: l.state == 'approved')
                 else:
                     color_recipe_id = False
@@ -32,10 +31,10 @@ class MrpProduction(models.Model):
                     raise UserError(_('Can\'t delete production in %s') %production.state)
         return super().unlink()
 
-    # def action_confirm(self):
-    #     if not self.color_recipe_id:
-    #         raise UserError(_('Production must have a recipe.'))
-    #     return super().color_recipe_id()
+    def action_confirm(self):
+        if not self.color_recipe_id:
+            raise UserError(_('Production must have a recipe.'))
+        return super().color_recipe_id()
     
     def action_manual(self):
         self.manual_recipe = not self.manual_recipe

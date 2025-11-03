@@ -7,5 +7,4 @@ from . import mrp_workcenter
 from . import mrp_workorder_batch
 from . import mrp_workorder_roll
 from . import mrp_workorder
-from . import product_product
 from . import scale_registry

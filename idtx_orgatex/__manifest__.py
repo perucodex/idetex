@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "Requerimientos",
+    'name': "Integración Orgatex",
 
-    'summary': "Requerimientos con diferente descripción",
+    'summary': "Modulo de integración con Orgatex",
 
     'description': """
-Si un requerimiento tiene el mismo producto pero con diferente descripción entonces al momento
-de crar la orden de compra se cren nuevas lineas y no se juntan todas en una sola.
+Gestión de recetas e integración con sistema textil Orgatex, proyecciones y kpi's
     """,
 
     'author': "Codex Development",
@@ -20,13 +19,13 @@ de crar la orden de compra se cren nuevas lineas y no se juntan todas en una sol
     'license': 'LGPL-3',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'approvals_purchase'],
+    'depends': ['idtx_laboratory'],
 
     # always loaded
     'data': [
+        'security/group_orgatex.xml',
         # 'security/ir.model.access.csv',
-        'views/approval_product_line_views.xml',
-        # 'views/templates.xml',
+        'views/orgatex_menu.xml',
     ],
 }
 

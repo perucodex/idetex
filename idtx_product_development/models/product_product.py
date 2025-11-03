@@ -23,7 +23,7 @@ class ProductProduct(models.Model):
     def _gs1_check_digit(self, gtin_13):
         if len(gtin_13) != 13 or not gtin_13.isdigit():
             raise ValueError("GTIN-13 debe ser 13 dígitos numéricos")
-        code = list(gtin_13[::-1])  # reverse
+        code = list(gtin_13.zfill(18)[::-1])  # reverse
         code.pop()                          # elimina el último dígito (check)
         evensum = 0
         oddsum = 0
@@ -33,11 +33,9 @@ class ProductProduct(models.Model):
             else:
                 oddsum += int(digit)
         total = evensum * 3 + oddsum
-        digit = (10 - (total % 10)) % 10 - 1
-        return str(digit) if digit > 0 else '0'
+        return str((10 - (total % 10)) % 10)
 
     @api.model
-    @api.depends('product_tmpl_id.categ_id','product_tmpl_id.is_weaving')
     def _generate_unique_gs1(self):
         """Genera un GTIN-14 único dentro del prefijo."""
         prefix = self._get_gs1_prefix()
@@ -63,6 +61,7 @@ class ProductProduct(models.Model):
         product = super().create(vals)
         if product.product_tmpl_id.is_weaving and not product.barcode:
             product.barcode = self._generate_unique_gs1()
+            product.product_tmpl_id.barcode = product.barcode
         return product
 
     def write(self, vals):
@@ -70,4 +69,5 @@ class ProductProduct(models.Model):
         for product in self:
             if product.product_tmpl_id.is_weaving and not product.barcode:
                 product.barcode = self._generate_unique_gs1()
+                product.product_tmpl_id.barcode = product.barcode
         return res

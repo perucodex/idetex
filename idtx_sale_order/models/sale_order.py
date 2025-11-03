@@ -146,7 +146,8 @@ class SaleOrder(models.Model):
                     wo_to_delete = prd.workorder_ids.filtered(lambda wo: wo.mrwo_id in operations_to_delete)
                     wo_to_delete.unlink()
                     line.production_id = prd
-                    prd.action_confirm()
+                    if prd.color_recipe_id:
+                        prd.action_confirm()
         return res
     
     def action_create_sale_order(self):
