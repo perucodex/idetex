@@ -9,4 +9,4 @@ class ApprovalProductLine(models.Model):
 
     def _compute_item(self):
         for rec in self:
-            rec.item = rec.sequence + 1
+            rec.item = self._ids.index(rec.id) + 1
