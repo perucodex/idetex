@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- <record id="view_new_module_tree" model="ir.ui.view">
+            <field name="name">new.module.list</field>
+            <field name="model">new.module</field>
+            <field name="inherit_id" ref="stock.view_production_lot_form"/>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="field_1"/>
+                    <field name="field_2"/>
+                    <field name="field_3"/>
+                </list>
+            </field>
+        </record> -->
+
+        <record id="view_production_lot_form_inherit" model="ir.ui.view">
+            <field name="name">stock.lot.form.inherit</field>
+            <field name="model">stock.lot</field>
+            <field name="inherit_id" ref="stock.view_production_lot_form"/>
+            <field name="arch" type="xml">
+                <group name="description" position="before">
+                    <field name="is_thread" invisible="1"/>
+                    <group invisible="not is_thread">
+                        <group>
+                            <field name="state"/>
+                            <field name="color_intensity_ids" widget="many2many_tags" invisible="state != 'dir'"/>
+                        </group>
+                    </group>
+                </group>
+                <group name="description" position="after">
+                    <group name="defects" string="Defects" invisible="not is_thread">
+                        <field name="defects" colspan="2" nolabel="1"/>
+                    </group>
+                </group>
+            </field>
+        </record>
+
+    </data>
+</odoo>

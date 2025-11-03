@@ -33,6 +33,10 @@
                         <strong>Términos de Pago: </strong>
                         <span t-field="o.payment_term_id" class="ms-1 o_info_small"/>
                     </div>
+                    <div class="mt-2">
+                        <strong>Tipo de Cambio (USD): </strong>
+                        <span t-esc="o.currency_rate_usd" t-options='{"widget": "float", "precision": 3}' class="ms-1 o_info_small"/>
+                    </div>
                 </div>
 
                 <!-- Columna derecha: firma -->
