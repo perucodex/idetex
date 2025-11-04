@@ -1,4 +1,5 @@
 from odoo import _, models, fields, api
+from odoo.exceptions import UserError
 
 class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'
@@ -14,3 +15,17 @@ class MrpWorkorder(models.Model):
         for rec in self:
             rec.workcenter_id = rec.mrwo_id.workcenter_id
             rec.name = rec.mrwo_id.name
+
+    def unlink(self):
+        if self.state in ('done','progress'):
+            raise UserError(_('You can\'t delete a workorder in state %s') % dict(self._fields['state'].selection).get(self.state, self.state))
+        return super().unlink()
+    
+    def button_reopen(self):
+        self.ensure_one()
+        self.leave_id.unlink()
+        self.write({
+            'state': 'ready',
+            'date_finished': False,
+        })
+        return True

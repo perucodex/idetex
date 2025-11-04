@@ -34,7 +34,7 @@ class MrpProduction(models.Model):
     def action_confirm(self):
         if not self.color_recipe_id:
             raise UserError(_('Production must have a recipe.'))
-        return super().color_recipe_id()
+        return super().action_confirm()
     
     def action_manual(self):
         self.manual_recipe = not self.manual_recipe

@@ -25,7 +25,10 @@
                     <group invisible="not is_thread">
                         <group>
                             <field name="state"/>
-                            <field name="color_intensity_ids" widget="many2many_tags" invisible="state != 'dir'"/>
+                        </group>
+                        <group string="Restrictions" invisible="state != 'dir'">
+                            <field name="product_family_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                            <field name="color_intensity_ids" widget="many2many_tags" options="{'no_create': True}"/>
                         </group>
                     </group>
                 </group>

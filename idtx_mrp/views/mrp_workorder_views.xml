@@ -12,6 +12,10 @@
             <xpath expr="//list/field[@name='name']" position="attributes">
                 <attribute name="column_invisible">1</attribute>
             </xpath>
+            <xpath expr="//list/button[@name='button_start']" position="before">
+                <button name="button_reopen" type="object" title="Open" class="btn-success px-2"
+                  invisible="production_state in ('draft', 'done', 'cancel') or state not in ('done','cancel') or is_user_working" icon="fa-refresh"/>
+            </xpath>
         </field>
     </record>
 

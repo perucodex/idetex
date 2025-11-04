@@ -16,8 +16,8 @@
                 <table class="table table-sm">
                     <tbody>
                         <tr t-foreach="items" t-as="item" t-key="item.key">
-                            <td><t t-esc="item.key"/></td>
-                            <td class="text-end">
+                            <td t-if="item.value &gt; 0"><t t-esc="item.key"/></td>
+                            <td class="text-end" t-if="item.value &gt; 0">
                                 <t t-if="item.key.startsWith('Production Loss') or item.key.startsWith('Financial Percentage') or item.key.startsWith('Incoterm')">
                                     <t t-esc="item.value.toFixed(2)"/>
                                 </t>

@@ -9,6 +9,6 @@ class StockLot(models.Model):
         ('dir', 'Directed'),
         ('ysg', 'Yarn Sale Gamarra'),
     ], string='State')
-    notes = fields.Text('Notes')
     defects = fields.Text('Defects')
-    color_intensity_ids = fields.Many2many('color.intensity', string='Color Intensity')
+    product_family_ids = fields.Many2many('product.family', string='Product Families')
+    color_intensity_ids = fields.Many2many('color.intensity', string='Color Intensities')

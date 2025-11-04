@@ -72,6 +72,7 @@
                 <span t-field="line.price_unit_discounted"/>
             </td>
         </xpath>
+        
     </template>
     
 </odoo>
