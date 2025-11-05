@@ -44,7 +44,7 @@ class RollPublicController(http.Controller):
                     <span class="value">{roll.name or ''}</span>
                 </div>
                 <div class="row">
-                    <span class="label">Peso (kg):</span>
+                    <span class="label">Peso Tejido(kg):</span>
                     <span class="value">{roll.gross_weight or ''}</span>
                 </div>
                 <div class="row">
