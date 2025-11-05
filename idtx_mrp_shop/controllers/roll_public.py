@@ -67,6 +67,18 @@ class RollPublicController(http.Controller):
                     <span class="label">Fibras:</span>
                     <span class="value">{fibers_html}</span>
                 </div>
+                <div class="row">
+                    <span class="label">Maquina:</span>
+                    <span class="value">{roll.equipment_id.name}</span>
+                </div>
+                <div class="row">
+                    <span class="label">Tejedor:</span>
+                    <span class="value">{roll.employee_id.name}</span>
+                </div>
+                <div class="row">
+                    <span class="label">Color:</span>
+                    <span class="value">[{roll.workorder_id.production_id.color_recipe_id.color_code}] {roll.workorder_id.production_id.color_recipe_id.color_name}</span>
+                </div>
             </div>
         </body>
         </html>
