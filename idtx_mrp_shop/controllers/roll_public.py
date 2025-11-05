@@ -8,6 +8,17 @@ class RollPublicController(http.Controller):
         roll = request.env['mrp.workorder.roll'].sudo().browse(roll_id)
         if not roll.exists():
             return request.not_found()
+        
+        # ==== FOREACH ==== (equivalente)
+        fibers_html = ""
+        technical_sheet_id = roll.workorder_id.production_id.bom_id.technical_sheet_id
+        weaving_data_id = roll.workorder_id.product_id.product_tmpl_id.analysis_id.weaving_data_ids.filtered(lambda w: w.technical_sheet_id == technical_sheet_id)
+        for fiber in weaving_data_id.fiber_ids:
+            fibers_html += f"""
+            <div class="col-6 col-md-3 mb-3 text-center">
+                <span>{fiber.product_template_id.name or ''}</span> <span>{round((fiber.percentage or 0) * 100, 2)} %</span><br/>
+            </div>
+            """
 
         html = f"""
         <!DOCTYPE html>
@@ -37,12 +48,24 @@ class RollPublicController(http.Controller):
                     <span class="value">{roll.gross_weight or ''}</span>
                 </div>
                 <div class="row">
-                    <span class="label">Ancho (m):</span>
+                    <span class="label">Peso Neto (kg):</span>
                     <span class="value">{roll.net_weight or ''}</span>
                 </div>
                 <div class="row">
-                    <span class="label">Largo (m):</span>
+                    <span class="label">Proceso:</span>
                     <span class="value">{roll.workorder_id.name or ''}</span>
+                </div>
+                <div class="row">
+                    <span class="label">Cliente:</span>
+                    <span class="value">{roll.workorder_id.production_id.sale_order_line_id.order_id.partner_id.name or ''}</span>
+                </div>
+                <div class="row">
+                    <span class="label">Orden de Producción:</span>
+                    <span class="value">{roll.workorder_id.production_id.name or ''}</span>
+                </div>
+                <div class="row">
+                    <span class="label">Fibras:</span>
+                    <span class="value">{fibers_html}</span>
                 </div>
             </div>
         </body>
