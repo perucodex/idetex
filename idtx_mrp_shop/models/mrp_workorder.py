@@ -1,5 +1,8 @@
 from odoo import _, models
 import requests
+import socket
+import ipaddress
+from odoo.exceptions import UserError
 
 class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'
@@ -23,7 +26,7 @@ class MrpWorkorder(models.Model):
                 else:
                     return {'status': 'danger', 'message': _('No communication with the scale')}
             if peso:
-                self.roll_ids.create({
+                roll = self.roll_ids.create({
                     'sequence': len(self.roll_ids),
                     'workorder_id': self.id,
                     'gross_weight': peso,
@@ -31,6 +34,7 @@ class MrpWorkorder(models.Model):
                     'employee_id': int(employee_id),
                     'equipment_id': int(equipment_id),
                 })
+                self._print_zpl_to_network(self.create_zpl(roll))
                 self.qty_producing = sum(self.roll_ids.mapped('gross_weight'))
                 return {
                     'status': 'success',
@@ -74,3 +78,57 @@ class MrpWorkorder(models.Model):
             'batchId': br.id,
             'message': _(f'Registry created for batch {batch.name}'),
         }
+    
+    def create_zpl(self, roll):
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') #"https://odoo.gestionidtx.com/rollo"
+        url = f"{base_url}/rollo/{roll.id}/datos"
+        zpl_code = f"""^XA
+                    ^PW600
+                    ^LL600
+                    ^CI28
+
+                    ^FO10,30
+                    ^A0N,40,40
+                    ^FD{roll.product_id.name}^FS
+
+                    ^FO10,100
+                    ^BQN,2,10
+                    ^FDLA,{url}^FS
+
+                    ^FO300,110
+                    ^A0N,22,22
+                    ^FDCódigo: {roll.product_id.default_code}^FS
+
+                    ^FO300,135
+                    ^A0N,22,22
+                    ^FDRollo: {roll.name}^FS
+
+                    ^FO300,160
+                    ^A0N,22,22
+                    ^FDPeso: {roll.gross_weight}^FS
+
+                    ^FO300,185
+                    ^A0N,22,22
+                    ^FDPeso Neto: {roll.net_weight} kg^FS
+
+                    ^FO300,210
+                    ^A0N,22,22
+                    ^FDMaquina: {roll.equipment_id.name}^FS
+
+                    ^FO300,235
+                    ^A0N,22,22
+                    ^FDUsuario: {roll.employee_id.name}^FS
+
+                    ^XZ"""
+        return zpl_code
+        
+    def _print_zpl_to_network(self, zpl_code, printer_ip='172.16.64.95', port=9100):
+        """Envía ZPL a impresora por socket TCP/IP."""
+        try:
+            # 1. Validar IP
+            ip = str(ipaddress.ip_address(printer_ip.strip()))
+            # 2. Enviar
+            with socket.create_connection((ip, port), timeout=5) as sock:
+                sock.sendall(zpl_code.encode('utf-8'))
+        except (socket.error, UnicodeError, ValueError) as e:
+            raise UserError("No se pudo imprimir (verificá IP): %s" % e)
