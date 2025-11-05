@@ -72,6 +72,11 @@
                 <span t-field="line.price_unit_discounted"/>
             </td>
         </xpath>
+
+        <!-- Crear la columna correspondiente en el tbody -->
+        <!-- <xpath expr="//td[@id='product']/span[1]" position="before">
+            <span t-field="line.product_id"/>
+        </xpath> -->
         
     </template>
     
