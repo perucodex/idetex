@@ -9,6 +9,9 @@ class RollPublicController(http.Controller):
         if not roll.exists():
             return request.not_found()
         
+        company = request.env.company
+        logo_url = f"{request.httprequest.host_url}web/image/res.company/{company.id}/logo/200x60"
+        
         # ==== FOREACH ==== (equivalente)
         fibers_html = ""
         technical_sheet_id = roll.workorder_id.production_id.bom_id.technical_sheet_id
@@ -29,6 +32,7 @@ class RollPublicController(http.Controller):
             <title>Información del rollo</title>
             <style>
                 body {{ font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }}
+                .header{{ text-align: center;}}
                 .card {{ background: #fff; border-radius: 8px; padding: 20px; max-width: 400px; margin: auto; box-shadow: 0 2px 8px rgba(0,0,0,.1); }}
                 .title {{ text-align: center; margin-bottom: 20px; color: #333; }}
                 .row {{ display: flex; justify-content: space-between; margin-bottom: 12px; }}
@@ -38,6 +42,9 @@ class RollPublicController(http.Controller):
         </head>
         <body>
             <div class="card">
+                <div class="header">
+                    <img src="{logo_url}" alt="Logo" style="max-height: 60px;">
+                </div>
                 <h1 class="title">Información del rollo</h1>
                 <div class="row">
                     <span class="label">Número:</span>
