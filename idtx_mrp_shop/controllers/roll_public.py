@@ -1,5 +1,6 @@
-from odoo import http
+from odoo import http, fields
 from odoo.http import request
+import datetime
 
 class RollPublicController(http.Controller):
 
@@ -13,15 +14,32 @@ class RollPublicController(http.Controller):
         logo_url = f"{request.httprequest.host_url}web/image/res.company/{company.id}/logo/200x60"
         
         # ==== FOREACH ==== (equivalente)
-        fibers_html = ""
+        fibers_html = """
+                        <table class="fibra text-start" style="width:100%; margin:auto;">
+                            <thead>
+                                <tr>
+                                    <th>Fibra</th>
+                                    <th>%</th>
+                                    <th>Lote</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    """
         technical_sheet_id = roll.workorder_id.production_id.bom_id.technical_sheet_id
         weaving_data_id = roll.workorder_id.product_id.product_tmpl_id.analysis_id.weaving_data_ids.filtered(lambda w: w.technical_sheet_id == technical_sheet_id)
         for fiber in weaving_data_id.fiber_ids:
             fibers_html += f"""
-            <div class="col-6 col-md-3 mb-3 text-center">
-                <span>{fiber.product_template_id.name or ''}</span> <span>{round((fiber.percentage or 0) * 100, 2)} %</span><br/>
-            </div>
-            """
+                                <tr>
+                                    <td>{fiber.product_template_id.name or ''}</td>
+                                    <td>{(fiber.percentage or 0) * 100:.2f} %</td>
+                                    <td>C56321487</td>
+                                </tr>
+                            """
+            
+        fibers_html += """
+                                </tbody>
+                            </table>
+                        """
 
         html = f"""
         <!DOCTYPE html>
@@ -38,6 +56,27 @@ class RollPublicController(http.Controller):
                 .row {{ display: flex; justify-content: space-between; margin-bottom: 12px; }}
                 .label {{ font-weight: 600; color: #555; }}
                 .value {{ color: #222; }}
+
+                /* --- bordes para la tabla --- */
+                table.fibra {{
+                    width: 100%;
+                    border-collapse: collapse;   /* junta los bordes */
+                    margin: auto;
+                }}
+                table.fibra td:nth-child(2) {{
+                    white-space: nowrap;
+                }}
+                table.fibra td:nth-child(3) {{
+                    white-space: nowrap;
+                }}
+                table.fibra th, table.fibra td {{
+                    text-align: left !important;
+                    border: 1px solid #ccc;
+                    padding: 4px 6px;
+                }}
+                table.fibra thead {{
+                    background: #f0f0f0;
+                }}
             </style>
         </head>
         <body>
@@ -47,16 +86,20 @@ class RollPublicController(http.Controller):
                 </div>
                 <h1 class="title">Información del rollo</h1>
                 <div class="row">
+                    <span class="label">Fecha y Hora:</span>
+                    <span class="value">{fields.Datetime.context_timestamp(request.env.user, roll.create_date).strftime("%d/%m/%Y %H:%M")}</span>
+                </div>
+                <div class="row">
                     <span class="label">Número:</span>
                     <span class="value">{roll.name or ''}</span>
                 </div>
                 <div class="row">
                     <span class="label">Peso Tejido(kg):</span>
-                    <span class="value">{roll.gross_weight or ''}</span>
+                    <span class="value">{(roll.gross_weight or 0):.2f}</span>
                 </div>
                 <div class="row">
                     <span class="label">Peso Neto (kg):</span>
-                    <span class="value">{roll.net_weight or ''}</span>
+                    <span class="value">{(roll.net_weight or 0):.2f}</span>
                 </div>
                 <div class="row">
                     <span class="label">Proceso:</span>
@@ -71,7 +114,6 @@ class RollPublicController(http.Controller):
                     <span class="value">{roll.workorder_id.production_id.name or ''}</span>
                 </div>
                 <div class="row">
-                    <span class="label">Fibras:</span>
                     <span class="value">{fibers_html}</span>
                 </div>
                 <div class="row">

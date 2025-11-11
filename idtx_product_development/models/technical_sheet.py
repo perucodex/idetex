@@ -91,16 +91,16 @@ class TechnicalSheet(models.Model):
     #     }
     #     connector.insert("rutas", values)
 
-    @api.onchange('gauge_id','width','density')
-    def _onchange_product_code(self):
-        for rec in self:
-            rec.product_code = (rec.analysis_id.product_family_id.code or '') + \
-                    (rec.analysis_id.product_title_id.code or '') + \
-                    (rec.analysis_id.product_fiber_id.code or '') + \
-                    (rec.gauge_id.code or '') + \
-                    (rec.analysis_id.product_appearance_id.code or '') + \
-                    (str(int(rec.width)).replace('.','') or '') + \
-                    (str(int(rec.density)).replace('.','') or '')
+    # @api.onchange('gauge_id','width','density')
+    # def _onchange_product_code(self):
+    #     for rec in self:
+    #         rec.product_code = (rec.analysis_id.product_family_id.code or '') + \
+    #                 (rec.analysis_id.product_title_id.code or '') + \
+    #                 (rec.analysis_id.product_fiber_id.code or '') + \
+    #                 (rec.gauge_id.code or '') + \
+    #                 (rec.analysis_id.product_appearance_id.code or '') + \
+    #                 (str(int(rec.width)).replace('.','') or '') + \
+    #                 (str(int(rec.density)).replace('.','') or '')
                 
     #=== CRUD METHODS ===#
 

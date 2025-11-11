@@ -7,7 +7,7 @@
         <field name="inherit_id" ref="idtx_mrp.mrp_workorder_roll_form"/>
         <field name="arch" type="xml">
             <field name="uom_id" position="after">
-                <field name="size_id"/>
+                <field name="size_id" readonly="1"/>
             </field>
         </field>
     </record>

@@ -18,12 +18,7 @@ class SaleOrder(models.Model):
     is_quote = fields.Boolean('is_quote', default=True)
     # is_manual_lab_dev = fields.Boolean('is_manual_lab_dev', default=False)
     lab_dev_count = fields.Integer(string="Technical Sheet Count", compute='_compute_lab_dev_count')
-    is_company_produce = fields.Boolean('is_company_produce', compute='_compute_is_company_produce')
-
-    @api.depends('company_id')
-    def _compute_is_company_produce(self):
-        for rec in self:
-            rec.is_company_produce = self.company_id.is_company_produce
+    is_company_produce = fields.Boolean(related='company_id.is_company_produce')
     
     @api.depends('lab_dev_ids')
     def _compute_lab_dev_count(self):
@@ -129,25 +124,26 @@ class SaleOrder(models.Model):
     
     def action_confirm(self):
         for rec in self:
-            if not rec.lab_dev_ids:
+            if not rec.lab_dev_ids and rec.company_id.is_company_produce:
                 raise UserError(_('Cant\'t confirm sale order without LD'))
         res = super().action_confirm()
         for rec in self:
             for line in rec.order_line:
                 if line.product_uom_qty and line.product_id.is_weaving:
                     # Si es un servicio o se quitaron algunas operaciones guardamos la diferencia para quitarlas
-                    operations_to_delete = line.bom_id.operation_ids.operation_id - line.operation_ids.operation_id
+                    # operations_to_delete = line.bom_id.operation_ids.operation_id - line.operation_ids.operation_id
                     prd = self.env['mrp.production'].create({
                         'product_tmpl_id': line.product_id.product_tmpl_id.id,
                         'product_qty': line.product_uom_qty,
                         'bom_id': line.bom_id.id,
                         'sale_order_line_id': line.id,
                     })
-                    wo_to_delete = prd.workorder_ids.filtered(lambda wo: wo.mrwo_id in operations_to_delete)
-                    wo_to_delete.unlink()
+                    # wo_to_delete = prd.workorder_ids.filtered(lambda wo: wo.mrwo_id in operations_to_delete)
+                    # wo_to_delete.unlink()
                     line.production_id = prd
                     if prd.color_recipe_id:
                         prd.action_confirm()
+                    prd.do_unreserve()
         return res
     
     def action_create_sale_order(self):

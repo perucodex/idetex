@@ -20,6 +20,7 @@ Gestiona la carga de precios y productos en tus cotizaciones
 
     # any module necessary for this one to work correctly
     'depends': [
+            'base',
             'sale_management',
             'sale_stock',
             'idtx_product_development',

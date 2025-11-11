@@ -50,6 +50,7 @@ class SaleOrderLine(models.Model):
             rec.operation_ids = [Command.clear()]
             rec.operation_ids = rec.bom_id.operation_ids.sorted(key=lambda r: r.sequence)
             rec.weaving_loss = rec.bom_id.technical_sheet_id.scrap
+            rec.production_id.bom_id = rec.bom_id
 
     def js_compute_price_unit(self):
         self._compute_price_unit()

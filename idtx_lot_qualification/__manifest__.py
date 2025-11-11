@@ -22,11 +22,13 @@ Califica los lotes por intensidad de color y defectos
     'depends': [
         'idtx_laboratory',
         'idtx_product_development',
+        'idtx_sale_order',
     ],
 
     # always loaded
     'data': [
         # 'security/ir.model.access.csv',
+        'views/mrp_production_views.xml',
         'views/stock_lot_views.xml',
         # 'views/templates.xml',
     ],

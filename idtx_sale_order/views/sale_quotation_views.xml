@@ -10,11 +10,24 @@
         <field name="domain">[('is_quote','=', True)]</field>
     </record>
 
+    <record id="sale_order_action" model="ir.actions.act_window">
+        <field name="name">Sales Orders</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">list,kanban,form,calendar,pivot,graph,activity</field>
+        <field name="search_view_id" ref="sale.sale_order_view_search_inherit_sale"/>
+        <field name="context">{'search_default_my_quotation': 1, 'default_is_quote': False}</field>
+        <field name="domain">[('is_quote','=', False)]</field>
+    </record>
+
     <data noupdate="0">
         <menuitem id="idtx_quotation_menu" name="Quotations" action="sale_quotation_action" sequence="10" parent="sale.sale_order_menu"/>
-        <menuitem id="sale_product_color_menu" name="Product Color" action="product_color_action" sequence="20" parent="sale.sale_order_menu"/>
+        <menuitem id="idtx_sale_order_menu" name="Sales Orders" action="sale_order_action" sequence="20" parent="sale.sale_order_menu"/>
+        <menuitem id="sale_product_color_menu" name="Product Color" action="product_color_action" sequence="30" parent="sale.sale_order_menu"/>
         
         <record id="sale.menu_sale_quotations" model="ir.ui.menu">
+            <field name="active" eval="False"/>
+        </record>
+        <record id="sale.menu_sale_order" model="ir.ui.menu">
             <field name="active" eval="False"/>
         </record>
     </data>

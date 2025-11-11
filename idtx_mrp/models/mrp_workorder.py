@@ -17,8 +17,9 @@ class MrpWorkorder(models.Model):
             rec.name = rec.mrwo_id.name
 
     def unlink(self):
-        if self.state in ('done','progress'):
-            raise UserError(_('You can\'t delete a workorder in state %s') % dict(self._fields['state'].selection).get(self.state, self.state))
+        for rec in self:
+            if rec.state in ('done','progress'):
+                raise UserError(_('You can\'t delete a workorder in state %s') % dict(rec._fields['state'].selection).get(rec.state, rec.state))
         return super().unlink()
     
     def button_reopen(self):

@@ -9,11 +9,13 @@
             <field name="arch" type="xml">
                 <button name="action_confirm" position="after">
                     <field name="manual_recipe" invisible="1"/>
-                    <button name="action_manual" invisible="manual_recipe or state != 'draft' or not bom_id or manual_color_recipe_id" string="Manual Recipe" type="object" class="oe_highlight" data-hotkey="q"/>
+                    <button name="action_manual" invisible="manual_recipe or state != 'draft' or not bom_id or manual_color_recipe_id or color_recipe_id" string="Manual Recipe" type="object" class="oe_highlight" data-hotkey="q"/>
                     <button name="action_manual" invisible="not manual_recipe or state != 'draft' or not bom_id or manual_color_recipe_id" string="Labdev Recipe" type="object" class="oe_highlight" data-hotkey="q"/>
                 </button>
                 <div name="bom_div" position="after">
                     <field name="color_recipe_id" readonly="1" invisible="manual_recipe"/>
+                    <field name="color_code" readonly="1" invisible="not color_recipe_id"/>
+                    <field name="color_name" readonly="1" invisible="not color_recipe_id"/>
                     <field name="manual_color_recipe_id" invisible="not manual_recipe or state != 'draft'" domain="[('product_id','=', product_id),('state','=','approved')]" options="{'no_create': True, 'no_edit': True}"/>
                 </div>
             </field>
