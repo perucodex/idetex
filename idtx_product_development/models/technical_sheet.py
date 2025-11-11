@@ -31,13 +31,13 @@ class TechnicalSheet(models.Model):
     weave_type = fields.Selection(related='analysis_id.weave_type', store=True)
     mesh_length = fields.Float('Mesh Length')
     # Datos de crudo
-    raw_width = fields.Float('Width')
-    raw_density = fields.Float('Density')
+    raw_width = fields.Float('Raw Width')
+    raw_density = fields.Float('Raw Density')
     raw_widening = fields.Float('Widening')
     # Datos de acabado
-    finish_width = fields.Float('Width')
-    finish_density = fields.Float('Density')
-    finish_yield = fields.Float('Yield')
+    finish_width = fields.Float('Finish Width')
+    finish_density = fields.Float('Finish Density')
+    finish_yield = fields.Float('Finish Yield')
     notes = fields.Text('Notes')
     company_id = fields.Many2one(
         'res.company',

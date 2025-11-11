@@ -9,7 +9,7 @@ class BatchAddWizard(models.TransientModel):
 
     batch_id = fields.Many2one('mrp.workorder.batch', string='Batch')
     product_id = fields.Many2one('product.template', string='Product')
-    all_products = fields.Many2many('product.template', string='Product', compute='_compute_count_products')
+    all_products = fields.Many2many('product.template', string='Products', compute='_compute_count_products')
     count_products = fields.Integer('Count Products', compute='_compute_count_products')
     quantity = fields.Integer('Quantity')
     gross_weight = fields.Float('Gross Weight')
