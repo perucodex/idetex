@@ -24,6 +24,7 @@ colors, technical sheets, coding, and customer quotes based on fibers, inputs, a
             'base',
             'portal',
             'sale',
+            'idtx_mrp',
         ],
 
     # always loaded
