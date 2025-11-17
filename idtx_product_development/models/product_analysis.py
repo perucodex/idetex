@@ -96,13 +96,13 @@ class ProductAnalysis(models.Model):
     @api.onchange('product_family_id','product_fiber_id','product_title_id','gauge_id','product_appearance_id','standard_width','density')
     def _onchange_product_code(self):
         for rec in self:
-            rec.product_code = (rec.product_family_id.code or '') + \
-                    (rec.product_title_id.code or '') + \
-                    (rec.product_fiber_id.code or '') + \
-                    (rec.gauge_id.code or '') + \
-                    (rec.product_appearance_id.code or '') + \
-                    (str(int(rec.standard_width)) or '') + \
-                    (str(int(rec.density)) or '')
+            rec.product_code = (rec.product_family_id.code or '00') + \
+                    (rec.product_title_id.code or '00') + \
+                    (rec.product_fiber_id.code or '0') + \
+                    (rec.gauge_id.code or '00') + \
+                    (rec.product_appearance_id.code or '00') + \
+                    (str(int(rec.standard_width)) or '000').zfill(3) + \
+                    (str(int(rec.density)) or '000').zfill(3)
                 
     @api.onchange('gauge_id')
     def _onchange_gauge_id(self):
@@ -130,6 +130,7 @@ class ProductAnalysis(models.Model):
         self.product_id = self.env['product.template'].create({
             'name': self.product_description,
             'is_storable': True,
+            'is_weaving': True,
             'tracking': 'lot',
             'default_code': self.product_code,
             'uom_id': uom.id,
@@ -275,11 +276,11 @@ class AnalysisFiber(models.Model):
     weaving_data_id = fields.Many2one('analysis.weaving.data', string='Weaving Data Parent')
     sequence = fields.Integer('Sequence')
     system_type = fields.Selection([
-        ('ne', 'English number'),
-        ('dn', 'Denier'),
-        ('tex', 'Tex'),
-        ('dtex', 'Decitex'),
-        ('nm', 'Metric number'),
+        ('ne', 'English number (ne)'),
+        ('dn', 'Denier (dn)'),
+        ('tex', 'Tex (tex)'),
+        ('dtex', 'Decitex (dtex)'),
+        ('nm', 'Metric number (nm)'),
     ], string='System Type', default='ne')
     length = fields.Float('Mesh Length', compute='_compute_length_average')
     weight = fields.Float('Weight', digits=(12,6))

@@ -2,41 +2,51 @@
 <odoo>
     <data>
 
-        <!-- <record id="view_new_module_tree" model="ir.ui.view">
-            <field name="name">new.module.list</field>
-            <field name="model">new.module</field>
-            <field name="inherit_id" ref="stock.view_production_lot_form"/>
-            <field name="arch" type="xml">
-                <list>
-                    <field name="field_1"/>
-                    <field name="field_2"/>
-                    <field name="field_3"/>
-                </list>
-            </field>
-        </record> -->
-
         <record id="view_production_lot_form_inherit" model="ir.ui.view">
             <field name="name">stock.lot.form.inherit</field>
             <field name="model">stock.lot</field>
             <field name="inherit_id" ref="stock.view_production_lot_form"/>
             <field name="arch" type="xml">
-                <group name="description" position="before">
+                <group name="description" position="replace">
                     <field name="is_thread" invisible="1"/>
-                    <group invisible="not is_thread">
-                        <group>
-                            <field name="state"/>
-                        </group>
-                        <group string="Restrictions" invisible="state != 'dir'">
-                            <field name="product_family_ids" widget="many2many_tags" options="{'no_create': True}"/>
-                            <field name="color_intensity_ids" widget="many2many_tags" options="{'no_create': True}"/>
-                        </group>
+                    <group name="description" string="Description" invisible="not display_complete or is_thread">
+                        <field name="note" colspan="2" nolabel="1"/>
                     </group>
+                    <notebook invisible="not is_thread">
+                        <page name="restriction_page" string="Thread Information">
+                            <group>
+                                <group>
+                                    <field name="state"/>
+                                </group>
+                                <group string="Restrictions" invisible="state != 'dir'">
+                                    <field name="product_family_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                                    <field name="color_intensity_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                                </group>
+                            </group>
+                            <group name="description" string="Description" invisible="not display_complete">
+                                <field name="note" colspan="2" nolabel="1"/>
+                            </group>
+                            <group name="defects" string="Defects">
+                                <field name="defects" colspan="2" nolabel="1"/>
+                            </group>
+                        </page>
+                        <page name="detail_page" string="Details">
+                            <field name="lot_detail_ids"/>
+                        </page>
+                    </notebook>
                 </group>
-                <group name="description" position="after">
-                    <group name="defects" string="Defects" invisible="not is_thread">
-                        <field name="defects" colspan="2" nolabel="1"/>
-                    </group>
-                </group>
+            </field>
+        </record>
+
+        <record id="stock_lot_detail_view_list" model="ir.ui.view">
+            <field name="name">stock.lot.detail.view.list</field>
+            <field name="model">stock.lot.detail</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="bags"/>
+                    <field name="cones"/>
+                    <field name="weight"/>
+                </list>
             </field>
         </record>
 

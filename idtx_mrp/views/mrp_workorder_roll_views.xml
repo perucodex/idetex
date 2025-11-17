@@ -42,6 +42,9 @@
         <field name="model">mrp.workorder.roll</field>
         <field name="arch" type="xml">
             <list create="0" edit="0">
+                <header>
+                    <button name="reprint" string="Reprint" type="object"/>
+                </header>
                 <field name="workorder_id"/>
                 <field name="name"/>
                 <field name="product_id"/>

@@ -20,6 +20,8 @@ Califica los lotes por intensidad de color y defectos
 
     # any module necessary for this one to work correctly
     'depends': [
+        'base',
+        'stock',
         'idtx_laboratory',
         'idtx_product_development',
         'idtx_sale_order',
@@ -27,9 +29,10 @@ Califica los lotes por intensidad de color y defectos
 
     # always loaded
     'data': [
-        # 'security/ir.model.access.csv',
+        'security/ir.model.access.csv',
         'views/mrp_production_views.xml',
         'views/stock_lot_views.xml',
+        'views/stock_move_line_views.xml',
         # 'views/templates.xml',
     ],
 }

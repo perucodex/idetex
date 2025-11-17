@@ -1,7 +1,4 @@
 from odoo import models, fields, api
-import socket
-import ipaddress
-from odoo.exceptions import UserError
 
 class BatchAddWizard(models.TransientModel):
     _name = 'batch.add.wizard'
@@ -33,12 +30,16 @@ class BatchAddWizard(models.TransientModel):
                 rec.count_products = 0
                 rec.product_id = False
     
+    def _get_lot_vals(self, prd, line):
+        return {'name': line.batch_id.name + '-' + str(len(prd.roll_ids) + 1).zfill(3), 'product_id': line.product_id.id}
+
     def action_add(self):
         """Crear los registros reales y MANTENER el wizard abierto."""
         for line in self:
-            lot_id = self.env['stock.lot'].create({'name': line.batch_id.name + '-' + str(len(line.batch_id.wo_roll_ids[0].workorder_id.production_id.roll_ids) + 1).zfill(3), 'product_id': line.product_id.id})
+            prd = line.batch_id.wo_roll_ids[0].workorder_id.production_id
+            lot_id = self.env['stock.lot'].create(self._get_lot_vals(prd, line))
             roll = self.env['mrp.production.roll'].create({
-                'production_id': line.batch_id.wo_roll_ids[0].workorder_id.production_id.id,
+                'production_id': prd.id,
                 'batch_id': line.batch_id.id,
                 'lot_id': lot_id.id,
                 'quantity': line.quantity,
@@ -46,13 +47,17 @@ class BatchAddWizard(models.TransientModel):
                 'net_weight': line.gross_weight,
                 'net_length': line.net_length,
             })
-            self._print_zpl_to_network(self.create_zpl(roll))
+            lot_id.roll_id = roll
+            roll._print_zpl_to_network(roll.create_zpl())
         # NO cerramos el wizard
         return {'type': 'ir.actions.act_window_close'}  # lo quitaremos en la vista
 
     def action_add_and_continue(self):
         """Igual que add pero sin cerrar."""
         self.action_add()
+        self.quantity = 0
+        self.gross_weight = 0
+        self.net_length = 0
         # Devolvemos la misma vista del wizard
         return {
             'type': 'ir.actions.act_window',
@@ -62,56 +67,4 @@ class BatchAddWizard(models.TransientModel):
             'target': 'new',
             'context': self.env.context,
         }
-    
-    def create_zpl(self, roll):
-        zpl_code = f"""^XA
-                    ^PW600
-                    ^LL600
-                    ^CI28
-
-                    ^FO10,30
-                    ^A0N,40,40
-                    ^FD{roll.product_id.name}^FS
-
-                    ^FO10,100
-                    ^BQN,2,10
-                    ^FDLA,01{roll.product_id.barcode}3102{str(int(roll.gross_weight * 100)).zfill(6)}10{roll.lot_id.name}^FS
-
-                    ^FO300,110
-                    ^A0N,22,22
-                    ^FDCódigo: {roll.product_id.default_code}^FS
-
-                    ^FO300,135
-                    ^A0N,22,22
-                    ^FDRollo: {roll.name}^FS
-
-                    ^FO300,160
-                    ^A0N,22,22
-                    ^FDLote: {roll.lot_id.name}^FS
-
-                    ^FO300,185
-                    ^A0N,22,22
-                    ^FDPeso: {roll.gross_weight} kg^FS
-
-                    ^FO300,210
-                    ^A0N,22,22
-                    ^FDMetros: {roll.net_length}^FS
-
-                    ^FO300,235
-                    ^A0N,22,22
-                    ^FDUsuario: {roll.create_uid.name}^FS
-
-                    ^XZ"""
-        return zpl_code
-        
-    def _print_zpl_to_network(self, zpl_code, printer_ip='172.16.64.95', port=9100):
-        """Envía ZPL a impresora por socket TCP/IP."""
-        try:
-            # 1. Validar IP
-            ip = str(ipaddress.ip_address(printer_ip.strip()))
-            # 2. Enviar
-            with socket.create_connection((ip, port), timeout=5) as sock:
-                sock.sendall(zpl_code.encode('utf-8'))
-        except (socket.error, UnicodeError, ValueError) as e:
-            raise UserError("No se pudo imprimir (verificá IP): %s" % e)
         

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-inherit="point_of_sale.ReceiptHeader" t-inherit-mode="extension">
+    
+        <xpath expr="//img[@class='pos-receipt-logo']" position="replace">
+            <!-- Si NO se va a facturar, mostramos "COTIZACIÓN" en grande -->
+            <div t-if="!order.to_invoice" class="text-center fw-bold fs-1 text-uppercase mb-2">
+                COTIZACIÓN
+            </div>
+            <!-- Si se va a facturar, mostramos el logo normal -->
+            <img t-else="" t-att-src="logoUrl" alt="Logo" class="pos-receipt-logo"/>
+        </xpath>
+        
+        <!-- Quitamos los datos de la empresa en la cabecera del ticket si no se factura -->
+        <xpath expr="//div[hasclass('d-flex','flex-column','align-items-center')]" position="attributes">
+            <attribute name="t-if">order.to_invoice</attribute>
+        </xpath>
+
+    </t>
+
+</templates>

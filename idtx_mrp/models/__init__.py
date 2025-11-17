@@ -9,3 +9,5 @@ from . import mrp_workorder_roll
 from . import mrp_workorder
 from . import res_company
 from . import scale_registry
+from . import stock_lot
+from . import stock_quant

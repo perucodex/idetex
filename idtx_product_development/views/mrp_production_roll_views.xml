@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="mrp_production_roll_view_tree_inherit" model="ir.ui.view">
+        <field name="name">mrp.production.roll.view.tree.inherit</field>
+        <field name="model">mrp.production.roll</field>
+        <field name="inherit_id" ref="idtx_mrp.mrp_production_roll_view_tree"/>
+        <field name="arch" type="xml">
+            <field name="net_length" position="after"/>
+                <field name="theorical_length"/>
+            </field>
+        </field>
+    </record>
+    
+</odoo>

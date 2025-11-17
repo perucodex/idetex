@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="lot_qualification_view_stock_move_line_operation_tree" model="ir.ui.view">
+        <field name="name">lot.qualification.stock.move.line.operations.list</field>
+        <field name="model">stock.move.line</field>
+        <field name="inherit_id" ref="stock.view_stock_move_line_operation_tree" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='lot_id']" position="after">
+                <!-- <field name="is_thread" column_invisible="1"/> -->
+                <field name="bags" column_invisible="not parent.is_thread" required="parent.is_thread"/>
+                <field name="cones" invisible="not parent.is_thread" required="parent.is_thread"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -53,7 +53,7 @@
                                 <label for="density"/>
                                 <div name="density" class="o_row">
                                     <field name="density" required="1" readonly="state != 'test'"/>
-                                    <span class="ms-1 oe_inline">gm</span>
+                                    <span class="ms-1 oe_inline">g/m²</span>
                                 </div>
                                 <field name="column_qty" readonly="state != 'test'"/>
                                 <label for="width"/>

@@ -3,6 +3,7 @@
 from . import configurate_svg_example
 from . import mrp_base_process
 from . import mrp_bom
+from . import mrp_production_roll
 from . import mrp_workorder_roll
 from . import mrp_workorder
 from . import product_analysis
