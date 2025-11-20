@@ -43,10 +43,10 @@
                 <field name="sale_type" required="is_company_produce" options="{'no_create': True, 'no_open': True}" invisible="not is_quote or not is_company_produce"/>
             </xpath>
             <xpath expr="//field[@name='payment_term_id']" position="after">
-                <field name="lab_dev_ids" widget="many2many_tags" required="state == 'sale'" options="{'no_create': True, 'no_open': True}" invisible="is_quote or not is_company_produce"/>
+                <field name="lab_dev_ids" widget="many2many_tags" required="state == 'sale'" options="{'no_create': True, 'no_open': True}" invisible="is_quote or not is_company_produce or not need_labdev"/>
             </xpath>
             <xpath expr="//header/button[@name='action_confirm'][1]" position="after">
-                <button name="create_labdev" class="btn-primary" string="Create LabDev" type="object" invisible="lab_dev_ids or is_quote or not is_company_produce"/>
+                <button name="create_labdev" class="btn-primary" string="Create LabDev" type="object" invisible="lab_dev_ids or is_quote or not is_company_produce or not need_labdev"/>
                 <!-- <button name="manual_labdev" class="btn-secondary" string="Manual LabDev" type="object" invisible="lab_dev_ids or is_quote"/> -->
                 <button name="action_create_sale_order" type="object" string="Sale Order" class="btn-primary" groups="base.group_user" invisible="state != 'sent' or not is_quote or not is_company_produce"/>
                 <button name="action_price_preview" type="object" string="Prices" class="btn-secondary" groups="base.group_user" invisible="not is_quote or not is_company_produce"/>

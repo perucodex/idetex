@@ -210,12 +210,21 @@ class AccountEdiFormat(models.Model):
             </S:Fault>
         </S:Body>
         """
+        # if self.env.context.get('efact'):
+        #     if cdr_tree.find('.//{*}detail') is not None:
+        #         message_element = cdr_tree.find('.//{*}detail')
+        #         message_element = message_element.find('.//{*}detail')
+        #     code_element = cdr_tree.find('.//{*}faultstring')
+        #     code = code_element.text
+        #     return message_element, code
+        # else:
+        #     return super()._l10n_pe_edi_response_code_sunat(cdr_tree)
         if self.env.context.get('efact'):
             message_element = cdr_tree.find('.//{*}faultcode')
-            if cdr_tree.find('.//{*}detail'):
+            if cdr_tree.find('.//{*}detail') is not None:
                 message_element = cdr_tree.find('.//{*}detail')
-            if cdr_tree.find('.//{*}detail//{*}detail'):
-                message_element = cdr_tree.find('.//{*}detail//{*}detail')
+            if message_element.find('.//{*}detail') is not None:
+                message_element = message_element.find('.//{*}detail')
             code_element = cdr_tree.find('.//{*}faultstring')
             code = code_element.text
             return message_element, code

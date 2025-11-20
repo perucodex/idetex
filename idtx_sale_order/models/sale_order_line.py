@@ -33,6 +33,7 @@ class SaleOrderLine(models.Model):
     lab_dev_line_id = fields.Many2one('lab.dev.line', string='Lab Dev Line')
     diff_days = fields.Float('diff_days')
     
+    @api.depends('lab_dev_line_id')
     def _compute_has_approved_lab_line(self):
         for line in self:
             line.has_approved_lab_line = bool(len(line.lab_dev_line_id.filtered(lambda l: l.state == 'approved')))
@@ -72,9 +73,9 @@ class SaleOrderLine(models.Model):
         if self.company_id.is_company_produce and self.product_id.is_weaving:
             # Diferenciar si es un producto tejido para calcular su precio
             for line in self.filtered(lambda l: l.is_weaving):
-                if not line.product_template_id.bom_ids:
-                    raise UserError(_('This product does not have any bom. Please check with product development.'))
-                else:
+                if line.product_template_id.bom_ids:
+                #     raise UserError(_('This product does not have any bom. Please check with product development.'))
+                # else:
                     line.bom_id = line.product_template_id.bom_ids[0]
                     line.price_unit = line.get_weaving_price_unit()
                     line.technical_price_unit = line.price_unit

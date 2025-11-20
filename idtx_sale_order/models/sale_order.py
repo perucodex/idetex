@@ -6,6 +6,7 @@ class SaleOrder(models.Model):
     
     lab_dev_ids = fields.Many2many('lab.dev', string='Lab Dev', copy=False, tracking=True)
     weaving_warning = fields.Text('weaving_warning', compute='_compute_weaving_warning')
+    dieying_info = fields.Text('dieying_info', compute='_compute_dieying_info')
     sale_order_ids = fields.One2many('sale.order', 'quotation_id', string='Sale Orders')
     quotation_id = fields.Many2one('sale.order', string='Quotation')
     applicant_id = fields.Many2one('res.partner', string='Applicant')
@@ -19,7 +20,13 @@ class SaleOrder(models.Model):
     # is_manual_lab_dev = fields.Boolean('is_manual_lab_dev', default=False)
     lab_dev_count = fields.Integer(string="Technical Sheet Count", compute='_compute_lab_dev_count')
     is_company_produce = fields.Boolean(related='company_id.is_company_produce')
+    need_labdev = fields.Boolean('Need LabDev?', compute='_compute_need_labdev', default=False)
     
+    @api.depends('order_line')
+    def _compute_need_labdev(self):
+        for rec in self:
+            rec.need_labdev = any(line.product_template_id.is_weaving for line in self.order_line)
+
     @api.depends('lab_dev_ids')
     def _compute_lab_dev_count(self):
         for rec in self:
@@ -88,7 +95,7 @@ class SaleOrder(models.Model):
             if order.partner_id and not order.pricelist_id:
                 order.weaving_warning += _(('This sale order has no price list or the option is not activated.')) + '\n'
             else:
-                for line in order.order_line:
+                for line in order.order_line.filtered(lambda l: l.product_template_id.is_weaving):
                     if line.product_template_id.bom_ids:    
                         bom_id = line.product_template_id.bom_ids[0]
                         for bom_line in bom_id.bom_line_ids:
@@ -105,7 +112,7 @@ class SaleOrder(models.Model):
                                 operation_color_line = operation.operation_id.product_color_price_ids.search([('product_color_id','=',line.product_color_id.id),('mrwo_id','=', operation.operation_id.id)])
                                 if not operation_color_line:
                                     order.weaving_warning += (_('The type prices of %s operation is by color. The color %s does not exists in the operation color list of product %s.') %(operation.operation_id.name, line.product_color_id.name, line.product_id.product_tmpl_id.name)) + '\n'
-                for line in order.order_line:
+                for line in order.order_line.filtered(lambda l: l.product_template_id.is_weaving):
                     if line.lab_dev_line_id and line.color_name:
                         if line.color_name.upper() != line.lab_dev_line_id.color_name.upper():
                             order.weaving_warning += (_('Product %s color %s does not match lab color name %s.') %(line.product_id.product_tmpl_id.name, line.color_name, line.lab_dev_line_id.color_name)) + '\n'
@@ -114,6 +121,14 @@ class SaleOrder(models.Model):
                             line.color_name = line.lab_dev_line_id.color_name
                     if line.diff_days:                        
                         order.weaving_warning += _(('Product %s has an old price. Quotation is %s days old') %( line.product_id.product_tmpl_id.name, line.diff_days)) + '\n'
+                    if not line.product_template_id.bom_ids:
+                        order.weaving_warning += _(('Product %s  does not have any bom. Please check with product development.')  % line.product_id.product_tmpl_id.name) + '\n'
+
+    @api.depends('order_line')
+    def _compute_dieying_info(self):
+        # TODO cuando el ingeniero Yagui termine la información, se creará el sistema de alerta
+        # que tambien servirá para la programación de partidas
+        pass
 
     def action_price_preview(self):
         self.ensure_one()
@@ -126,12 +141,12 @@ class SaleOrder(models.Model):
     
     def action_confirm(self):
         for rec in self:
-            if not rec.lab_dev_ids and rec.company_id.is_company_produce:
+            if not rec.lab_dev_ids and rec.company_id.is_company_produce and any(line.product_template_id.is_weaving for line in self.order_line):
                 raise UserError(_('Cant\'t confirm sale order without LD'))
         res = super().action_confirm()
         for rec in self:
             for line in rec.order_line:
-                if line.product_uom_qty and line.product_id.is_weaving:
+                if line.product_uom_qty and line.product_id.is_weaving and line.bom_id:
                     # Si es un servicio o se quitaron algunas operaciones guardamos la diferencia para quitarlas
                     # operations_to_delete = line.bom_id.operation_ids.operation_id - line.operation_ids.operation_id
                     prd = self.env['mrp.production'].create({
