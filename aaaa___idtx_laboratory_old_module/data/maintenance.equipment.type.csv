@@ -1,4 +1,0 @@
-id,name,needles,gauge_id:id,diameter,feeders
-galga_24,"Galga 24",2516,product_gauge_24,28,60
-galga_28,"Galga 28",2813,product_gauge_28,30,75
-galga_32,"Galga 32",2976,product_gauge_32,34,90
