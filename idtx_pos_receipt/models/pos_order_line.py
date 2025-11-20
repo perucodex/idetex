@@ -15,7 +15,10 @@ class PosOrderLine(models.Model):
                     ('name', '=', line.pack_lot_ids[0].lot_name),
                     ('product_id', '=', line.product_id.id),
                 ], limit=1)
-                line.lot_color_name = ('[' + lot.color_code + '] ' + lot.color_name) or ''
+                if lot.color_code and lot.color_name:
+                    line.lot_color_name = ('[' + lot.color_code + '] ' + lot.color_name) or ''
+                else:
+                    line.lot_color_name = ''
             else:
                 line.lot_color_name = ''
 

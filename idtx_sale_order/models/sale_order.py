@@ -89,7 +89,7 @@ class SaleOrder(models.Model):
                 order.weaving_warning += _(('This sale order has no price list or the option is not activated.')) + '\n'
             else:
                 for line in order.order_line:
-                    if line.product_template_id.bom_ids:
+                    if line.product_template_id.bom_ids:    
                         bom_id = line.product_template_id.bom_ids[0]
                         for bom_line in bom_id.bom_line_ids:
                             pricelist_item_id = line.order_id.pricelist_id._get_product_rule(
@@ -112,6 +112,8 @@ class SaleOrder(models.Model):
                     else:
                         if not line.color_name:
                             line.color_name = line.lab_dev_line_id.color_name
+                    if line.diff_days:                        
+                        order.weaving_warning += _(('Product %s has an old price. Quotation is %s days old') %( line.product_id.product_tmpl_id.name, line.diff_days)) + '\n'
 
     def action_price_preview(self):
         self.ensure_one()

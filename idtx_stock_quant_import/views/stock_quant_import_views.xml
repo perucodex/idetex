@@ -7,29 +7,35 @@
         <field name="arch" type="xml">
             <form string="Stock Quant Import">
                 <header>
-                    <button name="action_validate" type="object" string="Done" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_process" type="object" string="Process" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_validate" confirm="Are you sure you want to apply this inventory ?" type="object" string="Done" class="oe_highlight" invisible="state != 'process'"/>
+                    <button name="action_clean" type="object" string="Clean" invisible="state != 'process'"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
                     <group>
                         <group>
                             <field name="name" readonly="1"/>
-                            <field name="date"/>
+                            <field name="date" readonly="state != 'draft'"/>
                         </group>
                         <group>
                             <field name="filename" invisible="1"/>
-                            <field name="file" filename="filename" readonly="state != 'draft'" accept=".xlsx"/>
-                            <field name="location_id"/>
+                            <field name="file" filename="filename" readonly="state != 'draft'" accept=".xlsx" required="1"/>
+                            <field name="location_id" required="1" readonly="state != 'draft'"/>
                         </group>
                     </group>
                     <notebook>
                         <page string="Imported Quants">
                             <field name="line_ids" readonly="1">
-                                <list>
+                                <list decoration-danger="red_flag">
+                                    <field name="product_code"/>
+                                    <field name="product_name"/>
+                                    <field name="color_code"/>
+                                    <field name="color_name"/>
+                                    <field name="ref"/>
+                                    <field name="lot_name"/>
                                     <field name="location_id"/>
-                                    <field name="product_id"/>
                                     <field name="quantity"/>
-                                    <field name="quant_id"/>
                                 </list>
                             </field>
                         </page>
@@ -62,7 +68,8 @@
     <!-- Menú -->
     <menuitem id="menu_stock_quant_import_root"
               name="Quant Imports"
-              parent="stock.menu_stock_root"
+              parent="stock.menu_stock_warehouse_mgmt"
               action="action_stock_quant_import"
-              sequence="100"/>
+              groups="group_stock_quant_import_menu"
+              sequence="900"/>
 </odoo>

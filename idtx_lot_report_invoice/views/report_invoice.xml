@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_invoice_document_inherit_lot" inherit_id="account.report_invoice_document">
+        <!-- Agregamos columna de lote en el header -->
+        <xpath expr="//thead/tr/th[@name='th_description']" position="after">
+            <th t-if="o.company_id.is_company_produce and any(l.product_id.product_tmpl_id.tracking != 'quantity' for l in o.invoice_line_ids)" name="th_lot" class="text-start">
+                <span>Lot</span>
+            </th>
+            <th t-if="o.company_id.is_company_produce and any(l.product_id.product_tmpl_id.tracking != 'quantity' for l in o.invoice_line_ids)" name="th_color_code" class="text-start">
+                <span>Color Code</span>
+            </th>
+            <th t-if="o.company_id.is_company_produce and any(l.product_id.product_tmpl_id.tracking != 'quantity' for l in o.invoice_line_ids)" name="th_color_name" class="text-start">
+                <span>Color Name</span>
+            </th>
+        </xpath>
+
+        <!-- Agregamos celda de lote en cada línea de producto -->
+        <xpath expr="//td[@name='account_invoice_line_name']" position="after">
+            <td t-if="o.company_id.is_company_produce" name="td_lot" class="text-start">
+                <span t-if="line.lot_id" t-esc="line.lot_id.name"/>
+            </td>
+            <td t-if="o.company_id.is_company_produce" name="td_color_code" class="text-start">
+                <span t-if="line.lot_id" t-esc="line.lot_id.color_code"/>
+            </td>
+            <td t-if="o.company_id.is_company_produce" name="td_color_name" class="text-start">
+                <span t-if="line.lot_id" t-esc="line.lot_id.color_name"/>
+            </td>
+        </xpath>
+    </template>
+
+    <!-- Quitamos la tabla de lotes -->
+    <template id="hide_stock_account_lot_table" inherit_id="stock_account.stock_account_report_invoice_document">
+        <xpath expr="//table[@name='invoice_snln_table']" position="replace"/>
+    </template>
+
+</odoo>

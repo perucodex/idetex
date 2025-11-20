@@ -36,6 +36,11 @@ class MrpProductionRoll(models.Model):
     def create_zpl(self, weight=0):
         self.ensure_one()
         weight = self.gross_weight if not weight else weight
+        color_block = ""
+        if self.lot_id.color_code and self.lot_id.color_code.strip() != "00000000":
+            color_block = f"""^FO300,135
+                              ^A0N,22,22
+                              ^FDColor: [{self.lot_id.color_code}]^FS"""
         zpl_code = f"""^XA
                     ^PW600
                     ^LL600
@@ -43,20 +48,17 @@ class MrpProductionRoll(models.Model):
 
                     ^FO20,30
                     ^A0N,40,40
-                    ^FD{self.product_id.name}^FS
+                    ^FD{(self.product_id.name or self.lot_id.product_id.name)}^FS
 
                     ^FO20,100
                     ^BQN,2,10
-                    ^FDLA,01{self.product_id.barcode}3102{str(int(weight * 100)).zfill(6)}10{self.lot_id.name}^FS
+                    ^FDLA,01{(self.product_id.barcode or self.lot_id.product_id.barcode)}3102{str(int(weight * 100)).zfill(6)}10{self.lot_id.name}^FS
 
                     ^FO300,110
                     ^A0N,22,22
-                    ^FDCódigo: {self.product_id.default_code}^FS
+                    ^FDCódigo: {(self.product_id.default_code or self.lot_id.product_id.default_code)}^FS
 
-                    ^FO300,135
-                    ^A0N,22,22
-                    ^FDColor: [{self.lot_id.color_code}]^FS
-
+                    {color_block}\
                     ^FO300,160
                     ^A0N,28,28
                     ^FD{self.lot_id.color_name}^FS

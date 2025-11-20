@@ -8,7 +8,7 @@ class SaleOrderLine(models.Model):
 
     product_color_id = fields.Many2one('product.color', string='Color')
     color_name = fields.Char('Color Name')
-    weaving_warning = fields.Text('weaving_warning')
+    # weaving_warning = fields.Text('weaving_warning')
     weaving_loss = fields.Float('Weaving Loss')
     production_loss = fields.Float('Production Loss')
     is_weaving = fields.Boolean(related='product_template_id.is_weaving', store=True)
@@ -31,6 +31,7 @@ class SaleOrderLine(models.Model):
         store=False,
     )
     lab_dev_line_id = fields.Many2one('lab.dev.line', string='Lab Dev Line')
+    diff_days = fields.Float('diff_days')
     
     def _compute_has_approved_lab_line(self):
         for line in self:
@@ -68,7 +69,7 @@ class SaleOrderLine(models.Model):
     def _compute_price_unit(self):
         res = super()._compute_price_unit()
         #Solo calcula el precio si la compañía produce
-        if self.company_id.is_company_produce:
+        if self.company_id.is_company_produce and self.product_id.is_weaving:
             # Diferenciar si es un producto tejido para calcular su precio
             for line in self.filtered(lambda l: l.is_weaving):
                 if not line.product_template_id.bom_ids:
@@ -94,7 +95,7 @@ class SaleOrderLine(models.Model):
                 bom_id = self.bom_id
             if not price_dict:
                 currency = self.order_id.pricelist_id.currency_id
-                self.weaving_warning = ''
+                # self.weaving_warning = ''
                 for bom_line in bom_id.bom_line_ids.filtered(lambda l: l.product_tmpl_id.categ_id in self.env.company.thread_category_ids):
                     pricelist_item_id = self.order_id.pricelist_id._get_product_rule(
                         bom_line.product_id,
@@ -175,11 +176,11 @@ class SaleOrderLine(models.Model):
         # que este asociada, de lo contrario los precios serán ingresados a mano.
         # TODO posible candado para no permitir hacer ordenes libres y no permitir cambiar precios
         else:
-            if self.order_id.quotation_id:
-                line = self.get_product_from_quote(self.product_id, self.product_color_id)
-                total = line.price_unit
-            else:
-                total = 1
+            # if self.order_id.quotation_id:
+            line = self.get_product_from_quote(self.product_id, self.product_color_id)
+            total = line.price_unit
+            # else:
+            #     total = 1
     
         return float_round(total, 2)
     
@@ -188,7 +189,30 @@ class SaleOrderLine(models.Model):
             quote = self.order_id.quotation_id
             line = quote.order_line.filtered(lambda l: l.product_id == product and l.product_color_id == color)
             if not line:
-                raise UserError(_('Product %s with color %s can\'t be found in quotation') %(product.name, color.name))
+                today = fields.Date.context_today(self)
+                line = self._get_last_quotation_price(today)
+                if line:
+                    if line.order_id.validity_date <= today:
+                        self.diff_days = (today - line.order_id.validity_date ).days
+                    return line
+                else:
+                    raise UserError(_('Product %s with color %s can\'t be found in any quotation') %(product.name, color.name))
             return line
         else:
             return self.env['sale.order.line']
+        
+    def _get_last_quotation_price(self, today):
+        lines = self.env['sale.order.line'].search([
+            ('order_id.partner_id', '=', self.order_partner_id.id),
+            ('product_id', '=', self.product_id.id),
+            ('product_color_id', '=', self.product_color_id.id),
+            ('order_id.is_quote', '=', True),
+            ('order_id.state', 'in', ('draft','sent')),
+        ])
+        # ordenamos en Python por validez (más reciente primero)
+        lines = lines - self
+        if lines:
+            line = max(lines, key=lambda l: l.order_id.validity_date or today.min)
+        else:
+            line = False
+        return line

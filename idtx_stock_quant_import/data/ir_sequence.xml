@@ -5,7 +5,7 @@
     <record id="seq_stock_quant_import" model="ir.sequence">
         <field name="name">Stock Quant Import Sequence</field>
         <field name="code">stock.quant.import</field>
-        <field name="prefix">INV-</field>
+        <field name="prefix">IMP-</field>
         <field name="padding">5</field>
         <field name="company_id" eval="False"/>
     </record>
