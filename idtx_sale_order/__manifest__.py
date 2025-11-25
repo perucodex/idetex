@@ -23,6 +23,7 @@ Gestiona la carga de precios y productos en tus cotizaciones
             'base',
             'sale_management',
             'sale_stock',
+            'sale_subscription',
             'idtx_product_development',
             'idtx_laboratory',
         ],
