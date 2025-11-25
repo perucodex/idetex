@@ -7,7 +7,7 @@ class StockQuant(models.Model):
         for rec in self:
             if rec.lot_id and rec.lot_id.roll_id:
                 roll = rec.lot_id.roll_id
-                roll._print_zpl_to_network(roll.create_zpl(rec.quantity))  
+                roll._print_zpl_to_network(roll.create_zpl(rec.quantity), self.env.company.zpl_printer_ip)  
     
     def split_quant(self, quantity):
         # Dividir quant

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="res_config_settings_view_form_inherit_mrp_printers" model="ir.ui.view">
+            <field name="name">res.config.settings.view.form.inherit.mrp.printers</field>
+            <field name="model">res.config.settings</field>
+            <field name="priority" eval="36"/>
+            <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <!-- Nos colamos justo después del bloque "Planning" -->
+                <xpath expr="//app[@name='mrp']/block[@name='process_operations_setting_container']" position="after">
+                    <block title="Impresoras" name="mrp_printers_block">
+                        <setting id="mrp_zpl_printer"
+                                help="Permite imprimir etiquetas de codigos de barra para la producción de telas.">
+                            <field name="zpl_printer_ip"/>
+                        </setting>
+                    </block>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>

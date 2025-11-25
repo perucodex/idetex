@@ -4,3 +4,4 @@ class ResCompany(models.Model):
     _inherit = 'res.company'
 
     is_company_produce = fields.Boolean('Production Company', store=True, default=False)
+    zpl_printer_ip = fields.Char('Barcode Printer IP')

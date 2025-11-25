@@ -48,7 +48,7 @@ class BatchAddWizard(models.TransientModel):
                 'net_length': line.net_length,
             })
             lot_id.roll_id = roll
-            roll._print_zpl_to_network(roll.create_zpl())
+            roll._print_zpl_to_network(roll.create_zpl(), self.env.company.zpl_printer_ip)
         # NO cerramos el wizard
         return {'type': 'ir.actions.act_window_close'}  # lo quitaremos en la vista
 

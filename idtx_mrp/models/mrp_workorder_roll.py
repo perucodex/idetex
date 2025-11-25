@@ -22,7 +22,7 @@ class MrpWorkorderRoll(models.Model):
 
     def reprint(self):
         for rec in self:
-            rec._print_zpl_to_network(rec.create_zpl())
+            rec._print_zpl_to_network(rec.create_zpl(), self.env.company.zpl_printer_ip)
 
     #=== CRUD METHODS ===#
 
@@ -96,7 +96,7 @@ class MrpWorkorderRoll(models.Model):
                     ^XZ"""
         return zpl_code
         
-    def _print_zpl_to_network(self, zpl_code, printer_ip='172.16.64.95', port=9100):
+    def _print_zpl_to_network(self, zpl_code, printer_ip, port=9100):
         """Envía ZPL a impresora por socket TCP/IP."""
         try:
             # 1. Validar IP

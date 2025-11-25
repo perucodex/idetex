@@ -7,7 +7,7 @@ class StockMoveLine(models.Model):
 
     bags = fields.Integer('Bags')
     cones = fields.Integer('Cones')
-    is_thread = fields.Boolean(related='product_id.product_tmpl_id.is_thread')# -*- coding: utf-8 -*-
+    is_thread = fields.Boolean(related='product_id.product_tmpl_id.is_thread', store=True)
 
 class StockMove(models.Model):
     _inherit = 'stock.move'

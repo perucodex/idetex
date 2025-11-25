@@ -8,6 +8,7 @@ from . import mrp_workorder_batch
 from . import mrp_workorder_roll
 from . import mrp_workorder
 from . import res_company
+from . import res_config_settings
 from . import scale_registry
 from . import stock_lot
 from . import stock_quant
