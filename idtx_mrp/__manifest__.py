@@ -17,6 +17,7 @@ Módulo base para los desarrollos de producción para empresas textiles
     'category': 'Producción Textil',
     'version': '0.1',
     'license': 'LGPL-3',
+    'sequence': 0,
 
     # any module necessary for this one to work correctly
     'depends': [
@@ -39,7 +40,7 @@ Módulo base para los desarrollos de producción para empresas textiles
         'views/mrp_workorder_roll_views.xml',
         'views/mrp_workorder_views.xml',
         'views/res_company_views.xml',
-        'views/res_config_settings_views.xml',
+        # 'views/res_config_settings_views.xml',
         'views/scale_registry_views.xml',
         'views/stock_quant_views.xml',
         'wizard/add_production_roll.xml',

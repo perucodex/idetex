@@ -17,6 +17,7 @@ Gestión de recetas e integración con sistema textil Orgatex, proyecciones y kp
     'category': 'Uncategorized',
     'version': '0.1',
     'license': 'LGPL-3',
+    'sequence': 0,
 
     # any module necessary for this one to work correctly
     'depends': ['idtx_laboratory'],

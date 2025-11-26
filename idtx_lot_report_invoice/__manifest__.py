@@ -17,6 +17,7 @@ Modulo para mostrar los lotes en los comprobantes de pago, si existen.
     'category': 'Uncategorized',
     'version': '0.1',
     'license': 'LGPL-3',
+    'sequence': 0,
 
     # any module necessary for this one to work correctly
     'depends': [

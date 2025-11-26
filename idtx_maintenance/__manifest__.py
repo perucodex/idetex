@@ -17,6 +17,7 @@ Additional fields for maintenance to manage equipment
     'category': 'Uncategorized',
     'version': '0.1',
     'license': 'LGPL-3',
+    'sequence': 0,
 
     # any module necessary for this one to work correctly
     'depends': ['maintenance'],

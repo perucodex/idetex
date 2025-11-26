@@ -17,6 +17,7 @@ Importa los stock quant desde un excel para tener el inventario que se enviará 
     'category': 'Sales',
     'version': '0.1',
     'license': 'LGPL-3',
+    'sequence': 0,
 
     # any module necessary for this one to work correctly
     'depends': [
