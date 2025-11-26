@@ -67,7 +67,7 @@
         </xpath>
 
         <!-- Crear la columna correspondiente en el tbody -->
-        <xpath expr="//table[hasclass('o_main_table')]//tbody//tr[not(hasclass('o_line_section')) and not(hasclass('o_line_note'))]//td[position()=4]" position="after">
+        <xpath expr="//table[hasclass('o_main_table')]//tbody//tr[not(hasclass('o_line_section')) and not(hasclass('o_line_note'))]//td[position()=5]" position="after">
             <td class="text-end" t-if="any(line.discount for line in o.order_line if not line.display_type)">
                 <span t-field="line.price_unit_discounted"/>
             </td>
