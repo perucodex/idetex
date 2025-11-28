@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates id="template" xml:space="preserve">
-
     <t t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
         <xpath expr="//li[@class='lot-number']" position="after">
-            <div class="col ps-0" t-if="line.lot_color_name">
-                <li class="lot-number" t-esc="line.lot_color_name" />
+            <div class="col ps-0">
+                <li class="lot-number" t-esc="line.lotColorName" />
             </div>
         </xpath>
     </t>
-
 </templates>

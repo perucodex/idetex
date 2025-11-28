@@ -64,6 +64,7 @@ class StockQuantImport(models.Model):
             # Borrar líneas previas (por si re-validan)
             rec.line_ids.unlink()
 
+            vals_list = []
             for row in rows:
                 # location_name = row[header['location'] - 1]
                 product_code = row[header['product_code'] - 1].ljust(15, '0')
@@ -81,7 +82,7 @@ class StockQuantImport(models.Model):
                     continue
 
                 # Línea de auditoría
-                self.env['stock.quant.import.line'].create({
+                vals_list.append({
                     'import_id': rec.id,
                     'product_code': product_code,
                     'product_name': product_name,
@@ -94,6 +95,9 @@ class StockQuantImport(models.Model):
                     'quantity': float(qty),
                     'red_flag': exists,
                 })
+                
+            if vals_list:
+                self.env['stock.quant.import.line'].create(vals_list)
 
             rec.state = 'process'
         return True

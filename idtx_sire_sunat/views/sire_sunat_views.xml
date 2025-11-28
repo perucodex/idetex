@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_sire_sunat_form" model="ir.ui.view">
+            <field name="name">sire.sunat.form</field>
+            <field name="model">sire.sunat</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button string="Proposal" type="object" name="get_proposal" class="oe_highlight" invisible="state != 'draft'"/>
+                        <button string="Renew Proposal" type="object" name="renew_proposal" class="oe_highlight" invisible="state != 'draft' or not proposal_ticket_number"/>
+                        <button string="Check" type="object" name="check_documents" class="oe_highlight" 
+                            invisible="state != 'proposal'"/>
+                        <button string="Delete Records Not in Proposal" type="object" name="delete_records_not_in_proposal" class="btn btn-danger" 
+                            invisible="not account_move_ids"/>
+                        <button string="Accept Proposal" type="object" name="accept_proposal" 
+                            confirm="Esta aceptando la propuesta, este proceso carga el archivo en SUNAT" class="oe_highlight" invisible="state != 'check'"/>
+                        <button string="Replace Proposal" type="object" name="send_preliminary" class="oe_highlight" invisible="state != 'check'"/>
+                        <button string="Delete Preliminary" type="object" name="delete_preliminary" class="oe_highlight" invisible="state != 'preliminary'"/>
+                        <button string="Register Preliminary" type="object" name="register_preliminary" 
+                            confirm="Esta enviando a SUNAT, este proceso regista el preliminar en SUNAT, si desea eliminar debe ingresar con su clave SOL y confirmar o eliminar para procesar nuevamente" class="oe_highlight" invisible="state != 'preliminary'"/>
+                        <button string="Cancel" type="object" name="cancel" invisible="state not in ['proposal','check','preliminary','register']"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,check,proposal,preliminary,register" readonly="1"/>
+                    </header>
+                    <sheet>
+                        <h1 class="mt0">
+                            <field name="name" readonly="1" class="oe_inline"/>
+                        </h1>
+                        <group>
+                            <group>
+                                <field name="period" options="{'datepicker': {'format': 'MM/yyyy'}}" required="1" readonly="state != 'draft'"/>
+                                <label for="proposal_ticket_number" string="Proposal Ticket Number"/>
+                                <!-- <label for="proposal_ticket_date" string="Retrieve Date"/> -->
+                                <div>
+                                    <field name="proposal_ticket_number" readonly="1" force_save="1" class="oe_inline"/>
+                                    <span> - </span>
+                                    <!-- <label for="proposal_ticket_date" string="Retrieve Date"/> -->
+                                    <field name="proposal_ticket_date" readonly="1" force_save="1" class="oe_inline"/>
+                                </div>
+                                <label for="preliminary_ticket_number" string="Preliminary Ticket Number"/>
+                                <!-- <label for="preliminary_ticket_date" string="Retrieve Date"/> -->
+                                <div>
+                                    <field name="preliminary_ticket_number" readonly="1" force_save="1" class="oe_inline"/>
+                                    <span> - </span>
+                                    <!-- <label for="preliminary_ticket_date" string="Retrieve Date"/> -->
+                                    <field name="preliminary_ticket_date" readonly="1" force_save="1" class="oe_inline"/>
+                                </div>
+                                <field name="total"/>
+                            </group>
+                            <group>
+                                <field name="proposal_zip_file" filename="proposal_zip_file_name" widget="binary"/>
+                                <field name="preliminary_zip_file"/>
+                                <field name="company_id" />
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Proposal" name="proposal">
+                                <field name="proposal_line_ids" >
+                                    <list create="0">
+                                        <field name="issue_date"/>
+                                        <field name="l10n_latam_document_type_id"/>
+                                        <field name="serie"/>
+                                        <field name="number"/>
+                                        <field name="l10n_latam_identification_type_id"/>
+                                        <field name="vat"/>
+                                        <field name="partner_id"/>
+                                        <field name="currency_id" groups="base.group_multi_currency"/>
+                                        <field name="exchange_rate" groups="base.group_multi_currency"/>
+                                        <field name="total" sum="Total"/>
+                                        <field name="state" widget="badge" decoration-success="state == 'ok'" decoration-danger="state == 'no'" decoration-warning="state == 'amount'"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Not in Proposal" name="not_in_proposal">
+                                <field name="account_move_ids" readonly="1" context="{'tree_view_ref': 'account.view_move_tree'}"/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <!-- <div class="oe_chatter">
+                        <field name="message_follower_ids" widget="mail_followers"/>
+                        <field name="message_ids" widget="mail_thread"/>
+                    </div> -->
+            		<chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_sire_sunat_tree" model="ir.ui.view">
+            <field name="name">sire.sunat.tree</field>
+            <field name="model">sire.sunat</field>
+            <field name="arch" type="xml">
+                <list>
+                    <field name="name"/>
+                    <field name="period"/>
+                    <field name="total"/>
+                    <field name="state" widget="badge" decoration-success="state == 'register'" decoration-info="state in ('check','proposal')" decoration-primary="state == 'preliminary'"/>
+                    <field name="company_id" />
+                </list>
+            </field>
+        </record>
+
+        <record id="view_sire_sunat_search_view" model="ir.ui.view">
+            <field name="name">sire.sunat.search</field>
+            <field name="model">sire.sunat</field>
+            <field name="arch" type="xml">
+                <search string="Model Search">
+                    <field name="name"/>
+                    <filter string="Open" name="open" domain="[('state', '=', 'open')]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Name" name="name" context="{'group_by':'name'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="sire_sunat_action_sale" model="ir.actions.act_window">
+            <field name="name">Sale</field>
+            <field name="res_model">sire.sunat</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'list', 'view_id': ref('view_sire_sunat_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('view_sire_sunat_form')})]"/>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('sire_type', '=', 's')]</field>
+            <field name="context">{'default_sire_type': 's', 'default_move_type': 'out_invoice', 'domain_move_type': ('out_invoice', 'out_refund')}</field>
+        </record>
+
+        <record id="sire_sunat_action_purchase" model="ir.actions.act_window">
+            <field name="name">Purchase</field>
+            <field name="res_model">sire.sunat</field>
+            <field name="view_ids" eval="[(5, 0, 0),
+                (0, 0, {'view_mode': 'list', 'view_id': ref('view_sire_sunat_tree')}),
+                (0, 0, {'view_mode': 'form', 'view_id': ref('view_sire_sunat_form')})]"/>
+            <field name="view_mode">list,form</field>
+            <field name="domain">[('sire_type', '=', 'p')]</field>
+            <field name="context">{'default_sire_type': 'p', 'default_move_type': 'in_invoice', 'domain_move_type': ('in_invoice','in_refund')}</field>
+        </record>
+
+        <menuitem id="menu_sunat_sire"
+            name="Sire SUNAT"
+            parent="account.menu_finance_entries"
+            sequence="500"> 
+
+            <menuitem id="menu_sunat_sire_sale"
+                action="sire_sunat_action_sale"
+                sequence="10"/> 
+            <menuitem id="menu_sunat_sire_purchase"
+                action="sire_sunat_action_purchase"
+                sequence="20"/> 
+
+        </menuitem>
+
+    </data>
+</odoo>

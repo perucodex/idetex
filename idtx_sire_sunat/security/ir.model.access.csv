@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_sire_sunat,sire_sunat,model_sire_sunat,base.group_user,1,1,1,1
+access_proposal_line,proposal_line,model_proposal_line,base.group_user,1,1,1,1

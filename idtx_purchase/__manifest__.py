@@ -27,14 +27,14 @@ Muestra fechas de orden y de aprobación en reporte y vista
         'data/product_data.xml',
         'security/ir.model.access.csv',
         # 'security/payment_term_access.xml',
+        'report/report_templates.xml',
         'data/report_layout.xml',
         'report/purchase_order_templates.xml',
-        'report/report_templates.xml',
         'views/purchase_views.xml',
     ],
     'assets': {
         'web.report_assets_common': [
-            'idtx_purchase/static/src/scss/layout_boxed_purchase.scss',
+            'idtx_purchase/static/src/**/*',
         ],
     }
 }
