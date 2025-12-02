@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates id="template" xml:space="preserve">
     <t t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
-        <xpath expr="//li[@class='lot-number']" position="after">
-            <div class="col ps-0">
-                <li class="lot-number" t-esc="line.lotColorName" />
-            </div>
+        <xpath expr="//li[hasclass('lot-number')]/../.." position="after">
+            <li t-if="vals.lotLines and line.lotColorName" class="row flex-wrap w-100 m-0">
+                <div class="col-auto" t-attf-class="{{ vals.isReceipt ? 'p-0' : 'px-1' }}">
+                    <t t-slot="paint-icon" />
+                </div>
+                <div class="col ps-0">
+                    <li class="lot-number" t-esc="line.lotColorName" />
+                </div>
+            </li>
         </xpath>
     </t>
 </templates>

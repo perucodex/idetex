@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data noupdate="1">
+    
+        <menuitem
+            id="menu_management_menu"
+            name="Menu Management"
+            web_icon="idtx_menu_invoice_pe,static/description/icon.png"
+            groups="idtx_menu_invoice_pe.group_module_menu_invoice_pe_manager,idtx_menu_invoice_pe.group_module_menu_invoice_pe_user">
+                <menuitem id="dev_operations_menu" name="Operations" sequence="10">
+                    <menuitem id="menu_invoice_menu" name="Menu Invoices" action="menu_invoice_action" sequence="10"/>
+                </menuitem>
+        </menuitem>
+        
+    </data>
+    
+</odoo>

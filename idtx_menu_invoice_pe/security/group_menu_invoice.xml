@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- Desarrollo de Producto -->
+        <record model="res.groups.privilege" id="module_menu_invoice_pe_user">
+            <field name="name">Menu Invoice PE</field>
+            <field name="description">Set up menu invoicing</field>
+            <field name="sequence">19</field>
+        </record>
+        <record id="group_module_menu_invoice_pe_user" model="res.groups">
+            <field name="name">User</field>
+            <field name="privilege_id" ref="module_menu_invoice_pe_user"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+        <record id="group_module_menu_invoice_pe_manager" model="res.groups">
+            <field name="name">Manager</field>
+            <field name="privilege_id" ref="module_menu_invoice_pe_user"/>
+            <field name="implied_ids" eval="[(4, ref('group_module_menu_invoice_pe_user'))]"/>
+        </record>
+        
+        <record id="base.user_admin" model="res.users">
+            <field name="group_ids" eval="[Command.link(ref('group_module_menu_invoice_pe_manager'))]"/>
+        </record>
+
+        <!-- Reglas para multi-company -->
+        <record id="menu_invoice_company_rule" model="ir.rule">
+            <field name="name">Menu Invoice multi-company</field>
+            <field name="model_id" ref="model_menu_invoice"/>
+            <field name="domain_force">[('company_id', 'parent_of', company_ids)]</field>
+        </record>
+
+    </data>
+</odoo>
