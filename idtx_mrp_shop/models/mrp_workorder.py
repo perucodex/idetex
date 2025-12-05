@@ -31,7 +31,7 @@ class MrpWorkorder(models.Model):
                     'employee_id': int(employee_id),
                     'equipment_id': int(equipment_id),
                 })
-                roll._print_zpl_to_network(self.create_zpl(), self.env.company.zpl_printer_ip)
+                roll._print_zpl_to_network(roll.create_zpl(), self.env.company.zpl_printer_ip)
                 self.qty_producing = sum(self.roll_ids.mapped('gross_weight'))
                 return {
                     'status': 'success',

@@ -6,14 +6,26 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-02 20:05+0000\n"
-"PO-Revision-Date: 2025-12-02 20:05+0000\n"
+"POT-Creation-Date: 2025-12-03 15:12+0000\n"
+"PO-Revision-Date: 2025-12-03 15:12+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
+
+#. module: idtx_menu_invoice_pe
+#. odoo-python
+#: code:addons/idtx_menu_invoice_pe/models/menu_invoice.py:0
+msgid " from: "
+msgstr " del: "
+
+#. module: idtx_menu_invoice_pe
+#. odoo-python
+#: code:addons/idtx_menu_invoice_pe/models/menu_invoice.py:0
+msgid " to: "
+msgstr " al: "
 
 #. module: idtx_menu_invoice_pe
 #: model_terms:ir.ui.view,arch_db:idtx_menu_invoice_pe.view_menu_invoice_form
@@ -59,6 +71,7 @@ msgstr ""
 #. odoo-python
 #: code:addons/idtx_menu_invoice_pe/models/menu_invoice.py:0
 #: model:ir.model.fields.selection,name:idtx_menu_invoice_pe.selection__menu_invoice_line__menu_type__10
+#: model_terms:ir.ui.view,arch_db:idtx_menu_invoice_pe.view_menu_invoice_line_filter
 msgid "Breakfast"
 msgstr "Desayuno"
 
@@ -95,9 +108,9 @@ msgid "Data"
 msgstr ""
 
 #. module: idtx_menu_invoice_pe
-#: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__date
-msgid "Date"
-msgstr "Fecha"
+#: model_terms:ir.ui.view,arch_db:idtx_menu_invoice_pe.view_menu_invoice_form
+msgid "Dates"
+msgstr "Fechas"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice_line__description
@@ -106,6 +119,7 @@ msgstr "Descripción"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields.selection,name:idtx_menu_invoice_pe.selection__menu_invoice_line__menu_type__20
+#: model_terms:ir.ui.view,arch_db:idtx_menu_invoice_pe.view_menu_invoice_line_filter
 msgid "Dessert"
 msgstr "Postre"
 
@@ -118,6 +132,7 @@ msgstr "Detalle"
 #. odoo-python
 #: code:addons/idtx_menu_invoice_pe/models/menu_invoice.py:0
 #: model:ir.model.fields.selection,name:idtx_menu_invoice_pe.selection__menu_invoice_line__menu_type__11
+#: model_terms:ir.ui.view,arch_db:idtx_menu_invoice_pe.view_menu_invoice_line_filter
 msgid "Dinner"
 msgstr "Cena"
 
@@ -136,6 +151,11 @@ msgstr "Hecho"
 #: model:ir.model.fields.selection,name:idtx_menu_invoice_pe.selection__menu_invoice__state__draft
 msgid "Draft"
 msgstr "Borrador"
+
+#. module: idtx_menu_invoice_pe
+#: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__end_date
+msgid "End Date"
+msgstr "Fecha Final"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__message_follower_ids
@@ -228,6 +248,7 @@ msgstr "Administrador"
 #. odoo-python
 #: code:addons/idtx_menu_invoice_pe/models/menu_invoice.py:0
 #: model:ir.model.fields.selection,name:idtx_menu_invoice_pe.selection__menu_invoice_line__menu_type__1
+#: model_terms:ir.ui.view,arch_db:idtx_menu_invoice_pe.view_menu_invoice_line_filter
 msgid "Menu"
 msgstr "Menú"
 
@@ -235,18 +256,25 @@ msgstr "Menú"
 #: model:ir.actions.act_window,name:idtx_menu_invoice_pe.menu_invoice_action
 #: model:ir.model,name:idtx_menu_invoice_pe.model_menu_invoice
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice_line__menu_invoice_id
+#: model_terms:ir.ui.view,arch_db:idtx_menu_invoice_pe.view_menu_invoice_line_filter
 msgid "Menu Invoice"
 msgstr "Comprobantes de Menú"
 
 #. module: idtx_menu_invoice_pe
+#: model:ir.actions.act_window,name:idtx_menu_invoice_pe.menu_invoice_line_action
 #: model:ir.model,name:idtx_menu_invoice_pe.model_menu_invoice_line
 msgid "Menu Invoice Line"
-msgstr ""
+msgstr "Línea de Menu"
+
+#. module: idtx_menu_invoice_pe
+#: model:ir.ui.menu,name:idtx_menu_invoice_pe.menu_invoice_line_menu
+msgid "Menu Invoice Lines"
+msgstr "Líneas de Menú"
 
 #. module: idtx_menu_invoice_pe
 #: model:res.groups.privilege,name:idtx_menu_invoice_pe.module_menu_invoice_pe_user
 msgid "Menu Invoice PE"
-msgstr ""
+msgstr "Factura de Menú PE"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.ui.menu,name:idtx_menu_invoice_pe.menu_invoice_menu
@@ -260,8 +288,9 @@ msgstr "Gestion de Menú"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice_line__menu_type
+#: model_terms:ir.ui.view,arch_db:idtx_menu_invoice_pe.view_menu_invoice_line_filter
 msgid "Menu Type"
-msgstr ""
+msgstr "Tipo de Menú"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__message_has_error
@@ -330,6 +359,11 @@ msgid "Operations"
 msgstr "Operaciones"
 
 #. module: idtx_menu_invoice_pe
+#: model_terms:ir.ui.view,arch_db:idtx_menu_invoice_pe.view_menu_invoice_line_filter
+msgid "Partner"
+msgstr "Cliente"
+
+#. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice_line__price
 msgid "Price"
 msgstr "Precio"
@@ -358,6 +392,21 @@ msgstr "Volver"
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__message_has_sms_error
 msgid "SMS Delivery error"
 msgstr ""
+
+#. module: idtx_menu_invoice_pe
+#: model_terms:ir.ui.view,arch_db:idtx_menu_invoice_pe.view_menu_invoice_line_filter
+msgid "Search Menu Items"
+msgstr ""
+
+#. module: idtx_menu_invoice_pe
+#: model:product.template,name:idtx_menu_invoice_pe.product_template_product_menu
+msgid "Menu Service"
+msgstr "Servicio de menú"
+
+#. module: idtx_menu_invoice_pe
+#: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__start_date
+msgid "Start Date"
+msgstr "Fecha Inicial"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__state
@@ -401,4 +450,4 @@ msgstr ""
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__line_ids
 msgid "line"
-msgstr ""
+msgstr "línea"

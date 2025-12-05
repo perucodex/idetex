@@ -65,7 +65,7 @@ class MrpWorkorderRoll(models.Model):
                     ^A0N,40,40
                     ^FD{self.product_id.name}^FS
 
-                    ^FO100,100
+                    ^FO20,100
                     ^BQN,2,8.5
                     ^FDLA,{url}^FS
 

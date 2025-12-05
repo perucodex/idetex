@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="hr_afp_view_form" model="ir.ui.view">
+        <field name="name">hr.afp.view.form</field>
+        <field name="model">hr.afp</field>
+        <field name="arch" type="xml">
+            <form string="AFP">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="afp_contribution" widget="percentage"/>
+                            <field name="commission_balance" widget="percentage"/>
+                            <field name="commission_flow" widget="percentage"/>
+                        </group>
+                        <group>
+                            <field name="insurance_rate" widget="percentage"/>
+                            <field name="max_insurable"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="hr_afp_view_list" model="ir.ui.view">
+        <field name="name">hr.afp.view.list</field>
+        <field name="model">hr.afp</field>
+        <field name="arch" type="xml">
+            <list string="Afp">
+                <field name="name"/>
+                <field name="afp_contribution" widget="percentage"/>
+                <field name="commission_balance" widget="percentage"/>
+                <field name="commission_flow" widget="percentage"/>
+                <field name="insurance_rate" widget="percentage"/>
+                <field name="max_insurable"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="hr_afp_action" model="ir.actions.act_window">
+        <field name="name">AFP</field>
+        <field name="res_model">hr.afp</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="hr_afp_view_list"/>
+    </record>
+    
+    <!-- Menu de localización -->
+    <menuitem id="hr_payroll_pe_menu" name="Localization PE" parent="hr_work_entry_enterprise.menu_hr_payroll_configuration" sequence="200">
+        <menuitem id="hr_afp_menu" name="AFP" action="hr_afp_action" sequence="10"/>
+    </menuitem>
+
+</odoo>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="hr_contract_salary_view_employee_form" model="ir.ui.view">
+        <field name="name">hr.employee.form.inherit.contract_salary</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <group name="contract" position="after">
+                <group name="payroll_pe" groups="hr.group_hr_user">
+                    <div colspan="2" class="col-lg-6 w-100 mt-4 mb-3 o_horizontal_separator text-uppercase fw-bolder small d-flex">
+                        <span>Peruvian Localization</span>
+                    </div>
+                    <field name="pension_system"/>
+                    <field name="afp_id" invisible="pension_system != 'afp'"/>
+                    <field name="commission_type" invisible="pension_system != 'afp'"/>
+                </group>
+            </group>
+        </field>
+    </record>
+
+</odoo>

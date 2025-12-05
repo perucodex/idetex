@@ -10,6 +10,7 @@
             groups="idtx_menu_invoice_pe.group_module_menu_invoice_pe_manager,idtx_menu_invoice_pe.group_module_menu_invoice_pe_user">
                 <menuitem id="dev_operations_menu" name="Operations" sequence="10">
                     <menuitem id="menu_invoice_menu" name="Menu Invoices" action="menu_invoice_action" sequence="10"/>
+                    <menuitem id="menu_invoice_line_menu" name="Menu Invoice Lines" action="menu_invoice_line_action" sequence="20"/>
                 </menuitem>
         </menuitem>
         

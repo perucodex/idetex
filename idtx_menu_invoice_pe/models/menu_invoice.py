@@ -1,5 +1,6 @@
 from odoo import fields, models, api, _
 from odoo.fields import Command
+from odoo.exceptions import ValidationError
 from collections import defaultdict
 import mysql.connector
 
@@ -12,6 +13,7 @@ class MenuInvoice(models.Model):
     start_date = fields.Date('Start Date', required=True, default=lambda self: fields.Date.context_today(self))
     end_date = fields.Date('End Date', required=True, default=lambda self: fields.Date.context_today(self))
     tax_id = fields.Many2one('account.tax', string='Tax', required=True)
+    company_ids = fields.Many2many('res.partner', string='Companies')
     line_ids = fields.One2many('menu.invoice.line', 'menu_invoice_id', string='line')
     invoice_ids = fields.Many2many('account.move', string='Invoices')
     invoice_count = fields.Integer(compute='_compute_invoice_count')
@@ -46,6 +48,31 @@ class MenuInvoice(models.Model):
 
         return super().create(vals_list)
     
+    # -------------------------------------------------------------------------
+    # CONSTRAINT METHODS
+    # -------------------------------------------------------------------------
+    @api.constrains('start_date', 'end_date', 'company_id')
+    def _check_dates(self):
+        for mi in self:
+            # Starting date must be prior to the ending date
+            start_date = mi.start_date
+            end_date = mi.end_date
+            if end_date < start_date:
+                raise ValidationError(_('The ending date must not be prior to the starting date.'))
+
+            domain = [
+                ('id', '!=', mi.id),
+                ('company_id', '=', mi.company_id.id),
+                ('company_ids', 'in', mi.company_ids),
+                '|', '|',
+                '&', ('start_date', '<=', mi.start_date), ('end_date', '>=', mi.start_date),
+                '&', ('start_date', '<=', mi.end_date), ('end_date', '>=', mi.end_date),
+                '&', ('start_date', '<=', mi.start_date), ('end_date', '>=', mi.end_date),
+            ]
+
+            if self.search_count(domain) > 0:
+                raise ValidationError(_('You can not have an overlap between menu invoices, please correct the start and/or end dates.'))
+
     def action_process(self):
         # Primero los menus pagados para boletear
         self._create_lines(self._action_get_data(True), True)
@@ -53,8 +80,11 @@ class MenuInvoice(models.Model):
         self._create_lines(self._action_get_data())
     
     def get_query(self, paid=False):
+        placeholder = ','.join(f"'{vat}'" for vat in self.company_ids.mapped('vat'))
+        start = self.start_date
+        end = self.end_date
         if paid:
-            query = """
+            query = f"""
                 SELECT ed.fecha,
                     ed.codigo,
                     ed.item,
@@ -70,17 +100,17 @@ class MenuInvoice(models.Model):
                 LEFT JOIN programacion p ON p.fecha = ed.fecha AND p.item = ed.item
                 LEFT JOIN trabajadores tr ON tr.codigo = ed.codigo
                 LEFT JOIN platos_sopas ps ON ps.cod_sopa = ed.postre
-                WHERE ed.fecha >= '%s'
-                and ed.fecha <= '%s'
+                WHERE ed.fecha >= '{start}'
+                and ed.fecha <= '{end}'
                 AND ed.pago = 1
                 AND ed.item > 0
-                AND tr.empresa <> 'TSC'
+                AND tr.ruc in ({placeholder})
                 GROUP BY ed.codigo, ed.item;
-                """ %(self.start_date,self.end_date)
+                """
         else:
-            query = """
+            query = f"""
                 SELECT ed.fecha,
-                    ed.codigo,
+                    tr.ruc,
                     ed.item,
                     p.menuweb,
                     IF(ed.cant_postre = 0, ed.precio, ps.precio) AS precio,
@@ -94,13 +124,13 @@ class MenuInvoice(models.Model):
                 LEFT JOIN programacion p ON p.fecha = ed.fecha AND p.item = ed.item
                 LEFT JOIN trabajadores tr ON tr.codigo = ed.codigo
                 LEFT JOIN platos_sopas ps ON ps.cod_sopa = ed.postre
-                WHERE ed.fecha >= '%s'
-                and ed.fecha <= '%s'
+                WHERE ed.fecha >= '{start}'
+                and ed.fecha <= '{end}'
                 AND ed.pago = 0
                 AND ed.item > 0
-                AND tr.empresa <> 'TSC'
-                GROUP BY tr.empresa, ed.item;
-                """ %(self.start_date,self.end_date)
+                AND tr.ruc in ({placeholder})                
+                GROUP BY tr.ruc, ed.item, precio;
+                """
         return query
         
     def _action_get_data(self, paid=False):
@@ -149,12 +179,6 @@ class MenuInvoice(models.Model):
                 menu_type = str(row['item'])
             elif row['item'] > 19:
                 menu_type = '20'
-            # if row['menuweb']:
-            #     description = row['menuweb']
-            # else:
-            #     if row['sopa']:
-            #         description = row['sopa']
-            #     else:
             if menu_type == '1':
                 description = _('Menu')
             if menu_type == '11':
@@ -168,6 +192,7 @@ class MenuInvoice(models.Model):
             vals.append({
                 'partner_id': partner_id.id,
                 'menu_type': menu_type,
+                'line_description': row['menuweb'] if row['menuweb'] else row['sopa'] or description,
                 'description': description + _(' from: ') + self.start_date.strftime("%d/%m/%Y") + _(' to: ') + self.end_date.strftime("%d/%m/%Y"),
                 'qty': row['cant_postre'],
                 'price': row['precio'],
@@ -194,6 +219,7 @@ class MenuInvoice(models.Model):
                 invoice = invoice_map[partner_id]
                 invoice.write({
                     'invoice_line_ids': [Command.create({
+                        'product_id': self.env.ref('idtx_menu_invoice_pe.product_template_product_menu').id,
                         'name': description,
                         'quantity': qty,
                         'product_uom_id': self.env.ref('uom.product_uom_unit').id,
@@ -209,6 +235,7 @@ class MenuInvoice(models.Model):
                     'currency_id': self.env.company.currency_id.id,
                     'move_type': 'out_invoice',
                     'invoice_line_ids': [Command.create({
+                        'product_id': self.env.ref('idtx_menu_invoice_pe.product_template_product_menu').id,
                         'name': description,
                         'quantity': qty,
                         'product_uom_id': self.env.ref('uom.product_uom_unit').id,
@@ -222,6 +249,8 @@ class MenuInvoice(models.Model):
         self.state = 'done'
 
     def action_return(self):
+        if any(inv.state in ('posted', 'cancel') for inv in self.invoice_ids):
+            raise ValidationError(_('You can\'t return this document, some invoices are already posted or canceled'))
         if self.state == 'data':
             self.line_ids= [Command.clear()]
             self.state = 'draft'
@@ -232,11 +261,8 @@ class MenuInvoice(models.Model):
     def open_invoices(self):
         return self.invoice_ids._get_records_action(
             name=_("Invoices"),
-            views=[
-                (self.env.ref('account.view_out_invoice_tree').id, 'list'),
-                (self.env.ref('account.view_move_form').id, 'form'),
-            ],
-            context={'default_move_type': 'out_invoice', 'search_default_l10n_latam_document_type': 1},
+            views_id='account.view_out_invoice_tree' if len(self.invoice_ids) > 1 else 'account.view_move_form',
+            context={'default_move_type': 'out_invoice', 'search_default_l10n_latam_document_type': 1}
         )
     
 class MenuInvoiceLine(models.Model):
@@ -251,6 +277,7 @@ class MenuInvoiceLine(models.Model):
         ('11', 'Dinner'),
         ('20', 'Dessert'),
     ], string='Menu Type')
+    line_description = fields.Char('Menu Description')
     description = fields.Char('Description')
     qty = fields.Integer('Qty')
     price = fields.Float('Price')
