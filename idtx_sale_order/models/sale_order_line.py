@@ -74,8 +74,6 @@ class SaleOrderLine(models.Model):
             # Diferenciar si es un producto tejido para calcular su precio
             for line in self.filtered(lambda l: l.is_weaving):
                 if line.product_template_id.bom_ids:
-                    raise UserError(_('This product does not have any bom. Please check with product development.'))
-                else:
                     line.bom_id = line.product_template_id.bom_ids[0]
                     line.price_unit = line.get_weaving_price_unit()
                     line.technical_price_unit = line.price_unit

@@ -5,6 +5,7 @@ import { usePopover } from "@web/core/popover/popover_hook";
 import { Component, useState } from "@odoo/owl";
 import { standardWidgetProps } from "@web/views/widgets/standard_widget_props";
 import { registry } from "@web/core/registry";
+import { _t } from "@web/core/l10n/translation";
 
 // ---------- POPOVER ----------
 class PriceItemsPopover extends Component {
@@ -79,9 +80,9 @@ class PriceItemsPopover extends Component {
 
     async recalculateDerivedItems() {
         const baseItems = this.items.filter(item =>
-            !item.key.startsWith("Production Loss") &&
-            !item.key.startsWith("Financial Percentage") &&
-            !item.key.startsWith("Incoterm")
+            !item.key.startsWith(_t("Production Loss")) &&
+            !item.key.startsWith(_t("Financial Percentage")) &&
+            !item.key.startsWith(_t("Incoterm"))
         );
 
         let total = baseItems.reduce((acc, it) => acc + (parseFloat(it.value) || 0), 0);
@@ -118,7 +119,7 @@ class PriceItemsPopover extends Component {
             const loss = round2(total * scrap);
             aux = aux + loss;
             derived.push({
-                key: `Production Loss: ${(scrap * 100).toFixed(2)} %`,
+                key: _t(`Production Loss: ${(scrap * 100).toFixed(2)} %`),
                 value: loss
             });
         }
@@ -127,14 +128,14 @@ class PriceItemsPopover extends Component {
             const financial = round2(aux * financialPercentage);
             aux = aux + financial
             derived.push({
-                key: `Financial Percentage: ${(financialPercentage * 100).toFixed(2)} %`,
+                key: _t(`Financial Percentage: ${(financialPercentage * 100).toFixed(2)} %`),
                 value: financial
             });
         }
 
         if (incotermPrice) {
             derived.push({
-                key: `Incoterm: ${incotermCode}`,
+                key: _t(`Incoterm: ${incotermCode}`),
                 value: parseFloat(incotermPrice.toFixed(2))
             });
         }
