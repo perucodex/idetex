@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Tardanza (horas) -->
+        <record id="input_type_tardanza_hrs" model="hr.payslip.input.type">
+            <field name="name">Tardanza (Horas)</field>
+            <field name="code">TARDANZA_HRS</field>
+            <field name="is_quantity" eval="True"/>
+            <field name="struct_ids" eval="[(4, ref('idtx_hr_payroll_pe.structure_pe_obrero_textil'))]"/>
+        </record>
+
+        <!-- Inasistencias (días) -->
+        <record id="input_type_inasist_dias" model="hr.payslip.input.type">
+            <field name="name">Inasistencia (Días)</field>
+            <field name="code">INASIST_DIAS</field>
+            <field name="is_quantity" eval="True"/>
+            <field name="struct_ids" eval="[(4, ref('idtx_hr_payroll_pe.structure_pe_obrero_textil'))]"/>
+        </record>
+
+        <!-- Horas Extra 25% -->
+        <record id="input_type_he25" model="hr.payslip.input.type">
+            <field name="name">Horas Extra 25%</field>
+            <field name="code">HE25_HRS</field>
+            <field name="is_quantity" eval="True"/>
+            <field name="struct_ids" eval="[(4, ref('idtx_hr_payroll_pe.structure_pe_obrero_textil'))]"/>
+        </record>
+
+        <!-- Horas Extra 35% -->
+        <record id="input_type_he35" model="hr.payslip.input.type">
+            <field name="name">Horas Extra 35%</field>
+            <field name="code">HE35_HRS</field>
+            <field name="is_quantity" eval="True"/>
+            <field name="struct_ids" eval="[(4, ref('idtx_hr_payroll_pe.structure_pe_obrero_textil'))]"/>
+        </record>
+
+        <record id="input_type_dias_trab" model="hr.payslip.input.type">
+            <field name="name">Días Trabajados</field>
+            <field name="code">DIAS_TRAB</field>
+            <field name="is_quantity" eval="True"/>
+            <field name="struct_ids" eval="[(4, ref('idtx_hr_payroll_pe.structure_pe_obrero_textil'))]"/>
+        </record>
+
+        <record id="input_type_dias_lab" model="hr.payslip.input.type">
+            <field name="name">Días Laborables</field>
+            <field name="code">DIAS_LAB</field>
+            <field name="is_quantity" eval="True"/>
+            <field name="struct_ids" eval="[(4, ref('idtx_hr_payroll_pe.structure_pe_obrero_textil'))]"/>
+        </record>
+
+        <record id="input_type_horas_jorn" model="hr.payslip.input.type">
+            <field name="name">Horas Jornada</field>
+            <field name="code">HORAS_JORN</field>
+            <field name="is_quantity" eval="True"/>
+            <field name="struct_ids" eval="[(4, ref('idtx_hr_payroll_pe.structure_pe_obrero_textil'))]"/>
+        </record>
+
+
+    </data>
+</odoo>

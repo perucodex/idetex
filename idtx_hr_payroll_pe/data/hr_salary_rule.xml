@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <data noupdate="1">
+    <data noupdate="0">
 
         <!-- Regla: Asignación Familiar -->
         <record id="rule_asignacion_familiar" model="hr.salary.rule">
@@ -79,6 +79,22 @@
             <field name="struct_id" ref="hr_payroll_structure_peru_general"/>
         </record>
 
+        <!-- Regla de Senati 0.75% (Empleador) -->
+        <record id="rule_pe_senati_075" model="hr.salary.rule">
+            <field name="name">Aporte Senati 0.75% PE</field>
+            <field name="code">SENATI_075_PE</field>
+            <field name="sequence">91</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">percentage</field>
+            <field name="amount_percentage">0.75</field>
+            <field name="amount_percentage_base">categories['BASIC'] + categories['ALW']</field>
+            <field name="struct_id" ref="hr_payroll_structure_peru_general"/>
+            <field name="appears_on_employee_cost_dashboard" eval="True"/>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+
         <!-- Regla Gratificación -->
         <record id="rule_gratificacion" model="hr.salary.rule">
             <field name="name">Gratificación Julio / Diciembre</field>
@@ -112,6 +128,35 @@ end   = payslip.date_to
 months = max(0, (end.year - start.year) * 12 + end.month - start.month)
 months = min(months, 6)
 result = ((categories['BASIC'] + categories['ALW']) / 12) * months
+            </field>
+            <field name="struct_id" ref="hr_payroll_structure_peru_general"/>
+        </record>
+
+        <!-- Regla Vacaciones -->
+        <record id="rule_vacaciones" model="hr.salary.rule">
+            <field name="name">Vacaciones</field>
+            <field name="sequence">50</field>
+            <field name="code">VAC_PAY</field>
+            <field name="category_id" ref="VAC"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+work_entries = employee.work_entry_ids.filtered(
+    lambda w: w.date_start &gt;= payslip.date_from and
+            w.date_end &lt;= payslip.date_to and
+            w.work_entry_type_id.code == 'VAC'
+)
+result = bool(work_entries)
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+vac_days = sum(
+    (we.date_end - we.date_start).days + 1
+    for we in employee.work_entry_ids
+    if we.work_entry_type_id.code == 'VAC'
+    and we.date_start &gt;= payslip.date_from
+    and we.date_end &lt;= payslip.date_to
+)
+result = ((categories['BASIC'] + categories['ALW']) / 30) * vac_days if vac_days else 0
             </field>
             <field name="struct_id" ref="hr_payroll_structure_peru_general"/>
         </record>

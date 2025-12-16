@@ -13,6 +13,12 @@
             <field name="name">CTS</field>
             <field name="code">CTS</field>
         </record>
+        
+        <!-- Categoría Vacaciones -->
+        <record id="VAC" model="hr.salary.rule.category">
+            <field name="name">Vacaciones</field>
+            <field name="code">VAC</field>
+        </record>
 
     </data>
 </odoo>

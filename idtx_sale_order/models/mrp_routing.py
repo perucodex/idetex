@@ -19,5 +19,5 @@ class ProductColorPrice (models.Model):
 
     product_color_id = fields.Many2one('product.color', string='Product Color')
     unit_price = fields.Monetary('Unit Price' , currency_field='currency_id')
-    mrwo_id = fields.Many2one('mrp.routing.workcenter.operation', string='mrp_rout_wngWorkcenter_operation')
+    mrwo_id = fields.Many2one('mrp.routing.workcenter.operation', string='mrp_routing_workcenter_operation')
     currency_id = fields.Many2one(related='mrwo_id.currency_id')

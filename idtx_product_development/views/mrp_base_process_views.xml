@@ -49,7 +49,7 @@
             </field>
         </record>
 
-        <record id="mrp_base_process_line_tree_view" model="ir.ui.view">
+        <!-- <record id="mrp_base_process_line_tree_view" model="ir.ui.view">
             <field name="name">mrp.base.process.line.list</field>
             <field name="model">mrp.base.process.line</field>
             <field name="arch" type="xml">
@@ -57,9 +57,9 @@
                     <field name="operation_id"/>
                 </list>
             </field>
-        </record>
+        </record> -->
 
-        <record id="mrp_base_process_line_view_search" model="ir.ui.view">
+        <!-- <record id="mrp_base_process_line_view_search" model="ir.ui.view">
             <field name="name">mrp.base.process.line.view.search</field>
             <field name="model">mrp.base.process.line</field>
             <field name="arch" type="xml">
@@ -67,7 +67,7 @@
                     <field name="operation_id"/>
                 </search>
             </field>
-        </record>
+        </record> -->
 
         <record id="mrp_base_process_action" model="ir.actions.act_window">
             <field name="name">Mrp Base Operations</field>
@@ -76,12 +76,12 @@
             <field name="view_id" ref="mrp_base_process_tree_view"/>
         </record>
 
-        <record id="mrp_base_process_line_action" model="ir.actions.act_window">
+        <!-- <record id="mrp_base_process_line_action" model="ir.actions.act_window">
             <field name="name">Mrp Base Operations Lines</field>
             <field name="res_model">mrp.base.process.line</field>
             <field name="view_mode">list</field>
             <field name="view_id" ref="mrp_base_process_line_tree_view"/>
-        </record>
+        </record> -->
 
     </data>
 </odoo>

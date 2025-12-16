@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <odoo>
-    <data noupdate="1">
+    <data noupdate="0">
 
         <!-- Estructura salarial: Régimen General Perú -->
         <record id="hr_payroll_structure_peru_general" model="hr.payroll.structure">
@@ -8,15 +8,17 @@
             <field name="code">PERU_GENERAL</field>
             <field name="type_id" ref="hr.structure_type_employee"/>
             <field name="country_id" ref="base.pe"/>
-            <!-- <field name="rule_ids" eval="[(6, 0, [
-                ref('rule_basic'),
-                ref('rule_asignacion_familiar'),
-                ref('rule_onp'),
-                ref('rule_afp_aporte'),
-                ref('rule_afp_comision'),
-                ref('rule_afp_seguro'),
-                ref('rule_essalud'),
-            ])]"/> -->
+        </record>
+
+        <!-- Estructura de planilla semanal para obrero textil -->
+        <record id="structure_pe_obrero_textil" model="hr.payroll.structure">
+            <field name="name">Planilla Obrero Textil Semanal (Perú)</field>
+            <field name="type_id" ref="idtx_hr_payroll_pe.hr_structure_type_pe_obrero"/>
+            <!-- aquí luego agregaremos tipos de work entry no remunerados específicos si hace falta -->
+            <!-- <field name="unpaid_work_entry_type_ids" eval="[(4, ref('hr_work_entry.work_entry_type_unpaid_leave'))]"/> -->
+            <field name="country_id" ref="base.pe"/>
+            <!-- inicialmente sin reglas, se llenan por hr_salary_rule_data.xml -->
+            <field name="rule_ids" eval="[]"/>
         </record>
 
     </data>

@@ -43,14 +43,14 @@ class SaleOrderLine(models.Model):
         for record in self:
             operations = self.env['mrp.routing.workcenter'].search([])
             if record.bom_id:
-                operations = record.bom_id.operation_ids.ids
+                operations = record.bom_id.operation_ids.filtered(lambda o: o.operation_id.unit_price > 0 or o.operation_id.type_prices == 'col' and sum(o.operation_id.product_color_price_ids.mapped('unit_price')) > 0).ids
             record.available_operation_ids = operations
     
     @api.onchange('bom_id')
     def _onchange_bom_id(self):
         for rec in self:
             rec.operation_ids = [Command.clear()]
-            rec.operation_ids = rec.bom_id.operation_ids.sorted(key=lambda r: r.sequence)
+            rec.operation_ids = rec.bom_id.operation_ids.filtered(lambda o: o.operation_id.unit_price > 0 or o.operation_id.type_prices == 'col' and sum(o.operation_id.product_color_price_ids.mapped('unit_price')) > 0).sorted(key=lambda r: r.sequence)
             rec.weaving_loss = rec.bom_id.technical_sheet_id.scrap
             rec.production_id.bom_id = rec.bom_id
 
@@ -74,8 +74,8 @@ class SaleOrderLine(models.Model):
             # Diferenciar si es un producto tejido para calcular su precio
             for line in self.filtered(lambda l: l.is_weaving):
                 if line.product_template_id.bom_ids:
-                #     raise UserError(_('This product does not have any bom. Please check with product development.'))
-                # else:
+                    raise UserError(_('This product does not have any bom. Please check with product development.'))
+                else:
                     line.bom_id = line.product_template_id.bom_ids[0]
                     line.price_unit = line.get_weaving_price_unit()
                     line.technical_price_unit = line.price_unit
