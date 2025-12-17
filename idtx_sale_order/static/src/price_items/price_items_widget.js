@@ -1,11 +1,11 @@
 /** @odoo-module **/
 
+import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
 import { usePopover } from "@web/core/popover/popover_hook";
 import { Component, useState } from "@odoo/owl";
 import { standardWidgetProps } from "@web/views/widgets/standard_widget_props";
 import { registry } from "@web/core/registry";
-import { _t } from "@web/core/l10n/translation";
 
 // ---------- POPOVER ----------
 class PriceItemsPopover extends Component {
@@ -17,14 +17,16 @@ class PriceItemsPopover extends Component {
     };
 
     setup() {
-        console.log('[PriceItemsWidget] parent_is_quote =', this.props.record?.data?.parent_is_quote,
-                    'order_id =', this.props.record?.data?.order_id,
-                    'is_quote =', this.props.record?.data?.order_id?.data?.is_quote);
+        // 1) Deserializa: {key: {"price": float, "label": str}}
         const raw = this.props.record.data.price_items || "{}";
         try {
             const dict = JSON.parse(raw);
             this.items = useState(
-                Object.entries(dict).map(([k, v]) => ({ key: k, value: Number(v) }))
+                Object.entries(dict).map(([k, v]) => ({
+                    key: k,               // fijo, inglés
+                    price: Number(v.price),
+                    label: v.label        // traducible
+                }))
             );
         } catch {
             this.items = useState([]);
@@ -73,19 +75,17 @@ class PriceItemsPopover extends Component {
         val = val.replace(/,/g, "");
         val = val.replace(/[^0-9.]/g, "");
         val = val.replace(/^([^.]*\.)|\./g, (m, g1) => g1 || "");
-        item.value = parseFloat(val) || 0;
-
+        item.price = parseFloat(val) || 0;
         await this.recalculateDerivedItems();
     }
 
     async recalculateDerivedItems() {
+        // 2) Filtra por claves FIJAS (inglés) → comparación fiable
         const baseItems = this.items.filter(item =>
-            !item.key.startsWith(_t("Production Loss")) &&
-            !item.key.startsWith(_t("Financial Percentage")) &&
-            !item.key.startsWith(_t("Incoterm"))
+            !["Production Loss", "Financial Percentage", "Incoterm"].includes(item.key)
         );
 
-        let total = baseItems.reduce((acc, it) => acc + (parseFloat(it.value) || 0), 0);
+        let total = baseItems.reduce((acc, it) => acc + (parseFloat(it.price) || 0), 0);
 
         const lineId = this.props.record.resId;
         const [lineData] = await this.orm.read("sale.order.line", [lineId], ["weaving_loss", "order_id"]);
@@ -112,48 +112,50 @@ class PriceItemsPopover extends Component {
         }
 
         const derived = [];
-
         const round2 = (num) => Math.round(num * 100) / 100;
 
         if (scrap) {
             const loss = round2(total * scrap);
-            aux = aux + loss;
+            aux += loss;
             derived.push({
-                key: _t(`Production Loss: ${(scrap * 100).toFixed(2)} %`),
-                value: loss
+                key: "Production Loss",                         // fijo
+                price: loss,
+                label: _t("Production Loss: %s %", [(scrap * 100).toFixed(2)])
             });
         }
 
         if (financialPercentage) {
             const financial = round2(aux * financialPercentage);
-            aux = aux + financial
+            aux += financial;
             derived.push({
-                key: _t(`Financial Percentage: ${(financialPercentage * 100).toFixed(2)} %`),
-                value: financial
+                key: "Financial Percentage",                    // fijo
+                price: financial,
+                label: _t("Financial Percentage: %s %", [(financialPercentage * 100).toFixed(2)])
             });
         }
 
         if (incotermPrice) {
             derived.push({
-                key: _t(`Incoterm: ${incotermCode}`),
-                value: parseFloat(incotermPrice.toFixed(2))
+                key: "Incoterm",                                // fijo
+                price: parseFloat(incotermPrice.toFixed(2)),
+                label: _t("Incoterm: %s", [incotermCode])
             });
         }
 
-        this.items.splice(0, this.items.length, 
+        // 3) Reemplaza TODOS los items (claves fijas)
+        this.items.splice(0, this.items.length,
             ...baseItems,
-            ...derived.map(d => ({ key: d.key, value: d.value }))
+            ...derived.map(d => ({ key: d.key, price: d.price, label: d.label }))
         );
-
     }
 
     get total() {
-        return this.items.reduce((acc, it) => acc + (parseFloat(it.value) || 0), 0);
+        return this.items.reduce((acc, it) => acc + (parseFloat(it.price) || 0), 0);
     }
 
     save() {
         const dict = this.items.reduce((acc, it) => {
-            acc[it.key] = parseFloat(it.value) || 0;
+            acc[it.key] = { price: parseFloat(it.price) || 0, label: it.label };
             return acc;
         }, {});
         this.props.onSave(dict);

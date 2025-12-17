@@ -10,8 +10,8 @@
                     <!-- botón flotante -->
                     <div class="row align-items-center mb-3">
                         <div class="col">
-                            <h1>Sale Order: <t t-esc="order.name"/></h1>
-                            <h3>Customer: <t t-esc="order.partner_id.name"/></h3>
+                            <h1>Sale Order: <t t-esc="sale_order.name"/></h1>
+                            <h3>Customer: <t t-esc="sale_order.partner_id.name"/></h3>
                         </div>      
                         <div class="col-auto">
                             <div id="screenshot-btn" class="text-end m-3">
@@ -28,7 +28,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr t-foreach="order.order_line" t-as="line">
+                            <tr t-foreach="sale_order.order_line" t-as="line">
                                 <td><span t-field="line.name"/></td>
                                 <td><span t-field="line.product_color_id.name"/></td>
                                 <td class="text-end"><span t-field="line.price_unit" t-options='{"widget": "monetary", "display_currency": line.order_id.pricelist_id.currency_id}'/></td>
