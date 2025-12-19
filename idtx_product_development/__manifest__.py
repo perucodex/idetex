@@ -52,6 +52,7 @@ y ficha técnica
         'views/product_template_views.xml',
         'views/res_config_settings_views.xml',
         'views/technical_sheet_views.xml',
+        'wizards/split_roll_views.xml',
         'views/dev_menu.xml',
     ],
     

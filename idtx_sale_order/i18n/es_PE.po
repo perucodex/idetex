@@ -384,13 +384,13 @@ msgstr "Contador de Producción"
 #. module: idtx_sale_order
 #: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__production_loss
 msgid "Production Loss"
-msgstr "Merma"
+msgstr "Merma de Producción"
 
 #. module: idtx_sale_order
 #. odoo-python
 #: code:addons/idtx_sale_order/models/sale_order_line.py:0
 msgid "Production Loss:"
-msgstr "Merma:"
+msgstr "Merma de Producción:"
 
 #. module: idtx_sale_order
 #. odoo-javascript

@@ -71,6 +71,30 @@
             </field>
         </record>
 
+        <record id="lab_dev_view_search" model="ir.ui.view">
+            <field name="name">lab.dev.view.search</field>
+            <field name="model">lab.dev</field>
+            <field name="arch" type="xml">
+                <search string="">
+                    <field name="name"/>
+                    <field name="lab_dev_date"/>
+                    <field name="sale_order_id"/>
+                    <field name="partner_id"/>
+                    <field name="lab_dev_line_ids" string="Color Code" filter_domain="[('lab_dev_line_ids.color_code', 'ilike', self)]"/>
+                    <field name="lab_dev_line_ids" string="Color Name" filter_domain="[('lab_dev_line_ids.color_name', 'ilike', self)]"/>
+                    <filter name="approved" string="Approved" domain="[('state','=','approved')]"/>
+                    <filter name="test" string="Test" domain="[('state','=','test')]"/>
+                    <group>
+                        <filter string="Lav Dev Date" name="group_by_lab_dev_date" domain="[]" context="{'group_by': 'lab_dev_date'}"/>
+                        <filter string="Sale Order" name="group_by_sale_order" domain="[]" context="{'group_by': 'sale_order_id'}"/>
+                        <filter string="Customer" name="group_by_partner" domain="[]" context="{'group_by': 'partner_id'}"/>
+                        <!-- <filter string="Color Code" name="group_by_color_code" domain="[]" context="{'group_by': 'color_code'}"/>
+                        <filter string="Color Name" name="group_by_color_name" domain="[]" context="{'group_by': 'color_name'}"/> -->
+                    </group>
+                </search>
+            </field>
+        </record>
+
         <record id="lab_dev_line_view_form" model="ir.ui.view">
             <field name="name">lab.dev.line.view.form</field>
             <field name="model">lab.dev.line</field>

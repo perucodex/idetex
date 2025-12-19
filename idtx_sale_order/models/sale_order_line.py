@@ -106,60 +106,62 @@ class SaleOrderLine(models.Model):
 
             # 3) Calcula insumos y operaciones (tu lógica sin cambios)
             # ------------------------------------------------------------------
+            # TODO calcular el precio por hilado y porcentaje
             currency = self.order_id.pricelist_id.currency_id
             bom_id = self.bom_id or self.product_template_id.bom_ids[0]
 
-            for bom_line in bom_id.bom_line_ids.filtered(
-                lambda l: l.product_tmpl_id.categ_id in self.env.company.thread_category_ids
-            ):
-                pricelist_item_id = self.order_id.pricelist_id._get_product_rule(
-                    bom_line.product_id,
-                    quantity=bom_line.product_qty or 1.0,
-                    uom=bom_line.product_uom_id,
-                    date=self._get_order_date(),
-                )
-                if pricelist_item_id:
-                    bom_line_price = self.env['product.pricelist.item'].browse(pricelist_item_id)._compute_price(
-                        product=bom_line.product_id,
+            if not price_dict:
+                for bom_line in bom_id.bom_line_ids.filtered(
+                    lambda l: l.product_tmpl_id.categ_id in self.env.company.thread_category_ids
+                ):
+                    pricelist_item_id = self.order_id.pricelist_id._get_product_rule(
+                        bom_line.product_id,
                         quantity=bom_line.product_qty or 1.0,
                         uom=bom_line.product_uom_id,
                         date=self._get_order_date(),
-                        currency=self.currency_id,
                     )
-                else:
-                    bom_line_price = self.env.company.currency_id._convert(
-                        bom_line.product_id.list_price,
-                        currency,
-                        self.env.company,
-                        fields.Date.context_today(self),
-                        round=False
-                    )
-                price = bom_line_price
-                if bom_line.operation_id.id in self.operation_ids._origin.ids:
-                    # price_dict.update({bom_line.product_id.name: price})
-                    price_dict.update({bom_line.product_id.name: {'label': bom_line.product_id.name, 'price': price}})
+                    if pricelist_item_id:
+                        bom_line_price = self.env['product.pricelist.item'].browse(pricelist_item_id)._compute_price(
+                            product=bom_line.product_id,
+                            quantity=bom_line.product_qty or 1.0,
+                            uom=bom_line.product_uom_id,
+                            date=self._get_order_date(),
+                            currency=self.currency_id,
+                        )
+                    else:
+                        bom_line_price = self.env.company.currency_id._convert(
+                            bom_line.product_id.list_price,
+                            currency,
+                            self.env.company,
+                            fields.Date.context_today(self),
+                            round=False
+                        )
+                    price = round(bom_line_price * bom_line.product_qty, 2)
+                    if bom_line.operation_id.id in self.operation_ids._origin.ids:
+                        # price_dict.update({bom_line.product_id.name: price})
+                        price_dict.update({bom_line.product_id.name: {'label': bom_line.product_id.name, 'price': price}})
 
-            for operation in self.operation_ids.sorted(key=lambda r: r.sequence):
-                if operation.operation_id.type_prices == 'col':
-                    operation_color_line = operation.operation_id.product_color_price_ids.search([
-                        ('product_color_id', '=', self.product_color_id.id),
-                        ('mrwo_id', '=', operation.operation_id._origin.id)
-                    ])
-                    price = operation_color_line.unit_price if operation_color_line else 0
-                else:
-                    price = operation.operation_id.unit_price
+                for operation in self.operation_ids.sorted(key=lambda r: r.sequence):
+                    if operation.operation_id.type_prices == 'col':
+                        operation_color_line = operation.operation_id.product_color_price_ids.search([
+                            ('product_color_id', '=', self.product_color_id.id),
+                            ('mrwo_id', '=', operation.operation_id._origin.id)
+                        ])
+                        price = operation_color_line.unit_price if operation_color_line else 0
+                    else:
+                        price = operation.operation_id.unit_price
 
-                src_currency = operation.operation_id.currency_id
-                if src_currency != currency:
-                    price = src_currency._convert(
-                        price,
-                        currency,
-                        self.env.company,
-                        fields.Date.context_today(self),
-                        round=False
-                    )
-                # price_dict.update({operation.operation_id.name: price})
-                price_dict.update({operation.operation_id.name: {'label': operation.operation_id.name, 'price': price}})
+                    src_currency = operation.operation_id.currency_id
+                    if src_currency != currency:
+                        price = src_currency._convert(
+                            price,
+                            currency,
+                            self.env.company,
+                            fields.Date.context_today(self),
+                            round=False
+                        )
+                    # price_dict.update({operation.operation_id.name: price})
+                    price_dict.update({operation.operation_id.name: {'label': operation.operation_id.name, 'price': price}})
 
             # 4) Totales y derivados con clave FIJA + label traducible
             # ------------------------------------------------------------------
@@ -212,7 +214,8 @@ class SaleOrderLine(models.Model):
                         self.diff_days = (today - line.order_id.validity_date ).days
                     return line
                 else:
-                    raise UserError(_('Product %s with color %s can\'t be found in any quotation') %(product.name, color.name))
+                    if quote:
+                        raise UserError(_('Product %s with color %s can\'t be found in any quotation') %(product.name, color.name))
             return line
         else:
             return self.env['sale.order.line']

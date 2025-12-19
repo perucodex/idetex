@@ -19,6 +19,18 @@
         <xpath expr="//div[@name='so_total_summary']" position="attributes">
             <attribute name="t-if">not doc.is_quote</attribute>
         </xpath>
+        <xpath expr="//td[@name='td_product_taxes']" position="attributes">
+            <attribute name="t-if">display_taxes or not doc.is_quote</attribute>
+        </xpath>
+        <xpath expr="//td[@name='td_product_subtotal']" position="attributes">
+            <attribute name="t-if">not doc.is_quote</attribute>
+        </xpath>
+        <xpath expr="//th[@name='th_taxes']" position="attributes">
+            <attribute name="t-if">display_taxes or not doc.is_quote</attribute>
+        </xpath>
+        <xpath expr="//th[@name='th_subtotal']" position="attributes">
+            <attribute name="t-if">not doc.is_quote</attribute>
+        </xpath>
     </template>
     
 </odoo>

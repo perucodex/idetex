@@ -122,7 +122,7 @@ class SaleOrder(models.Model):
                     if line.diff_days:                        
                         order.weaving_warning += _(('Product %s has an old price. Quotation is %s days old') %( line.product_id.product_tmpl_id.name, line.diff_days)) + '\n'
                     if not line.product_template_id.bom_ids:
-                        order.weaving_warning += _(('Product %s  does not have any bom. Please check with product development.')  % line.product_id.product_tmpl_id.name) + '\n'
+                        order.weaving_warning += _(('Product %s does not have any bom. Please check with product development.')  % line.product_id.product_tmpl_id.name) + '\n'
 
     @api.depends('order_line')
     def _compute_dieying_info(self):
@@ -141,8 +141,10 @@ class SaleOrder(models.Model):
     
     def action_confirm(self):
         for rec in self:
-            if not rec.lab_dev_ids and rec.company_id.is_company_produce and any(line.product_template_id.is_weaving for line in self.order_line):
+            if not rec.is_quote and not rec.lab_dev_ids and rec.company_id.is_company_produce and any(line.product_template_id.is_weaving for line in self.order_line):
                 raise UserError(_('Cant\'t confirm sale order without LD'))
+            if rec.is_quote:
+                raise UserError(_('Cant\'t confirm a quotation.'))
         res = super().action_confirm()
         for rec in self:
             for line in rec.order_line:
@@ -161,6 +163,8 @@ class SaleOrder(models.Model):
                     if prd.color_recipe_id:
                         prd.action_confirm()
                     prd.do_unreserve()
+            if not rec.company_id.is_company_produce:
+                rec.is_quote = False
         return res
     
     def action_create_sale_order(self):

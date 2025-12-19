@@ -36,7 +36,6 @@
                                     <field name="quantity" sum="Total"/>
                                     <field name="net_weight" sum="Total"/>
                                     <field name="gross_weight" sum="Total"/>
-                                    <button name="split" type="object" class="oe_highlight" string="Split" column_invisible="parent.state != 'draft'"/>
                                 </list>
                                 <form>
                                     <group>
