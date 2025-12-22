@@ -82,7 +82,7 @@ class PriceItemsPopover extends Component {
     async recalculateDerivedItems() {
         // 2) Filtra por claves FIJAS (inglés) → comparación fiable
         const baseItems = this.items.filter(item =>
-            !["Production Loss", "Financial Percentage", "Incoterm"].includes(item.key)
+            !["Weaving Loss", "Financial Percentage", "Incoterm"].includes(item.key)
         );
 
         let total = baseItems.reduce((acc, it) => acc + (parseFloat(it.price) || 0), 0);
@@ -118,9 +118,9 @@ class PriceItemsPopover extends Component {
             const loss = round2(total * scrap);
             aux += loss;
             derived.push({
-                key: "Production Loss",                         // fijo
+                key: "Weaving Loss",                         // fijo
                 price: loss,
-                label: _t("Production Loss: %s %", [(scrap * 100).toFixed(2)])
+                label: _t("Weaving Loss: %s %", [(scrap * 100).toFixed(2)])
             });
         }
 

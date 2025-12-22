@@ -95,7 +95,7 @@ class SaleOrderLine(models.Model):
                 price_dict = {}
 
             # 1) CLAVES FIJAS (sin _() → nunca se traducen)
-            PROD_LOSS_KEY = "Production Loss"
+            PROD_LOSS_KEY = "Weaving Loss"
             FINANCIAL_KEY = "Financial Percentage"
             INCOTERM_KEY  = "Incoterm"
 
@@ -174,7 +174,7 @@ class SaleOrderLine(models.Model):
                 total = float_round(total / (1 - scrap), 2)
                 price_dict[PROD_LOSS_KEY] = {
                     "price": loss,
-                    "label": _("Production Loss:") + " %.2f %%" % (scrap * 100)
+                    "label": _("Weaving Loss:") + " %.2f %%" % (scrap * 100)
                 }
 
             if self.order_id.payment_term_id and self.order_id.payment_term_id.financial_percentage:
