@@ -49,17 +49,6 @@ class MrpWorkorderRoll(models.Model):
             raise UserError(_('Can\'t delete a roll that is in a batch process.\nRolls:\n%s') %roll_names)
         return super().unlink()
 
-    def split(self):
-        return {
-            'name': _('Divide Roll'),
-            'view_mode': 'form',
-            'res_model': 'split.roll',
-            'views': [(self.env.ref('idtx_mrp.split_roll_form').id, 'form')],
-            'type': 'ir.actions.act_window',
-            'target': 'new',
-            'context': dict(self.env.context)
-        }
-
     def create_zpl(self):
         self.ensure_one()
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') #"https://odoo.gestionidtx.com/rollo"
