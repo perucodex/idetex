@@ -137,7 +137,12 @@ class SaleOrderLine(models.Model):
                             fields.Date.context_today(self),
                             round=False
                         )
-                    price = round(bom_line_price * bom_line.product_qty, 2)
+                    if 'DUPONT' in bom_line.product_id.name.upper():
+                        qty = 1
+                    else:
+                        qty = bom_line.product_qty 
+                    price = round(bom_line_price * qty, 2)
+                    # price = round(bom_line_price * bom_line.product_qty, 2)
                     if bom_line.operation_id.id in self.operation_ids._origin.ids:
                         # price_dict.update({bom_line.product_id.name: price})
                         price_dict.update({bom_line.product_id.name: {'label': bom_line.product_id.name, 'price': price}})
