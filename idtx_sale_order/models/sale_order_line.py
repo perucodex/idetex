@@ -52,6 +52,7 @@ class SaleOrderLine(models.Model):
             rec.operation_ids = [Command.clear()]
             rec.operation_ids = rec.bom_id.operation_ids.filtered(lambda o: o.operation_id.unit_price > 0 or o.operation_id.type_prices == 'col' and sum(o.operation_id.product_color_price_ids.mapped('unit_price')) > 0).sorted(key=lambda r: r.sequence)
             rec.weaving_loss = rec.bom_id.technical_sheet_id.scrap
+            rec.production_loss = rec.bom_id.technical_sheet_id.prod_scrap
             rec.production_id.bom_id = rec.bom_id
 
     def js_compute_price_unit(self):
@@ -95,18 +96,18 @@ class SaleOrderLine(models.Model):
                 price_dict = {}
 
             # 1) CLAVES FIJAS (sin _() → nunca se traducen)
-            PROD_LOSS_KEY = "Weaving Loss"
+            WEAV_LOSS_KEY = "Weaving Loss"
+            PROD_LOSS_KEY = "Production Loss"
             FINANCIAL_KEY = "Financial Percentage"
             INCOTERM_KEY  = "Incoterm"
 
             # 2) Elimina previos por clave FIJA (sin traducción)
             for key in list(price_dict.keys()):
-                if key in (PROD_LOSS_KEY, FINANCIAL_KEY, INCOTERM_KEY):
+                if key in (WEAV_LOSS_KEY, PROD_LOSS_KEY, FINANCIAL_KEY, INCOTERM_KEY):
                     price_dict.pop(key, None)
 
             # 3) Calcula insumos y operaciones (tu lógica sin cambios)
             # ------------------------------------------------------------------
-            # TODO calcular el precio por hilado y porcentaje
             currency = self.order_id.pricelist_id.currency_id
             bom_id = self.bom_id or self.product_template_id.bom_ids[0]
 
@@ -165,16 +166,24 @@ class SaleOrderLine(models.Model):
 
             # 4) Totales y derivados con clave FIJA + label traducible
             # ------------------------------------------------------------------
-            # total = float_round(sum(price_dict.values()), 2) if price_dict else 0
             total = float_round(sum([v["price"] for v in price_dict.values()]), 2) if price_dict else 0
 
             scrap = self.weaving_loss or bom_id.technical_sheet_id.scrap
             if scrap:
                 loss = float_round(total * scrap, 2)
                 total = float_round(total / (1 - scrap), 2)
-                price_dict[PROD_LOSS_KEY] = {
+                price_dict[WEAV_LOSS_KEY] = {
                     "price": loss,
                     "label": _("Weaving Loss:") + " %.2f %%" % (scrap * 100)
+                }
+
+            prod_scrap = self.production_loss or bom_id.technical_sheet_id.prod_scrap
+            if scrap:
+                loss = float_round(total * prod_scrap, 2)
+                total = float_round(total / (1 - prod_scrap), 2)
+                price_dict[PROD_LOSS_KEY] = {
+                    "price": loss,
+                    "label": _("Production Loss:") + " %.2f %%" % (prod_scrap * 100)
                 }
 
             if self.order_id.payment_term_id and self.order_id.payment_term_id.financial_percentage:

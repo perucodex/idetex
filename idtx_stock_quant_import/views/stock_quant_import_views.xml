@@ -35,7 +35,7 @@
                                     <field name="ref"/>
                                     <field name="lot_name"/>
                                     <field name="location_id"/>
-                                    <field name="quantity"/>
+                                    <field name="quantity" sum="Total"/>
                                 </list>
                             </field>
                         </page>

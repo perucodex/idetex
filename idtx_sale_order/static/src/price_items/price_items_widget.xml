@@ -18,7 +18,7 @@
                         <tr t-foreach="items" t-as="item" t-key="item.key">
                             <td t-if="item.price &gt; 0"><t t-esc="item.label or item.key"/></td>
                             <td class="text-end" t-if="item.price &gt; 0">
-                                <t t-if="['Weaving Loss', 'Financial Percentage', 'Incoterm'].includes(item.key)">
+                                <t t-if="['Weaving Loss', 'Production Loss', 'Financial Percentage', 'Incoterm'].includes(item.key)">
                                     <t t-esc="item.price.toFixed(2)"/>
                                 </t>
                                 <t t-else="">

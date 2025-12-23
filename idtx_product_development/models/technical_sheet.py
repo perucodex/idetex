@@ -27,7 +27,8 @@ class TechnicalSheet(models.Model):
     first_wash_shrinkage = fields.Char('First Wash Shrinkage')
     first_wash_twist = fields.Char('First Wash Twist')
     yield_meter = fields.Float('Yield', compute='_compute_yield_meter')
-    scrap = fields.Float('Scrap', default=0.01)
+    scrap = fields.Float('Weaving Scrap', default=0.01)
+    prod_scrap = fields.Float('Production Scrap', compute='_compute_prod_scrap')
     weave_type = fields.Selection(related='analysis_id.weave_type', store=True)
     mesh_length = fields.Float('Mesh Length')
     # Datos de crudo
@@ -55,6 +56,10 @@ class TechnicalSheet(models.Model):
     user_id = fields.Many2one('res.users','Prepared by',default=lambda self: self.env.user)
     size_chart_ids = fields.One2many('technical.size.line', 'technical_id', string='Size Chart')
     route_line_ids = fields.One2many('technical.route.line', 'technical_id', string='Route Line')
+
+    def _compute_prod_scrap(self):
+        for rec in self:
+            rec.prod_scrap = 0.09
 
     @api.depends('density','width')
     def _compute_yield_meter(self):

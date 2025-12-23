@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-19 17:41+0000\n"
-"PO-Revision-Date: 2025-12-19 17:41+0000\n"
+"POT-Creation-Date: 2025-12-23 22:39+0000\n"
+"PO-Revision-Date: 2025-12-23 22:39+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -76,7 +76,7 @@ msgstr "No se puede borrar una producción en %s"
 #. odoo-python
 #: code:addons/idtx_sale_order/models/sale_order.py:0
 msgid "Cant't confirm a quotation."
-msgstr ""
+msgstr "No puede confirmar una cotización."
 
 #. module: idtx_sale_order
 #. odoo-python
@@ -331,6 +331,7 @@ msgstr ""
 msgid ""
 "Product %s does not have any bom. Please check with product development."
 msgstr ""
+"El producto %s no tiene lista de materiales. Por favor contactar con desarrollo de producto."
 
 #. module: idtx_sale_order
 #. odoo-python
@@ -389,6 +390,18 @@ msgstr "Contador de Producción"
 #: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__production_loss
 msgid "Production Loss"
 msgstr "Merma de Producción"
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order_line.py:0
+msgid "Production Loss:"
+msgstr "Merma de Producción"
+
+#. module: idtx_sale_order
+#. odoo-javascript
+#: code:addons/idtx_sale_order/static/src/price_items/price_items_widget.js:0
+msgid "Production Loss: %s %"
+msgstr "Merma de Producción: %s %"
 
 #. module: idtx_sale_order
 #. odoo-python
@@ -538,8 +551,8 @@ msgstr "Merma de Tejido:"
 #. module: idtx_sale_order
 #. odoo-javascript
 #: code:addons/idtx_sale_order/static/src/price_items/price_items_widget.js:0
-msgid "Merma de Tejido: %s %"
-msgstr ""
+msgid "Weaving Loss: %s %"
+msgstr "Merma de Tejido: %s %"
 
 #. module: idtx_sale_order
 #: model:ir.model,name:idtx_sale_order.model_mrp_routing_workcenter_operation

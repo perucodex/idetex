@@ -5,5 +5,5 @@ class BatchAddWizard(models.TransientModel):
 
     def _get_lot_vals(self, prd, line):
         res = super()._get_lot_vals(prd, line)
-        res.append({'color_recipe_id': prd.color_recipe_id.id})
+        res.update({'color_recipe_id': prd.color_recipe_id.id})
         return res
