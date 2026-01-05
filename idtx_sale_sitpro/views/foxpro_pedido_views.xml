@@ -1,0 +1,338 @@
+<odoo>
+  <!-- ============ Cabecera: Tree ============ -->
+  <record id="view_foxpro_pedido_tree" model="ir.ui.view">
+    <field name="name">foxpro.pedido.tree</field>
+    <field name="model">foxpro.pedido</field>
+    <field name="arch" type="xml">
+      <list>
+        <field name="numordped"/>
+        <field name="fecha"/>
+        <field name="razsoc"/>
+        <field name="cdgclie"/>
+        <field name="tipoventa"/>
+        <field name="moneda"/>
+        <field name="subtotal"/>
+        <field name="canigv"/>
+        <field name="totnet"/>
+        <field name="activo"/>
+        <field name="cancelado"/>
+      </list>
+    </field>
+  </record>
+
+  <!-- ============ Detalle: Form (TODOS los campos) ============ -->
+  <record id="view_foxpro_pedido_line_form" model="ir.ui.view">
+    <field name="name">foxpro.pedido.line.form</field>
+    <field name="model">foxpro.pedido.line</field>
+    <field name="arch" type="xml">
+      <form string="Detalle Pedido FoxPro">
+        <sheet>
+          <group col="4">
+            <field name="pedido_id"/>
+            <field name="numordped"/>
+            <field name="item"/>
+            <field name="cdgart"/>
+            <field name="cdgcol"/>
+            <field name="descol"/>
+            <field name="descrip"/>
+            <field name="moneda"/>
+          </group>
+
+          <notebook>
+            <page string="Medidas y Cantidades">
+              <group col="4">
+                <field name="kilo"/>
+                <field name="metros"/>
+                <field name="metrosf"/>
+                <field name="pescl"/>
+                <field name="preuni"/>
+                <field name="importe"/>
+                <field name="ancho"/>
+                <field name="ancmin"/>
+                <field name="ancmax"/>
+                <field name="densidad"/>
+                <field name="denmin"/>
+                <field name="denmax"/>
+                <field name="rend"/>
+                <field name="rendmin"/>
+                <field name="rendmax"/>
+              </group>
+            </page>
+
+            <page string="Calidad / Proceso">
+              <group col="4">
+                <field name="dato"/>
+                <field name="gal"/>
+                <field name="tiptej"/>
+                <field name="luz"/>
+                <field name="lavado"/>
+                <field name="frote"/>
+                <field name="luzsudor"/>
+                <field name="acabado"/>
+                <field name="encogim_a"/>
+                <field name="encogim_l"/>
+                <field name="revirado"/>
+                <field name="luces"/>
+                <field name="antipiling"/>
+                <field name="blanqueado"/>
+              </group>
+            </page>
+
+            <page string="Máquinas / Operaciones">
+              <group col="4">
+                <field name="rama1"/>
+                <field name="secado"/>
+                <field name="compactado"/>
+                <field name="perchado"/>
+                <field name="rama2"/>
+                <field name="esmerilado"/>
+                <field name="tamble"/>
+                <field name="abridora"/>
+                <field name="hidro"/>
+                <field name="centrifuga"/>
+                <field name="termofijad"/>
+                <field name="lavado1"/>
+                <field name="tiedye"/>
+                <field name="debore"/>
+                <field name="plisado"/>
+                <field name="tundido"/>
+                <field name="estampado"/>
+                <field name="oxidado"/>
+              </group>
+            </page>
+
+            <page string="OT / Lote / Estado">
+              <group col="4">
+                <field name="numot"/>
+                <field name="lote"/>
+                <field name="kstock"/>
+                <field name="listado"/>
+                <field name="opcol"/>
+                <field name="act2"/>
+                <field name="cancelado"/>
+                <field name="docliq"/>
+                <field name="tipoconpag"/>
+                <field name="unid"/>
+                <field name="tallas"/>
+                <field name="correl"/>
+                <field name="voucher"/>
+                <field name="prerep"/>
+                <field name="comple"/>
+                <field name="tend"/>
+              </group>
+            </page>
+
+            <page string="Fechas">
+              <group col="4">
+                <field name="fechaplan"/>
+                <field name="fechamod"/>
+                <field name="fechafin"/>
+                <field name="fechil"/>
+                <field name="fectej"/>
+                <field name="fecarma"/>
+                <field name="fecten"/>
+                <field name="fecaca"/>
+                <field name="fecfin"/>
+              </group>
+            </page>
+
+            <page string="Diseño / Ruta">
+              <group col="4">
+                <field name="diastrans"/>
+                <field name="diseno"/>
+                <field name="ncol"/>
+                <field name="procod"/>
+                <field name="ruta"/>
+                <field name="materia"/>
+                <field name="mod"/>
+                <field name="coddiseno"/>
+                <field name="lpar0"/>
+                <field name="htf1"/>
+                <field name="lpar1"/>
+                <field name="htf2"/>
+                <field name="lpar2"/>
+                <field name="htf"/>
+                <field name="xtf"/>
+              </group>
+            </page>
+
+            <page string="Observaciones">
+              <group col="2">
+                <field name="obsart"/>
+                <field name="pobservaci"/>
+                <field name="observacio"/>
+                <field name="cmod"/>
+              </group>
+            </page>
+          </notebook>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <!-- ============ Cabecera: Form (TODOS los campos) ============ -->
+  <record id="view_foxpro_pedido_form" model="ir.ui.view">
+    <field name="name">foxpro.pedido.form</field>
+    <field name="model">foxpro.pedido</field>
+    <field name="arch" type="xml">
+      <form string="Pedido FoxPro">
+        <header>
+          <button name="action_sync_from_dbf" type="object" string="Sincronizar desde DBF" class="btn-primary"/>
+        </header>
+
+        <sheet>
+          <group col="4">
+            <field name="numordped"/>
+            <field name="fecha"/>
+            <field name="orden"/>
+            <field name="t"/>
+            <field name="tipoventa"/>
+            <field name="cdgclie"/>
+            <field name="razsoc"/>
+            <field name="moneda"/>
+          </group>
+
+          <notebook>
+            <page string="Comercial">
+              <group col="4">
+                <field name="cdgtipmer"/>
+                <field name="cdgtipven"/>
+                <field name="lab"/>
+                <field name="condpago"/>
+                <field name="cdgven"/>
+                <field name="telefono"/>
+                <field name="grem"/>
+                <field name="occ"/>
+                <field name="tj"/>
+                <field name="tn"/>
+              </group>
+            </page>
+
+            <page string="Totales">
+              <group col="4">
+                <field name="metros"/>
+                <field name="metrosf"/>
+                <field name="totkil"/>
+                <field name="subtotal"/>
+                <field name="canigv"/>
+                <field name="totnet"/>
+                <field name="um"/>
+                <field name="um1"/>
+              </group>
+            </page>
+
+            <page string="Estado">
+              <group col="4">
+                <field name="procesa"/>
+                <field name="procesado"/>
+                <field name="activo"/>
+                <field name="cancelado"/>
+                <field name="dstock"/>
+                <field name="editada"/>
+                <field name="scaneo"/>
+                <field name="expo"/>
+                <field name="ctrl"/>
+                <field name="gvtas"/>
+                <field name="fecgvtas"/>
+                <field name="cc"/>
+                <field name="feccc"/>
+                <field name="pcpi"/>
+                <field name="fecpcpi"/>
+              </group>
+            </page>
+
+            <page string="Despacho">
+              <group col="4">
+                <field name="almacen"/>
+                <field name="alming"/>
+                <field name="almegr"/>
+                <field name="tipdesp"/>
+                <field name="tej"/>
+                <field name="ten"/>
+                <field name="docliq"/>
+                <field name="tipocondpa"/>
+                <field name="dirdespcl"/>
+                <field name="disdespcl"/>
+                <field name="provdespcl"/>
+                <field name="dptodespcl"/>
+                <field name="fechadespa"/>
+                <field name="incoterms"/>
+              </group>
+            </page>
+
+            <page string="Calidad / Plan">
+              <group col="4">
+                <field name="rendim"/>
+                <field name="encog"/>
+                <field name="datacol"/>
+                <field name="revirado"/>
+                <field name="solidez"/>
+                <field name="idtipo"/>
+                <field name="planh"/>
+                <field name="plant"/>
+                <field name="plann"/>
+                <field name="fechaplan"/>
+              </group>
+            </page>
+
+            <page string="Auditoría / Anulación">
+              <group col="4">
+                <field name="usuario"/>
+                <field name="maquina"/>
+                <field name="feccrea"/>
+                <field name="feccrea1"/>
+                <field name="useranul"/>
+                <field name="fecanul"/>
+              </group>
+              <group col="2">
+                <field name="observ"/>
+                <field name="obsanul"/>
+              </group>
+            </page>
+
+            <page string="Otros">
+              <group col="4">
+                <field name="htf"/>
+                <field name="xtf"/>
+                <field name="dato1"/>
+                <field name="fechagio"/>
+                <field name="numreq"/>
+                <field name="oprela"/>
+                <field name="fecinipedi"/>
+                <field name="fecoc"/>
+                <field name="empresa"/>
+              </group>
+            </page>
+
+            <page string="Detalle">
+              <field name="line_ids" context="{'default_numordped': numordped, 'form_view_ref': 'view_foxpro_pedido_line_form'}">
+                <list>
+                  <field name="item" widget="handle"/>
+                  <field name="cdgart"/>
+                  <field name="cdgcol"/>
+                  <field name="descol"/>
+                  <field name="kilo"/>
+                  <field name="metros"/>
+                  <field name="preuni"/>
+                  <field name="importe"/>
+                  <field name="cancelado"/>
+                </list>
+                <!-- <form ref="view_foxpro_pedido_line_form"/> -->
+              </field>
+            </page>
+
+          </notebook>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <!-- ============ Action / Menu ============ -->
+  <record id="action_foxpro_pedido" model="ir.actions.act_window">
+    <field name="name">Pedidos FoxPro</field>
+    <field name="res_model">foxpro.pedido</field>
+    <field name="view_mode">list,form</field>
+  </record>
+
+  <menuitem id="menu_foxpro_pedidos" name="Pedidos" parent="sale.sale_order_menu" sequence="40" action="action_foxpro_pedido"/>
+</odoo>
