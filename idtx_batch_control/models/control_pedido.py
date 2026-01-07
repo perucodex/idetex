@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import datetime
+import pytz
 import dbf
 import pyodbc
 pyodbc.setDecimalSeparator(".")
@@ -8,25 +9,24 @@ from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
 # ---------- Helpers DBF ----------
-def _read_dbf(folder, filename, codepage="cp1252", limit=None):
-    path = os.path.join(folder, filename)
-    if not os.path.isfile(path):
-        raise UserError(_("No existe el DBF: %s") % path)
-
-    t = dbf.Table(path, codepage=codepage)
+def _read_dbf(filename, limit=None):
+    t = dbf.Table(filename, codepage="cp1252")
     t.open(mode=dbf.READ_ONLY)
     try:
         rows = []
         i = 0
         for rec in t:
-            # Este filtro ya no es necesario
-            # if 'FECOC' in t.field_names: 
+            if bool(dbf.is_deleted(rec)):
+                continue
             # Filtros de tablavta_cab_pedido
             if rec['FECOC'] is None or \
-                not rec['FECOC'] or \
+                not _safe_date(rec['FECOC']) or \
                 rec['FECOC'] < datetime.date(2025,6,30) or \
-                not rec['activo'] or \
-                rec['tipoventa'][:10] != 'VENTA DE T':
+                not _safe_bool(rec['activo']) or \
+                _safe_str(rec['tipoventa'][:10]) != 'VENTA DE T':# or \
+                # 'MUESTRA' in _safe_str(rec['RAZSOC'])or \
+                # 'IDEAS' in _safe_str(rec['RAZSOC'])or \
+                # 'IDETEX' in _safe_str(rec['RAZSOC']):
                 continue
             if limit and i >= limit:
                 break
@@ -35,6 +35,19 @@ def _read_dbf(folder, filename, codepage="cp1252", limit=None):
         return rows
     finally:
         t.close()
+
+def _settle_order_dbf(filename, order, is_active):
+    table = dbf.Table(filename, codepage='cp1252')
+    table.open(mode=dbf.READ_WRITE)
+    try:
+        for rec in table:
+            if _safe_str(rec['NUMORDPED']) == order:
+                with rec:
+                    rec['ACTIVO'] = is_active
+                return True
+        return False
+    finally:
+        table.close()
 
 def _safe_str(v):
     if v is None:
@@ -58,19 +71,37 @@ def _safe_float(v):
         return 0.0
 
 
-def _safe_date(v):
+def _safe_date(v, user_tz=None):
     if not v:
         return False
-    if isinstance(v, datetime.datetime):
-        return v.date()
-    if isinstance(v, datetime.date):
-        return v
-    # si viene como string, intenta YYYY-MM-DD
-    try:
-        return datetime.date.fromisoformat(str(v)[:10])
-    except Exception:
-        return False
 
+    user_tz = user_tz or pytz.UTC
+
+    # --- Normaliza a datetime ---
+    if isinstance(v, datetime.datetime):
+        dt = v
+    elif isinstance(v, datetime.date):
+        # si solo viene fecha, pon hora 00:00
+        dt = datetime.datetime.combine(v, datetime.time.min)
+    else:
+        # intenta parsear 'YYYY-MM-DD' o 'YYYY-MM-DD HH:MM:SS'
+        s = str(v).strip()
+        try:
+            dt = datetime.datetime.fromisoformat(s[:19])
+        except Exception:
+            try:
+                d = datetime.date.fromisoformat(s[:10])
+                dt = datetime.datetime.combine(d, datetime.time.min)
+            except Exception:
+                return False
+
+    # --- Asume que dt está en TZ del usuario si viene naive ---
+    if dt.tzinfo is None:
+        dt = user_tz.localize(dt)
+
+    # --- Convierte a UTC y devuelve NAIVE (lo que Odoo exige) ---
+    dt_utc = dt.astimezone(pytz.UTC).replace(tzinfo=None)
+    return dt_utc
 
 def _safe_bool(v):
     if v in (True, False):
@@ -81,37 +112,49 @@ def _safe_bool(v):
     return s in ("T", "Y", "1", "SI", "S", "TRUE")
 
 FIRST_AREA = {
-    'TINTORERIA',
+    'PRE TINTORERIA',
+    'TEJEDURIA',
 }
 SECOND_AREA = {
-    'ACABADO',
+    'TINTORERIA',
+    'PRE ESTAMPADO',
 }
 THIRD_AREA = {
-    'CALIDAD',
+    'ESTAMPADO',
+    'PRE ACABADO',
+}
+FOURTH_AREA = {
+    'ACABADO',
+    'CONTROL DE CALIDAD',
 }
 
 # ---------- Models ----------
 class ControlPedido(models.Model):
     _name = "control.pedido"
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = "Control de Pedido"
-    _order = "num_days desc, fecha desc, numordped desc"
+    _order = "num_days desc, state desc, fecoc desc, numordped desc"
     _rec_name = 'numordped'
 
     # ----- Campos DBF (TODOS) -----
     fecha = fields.Date(string="Order Date")
     fecoc = fields.Date(string="Customer Order Date")
     numordped = fields.Char(string="Order Number", required=True, index=True)
+    customer = fields.Char('Customer')
+    salesman = fields.Char('Salesman')
     tipoventa = fields.Char(string="Type of Sale")
     total_weight = fields.Float('Total Weight')
     line_ids = fields.One2many("control.pedido.line", "pedido_id", string="Detail")
     process = fields.Char('Process', compute='_compute_process', store=True)
     area = fields.Char('Area', compute='_compute_process', store=True)
+    is_active = fields.Boolean('is_active?')
     num_days = fields.Integer('Number of Days', compute='_compute_num_days', store=True)
     state = fields.Selection([
         ('on', 'On Time'),
         ('de', 'Delayed'),
         ('do', 'Done'),
-    ], string='State', compute='_compute_state', default='on', store=True)
+        ('se', 'Settled'),
+    ], string='State', compute='_compute_state', default='on', store=True, tracking=True)
 
     _sql_constraints = [
         ("control_pedido_numordped_uniq", "unique(numordped)", "Ya existe un pedido con ese NUMORDPED."),
@@ -119,46 +162,89 @@ class ControlPedido(models.Model):
 
     @api.depends('fecoc')
     def _compute_num_days(self):
-        for rec in self:
-            rec.num_days = (fields.Date.context_today(self) - rec.fecoc).days if rec.fecoc else 0
+        # for rec in self:
+        #     rec.num_days = (fields.Date.context_today(self) - rec.fecoc).days if rec.fecoc else 0
 
-    @api.depends('line_ids','num_days')
+        #### Misma funcion pero sin Domingos
+
+        today = fields.Date.context_today(self)
+
+        for rec in self:
+            if not rec.fecoc:
+                rec.num_days = 0
+                continue
+
+            days = 0
+            current = rec.fecoc
+
+            while current <= today:
+                print(current.weekday())
+                if current.weekday() != 6:
+                    days += 1
+                current += datetime.timedelta(days=1)
+
+            rec.num_days = days
+
+    @api.depends('line_ids','num_days','is_active')
     def _compute_state(self):
         for rec in self:
             result = 'on'
             if rec.num_days:
+                if rec.num_days == 157:
+                    x = 1
                 if not len(rec.line_ids) and rec.num_days > 12:
                     result = 'de'
-                elif rec.num_days > 12 and rec.num_days <= 20:
+                elif len(rec.line_ids) and rec.num_days > 12:
                     if any(l.area in FIRST_AREA for l in rec.line_ids) or rec.area == 'TEJEDURIA':
                         result = 'de'
-                elif rec.num_days > 20 and rec.num_days <= 25:
+                elif rec.num_days > 12 and rec.num_days <= 20:
                     if any(l.area in SECOND_AREA for l in rec.line_ids) or rec.area == 'TEJEDURIA':
                         result = 'de'
-                elif rec.num_days > 25 and rec.num_days <= 30:
+                elif rec.num_days > 20 and rec.num_days <= 25:
                     if any(l.area in THIRD_AREA for l in rec.line_ids) or rec.area == 'TEJEDURIA':
+                        result = 'de'
+                elif rec.num_days > 25 and rec.num_days <= 30:
+                    if any(l.area in FOURTH_AREA for l in rec.line_ids) or rec.area == 'TEJEDURIA':
                         result = 'de'
                 elif rec.num_days > 30:
                     result = 'de'
+                if sum(rec.line_ids.mapped('kilograms')) >= rec.total_weight and all(l.area in FOURTH_AREA and l.start_date and l.end_date for l in rec.line_ids):
+                    result = 'do'
+                if not rec.is_active:
+                    result = 'se'
             rec.state = result
-    
-    @api.depends('line_ids')
+
+    @api.depends('line_ids', 'line_ids.area', 'line_ids.kilograms', 'total_weight')
     def _compute_process(self):
         for rec in self:
-            suma = sum(rec.line_ids.mapped('kilograms'))
-            if rec.line_ids and suma >= rec.total_weight:
-                for hr in rec.line_ids:
-                    if hr.area in FIRST_AREA:
-                        break
-                    elif hr.area in SECOND_AREA:
-                        break
-                    elif hr.area in THIRD_AREA:
-                        break
-                rec.process = hr.process or 'FASE NO RECONOCIDA'
-                rec.area = hr.area or 'AREA NO CONOCIDA'
-            else:
+            suma = sum(rec.line_ids.mapped('kilograms') or [0.0])
+
+            if not rec.line_ids or suma < rec.total_weight:
                 rec.process = 'TEJIDO'
                 rec.area = 'TEJEDURIA'
+                continue
+
+            # Busca por prioridad, no por orden de las líneas
+            first = rec.line_ids.filtered(lambda l: l.area in FIRST_AREA)
+            second = rec.line_ids.filtered(lambda l: l.area in SECOND_AREA)
+            third = rec.line_ids.filtered(lambda l: l.area in THIRD_AREA)
+            fourth = rec.line_ids.filtered(lambda l: l.area in FOURTH_AREA)
+
+            chosen = (first or second or third or fourth)[:1]
+            if chosen:
+                line = chosen[0]
+                rec.process = line.process or 'FASE NO RECONOCIDA'
+                rec.area = line.area or 'AREA NO CONOCIDA'
+            else:
+                rec.process = 'SIN AVANCE'
+                rec.area = 'AREA NO CONOCIDA'
+
+    # Liquidar y revertir orden
+    def settle_order(self):
+        res = _settle_order_dbf("/mnt/fox/sit06/dbf/vta_cab_pedido.dbf", self.numordped, not self.is_active)
+        if res:
+            self.is_active = not self.is_active
+        return res
 
     # -----------------------------------------
     # 🔌 CONEXION SQL SERVER
@@ -174,13 +260,12 @@ class ControlPedido(models.Model):
             )
             return conn
         except Exception as e:
-            # _logger.error(f"Error conectando a SQL Server: {e}")
             raise UserError(f"No se pudo conectar a SQL Server: {e}")
         
     # ----- Sync -----
     @api.model
-    def sync_from_dbf(self, folder, codepage="cp1252", limit_cab=5000, limit_det=5000):
-        cab = _read_dbf(folder, "vta_cab_pedido.dbf", codepage=codepage, limit=limit_cab)
+    def sync_from_dbf(self):
+        cab = _read_dbf("/mnt/fox/sit06/dbf/vta_cab_pedido.dbf")
 
         # 1) Lista de nums válidos
         nums = []
@@ -211,8 +296,11 @@ class ControlPedido(models.Model):
                 'fecha': _safe_date(r.get('FECHA')),
                 'fecoc': _safe_date(r.get('FECOC')),
                 'numordped': num,
+                'customer': _safe_str(r.get('RAZSOC')),
+                'salesman': _safe_str(r.get('USUARIO')),
                 'tipoventa': _safe_str(r.get('TIPOVENTA')),
                 'total_weight': _safe_float(r.get('TOTKIL')),
+                'is_active': _safe_bool(r.get('ACTIVO')),
             }
 
             pedido = existing_map.get(num)
@@ -238,81 +326,70 @@ class ControlPedido(models.Model):
             placeholders = ",".join(["?"] * len(nums))
 
             query = f"""
-                    WITH KilosPorBarCod AS (
-                        SELECT 
-                            B.BarCod,
-                            SUM(D.DisPieKil) AS TotalKilos
-                        FROM BARCAD B
-                        JOIN DISALD D 
-                            ON B.DisCod = D.DisCod
-                        GROUP BY B.BarCod
-                    ),
-                    UltimoProcesoTerminado AS (
-                        SELECT 
-                            BarCod, 
-                            MAX(BarOrdLin) AS BarOrdLin_Terminado
-                        FROM BARFAS
-                        WHERE BarCodReo = 0
-                        AND BarFasDTI <> '1753-01-01'
-                        AND BarFasDTF <> '1753-01-01'
-                        GROUP BY BarCod
-                    )
-                    SELECT
-                        bc.BarItem2 AS Pedido,
-                        bf_next.BarCod AS HojaDeRuta,
-                        kp.TotalKilos AS PesoTotal,
-                        fp.FasDsc AS Proceso_Siguiente,
-                        sp.area AS Area
-                    FROM BARCAD bc
-                    JOIN KilosPorBarCod kp
-                        ON kp.BarCod = bc.BarCod
-                    JOIN UltimoProcesoTerminado upt
-                        ON upt.BarCod = bc.BarCod
+            WITH PedidoHDR AS (
+                SELECT
+                    bc.BarCod,
+                    bc.BarCodReo,
+                    bc.BarCodPar,
+                    bc.BarItem2 AS Pedido,
+                    bc.BarItem4 AS Partida
+                FROM BARCAD bc
+                WHERE bc.BarItem2 IN ({placeholders})
+                -- si quieres SOLO rutas "principales" como muchas pantallas:
+                -- AND ISNULL(bc.BarCodPar,'') = ''
+            ),
+            Kilos AS (
+                SELECT
+                    bp.BarCod,
+                    bp.BarCodReo,
+                    SUM(bp.BarPieKil) AS Kilos
+                FROM BARPIE bp
+                WHERE bp.BarCod IN (SELECT BarCod FROM PedidoHDR)
+                GROUP BY bp.BarCod, bp.BarCodReo
+            )
+            SELECT
+                h.Pedido,
+                h.Partida,
+                h.BarCod AS HojaDeRuta,
+                h.BarCodReo,
+                ISNULL(k.Kilos, 0) AS PesoTotal,
+                fp.FasDsc AS Proceso_Ultimo,
+                sp.area AS Area,
+                bf_last.BarFasDTI AS FechaInicio,
+                bf_last.BarFasDTF AS FechaFinal
+            FROM PedidoHDR h
+            JOIN Kilos k
+            ON k.BarCod = h.BarCod
+            AND k.BarCodReo = h.BarCodReo
+            AND k.Kilos > 0
+            OUTER APPLY (
+                SELECT TOP (1)
+                    bf.FasCod,
+                    bf.BarFasDTI,
+                    bf.BarFasDTF,
+                    bf.BarOrdLin
+                FROM BARFAS bf
+                WHERE bf.BarCod = h.BarCod
+                AND bf.BarCodReo = h.BarCodReo
+                AND ISNULL(bf.BarCodPar,'') = ISNULL(h.BarCodPar,'')   -- 🔑 IMPORTANTÍSIMO
+                AND bf.BarFasDTI > '1753-01-01'
+                AND bf.BarFasDTF > '1753-01-01'
+                ORDER BY bf.BarOrdLin DESC, bf.BarFasDTF DESC, bf.BarFasDTI DESC
+            ) bf_last
 
-                    CROSS APPLY (
-                        SELECT TOP (1)
-                            bf2.BarCod,
-                            bf2.FasCod,
-                            bf2.BarFasDTI,
-                            bf2.BarFasDTF,
-                            bf2.BarOrdLin
-                        FROM BARFAS bf2
-                        WHERE bf2.BarCod = bc.BarCod
-                        AND bf2.BarCodReo = 0
-                        AND bf2.BarOrdLin > upt.BarOrdLin_Terminado
-                        ORDER BY bf2.BarOrdLin
-                    ) bf_next
-                    JOIN FASPRO fp
-                        ON fp.FasCod = bf_next.FasCod
-                    LEFT JOIN estatus_reproceso sp
-                        ON fp.FasCod = sp.fase
-                    WHERE bc.BarCodReo = 0
-                    AND bc.BarItem2 IN ({placeholders});
+            LEFT JOIN FASPRO fp
+            ON fp.FasCod = bf_last.FasCod
+            LEFT JOIN estatus_reproceso sp
+            ON sp.fase = bf_last.FasCod
+
+            ORDER BY h.Pedido, h.BarCod, h.BarCodReo, h.BarCodPar;
             """
 
             cursor.execute(query, nums)
+            print(query)
 
             cols = [c[0] for c in cursor.description]
-            # rows = [dict(zip(cols, row)) for row in cursor.fetchall()]
-            rows = []
-            try:
-                for row in cursor.fetchall():
-                    # fuerza a tupla por si pyodbc.Row raro
-                    row_t = tuple(row)
-                    rows.append({cols[i]: row_t[i] for i in range(len(cols))})
-            except Exception as e:
-                # imprime info útil para ubicar el detonante
-                print("ERROR al leer rows desde SQL Server:", repr(e))
-                print("Columnas:", cols)
-                # intenta leer una fila para ver tipos
-                try:
-                    one = cursor.fetchone()
-                    print("Una fila (fetchone):", one)
-                    if one:
-                        print("Tipos:", [type(x) for x in one])
-                except Exception as e2:
-                    print("También falló fetchone:", repr(e2))
-                raise
+            rows = [dict(zip(cols, row)) for row in cursor.fetchall()]
 
         finally:
             try:
@@ -326,7 +403,7 @@ class ControlPedido(models.Model):
 
         # 6) Insertar líneas en batch por pedido (sin write repetitivo)
         line_cmds_by_pedido = {}
-        vals_to_print = set()
+        # vals_to_print = set()
         for dr in rows:
             num = _safe_str(dr.get("Pedido"))
             pedido = existing_map.get(num)
@@ -334,22 +411,18 @@ class ControlPedido(models.Model):
                 continue
 
             vals_line = self.env["control.pedido.line"]._vals_from_det_row(dr)
-            vals_to_print.add(vals_line['process'])
+            # vals_to_print.add(vals_line['process'])
             line_cmds_by_pedido.setdefault(pedido.id, []).append((0, 0, vals_line))
 
         # Write por pedido que tenga líneas (normalmente mucho menos que N)
         for pid, cmds in line_cmds_by_pedido.items():
             self.browse(pid).write({"line_ids": cmds})
-        print(vals_to_print)
+        # print(vals_to_print)
         return {"created": created, "updated": updated}
 
 
     def action_sync_from_dbf(self):
-        folder = '/mnt/fox/sit06/dbf'
-        # folder = self.env["ir.config_parameter"].sudo().get_param("foxpro.folder")
-        if not folder:
-            raise UserError(_("Configura 'control.folder' con la ruta montada (ej: /mnt/fox/sit06/dbf)."))
-        res = self.sync_from_dbf(folder)
+        res = self.sync_from_dbf()
         return {
             "type": "ir.actions.client",
             "tag": "display_notification",
@@ -367,16 +440,24 @@ class ControlPedidoLine(models.Model):
 
     pedido_id = fields.Many2one("control.pedido", required=True, ondelete="cascade")
     route = fields.Char(string="Route")
+    barcodreo = fields.Char('R')
+    batch = fields.Char('Batch')
     process = fields.Char(string="Next Process")
     area = fields.Char('Area')
     kilograms = fields.Float('Kilograms')
+    start_date = fields.Datetime('Start Date')
+    end_date = fields.Datetime('End Date')
 
     @api.model
     def _vals_from_det_row(self, dr):
-        # get = dr.cursor_description
+        user_tz = pytz.timezone(self.env.user.tz or 'UTC')
         return {
             "route": _safe_str(dr["HojaDeRuta"]),
+            "barcodreo": _safe_str(dr["BarCodReo"]),
+            "batch": _safe_str(dr["Partida"]),
             "kilograms": _safe_float(dr["PesoTotal"]),
-            "process": _safe_str(dr["Proceso_Siguiente"]),
+            "process": _safe_str(dr["Proceso_Ultimo"]),
             "area": _safe_str(dr["Area"]),
+            "start_date": _safe_date(dr["FechaInicio"], user_tz),
+            "end_date": _safe_date(dr["FechaFinal"], user_tz),
         }

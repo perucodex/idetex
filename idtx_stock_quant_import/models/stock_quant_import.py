@@ -32,7 +32,7 @@ class StockQuantImport(models.Model):
 
             if ext == 'xlsx':
                 try:
-                    wb = load_workbook(io.BytesIO(raw), read_only=True)
+                    wb = load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
                     ws = wb.active
                     header = {cell.value: idx for idx, cell in enumerate(next(ws.iter_rows(max_row=1)), 1)}
                     rows = list(ws.iter_rows(min_row=2, values_only=True))
@@ -66,6 +66,8 @@ class StockQuantImport(models.Model):
 
             vals_list = []
             for row in rows:
+                if not row[header['product_code'] - 1]:
+                    continue
                 # location_name = row[header['location'] - 1]
                 product_code = row[header['product_code'] - 1].ljust(15, '0')
                 product_name = row[header['product_name'] - 1]

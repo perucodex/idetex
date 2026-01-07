@@ -20,7 +20,10 @@ de foxpro (dbf) SITPRO y conección con MSSql server para obtener data del TEXPL
     'license': 'LGPL-3',
 
     # any module necessary for this one to work correctly
-    'depends': ['base'],
+    'depends': [
+        'base',
+        'portal',
+    ],
 
     # always loaded
     'data': [
