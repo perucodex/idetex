@@ -343,8 +343,8 @@ class ControlPedido(models.Model):
             return {"created": 0, "updated": 0}
 
         # --- Producción (tej_produccion) -> sumar KNETO por pedido ---
-        # nums_set = set(nums)
-        # produced_by_num = _sum_kneto_by_pedido("/mnt/fox/sit06/dbf/tej_produccion.dbf", nums_set)
+        nums_set = set(nums)
+        produced_by_num = _sum_kneto_by_pedido("/mnt/fox/sit06/dbf/tej_produccion.dbf", nums_set)
 
         # produced_by_num = {}   # { '000123': 1500.25, ... }
         # for pr in prod:
@@ -368,7 +368,7 @@ class ControlPedido(models.Model):
             vals = {
                 **base,
                 'numordped': num,
-                # 'produced_weight': produced_by_num.get(num, 0.0),
+                'produced_weight': produced_by_num.get(num, 0.0),
             }
 
             pedido = existing_map.get(num)
@@ -400,8 +400,7 @@ class ControlPedido(models.Model):
                     bc.BarCodReo,
                     bc.BarCodPar,
                     bc.BarItem2 AS Pedido,
-                    bc.BarItem4 AS Partida,
-                    bc.BarColNom AS CodCol
+                    bc.BarItem4 AS Partida
                 FROM BARCAD bc
                 WHERE bc.BarItem2 IN ({placeholders})
                 -- si quieres SOLO rutas "principales" como muchas pantallas:
@@ -425,9 +424,7 @@ class ControlPedido(models.Model):
                 fp.FasDsc AS Proceso_Ultimo,
                 sp.area AS Area,
                 bf_last.BarFasDTI AS FechaInicio,
-                bf_last.BarFasDTF AS FechaFinal,
-                ba.ColNomAgr AS CodigoColor,
-                ba.ColNoCAgr AS NombreColor
+                bf_last.BarFasDTF AS FechaFinal
             FROM PedidoHDR h
             JOIN Kilos k
             ON k.BarCod = h.BarCod
@@ -452,8 +449,7 @@ class ControlPedido(models.Model):
             ON fp.FasCod = bf_last.FasCod
             LEFT JOIN estatus_reproceso sp
             ON sp.fase = bf_last.FasCod
-            LEFT JOIN BARAGR ba
-            ON ba.ColNomAgr = h.CodCol
+
             ORDER BY h.Pedido, h.BarCod, h.BarCodReo, h.BarCodPar;
             """
 
@@ -515,8 +511,6 @@ class ControlPedidoLine(models.Model):
     kilograms = fields.Float('Kilograms')
     start_date = fields.Datetime('Start Date')
     end_date = fields.Datetime('End Date')
-    colcode = fields.Char('Color Code')
-    colname = fields.Char('Color Name')
 
     @api.model
     def _vals_from_det_row(self, dr):
@@ -530,6 +524,4 @@ class ControlPedidoLine(models.Model):
             "area": _safe_str(dr["Area"]) or 'VOUCHER',
             "start_date": _safe_date(dr["FechaInicio"], user_tz),
             "end_date": _safe_date(dr["FechaFinal"], user_tz),
-            'colcode': _safe_str(dr["CodigoColor"]),
-            'colname': _safe_str(dr["NombreColor"]),
         }
