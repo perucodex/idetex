@@ -123,6 +123,7 @@ class StockQuantImport(models.Model):
                 uom = self.env.ref('uom.product_uom_kgm')
                 product = self.env['product.template'].create({
                     'name': row.product_name,
+                    'type': 'consu',
                     'is_storable': True,
                     'is_weaving': True,
                     'tracking': 'lot',

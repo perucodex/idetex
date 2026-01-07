@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <record id="ir_cron_control_batch_sitpro" model="ir.cron">
+        <field name="name">Ventas: Actualizar producción desde SITPRO y TEXPLUS</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="nextcall" eval="(DateTime.now() + timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')" />
+        <field name="model_id" ref="model_control_pedido"/>
+        <field name="code">model.sync_from_dbf()</field>
+        <field name="state">code</field>
+    </record>
+    
+</odoo>

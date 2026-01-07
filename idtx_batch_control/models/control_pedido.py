@@ -9,24 +9,16 @@ from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
 # ---------- Helpers DBF ----------
-def _read_dbf(filename, limit=None):
+def _read_dbf(filename, limit=None, nums=None):
     t = dbf.Table(filename, codepage="cp1252")
     t.open(mode=dbf.READ_ONLY)
     try:
         rows = []
         i = 0
         for rec in t:
-            if bool(dbf.is_deleted(rec)):
+            if _filter_rec(filename, rec, nums):
                 continue
-            # Filtros de tablavta_cab_pedido
-            if rec['FECOC'] is None or \
-                not _safe_date(rec['FECOC']) or \
-                rec['FECOC'] < datetime.date(2025,6,30) or \
-                not _safe_bool(rec['activo']) or \
-                _safe_str(rec['tipoventa'][:10]) != 'VENTA DE T':# or \
-                # 'MUESTRA' in _safe_str(rec['RAZSOC'])or \
-                # 'IDEAS' in _safe_str(rec['RAZSOC'])or \
-                # 'IDETEX' in _safe_str(rec['RAZSOC']):
+            if bool(dbf.is_deleted(rec)):
                 continue
             if limit and i >= limit:
                 break
@@ -35,6 +27,54 @@ def _read_dbf(filename, limit=None):
         return rows
     finally:
         t.close()
+
+def _iter_dbf(dbf_path):
+    t = dbf.Table(dbf_path, codepage="cp1252")
+    t.open(mode=dbf.READ_ONLY)
+    try:
+        for rec in t:
+            if dbf.is_deleted(rec):
+                continue
+            yield rec
+    finally:
+        t.close()
+
+def _sum_kneto_by_pedido(dbf_path, nums_set):
+    t = dbf.Table(dbf_path, codepage="cp1252")
+    t.open(mode=dbf.READ_ONLY)
+    try:
+        out = {}  # {numordped: suma_kneto}
+        for rec in t:
+            if dbf.is_deleted(rec):
+                continue
+
+            pnum = _safe_str(rec["NUMORDPED"])
+            if not pnum or pnum not in nums_set:
+                continue
+
+            out[pnum] = out.get(pnum, 0.0) + _safe_float(rec["KNETO"])
+        return out
+    finally:
+        t.close()
+
+def _filter_rec(filename, rec, nums):
+    if filename == '/mnt/fox/sit06/dbf/vta_cab_pedido.dbf':
+        # Filtros de tabla vta_cab_pedido
+        if rec['FECOC'] is None or \
+            not _safe_date(rec['FECOC']) or \
+            rec['FECOC'] < datetime.date(2025,6,30) or \
+            not _safe_bool(rec['activo']) or \
+            _safe_str(rec['tipoventa'][:10]) != 'VENTA DE T':# or \
+            # 'MUESTRA' in _safe_str(rec['RAZSOC'])or \
+            # 'IDEAS' in _safe_str(rec['RAZSOC'])or \
+            # 'IDETEX' in _safe_str(rec['RAZSOC']):
+            return True
+    else:
+        # Filtros de tabla tej_produccion
+        pnum = _safe_str(rec["NUMORDPED"])
+        if not pnum or pnum not in nums:
+            return True
+    return False
 
 def _settle_order_dbf(filename, order, is_active):
     table = dbf.Table(filename, codepage='cp1252')
@@ -144,6 +184,7 @@ class ControlPedido(models.Model):
     salesman = fields.Char('Salesman')
     tipoventa = fields.Char(string="Type of Sale")
     total_weight = fields.Float('Total Weight')
+    produced_weight = fields.Float('Produced Weight')
     line_ids = fields.One2many("control.pedido.line", "pedido_id", string="Detail")
     process = fields.Char('Process', compute='_compute_process', store=True)
     area = fields.Char('Area', compute='_compute_process', store=True)
@@ -157,7 +198,7 @@ class ControlPedido(models.Model):
     ], string='State', compute='_compute_state', default='on', store=True, tracking=True)
 
     _sql_constraints = [
-        ("control_pedido_numordped_uniq", "unique(numordped)", "Ya existe un pedido con ese NUMORDPED."),
+        ("control_pedido_numordped_uniq", "unique(numordped)", "Ya existe un pedido con ese Número de Orden."),
     ]
 
     @api.depends('fecoc')
@@ -178,7 +219,6 @@ class ControlPedido(models.Model):
             current = rec.fecoc
 
             while current <= today:
-                print(current.weekday())
                 if current.weekday() != 6:
                     days += 1
                 current += datetime.timedelta(days=1)
@@ -189,14 +229,12 @@ class ControlPedido(models.Model):
     def _compute_state(self):
         for rec in self:
             result = 'on'
+            suma = sum(rec.line_ids.mapped('kilograms') or [0.0])
             if rec.num_days:
-                if rec.num_days == 157:
-                    x = 1
                 if not len(rec.line_ids) and rec.num_days > 12:
                     result = 'de'
-                elif len(rec.line_ids) and rec.num_days > 12:
-                    if any(l.area in FIRST_AREA for l in rec.line_ids) or rec.area == 'TEJEDURIA':
-                        result = 'de'
+                elif len(rec.line_ids) and rec.num_days > 12 and any(l.area in FIRST_AREA for l in rec.line_ids) and suma < rec.total_weight:
+                    result = 'de'
                 elif rec.num_days > 12 and rec.num_days <= 20:
                     if any(l.area in SECOND_AREA for l in rec.line_ids) or rec.area == 'TEJEDURIA':
                         result = 'de'
@@ -265,20 +303,54 @@ class ControlPedido(models.Model):
     # ----- Sync -----
     @api.model
     def sync_from_dbf(self):
-        cab = _read_dbf("/mnt/fox/sit06/dbf/vta_cab_pedido.dbf")
+        # cab = _read_dbf("/mnt/fox/sit06/dbf/vta_cab_pedido.dbf")
 
-        # 1) Lista de nums válidos
-        nums = []
+        # # 1) Lista de nums válidos
+        # nums = []
+        # cab_by_num = {}
+        # for r in cab:
+        #     num = _safe_str(r.get("NUMORDPED"))
+        #     if not num:
+        #         continue
+        #     nums.append(num)
+        #     cab_by_num[num] = r
         cab_by_num = {}
-        for r in cab:
-            num = _safe_str(r.get("NUMORDPED"))
+        nums = []
+        for rec in _iter_dbf("/mnt/fox/sit06/dbf/vta_cab_pedido.dbf"):
+            # filtros cab: evita _safe_date 2 veces si FECOC ya es date
+            fecoc = rec["FECOC"]
+            if not fecoc or fecoc < datetime.date(2025, 6, 30):
+                continue
+            if not _safe_bool(rec["ACTIVO"]):
+                continue
+            if _safe_str(rec["TIPOVENTA"][:10]) != "VENTA DE T":
+                continue
+            num = _safe_str(rec["NUMORDPED"])
             if not num:
                 continue
             nums.append(num)
-            cab_by_num[num] = r
+            cab_by_num[num] = {
+                "fecha": _safe_date(rec["FECHA"]),
+                "fecoc": _safe_date(rec["FECOC"]),
+                "customer": _safe_str(rec["RAZSOC"]),
+                "salesman": _safe_str(rec["USUARIO"]),
+                "tipoventa": _safe_str(rec["TIPOVENTA"]),
+                "total_weight": _safe_float(rec["TOTKIL"]),
+                "is_active": _safe_bool(rec["ACTIVO"]),
+            }
 
         if not nums:
             return {"created": 0, "updated": 0}
+
+        # --- Producción (tej_produccion) -> sumar KNETO por pedido ---
+        # nums_set = set(nums)
+        # produced_by_num = _sum_kneto_by_pedido("/mnt/fox/sit06/dbf/tej_produccion.dbf", nums_set)
+
+        # produced_by_num = {}   # { '000123': 1500.25, ... }
+        # for pr in prod:
+        #     pnum = _safe_str(pr.get("NUMORDPED"))
+        #     kneto = _safe_float(pr.get("KNETO"))
+        #     produced_by_num[pnum] = produced_by_num.get(pnum, 0.0) + kneto
 
         # 2) Traer pedidos existentes de una sola vez
         existing = self.search([("numordped", "in", nums)])
@@ -291,16 +363,12 @@ class ControlPedido(models.Model):
         #    (si quieres aún más rápido, se puede hacer SQL directo, pero mejor mantener ORM)
         pedidos = self.browse()
         for num in nums:
-            r = cab_by_num[num]
+            rec = cab_by_num[num]
+            base = cab_by_num[num]
             vals = {
-                'fecha': _safe_date(r.get('FECHA')),
-                'fecoc': _safe_date(r.get('FECOC')),
+                **base,
                 'numordped': num,
-                'customer': _safe_str(r.get('RAZSOC')),
-                'salesman': _safe_str(r.get('USUARIO')),
-                'tipoventa': _safe_str(r.get('TIPOVENTA')),
-                'total_weight': _safe_float(r.get('TOTKIL')),
-                'is_active': _safe_bool(r.get('ACTIVO')),
+                # 'produced_weight': produced_by_num.get(num, 0.0),
             }
 
             pedido = existing_map.get(num)
@@ -332,7 +400,8 @@ class ControlPedido(models.Model):
                     bc.BarCodReo,
                     bc.BarCodPar,
                     bc.BarItem2 AS Pedido,
-                    bc.BarItem4 AS Partida
+                    bc.BarItem4 AS Partida,
+                    bc.BarColNom AS CodCol
                 FROM BARCAD bc
                 WHERE bc.BarItem2 IN ({placeholders})
                 -- si quieres SOLO rutas "principales" como muchas pantallas:
@@ -356,7 +425,9 @@ class ControlPedido(models.Model):
                 fp.FasDsc AS Proceso_Ultimo,
                 sp.area AS Area,
                 bf_last.BarFasDTI AS FechaInicio,
-                bf_last.BarFasDTF AS FechaFinal
+                bf_last.BarFasDTF AS FechaFinal,
+                ba.ColNomAgr AS CodigoColor,
+                ba.ColNoCAgr AS NombreColor
             FROM PedidoHDR h
             JOIN Kilos k
             ON k.BarCod = h.BarCod
@@ -381,12 +452,12 @@ class ControlPedido(models.Model):
             ON fp.FasCod = bf_last.FasCod
             LEFT JOIN estatus_reproceso sp
             ON sp.fase = bf_last.FasCod
-
+            LEFT JOIN BARAGR ba
+            ON ba.ColNomAgr = h.CodCol
             ORDER BY h.Pedido, h.BarCod, h.BarCodReo, h.BarCodPar;
             """
 
             cursor.execute(query, nums)
-            print(query)
 
             cols = [c[0] for c in cursor.description]
             rows = [dict(zip(cols, row)) for row in cursor.fetchall()]
@@ -403,7 +474,6 @@ class ControlPedido(models.Model):
 
         # 6) Insertar líneas en batch por pedido (sin write repetitivo)
         line_cmds_by_pedido = {}
-        # vals_to_print = set()
         for dr in rows:
             num = _safe_str(dr.get("Pedido"))
             pedido = existing_map.get(num)
@@ -411,13 +481,11 @@ class ControlPedido(models.Model):
                 continue
 
             vals_line = self.env["control.pedido.line"]._vals_from_det_row(dr)
-            # vals_to_print.add(vals_line['process'])
             line_cmds_by_pedido.setdefault(pedido.id, []).append((0, 0, vals_line))
 
         # Write por pedido que tenga líneas (normalmente mucho menos que N)
         for pid, cmds in line_cmds_by_pedido.items():
             self.browse(pid).write({"line_ids": cmds})
-        # print(vals_to_print)
         return {"created": created, "updated": updated}
 
 
@@ -440,13 +508,15 @@ class ControlPedidoLine(models.Model):
 
     pedido_id = fields.Many2one("control.pedido", required=True, ondelete="cascade")
     route = fields.Char(string="Route")
-    barcodreo = fields.Char('R')
+    barcodreo = fields.Char('Reprocess')
     batch = fields.Char('Batch')
     process = fields.Char(string="Next Process")
     area = fields.Char('Area')
     kilograms = fields.Float('Kilograms')
     start_date = fields.Datetime('Start Date')
     end_date = fields.Datetime('End Date')
+    colcode = fields.Char('Color Code')
+    colname = fields.Char('Color Name')
 
     @api.model
     def _vals_from_det_row(self, dr):
@@ -456,8 +526,10 @@ class ControlPedidoLine(models.Model):
             "barcodreo": _safe_str(dr["BarCodReo"]),
             "batch": _safe_str(dr["Partida"]),
             "kilograms": _safe_float(dr["PesoTotal"]),
-            "process": _safe_str(dr["Proceso_Ultimo"]),
-            "area": _safe_str(dr["Area"]),
+            "process": _safe_str(dr["Proceso_Ultimo"]) or 'SIN AVANCE',
+            "area": _safe_str(dr["Area"]) or 'VOUCHER',
             "start_date": _safe_date(dr["FechaInicio"], user_tz),
             "end_date": _safe_date(dr["FechaFinal"], user_tz),
+            'colcode': _safe_str(dr["CodigoColor"]),
+            'colname': _safe_str(dr["NombreColor"]),
         }

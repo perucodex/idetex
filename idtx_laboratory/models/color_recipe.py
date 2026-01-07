@@ -101,6 +101,7 @@ class ColorRecipe(models.Model):
         }
 
     def unlink(self):
-        if self.state == 'approved':
-            raise UserError(_('Can\'t delete a recipe in approved state.'))
+        for rec in self:
+            if rec.state == 'approved':
+                raise UserError(_('Can\'t delete a recipe in approved state.'))
         return super().unlink()
