@@ -88,8 +88,8 @@
               <field name="area"/>
               <field name="process"/>
               <field name="state"/>
-              <field name="colorcode" string="Color Code" filter_domain="[('line_ids.colorcode', 'ilike', self)]"/>
-              <field name="colorname" string="Color Name" filter_domain="[('line_ids.colorname', 'ilike', self)]"/>
+              <field name="line_ids" string="Color Code" filter_domain="[('line_ids.colorcode', 'ilike', self)]"/>
+              <field name="line_ids" string="Color Name" filter_domain="[('line_ids.colorname', 'ilike', self)]"/>
               <filter name="not_done" string="Active" domain="[('state', 'in', ['de','on'])]"/>
               <filter name="done" string="Done" domain="[('state', '=', 'do')]"/>
               <filter name="settle" string="Settle" domain="[('state', '=', 'se')]"/>
