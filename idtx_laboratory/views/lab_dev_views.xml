@@ -80,6 +80,7 @@
                     <field name="lab_dev_date"/>
                     <field name="sale_order_id"/>
                     <field name="partner_id"/>
+                    <field name="lab_dev_line_ids" string="Product" filter_domain="[('lab_dev_line_ids.product_id', 'ilike', self)]"/>
                     <field name="lab_dev_line_ids" string="Color Code" filter_domain="[('lab_dev_line_ids.color_code', 'ilike', self)]"/>
                     <field name="lab_dev_line_ids" string="Color Name" filter_domain="[('lab_dev_line_ids.color_name', 'ilike', self)]"/>
                     <filter name="approved" string="Approved" domain="[('state','=','approved')]"/>

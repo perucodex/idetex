@@ -62,7 +62,7 @@ class SaleOrder(models.Model):
             #     line.lab_dev_line_id = False
 
     def create_labdev(self):
-        if any(not line.color_name for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving)):
+        if any(not line.color_name for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.product_color_id.is_lab_color)):
             raise UserError(_('Can\'t create Lab Dev some lines have no color name.'))
         today = fields.Date.context_today(self)
         data = {
@@ -73,7 +73,7 @@ class SaleOrder(models.Model):
                  'product_id': line.product_template_id.id,
                  'color_name': line.color_name or line.product_color_id.name,
                  'sale_order_line_id': line.id,
-            }) for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving)]
+            }) for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.product_color_id.is_lab_color)]
         }
         lab_dev = self.env['lab.dev'].create(data)
         self.lab_dev_ids = [Command.link(lab_dev.id)]

@@ -7,6 +7,7 @@ class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
     product_color_id = fields.Many2one('product.color', string='Color')
+    is_lab_color = fields.Boolean(related='product_color_id.is_lab_color')
     color_name = fields.Char('Color Name')
     # weaving_warning = fields.Text('weaving_warning')
     weaving_loss = fields.Float('Weaving Loss')

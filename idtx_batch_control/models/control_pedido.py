@@ -400,7 +400,9 @@ class ControlPedido(models.Model):
                     bc.BarCodReo,
                     bc.BarCodPar,
                     bc.BarItem2 AS Pedido,
-                    bc.BarItem4 AS Partida
+                    bc.BarItem4 AS Partida,
+                    bc.BarColNom as ColorCode,
+                    bc.BarNomCli as ColorName
                 FROM BARCAD bc
                 WHERE bc.BarItem2 IN ({placeholders})
                 -- si quieres SOLO rutas "principales" como muchas pantallas:
@@ -420,6 +422,8 @@ class ControlPedido(models.Model):
                 h.Partida,
                 h.BarCod AS HojaDeRuta,
                 h.BarCodReo,
+                h.ColorCode,
+                h.ColorName,
                 ISNULL(k.Kilos, 0) AS PesoTotal,
                 fp.FasDsc AS Proceso_Ultimo,
                 sp.area AS Area,
@@ -452,8 +456,8 @@ class ControlPedido(models.Model):
 
             ORDER BY h.Pedido, h.BarCod, h.BarCodReo, h.BarCodPar;
             """
-
-            cursor.execute(query, nums)
+            print(nums)
+            cursor.execute(query, *nums)
 
             cols = [c[0] for c in cursor.description]
             rows = [dict(zip(cols, row)) for row in cursor.fetchall()]
@@ -511,6 +515,8 @@ class ControlPedidoLine(models.Model):
     kilograms = fields.Float('Kilograms')
     start_date = fields.Datetime('Start Date')
     end_date = fields.Datetime('End Date')
+    colorcode = fields.Char('Color Code')
+    colorname = fields.Char('Color Name')
 
     @api.model
     def _vals_from_det_row(self, dr):
@@ -524,4 +530,6 @@ class ControlPedidoLine(models.Model):
             "area": _safe_str(dr["Area"]) or 'VOUCHER',
             "start_date": _safe_date(dr["FechaInicio"], user_tz),
             "end_date": _safe_date(dr["FechaFinal"], user_tz),
+            "colorcode": _safe_str(dr["ColorCode"]),
+            "colorname": _safe_str(dr["ColorName"]),
         }

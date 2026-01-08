@@ -66,8 +66,8 @@
                   <field name="area"/>
                   <field name="start_date"/>
                   <field name="end_date"/>
-                  <!-- <field name="colcode"/>
-                  <field name="colname"/> -->
+                  <field name="colorcode"/>
+                  <field name="colorname"/>
                 </list>
               </field>
             </page>
