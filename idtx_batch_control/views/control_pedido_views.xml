@@ -88,10 +88,14 @@
               <field name="area"/>
               <field name="process"/>
               <field name="state"/>
+              <field name="colorcode" string="Color Code" filter_domain="[('line_ids.colorcode', 'ilike', self)]"/>
+              <field name="colorname" string="Color Name" filter_domain="[('line_ids.colorname', 'ilike', self)]"/>
               <filter name="not_done" string="Active" domain="[('state', 'in', ['de','on'])]"/>
               <filter name="done" string="Done" domain="[('state', '=', 'do')]"/>
               <filter name="settle" string="Settle" domain="[('state', '=', 'se')]"/>
               <group>
+                  <filter string="Customer" name="group_by_customer" domain="[]" context="{'group_by': 'customer'}"/>
+                  <filter string="Salesman" name="group_by_salesman" domain="[]" context="{'group_by': 'salesman'}"/>
                   <filter string="Area" name="group_by_area" domain="[]" context="{'group_by': 'area'}"/>
                   <filter string="Process" name="group_by_process" domain="[]" context="{'group_by': 'process'}"/>
                   <filter string="State" name="group_by_state" domain="[]" context="{'group_by': 'state'}"/>
