@@ -1,0 +1,158 @@
+/* Layout sin cortes */
+.kiosk-root{
+  height: 100vh;
+  overflow: hidden;
+  background: #05080d;
+  color: #e6eefb;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header tipo “departures” */
+.kiosk-header{
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+  background: linear-gradient(to bottom, rgba(255,255,255,0.06), rgba(255,255,255,0.00));
+}
+
+.kiosk-title{
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.kiosk-meta{
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+/* Board ocupa el resto */
+.kiosk-board{
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 10px 14px 14px;
+  overflow: hidden;
+}
+
+/* Viewport del carrusel */
+.kiosk-grid{
+  height: 100%;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background:
+    radial-gradient(1200px 600px at 50% 0%, rgba(255,210,64,0.10), rgba(0,0,0,0.0)),
+    linear-gradient(to bottom, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+  position: relative;
+}
+
+/* Track que se desliza (5 columnas: 4 visibles + la siguiente) */
+.kiosk-track{
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  padding: 12px;
+  transform: translateX(0%);
+}
+
+/* Animación del desplazamiento (mueve 1 columna: 20% del track porque son 5) */
+.kiosk-track.is-sliding{
+  transition: transform 700ms ease;
+  transform: translateX(-20%);
+}
+
+/* Columna */
+.kiosk-col{
+  height: 100%;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(0,0,0,0.35);
+}
+
+/* Tabla */
+.kiosk-table{
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* Encabezado estilo pizarra */
+.kiosk-table thead th{
+  padding: 8px 8px;
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.88);
+  border-bottom: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.04);
+}
+
+/* Filas (LETRA FIJA) */
+.kiosk-table td{
+  padding: 6px 8px;
+  font-size: 13px;
+  line-height: 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-bottom: 1px dashed rgba(255,255,255,0.07);
+}
+
+/* ✅ Anchos sugeridos para que "Delayed" no se corte */
+.kiosk-table th:nth-child(1), .kiosk-table td:nth-child(1){ width: 26%; } /* Fecha */
+.kiosk-table th:nth-child(2), .kiosk-table td:nth-child(2){ width: 34%; } /* Pedido */
+.kiosk-table th:nth-child(3), .kiosk-table td:nth-child(3){ width: 14%; } /* Días */
+.kiosk-table th:nth-child(4), .kiosk-table td:nth-child(4){ width: 26%; } /* Estado */
+
+/* Efecto “departures board”: resalta alternando */
+.kiosk-table tbody tr:nth-child(odd) td{
+  background: rgba(255,255,255,0.02);
+}
+.kiosk-table tbody tr:hover td{
+  background: rgba(255,210,64,0.08);
+}
+
+/* Texto tipo “ámbar”/pizarra */
+.kiosk-amber{
+  color: rgba(255, 210, 64, 0.92);
+  text-shadow: 0 0 8px rgba(255, 210, 64, 0.10);
+}
+
+/* Badge de estado */
+.badge{
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 12px;
+  line-height: 14px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+.badge-on{
+  background: rgba(0, 140, 255, 0.18);
+  border: 1px solid rgba(0, 140, 255, 0.45);
+  color: rgba(210, 235, 255, 0.95);
+}
+.badge-de{
+  background: rgba(255, 60, 60, 0.18);
+  border: 1px solid rgba(255, 60, 60, 0.50);
+  color: rgba(255, 220, 220, 0.98);
+}
+.badge-ot{
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.85);
+}
+
+/* Error */
+.kiosk-error{
+  padding: 14px;
+  font-size: 13px;
+}

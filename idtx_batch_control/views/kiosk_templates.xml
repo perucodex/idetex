@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+  <template id="kiosk_control_pedido_page" name="Kiosk Control Pedido">
+    <t t-call="web.layout">
+
+      <!-- ✅ Cache-busting para evitar que el kiosk agarre versiones viejas -->
+      <link rel="stylesheet" type="text/css"
+            href="/idtx_batch_control/static/src/css/kiosk_board.css?v=20260109"/>
+      <script type="text/javascript"
+              src="/idtx_batch_control/static/src/js/kiosk_board.js?v=20260109"></script>
+
+      <div id="kiosk-root" class="kiosk-root">
+        <header class="kiosk-header">
+          <div class="kiosk-title">CONTROL PEDIDO</div>
+          <div class="kiosk-meta">
+            <span id="kiosk-count">0</span> registros · Última actualización:
+            <span id="kiosk-last">—</span>
+          </div>
+        </header>
+
+        <main class="kiosk-board">
+          <div class="kiosk-grid" id="kiosk-grid">
+            <!-- JS dibuja el carrusel aquí -->
+          </div>
+        </main>
+      </div>
+
+    </t>
+  </template>
+</odoo>
