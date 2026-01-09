@@ -6,14 +6,21 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-07 22:40+0000\n"
-"PO-Revision-Date: 2026-01-07 22:40+0000\n"
+"POT-Creation-Date: 2026-01-09 17:50+0000\n"
+"PO-Revision-Date: 2026-01-09 17:50+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
+
+#. module: idtx_batch_control
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.kiosk_control_pedido_page
+msgid ""
+"<span id=\"kiosk-count\">0</span> registros · Última actualización:\n"
+"            <span id=\"kiosk-last\">—</span>"
+msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__message_needaction
@@ -63,14 +70,21 @@ msgid "Batch"
 msgstr "Partida"
 
 #. module: idtx_batch_control
-#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__colcode
-msgid "Color Code"
-msgstr "Código de Color"
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.kiosk_control_pedido_page
+msgid "CONTROL PEDIDO"
+msgstr ""
 
 #. module: idtx_batch_control
-#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__colname
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__colorcode
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_view_search
+msgid "Color Code"
+msgstr "Cod. Color"
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__colorname
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_view_search
 msgid "Color Name"
-msgstr "Nombre de Color"
+msgstr "Color"
 
 #. module: idtx_batch_control
 #: model:ir.model,name:idtx_batch_control.model_control_pedido_line
@@ -101,6 +115,7 @@ msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__customer
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_view_search
 msgid "Customer"
 msgstr "Cliente"
 
@@ -353,6 +368,7 @@ msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__salesman
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_view_search
 msgid "Salesman"
 msgstr "Comercial"
 

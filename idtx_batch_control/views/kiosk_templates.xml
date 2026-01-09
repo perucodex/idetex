@@ -3,11 +3,10 @@
   <template id="kiosk_control_pedido_page" name="Kiosk Control Pedido">
     <t t-call="web.layout">
 
-      <!-- ✅ Cache-busting para evitar que el kiosk agarre versiones viejas -->
       <link rel="stylesheet" type="text/css"
-            href="/idtx_batch_control/static/src/css/kiosk_board.css?v=20260109"/>
+            href="/idtx_batch_control/static/src/css/kiosk_board.css?v=20260109a"/>
       <script type="text/javascript"
-              src="/idtx_batch_control/static/src/js/kiosk_board.js?v=20260109"></script>
+              src="/idtx_batch_control/static/src/js/kiosk_board.js?v=20260109a"></script>
 
       <div id="kiosk-root" class="kiosk-root">
         <header class="kiosk-header">

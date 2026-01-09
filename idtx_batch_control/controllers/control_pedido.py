@@ -8,15 +8,19 @@ class KioskControlPedido(http.Controller):
     def kiosk_page(self, **kw):
         return request.render('idtx_batch_control.kiosk_control_pedido_page', {})
 
-    @http.route('/kiosk/control_pedido/data', type='http', auth='public')
+    @http.route('/kiosk/control_pedido/data', type='http', auth='public', csrf=False)
     def kiosk_data(self, limit=300, **kw):
-        limit = int(limit or 300)
+        try:
+            limit = int(limit or 300)
+        except Exception:
+            limit = 300
 
-        # Ajusta tu filtro si deseas
-        domain = [('is_active','=', True),('state','in',('on','de'))]  # ejemplo: [('state', 'in', ['on', 'de'])]
+        domain = [('state', 'in', ('on', 'de'))]
         order = 'num_days desc, state desc, fecoc desc, numordped desc'
 
-        fields = ['fecoc', 'numordped', 'num_days', 'state']
+        # ✅ Agregamos 'area'
+        fields = ['fecoc', 'numordped', 'num_days', 'state', 'area']
+
         records = request.env['control.pedido'].sudo().search_read(
             domain, fields=fields, order=order, limit=limit
         )

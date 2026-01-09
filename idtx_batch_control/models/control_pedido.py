@@ -316,12 +316,15 @@ class ControlPedido(models.Model):
         #     cab_by_num[num] = r
         cab_by_num = {}
         nums = []
+        nums_to_settle = []
         for rec in _iter_dbf("/mnt/fox/sit06/dbf/vta_cab_pedido.dbf"):
             # filtros cab: evita _safe_date 2 veces si FECOC ya es date
             fecoc = rec["FECOC"]
             if not fecoc or fecoc < datetime.date(2025, 6, 30):
                 continue
             if not _safe_bool(rec["ACTIVO"]):
+                num = _safe_str(rec["NUMORDPED"])
+                nums_to_settle.append(num)    
                 continue
             if _safe_str(rec["TIPOVENTA"][:10]) != "VENTA DE T":
                 continue
@@ -341,6 +344,8 @@ class ControlPedido(models.Model):
 
         if not nums:
             return {"created": 0, "updated": 0}
+
+        self.search([("numordped", "in", nums_to_settle)]).is_active = False
 
         # --- Producción (tej_produccion) -> sumar KNETO por pedido ---
         nums_set = set(nums)

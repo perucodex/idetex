@@ -1,16 +1,16 @@
-// Kiosk Control Pedido - Carrusel 4 columnas estilo aeropuerto
+// Kiosk Control Pedido - Carrusel 4 columnas estilo aeropuerto (ahora 5 columnas)
 
 const REFRESH_MS = 15 * 60 * 1000; // 15 min
-const SLIDE_MS = 5 * 1000;        // 20 s
-const DEFAULT_LIMIT = 3000;
+const SLIDE_MS = 20 * 1000;        // 20 s
+const DEFAULT_LIMIT = 300;
 const VISIBLE_COLS = 4;            // 4 visibles
-const TRACK_COLS = VISIBLE_COLS + 1; // +1 para animación (entra la siguiente)
+const TRACK_COLS = VISIBLE_COLS + 1; // +1 para animación
 
 let state = {
   records: [],
-  columns: [],        // columnas virtuales (chunks)
-  startCol: 0,        // índice de columna inicial del carrusel
-  rowsPerCol: null,   // calculado por altura
+  columns: [],
+  startCol: 0,
+  rowsPerCol: null,
   slideTimer: null,
   refreshTimer: null,
   sliding: false,
@@ -35,26 +35,53 @@ function pad2(n) {
   return n < 10 ? "0" + n : String(n);
 }
 
-// Formato: DD/MM/YY (sin siglo). Entrada esperada: "YYYY-MM-DD"
+// Fecha: DD/MM/YY
 function fmtDateDMYShort(v) {
   if (!v) return "-";
   const s = String(v).trim();
-
-  // Caso "YYYY-MM-DD"
   const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (m) {
-    const yy = m[1].slice(2);
-    const mm = m[2];
-    const dd = m[3];
-    return `${dd}/${mm}/${yy}`;
-  }
+  if (m) return `${m[3]}/${m[2]}/${m[1].slice(2)}`;
 
-  // Fallback: intentar Date()
   const d = new Date(s);
   if (!isNaN(d.getTime())) {
     return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${String(d.getFullYear()).slice(2)}`;
   }
   return s;
+}
+
+// Quita acentos para comparar áreas
+function normArea(s) {
+  return String(s ?? "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+// ✅ Abreviación de áreas
+function abbrevArea(area) {
+  const a = normArea(area);
+  if (!a) return "-";
+
+  // Mapeo explícito (ajusta a tu gusto)
+  const map = {
+    "tejeduria": "TEJ",
+    "pre tintoreria": "PTI",
+    "tintoreria": "TIN",
+    "pre estampado": "PES",
+    "estampado": "EST",
+    "pre acabado": "PAC",
+    "acabado": "ACA",
+    "control de calidad": "CC",
+    "voucher": "VOU",
+  };
+
+  if (map[a]) return map[a];
+
+  // fallback: primeras 3 letras alfabéticas
+  const only = a.replace(/[^a-z]/g, "");
+  if (only.length >= 3) return only.slice(0, 3).toUpperCase();
+  return (only || a).toUpperCase();
 }
 
 function badgeForState(st) {
@@ -65,15 +92,17 @@ function badgeForState(st) {
 }
 
 function buildTable(colRecords) {
-  const headers = ["Fecha", "Pedido", "Días", "Estado"];
+  const headers = ["Fecha", "Pedido", "Días", "Área", "Estado"];
 
   const rows = (colRecords || []).map(r => {
     const fecShort = fmtDateDMYShort(r.fecoc);
+    const areaShort = abbrevArea(r.area);
     return `
       <tr>
         <td class="kiosk-amber" title="${escapeHtml(r.fecoc)}">${escapeHtml(fecShort)}</td>
         <td title="${escapeHtml(r.numordped)}">${escapeHtml(r.numordped)}</td>
         <td title="${escapeHtml(r.num_days)}">${escapeHtml(r.num_days)}</td>
+        <td title="${escapeHtml(r.area)}">${escapeHtml(areaShort)}</td>
         <td>${badgeForState(r.state)}</td>
       </tr>
     `;
@@ -92,10 +121,7 @@ function buildTable(colRecords) {
 function chunkIntoColumns(records, rowsPerCol) {
   const cols = [];
   const size = Math.max(1, Number(rowsPerCol) || 30);
-
-  for (let i = 0; i < records.length; i += size) {
-    cols.push(records.slice(i, i + size));
-  }
+  for (let i = 0; i < records.length; i += size) cols.push(records.slice(i, i + size));
   return cols.length ? cols : [[]];
 }
 
@@ -104,7 +130,6 @@ function getDbParam() {
   return params.get("db");
 }
 
-// ✅ Fetch robusto: si no es JSON, muestra detalle
 async function fetchData() {
   const db = getDbParam();
   const limit = DEFAULT_LIMIT;
@@ -129,17 +154,15 @@ async function fetchData() {
   return await res.json();
 }
 
-// calcula cuántas filas caben (sin cortar) con letra fija
 function computeRowsPerCol(gridEl) {
-  // Columna temporal para medir alto real
   gridEl.innerHTML = `
     <div class="kiosk-track">
       <section class="kiosk-col">
         <table class="kiosk-table">
-          <thead><tr><th>Fecha</th><th>Pedido</th><th>Días</th><th>Estado</th></tr></thead>
+          <thead><tr><th>Fecha</th><th>Pedido</th><th>Días</th><th>Área</th><th>Estado</th></tr></thead>
           <tbody>
-            <tr><td>01/01/26</td><td>123</td><td>1</td><td><span class="badge badge-on">On Time</span></td></tr>
-            <tr><td>01/01/26</td><td>123</td><td>1</td><td><span class="badge badge-de">Delayed</span></td></tr>
+            <tr><td>01/01/26</td><td>123</td><td>1</td><td>TIN</td><td><span class="badge badge-on">On Time</span></td></tr>
+            <tr><td>01/01/26</td><td>123</td><td>1</td><td>TEJ</td><td><span class="badge badge-de">Delayed</span></td></tr>
           </tbody>
         </table>
       </section>
@@ -153,12 +176,10 @@ function computeRowsPerCol(gridEl) {
   const colEl = gridEl.querySelector(".kiosk-col");
   const theadEl = gridEl.querySelector(".kiosk-table thead");
   const trEl = gridEl.querySelector(".kiosk-table tbody tr");
-
   if (!colEl || !theadEl || !trEl) return 30;
 
   const colH = colEl.clientHeight;
   const headH = theadEl.offsetHeight;
-
   const rowH = trEl.offsetHeight || 18;
   const usable = Math.max(colH - headH - 8, 60);
 
@@ -184,11 +205,7 @@ function renderTrack(gridEl) {
 
 function startCarousel(gridEl) {
   stopCarousel();
-
-  if (!state.columns || state.columns.length <= 1) {
-    // si hay 1 sola columna, queda estático (igual renderiza)
-    return;
-  }
+  if (!state.columns || state.columns.length <= 1) return;
 
   state.slideTimer = setInterval(() => {
     if (state.sliding) return;
@@ -200,10 +217,8 @@ function startCarousel(gridEl) {
       return;
     }
 
-    // 1) animar hacia la izquierda
     track.classList.add("is-sliding");
 
-    // 2) al terminar transición, avanzamos y re-render sin transición
     setTimeout(() => {
       state.startCol = (state.startCol + 1) % state.columns.length;
 
@@ -212,11 +227,11 @@ function startCarousel(gridEl) {
       const newTrack = document.getElementById("kiosk-track");
       if (newTrack) {
         newTrack.classList.remove("is-sliding");
-        void newTrack.offsetWidth; // reflow
+        void newTrack.offsetWidth;
       }
 
       state.sliding = false;
-    }, 720); // un poquito > 700ms
+    }, 720);
   }, SLIDE_MS);
 }
 
@@ -261,13 +276,9 @@ function boot() {
   loadAndStart();
 
   if (state.refreshTimer) clearInterval(state.refreshTimer);
-  state.refreshTimer = setInterval(() => {
-    loadAndStart();
-  }, REFRESH_MS);
+  state.refreshTimer = setInterval(() => loadAndStart(), REFRESH_MS);
 
-  window.addEventListener("resize", () => {
-    loadAndStart();
-  });
+  window.addEventListener("resize", () => loadAndStart());
 }
 
 document.addEventListener("DOMContentLoaded", boot);
