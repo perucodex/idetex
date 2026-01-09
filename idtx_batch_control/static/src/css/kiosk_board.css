@@ -40,7 +40,7 @@
 /* Viewport del carrusel */
 .kiosk-grid{
   height: 100%;
-  overflow: hidden;
+  overflow: hidden; /* ✅ oculta la 5ta columna */
   border-radius: 14px;
   border: 1px solid rgba(255,255,255,0.10);
   background:
@@ -50,28 +50,32 @@
   position: relative;
 }
 
-/* Track */
+/* ✅ Track: flex (no grid) para que solo entren 4 columnas visibles */
 .kiosk-track{
   height: 100%;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
+  display: flex;
+  gap: var(--gap, 12px);
   padding: 12px;
-  transform: translateX(0%);
+  transform: translateX(0px);
 }
 
+/* Transición solo cuando está deslizando */
 .kiosk-track.is-sliding{
   transition: transform 700ms ease;
-  transform: translateX(-20%);
 }
 
-/* Columna */
+/* ✅ Columna: ancho calculado con --visible-cols (4) */
 .kiosk-col{
   height: 100%;
   overflow: hidden;
   border-radius: 12px;
   border: 1px solid rgba(255,255,255,0.12);
   background: rgba(0,0,0,0.35);
+
+  flex: 0 0 calc(
+    (100% - (var(--visible-cols) - 1) * var(--gap, 12px))
+    / var(--visible-cols)
+  );
 }
 
 /* Tabla */
@@ -81,6 +85,7 @@
   table-layout: fixed;
 }
 
+/* Encabezado */
 .kiosk-table thead th{
   padding: 8px 8px;
   font-size: 12px;
@@ -89,8 +94,11 @@
   color: rgba(255,255,255,0.88);
   border-bottom: 1px solid rgba(255,255,255,0.14);
   background: rgba(255,255,255,0.04);
+  text-align: left;
+  vertical-align: middle;
 }
 
+/* Filas */
 .kiosk-table td{
   padding: 6px 8px;
   font-size: 13px;
@@ -115,6 +123,7 @@
   background: rgba(255,210,64,0.08);
 }
 
+/* Texto ámbar */
 .kiosk-amber{
   color: rgba(255, 210, 64, 0.92);
   text-shadow: 0 0 8px rgba(255, 210, 64, 0.10);

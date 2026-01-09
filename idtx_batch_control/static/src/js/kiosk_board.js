@@ -1,10 +1,12 @@
-// Kiosk Control Pedido - Carrusel 4 columnas estilo aeropuerto (ahora 5 columnas)
+// Kiosk Control Pedido - Carrusel 4 columnas visibles (la 5ta queda oculta para animación)
 
 const REFRESH_MS = 15 * 60 * 1000; // 15 min
 const SLIDE_MS = 5 * 1000;        // 20 s
-const DEFAULT_LIMIT = 3000;
-const VISIBLE_COLS = 4;            // 4 visibles
-const TRACK_COLS = VISIBLE_COLS + 1; // +1 para animación
+const DEFAULT_LIMIT = 300;
+
+const VISIBLE_COLS = 4;              // ✅ SOLO 4 visibles en pantalla
+const TRACK_COLS = VISIBLE_COLS + 1; // columna extra para animación (queda fuera de vista)
+const GAP_PX = 12;                   // debe coincidir con el CSS
 
 let state = {
   records: [],
@@ -35,7 +37,7 @@ function pad2(n) {
   return n < 10 ? "0" + n : String(n);
 }
 
-// Fecha: DD/MM/YY
+// Fecha: DD/MM/YY (sin siglo)
 function fmtDateDMYShort(v) {
   if (!v) return "-";
   const s = String(v).trim();
@@ -49,7 +51,7 @@ function fmtDateDMYShort(v) {
   return s;
 }
 
-// Quita acentos para comparar áreas
+// Normaliza textos (quita acentos)
 function normArea(s) {
   return String(s ?? "")
     .trim()
@@ -58,12 +60,11 @@ function normArea(s) {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
-// ✅ Abreviación de áreas
+// Abreviación de áreas
 function abbrevArea(area) {
   const a = normArea(area);
   if (!a) return "-";
 
-  // Mapeo explícito (ajusta a tu gusto)
   const map = {
     "tejeduria": "TEJ",
     "pre tintoreria": "PTI",
@@ -78,12 +79,12 @@ function abbrevArea(area) {
 
   if (map[a]) return map[a];
 
-  // fallback: primeras 3 letras alfabéticas
   const only = a.replace(/[^a-z]/g, "");
   if (only.length >= 3) return only.slice(0, 3).toUpperCase();
   return (only || a).toUpperCase();
 }
 
+// Etiquetas de estado
 function badgeForState(st) {
   const v = String(st ?? "").toLowerCase();
   if (v === "on") return `<span class="badge badge-on">On Time</span>`;
@@ -121,7 +122,9 @@ function buildTable(colRecords) {
 function chunkIntoColumns(records, rowsPerCol) {
   const cols = [];
   const size = Math.max(1, Number(rowsPerCol) || 30);
-  for (let i = 0; i < records.length; i += size) cols.push(records.slice(i, i + size));
+  for (let i = 0; i < records.length; i += size) {
+    cols.push(records.slice(i, i + size));
+  }
   return cols.length ? cols : [[]];
 }
 
@@ -154,9 +157,10 @@ async function fetchData() {
   return await res.json();
 }
 
+// calcula cuántas filas caben
 function computeRowsPerCol(gridEl) {
   gridEl.innerHTML = `
-    <div class="kiosk-track">
+    <div class="kiosk-track" style="--visible-cols:${VISIBLE_COLS}; --gap:${GAP_PX}px;">
       <section class="kiosk-col">
         <table class="kiosk-table">
           <thead><tr><th>Fecha</th><th>Pedido</th><th>Días</th><th>Área</th><th>Estado</th></tr></thead>
@@ -181,8 +185,8 @@ function computeRowsPerCol(gridEl) {
   const colH = colEl.clientHeight;
   const headH = theadEl.offsetHeight;
   const rowH = trEl.offsetHeight || 18;
-  const usable = Math.max(colH - headH - 8, 60);
 
+  const usable = Math.max(colH - headH - 8, 60);
   return Math.max(1, Math.floor(usable / rowH));
 }
 
@@ -197,10 +201,24 @@ function renderTrack(gridEl) {
   }
 
   gridEl.innerHTML = `
-    <div class="kiosk-track" id="kiosk-track">
+    <div class="kiosk-track" id="kiosk-track"
+         style="--visible-cols:${VISIBLE_COLS}; --gap:${GAP_PX}px; transform: translateX(0px);">
       ${take.map(col => `<section class="kiosk-col">${buildTable(col)}</section>`).join("")}
     </div>
   `;
+}
+
+function getSlidePx() {
+  const track = document.getElementById("kiosk-track");
+  if (!track) return 0;
+
+  const col = track.querySelector(".kiosk-col");
+  if (!col) return 0;
+
+  const styles = getComputedStyle(track);
+  const gap = parseFloat(styles.gap || styles.columnGap || "0") || 0;
+
+  return col.getBoundingClientRect().width + gap;
 }
 
 function startCarousel(gridEl) {
@@ -217,7 +235,12 @@ function startCarousel(gridEl) {
       return;
     }
 
+    const slidePx = getSlidePx();
+
     track.classList.add("is-sliding");
+    requestAnimationFrame(() => {
+      track.style.transform = `translateX(-${slidePx}px)`;
+    });
 
     setTimeout(() => {
       state.startCol = (state.startCol + 1) % state.columns.length;
@@ -227,6 +250,7 @@ function startCarousel(gridEl) {
       const newTrack = document.getElementById("kiosk-track");
       if (newTrack) {
         newTrack.classList.remove("is-sliding");
+        newTrack.style.transform = "translateX(0px)";
         void newTrack.offsetWidth;
       }
 
