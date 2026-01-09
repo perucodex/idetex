@@ -1,8 +1,8 @@
 // Kiosk Control Pedido - Carrusel 4 columnas estilo aeropuerto (ahora 5 columnas)
 
 const REFRESH_MS = 15 * 60 * 1000; // 15 min
-const SLIDE_MS = 20 * 1000;        // 20 s
-const DEFAULT_LIMIT = 300;
+const SLIDE_MS = 5 * 1000;        // 20 s
+const DEFAULT_LIMIT = 3000;
 const VISIBLE_COLS = 4;            // 4 visibles
 const TRACK_COLS = VISIBLE_COLS + 1; // +1 para animación
 
