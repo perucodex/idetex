@@ -8,11 +8,13 @@
         <field name="fecha"/>
         <field name="fecoc"/>
         <field name="numordped"/>
+        <field name="customer" optional="hide"/>
+        <field name="salesman" optional="hide"/>
+        <field name="tipoventa" optional="hide"/>
         <field name="num_days"/>
         <field name="area"/>
         <field name="process"/>
         <field name="state" widget="badge" decoration-danger="state == 'de'" decoration-info="state == 'on'" decoration-success="state == 'do'"/>
-        <field name="tipoventa" optional="hide"/>
       </list>
     </field>
   </record>

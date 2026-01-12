@@ -52,7 +52,7 @@ class MrpProductionRoll(models.Model):
 
                     ^FO20,100
                     ^BQN,2,10
-                    ^FDLA,01{(self.product_id.barcode or self.lot_id.product_id.barcode)}3102{str(int(weight * 100)).zfill(6)}10{self.lot_id.name}^FS
+                    ^FDLA,01{(self.product_id.barcode or self.lot_id.product_id.barcode)}3102{str(int(round(weight * 100))).zfill(6)}10{self.lot_id.name}^FS
 
                     ^FO300,110
                     ^A0N,22,22

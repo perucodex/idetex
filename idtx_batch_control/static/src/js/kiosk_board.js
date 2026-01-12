@@ -4,7 +4,7 @@ const REFRESH_MS = 15 * 60 * 1000; // 15 min
 const SLIDE_MS = 5 * 1000;        // 20 s
 const DEFAULT_LIMIT = 300;
 
-const VISIBLE_COLS = 4;              // ✅ SOLO 4 visibles en pantalla
+const VISIBLE_COLS = 3;              // ✅ SOLO 4 visibles en pantalla
 const TRACK_COLS = VISIBLE_COLS + 1; // columna extra para animación (queda fuera de vista)
 const GAP_PX = 12;                   // debe coincidir con el CSS
 
