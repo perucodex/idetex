@@ -21,6 +21,7 @@ class ProductAnalysis(models.Model):
         ('open', 'Open'),
         ('tubu', 'Tubular'),
         ('rect', 'Rectilinear'),
+        ('othe', 'Other'),
     ], string='Weave Type')
     column_qty = fields.Integer('Column Qty')
     width = fields.Float('Analysis Width', compute='_compute_width')
@@ -103,6 +104,7 @@ class ProductAnalysis(models.Model):
                     (rec.product_appearance_id.code or '00') + \
                     (str(int(rec.standard_width)) or '000').zfill(3) + \
                     (str(int(rec.density)) or '000').zfill(3)
+            rec.product_id.default_code = rec.product_code
                 
     @api.onchange('gauge_id')
     def _onchange_gauge_id(self):
@@ -287,6 +289,7 @@ class AnalysisFiber(models.Model):
     thread_qty = fields.Integer('Thread Quantity')
     thread_title = fields.Float('Thread Title', compute='_compute_thread_title')
     product_template_id = fields.Many2one('product.template', string='Thread', domain=lambda self: [('categ_id', 'in', self.env.company.thread_category_ids.ids)], ondelete='restrict')
+    ligament_id = fields.Many2one('ligament.type', string='Ligament')
     percentage = fields.Float('Percentage', compute='_compute_percentage')
     line_ids = fields.One2many('analysis.fiber.line', 'analysis_fiber_id', string='Lines')
 

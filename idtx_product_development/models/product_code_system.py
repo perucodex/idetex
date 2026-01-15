@@ -35,3 +35,8 @@ class ProductAppearance(models.Model):
     _name = 'product.appearance'
     _inherit = 'product.code.system'
     _description = 'Product Appearance'
+
+class LigamentType(models.Model):
+    _name = 'ligament.type'
+    _inherit = 'product.code.system'
+    _description = 'Ligament Type'

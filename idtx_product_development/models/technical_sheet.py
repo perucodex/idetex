@@ -56,6 +56,7 @@ class TechnicalSheet(models.Model):
     user_id = fields.Many2one('res.users','Prepared by',default=lambda self: self.env.user)
     size_chart_ids = fields.One2many('technical.size.line', 'technical_id', string='Size Chart')
     route_line_ids = fields.One2many('technical.route.line', 'technical_id', string='Route Line')
+    bom_id = fields.Many2one('mrp.bom', string='LdM')
 
     def _compute_prod_scrap(self):
         for rec in self:
@@ -139,12 +140,12 @@ class TechnicalSheet(models.Model):
                 'operation_id': route.operation_id.id,
                 'workcenter_id': route.workcenter_id.id,
             }) for route in self.route_line_ids.sorted(key=lambda r: r.sequence)],
-            'bom_line_ids': [Command.create({'product_id': f.product_template_id.product_variant_id.id, 'product_qty': f.percentage}) for f in analysis_line.fiber_ids],
+            'bom_line_ids': [Command.create({'product_id': f.product_template_id.product_variant_id.id, 'product_qty': f.percentage}) for f in analysis_line.fiber_ids if f.product_template_id and f.percentage],
         })
         # Consumir el hilo en tejeduria
         # Solo si existe un producto de hilado
         if any(p.is_thread for p in analysis_line.fiber_ids.product_template_id.product_variant_id):
-            weaving_operation = bom_id.operation_ids.filtered(lambda o: o.operation_id.workcenter_id.operation_type == 'weaving')
+            weaving_operation = bom_id.operation_ids.filtered(lambda o: o.operation_id.operation_type == 'weaving')
             if weaving_operation:
                 for l in bom_id.bom_line_ids:
                     l.operation_id = weaving_operation
@@ -153,6 +154,7 @@ class TechnicalSheet(models.Model):
                 if bom_id.bom_line_ids:
                     raise UserError(_('There is no weaving operation in bom. Please check your product routing!'))
         self.product_id.bom_ids += bom_id
+        self.bom_id = bom_id
 
     def action_return(self):
         self.state = 'done' if self.state == 'prod' else 'draft'

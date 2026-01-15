@@ -42,7 +42,7 @@ class SaleOrderLine(models.Model):
     @api.depends('bom_id')
     def _compute_available_operations(self):
         for record in self:
-            operations = self.env['mrp.routing.workcenter'].search([])
+            operations = self.env['mrp.routing.workcenter']
             if record.bom_id:
                 operations = record.bom_id.operation_ids.filtered(lambda o: o.operation_id.unit_price > 0 or o.operation_id.type_prices == 'col' and sum(o.operation_id.product_color_price_ids.mapped('unit_price')) > 0).ids
             record.available_operation_ids = operations
@@ -157,6 +157,10 @@ class SaleOrderLine(models.Model):
                         price = operation_color_line.unit_price if operation_color_line else 0
                     else:
                         price = operation.operation_id.unit_price
+                    
+                    # # Si el precio varia por titulo de hilo
+                    # if operation.operation_id.per_title:
+                    #     price += self.product_template_id.id.analysis_id.product_title_id.unit_price
 
                     src_currency = operation.operation_id.currency_id
                     if src_currency != currency:

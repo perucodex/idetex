@@ -1,4 +1,5 @@
 id,code,name,needles,diameter,feeders
+product_gauge_00,"00","Galga 00",2516,28,60
 product_gauge_12,"12","Galga 12",2516,28,60
 product_gauge_14,"14","Galga 14",2516,28,60
 product_gauge_16,"16","Galga 16",2516,28,60

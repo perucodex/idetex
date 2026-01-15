@@ -36,6 +36,7 @@ y ficha técnica
         'data/product.fiber.csv',
         'data/product.gauge.csv',
         'data/product.title.csv',
+        'data/ligament.type.csv',
         'security/group_dev.xml',
         'security/ir.model.access.csv',
         'report/report_product_analysis.xml',

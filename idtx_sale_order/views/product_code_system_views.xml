@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="product_title_tree_view_inherit" model="ir.ui.view">
+        <field name="name">product.title.list.inherit</field>
+        <field name="model">product.title</field>
+        <field name="inherit_id" ref="idtx_product_development.product_title_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="currency_id" invisible="1"/>
+                <field name="unit_price"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

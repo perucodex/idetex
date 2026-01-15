@@ -191,6 +191,7 @@
                                         <field name="weight"/>
                                         <field name="thread_title"/>
                                         <field name="product_template_id"/>
+                                        <field name="ligament_id"/>
                                         <field name="percentage" widget="percentage"/>
                                     </list>
                                 </field>
@@ -229,6 +230,7 @@
                             <group>
                                 <field name="thread_title"/>
                                 <field name="product_template_id" options="{'no_create': True, 'no_open': True}"/>
+                                <field name="ligament_id"/>
                             </group>
                         </group>
                         <notebook>
@@ -256,6 +258,7 @@
                     <field name="weight"/>
                     <field name="thread_title"/>
                     <field name="product_template_id"/>
+                    <field name="ligament_id"/>
                     <field name="percentage" widget="percentage"/>
                 </list>
             </field>

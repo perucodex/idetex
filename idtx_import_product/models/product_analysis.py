@@ -1,0 +1,311 @@
+# -*- coding: utf-8 -*-
+import re
+import pyodbc
+pyodbc.setDecimalSeparator(".")
+from odoo import models, fields, api, Command, _
+from odoo.exceptions import UserError
+
+import logging
+_logger = logging.getLogger(__name__)
+
+def validar_ruc_peru(ruc):
+    # Debe ser string de 11 dígitos numéricos
+    if not ruc.isdigit() or len(ruc) != 11:
+        return False
+
+    # Prefijos válidos según SUNAT
+    if ruc[:2] not in {'10', '15', '16', '17', '20'}:
+        return False
+
+    # Pesos oficiales
+    pesos = [5, 4, 3, 2, 7, 6, 5, 4, 3, 2]
+
+    suma = sum(int(ruc[i]) * pesos[i] for i in range(10))
+    resto = suma % 11
+    digito = 11 - resto
+
+    if digito == 10:
+        digito = 0
+    elif digito == 11:
+        digito = 1
+
+    return digito == int(ruc[-1])
+
+
+def a_float(cadena):
+    if not isinstance(cadena, str):
+        return 0
+
+    match = re.search(r'[-+]?\d*\.?\d+', cadena)
+    return float(match.group()) if match else 0
+import re
+
+def a_int(cadena):
+    if not isinstance(cadena, str):
+        return 0
+    match = re.search(r'[-+]?\d*\.?\d+', cadena)
+    if not match:
+        return 0
+    return int(float(match.group()))
+
+# ---------- Models ----------
+class ProductAnalysis(models.Model):
+    _inherit = 'product.analysis'
+
+    is_problem = fields.Boolean('is_problem?')
+    state = fields.Selection(selection_add=[('impo', 'Imported')],)    
+    
+    @api.onchange('product_code','partner_id')
+    def _onchange_is_problem(self):
+        for rec in self:
+            if not rec.partner_id or not rec.product_family_id or not rec.product_appearance_id or not rec.product_fiber_id or not rec.product_title_id or not rec.gauge_id:
+                rec.is_problem = True
+            else:
+                rec.is_problem = False
+
+    # -----------------------------------------
+    # 🔌 CONEXION SQL SERVER
+    # -----------------------------------------
+    def _get_sql_connection(self):
+        try:
+            conn = pyodbc.connect(
+                "DSN=SITPRO_DSN;"
+                "PORT=1433;"
+                "UID=sistemas;"
+                "PWD=idtE#21@IRdc95;"
+                "TDS_Version=7.3;"
+            )
+            return conn
+        except Exception as e:
+            raise UserError(f"No se pudo conectar a SQL Server: {e}")
+    
+    def get_routing_data(self, ruta):
+        try:
+            conn = self._get_sql_connection()
+            cursor = conn.cursor()
+            query = f"""
+                SELECT *
+                FROM Ruta_Detalle
+                where procod = '{ruta}'
+                ORDER BY
+                    Procod,
+                    pronumlin;
+            """
+            cursor.execute(query)
+            return cursor.fetchall()
+        finally:
+            try:
+                cursor.close()
+            except Exception:
+                pass
+            try:
+                conn.close()
+            except Exception:
+                pass
+
+    # ----- Sync -----
+    def sync_from_sql(self):
+        try:
+            conn = self._get_sql_connection()
+            cursor = conn.cursor()
+            query = f"""
+                SELECT *
+                FROM tinto_cab_ruta tcr
+                JOIN tinto_crudo tc ON tcr.ficha = tc.ficha
+                JOIN tinto_tejido tt ON tcr.ficha = tt.ficha
+                JOIN clientes c ON c.cdgclie = tcr.cdgclie
+                JOIN (SELECT ficha, fascod, max(it) as it FROM ficha_ruta_final GROUP BY ficha, fascod) frf ON frf.ficha = tcr.ficha
+                JOIN (
+                    SELECT
+                        ficha,
+                        item,
+                        articulo,
+                        MAX(porcen)    AS porcen,
+                        MAX(codigo)    AS codigo,
+                        MAX(it)        AS it,
+                        MAX(ligamento) AS ligamento,
+                        MAX(lm1)       AS lm1
+                    FROM tinto_prog 
+                    GROUP BY
+                        ficha,
+                        item,
+                        articulo
+                ) TP 
+                    ON tcr.ficha = tp.ficha
+                WHERE tcr.fecha >= '2022-01-01'
+                -- and tcr.ficha = '19497-26'
+                and len(tcr.cdgart) = 16
+                ORDER BY
+                    tcr.fecha desc,
+                    tcr.ficha,
+                    tp.item;
+            """
+            cursor.execute(query)
+            
+            last_weaving_data_id = self.env['analysis.weaving.data']
+            cursor_result = cursor.fetchall()
+            total = len(cursor_result)
+            weaving_workcenter = self.env['mrp.workcenter'].create({'name': 'TEJEDURIA', 'operation_type': 'weaving'})
+            weaving_process = self.env['mrp.routing.workcenter.operation'].create({'name': 'TEJIDO CRUDO', 'workcenter_id': weaving_workcenter.id})
+            for contador, row in enumerate(cursor_result, 1):
+                code = row.cdgart.strip()
+                _logger.info(str(contador) + ' / ' + str(total) + '  ' + str(int((contador / total)*100)) + '%')
+                product_analysis = self.search([('product_code','=', code[1:])])
+                partner = self.env['res.partner'].search([('vat','=', row.ruc.strip()),('is_company','=', True)])
+                if not partner and len(row.ruc.strip()) == 11 and validar_ruc_peru(row.ruc.strip()):
+                    partner = self.env['res.partner'].create({
+                        'name': row.razsoc.strip(),
+                        'vat': row.ruc.strip(),
+                        'l10n_latam_identification_type_id': self.env.ref('l10n_pe.it_RUC').id,
+                    })
+                if not product_analysis:
+                    fam = self.env['product.family'].search([('code','=', code[1:3])])
+                    app = self.env['product.appearance'].search([('code','=', code[8:10])])
+                    fib = self.env['product.fiber'].search([('code','=', code[5:6])])
+                    tit = self.env['product.title'].search([('code','=', code[3:5])])
+                    gau = self.env['product.gauge'].search([('code','=', code[6:8])])
+                    codfam = 'rect' if code[1:3] in ('CD','CO','CR','CT','CU','PO','PT','PU') else False
+                    if not codfam:
+                        codfam = 'othe' if code[1:3] in ('BL','EN','PP','PR','TO','TP','TW') else False
+                    if not partner or not fam or not app or not fib or not tit or not gau:
+                        is_problem = True
+                    else:
+                        is_problem = False
+                    base_process_id = self.env['mrp.base.process'].search([('name','=', row.fascod.strip())])
+                    if not base_process_id:
+                        ruta_cursor = self.get_routing_data(row.fascod.strip())
+                        base_process_id = self.env['mrp.base.process'].create({'name': row.fascod.strip(),'process_ids': [Command.create({'operation_id': weaving_process.id})]})
+                        # for rrow in ruta_cursor:
+                        #     print(rrow.FasDsc.strip())
+                        base_process_id.write({
+                            # 'name': row.fascod.strip(),
+                            'process_ids': [Command.create({
+                                'operation_id': self.env['mrp.routing.workcenter.operation'].search([('name','=', rrow.FasDsc.strip())]).id or self.env['mrp.routing.workcenter.operation'].create({'name': rrow.FasDsc.strip(), 'workcenter_id': self.env['mrp.workcenter'].search([('name','=', str(rrow.area).strip())]).id or self.env['mrp.workcenter'].create({'name': str(rrow.area).strip()}).id}).id,
+                            }) for rrow in ruta_cursor]
+                        })
+                        weaving_lines = base_process_id.process_ids.filtered(lambda l: l.operation_id.operation_type == 'weaving')
+                        # Si no hay tejido creamos uno sino eliminamos hasta que quede el primero
+                        # if not weaving_lines:
+                        #     weaving_line = self.env['mrp.base.process.line'].create({
+                        #         'mrp_base_process_id': base_process_id.id,
+                        #         'operation_id': weaving_process.id,
+                        #     })
+                        # else:
+                        if weaving_lines:
+                            weaving_line = weaving_lines[0]
+                            if len(weaving_lines) > 1:
+                                (weaving_lines - weaving_line).unlink()
+                    vals = {
+                        'analysis_date': row.fecha,
+                        'partner_id': partner.id or False,
+                        'product_description': row.descrip.strip(),
+                        'product_family_id': fam.id or False,
+                        'product_appearance_id': app.id or False,
+                        'product_fiber_id': fib.id or False,
+                        'product_title_id': tit.id or False,
+                        'weave_type': codfam if codfam else ('tubu' if row.tiptej.strip()[:1] == 'T' else 'open'),
+                        'gauge_id': gau.id or False,
+                        'needles': a_int(row.agujas),
+                        'diameter': a_int(row.diametro),
+                        'feeders': a_int(row.alimenta),
+                        'density': a_int(code[10:13]) if a_int(code[10:13]) else 1,
+                        'standard_width': a_float(code[13:16]) if a_float(code[13:16]) else 1,
+                        'product_code': code[1:],
+                        'is_problem': is_problem,
+                        'mrp_base_process_id': base_process_id.id,
+                    }
+                    product_analysis = self.create(vals)
+                    # Actualizamos el detalle de las rutas desde la base
+                    product_analysis._onchange_mrp_base_process_id()
+                if not product_analysis.product_id:
+                    product_analysis.action_product()
+                ligament = self.env['ligament.type'].search([('name','=',row.ligamento.strip())])
+                codhil = row.codigo.strip() if row.codigo.strip() != '0' or row.codigo.strip() != '' else ''
+                if last_weaving_data_id and last_weaving_data_id.sitpro_sheet != row.ficha.strip():
+                    last_product_analysis.weaving_data_ids = [Command.link(last_weaving_data_id.id)]
+                    self.create_technical_sheet(last_weaving_data_id, last_product_analysis, last_row)
+                    last_product_analysis.state = 'impo'
+                if last_weaving_data_id and last_weaving_data_id.sitpro_sheet == row.ficha.strip():
+                    vals = {
+                        'fiber_ids': [Command.create({
+                            'weight': a_float(row.porcen),
+                            'ligament_id': ligament.id or False,
+                            'product_template_id': (self.env['product.template'].search([('default_code','=', codhil)]).id or self.env['product.template'].create({'name': row.articulo.strip(), 'default_code': codhil, 'categ_id': self.env.company.thread_category_ids[0].id, 'uom_id': self.env.ref('uom.product_uom_kgm').id}).id) if codhil else False,
+                            'line_ids': [Command.create({
+                                'length': a_float(row.lm1),
+                            })]
+                        })]
+                    }
+                    last_weaving_data_id.write(vals)
+                else:
+                    vals = {
+                        'sitpro_sheet': row.ficha.strip(),
+                        'partner_id': partner.id or False,
+                        'stylo': row.stylo.strip(),
+                        'notes': row.obs,
+                        'fiber_ids': [Command.create({
+                            'weight': a_float(row.porcen),
+                            'ligament_id': ligament.id or False,
+                            'product_template_id': (self.env['product.template'].search([('default_code','=', codhil)]).id or self.env['product.template'].create({'name': row.articulo.strip(), 'default_code': codhil, 'categ_id': self.env.company.thread_category_ids[0].id, 'uom_id': self.env.ref('uom.product_uom_kgm').id}).id) if codhil else False,
+                            'line_ids': [Command.create({
+                                'length': a_float(row.lm1),
+                            })]
+                        })]
+                    }
+                    last_weaving_data_id = self.env['analysis.weaving.data'].create(vals)
+                    last_row = row
+                    last_product_analysis = product_analysis
+            if last_weaving_data_id and last_product_analysis and last_row:
+                last_product_analysis.weaving_data_ids = [Command.link(last_weaving_data_id.id)]
+                self.create_technical_sheet(last_weaving_data_id, last_product_analysis, last_row)
+                last_product_analysis.state = 'impo'
+        finally:
+            try:
+                cursor.close()
+            except Exception:
+                pass
+            try:
+                conn.close()
+            except Exception:
+                pass
+
+    def create_technical_sheet(self, lw, pa, row):
+        # Ficha Tecnica
+        lw.technical_sheet_id = self.env['technical.sheet'].create({
+            'sitpro_sheet': row.ficha.strip(),
+            'analysis_id': pa.id,
+            'product_code': pa.product_code,
+            'product_id': pa.product_id.id,
+            'partner_id': lw.partner_id.id,
+            'fabric_composition': ' '.join([
+                f'{round(f.percentage * 100)}% {f.product_template_id.name}'
+                for f in lw.fiber_ids if f.product_template_id
+            ]),
+            'density': pa.density,
+            'width': pa.standard_width,
+            'gauge_id': pa.gauge_id.id,
+            'stylo': lw.stylo,
+            'route_line_ids': [Command.create({
+                'operation_id': route.operation_id.id,
+                'line_parameter_ids': [Command.create({'name': param.name}) for param in route.operation_id.parameter_ids],
+            }) for route in pa.routing_ids.sorted(key=lambda r: r.sequence)],
+            # Datos de crudo
+            'raw_width': a_float(row.ancho),
+            'raw_density': a_float(row.densidad),
+            'raw_widening': a_float(row.ensanch),
+            # Datos de acabado
+            'finish_width': a_float(row.trollo),
+            'finish_density': a_float(row.vrollo),
+            'finish_yield': a_float(row.rrollo),
+        })
+        lw.technical_sheet_id.action_done()
+    
+class AnalysisWeavingData(models.Model):
+    _inherit = 'analysis.weaving.data'
+
+    sitpro_sheet = fields.Char('Sitpro Sheet')
+
+class TechnicalSheet(models.Model):
+    _inherit = 'technical.sheet'
+
+    sitpro_sheet = fields.Char('Sitpro Sheet')
