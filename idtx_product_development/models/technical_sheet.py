@@ -19,7 +19,7 @@ class TechnicalSheet(models.Model):
     # Tejido
     stylo = fields.Char('Stylo')
     program = fields.Char('Program')
-    fabric_composition = fields.Char('Fabric Composition')
+    fabric_composition = fields.Text('Fabric Composition')
     atx = fields.Char('ATX')
     density = fields.Integer('Density')
     width = fields.Float('Width')
@@ -197,4 +197,5 @@ class RouteLineParameter(models.Model):
 
     technical_route_id = fields.Many2one('technical.route.line', string='Technical Routing Line')
     name = fields.Char('Parameter')
-    value = fields.Char('Value')
+    value = fields.Text('Value')
+    is_observation = fields.Boolean('Observación?')

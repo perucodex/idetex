@@ -114,6 +114,7 @@ FIELD_NAMES = {
     'densisale': 'Densidad de Salida',
     'tensiing': 'Tensión de Entrada',
     'tensisal': 'Tensión de Salida',
+    'obs': 'Observación'
 }
 
 def validar_ruc_peru(ruc):
@@ -413,6 +414,7 @@ class ProductAnalysis(models.Model):
                                     Command.create({
                                         'name': FIELD_NAMES[field_name],
                                         'value': value,
+                                        'is_observation': field_name == 'obs',
                                     })
                                 )
             route_line_ids.append(Command.create({
@@ -428,10 +430,10 @@ class ProductAnalysis(models.Model):
             'product_code': pa.product_code,
             'product_id': pa.product_id.id,
             'partner_id': lw.partner_id.id,
-            'fabric_composition': ' '.join([
+            'fabric_composition': '\n'.join([
                 f'{round(f.percentage * 100)}% {f.product_template_id.name}'
                 for f in lw.fiber_ids if f.product_template_id
-            ]),
+            ]).strip(),
             'density': pa.density,
             'width': pa.standard_width,
             'gauge_id': pa.gauge_id.id,

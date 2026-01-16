@@ -149,10 +149,10 @@ class ProductAnalysis(models.Model):
                 'product_code': self.product_code,
                 'product_id': self.product_id.id,
                 'partner_id': rec.partner_id.id,
-                'fabric_composition': ' '.join([
+                'fabric_composition': '\n'.join([
                     f'{round(f.percentage * 100)}% {f.product_template_id.name}'
                     for f in rec.fiber_ids if f.product_template_id
-                ]),
+                ]).strip(),
                 'density': self.density,
                 'width': self.standard_width,
                 'gauge_id': self.gauge_id.id,
