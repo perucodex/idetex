@@ -4,9 +4,117 @@ import pyodbc
 pyodbc.setDecimalSeparator(".")
 from odoo import models, fields, api, Command, _
 from odoo.exceptions import UserError
+import psycopg2.extras
 
 import logging
 _logger = logging.getLogger(__name__)
+
+TERMO_2 = []
+MCS = []
+ABI_TER = ['Ancho de Entrada', 'Densidad de Entrada','Ancho de Cadena','Velocidad','Temperatura C°','Alimentador Superior','Alimentador Inferior','Alimentador de Salida','Presión','Ancho de Salida','Densidad de Salida','Alimentador Brazo Derecho','Alimentador Brazo Izquierdo','Presión Foulard','T° por Campos','Turbulencia','Inclinación de Trama','Maquina']
+ABI_SIL = []
+ABI_RAMA = []
+ABI_PERCHA = []
+ABI_TUNDI = []
+ABI_ESME = []
+ABI_TAM = []
+ABI_ABRI = []
+ABI_HIDRO = []
+ABI_SECA = []
+ABI_COMPA = []
+CALIDAD = []
+TABLES = [
+    {'process': ['THERMOFIJADO ENTEMA','THERMOFIJADO MERSAN'], 'table': 'tinto_termo_2'},
+    #'tinto_mcs', Segun alex esto no se llena, es complejo y lo hace tintoreri}a
+    {'process': ['THERMOFIJADO RAMA','THERMOFIJADO DISPERSANTE/HUM','THERMO-BLANQUEO ACABADO','THERMO ACABADO'], 'table': 'tinto_abi_ter'},
+    {'process': ['SECADO','SECADO RECETA 155','SECADO PP ESTAMPAR','SECADO LUBRICANTE COSTURA','SECADO SOLO AGUA','SECADO PP ESMERILAR','SECADO PP PERCHAR','SECADO INCLINACION FULL','SECADO RECETA 211','SECADO PP TEÑIR','SECADO ENGOMADO C/ORILLOS',], 'table': 'tinto_abi_sil'},
+    {'process': ['ACABADO','ACAB RESINA LIBRE FORMALEHID','ACABADO RESINADO','PRESECADO 100% RESINADO 158','ACABADO RECETA 104','ACABADO RECETA 102','ACABADO RECETA 157','PRESECADO 100% RESINADO 71','ACABADO RECETA 156','PRESECADO 100% ACABADO 157','ACABADO WICKING','ACABADO LUBRICANTE COSTURA','ACABADO HIDROFILO TACTO SUAV','ACABADO LUXURY','ACABADO BESOCOOL','ACABADO RESINADO LUXURY','ACABADO CON CORTE DE ORILLOS','PRESECADO 50% SOLO AGUA','PRESECADO 100% ACABADO','PRESECADO100% ACA157 ENG/C O','ACABADO RESINADO 1/2 RECETA','ACABADO RESI LUXU RECETA 158','ACABADO RESINADO LANDS END','PRESECADO 100% ACABADO 104','ACABADO RESINADO C/ORILLOS','ACABADO ENGOMADO C/ORILLOS','RAMA ENGOMADO/CORTE ORILLOS','RAMA CON HUMECTANTE','SUAVIZADO PP PERCHAR','ACABADO RECETA 101','ACABADO RESINADO LACOSTE','ACABADO WICKING RECETA 76','ACABADO RECETA 120','ACABADO PIQUE TACTO LACOSTE','ACAB RESIN LUXURY 1/2 RECETA','ACABADO RECETA 209','ACABADO ENGOMADO','ACABADO SOLO AGUA SIN C/ORIL','ACABADO HIDROFILO','LAVADO Y ACABADO ROTOCLEAN','ACABADO RESI LUXURY POLYCRYL','ACABADO PP SUBLIMAR','ACABADO WICKING+ANTIMICROBIA'], 'table': 'tinto_abi_rama'},
+    {'process': ['PERCHADORA','PERCHADO X REVEZ','PERCHADO 2 PASES'], 'table': 'tinto_abi_percha'},
+    {'process': ['TUNDIDO SOLO PUNTAS','TUNDIDO'], 'table': 'tinto_abi_tundi'},
+    {'process': ['ESMERILADO','ESMERILADO X CARA ESTAMPADA','ESMERILADO X CARA'], 'table': 'tinto_abi_esme'},
+    {'process': ['TAMBLEADO'], 'table': 'tinto_abi_tam'},
+    {'process': ['ABIERTO TINTO','ABRIDORA CON DUCHA 2 PASES'], 'table': 'tinto_abi_abri'},
+    {'process': ['HIDROEXTRACTORA','HIDRO SUAVIZADO','HIDRO SUAVIZADO PIMA','HIDRO HUMECTADO','HIDRO SOLO AGUA MINIMA PRESI','HIDRO RESINADO','HIDRO SOLO SUAVIZANT COSTURA','HIDRO SUAVIZANTE PERCHADO','HIDRO SUAVIZADO LUXURY','HIDRO RESINADO LANDS SEND','HIDRO HIDROFILO TACTO SUAVE','HIDRO SUA HIDROFIL TACTO SUA','HIDRO EXPRIMIDO'], 'table': 'tinto_tub_hidro'},
+    {'process': ['SECADO','SECADO TUBULAR'], 'table': 'tinto_tub_seca'},
+    {'process': ['COMPACTADO','SANFORIZADO'], 'table': 'tinto_tub_compa'},
+    {'process': ['CONTROL DE CALIDAD'], 'table': 'tinto_calidad'},
+]
+
+FIELD_NAMES = {
+    'txcampo': 'T° por Campo',
+    'velocidad': 'Velocidad',
+    'turbulenci': 'Turbulencia',
+    'anchomaq': 'Ancho de Entrada',
+    'alimsuperi': 'Alimentador Superior',
+    'aliminfe': 'Alimentador Inferior',
+    'alimbrizq': 'Alimentador Brazo Izquierdo',
+    'alimbrader': 'Alimentador Brazo Derecho',
+    'inclitrama': 'Inclinación de Trama',
+    'anchosale': 'Ancho de Salida',
+    'densisale': 'Densidad de Salida',
+    'presifoula': 'Presion de Foulard',
+    'recetacaba': 'Receta de Acabado',
+    'presion': 'Presión',
+    'alimsale': 'Alimentador de Salida',
+    'temperatura': 'Temperatura C°',
+    'anchocadena': 'Ancho de Cadena',
+    'densidmaq': 'Densidad de Entrada',
+    'maquina': 'Maquina',
+    'regulpelo': 'Regulación de Pelo',
+    'regulcpelo': 'Regulación de Contrapelo',
+    'tensientra': 'Tensión de Entrada',
+    'tensisale': 'Tensión de Salida',
+    'npases': 'N° de Pases',
+    'altercuchi': 'Alterno de Cuchilla',
+    'tensisalid': 'Tensión de Salida',
+    'rpm': 'RPM',
+    'veltambor': 'Velocidad del Tambor',
+    'presifaja': 'Presión de Faja',
+    'presientra': 'Presión de Entrada',
+    'aircalient': 'Aire Caliente',
+    'airefrio': 'Aire Frío',
+    'vapor': 'Vapor',
+    'alimgarru': 'Alimentador de Garrucha',
+    'alimfoular': 'Alimentador de Foulard',
+    'presifoul2': 'Presion de Foulard 2',
+    'aliment123': 'Alimentadores 1-2-3',
+    'presifoul1': 'Presion de Foulard 1',
+    'anchotela': 'Ancho de Entrada',
+    'recetacab': 'Bastidor',
+    'ventxcamp': 'Ventilación por Campo',
+    'alimentra': 'Alimentador de Entrada',
+    'anchoentra': 'Anch de Entrada',
+    'tempera1': 'Temperatura 1',
+    'tempera2': 'Temperatura 2',
+    'tempera3': 'Temperatura 3',
+    'encogimiento': 'Encogimiento',
+    'densidad': 'Densidad',
+    'alimsupe': 'Alimentador Superior',
+    'presifoular': 'Presion de Foulard',
+    'pickup': '%% de Pick Up',
+    'vibracion': 'Vibración',
+    'sobrealim': 'Sobre Alimentación',
+    'alimentaci': 'Alimentación',
+    'temperatu': 'Temperatura',
+    'velicidad': 'Velocidad',
+    'vaporizado': 'Vaporizado',
+    'densisalid': 'Ancho de Salida',
+    'teflon': 'Teflon',
+    'tension': 'Tensión',
+    'humectado': 'Humectado',
+    'ancho': 'Ancho',
+    'encolargo': 'Encogimiento Largo',
+    'encoancho': 'Encogimiento Ancho',
+    'revirado': 'Revirado',
+    'solidelava': 'Solidez de Lavado',
+    'otros': 'Otros',
+    'temperatur': 'Temperatura',
+    'alimen': 'Alimentación',
+    'densientra': 'Densidad de Entrada',
+    'densisale': 'Densidad de Salida',
+    'tensiing': 'Tensión de Entrada',
+    'tensisal': 'Tensión de Salida',
+}
 
 def validar_ruc_peru(ruc):
     # Debe ser string de 11 dígitos numéricos
@@ -102,6 +210,33 @@ class ProductAnalysis(models.Model):
                 conn.close()
             except Exception:
                 pass
+    
+    def get_parameters_data(self, ficha, table):
+        try:
+            conn = self._get_sql_connection()
+            cursor = conn.cursor()
+            query = f"""
+                SELECT *
+                FROM {table} where ficha = '{ficha}'
+            """
+            cursor.execute(query)
+            columns = [col[0] for col in cursor.description]
+            rows = cursor.fetchall()
+
+            # Convertimos a lista de dicts
+            return [dict(zip(columns, row)) for row in rows]
+        
+            # cursor.execute(query)
+            # return cursor.fetchall()
+        finally:
+            try:
+                cursor.close()
+            except Exception:
+                pass
+            try:
+                conn.close()
+            except Exception:
+                pass
 
     # ----- Sync -----
     def sync_from_sql(self):
@@ -175,22 +310,13 @@ class ProductAnalysis(models.Model):
                     if not base_process_id:
                         ruta_cursor = self.get_routing_data(row.fascod.strip())
                         base_process_id = self.env['mrp.base.process'].create({'name': row.fascod.strip(),'process_ids': [Command.create({'operation_id': weaving_process.id})]})
-                        # for rrow in ruta_cursor:
-                        #     print(rrow.FasDsc.strip())
                         base_process_id.write({
-                            # 'name': row.fascod.strip(),
                             'process_ids': [Command.create({
                                 'operation_id': self.env['mrp.routing.workcenter.operation'].search([('name','=', rrow.FasDsc.strip())]).id or self.env['mrp.routing.workcenter.operation'].create({'name': rrow.FasDsc.strip(), 'workcenter_id': self.env['mrp.workcenter'].search([('name','=', str(rrow.area).strip())]).id or self.env['mrp.workcenter'].create({'name': str(rrow.area).strip()}).id}).id,
                             }) for rrow in ruta_cursor]
                         })
                         weaving_lines = base_process_id.process_ids.filtered(lambda l: l.operation_id.operation_type == 'weaving')
                         # Si no hay tejido creamos uno sino eliminamos hasta que quede el primero
-                        # if not weaving_lines:
-                        #     weaving_line = self.env['mrp.base.process.line'].create({
-                        #         'mrp_base_process_id': base_process_id.id,
-                        #         'operation_id': weaving_process.id,
-                        #     })
-                        # else:
                         if weaving_lines:
                             weaving_line = weaving_lines[0]
                             if len(weaving_lines) > 1:
@@ -270,6 +396,31 @@ class ProductAnalysis(models.Model):
                 pass
 
     def create_technical_sheet(self, lw, pa, row):
+        route_line_ids = []
+        for route in pa.routing_ids.sorted(key=lambda r: r.sequence):
+            if route.operation_id.name == 'CONTROL DE CALIDAD':
+                x = 1
+            line_parameter_ids = []
+            for item in TABLES:
+                if route.operation_id.name in item['process']:
+                    table = item['table']
+                    cursor_param = self.get_parameters_data(row.ficha.strip(), table)
+                    for row_param in cursor_param:
+                        for field_name, field_value in row_param.items():
+                            value = field_value.strip() if isinstance(field_value, str) else field_value
+                            if field_name in FIELD_NAMES and value and value is not None:
+                                line_parameter_ids.append(
+                                    Command.create({
+                                        'name': FIELD_NAMES[field_name],
+                                        'value': value,
+                                    })
+                                )
+            route_line_ids.append(Command.create({
+                'operation_id': route.operation_id.id,
+                'line_parameter_ids': line_parameter_ids
+            }))
+        if line_parameter_ids:
+            x = 1
         # Ficha Tecnica
         lw.technical_sheet_id = self.env['technical.sheet'].create({
             'sitpro_sheet': row.ficha.strip(),
@@ -285,10 +436,13 @@ class ProductAnalysis(models.Model):
             'width': pa.standard_width,
             'gauge_id': pa.gauge_id.id,
             'stylo': lw.stylo,
-            'route_line_ids': [Command.create({
-                'operation_id': route.operation_id.id,
-                'line_parameter_ids': [Command.create({'name': param.name}) for param in route.operation_id.parameter_ids],
-            }) for route in pa.routing_ids.sorted(key=lambda r: r.sequence)],
+            'route_line_ids': route_line_ids,
+                # 'route_line_ids': [Command.create({
+                #     'operation_id': route.operation_id.id,
+                #     'line_parameter_ids': line_parameter_ids,
+                # })],
+                #     'line_parameter_ids': [Command.create({'name': param.name}) for param in route.operation_id.parameter_ids],
+                # }) for route in pa.routing_ids.sorted(key=lambda r: r.sequence)],
             # Datos de crudo
             'raw_width': a_float(row.ancho),
             'raw_density': a_float(row.densidad),

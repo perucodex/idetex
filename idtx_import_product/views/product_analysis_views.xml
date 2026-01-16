@@ -89,5 +89,16 @@
             </field>
         </record>
 
+        <record id="technical_sheet_search_view_inherit_view" model="ir.ui.view">
+            <field name="name">technical.sheet.list.inherit</field>
+            <field name="model">technical.sheet</field>
+            <field name="inherit_id" ref="idtx_product_development.technical_sheet_search_view"/>
+            <field name="arch" type="xml">
+                <field name="name" position="after">
+                    <field name="sitpro_sheet"/>
+                </field>
+            </field>
+        </record>
+
     </data>
 </odoo>
