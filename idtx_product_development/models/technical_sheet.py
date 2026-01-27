@@ -57,6 +57,7 @@ class TechnicalSheet(models.Model):
     size_chart_ids = fields.One2many('technical.size.line', 'technical_id', string='Size Chart')
     route_line_ids = fields.One2many('technical.route.line', 'technical_id', string='Route Line')
     bom_id = fields.Many2one('mrp.bom', string='LdM')
+    mrp_base_process_id = fields.Many2one(related='analysis_id.mrp_base_process_id')
 
     def _compute_prod_scrap(self):
         for rec in self:

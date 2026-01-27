@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="ir_cron_follow_up" model="ir.cron">
+    <record id="ir_cron_products" model="ir.cron">
         <field name="name">Importación pesada SQL</field>
         <field name="model_id" ref="model_product_analysis"/>
         <field name="state">code</field>
         <field name="code">model.sync_from_sql()</field>
+        <field name="nextcall" eval="(DateTime.now().replace(hour=2, minute=0) + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')" />
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+    </record>
+    <record id="ir_cron_lab" model="ir.cron">
+        <field name="name">Importación pesada SQL Lab</field>
+        <field name="model_id" ref="model_product_analysis"/>
+        <field name="state">code</field>
+        <field name="code">model.sync_lab()</field>
         <field name="nextcall" eval="(DateTime.now().replace(hour=2, minute=0) + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')" />
         <field name="interval_number">1</field>
         <field name="interval_type">days</field>

@@ -2,7 +2,7 @@
 <templates xml:space="preserve">
 
     <t t-name="idtx_laboratory.PriceItemsWidget">
-        <t t-if="props.record and props.record.resId and props.record.data.parent_is_quote">
+        <t t-if="props.record and props.record.resId and props.record.data.parent_is_quote and !props.record.data.is_salesman">
             <a t-on-click="showPopover"
                 t-att-class="props.record.data.is_weaving ? 'fa fa-edit cursor-pointer ml-1' : 'd-none'"
                 title="Editar precios por ítem"/>

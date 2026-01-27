@@ -1,5 +1,7 @@
 from odoo import models, fields, Command, api, _
 from odoo.exceptions import UserError
+from odoo.tools import html_escape
+from markupsafe import Markup
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
@@ -13,6 +15,8 @@ class SaleOrder(models.Model):
     sale_type = fields.Selection([
         ('sale', 'Sale'),
         ('service', 'Service'),
+        ('sample', 'Sample'),
+        ('pilot', 'Pilot'),
     ], string='Sale Type', default='sale')
     production_count = fields.Integer('Production Count', compute='_compute_production_count')
     sale_count = fields.Integer('Sales Count', compute='_compute_sale_count')
@@ -21,7 +25,51 @@ class SaleOrder(models.Model):
     lab_dev_count = fields.Integer(string="Technical Sheet Count", compute='_compute_lab_dev_count')
     is_company_produce = fields.Boolean(related='company_id.is_company_produce')
     need_labdev = fields.Boolean('Need LabDev?', compute='_compute_need_labdev', default=False)
+    color_name_warning = fields.Boolean(default=False)
+    need_approval = fields.Boolean('need_approval?', compute='_compute_need_approval')
+    state = fields.Selection(selection_add=[('for_app', 'For Approval')])
+
+    @api.depends('order_line.dis_app')
+    def _compute_need_approval(self):
+        for rec in self:
+            if any(not line.dis_app for line in rec.order_line):
+                rec.need_approval = True
+            else:
+                rec.need_approval = False
+
+    def action_request_approval(self):
+        self.state = 'for_app'
+
+    def action_approve(self):
+        self.order_line.dis_app = True
+        self.state = 'draft'
+
+    def action_quotation_send(self):
+        if self.need_approval:
+            raise UserError(_('Can\'t send quotation without approval for discount.'))
+        action = super().action_quotation_send()
+        if len(self) != 1:
+            return action
+        sheets = self.order_line.mapped('bom_id.technical_sheet_id').filtered(lambda s: s)
+        if sheets:
+            ctx = dict(action.get('context', {}))
+            ctx['technical_sheet_ids_to_attach'] = sheets.ids
+            action['context'] = ctx
+        return action
     
+    def write(self, vals):
+        return super().write(vals)
+    
+    def update_color_names(self):
+        for l in self.order_line:
+            prod = l.product_id.display_name
+            before = l.color_name
+            after = l.lab_dev_line_id.display_name
+            body = Markup(_('Color changed in line <b>%s</b>: <br/> %s <i class="o-mail-Message-trackingSeparator fa fa-long-arrow-right mx-2 text-600"></i> <span class="text-info fw-bold">%s</span>') % (html_escape(prod), html_escape(before), html_escape(after)))
+            self.message_post(body=body, message_type="comment", subtype_xmlid="mail.mt_note",)
+            l.color_name = l.lab_dev_line_id.color_name
+        self.color_name_warning = False
+
     @api.depends('order_line')
     def _compute_need_labdev(self):
         for rec in self:
@@ -58,8 +106,8 @@ class SaleOrder(models.Model):
             ld_line = self.lab_dev_ids._origin.lab_dev_line_ids.filtered(lambda l: l.sale_order_line_id == line._origin)
             if ld_line:
                 line.lab_dev_line_id = ld_line
-            # else:
-            #     line.lab_dev_line_id = False
+            else:
+                line.lab_dev_line_id = False
 
     def create_labdev(self):
         if any(not line.color_name for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.product_color_id.is_lab_color)):
@@ -77,6 +125,9 @@ class SaleOrder(models.Model):
         }
         lab_dev = self.env['lab.dev'].create(data)
         self.lab_dev_ids = [Command.link(lab_dev.id)]
+        for ld_line in lab_dev.lab_dev_line_ids:
+            if ld_line.sale_order_line_id:
+                ld_line.sale_order_line_id.lab_dev_line_id = ld_line.id
         self.open_labdev()
     
     def open_labdev(self):
@@ -106,16 +157,17 @@ class SaleOrder(models.Model):
                                 date=line._get_order_date(),
                             )
                             if not pricelist_item_id and order.partner_id:
-                                order.weaving_warning += _(('Product %s has product %s on its bom and does not have a price in %s price list. The price is obtained from its own sale price.') %( line.product_id.product_tmpl_id.name, bom_line.product_id.product_tmpl_id.name, order.pricelist_id.name)) + '\n'
+                                order.weaving_warning += _(('Product %s has product [%s] %s on its bom and does not have a price in %s price list. The price is obtained from its own sale price.') %( line.product_id.product_tmpl_id.name, bom_line.product_id.product_tmpl_id.default_code, bom_line.product_id.product_tmpl_id.name, order.pricelist_id.name)) + '\n'
                         for operation in bom_id.operation_ids:
-                            if operation.operation_id.type_prices == 'col':
+                            if operation.operation_id.type_prices == 'col' and line.product_color_id.is_lab_color:
                                 operation_color_line = operation.operation_id.product_color_price_ids.search([('product_color_id','=',line.product_color_id.id),('mrwo_id','=', operation.operation_id.id)])
                                 if not operation_color_line:
-                                    order.weaving_warning += (_('The type prices of %s operation is by color. The color %s does not exists in the operation color list of product %s.') %(operation.operation_id.name, line.product_color_id.name, line.product_id.product_tmpl_id.name)) + '\n'
+                                    order.weaving_warning += (_('The type prices of %s operation is by color. The color %s does not exists in the operation color list, product %s.') %(operation.operation_id.name, line.product_color_id.name, line.product_id.product_tmpl_id.name)) + '\n'
                 for line in order.order_line.filtered(lambda l: l.product_template_id.is_weaving):
                     if line.lab_dev_line_id and line.color_name:
                         if line.color_name.upper() != line.lab_dev_line_id.color_name.upper():
                             order.weaving_warning += (_('Product %s color %s does not match lab color name %s.') %(line.product_id.product_tmpl_id.name, line.color_name, line.lab_dev_line_id.color_name)) + '\n'
+                            order.color_name_warning = True
                     else:
                         if not line.color_name:
                             line.color_name = line.lab_dev_line_id.color_name
@@ -139,11 +191,17 @@ class SaleOrder(models.Model):
             'url': url,
         }
     
+    def _validate_order(self):
+        # Evitamos confirmar la cotizacion al firmar desde el portal
+        if self.is_quote:
+            return
+        return super()._validate_order()
+
     def action_confirm(self):
         for rec in self:
             if not rec.is_quote and not rec.lab_dev_ids and rec.company_id.is_company_produce and any(line.product_template_id.is_weaving for line in self.order_line):
                 raise UserError(_('Cant\'t confirm sale order without LD'))
-            if rec.is_quote:
+            if rec.is_quote and rec.company_id.is_company_produce:
                 raise UserError(_('Cant\'t confirm a quotation.'))
         res = super().action_confirm()
         for rec in self:
@@ -169,6 +227,8 @@ class SaleOrder(models.Model):
     
     def action_create_sale_order(self):
         self.ensure_one()
+        if self.is_quote and self.weaving_warning:
+            raise UserError(_('Please solve all the warnings first.'))
         sale_order = self.copy({
                 'quotation_id': self.id,
                 'is_quote': False,

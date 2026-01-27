@@ -73,6 +73,8 @@ class ColorRecipe(models.Model):
         self.state = 'approved'
         self.lab_dev_line_id.state = 'approved'
         self.lab_dev_line_id.write({'state': 'approved'})
+        production_ids = self.env['sale.order.line'].search([('lab_dev_line_id','=', self.lab_dev_line_id.id)]).production_id.filtered(lambda p: not p.color_recipe_id)
+        production_ids.color_recipe_id = self
         # self.lab_dev_line_id.state = 'approved'
         # self.color_code = self.color_code[:-4]
 

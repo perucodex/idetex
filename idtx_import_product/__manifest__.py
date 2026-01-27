@@ -21,6 +21,7 @@ Importa los productos y crea sus fichas tecnicas
     # any module necessary for this one to work correctly
     'depends': [
         'base',
+        'idtx_laboratory',
         'idtx_product_development',
         'l10n_pe',
         'pc_l10n_pe_vat_sunat',

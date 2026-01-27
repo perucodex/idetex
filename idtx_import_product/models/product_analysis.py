@@ -2,9 +2,9 @@
 import re
 import pyodbc
 pyodbc.setDecimalSeparator(".")
-from odoo import models, fields, api, Command, _
+from odoo import models, fields, api, _
+from odoo.fields import Command
 from odoo.exceptions import UserError
-import psycopg2.extras
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -24,6 +24,7 @@ ABI_SECA = []
 ABI_COMPA = []
 CALIDAD = []
 TABLES = [
+    {'process': ['TEJIDO CRUDO','SERV. TEJIDO'], 'table': 'tinto_crudo'},
     {'process': ['THERMOFIJADO ENTEMA','THERMOFIJADO MERSAN'], 'table': 'tinto_termo_2'},
     #'tinto_mcs', Segun alex esto no se llena, es complejo y lo hace tintoreri}a
     {'process': ['THERMOFIJADO RAMA','THERMOFIJADO DISPERSANTE/HUM','THERMO-BLANQUEO ACABADO','THERMO ACABADO'], 'table': 'tinto_abi_ter'},
@@ -268,7 +269,7 @@ class ProductAnalysis(models.Model):
                         articulo
                 ) TP 
                     ON tcr.ficha = tp.ficha
-                WHERE tcr.fecha >= '2022-01-01'
+                WHERE tcr.fecha >= '2020-01-01'
                 -- and tcr.ficha = '19497-26'
                 and len(tcr.cdgart) = 16
                 ORDER BY
@@ -282,18 +283,31 @@ class ProductAnalysis(models.Model):
             cursor_result = cursor.fetchall()
             total = len(cursor_result)
             weaving_workcenter = self.env['mrp.workcenter'].create({'name': 'TEJEDURIA', 'operation_type': 'weaving'})
-            weaving_process = self.env['mrp.routing.workcenter.operation'].create({'name': 'TEJIDO CRUDO', 'workcenter_id': weaving_workcenter.id})
+            weaving_process = self.env['mrp.routing.workcenter.operation'].search([('name','=','TEJIDO CRUDO')])
+            if not weaving_process:
+                weaving_process = self.env['mrp.routing.workcenter.operation'].create({'name': 'TEJIDO CRUDO', 'workcenter_id': weaving_workcenter.id})
             for contador, row in enumerate(cursor_result, 1):
-                code = row.cdgart.strip()
                 _logger.info(str(contador) + ' / ' + str(total) + '  ' + str(int((contador / total)*100)) + '%')
+                if self.env['technical.sheet'].search([('sitpro_sheet','=',row.ficha.strip())]):
+                    continue
+                code = row.cdgart.strip()
                 product_analysis = self.search([('product_code','=', code[1:])])
                 partner = self.env['res.partner'].search([('vat','=', row.ruc.strip()),('is_company','=', True)])
-                if not partner and len(row.ruc.strip()) == 11 and validar_ruc_peru(row.ruc.strip()):
-                    partner = self.env['res.partner'].create({
-                        'name': row.razsoc.strip(),
-                        'vat': row.ruc.strip(),
-                        'l10n_latam_identification_type_id': self.env.ref('l10n_pe.it_RUC').id,
-                    })
+                if not partner:
+                    if len(row.ruc.strip()) == 11 and validar_ruc_peru(row.ruc.strip()):
+                        partner = self.env['res.partner'].create({
+                            'name': row.razsoc.strip(),
+                            'vat': row.ruc.strip(),
+                            'l10n_latam_identification_type_id': self.env.ref('l10n_pe.it_RUC').id,
+                            'is_company': True,
+                        })
+                    else:
+                        partner = self.env['res.partner'].create({
+                            'name': row.razsoc.strip(),
+                            'vat': row.ruc.strip(),
+                            # 'l10n_latam_identification_type_id': self.env.ref('l10n_pe.it_RUC').id,
+                            'is_company': True,
+                        })
                 if not product_analysis:
                     fam = self.env['product.family'].search([('code','=', code[1:3])])
                     app = self.env['product.appearance'].search([('code','=', code[8:10])])
@@ -396,11 +410,89 @@ class ProductAnalysis(models.Model):
             except Exception:
                 pass
 
+    def sync_lab(self):
+        try:
+            conn = self._get_sql_connection()
+            cursor = conn.cursor()
+            query = f"""
+                SELECT
+                    v.fecha,
+                    v.lab,
+                    c.ruc,
+                    v.cdgart,
+                    v.cdgcolor,
+                    v.descolor,
+                    v.obs,
+                    l.gt,
+                    l.cb,
+                    l.ints
+                FROM vta_labs v
+                INNER JOIN lab_colores l
+                    ON LTRIM(RTRIM(v.cdgcolor)) =
+                    LTRIM(RTRIM(ISNULL(l.gt,''))) +
+                    LTRIM(RTRIM(ISNULL(l.cb,''))) +
+                    LTRIM(RTRIM(ISNULL(l.ints,''))) +
+                    RIGHT('0000' + CAST(CAST(l.corr AS INT) AS VARCHAR(10)), 4)
+                INNER JOIN clientes c ON c.cdgclie = v.cdgclien
+                where v.cdgcolor is NOT NULL AND LTRIM(RTRIM(v.cdgcolor)) <> '';
+            """
+            cursor.execute(query)
+            cursor_result = cursor.fetchall()
+            total = len(cursor_result)
+            for contador, row in enumerate(cursor_result, 1):
+                _logger.info(str(contador) + ' / ' + str(total) + '  ' + str(int((contador / total)*100)) + '%')
+                partner = self.env['res.partner'].search([('vat','=', row.ruc.strip()),('is_company','=', True)])
+                codigo = row.cdgart[1:].strip()
+                product = self.env['product.template'].search([('default_code','=', codigo)])
+                if not partner or not product:
+                    continue
+                process = self.env['color.process.type'].search([('code','=',row.gt.strip())])
+                range = self.env['color.range'].search([('code','=',row.cb.strip())])
+                intens = self.env['color.intensity'].search([('code','=',row.ints.strip())])
+                lab_dev_id = self.env['lab.dev'].search([('name','=', row.lab.strip())])
+                if lab_dev_id:
+                    vals = {
+                        'lab_dev_line_ids': [Command.create({
+                            'product_id': product.id or False,
+                            'color_name': row.descolor.strip(),
+                            'color_code': row.cdgcolor.strip(),
+                            'color_process_type_id': process.id,
+                            'color_range_id': range.id,
+                            'color_intensity_id': intens.id,
+                            'state': 'approved',
+                        })],
+                    }
+                    lab_dev_id.write(vals)
+                else:
+                    vals = {
+                        'lab_dev_date': row.fecha,
+                        'name': row.lab.strip(),
+                        'partner_id': partner.id or False,
+                        'lab_dev_line_ids': [Command.create({
+                            'product_id': product.id or False,
+                            'color_name': row.descolor.strip(),
+                            'color_code': row.cdgcolor.strip(),
+                            'color_process_type_id': process.id,
+                            'color_range_id': range.id,
+                            'color_intensity_id': intens.id,
+                            'state': 'approved',
+                        })],
+                        'state': 'approved',
+                    }
+                    lab_dev_id.create(vals)
+        finally:
+            try:
+                cursor.close()
+            except Exception:
+                pass
+            try:
+                conn.close()
+            except Exception:
+                pass
+
     def create_technical_sheet(self, lw, pa, row):
         route_line_ids = []
         for route in pa.routing_ids.sorted(key=lambda r: r.sequence):
-            if route.operation_id.name == 'CONTROL DE CALIDAD':
-                x = 1
             line_parameter_ids = []
             for item in TABLES:
                 if route.operation_id.name in item['process']:
@@ -430,6 +522,7 @@ class ProductAnalysis(models.Model):
             'product_code': pa.product_code,
             'product_id': pa.product_id.id,
             'partner_id': lw.partner_id.id,
+            'notes': row.obs,
             'fabric_composition': '\n'.join([
                 f'{round(f.percentage * 100)}% {f.product_template_id.name}'
                 for f in lw.fiber_ids if f.product_template_id
@@ -439,12 +532,6 @@ class ProductAnalysis(models.Model):
             'gauge_id': pa.gauge_id.id,
             'stylo': lw.stylo,
             'route_line_ids': route_line_ids,
-                # 'route_line_ids': [Command.create({
-                #     'operation_id': route.operation_id.id,
-                #     'line_parameter_ids': line_parameter_ids,
-                # })],
-                #     'line_parameter_ids': [Command.create({'name': param.name}) for param in route.operation_id.parameter_ids],
-                # }) for route in pa.routing_ids.sorted(key=lambda r: r.sequence)],
             # Datos de crudo
             'raw_width': a_float(row.ancho),
             'raw_density': a_float(row.densidad),

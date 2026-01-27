@@ -1,13 +1,13 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-# 	* idtx_product_development
+# 	* idtx_sale_order
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-19 14:03+0000\n"
-"PO-Revision-Date: 2026-01-19 14:03+0000\n"
+"POT-Creation-Date: 2026-01-19 19:52+0000\n"
+"PO-Revision-Date: 2026-01-19 19:52+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -15,1737 +15,602 @@ msgstr ""
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
 
-#. module: idtx_product_development
-#: model:ir.actions.report,print_report_name:idtx_product_development.action_report_product_analysis
-msgid "'Product Analysis - %s - %s' % (object.analysis_id.name, object.stylo)"
-msgstr "'Analisis de Producto - %s - %s' % (object.analysis_id.name, object.stylo)"
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "<strong>Applicant</strong>"
+msgstr "<strong>Solicitante</strong>"
 
-#. module: idtx_product_development
-#: model:ir.actions.report,print_report_name:idtx_product_development.action_report_technical_sheet
-msgid "'Technical Sheet - %s - %s' % (object.name, object.stylo)"
-msgstr "'Ficha Técnica - %s - %s' % (object.name, object.stylo)"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_form_view
-msgid "<span class=\"ms-1 oe_inline\">cm</span>"
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_batch_add_wizard
+msgid "Agregar registros en lote"
 msgstr ""
 
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_form_view
-msgid "<span class=\"ms-1 oe_inline\">g/m²</span>"
-msgstr ""
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_form_view
-msgid "<span class=\"ms-1 oe_inline\">m/kg</span>"
-msgstr ""
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-msgid "<span>Analysis Date:</span>"
-msgstr "<span>Fecha de Analisis:</span>"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "<span>Code:</span>"
-msgstr "<span>Código:</span"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "<span>Customer:</span>"
-msgstr "<span>Cliente:</span>"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "<span>Fabric:</span>"
-msgstr "<span>Tela:</span>"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "<span>Technical Date:</span>"
-msgstr "<span>Fecha de F. T.:</span>"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "<strong>Datos de Acabado</strong>"
-msgstr ""
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "<strong>Datos de Crudo</strong>"
-msgstr ""
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-msgid "<strong>Fabric Description</strong>"
-msgstr "<strong>Descripción de Tela</strong>"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.fabric_ligaments_table
-msgid "<strong>Fabric Ligaments</strong>"
-msgstr "<strong>Ligamentos</strong>"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "<strong>Pocess</strong>"
-msgstr "<strong>Pocesos</strong>"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "<strong>Rectilinear Size Chart</strong>"
-msgstr "<strong>Tabla de tallas Rectilineos</strong>"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-msgid "<strong>Thread Description</strong>"
-msgstr "<strong>Descripción del Hilado</strong>"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__atx
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "ATX"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__message_needaction
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__message_needaction
-msgid "Action Needed"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__activity_ids
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__activity_ids
-msgid "Activities"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__activity_exception_decoration
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__activity_exception_decoration
-msgid "Activity Exception Decoration"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__activity_state
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__activity_state
-msgid "Activity State"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__activity_type_icon
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__activity_type_icon
-msgid "Activity Type Icon"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_product__analysis_id
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_template__analysis_id
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__analysis_id
 msgid "Analysis"
-msgstr "Analisis"
+msgstr "Análisis"
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__analysis_date
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_view_search
-msgid "Analysis Date"
-msgstr "Fecha de Analyisis"
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__applicant_id
+msgid "Applicant"
+msgstr "Solicitante"
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__density
-msgid "Analysis Density"
-msgstr "Densidad"
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__has_approved_lab_line
+msgid "Approved"
+msgstr "Aprobado"
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber_line__analysis_fiber_id
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.analysis_fibe_form_view
-msgid "Analysis Fiber"
-msgstr "Fibra"
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__available_operation_ids
+msgid "Available Operations"
+msgstr "Operaciones Disponibles"
 
-#. module: idtx_product_development
-#: model:ir.model,name:idtx_product_development.model_analysis_fiber_line
-msgid "Analysis Fiber Lines"
-msgstr "Líneas de Fibra"
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__bom_id
+msgid "Bom"
+msgstr "LdM"
 
-#. module: idtx_product_development
-#: model:ir.model,name:idtx_product_development.model_analysis_fiber
-msgid "Analysis Fibers"
-msgstr "Fibras"
+#. module: idtx_sale_order
+#: model:ir.model.fields.selection,name:idtx_sale_order.selection__mrp_routing_workcenter_operation__type_prices__col
+msgid "By Color"
+msgstr "Por Color"
 
-#. module: idtx_product_development
-#: model:ir.model,name:idtx_product_development.model_analysis_routing_line
-msgid "Analysis Routing Line"
-msgstr "Ruta"
+#. module: idtx_sale_order
+#: model:ir.model.fields.selection,name:idtx_sale_order.selection__mrp_routing_workcenter_operation__type_prices__pp
+msgid "By Process"
+msgstr "Por Proceso"
 
-#. module: idtx_product_development
-#: model:ir.actions.report,name:idtx_product_development.action_report_product_analysis
-#: model:ir.model,name:idtx_product_development.model_analysis_weaving_data
-msgid "Analysis Weaving Data"
-msgstr "Tejido"
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+msgid "Can't create Lab Dev some lines have no color name."
+msgstr "No se puede crear LD algunas líneas no tiene nombre de color."
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__width
-msgid "Analysis Width"
-msgstr "Ancho"
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/mrp_production.py:0
+msgid "Can't delete production in %s"
+msgstr "No se puede eliminar la producción %s"
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__product_appearance_id
-#: model:ir.ui.menu,name:idtx_product_development.dev_product_appearance_action_menu
-msgid "Appearance"
-msgstr "Apariencia"
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+msgid "Cant't confirm a quotation."
+msgstr "No se puede confirmar una cotización"
 
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
-msgid "Are you sure you want to create the product ?"
-msgstr "Esta seguro que desea crear el producto?"
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+msgid "Cant't confirm sale order without LD"
+msgstr "No se puede confirmar el pedido sin una LD"
 
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
-msgid "Are you sure you want to create the technical sheet ?"
-msgstr "Esta seguro que desea crear la ficha técnica?"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__message_attachment_count
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__message_attachment_count
-msgid "Attachment Count"
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_price_items_preview
+msgid "Capturar pantalla completa"
 msgstr ""
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process_line__mrp_base_process_id
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__mrp_base_process_id
-msgid "Base Process"
-msgstr "Proceso Base"
-
-#. module: idtx_product_development
-#: model:ir.model,name:idtx_product_development.model_mrp_bom
-msgid "Bill of Material"
-msgstr "Lista de materiales"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__body
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "Body"
-msgstr "Cuerpo"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.split_roll_form
-msgid "Cancel"
-msgstr "Cancelar"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.res_config_settings_view_form
-msgid "Categories"
-msgstr "Categorías"
-
-#. module: idtx_product_development
-#. odoo-javascript
-#: code:addons/idtx_product_development/static/src/ligament_widget/ligament_widget.xml:0
-msgid "Clean Cell"
-msgstr "Limpiar"
-
-#. module: idtx_product_development
-#. odoo-javascript
-#: code:addons/idtx_product_development/static/src/ligament_widget/svg_selection_popup.xml:0
-msgid "Close"
-msgstr "Cerrar"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_ligament_type__code
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_appearance__code
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_code_system__code
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_family__code
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_fiber__code
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_gauge__code
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_title__code
-msgid "Code"
-msgstr "Código"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__codpro
-msgid "CodigoProductoBD"
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__product_color_id
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_price_items_preview
+msgid "Color"
 msgstr ""
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__column_qty
-msgid "Column Qty"
-msgstr "Cantidad de Columnas"
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_production__color_code
+msgid "Color Code"
+msgstr "Código de Color"
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__ligament_column
-msgid "Columns"
-msgstr "Columnas"
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_production__color_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__color_name
+msgid "Color Name"
+msgstr "Nombre de Color"
 
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-msgid "Columns Qty"
-msgstr "Cantidad de Columnas"
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_production__color_recipe_id
+msgid "Color Recipe"
+msgstr "Receta"
 
-#. module: idtx_product_development
-#: model:ir.model,name:idtx_product_development.model_res_company
-msgid "Companies"
-msgstr "Empresas"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__company_id
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__company_id
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color__company_id
 msgid "Company"
 msgstr ""
 
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "Composition"
-msgstr "Composición"
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_order_view_form_inherit_lab
+msgid "Create LabDev"
+msgstr "Crear LD"
 
-#. module: idtx_product_development
-#: model:ir.model,name:idtx_product_development.model_res_config_settings
-msgid "Config Settings"
-msgstr "Ajustes de configuración"
+#. module: idtx_sale_order
+#: model_terms:ir.actions.act_window,help:idtx_sale_order.product_color_action
+msgid "Create a new product color"
+msgstr "Crear nuevo color de producto"
 
-#. module: idtx_product_development
-#: model:ir.ui.menu,name:idtx_product_development.dev_settings_menu
-msgid "Configuration"
-msgstr "Configuración"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_configurate_svg_example__svg_content
-msgid "Content SVG"
-msgstr "Contenido SVG"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
-msgid "Create Product"
-msgstr "Crear Producto"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
-msgid "Create Technical Sheet"
-msgstr "Crear Ficha Técnica"
-
-#. module: idtx_product_development
-#: model_terms:ir.actions.act_window,help:idtx_product_development.product_analysis_action
-msgid "Create a new Product Analysis"
-msgstr "Nuevo Analisis de Producto"
-
-#. module: idtx_product_development
-#: model_terms:ir.actions.act_window,help:idtx_product_development.technical_sheet_action
-msgid "Create a new Technical Sheet"
-msgstr "Nueva Ficha Técnica"
-
-#. module: idtx_product_development
-#: model_terms:ir.actions.act_window,help:idtx_product_development.product_product_action_thread
-msgid "Create a new thread product"
-msgstr "Nuevo Hilado"
-
-#. module: idtx_product_development
-#: model_terms:ir.actions.act_window,help:idtx_product_development.product_product_action_weaving
-msgid "Create a new weaving product"
-msgstr "Nuevos datos de tejido"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__create_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber_line__create_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_routing_line__create_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__create_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_configurate_svg_example__create_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_ligament_type__create_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process__create_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process_line__create_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__create_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_appearance__create_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_code_system__create_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_family__create_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_fiber__create_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_gauge__create_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_title__create_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_route_line_parameter__create_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_split_roll__create_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_route_line__create_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__create_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__create_uid
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color__create_uid
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color_price__create_uid
 msgid "Created by"
 msgstr ""
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__create_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber_line__create_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_routing_line__create_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__create_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_configurate_svg_example__create_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_ligament_type__create_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process__create_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process_line__create_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__create_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_appearance__create_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_code_system__create_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_family__create_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_fiber__create_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_gauge__create_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_title__create_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_route_line_parameter__create_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_split_roll__create_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_route_line__create_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__create_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__create_date
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color__create_date
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color_price__create_date
 msgid "Created on"
 msgstr ""
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__partner_id
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__partner_id
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__partner_id
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_view_search
-msgid "Customer"
-msgstr "Cliente"
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_account_incoterms__currency_id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_routing_workcenter_operation__currency_id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color_price__currency_id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_title__currency_id
+msgid "Currency"
+msgstr "Moneda"
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__grid_data
-msgid "Data Widget"
-msgstr ""
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_price_items_preview
+msgid "Customer:"
+msgstr "Cliente:"
 
-#. module: idtx_product_development
-#: model:ir.model.fields.selection,name:idtx_product_development.selection__analysis_fiber__system_type__dtex
-msgid "Decitex (dtex)"
-msgstr ""
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.res_config_settings_view_form
-msgid "Default Categories"
-msgstr "Categoría por Defecto"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.res_config_settings_view_form
-msgid "Default categories applied when selecting products."
-msgstr "Categoría por defecto al seleccionar productos"
-
-#. module: idtx_product_development
-#: model:ir.model.fields.selection,name:idtx_product_development.selection__analysis_fiber__system_type__dn
-msgid "Denier (dn)"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__density
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_view_search
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "Density"
-msgstr "Densidad"
-
-#. module: idtx_product_development
-#: model:ir.model.constraint,message:idtx_product_development.constraint_product_analysis_check_density
-msgid "Density should be grather than zero."
-msgstr "La densidad debe ser mayor a cero."
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__diameter
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_gauge__diameter
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-msgid "Diameter"
-msgstr "Diametro"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber_line__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_routing_line__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_configurate_svg_example__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_ligament_type__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process_line__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_bom__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_production_roll__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_workorder__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_workorder_roll__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_appearance__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_category__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_code_system__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_family__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_fiber__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_gauge__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_product__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_template__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_title__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_res_company__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_res_config_settings__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_route_line_parameter__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_split_roll__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_route_line__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__display_name
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__display_name
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_account_incoterms__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_account_payment_term__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_batch_add_wizard__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_production__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_routing_workcenter_operation__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color_price__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_title__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__display_name
 msgid "Display Name"
 msgstr "Nombre en pantalla"
 
-#. module: idtx_product_development
+#. module: idtx_sale_order
+#. odoo-javascript
+#: code:addons/idtx_sale_order/static/src/price_items/price_items_widget.xml:0
+msgid "Edit prices"
+msgstr "Editar precios"
+
+#. module: idtx_sale_order
+#. odoo-javascript
+#: code:addons/idtx_sale_order/static/src/price_items/price_items_widget.xml:0
+msgid "Editar precios por ítem"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_account_payment_term__financial_percentage
+msgid "Financial Percentage"
+msgstr "Porcentaje Financiero"
+
+#. module: idtx_sale_order
 #. odoo-python
-#: code:addons/idtx_product_development/models/mrp_workorder_roll.py:0
-msgid "Divide Roll"
-msgstr "Dividir Rollo"
+#: code:addons/idtx_sale_order/models/sale_order_line.py:0
+msgid "Financial Percentage:"
+msgstr "Porcentaje Financiero:"
 
-#. module: idtx_product_development
-#: model:ir.model.fields.selection,name:idtx_product_development.selection__technical_sheet__state__done
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_form_view
-msgid "Done"
-msgstr "Hecho"
-
-#. module: idtx_product_development
-#: model:ir.model.fields.selection,name:idtx_product_development.selection__technical_sheet__state__draft
-msgid "Draft"
-msgstr "Borrador"
-
-#. module: idtx_product_development
-#: model:ir.model.fields.selection,name:idtx_product_development.selection__analysis_fiber__system_type__ne
-msgid "English number (ne)"
-msgstr "Número Ingles (ne)"
-
-#. module: idtx_product_development
+#. module: idtx_sale_order
 #. odoo-javascript
-#: code:addons/idtx_product_development/static/src/ligament_widget/ligament_widget.js:0
-msgid "Error Drop"
-msgstr "Error"
+#: code:addons/idtx_sale_order/static/src/price_items/price_items_widget.js:0
+msgid "Financial Percentage: %s %"
+msgstr "Porcentaje Financiero: %s %"
 
-#. module: idtx_product_development
-#. odoo-javascript
-#: code:addons/idtx_product_development/static/src/ligament_widget/ligament_widget.js:0
-msgid "Error de SVG"
-msgstr "Error de SVG"
-
-#. module: idtx_product_development
-#. odoo-javascript
-#: code:addons/idtx_product_development/static/src/ligament_widget/ligament_widget.js:0
-msgid "Error to load"
-msgstr "Error al cargar"
-
-#. module: idtx_product_development
-#. odoo-javascript
-#: code:addons/idtx_product_development/static/src/ligament_widget/ligament_widget.js:0
-msgid "Error to load SVG. Try again."
-msgstr "Error al cargar SVG. Intente nuevamente."
-
-#. module: idtx_product_development
-#. odoo-javascript
-#: code:addons/idtx_product_development/static/src/ligament_widget/ligament_widget.js:0
-msgid "Error to load SVGs. Please, reload page."
-msgstr "Error al cargar SVG. Porfavor, refrescar la página"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__fabric_composition
-msgid "Fabric Composition"
-msgstr "Composición de Tela"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__product_family_id
-#: model:ir.ui.menu,name:idtx_product_development.dev_product_family_action_menu
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-msgid "Family"
-msgstr "Familia"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__feeders
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_gauge__feeders
-msgid "Feeders"
-msgstr "Alimentadores"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__product_fiber_id
-#: model:ir.ui.menu,name:idtx_product_development.dev_product_fiber_action_menu
-msgid "Fiber"
-msgstr "Fibra"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__fiber_ids
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.analysis_fiber_tree_view
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.analysis_weaving_data_view_form
-msgid "Fibers"
-msgstr "Fibras"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__ficha
-msgid "Ficha"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__finish_density
-msgid "Finish Density"
-msgstr "Densidad Final"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__finish_width
-msgid "Finish Width"
-msgstr "Ancho Final"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__finish_yield
-msgid "Finish Yield"
-msgstr "Rendimiento"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_form_view
-msgid "Finishing Data"
-msgstr "Data de Acabado"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__first_wash_shrinkage
-msgid "First Wash Shrinkage"
-msgstr "Encogimiento al primer lavado"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__first_wash_twist
-msgid "First Wash Twist"
-msgstr "Revirado al primer lavado"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "First wash shrinkage"
-msgstr "Encogimiento al primer lavado"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "First wash twist"
-msgstr "Revirado al primer lavado"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__message_follower_ids
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__message_follower_ids
-msgid "Followers"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__message_partner_ids
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__message_partner_ids
-msgid "Followers (Partners)"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,help:idtx_product_development.field_product_analysis__activity_type_icon
-#: model:ir.model.fields,help:idtx_product_development.field_technical_sheet__activity_type_icon
-msgid "Font awesome icon e.g. fa-tasks"
-msgstr ""
-
-#. module: idtx_product_development
-#. odoo-python
-#: code:addons/idtx_product_development/models/product_product.py:0
-msgid "GS1 sequence exhausted. Contact admin."
-msgstr "GS1 secuencia terminada, Contactar al administrador."
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__gauge_id
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__gauge_id
-#: model:ir.ui.menu,name:idtx_product_development.dev_product_gauge_action_menu
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_view_search
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "Gauge"
-msgstr "Galga"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
-msgid "Generate"
-msgstr "Generar"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__has_message
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__has_message
-msgid "Has Message"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber_line__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_routing_line__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_configurate_svg_example__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_ligament_type__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process_line__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_bom__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_production_roll__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_workorder__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_workorder_roll__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_appearance__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_category__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_code_system__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_family__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_fiber__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_gauge__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_product__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_template__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_title__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_res_company__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_res_config_settings__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_route_line_parameter__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_split_roll__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_route_line__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__id
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__id
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_account_incoterms__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_account_payment_term__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_batch_add_wizard__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_production__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_routing_workcenter_operation__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color_price__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_title__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__id
 msgid "ID"
 msgstr ""
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__activity_exception_icon
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__activity_exception_icon
-msgid "Icon"
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order_line.py:0
+msgid "Incoterm:"
 msgstr ""
 
-#. module: idtx_product_development
-#: model:ir.model.fields,help:idtx_product_development.field_product_analysis__activity_exception_icon
-#: model:ir.model.fields,help:idtx_product_development.field_technical_sheet__activity_exception_icon
-msgid "Icon to indicate an exception activity."
+#. module: idtx_sale_order
+#. odoo-javascript
+#: code:addons/idtx_sale_order/static/src/price_items/price_items_widget.js:0
+msgid "Incoterm: %s"
 msgstr ""
 
-#. module: idtx_product_development
-#: model:ir.model.fields,help:idtx_product_development.field_product_analysis__message_needaction
-#: model:ir.model.fields,help:idtx_product_development.field_technical_sheet__message_needaction
-msgid "If checked, new messages require your attention."
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_account_incoterms
+msgid "Incoterms"
 msgstr ""
 
-#. module: idtx_product_development
-#: model:ir.model.fields,help:idtx_product_development.field_product_analysis__message_has_error
-#: model:ir.model.fields,help:idtx_product_development.field_product_analysis__message_has_sms_error
-#: model:ir.model.fields,help:idtx_product_development.field_technical_sheet__message_has_error
-#: model:ir.model.fields,help:idtx_product_development.field_technical_sheet__message_has_sms_error
-msgid "If checked, some messages have a delivery error."
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__lab_dev_ids
+msgid "Lab Dev"
 msgstr ""
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__message_is_follower
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__message_is_follower
-msgid "Is Follower"
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__lab_dev_line_id
+msgid "Lab Dev Line"
 msgstr ""
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__write_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber_line__write_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_routing_line__write_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__write_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_configurate_svg_example__write_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_ligament_type__write_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process__write_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process_line__write_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__write_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_appearance__write_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_code_system__write_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_family__write_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_fiber__write_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_gauge__write_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_title__write_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_route_line_parameter__write_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_split_roll__write_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_route_line__write_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__write_uid
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__write_uid
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_order_view_form_inherit_lab
+msgid "Lab Dev's"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.mrp_production_form_view_inherit
+msgid "Labdev Recipe"
+msgstr "Receta LavDev"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color__write_uid
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color_price__write_uid
 msgid "Last Updated by"
 msgstr ""
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__write_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber_line__write_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_routing_line__write_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__write_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_configurate_svg_example__write_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_ligament_type__write_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process__write_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process_line__write_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__write_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_appearance__write_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_code_system__write_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_family__write_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_fiber__write_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_gauge__write_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_title__write_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_route_line_parameter__write_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_split_roll__write_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_route_line__write_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__write_date
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__write_date
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color__write_date
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color_price__write_date
 msgid "Last Updated on"
 msgstr ""
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__bom_id
-msgid "LdM"
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_production__manual_color_recipe_id
+msgid "Manual Color Recipe"
+msgstr "Receta Manual"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.mrp_production_form_view_inherit
+msgid "Manual Recipe"
+msgstr "Receta Manual"
+
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_mrp_production
+msgid "Manufacturing Order"
+msgstr "Orden de fabricación"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Mitchell Admin"
 msgstr ""
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__length
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "Length"
-msgstr "Longitud"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__ligament_id
-#: model:ir.ui.menu,name:idtx_product_development.dev_ligament_type_action_menu
-msgid "Ligament"
-msgstr "Ligamento"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
-msgid "Ligament Design Structure"
-msgstr "Diseño de Estructura de Ligamento"
-
-#. module: idtx_product_development
-#: model:ir.actions.act_window,name:idtx_product_development.ligament_type_action
-#: model:ir.model,name:idtx_product_development.model_ligament_type
-msgid "Ligament Type"
-msgstr "Tipo de Ligamento"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.ligament_type_tree_view
-msgid "Ligament type"
-msgstr "Tipo de Ligamento"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_route_line__line_parameter_ids
-msgid "Line Parameter"
-msgstr "Parámetro"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__line_ids
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__routing_ids
-msgid "Lines"
-msgstr "Lineas"
-
-#. module: idtx_product_development
-#. odoo-javascript
-#: code:addons/idtx_product_development/static/src/ligament_widget/svg_selection_popup.xml:0
-msgid "Loading SVGs..."
-msgstr "Cargando SVGs..."
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "Logo"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:res.groups,name:idtx_product_development.group_module_product_development_manager
-msgid "Manager"
-msgstr "Administrador"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.analysis_fibe_form_view
-msgid "Measures"
-msgstr "Medidas"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "Mesh Lenght"
-msgstr "Longitud de Malla"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__length
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber_line__length
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__mesh_length
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-msgid "Mesh Length"
-msgstr "Longitud de Malla"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__message_has_error
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__message_has_error
-msgid "Message Delivery error"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__message_ids
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__message_ids
-msgid "Messages"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields.selection,name:idtx_product_development.selection__analysis_fiber__system_type__nm
-msgid "Metric number (nm)"
-msgstr "Número Métrico (nm)"
-
-#. module: idtx_product_development
-#: model:ir.actions.act_window,name:idtx_product_development.configurate_svg_example_action
-#: model:ir.model,name:idtx_product_development.model_configurate_svg_example
-#: model:ir.ui.menu,name:idtx_product_development.configurate_svg_example_menu
-msgid "Models SVG Configurate"
-msgstr "Modelos SVG Configuración"
-
-#. module: idtx_product_development
-#: model:ir.actions.act_window,name:idtx_product_development.mrp_base_process_action
-msgid "Mrp Base Operations"
-msgstr "Operaciones Base"
-
-#. module: idtx_product_development
-#: model:ir.model,name:idtx_product_development.model_mrp_base_process
-#: model:ir.ui.menu,name:idtx_product_development.mrp_base_operation_menu
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.mrp_base_process_tree_view
-msgid "Mrp Base Process"
-msgstr "Proceso base"
-
-#. module: idtx_product_development
-#: model:ir.model,name:idtx_product_development.model_mrp_base_process_line
-msgid "Mrp Base Process Line"
-msgstr "Línea de Proceso Base"
-
-#. module: idtx_product_development
-#: model:ir.ui.menu,name:idtx_product_development.mrp_base_operation_line_menu
-msgid "Mrp Base Process Lines"
-msgstr "Líneas de Proceso Base"
-
-#. module: idtx_product_development
-#: model:ir.model,name:idtx_product_development.model_mrp_production_roll
-msgid "Mrp Production Roll"
-msgstr "Rollo de Producción"
-
-#. module: idtx_product_development
-#: model:ir.model,name:idtx_product_development.model_mrp_workorder_roll
-msgid "Mrp Workorder Roll"
-msgstr "Rollo de Tejido"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__my_activity_date_deadline
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__my_activity_date_deadline
-msgid "My Activity Deadline"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__ne
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "NE"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_ligament_type__name
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process__name
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__name
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_appearance__name
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_code_system__name
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_family__name
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_fiber__name
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_gauge__name
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_title__name
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__name
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color__name
 msgid "Name"
 msgstr "Nombre"
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_configurate_svg_example__name
-msgid "Name SVG"
-msgstr "Nombre SVG"
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__need_labdev
+msgid "Need LabDev?"
+msgstr "Necesita LD?"
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__needles
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_gauge__needles
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__needles
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "Needles"
-msgstr "Agujas"
-
-#. module: idtx_product_development
-#. odoo-python
-#: code:addons/idtx_product_development/models/product_analysis.py:0
-#: code:addons/idtx_product_development/models/technical_sheet.py:0
-msgid "New"
-msgstr "Nuevo"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_split_roll__new_quantity
-msgid "New Quantity"
-msgstr "Nueva Cantidad"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_split_roll__new_weight
-msgid "New Weight"
-msgstr "Nuevo Peso"
-
-#. module: idtx_product_development
-#. odoo-python
-#: code:addons/idtx_product_development/wizards/split_roll.py:0
-msgid "New quantity can't be greather than old quantity."
-msgstr "Nueva cantidad no puede ser mayor a la cantidad anterior."
-
-#. module: idtx_product_development
-#. odoo-python
-#: code:addons/idtx_product_development/wizards/split_roll.py:0
-msgid "New weight can't be greather than gross weight."
-msgstr "Nuevo peso no puede ser mayor al peso anterior."
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__activity_date_deadline
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__activity_date_deadline
-msgid "Next Activity Deadline"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__activity_summary
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__activity_summary
-msgid "Next Activity Summary"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__activity_type_id
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__activity_type_id
-msgid "Next Activity Type"
-msgstr ""
-
-#. module: idtx_product_development
-#. odoo-javascript
-#: code:addons/idtx_product_development/static/src/ligament_widget/svg_selection_popup.xml:0
-msgid "No SVGs availables. Please, add records."
-msgstr "No hay SVGs disponibles. Porfavor, agregue registros."
-
-#. module: idtx_product_development
-#. odoo-javascript
-#: code:addons/idtx_product_development/static/src/ligament_widget/ligament_widget.js:0
-msgid "No find SVG selected."
-msgstr "No se encontró el SVG seleccionado"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__notes
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__notes
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "Notes"
-msgstr "Observaciones"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__message_needaction_counter
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__message_needaction_counter
-msgid "Number of Actions"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__message_has_error_counter
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__message_has_error_counter
-msgid "Number of errors"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,help:idtx_product_development.field_product_analysis__message_needaction_counter
-#: model:ir.model.fields,help:idtx_product_development.field_technical_sheet__message_needaction_counter
-msgid "Number of messages requiring action"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,help:idtx_product_development.field_product_analysis__message_has_error_counter
-#: model:ir.model.fields,help:idtx_product_development.field_technical_sheet__message_has_error_counter
-msgid "Number of messages with delivery error"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_route_line_parameter__is_observation
-msgid "Observación?"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_split_roll__old_quantity
-msgid "Old Quantity"
-msgstr "Cantidad anterior"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_split_roll__old_weight
-msgid "Old Weight"
-msgstr "Peso anterior"
-
-#. module: idtx_product_development
-#: model:ir.model.fields.selection,name:idtx_product_development.selection__product_analysis__weave_type__open
-msgid "Open"
-msgstr "Abierto"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.analysis_weaving_data_view_form
-msgid "Open Technical Sheet"
-msgstr "Abrir Ficha Técnica"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.mrp_base_process_view_search
-msgid "Operation"
-msgstr "Operación"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_routing_line__operation_id
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process_line__operation_id
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_route_line__operation_id
-msgid "Operation Name"
-msgstr "Nombre de Operación"
-
-#. module: idtx_product_development
-#: model:ir.ui.menu,name:idtx_product_development.dev_operations_menu
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__operation_ids
 msgid "Operations"
 msgstr "Operaciones"
 
-#. module: idtx_product_development
-#: model:ir.model.fields.selection,name:idtx_product_development.selection__product_analysis__weave_type__othe
-msgid "Other"
-msgstr "Otro"
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_account_payment_term
+msgid "Payment Terms"
+msgstr "Términos de pago"
 
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_form_view
-msgid "Other Information"
-msgstr "Otra información"
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_routing_workcenter_operation__per_title
+msgid "Per Thread Title"
+msgstr "Por Título de Hilado"
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_route_line_parameter__name
-msgid "Parameter"
-msgstr "Parámetro"
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_price_items_preview
+msgid "Price"
+msgstr "Precio"
 
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_form_view
-msgid "Parameters"
-msgstr "Parámetros"
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__price_items
+msgid "Price Items"
+msgstr "Items de Precio"
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__percentage
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-msgid "Percentage"
-msgstr "Porcentaje"
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.mrp_routing_workcenter_operation_form_view_inherit
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_order_view_form_inherit_lab
+msgid "Prices"
+msgstr "Precios"
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__plies
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "Plies"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__user_id
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__user_id
-msgid "Prepared by"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_configurate_svg_example__svg_preview
-msgid "Preview"
-msgstr "Preliminar"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.analysis_weaving_data_view_form
-msgid "Print Analysis"
-msgstr "Imprimir Análisis"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process__process_ids
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.mrp_base_process_form_view
-msgid "Process"
-msgstr "Proceso"
-
-#. module: idtx_product_development
-#. odoo-python
-#: code:addons/idtx_product_development/models/product_analysis.py:0
-#: model:ir.model,name:idtx_product_development.model_product_template
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__product_id
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__product_id
-#: model:ir.model.fields.selection,name:idtx_product_development.selection__product_analysis__state__prod
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_view_search
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_price_items_preview
 msgid "Product"
 msgstr "Producto"
 
-#. module: idtx_product_development
-#: model:ir.actions.act_window,name:idtx_product_development.product_analysis_action
-#: model:ir.model,name:idtx_product_development.model_product_analysis
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_routing_line__analysis_id
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__analysis_id
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__analysis_id
-#: model:ir.ui.menu,name:idtx_product_development.dev_product_analysis_menu
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_tree_view
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-msgid "Product Analysis"
-msgstr "Análisis de Producto"
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+msgid "Product %s color %s does not match lab color name %s."
+msgstr "El producto %s con color %s no concuerda con el nombre de color %s de la LD."
 
-#. module: idtx_product_development
-#: model_terms:ir.actions.act_window,help:idtx_product_development.product_analysis_action
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
 msgid ""
-"Product Analysis define that need to be done to realize a Technical Sheet.\n"
-"                Each analysis is done from customer samples."
+"Product %s does not have any bom. Please check with product development."
 msgstr ""
-"Análisis de Producto define lo que se tiene que hacer para realizar un Ficha Técnica.\n"
-"                Cada análisis se hace a partir de una muestra del cliente."
+"El producto %s no tiene LdM. Porfavor revisar con desarrollo."
 
-#. module: idtx_product_development
-#: model:ir.actions.act_window,name:idtx_product_development.product_appearance_action
-#: model:ir.model,name:idtx_product_development.model_product_appearance
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_appearance_tree_view
-msgid "Product Appearance"
-msgstr "Apariencia"
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+msgid "Product %s has an old price. Quotation is %s days old"
+msgstr "El producto %s tiene un precio antiguo. La cotización tiene %s dias de vencido"
 
-#. module: idtx_product_development
-#: model:ir.model,name:idtx_product_development.model_product_category
-msgid "Product Category"
-msgstr "Categoría del producto"
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+msgid ""
+"Product %s has product %s on its bom and does not have a price in %s price "
+"list. The price is obtained from its own sale price."
+msgstr ""
+"El producto %s tiene el producto %s en su LdM y no tiene precio en la lista %s"
+". El precio se obtiene del precio establecido en el producto."
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__product_code
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__product_code
-#: model:ir.ui.menu,name:idtx_product_development.dev_product_code_menu
-msgid "Product Code"
-msgstr "Código"
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order_line.py:0
+msgid "Product %s with color %s can't be found in any quotation or sale order"
+msgstr "El producto %s con color %s no se encuentra en ninguna cotización o pedido de venta anterior"
 
-#. module: idtx_product_development
-#: model:ir.model,name:idtx_product_development.model_product_code_system
-msgid "Product Code System"
-msgstr "Sistema de Codificación de Producto"
+#. module: idtx_sale_order
+#: model:ir.actions.act_window,name:idtx_sale_order.product_color_action
+#: model:ir.model,name:idtx_sale_order.model_product_color
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color_price__product_color_id
+#: model:ir.ui.menu,name:idtx_sale_order.sale_product_color_menu
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.product_color_tree_view
+msgid "Product Color"
+msgstr "Color de Producto"
 
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_form_view
-msgid "Product Data"
-msgstr "Datos de Producto"
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_product_color_price
+msgid "Product Color Price"
+msgstr "Precio de Color de Producto"
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__product_description
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_view_search
-msgid "Product Description"
-msgstr "Descripción"
-
-#. module: idtx_product_development
-#: model:ir.ui.menu,name:idtx_product_development.product_development_menu
-msgid "Product Dev"
-msgstr "Desarrollo de Producto"
-
-#. module: idtx_product_development
-#: model:res.groups.privilege,name:idtx_product_development.module_product_development_user
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.res_config_settings_view_form
-msgid "Product Development"
-msgstr "Desarrollo de Producto"
-
-#. module: idtx_product_development
-#: model:ir.actions.act_window,name:idtx_product_development.product_family_action
-#: model:ir.model,name:idtx_product_development.model_product_family
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_family_tree_view
-msgid "Product Family"
-msgstr "Familia"
-
-#. module: idtx_product_development
-#: model:ir.actions.act_window,name:idtx_product_development.product_fiber_action
-#: model:ir.model,name:idtx_product_development.model_product_fiber
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_fiber_tree_view
-msgid "Product Fiber"
-msgstr "Fibra"
-
-#. module: idtx_product_development
-#: model:ir.actions.act_window,name:idtx_product_development.product_gauge_action
-#: model:ir.model,name:idtx_product_development.model_product_gauge
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_gauge_tree_view
-msgid "Product Gauge"
-msgstr "Galga"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "Product Technical Sheet"
-msgstr "Ficha Técnica"
-
-#. module: idtx_product_development
-#: model:ir.actions.act_window,name:idtx_product_development.product_title_action
-#: model:ir.model,name:idtx_product_development.model_product_title
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_title_tree_view
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_product_title
 msgid "Product Title"
 msgstr "Título"
 
-#. module: idtx_product_development
-#: model:ir.model,name:idtx_product_development.model_product_product
-msgid "Product Variant"
-msgstr "Variante del producto"
-
-#. module: idtx_product_development
-#: model:ir.model.fields.selection,name:idtx_product_development.selection__technical_sheet__state__prod
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__production_id
 msgid "Production"
 msgstr "Producción"
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__prod_scrap
-msgid "Production Scrap"
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__is_company_produce
+msgid "Production Company"
+msgstr "Compañía Productiva"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__production_count
+msgid "Production Count"
+msgstr "Contador de Producción"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__production_loss
+msgid "Production Loss"
 msgstr "Merma de Producción"
 
-#. module: idtx_product_development
-#: model:ir.ui.menu,name:idtx_product_development.dev_product_menu
-msgid "Products"
-msgstr "Productos"
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order_line.py:0
+msgid "Production Loss:"
+msgstr "Merma de Producción:"
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__program
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "Program"
-msgstr "Programa"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_workorder__progress
-msgid "Progress"
-msgstr "Progreso realizado (%)"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_workorder__quantity
-msgid "Quantity LAB"
-msgstr "Cantidad LAB"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__rating_ids
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__rating_ids
-msgid "Ratings"
-msgstr ""
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_form_view
-msgid "Raw Data"
-msgstr "Datos Crudo"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__raw_density
-msgid "Raw Density"
-msgstr "Densidad"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__raw_width
-msgid "Raw Width"
-msgstr "Ancho"
-
-#. module: idtx_product_development
-#: model:ir.model.fields.selection,name:idtx_product_development.selection__product_analysis__weave_type__rect
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.mrp_workorder_roll_view_search_inherit
-msgid "Rectilinear"
-msgstr "Rectilineo"
-
-#. module: idtx_product_development
-#: model:ir.ui.menu,name:idtx_product_development.dev_report_menu
-msgid "Reports"
-msgstr "Informes"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__activity_user_id
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__activity_user_id
-msgid "Responsible User"
-msgstr ""
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_form_view
-msgid "Return"
-msgstr "Regresar"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_workorder__roll_weight
-msgid "Roll Weight"
-msgstr "Peso de Rollo"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__route_line_ids
-msgid "Route Line"
-msgstr "Línea de Ruta"
-
-#. module: idtx_product_development
-#: model:ir.model,name:idtx_product_development.model_route_line_parameter
-msgid "Route Line Parameter"
-msgstr "Parámetro de Línea de Ruta"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_form_view
-msgid "Routing"
-msgstr "Ruta"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.analysis_routing_line_tree_view
-msgid "Routing Lines"
-msgstr "Líneas de Ruta"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
-msgid "Routing Template"
-msgstr "Ruta Base"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.mrp_base_process_form_view
-msgid "Routing Work Centers Operations"
-msgstr "Operaciones de Centros de Trabajo"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__ligament_row
-msgid "Rows"
-msgstr "Filas"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__message_has_sms_error
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__message_has_sms_error
-msgid "SMS Delivery error"
-msgstr ""
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "Scrap"
-msgstr "Merma"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_view_search
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_search_view
-msgid "Search Product Analysis"
-msgstr ""
-
-#. module: idtx_product_development
+#. module: idtx_sale_order
 #. odoo-javascript
-#: code:addons/idtx_product_development/static/src/ligament_widget/svg_selection_popup.xml:0
-msgid "Select Ligament"
-msgstr "Seleccionar Ligamento"
+#: code:addons/idtx_sale_order/static/src/price_items/price_items_widget.js:0
+msgid "Production Loss: %s %"
+msgstr "Merma de Producción: %s %"
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__sequence
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_routing_line__sequence
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_route_line__sequence
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__sequence
-msgid "Sequence"
-msgstr "Secuencia"
-
-#. module: idtx_product_development
-#: model:ir.actions.act_window,name:idtx_product_development.action_idtx_product_development_config
-#: model:ir.ui.menu,name:idtx_product_development.dev_menu_settings_config
-msgid "Settings"
-msgstr "Ajustes"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__size
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "Size"
-msgstr "Talla"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__size_chart_ids
-msgid "Size Chart"
-msgstr "Tabla de Tallas"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_form_view
-msgid "Sizes"
-msgstr "Tallas"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.mrp_workorder_batch_form_inherit
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.split_roll_form
-msgid "Split"
-msgstr "Dividir"
-
-#. module: idtx_product_development
-#: model:ir.model,name:idtx_product_development.model_split_roll
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.split_roll_form
-msgid "Split Roll"
-msgstr "Dividir Rollo"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__standard_width
-msgid "Standard Width"
-msgstr "Ancho Standard"
-
-#. module: idtx_product_development
-#: model:ir.model.constraint,message:idtx_product_development.constraint_product_analysis_check_standard_width
-msgid "Standard width should be grather than zero."
-msgstr "El ancho standard debe ser mayor a cero."
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__state
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__state
-msgid "State"
-msgstr "Estado"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,help:idtx_product_development.field_product_analysis__activity_state
-#: model:ir.model.fields,help:idtx_product_development.field_technical_sheet__activity_state
-msgid ""
-"Status based on activities\n"
-"Overdue: Due date is already passed\n"
-"Today: Activity date is today\n"
-"Planned: Future activities."
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__stylo
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__stylo
-msgid "Stylo"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__system_type
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-msgid "System Type"
-msgstr "Tipo de Sistema"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__technical_date
-msgid "Technical Date"
-msgstr "Fecha de F. T."
-
-#. module: idtx_product_development
-#: model:ir.model,name:idtx_product_development.model_technical_route_line
-msgid "Technical Route Line"
-msgstr "Ruta de Ficha"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_route_line_parameter__technical_route_id
-msgid "Technical Routing Line"
-msgstr "Línea de Ruta de Ficha"
-
-#. module: idtx_product_development
+#. module: idtx_sale_order
 #. odoo-python
-#: code:addons/idtx_product_development/models/product_analysis.py:0
-#: model:ir.actions.act_window,name:idtx_product_development.technical_sheet_action
-#: model:ir.actions.report,name:idtx_product_development.action_report_technical_sheet
-#: model:ir.model,name:idtx_product_development.model_technical_sheet
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__technical_sheet_id
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_bom__technical_sheet_id
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_workorder_roll__technical_id
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__technical_sheet_ids
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_route_line__technical_id
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__technical_id
-#: model:ir.ui.menu,name:idtx_product_development.dev_technical_sheet_menu
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_form_view
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_tree_view
-msgid "Technical Sheet"
-msgstr "Ficha Técnica"
+#: code:addons/idtx_sale_order/models/mrp_production.py:0
+msgid "Production must have a recipe."
+msgstr "La producción debe tener una receta."
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__technical_sheet_count
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_product__technical_sheet_count
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_template__technical_sheet_count
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_order_view_form_inherit_lab
+msgid "Productions"
+msgstr "Producciones"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__quotation_id
+msgid "Quotation"
+msgstr "Cotización"
+
+#. module: idtx_sale_order
+#: model:ir.actions.act_window,name:idtx_sale_order.sale_quotation_action
+#: model:ir.ui.menu,name:idtx_sale_order.idtx_quotation_menu
+msgid "Quotations"
+msgstr "Cotizaciones"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color__is_lab_color
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__is_lab_color
+msgid "Require LabDev"
+msgstr "LD Requerido"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields.selection,name:idtx_sale_order.selection__sale_order__sale_type__sale
+msgid "Sale"
+msgstr "Venta"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_order_view_form_inherit_lab
+msgid "Sale Order"
+msgstr "Pedido de Venta"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_production__sale_order_line_id
+msgid "Sale Order Line"
+msgstr "Línea de Pedido de Venta"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_price_items_preview
+msgid "Sale Order:"
+msgstr "Pedido de Venta:"
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__sale_order_ids
+msgid "Sale Orders"
+msgstr "Pedidos de Venta"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__sale_type
+msgid "Sale Type"
+msgstr "Tipo de Venta"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_order_view_form_inherit_lab
+msgid "Sales"
+msgstr "Ventas"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__sale_count
+msgid "Sales Count"
+msgstr "Contador de Ventas"
+
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_sale_order
+msgid "Sales Order"
+msgstr "Orden de venta"
+
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_sale_order_line
+msgid "Sales Order Line"
+msgstr "Línea de la orden de venta"
+
+#. module: idtx_sale_order
+#: model:ir.actions.act_window,name:idtx_sale_order.sale_order_action
+#: model:ir.ui.menu,name:idtx_sale_order.idtx_sale_order_menu
+msgid "Sales Orders"
+msgstr "Pedidos de Ventas"
+
+#. module: idtx_sale_order
+#. odoo-javascript
+#: code:addons/idtx_sale_order/static/src/price_items/price_items_widget.xml:0
+msgid "Save"
+msgstr "Guardar"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields.selection,name:idtx_sale_order.selection__sale_order__sale_type__service
+msgid "Service"
+msgstr "Servicio"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__lab_dev_count
 msgid "Technical Sheet Count"
-msgstr "Contador de F.T."
+msgstr "Contador de Fichas Tecnicas"
 
-#. module: idtx_product_development
-#: model_terms:ir.actions.act_window,help:idtx_product_development.technical_sheet_action
-msgid ""
-"Technical Sheet define that need to be done to realize a Product.\n"
-"                Each sheet is done from customer samples."
-msgstr ""
-"La Ficha Técnica define lo que se debe hacer para tener un Producto.\n"
-"                Cada ficha se hace a partir de la muestra del cliente."
-
-#. module: idtx_product_development
+#. module: idtx_sale_order
 #. odoo-python
-#: code:addons/idtx_product_development/models/product_template.py:0
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_template_form_view_inherit_ld
-msgid "Technical Sheets"
-msgstr "Fichas Técnicas"
-
-#. module: idtx_product_development
-#: model:ir.model,name:idtx_product_development.model_technical_size_line
-msgid "Technical Size Line"
-msgstr "Línea de Talla de F.T."
-
-#. module: idtx_product_development
-#: model:ir.model.fields.selection,name:idtx_product_development.selection__product_analysis__state__test
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_view_search
-msgid "Test"
-msgstr "Prueba"
-
-#. module: idtx_product_development
-#: model:ir.model.fields.selection,name:idtx_product_development.selection__analysis_fiber__system_type__tex
-msgid "Tex (tex)"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_production_roll__theorical_length
-msgid "Theorical Length"
-msgstr "Longitud Teórica"
-
-#. module: idtx_product_development
-#. odoo-python
-#: code:addons/idtx_product_development/models/technical_sheet.py:0
+#: code:addons/idtx_sale_order/models/sale_order.py:0
 msgid ""
-"There is no weaving operation in bom. Please check your product routing!"
+"The type prices of %s operation is by color. The color %s does not exists in"
+" the operation color list of product %s."
 msgstr ""
-"No hay una operación de tejido en la LdM. Porfavor revise la ruta del producto!"
+"El tipo de precios de %s es por color. El color %s no existe en"
+" la lista de colores producto %s."
 
-#. module: idtx_product_development
-#: model:ir.actions.act_window,name:idtx_product_development.product_product_action_thread
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__product_template_id
-#: model:ir.ui.menu,name:idtx_product_development.dev_thread_template_menu
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_template_search_view_inherit_ld
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-msgid "Thread"
-msgstr "Hilado"
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+msgid "This sale order has no price list or the option is not activated."
+msgstr "Este pedido de venta no tiene lista de precios o la opción no esta activada"
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_res_company__thread_category_ids
-#: model:ir.model.fields,field_description:idtx_product_development.field_res_config_settings__thread_category_ids
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.res_config_settings_view_form
-msgid "Thread Categories"
-msgstr "Categorías de Hilado"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-msgid "Thread Code"
-msgstr "Código de Hilado"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__thread_qty
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-msgid "Thread Quantity"
-msgstr "Cantidad de Hilado"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__thread_title
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-msgid "Thread Title"
-msgstr "Título de Hilado"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__product_title_id
-#: model:ir.ui.menu,name:idtx_product_development.dev_product_title_action_menu
-msgid "Title"
-msgstr "Título"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__tubular
-#: model:ir.model.fields.selection,name:idtx_product_development.selection__product_analysis__weave_type__tubu
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "Tubular"
+#. module: idtx_sale_order
+#. odoo-javascript
+#: code:addons/idtx_sale_order/static/src/price_items/price_items_widget.xml:0
+msgid "Total"
 msgstr ""
 
-#. module: idtx_product_development
-#: model:ir.model.fields,help:idtx_product_development.field_product_analysis__activity_exception_decoration
-#: model:ir.model.fields,help:idtx_product_development.field_technical_sheet__activity_exception_decoration
-msgid "Type of the exception activity on record."
-msgstr ""
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_routing_workcenter_operation__type_prices
+msgid "Type Prices"
+msgstr "Tipo de Precios"
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__ligament_join_row_column
-msgid "Union"
-msgstr "Unión"
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_account_incoterms__unit_price
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_routing_workcenter_operation__unit_price
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color_price__unit_price
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_title__unit_price
+msgid "Unit Price"
+msgstr "Precio Unitario"
 
-#. module: idtx_product_development
-#: model:res.groups,name:idtx_product_development.group_module_product_development_user
-msgid "User"
-msgstr "Usuario"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_route_line_parameter__value
-msgid "Value"
-msgstr "Valor"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_workorder__weave_type
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_workorder_roll__weave_type
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__weave_type
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__weave_type
-msgid "Weave Type"
-msgstr "Tipo de Technicalejido"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "Weave type"
-msgstr "Tipo de tejido"
-
-#. module: idtx_product_development
-#: model:ir.actions.act_window,name:idtx_product_development.product_product_action_weaving
-#: model:ir.ui.menu,name:idtx_product_development.dev_weaving_template_menu
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.mrp_workorder_roll_view_search_inherit
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_template_search_view_inherit_ld
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_form_view
-msgid "Weaving"
-msgstr "Tejido"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_res_company__weaving_category_ids
-#: model:ir.model.fields,field_description:idtx_product_development.field_res_config_settings__weaving_category_ids
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.res_config_settings_view_form
-msgid "Weaving Categories"
-msgstr "Categorías de Tejido"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__weaving_data_ids
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.analysis_weaving_data_view_form
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
-msgid "Weaving Data"
-msgstr "Datos de Tejido"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__weaving_data_id
-msgid "Weaving Data Parent"
-msgstr "Datos de Tejido Padre"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__notes
-msgid "Weaving Notes"
-msgstr "Observaciones de Tejido"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__scrap
-msgid "Weaving Scrap"
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__weaving_loss
+msgid "Weaving Loss"
 msgstr "Merma de Tejido"
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__website_message_ids
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__website_message_ids
-msgid "Website Messages"
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order_line.py:0
+msgid "Weaving Loss:"
+msgstr "Merma de Tejido:"
+
+#. module: idtx_sale_order
+#. odoo-javascript
+#: code:addons/idtx_sale_order/static/src/price_items/price_items_widget.js:0
+msgid "Weaving Loss: %s %"
+msgstr "Merma de Tejido: %s %"
+
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_mrp_routing_workcenter_operation
+msgid "Workcenter Operation"
+msgstr "Operación"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__dieying_info
+msgid "dieying_info"
 msgstr ""
 
-#. module: idtx_product_development
-#: model:ir.model.fields,help:idtx_product_development.field_product_analysis__website_message_ids
-#: model:ir.model.fields,help:idtx_product_development.field_technical_sheet__website_message_ids
-msgid "Website communication history"
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__diff_days
+msgid "diff_days"
 msgstr ""
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__weight
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-msgid "Weight"
-msgstr "Peso"
-
-#. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
-msgid "Weight (gr/m²)"
-msgstr "Peso (gr/m²)"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__raw_widening
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "Widening"
-msgstr "Ensanchamiento"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__width
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__width
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "Width"
-msgstr "Ancho"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_routing_line__workcenter_id
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_route_line__workcenter_id
-msgid "Work Center"
-msgstr "Centro de Trabajo"
-
-#. module: idtx_product_development
-#: model:ir.model,name:idtx_product_development.model_mrp_workorder
-msgid "Work Order"
-msgstr "Orden de trabajo"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__yield_meter
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "Yield"
-msgstr "Rendimiento"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_product__is_thread
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_template__is_thread
-msgid "is_thread"
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__is_quote
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__parent_is_quote
+msgid "is_quote"
 msgstr ""
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_product__is_weaving
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_template__is_weaving
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__is_weaving
 msgid "is_weaving"
 msgstr ""
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process_line__sequence
-msgid "sequence"
-msgstr "secuencia"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_workorder_roll__size_id
-msgid "size"
-msgstr "talla"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_category__thread_company_categ_id
-msgid "thread_company_categ_id"
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_production__manual_recipe
+msgid "manual_recipe"
 msgstr ""
 
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_category__weaving_company_categ_id
-msgid "weaving_company_categ_id"
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color_price__mrwo_id
+msgid "mrp_routing_workcenter_operation"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_routing_workcenter_operation__product_color_price_ids
+msgid "product_color_price"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__weaving_warning
+msgid "weaving_warning"
 msgstr ""

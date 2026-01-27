@@ -20,12 +20,15 @@ e insertar el registro en tabla fox (dbf)
     'license': 'LGPL-3',
 
     # any module necessary for this one to work correctly
-    'depends': ['base','sale'],
+    'depends': ['base','idtx_sale_order'],
 
     # always loaded
     'data': [
         'security/ir.model.access.csv',
-        'views/foxpro_pedido_views.xml',
+        'views/account_payment_term_views.xml',
+        'views/res_users_views.xml',
+        'views/sale_order_views.xml',
+        'views/sitpro_sale_type_views.xml',
         # 'views/templates.xml',
     ],
 }

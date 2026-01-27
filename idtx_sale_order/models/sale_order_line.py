@@ -33,7 +33,29 @@ class SaleOrderLine(models.Model):
     )
     lab_dev_line_id = fields.Many2one('lab.dev.line', string='Lab Dev Line')
     diff_days = fields.Float('diff_days')
+    is_salesman = fields.Boolean('is_salesman?', compute='_compute_is_salesman')
+    # Detalle de producto en cotización ingresado por comercial y Alex
+    min_qty = fields.Float('Minimum Qty', default=1000.00)
+    # Lo comentamos y usamos el campo customer_lead del estandar
+    # lead_time = fields.Integer('Lead Time', default=30)
+    dis_app = fields.Boolean('dis_app?', default=True)
     
+    @api.onchange('discount')
+    def _onchange_discount(self):
+        max_discount = self.env.company.max_discount * 100
+        if self.discount > max_discount:
+            self.dis_app = False
+        else:
+            self.dis_app = True
+
+    @api.depends_context("uid")
+    def _compute_is_salesman(self):
+        # Si pertenece a unos de estos 2 grupos no es vendedor entonces puede editar
+        # Si solo puede ver sus propios documentos no edita precio
+        is_admin = (self.env.user.has_group("sales_team.group_sale_salesman_all_leads") or self.env.user.has_group("sales_team.group_sale_manager"))
+        for line in self:
+            line.is_salesman = not is_admin
+            
     @api.depends('lab_dev_line_id')
     def _compute_has_approved_lab_line(self):
         for line in self:
@@ -47,7 +69,7 @@ class SaleOrderLine(models.Model):
                 operations = record.bom_id.operation_ids.filtered(lambda o: o.operation_id.unit_price > 0 or o.operation_id.type_prices == 'col' and sum(o.operation_id.product_color_price_ids.mapped('unit_price')) > 0).ids
             record.available_operation_ids = operations
     
-    @api.onchange('bom_id')
+    @api.onchange('bom_id','product_color_id')
     def _onchange_bom_id(self):
         for rec in self:
             rec.operation_ids = [Command.clear()]
@@ -62,21 +84,31 @@ class SaleOrderLine(models.Model):
     @api.onchange('product_id','product_color_id','operation_ids')
     def _onchange_product_or_color(self):
         self.price_items = '{}'
-        self._compute_price_unit()
+        # self._compute_price_unit()
 
     @api.onchange('lab_dev_line_id')
     def _onchange_lab_dev_line_id(self):
         self._compute_has_approved_lab_line()
+        if not self.color_name:
+            self.color_name = self.lab_dev_line_id.color_name
+
+    @api.onchange('product_id')
+    def _onchange_product_id(self):
+        res = super()._onchange_product_id()
+        if self.is_weaving and self.product_template_id.bom_ids:
+            self.bom_id = self.product_template_id.bom_ids[0]
+        return res
 
     @api.depends('product_id', 'product_template_id', 'product_uom_id', 'product_uom_qty','product_color_id', 'weaving_loss', 'production_loss','bom_id','operation_ids','order_id.payment_term_id','order_id.incoterm')
     def _compute_price_unit(self):
         res = super()._compute_price_unit()
         #Solo calcula el precio si la compañía produce
-        if self.company_id.is_company_produce and self.product_id.is_weaving:
-            # Diferenciar si es un producto tejido para calcular su precio
-            for line in self.filtered(lambda l: l.is_weaving):
+        for line in self.filtered(lambda l: l.is_weaving):
+            if self.company_id.is_company_produce and line.product_id.is_weaving:
+                # Diferenciar si es un producto tejido para calcular su precio
+                # for line in self.filtered(lambda l: l.is_weaving):
                 if line.product_template_id.bom_ids:
-                    line.bom_id = line.product_template_id.bom_ids[0]
+                    # line.bom_id = line.product_template_id.bom_ids[0]
                     line.price_unit = line.get_weaving_price_unit()
                     line.technical_price_unit = line.price_unit
         return res
@@ -85,9 +117,6 @@ class SaleOrderLine(models.Model):
     def get_weaving_price_unit(self):
         """
         Calcula el precio unitario para productos de tejido.
-        Ahora usa:
-        - key: fijo en inglés (sin _()) → para comparaciones
-        - label: traducible con _() → para mostrar
         """
         self.ensure_one()
         if self.order_id.is_quote:
@@ -144,12 +173,15 @@ class SaleOrderLine(models.Model):
                         qty = bom_line.product_qty 
                     price = round(bom_line_price * qty, 2)
                     # price = round(bom_line_price * bom_line.product_qty, 2)
-                    if bom_line.operation_id.id in self.operation_ids._origin.ids:
-                        # price_dict.update({bom_line.product_id.name: price})
-                        price_dict.update({bom_line.product_id.name: {'label': bom_line.product_id.name, 'price': price}})
+                    # if bom_line.operation_id.id in self.operation_ids._origin.ids:
+                    #     # price_dict.update({bom_line.product_id.name: price})
+                    #     price_dict.update({bom_line.product_id.name: {'label': bom_line.product_id.name, 'price': price}})
+                    product_name = bom_line.product_id.name
+                    price_dict.setdefault(product_name, {'label': product_name, 'price': 0.0})
+                    price_dict[product_name]['price'] += round(bom_line_price * qty, 2)
 
                 for operation in self.operation_ids.sorted(key=lambda r: r.sequence):
-                    if operation.operation_id.type_prices == 'col':
+                    if operation.operation_id.type_prices == 'col' and self.product_color_id.is_lab_color:
                         operation_color_line = operation.operation_id.product_color_price_ids.search([
                             ('product_color_id', '=', self.product_color_id.id),
                             ('mrwo_id', '=', operation.operation_id._origin.id)
@@ -158,9 +190,13 @@ class SaleOrderLine(models.Model):
                     else:
                         price = operation.operation_id.unit_price
                     
-                    # # Si el precio varia por titulo de hilo
-                    # if operation.operation_id.per_title:
-                    #     price += self.product_template_id.id.analysis_id.product_title_id.unit_price
+                    # Si el precio varia por titulo de hilo
+                    if operation.operation_id.per_title:
+                        if operation.operation_id.type_prices == 'col':
+                            if self.product_color_id.is_lab_color:
+                                price += self.product_template_id.analysis_id.product_title_id.unit_price
+                        else:
+                            price += self.product_template_id.analysis_id.product_title_id.unit_price
 
                     src_currency = operation.operation_id.currency_id
                     if src_currency != currency:
@@ -171,8 +207,9 @@ class SaleOrderLine(models.Model):
                             fields.Date.context_today(self),
                             round=False
                         )
+                    if price:
                     # price_dict.update({operation.operation_id.name: price})
-                    price_dict.update({operation.operation_id.name: {'label': operation.operation_id.name, 'price': price}})
+                        price_dict.update({operation.operation_id.name: {'label': operation.operation_id.name, 'price': price}})
 
             # 4) Totales y derivados con clave FIJA + label traducible
             # ------------------------------------------------------------------
@@ -216,15 +253,15 @@ class SaleOrderLine(models.Model):
 
         # Si NO es cotización → tu lógica anterior (sin cambios)
         else:
-            line = self.get_product_from_quote(self.product_id, self.product_color_id)
+            line = self.get_product_from_quote(self.product_id, self.product_color_id, self.bom_id)
             total = line.price_unit if line else 1
 
         return float_round(total, 2)
     
-    def get_product_from_quote(self, product, color):
+    def get_product_from_quote(self, product, color, bom):
         if product and color:
             quote = self.order_id.quotation_id
-            line = quote.order_line.filtered(lambda l: l.product_id == product and l.product_color_id == color)
+            line = quote.order_line.filtered(lambda l: l.product_id == product and l.product_color_id == color and l.bom_id == bom)
             if not line:
                 today = fields.Date.context_today(self)
                 line = self._get_last_quotation_price(today)
@@ -233,8 +270,8 @@ class SaleOrderLine(models.Model):
                         self.diff_days = (today - line.order_id.validity_date ).days
                     return line
                 else:
-                    if quote:
-                        raise UserError(_('Product %s with color %s can\'t be found in any quotation') %(product.name, color.name))
+                    # if quote:
+                    raise UserError(_('Product %s with color %s can\'t be found in any quotation or sale order. Please quotate first.') %(product.name, color.name))
             return line
         else:
             return self.env['sale.order.line']
@@ -244,7 +281,7 @@ class SaleOrderLine(models.Model):
             ('order_id.partner_id', '=', self.order_partner_id.id),
             ('product_id', '=', self.product_id.id),
             ('product_color_id', '=', self.product_color_id.id),
-            ('order_id.is_quote', '=', True),
+            # ('order_id.is_quote', '=', True),
             ('order_id.state', 'in', ('draft','sent')),
         ])
         # ordenamos en Python por validez (más reciente primero)
