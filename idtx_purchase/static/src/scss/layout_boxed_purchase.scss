@@ -36,20 +36,20 @@ $o-row-stripe:        #fafafa;
 .o_table_boxed_purchase {
     
     div[name="address"] {          /* único bloque que contiene la dirección */
-        font-size: 9px !important;
+        font-size: 12px !important;
         line-height: 1.1 !important;
 
         strong, span, p, div {     /* cualquier texto dentro */
-            font-size: 9px !important;
+            font-size: 12px !important;
         }
     }
 
     div[name="information_block"] {  /* shipping address */
-        font-size: 9px !important;
+        font-size: 12px !important;
         line-height: 1.1 !important;
 
         strong, span, p, div {
-            font-size: 9px !important;
+            font-size: 12px !important;
         }
 
         /* si quieres también quitar el recuadro de shipping */

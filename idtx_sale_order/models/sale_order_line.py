@@ -186,17 +186,17 @@ class SaleOrderLine(models.Model):
                             ('product_color_id', '=', self.product_color_id.id),
                             ('mrwo_id', '=', operation.operation_id._origin.id)
                         ])
-                        price = operation_color_line.unit_price if operation_color_line else 0
+                        price = round(operation_color_line.unit_price, 2) if operation_color_line else 0
                     else:
-                        price = operation.operation_id.unit_price
+                        price = round(operation.operation_id.unit_price, 2)
                     
                     # Si el precio varia por titulo de hilo
                     if operation.operation_id.per_title:
                         if operation.operation_id.type_prices == 'col':
                             if self.product_color_id.is_lab_color:
-                                price += self.product_template_id.analysis_id.product_title_id.unit_price
+                                price += round(self.product_template_id.analysis_id.product_title_id.unit_price, 2)
                         else:
-                            price += self.product_template_id.analysis_id.product_title_id.unit_price
+                            price += round(self.product_template_id.analysis_id.product_title_id.unit_price, 2)
 
                     src_currency = operation.operation_id.currency_id
                     if src_currency != currency:
@@ -291,3 +291,9 @@ class SaleOrderLine(models.Model):
         else:
             line = False
         return line
+    
+    def write(self, vals):
+        for rec in self:
+            if 'product_uom_qty' in vals:
+                rec.production_id.product_qty = vals.get('product_uom_qty')
+        return super().write(vals)

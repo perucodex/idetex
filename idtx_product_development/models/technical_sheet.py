@@ -68,52 +68,6 @@ class TechnicalSheet(models.Model):
         for rec in self:
             rec.yield_meter = 1000 / (rec.density * (rec.width / 100)) if (rec.density and rec.width) else 1
 
-    # def action_fetch_from_mysql(self):
-
-    #     connector = MySQLConnector(
-    #         host="170.233.144.110",
-    #         user="root",
-    #         password="Server01",
-    #         database="prueba_covatex"
-    #     )
-    #     # _logger.info("clave1:******************************" + MySQLConnector.decrypt_data('X9vPTUu4s85CrJqn7IilfudhiMVlBvKN0mqx9yrhjQyL91VOKWyV/GQROQ5zqWlH'))
-    #     # print(str(round(self.density, 2)))
-    #     values = {
-    #         'id_usuarios': 23,
-    #         'fecha': fields.Date.context_today(self),
-    #         'articulo': MySQLConnector.encrypt_data(self.analysis_id.product_description or ''),
-    #         'cod_articulo': MySQLConnector.encrypt_data(self.analysis_id.product_code or ''),
-    #         'cod_cliente': MySQLConnector.encrypt_data(str(self.partner_id.id) or ''),
-    #         'programa': MySQLConnector.encrypt_data(self.program or ''),
-    #         'composicion_tela': MySQLConnector.encrypt_data(self.fabric_composition or ''),
-    #         'atx': MySQLConnector.encrypt_data(self.atx or ''),
-    #         'densidad': MySQLConnector.encrypt_data(str(round(self.density, 2)) or ''),
-    #         'ancho': MySQLConnector.encrypt_data(str(round(self.width, 2)) or ''),
-    #         'primera_lav_encog': MySQLConnector.encrypt_data(self.first_wash_shrinkage or ''),
-    #         'primera_lav_revir': MySQLConnector.encrypt_data(self.first_wash_twist or ''),
-    #         'rendimiento': MySQLConnector.encrypt_data(str(self.yield_meter) or ''),
-    #         'merma': MySQLConnector.encrypt_data(str(self.scrap) or ''),
-    #         'tipo_tejido': MySQLConnector.encrypt_data('ABIERTO' if self.weave_type == 'open' else 'TUBULAR'),
-    #         'tipo_operacion': MySQLConnector.encrypt_data('VENTA'),
-    #         'partida': MySQLConnector.encrypt_data(self.batch or ''),
-    #         'galga': MySQLConnector.encrypt_data(self.analysis_id.gauge_id.code or ''),
-    #         'observacion': MySQLConnector.encrypt_data(self.notes or ''),
-    #         'cantidad_procesos': MySQLConnector.encrypt_data(str(len(self.route_line_ids)) or ''),
-    #         'hilanderia': MySQLConnector.encrypt_data(''),
-    #     }
-    #     connector.insert("rutas", values)
-
-    # @api.onchange('gauge_id','width','density')
-    # def _onchange_product_code(self):
-    #     for rec in self:
-    #         rec.product_code = (rec.analysis_id.product_family_id.code or '') + \
-    #                 (rec.analysis_id.product_title_id.code or '') + \
-    #                 (rec.analysis_id.product_fiber_id.code or '') + \
-    #                 (rec.gauge_id.code or '') + \
-    #                 (rec.analysis_id.product_appearance_id.code or '') + \
-    #                 (str(int(rec.width)).replace('.','') or '') + \
-    #                 (str(int(rec.density)).replace('.','') or '')
-                
     #=== CRUD METHODS ===#
 
     @api.model_create_multi

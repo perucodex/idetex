@@ -47,6 +47,8 @@ class SaleOrder(models.Model):
     def action_quotation_send(self):
         if self.need_approval:
             raise UserError(_('Can\'t send quotation without approval for discount.'))
+        if self.weaving_warning:
+            raise UserError(_('Please solve all the warnings first.'))
         action = super().action_quotation_send()
         if len(self) != 1:
             return action
@@ -73,7 +75,7 @@ class SaleOrder(models.Model):
     @api.depends('order_line')
     def _compute_need_labdev(self):
         for rec in self:
-            rec.need_labdev = any(line.product_template_id.is_weaving for line in self.order_line)
+            rec.need_labdev = any(line.product_template_id.is_weaving and line.product_color_id.is_lab_color for line in self.order_line)
 
     @api.depends('lab_dev_ids')
     def _compute_lab_dev_count(self):
@@ -142,6 +144,10 @@ class SaleOrder(models.Model):
     @api.depends('order_line','partner_id','pricelist_id')
     def _compute_weaving_warning(self):
         for order in self:
+            if order.weaving_warning:
+                has_warning = True
+            else:
+                has_warning = False
             order.weaving_warning = ''
             if order.partner_id and not order.pricelist_id:
                 order.weaving_warning += _(('This sale order has no price list or the option is not activated.')) + '\n'
@@ -175,6 +181,10 @@ class SaleOrder(models.Model):
                         order.weaving_warning += _(('Product %s has an old price. Quotation is %s days old') %( line.product_id.product_tmpl_id.name, line.diff_days)) + '\n'
                     if not line.product_template_id.bom_ids:
                         order.weaving_warning += _(('Product %s does not have any bom. Please check with product development.')  % line.product_id.product_tmpl_id.name) + '\n'
+            # Si se limpian los warnings, calculamos los precios nuevamente
+            if has_warning and not order.weaving_warning:
+                for l in order.order_line:
+                    l._compute_price_unit()
 
     @api.depends('order_line')
     def _compute_dieying_info(self):
@@ -199,7 +209,7 @@ class SaleOrder(models.Model):
 
     def action_confirm(self):
         for rec in self:
-            if not rec.is_quote and not rec.lab_dev_ids and rec.company_id.is_company_produce and any(line.product_template_id.is_weaving for line in self.order_line):
+            if not rec.is_quote and not rec.lab_dev_ids and rec.company_id.is_company_produce and any(line.product_template_id.is_weaving and line.product_color_id.is_lab_color for line in self.order_line):
                 raise UserError(_('Cant\'t confirm sale order without LD'))
             if rec.is_quote and rec.company_id.is_company_produce:
                 raise UserError(_('Cant\'t confirm a quotation.'))

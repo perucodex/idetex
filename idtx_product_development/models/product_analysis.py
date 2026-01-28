@@ -128,7 +128,8 @@ class ProductAnalysis(models.Model):
         return super().create(vals_list)
     
     def action_product(self):
-        uom = self.env.ref('uom.product_uom_kgm') if self.weave_type != 'rect' else self.env.ref('uom.product_uom_unit')
+        # Modificamos la línea porque los rectilíneos tambien se venden por kilo
+        uom = self.env.ref('uom.product_uom_kgm') #if self.weave_type != 'rect' else self.env.ref('uom.product_uom_unit')
         self.product_id = self.env['product.template'].create({
             'name': self.product_description,
             'is_storable': True,

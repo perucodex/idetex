@@ -1,4 +1,6 @@
 import dbf
+import pyodbc
+import re
 import logging
 from odoo import models, api, fields, _
 from odoo.exceptions import UserError
@@ -66,26 +68,37 @@ class SaleOrder(models.Model):
     def find_cliente_codigo(self, filename, vat_cliente):
         table = None
         try:
-            table = dbf.Table(filename, codepage="cp1252")
+            table = dbf.Table(filename, codepage='cp1252')
             with table:
-                key = (vat_cliente or "").strip()
-
-                idx = table.create_index(
-                    lambda r: (r.RUC.strip(),)   # 👈 strip en el índice
-                )
-
+                key = (vat_cliente or '').strip()
+                idx = table.create_index(lambda r: (r.RUC.strip(),))
                 matches = idx.search(match=(key,), partial=False)
-
                 for rec in matches:
                     if not dbf.is_deleted(rec):
-                        return rec.CDGCLIE   # 👈 campo en MAYÚSCULAS
-
-            return None
-
+                        return rec.CDGCLIE, False
+                next_code = self._siguiente_codigo_por_letra(table, self.partner_id.name[:1])
+                return next_code, True
         finally:
             if table:
                 table.close()
 
+    def _siguiente_codigo_por_letra(self, table, letra):
+        patron = re.compile(rf'^{re.escape(letra)}(\d{{4}})$')
+        max_n = 0
+        for rec in table:
+            if dbf.is_deleted(rec):
+                continue
+            cdg = (getattr(rec, 'CDGCLIE', '') or '').strip().upper()
+            m = patron.match(cdg)
+            if m:
+                n = int(m.group(1))
+                if n > max_n:
+                    max_n = n
+        siguiente = max_n + 1
+        if siguiente > 9999:
+            raise ValueError(f'Se agotó el correlativo para la letra {letra} (>{letra}9999).')
+        return f'{letra}{siguiente:04d}'
+    
     # ------------------------------------------------------------------
     # Exportación FoxPro
     # ------------------------------------------------------------------
@@ -95,17 +108,38 @@ class SaleOrder(models.Model):
         
         file_cab = '/mnt/fox/sit06/JP_DBF/vta_cab_pedido.dbf'
         file_det = '/mnt/fox/sit06/JP_DBF/vta_det_pedido.dbf'
-        clientes_dbf = '/mnt/fox/sit06/DBF/clientes.dbf'
+        clientes_dbf = '/mnt/fox/sit06/JP_DBF/clientes.dbf'
 
         # --------------------
         # Cabecera
         # --------------------
-        codcli = self.find_cliente_codigo(clientes_dbf,self.partner_id.vat)
+        codcli, nuevo = self.find_cliente_codigo(clientes_dbf,self.partner_id.vat)
+        if nuevo:
+            # Inserta en dbf
+            cli_values = {
+                'CDGCLIE': str(codcli).strip()[:10],
+                'RAZSOC': self.partner_id.name or '',
+                'RUC': self.partner_id.vat or '',
+                'DIRECCI': self.partner_id.street or '',
+                'PAIS': self.partner_id.country_id.name or '',
+                'DESDIS': self.partner_id.l10n_pe_district.name or '',
+                'DPTO': self.partner_id.state_id.name or '',
+                'EMAIL': self.partner_id.email or '',
+            }
+            self._insert_dbf_record(clientes_dbf, cli_values)
+            cli_values.update({
+                'CONTACTOVT': self.user_id.vendor_code_sitpro or '',
+                'TELEF1': self.partner_id.phone or '',
+                'OBSCLIEN': '',
+                'EMAILS': self.partner_id.email or '',
+            })
+            self._insert_sql_record(cli_values)
+
         for tax_totals in self.tax_totals['subtotals']:
             for tax in tax_totals['tax_groups']:
                 if tax['group_name'] == 'IGV':
                     total_tax = tax['tax_amount_currency']
-        orden = dbf.Char((self.name or "").strip())
+        orden = dbf.Char((self.name or '').strip())
         orden = str(orden or '')[:10].ljust(10)
         cab_values = {
             'NUMORDPED': orden[:10],
@@ -113,9 +147,9 @@ class SaleOrder(models.Model):
             'CDGCLIE': str(codcli).strip()[:10],
             'CDGTIPVEN': self.payment_term_id.sitpro_code,
             'CDGTIPMER': '001' if self.fiscal_position_id.name == 'LOCAL PERÚ' else '002',
-            'LAB': (self.lab_dev_ids[0].name or '')[:10],
+            'LAB': (self.lab_dev_ids[0].name or '')[:10] if self.lab_dev_ids else '',
             'CONDPAGO': (self.payment_term_id.name or '')[:150], # Traer tabla
-            'CDGVEN': self.user_id.vendor_code_sitpro, # Crear campo oculto en vendedor para ingresar codigo de sitpro
+            'CDGVEN': self.user_id.vendor_code_sitpro or '', # Crear campo oculto en vendedor para ingresar codigo de sitpro
             'TELEFONO': self.telefono, # Selection 1
             'GREM': (self.grem or '')[:10], #Char
             'OCC': (self.occ or '')[:30], #Char
@@ -137,7 +171,7 @@ class SaleOrder(models.Model):
             'UM1': 'KG',
             'FECHADESPA': self.fechadespacho,
             'FECOC': self.fecoc,
-            'EMPRESA': (self.env.company.name or "")[:50],
+            'EMPRESA': (self.env.company.name or '')[:50],
             'USUARIO': self.env.user.name,
         }
 
@@ -179,20 +213,68 @@ class SaleOrder(models.Model):
     def _insert_dbf_record(self, filename, values):
         table = None
         try:
-            # table = dbf.Table(filename, codepage='cp1252')
             table = dbf.VfpTable(filename, codepage='cp1252')
             table.open(mode=dbf.READ_WRITE)
-
-            # Normalizar campos
             record = {k.upper(): v for k, v in values.items()}
-
-            # Validar campos
             for field in record:
                 if field not in table.field_names:
-                    raise Exception(f'Campo "{field}" no existe en {filename}')
-
+                    raise Exception(f"Campo '{field}' no existe en {filename}")
             table.append(record)
-
         finally:
             if table:
                 table.close()
+
+    # -----------------------------------------
+    # 🔌 CONEXION SQL SERVER
+    # -----------------------------------------
+    def _get_sql_connection(self):
+        try:
+            conn = pyodbc.connect(
+                "DSN=SITPRO_DSN;"
+                "PORT=1433;"
+                "UID=sistemas;"
+                "PWD=idtE#21@IRdc95;"
+                "TDS_Version=7.3;"
+            )
+            return conn
+        except Exception as e:
+            raise UserError(f"No se pudo conectar a SQL Server: {e}")
+    
+    def _insert_sql_record(self, cli_values):
+        conn = None
+        cursor = None
+        try:
+            conn = self._get_sql_connection()
+            cursor = conn.cursor()
+            query = """
+                INSERT INTO clientes
+                (CDGCLIE, RAZSOC, RUC, DIRECCI, PAIS, DESDIS, DPTO, EMAIL, CONTACTOVT, TELEF1, OBSCLIEN, EMAILS)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """
+            params = (
+                cli_values['CDGCLIE'].upper(),
+                cli_values['RAZSOC'].upper(),
+                cli_values['RUC'].upper(),
+                cli_values['DIRECCI'].upper(),
+                cli_values['PAIS'].upper(),
+                cli_values['DESDIS'].upper(),
+                cli_values['DPTO'].upper(),
+                cli_values['EMAIL'].upper(),
+                cli_values['CONTACTOVT'].upper(),
+                cli_values['TELEF1'].upper(),
+                cli_values['OBSCLIEN'].upper(),
+                cli_values['EMAILS'].upper(),
+            )
+            cursor.execute(query, params)
+            conn.commit()
+        finally:
+            try:
+                if cursor:
+                    cursor.close()
+            except Exception:
+                pass
+            try:
+                if conn:
+                    conn.close()
+            except Exception:
+                pass

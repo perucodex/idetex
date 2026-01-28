@@ -14,27 +14,27 @@
                     <field name="is_problem" invisible="1" force_save="1"/>
                 </field>
                 <field name="partner_id" position="attributes">
-                    <attribute name="readonly">state == 'prod' or not is_problem</attribute>
+                    <attribute name="readonly">state == 'prod' or state == 'impo' and not is_problem</attribute>
                     <attribute name="force_save">1</attribute>
                 </field>
                 <field name="product_family_id" position="attributes">
-                    <attribute name="readonly">state == 'prod' or not is_problem</attribute>
+                    <attribute name="readonly">state == 'prod' or state == 'impo' and not is_problem</attribute>
                     <attribute name="force_save">1</attribute>
                 </field>
                 <field name="product_appearance_id" position="attributes">
-                    <attribute name="readonly">state == 'prod' or not is_problem</attribute>
+                    <attribute name="readonly">state == 'prod' or state == 'impo' and not is_problem</attribute>
                     <attribute name="force_save">1</attribute>
                 </field>
                 <field name="product_fiber_id" position="attributes">
-                    <attribute name="readonly">state == 'prod' or not is_problem</attribute>
+                    <attribute name="readonly">state == 'prod' or state == 'impo' and not is_problem</attribute>
                     <attribute name="force_save">1</attribute>
                 </field>
                 <field name="product_title_id" position="attributes">
-                    <attribute name="readonly">state == 'prod' or not is_problem</attribute>
+                    <attribute name="readonly">state == 'prod' or state == 'impo' and not is_problem</attribute>
                     <attribute name="force_save">1</attribute>
                 </field>
                 <field name="gauge_id" position="attributes">
-                    <attribute name="readonly">state == 'prod' or not is_problem</attribute>
+                    <attribute name="readonly">state == 'prod' or state == 'impo' and not is_problem</attribute>
                     <attribute name="force_save">1</attribute>
                 </field>
             </field>

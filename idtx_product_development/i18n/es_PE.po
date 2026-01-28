@@ -1196,7 +1196,7 @@ msgstr "Descripción"
 #. module: idtx_product_development
 #: model:ir.ui.menu,name:idtx_product_development.product_development_menu
 msgid "Product Dev"
-msgstr "Desarrollo de Producto"
+msgstr "Desarrollo"
 
 #. module: idtx_product_development
 #: model:res.groups.privilege,name:idtx_product_development.module_product_development_user
@@ -1620,7 +1620,7 @@ msgstr "Valor"
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__weave_type
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__weave_type
 msgid "Weave Type"
-msgstr "Tipo de Technicalejido"
+msgstr "Tipo de Tejido"
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document

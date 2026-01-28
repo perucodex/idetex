@@ -21,7 +21,7 @@
                 <attribute name="invisible">state not in ('sent', 'sale') or need_approval and is_company_produce</attribute>
             </xpath>
             <field name="state" position="attributes">
-                <attribute name="statusbar_visible">draft,for_app,sent,sale</attribute>
+                <attribute name="statusbar_visible">draft,sent,sale</attribute>
             </field>
             <xpath expr="//div[@name='button_box']/button[@name='action_view_invoice']" position="after">
                 <button name="open_labdev"
@@ -58,10 +58,10 @@
             <xpath expr="//header/button[@name='action_confirm'][1]" position="after">
                 <button name="create_labdev" class="btn-primary" string="Create LabDev" type="object" invisible="lab_dev_ids or is_quote or not is_company_produce or not need_labdev"/>
                 <!-- <button name="manual_labdev" class="btn-secondary" string="Manual LabDev" type="object" invisible="lab_dev_ids or is_quote"/> -->
-                <button name="action_create_sale_order" type="object" string="Sale Order" class="btn-primary" groups="base.group_user" invisible="state != 'sent' or not is_quote or not is_company_produce"/>
+                <button name="action_create_sale_order" type="object" string="Sale Order" class="btn-primary" groups="base.group_user" invisible="state != 'sent' or not is_quote or not is_company_produce or need_approval"/>
                 <button name="action_request_approval" type="object" string="Request Approval" class="btn-primary" invisible="not need_approval or state == 'for_app' or not is_company_produce"/>
                 <button name="action_approve" type="object" string="Approve Discount" class="btn-primary" groups="sales_team.group_sale_salesman_all_leads" invisible="state != 'for_app' or not is_company_produce"/>
-                <button name="action_price_preview" type="object" string="Prices" class="btn-secondary" groups="base.group_user" invisible="not is_quote or not is_company_produce or is_subscription"/>
+                <button name="action_price_preview" type="object" string="Prices" class="btn-secondary" groups="sales_team.group_sale_salesman_all_leads" invisible="not is_quote or not is_company_produce or is_subscription"/>
             </xpath>
             <xpath expr="//header" position="after">
                 <div class="alert alert-warning d-flex justify-content-between align-items-center" role="alert"
@@ -83,7 +83,7 @@
                 <field name="diff_days" column_invisible="1"/>
                 <field name="color_name" required="is_weaving and not parent.lab_dev_ids and parent.is_company_produce and is_lab_color" readonly="not is_weaving or not is_lab_color" column_invisible="parent.is_quote or parent.lab_dev_ids or not parent.is_company_produce"/>
                 <field name="color_name" required="is_weaving and not parent.lab_dev_ids and parent.is_company_produce and is_lab_color" readonly="not is_weaving or not is_lab_color" column_invisible="parent.is_quote or not parent.lab_dev_ids or not parent.is_company_produce" widget="badge" decoration-success="has_approved_lab_line" decoration-danger="not has_approved_lab_line" force_save="1"/>
-                <field name="lab_dev_line_id" required="is_weaving and not lab_dev_line_id and parent.is_company_produce and state == 'sale'" readonly="not is_weaving or not is_lab_color" column_invisible="parent.is_quote or not parent.lab_dev_ids or not parent.is_company_produce" domain="[('lab_dev_id', 'in', parent.lab_dev_ids),('product_id','=',product_template_id)]" options="{'no_create': True}"/>
+                <field name="lab_dev_line_id" required="is_weaving and parent.is_company_produce and state == 'sale' and is_lab_color" readonly="not is_weaving or not is_lab_color" column_invisible="parent.is_quote or not parent.lab_dev_ids or not parent.is_company_produce" domain="[('lab_dev_id', 'in', parent.lab_dev_ids),('product_id','=',product_template_id)]" options="{'no_create': True}"/>
                 <field name="bom_id" options="{'no_create': True}" required="is_weaving and parent.is_company_produce and state == 'sale'" readonly="not is_weaving" domain="[('product_tmpl_id','=',product_template_id)]" optional="hide" column_invisible="not parent.is_quote or not parent.is_company_produce"/>
                 <field name="operation_ids" options="{'no_create': True}" required="parent.sale_type == 'service' and parent.is_company_produce and is_weaving" readonly="not is_weaving or parent.sale_type != 'service'" domain="[('id','in',available_operation_ids)]" widget="many2many_tags" force_save="1" optional="hide" column_invisible="not parent.is_quote or not parent.is_company_produce"/>
                 <field name="weaving_loss" readonly="not is_weaving" optional="hide" widget="percentage" column_invisible="not parent.is_quote or not parent.is_company_produce"/>
@@ -101,6 +101,11 @@
 
             <xpath expr="//notebook/page/field[@name='order_line']/list/field[@name='price_unit']" position="attributes">
                 <attribute name="readonly">qty_invoiced &gt; 0 or is_salesman and parent.is_company_produce and is_weaving</attribute>
+                <attribute name="force_save">1</attribute>
+            </xpath>
+
+            <xpath expr="//notebook/page/field[@name='order_line']/list/field[@name='discount']" position="attributes">
+                <attribute name="readonly">not parent.is_quote and is_salesman and parent.is_company_produce and is_weaving</attribute>
                 <attribute name="force_save">1</attribute>
             </xpath>
 
