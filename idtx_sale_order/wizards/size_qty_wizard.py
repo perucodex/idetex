@@ -3,9 +3,9 @@ from odoo import api, fields, models
 
 class SizeQtyWizard(models.TransientModel):
     _name = "size.qty.wizard"
-    _description = "Wizard tallas rectilíneo"
+    _description = "Wizard Size Qty Rectilinear"
 
-    line_ids = fields.One2many("size.qty.wizard.line", "wizard_id", string="Tallas")
+    line_ids = fields.One2many("size.qty.wizard.line", "wizard_id", string="Sizes")
 
     @api.model
     def default_get(self, fields_list):
@@ -42,7 +42,7 @@ class SizeQtyWizard(models.TransientModel):
 
 class SizeQtyWizardLine(models.TransientModel):
     _name = "size.qty.wizard.line"
-    _description = "Wizard línea tallas rectilíneo"
+    _description = "Wizard Line Size Qty Rectilinear"
     _order = "sequence, id"
 
     wizard_id = fields.Many2one("size.qty.wizard", required=True, ondelete="cascade")

@@ -91,7 +91,7 @@
                 <field name="min_qty" readonly="not is_weaving" optional="hide" column_invisible="not parent.is_quote or not parent.is_company_produce"/>
                 <field name="dis_app" column_invisible="1"/>
                 <field name="is_rect" column_invisible="1"/>
-                <button name="action_open_size_qty_wizard" type="object" icon="fa-list-ol" class="btn-link" title="Editar tallas rectilíneo" invisible="not is_rect"/>
+                <button name="action_open_size_qty_wizard" type="object" icon="fa-sort-amount-desc" class="btn-link" title="Edit Sizes Qty Rectilinear" invisible="not is_rect"/>
             </xpath>
 
             <xpath expr="//notebook/page/field[@name='order_line']/list/field[@name='price_unit']" position="after">
