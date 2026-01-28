@@ -39,6 +39,9 @@ class SaleOrderLine(models.Model):
     # Lo comentamos y usamos el campo customer_lead del estandar
     # lead_time = fields.Integer('Lead Time', default=30)
     dis_app = fields.Boolean('dis_app?', default=True)
+    # Manejo de tallas para rectilineos
+    is_rect = fields.Boolean(related='product_id.product_tmpl_id.is_rect')
+    size_qty_ids = fields.One2many('sale.order.line.size', 'line_id', string='Size / Qty')
     
     @api.onchange('discount')
     def _onchange_discount(self):
@@ -297,3 +300,28 @@ class SaleOrderLine(models.Model):
             if 'product_uom_qty' in vals:
                 rec.production_id.product_qty = vals.get('product_uom_qty')
         return super().write(vals)
+    
+    def action_open_size_qty_wizard(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Size Qty (Rectilinear)",
+            "res_model": "size.qty.wizard",
+            "view_mode": "form",
+            "target": "new",
+            "context": {
+                "active_model": self._name,
+                "active_id": self.id,
+            },
+        }
+    
+class SaleOrderLineSize(models.Model):
+    _name = 'sale.order.line.size'
+    _description = 'Sale Order Line Size'
+
+    line_id = fields.Many2one('sale.order.line', string='Sale Order Line', required=True, ondelete="cascade")
+    sequence = fields.Integer(default=10)
+    size = fields.Char(string='Size')
+    product_qty = fields.Integer('Product Qty', required=True, default=0)
+    # length = fields.Float(string="Largo (cm)")
+    # width = fields.Float(string="Ancho (cm)")

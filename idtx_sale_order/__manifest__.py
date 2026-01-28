@@ -46,6 +46,7 @@ Gestiona la carga de precios y productos en tus cotizaciones
         'views/res_config_settings_views.xml',
         'views/sale_order_views.xml',
         'views/sale_quotation_views.xml',
+        'wizards/size_qty_wizard_views.xml',
     ],
     
     'assets': {

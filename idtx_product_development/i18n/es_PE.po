@@ -1100,7 +1100,7 @@ msgstr "Porcentaje"
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__plies
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
 msgid "Plies"
-msgstr ""
+msgstr "Cabos"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__user_id
