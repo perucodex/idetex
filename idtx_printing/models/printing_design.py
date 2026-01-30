@@ -11,8 +11,10 @@ ALLOWED_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.bmp')
 class PrintingDesign(models.Model):
     _name = 'printing.design'
     _description = 'Printing Design'
+    _rec_name = 'code'
 
     name = fields.Char('Name', required=True, copy=False, readonly=False, default=lambda self: _('New'))
+    code = fields.Char('Code')
     printing_date = fields.Date('Printing Date', required=True)
     printing_type = fields.Selection([
         ('rotary', 'Rotary'),
@@ -45,11 +47,17 @@ class PrintingDesign(models.Model):
     unit_price = fields.Monetary('Unit Price', currency_field='currency_id')
     yield_meter = fields.Float('Yield')
     total_price = fields.Monetary('Total Price', compute='_compute_total_price', currency_field='currency_id')
+    is_locked = fields.Boolean(compute='_compute_is_locked', store=False)
+
+    @api.depends('name')
+    def _compute_is_locked(self):
+        for rec in self:
+            rec.is_locked = rec.name != _('New')
 
     @api.constrains('cylinder_qty')
     def _check_cylinder_qty(self):
         for rec in self:
-            if rec.cylinder_qty <= 0:
+            if rec.cylinder_qty <= 0 and rec.printing_type == 'rotary':
                 raise ValidationError(_("Cylinder Qty must be greater than 0"))
         
     @api.depends('yield_meter')
@@ -61,29 +69,21 @@ class PrintingDesign(models.Model):
     def _compute_preview_image(self):
         for rec in self:
             rec.preview_image = False
-
             if not rec.design_image:
                 continue
-
             if not rec.file_name or not rec.file_name.lower().endswith(ALLOWED_EXTENSIONS):
                 continue
-
             try:
                 image_data = base64.b64decode(rec.design_image)
                 image = Image.open(io.BytesIO(image_data))
-
                 # Normaliza modo de color
                 if image.mode not in ('RGB', 'RGBA'):
                     image = image.convert('RGB')
-
                 # Resize para preview
                 image.thumbnail((512, 512))
-
                 buffer = io.BytesIO()
                 image.save(buffer, format='PNG')
-
                 rec.preview_image = base64.b64encode(buffer.getvalue())
-
             except Exception:
                 rec.preview_image = False
 
@@ -98,37 +98,37 @@ class PrintingDesign(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
-            if vals.get('name', _('New')) != _('New'):
-                continue
-            # 📅 Año (2 dígitos)
-            p_date = vals.get('printing_date') or fields.Date.context_today(self)
-            year_2d = fields.Date.from_string(p_date).strftime('%y')
-            # 🔢 Secuencia (0001)
-            seq = self.env['ir.sequence'].next_by_code('printing.design') or '0000'
-            # 🌀 Cantidad de cilindros (solo rotativo)
-            cyl = ''
-            if vals.get('printing_type') == 'rotary':
-                cyl = str(vals.get('cylinder_qty') or 0)
-            # 🏷️ Código de tipo + proceso
-            code = self._get_process_code(vals)
-            # 🧩 Armado final
-            parts = [
-                'M' + year_2d,
-                seq,
-            ]
-            if cyl:
-                parts.append(cyl)
-
-            if code:
-                parts.append(code)
-            vals['name'] = '-'.join(parts)
-
+            if vals.get('name', _("New")) == _("New"):
+                seq_date = fields.Datetime.context_timestamp(
+                    self, fields.Datetime.to_datetime(vals['printing_date'])
+                ) if 'printing_date' in vals else None
+                vals['name'] = self.env['ir.sequence'].with_company(vals.get('company_id')).next_by_code(
+                    'printing.design', sequence_date=seq_date) or _("New")
         return super().create(vals_list)
 
     # -------------------------------------------------------
     # HELPERS
     # -------------------------------------------------------
-    def _get_process_code(self, vals):
+
+    @api.onchange('printing_date','printing_type','cylinder_qty','process_type_rotary','process_type_digital')
+    def _onchange_get_code(self):
+        for rec in self:
+            p_date = rec.printing_date or fields.Date.context_today(self)
+            year_2d = fields.Date.from_string(p_date).strftime('%y')
+            last_code = rec.search([], limit=1).sorted('code', True)
+            seq = str(int(last_code[5:8]) + 1).zfill(4)
+            cyl = ''
+            if rec.printing_type == 'rotary':
+                cyl = str(rec.cylinder_qty) or 0
+            code = self._get_process_code(rec)
+            parts = ['M' + year_2d, seq]
+            if cyl:
+                parts.append(cyl)
+            if code:
+                parts.append(code)
+            rec.code = '-'.join(parts)
+
+    def _get_process_code(self, rec):
         """
         RR = Rotary + Reactive
         RP = Rotary + Pigment
@@ -137,10 +137,9 @@ class PrintingDesign(models.Model):
         DR = Digital + Reactive
         DP = Digital + Pigment
         """
-        printing_type = vals.get('printing_type')
-
+        printing_type = rec.printing_type
         if printing_type == 'rotary':
-            process = vals.get('process_type_rotary')
+            process = rec.process_type_rotary
             return {
                 'reactive': 'RR',
                 'pigment': 'RP',
@@ -149,7 +148,7 @@ class PrintingDesign(models.Model):
             }.get(process)
 
         if printing_type == 'digital':
-            process = vals.get('process_type_digital')
+            process = rec.process_type_digital
             return {
                 'reactive': 'DR',
                 'pigment': 'DP',

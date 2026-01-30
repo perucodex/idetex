@@ -152,45 +152,49 @@ class SaleOrderLine(models.Model):
             # ------------------------------------------------------------------
             currency = self.order_id.pricelist_id.currency_id
             bom_id = self.bom_id or self.product_template_id.bom_ids[0]
+            weaving = any(operation.operation_id.operation_type == 'weaving' for operation in self.operation_ids)
 
             if not price_dict:
-                for bom_line in bom_id.bom_line_ids.filtered(
-                    lambda l: l.product_tmpl_id.categ_id in self.env.company.thread_category_ids
-                ):
-                    pricelist_item_id = self.order_id.pricelist_id._get_product_rule(
-                        bom_line.product_id,
-                        quantity=bom_line.product_qty or 1.0,
-                        uom=bom_line.product_uom_id,
-                        date=self._get_order_date(),
-                    )
-                    if pricelist_item_id:
-                        bom_line_price = self.env['product.pricelist.item'].browse(pricelist_item_id)._compute_price(
-                            product=bom_line.product_id,
+                if weaving:
+                    for bom_line in bom_id.bom_line_ids.filtered(
+                        lambda l: l.product_tmpl_id.categ_id in self.env.company.thread_category_ids
+                    ):
+                        for operation in self.operation_ids:
+                            print(operation.operation_id.operation_type == 'weaving')
+                        pricelist_item_id = self.order_id.pricelist_id._get_product_rule(
+                            bom_line.product_id,
                             quantity=bom_line.product_qty or 1.0,
                             uom=bom_line.product_uom_id,
                             date=self._get_order_date(),
-                            currency=self.currency_id,
                         )
-                    else:
-                        bom_line_price = self.env.company.currency_id._convert(
-                            bom_line.product_id.list_price,
-                            currency,
-                            self.env.company,
-                            fields.Date.context_today(self),
-                            round=False
-                        )
-                    if 'DUPONT' in bom_line.product_id.name.upper():
-                        qty = 1
-                    else:
-                        qty = bom_line.product_qty 
-                    price = round(bom_line_price * qty, 2)
-                    # price = round(bom_line_price * bom_line.product_qty, 2)
-                    # if bom_line.operation_id.id in self.operation_ids._origin.ids:
-                    #     # price_dict.update({bom_line.product_id.name: price})
-                    #     price_dict.update({bom_line.product_id.name: {'label': bom_line.product_id.name, 'price': price}})
-                    product_name = bom_line.product_id.name
-                    price_dict.setdefault(product_name, {'label': product_name, 'price': 0.0})
-                    price_dict[product_name]['price'] += round(bom_line_price * qty, 2)
+                        if pricelist_item_id:
+                            bom_line_price = self.env['product.pricelist.item'].browse(pricelist_item_id)._compute_price(
+                                product=bom_line.product_id,
+                                quantity=bom_line.product_qty or 1.0,
+                                uom=bom_line.product_uom_id,
+                                date=self._get_order_date(),
+                                currency=self.currency_id,
+                            )
+                        else:
+                            bom_line_price = self.env.company.currency_id._convert(
+                                bom_line.product_id.list_price,
+                                currency,
+                                self.env.company,
+                                fields.Date.context_today(self),
+                                round=False
+                            )
+                        if 'DUPONT' in bom_line.product_id.name.upper():
+                            qty = 1
+                        else:
+                            qty = bom_line.product_qty 
+                        price = round(bom_line_price * qty, 2)
+                        # price = round(bom_line_price * bom_line.product_qty, 2)
+                        # if bom_line.operation_id.id in self.operation_ids._origin.ids:
+                        #     # price_dict.update({bom_line.product_id.name: price})
+                        #     price_dict.update({bom_line.product_id.name: {'label': bom_line.product_id.name, 'price': price}})
+                        product_name = bom_line.product_id.name
+                        price_dict.setdefault(product_name, {'label': product_name, 'price': 0.0})
+                        price_dict[product_name]['price'] += round(bom_line_price * qty, 2)
 
                 for operation in self.operation_ids.sorted(key=lambda r: r.sequence):
                     if operation.operation_id.type_prices == 'col' and self.product_color_id.is_lab_color:
@@ -241,23 +245,24 @@ class SaleOrderLine(models.Model):
             # ------------------------------------------------------------------
             total = float_round(sum([v["price"] for v in price_dict.values()]), 2) if price_dict else 0
 
-            scrap = self.weaving_loss or bom_id.technical_sheet_id.scrap
-            if scrap:
-                loss = float_round(total * scrap, 2)
-                total = float_round(total / (1 - scrap), 2)
-                price_dict[WEAV_LOSS_KEY] = {
-                    "price": loss,
-                    "label": _("Weaving Loss:") + " %.2f %%" % (scrap * 100)
-                }
+            if weaving:
+                scrap = self.weaving_loss or bom_id.technical_sheet_id.scrap
+                if scrap:
+                    loss = float_round(total * scrap, 2)
+                    total = float_round(total / (1 - scrap), 2)
+                    price_dict[WEAV_LOSS_KEY] = {
+                        "price": loss,
+                        "label": _("Weaving Loss:") + " %.2f %%" % (scrap * 100)
+                    }
 
-            prod_scrap = self.production_loss or bom_id.technical_sheet_id.prod_scrap
-            if scrap:
-                loss = float_round(total * prod_scrap, 2)
-                total = float_round(total / (1 - prod_scrap), 2)
-                price_dict[PROD_LOSS_KEY] = {
-                    "price": loss,
-                    "label": _("Production Loss:") + " %.2f %%" % (prod_scrap * 100)
-                }
+                prod_scrap = self.production_loss or bom_id.technical_sheet_id.prod_scrap
+                if scrap:
+                    loss = float_round(total * prod_scrap, 2)
+                    total = float_round(total / (1 - prod_scrap), 2)
+                    price_dict[PROD_LOSS_KEY] = {
+                        "price": loss,
+                        "label": _("Production Loss:") + " %.2f %%" % (prod_scrap * 100)
+                    }
 
             if self.order_id.payment_term_id and self.order_id.payment_term_id.financial_percentage:
                 financial = float_round(total * self.order_id.payment_term_id.financial_percentage, 2)

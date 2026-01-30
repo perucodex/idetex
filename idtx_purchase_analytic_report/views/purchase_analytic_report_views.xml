@@ -10,9 +10,12 @@
                 <field name="product_qty" type="measure"/>
                 <field name="price_subtotal" type="measure"/>
                 <field name="price_total" type="measure"/>
-                <field name="analytic_account_id" type="row"/>
-                <field name="product_id" type="col"/>
-                <field name="date_order" interval="month"/>
+                <field name="date_order" type="col"/>
+                <field name="currency_id" type="col"/>
+                <!-- <field name="currency_id" type="row"/> -->
+                <field name="order_id" type="row"/>
+                <field name="product_id" type="row"/>
+                <!-- <field name="date_order" interval="month"/> -->
                 <field name="company_id"/>
             </pivot>
         </field>

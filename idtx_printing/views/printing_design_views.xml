@@ -13,7 +13,8 @@
                     </div>
                     <group>
                         <group>
-                            <field name="printing_date" readonly="name != 'New' and name != 'Nuevo'"/>
+                            <field name="code" readonly="1" force_save="1"/>
+                            <field name="printing_date" readonly="is_locked"/>
                             <field name="partner_id"/>
                             <field name="printing_type"/>
                             <field name="process_type_rotary" invisible="printing_type != 'rotary'" required="printing_type == 'rotary'"/>
