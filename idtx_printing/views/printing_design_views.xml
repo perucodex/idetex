@@ -1,0 +1,73 @@
+<odoo>
+
+    <record id="view_printing_design_form" model="ir.ui.view">
+        <field name="name">printing.design.form</field>
+        <field name="model">printing.design</field>
+        <field name="arch" type="xml">
+            <form string="Printing Design">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="printing_date" readonly="name != 'New' and name != 'Nuevo'"/>
+                            <field name="partner_id"/>
+                            <field name="printing_type"/>
+                            <field name="process_type_rotary" invisible="printing_type != 'rotary'" required="printing_type == 'rotary'"/>
+                            <field name="file_desc"/>
+                            <field name="design_image" filename="file_name" widget="binary"/>
+                            <field name="cylinder_qty" invisible="printing_type != 'rotary'"/>
+                            <field name="cylinder_size" invisible="printing_type != 'rotary'"/>
+                            <field name="shrinkage" widget="percentage" invisible="printing_type != 'rotary'"/>
+                            <field name="raport" invisible="printing_type != 'rotary'"/>
+                            <field name="process_type_digital" invisible="printing_type != 'digital'" required="printing_type == 'digital'"/>
+                            <field name="currency_id" invisible="1"/>
+                            <label for="unit_price"/>
+                            <div name="unit_price" class="o_row">
+                                <field name="unit_price"/>
+                                <span class="ms-1 oe_inline">mt</span>
+                            </div>
+                            <label for="yield_meter"/>
+                            <div name="yield_meter" class="o_row">
+                                <field name="yield_meter"/>
+                                <span class="ms-1 oe_inline">kg</span>
+                            </div>
+                            <label for="total_price"/>
+                            <div name="total_price" class="o_row">
+                                <field name="total_price"/>
+                                <span class="ms-1 oe_inline">kg</span>
+                            </div>
+                        </group>
+                        <group>
+                            <field name="preview_image" widget="image" options="{'preview_image': 'preview_image'}" nolabel="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_printing_design_list" model="ir.ui.view">
+        <field name="name">printing.design.list</field>
+        <field name="model">printing.design</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="printing_type"/>
+                <field name="file_desc"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_printing_design" model="ir.actions.act_window">
+        <field name="name">Printing Design</field>
+        <field name="res_model">printing.design</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_printing_design_list"/>
+    </record>
+
+</odoo>

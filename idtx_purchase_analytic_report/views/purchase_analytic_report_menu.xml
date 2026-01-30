@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- <menuitem
+        id="menu_purchase_analytic_root"
+        name="Reportes Analíticos"
+        parent="purchase.menu_purchase_root"
+        sequence="90"/> -->
+
+    <menuitem
+        id="menu_purchase_analytic_report"
+        name="Compras por Centro de Costo"
+        parent="purchase.purchase_report_main"
+        action="action_purchase_analytic_report"
+        sequence="10"/>
+
+</odoo>

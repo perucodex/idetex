@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="seq_printing_design" model="ir.sequence">
+        <field name="name">Printing Sesign</field>
+        <field name="code">printing.design</field>
+        <field name="prefix"/>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Pivot -->
+    <record id="view_purchase_analytic_report_pivot" model="ir.ui.view">
+        <field name="name">purchase.analytic.report.pivot</field>
+        <field name="model">purchase.order.line.analytic.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Compras por Centro de Costo">
+                <field name="product_qty" type="measure"/>
+                <field name="price_subtotal" type="measure"/>
+                <field name="price_total" type="measure"/>
+                <field name="analytic_account_id" type="row"/>
+                <field name="product_id" type="col"/>
+                <field name="date_order" interval="month"/>
+                <field name="company_id"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- list -->
+    <record id="view_purchase_analytic_report_list" model="ir.ui.view">
+        <field name="name">purchase.analytic.report.list</field>
+        <field name="model">purchase.order.line.analytic.report</field>
+        <field name="arch" type="xml">
+            <list string="Compras por Centro de Costo">
+                <field name="date_order"/>
+                <field name="order_id"/>
+                <field name="product_id"/>
+                <field name="analytic_account_id"/>
+                <field name="code"/>
+                <field name="product_qty"/>
+                <field name="price_subtotal"/>
+                <field name="price_total"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_purchase_analytic_report" model="ir.actions.act_window">
+        <field name="name">Compras por Centro de Costo</field>
+        <field name="res_model">purchase.order.line.analytic.report</field>
+        <field name="view_mode">pivot,list</field>
+    </record>
+
+</odoo>
