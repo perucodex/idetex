@@ -27,6 +27,7 @@ Gestiona la carga de precios y productos en tus cotizaciones
             'sale_subscription',
             'idtx_product_development',
             'idtx_laboratory',
+            'idtx_printing',
         ],
 
     # always loaded

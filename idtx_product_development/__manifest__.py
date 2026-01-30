@@ -44,6 +44,7 @@ y ficha técnica
         'report/ir_actions_report.xml',
         'views/configurate_svg_example.xml',
         'views/mrp_base_process_views.xml',
+        'views/mrp_bom_views.xml',
         'views/mrp_workorder_batch_views.xml',
         'views/mrp_workorder_roll_views.xml',
         'views/mrp_workorder_views.xml',

@@ -25,9 +25,9 @@ Producción y control de estampados textiles.
     # always loaded
     'data': [
         'security/group_print.xml',
-        # 'security/ir.model.access.csv',
-        # 'views/views.xml',
-        # 'views/templates.xml',
+        'security/ir.model.access.csv',
+        'data/ir_sequence.xml',
+        'views/printing_design_views.xml',
         'views/print_menu.xml',
     ],
 }

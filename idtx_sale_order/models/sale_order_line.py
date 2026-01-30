@@ -13,6 +13,10 @@ class SaleOrderLine(models.Model):
     weaving_loss = fields.Float('Weaving Loss')
     production_loss = fields.Float('Production Loss')
     is_weaving = fields.Boolean(related='product_template_id.is_weaving', store=True)
+    # Otra tecnica para saber si lleva estampado
+    is_printing = fields.Boolean('is_printing', compute='_compute_is_printing', store=True, default=False)
+    printing_design_id = fields.Many2one('printing.design', string='Design')
+    printing_design_name = fields.Char(related='printing_design_id.file_desc')
     analysis_id = fields.Many2one(related='product_template_id.analysis_id')
     bom_id = fields.Many2one('mrp.bom', string='Bom')
     operation_ids = fields.Many2many('mrp.routing.workcenter', string='Operations')
@@ -72,6 +76,11 @@ class SaleOrderLine(models.Model):
                 operations = record.bom_id.operation_ids.filtered(lambda o: o.operation_id.unit_price > 0 or o.operation_id.type_prices == 'col' and sum(o.operation_id.product_color_price_ids.mapped('unit_price')) > 0).ids
             record.available_operation_ids = operations
     
+    @api.depends('bom_id')
+    def _compute_is_printing(self):
+        for rec in self:
+            rec.is_printing = bool(any(p.operation_type == 'printing' for p in rec.bom_id.operation_ids.mapped('operation_id')))
+
     @api.onchange('bom_id','product_color_id')
     def _onchange_bom_id(self):
         for rec in self:
@@ -102,7 +111,7 @@ class SaleOrderLine(models.Model):
             self.bom_id = self.product_template_id.bom_ids[0]
         return res
 
-    @api.depends('product_id', 'product_template_id', 'product_uom_id', 'product_uom_qty','product_color_id', 'weaving_loss', 'production_loss','bom_id','operation_ids','order_id.payment_term_id','order_id.incoterm')
+    @api.depends('product_id', 'product_template_id', 'product_uom_id', 'product_uom_qty','product_color_id', 'weaving_loss', 'production_loss','bom_id','operation_ids','order_id.payment_term_id','order_id.incoterm','printing_design_id')
     def _compute_price_unit(self):
         res = super()._compute_price_unit()
         #Solo calcula el precio si la compañía produce
@@ -213,6 +222,20 @@ class SaleOrderLine(models.Model):
                     if price:
                     # price_dict.update({operation.operation_id.name: price})
                         price_dict.update({operation.operation_id.name: {'label': operation.operation_id.name, 'price': price}})
+
+            # Agregamos precio de estampado si existiera# Agregamos precio de estampado si existiera
+            if self.printing_design_id:
+                printing = price_dict.get('PRINTING')
+                if not printing or printing.get('design_id') != self.printing_design_id.id:
+                    price_dict.pop('PRINTING', None)
+                    price_dict['PRINTING'] = {
+                        'label': _('PRINTING'),
+                        'price': round(self.printing_design_id.unit_price * (self.bom_id.technical_sheet_id.yield_meter if self.bom_id.technical_sheet_id else self.printing_design_id.yield_meter), 2),
+                        'design_id': self.printing_design_id.id
+                    }
+            else:
+                price_dict.pop('PRINTING', None)
+
 
             # 4) Totales y derivados con clave FIJA + label traducible
             # ------------------------------------------------------------------

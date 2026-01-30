@@ -9,7 +9,7 @@
             web_icon="idtx_printing,static/description/icon.png"
             groups="idtx_printing.group_module_print_manager,idtx_printing.group_module_print_user">
                 <menuitem id="print_operations_menu" name="Operations" sequence="10">
-                    <menuitem id="print_dev_menu" name="Lab Dev" action="idtx_laboratory.lab_dev_action" sequence="10"/>
+                    <menuitem id="print_dev_menu" name="Printing Design" action="action_printing_design" sequence="10"/>
                    <!--  <menuitem id="print_color_recipe_menu" name="Color Recipe" action="color_recipe_action" sequence="20"/> -->
                 </menuitem>
                 <!-- <menuitem id="print_product_menu" name="Products" sequence="20">

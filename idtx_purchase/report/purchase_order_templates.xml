@@ -55,10 +55,13 @@
 
         <!-- Agregar la celda correspondiente antes de la descripción -->
         <xpath expr="//td[@id='product']" position="before">
-            <td name="td_item" class="text-start">
-                <span t-esc="line_index + 1"/>  <!-- o cualquier contador o campo que quieras mostrar -->
+            <td class="text-start">
+                <t t-if="not line.display_type">
+                    <span t-esc="len(o.order_line.filtered(lambda l: not l.display_type and l.sequence &lt;= line.sequence))"/>
+                </t>
             </td>
         </xpath>
+        
         <!-- 1. Agregar columna en el encabezado -->
         <xpath expr="//th[@name='th_discount']" position="after">
             <th name="th_price_unit_discounted" class="text-end" t-if="any(line.discount for line in o.order_line if not line.display_type)">

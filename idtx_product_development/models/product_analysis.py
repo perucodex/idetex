@@ -67,6 +67,11 @@ class ProductAnalysis(models.Model):
         'Density should be grather than zero.',
     )
 
+    _product_code_unique = models.Constraint(
+        'unique(product_code)',
+        "Product code must be unique!",
+    )
+
     @api.onchange('mrp_base_process_id')
     def _onchange_mrp_base_process_id(self):
         if not self.mrp_base_process_id:
@@ -124,8 +129,10 @@ class ProductAnalysis(models.Model):
                 ) if 'analysis_date' in vals else None
                 vals['name'] = self.env['ir.sequence'].with_company(vals.get('company_id')).next_by_code(
                     'product.analysis', sequence_date=seq_date) or _("New")
-
         return super().create(vals_list)
+    
+    def write(self, vals):
+        return super().write(vals)
     
     def action_product(self):
         # Modificamos la línea porque los rectilíneos tambien se venden por kilo

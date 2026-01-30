@@ -196,9 +196,14 @@ class ControlPedido(models.Model):
         ('se', 'Settled'),
     ], string='State', compute='_compute_state', default='on', store=True, tracking=True)
 
-    _sql_constraints = [
-        ("control_pedido_numordped_uniq", "unique(numordped)", "Ya existe un pedido con ese Número de Orden."),
-    ]
+    # _sql_constraints = [
+    #     ("control_pedido_numordped_uniq", "unique(numordped)", "Ya existe un pedido con ese Número de Orden."),
+    # ]
+
+    _product_code_unique = models.Constraint(
+        'unique(numordped)',
+        "Ya existe un pedido con ese Número de Orden!",
+    )
 
     @api.depends('fecoc')
     def _compute_num_days(self):

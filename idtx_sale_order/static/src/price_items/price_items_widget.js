@@ -25,7 +25,8 @@ class PriceItemsPopover extends Component {
                 Object.entries(dict).map(([k, v]) => ({
                     key: k,               // fijo, inglés
                     price: Number(v.price),
-                    label: v.label        // traducible
+                    label: v.label,        // traducible
+                    meta: v, // ← guarda todo
                 }))
             );
         } catch {
@@ -167,7 +168,7 @@ class PriceItemsPopover extends Component {
 
     save() {
         const dict = this.items.reduce((acc, it) => {
-            acc[it.key] = { price: parseFloat(it.price) || 0, label: it.label };
+            acc[it.key] = { ...it.meta, price: parseFloat(it.price) || 0, label: it.label };
             return acc;
         }, {});
         this.props.onSave(dict);
