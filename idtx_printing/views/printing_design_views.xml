@@ -11,42 +11,61 @@
                             <field name="name" readonly="1"/>
                         </h1>
                     </div>
-                    <group>
+                    <group col="3">
                         <group>
                             <field name="code" readonly="1" force_save="1"/>
-                            <field name="printing_date" readonly="is_locked"/>
+                            <field name="printing_date" readonly="is_locked" required="1"/>
                             <field name="partner_id"/>
-                            <field name="printing_type"/>
-                            <field name="process_type_rotary" invisible="printing_type != 'rotary'" required="printing_type == 'rotary'"/>
-                            <field name="file_desc"/>
-                            <field name="design_image" filename="file_name" widget="binary"/>
-                            <field name="cylinder_qty" invisible="printing_type != 'rotary'"/>
+                            <field name="printing_type" readonly="is_locked" required="1"/>
+                            <field name="process_type_rotary" readonly="is_locked" invisible="printing_type != 'rotary'" required="printing_type == 'rotary'"/>
+                            <field name="process_type_digital" readonly="is_locked" invisible="printing_type != 'digital'" required="printing_type == 'digital'"/>
+                            <field name="fabric_base"/>
+                        </group>
+                        <group>
+                            <field name="cylinder_qty" readonly="is_locked" invisible="printing_type != 'rotary'"/>
                             <field name="cylinder_size" invisible="printing_type != 'rotary'"/>
                             <field name="shrinkage" widget="percentage" invisible="printing_type != 'rotary'"/>
-                            <field name="raport" invisible="printing_type != 'rotary'"/>
-                            <field name="process_type_digital" invisible="printing_type != 'digital'" required="printing_type == 'digital'"/>
-                            <field name="currency_id" invisible="1"/>
-                            <label for="unit_price"/>
-                            <div name="unit_price" class="o_row">
-                                <field name="unit_price"/>
-                                <span class="ms-1 oe_inline">mt</span>
-                            </div>
+                            <!-- <field name="raport" invisible="printing_type != 'rotary'"/> -->
                             <label for="yield_meter"/>
                             <div name="yield_meter" class="o_row">
                                 <field name="yield_meter"/>
                                 <span class="ms-1 oe_inline">kg</span>
                             </div>
-                            <label for="total_price"/>
-                            <div name="total_price" class="o_row">
-                                <field name="total_price"/>
-                                <span class="ms-1 oe_inline">kg</span>
-                            </div>
+                            <field name="unit_price" invisible="printing_type != 'rotary'"/>
+                            <field name="bonding_price" invisible="printing_type != 'rotary'"/>
                         </group>
                         <group>
-                            <field name="preview_image" widget="image" options="{'preview_image': 'preview_image'}" nolabel="1"/>
+                            <field name="file_desc"/>
+                            <field name="design_image" filename="file_name" widget="binary"/>
+                            <field name="preview_image" widget="image" options="{'preview_image': 'preview_image', 'size': [256, 256]}"/>
                         </group>
                     </group>
+                    <notebook>
+                        <page name="prices" string="Prices" invisible="printing_type != 'digital'">
+                            <field name="digital_unit_price_ids">
+                                <list create="0" delete="0" editable="top">
+                                    <field name="range" readonly="1" force_save="1"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="unit_price"/>
+                                    <field name="total_price"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page name="prices" string="Prices" invisible="printing_type != 'rotary'">
+                            <field name="rotary_unit_price_ids">
+                                <list create="0" delete="0" editable="top">
+                                    <field name="raport" readonly="1" force_save="1"/>
+                                    <field name="unit_price" readonly="1" force_save="1"/>
+                                    <field name="color_qty" readonly="1" force_save="1"/>
+                                    <field name="sample_min_qty" readonly="1" force_save="1"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="sample_price" readonly="1" force_save="1"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
                 </sheet>
+                <chatter/>
             </form>
         </field>
     </record>
@@ -59,7 +78,9 @@
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="printing_type"/>
+                <field name="code"/>
                 <field name="file_desc"/>
+                <field name="fabric_base"/>
             </list>
         </field>
     </record>

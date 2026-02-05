@@ -45,6 +45,7 @@ Gestiona la carga de precios y productos en tus cotizaciones
         'views/product_code_system_views.xml',
         'views/product_color_views.xml',
         'views/res_config_settings_views.xml',
+        'views/sale_order_portal_templates.xml',
         'views/sale_order_views.xml',
         'views/sale_quotation_views.xml',
         'wizards/size_qty_wizard_views.xml',
@@ -54,7 +55,12 @@ Gestiona la carga de precios y productos en tus cotizaciones
         'web.assets_backend': [
             'idtx_sale_order/static/src/price_items/**/*',
         ],
+        'web.report_assets_pdf': [
+            'idtx_sale_order/static/src/css/ir_actions_report_templates.css',
+        ],
+        'web.report_assets_common': [
+            'idtx_sale_order/static/src/css/ir_actions_report_templates.css',
+        ],
     },
-
 }
 

@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-30 16:29+0000\n"
-"PO-Revision-Date: 2026-01-30 16:29+0000\n"
+"POT-Creation-Date: 2026-02-03 23:27+0000\n"
+"PO-Revision-Date: 2026-02-03 23:27+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -21,75 +21,198 @@ msgid "<span class=\"ms-1 oe_inline\">kg</span>"
 msgstr ""
 
 #. module: idtx_printing
-#: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_form
-msgid "<span class=\"ms-1 oe_inline\">mt</span>"
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__message_needaction
+msgid "Action Needed"
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__activity_ids
+msgid "Activities"
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__activity_state
+msgid "Activity State"
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__activity_type_icon
+msgid "Activity Type Icon"
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__message_attachment_count
+msgid "Attachment Count"
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__bonding_price
+msgid "Bonding Price"
+msgstr "Precio de Bondeo"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_res_company__cylinder_102_price
+#: model:ir.model.fields,field_description:idtx_printing.field_res_config_settings__cylinder_102_price
+msgid "Cilinder Raport 102 Price"
+msgstr "Costo de Cilindro Raport 102"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_res_company__cylinder_64_price
+#: model:ir.model.fields,field_description:idtx_printing.field_res_config_settings__cylinder_64_price
+msgid "Cilinder Raport 64 Price"
+msgstr "Costo de Cilindro Raport 64"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_res_company__cylinder_82_price
+#: model:ir.model.fields,field_description:idtx_printing.field_res_config_settings__cylinder_82_price
+msgid "Cilinder Raport 82 Price"
+msgstr "Costo de Cilindro Raport 82"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__code
+msgid "Code"
+msgstr "Código"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__color_qty
+msgid "Color Qty"
+msgstr "Cant. Colores"
+
+#. module: idtx_printing
+#: model:ir.model,name:idtx_printing.model_res_company
+msgid "Companies"
+msgstr "Empresas"
+
+#. module: idtx_printing
+#: model:ir.model,name:idtx_printing.model_res_config_settings
+msgid "Config Settings"
+msgstr "Ajustes de configuración"
+
+#. module: idtx_printing
+#: model:ir.ui.menu,name:idtx_printing.print_settings_menu
+msgid "Configuration"
 msgstr ""
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__create_uid
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__create_uid
 msgid "Created by"
 msgstr ""
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__create_date
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__create_date
 msgid "Created on"
 msgstr ""
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__currency_id
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__currency_id
 msgid "Currency"
-msgstr ""
+msgstr "Moneda"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__partner_id
 msgid "Customer"
-msgstr ""
+msgstr "Cliente"
 
 #. module: idtx_printing
 #: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__cylinder_size__102
 msgid "Cylinder 102"
-msgstr ""
+msgstr "Cilindro 102"
 
 #. module: idtx_printing
 #: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__cylinder_size__64
 msgid "Cylinder 64"
-msgstr ""
+msgstr "Cilindro 64"
 
 #. module: idtx_printing
 #: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__cylinder_size__82
 msgid "Cylinder 82"
-msgstr ""
+msgstr "Cilindro 82"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
+msgid "Cylinder Price Raport 102"
+msgstr "Costo de Cilindro Raport 102"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
+msgid "Cylinder Price Raport 64"
+msgstr "Costo de Cilindro Raport 64"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
+msgid "Cylinder Price Raport 82"
+msgstr "Costo de Cilindro Raport 82"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
+msgid "Cylinder Prices"
+msgstr "Costo de Cilindros"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__cylinder_qty
 msgid "Cylinder Qty"
-msgstr ""
+msgstr "Cantidad de Cilindros"
 
 #. module: idtx_printing
 #. odoo-python
 #: code:addons/idtx_printing/models/printing_design.py:0
 msgid "Cylinder Qty must be greater than 0"
-msgstr ""
+msgstr "La cantidad de cilindros debe ser mayor a 0"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__cylinder_size
 msgid "Cylinder Size"
+msgstr "Raport de Cilindro"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
+msgid "Default Minimum Printing"
+msgstr "Cantidad Mínima de Estampado"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
+msgid "Default minimum printing quantity applied when selecting products."
+msgstr "Cantidad mínima de estampado aplicada al seleccionar productos."
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
+msgid "Default prices for rotary printing applied when selecting products."
+msgstr "Precios por defecto de estampado rotativo aplicada al seleccionar productos."
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
+msgid ""
+"Default sample prices for rotary printing applied when selecting products."
 msgstr ""
+"Precios de muestras para estampado rotativo aplicado al seleccionar productos.
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
+msgid "Default strike off price for printing applied when selecting products."
+msgstr "Precio de strike off de estampado aplicado al seleccionar productos."
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__file_name
 msgid "Design File Name"
-msgstr ""
+msgstr "Archivo"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__design_image
 msgid "Design Image"
-msgstr ""
+msgstr "Imagen"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__file_desc
 msgid "Design Name"
-msgstr ""
+msgstr "Nombre Diseño"
 
 #. module: idtx_printing
 #: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__process_type_rotary__devore
@@ -102,9 +225,30 @@ msgid "Digital"
 msgstr ""
 
 #. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
+msgid "Digital Min. Qty."
+msgstr "Cant. Mín. Digital"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__digital_unit_price_ids
+msgid "Digital Prices"
+msgstr "Precios Digital"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__digital_printing_id
+msgid "Digital Printing"
+msgstr "Estampado Digital"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_res_company__digital_printing_min_qty
+#: model:ir.model.fields,field_description:idtx_printing.field_res_config_settings__digital_printing_min_qty
+msgid "Digital Printing Min. Qty."
+msgstr "Cant. Min. Estampado Digital"
+
+#. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__process_type_digital
 msgid "Digital Process Type"
-msgstr ""
+msgstr "Tipo de Proceso"
 
 #. module: idtx_printing
 #: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__process_type_rotary__discharge
@@ -113,33 +257,122 @@ msgstr ""
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__display_name
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__display_name
+#: model:ir.model.fields,field_description:idtx_printing.field_res_company__display_name
+#: model:ir.model.fields,field_description:idtx_printing.field_res_config_settings__display_name
 msgid "Display Name"
+msgstr "Nombre en pantalla"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__fabric_base
+msgid "Fabric Base"
+msgstr "Fondo de Tela"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__message_follower_ids
+msgid "Followers"
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__message_partner_ids
+msgid "Followers (Partners)"
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,help:idtx_printing.field_printing_design__activity_type_icon
+msgid "Font awesome icon e.g. fa-tasks"
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__has_message
+msgid "Has Message"
 msgstr ""
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__id
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__id
+#: model:ir.model.fields,field_description:idtx_printing.field_res_company__id
+#: model:ir.model.fields,field_description:idtx_printing.field_res_config_settings__id
 msgid "ID"
 msgstr ""
 
 #. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__activity_exception_icon
+msgid "Icon"
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,help:idtx_printing.field_printing_design__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,help:idtx_printing.field_printing_design__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,help:idtx_printing.field_printing_design__message_has_error
+#: model:ir.model.fields,help:idtx_printing.field_printing_design__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__message_is_follower
+msgid "Is Follower"
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__is_locked
+msgid "Is Locked"
+msgstr ""
+
+#. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__write_uid
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__write_uid
 msgid "Last Updated by"
 msgstr ""
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__write_date
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__write_date
 msgid "Last Updated on"
 msgstr ""
 
 #. module: idtx_printing
 #: model:res.groups,name:idtx_printing.group_module_print_manager
 msgid "Manager"
+msgstr "Administrador"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__max_qty
+msgid "Max. Qty"
+msgstr "Cant. Máx."
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__message_has_error
+msgid "Message Delivery error"
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__message_ids
+msgid "Messages"
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__min_qty
+msgid "Min. Qty"
+msgstr "Cant. Mín."
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__my_activity_date_deadline
+msgid "My Activity Deadline"
 msgstr ""
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__name
 msgid "Name"
-msgstr ""
+msgstr "Nombre"
 
 #. module: idtx_printing
 #. odoo-python
@@ -148,37 +381,89 @@ msgid "New"
 msgstr "Nuevo"
 
 #. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__activity_summary
+msgid "Next Activity Summary"
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__activity_type_id
+msgid "Next Activity Type"
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__message_needaction_counter
+msgid "Number of Actions"
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__message_has_error_counter
+msgid "Number of errors"
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,help:idtx_printing.field_printing_design__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,help:idtx_printing.field_printing_design__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr ""
+
+#. module: idtx_printing
 #. odoo-python
 #: code:addons/idtx_printing/models/printing_design.py:0
 msgid "Only image files are allowed: JPG, JPEG, PNG, BMP."
-msgstr ""
+msgstr "Solo se aceptan archivos de imagen: JPG, JPEG, PNG, BMP."
 
 #. module: idtx_printing
 #: model:ir.ui.menu,name:idtx_printing.print_operations_menu
 msgid "Operations"
-msgstr ""
+msgstr "Operaciones"
 
 #. module: idtx_printing
 #: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__process_type_digital__pigment
 #: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__process_type_rotary__pigment
 msgid "Pigment"
-msgstr ""
+msgstr "Pigmento"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__preview_image
 msgid "Preview"
-msgstr ""
+msgstr "Preliminar"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__total_price
+msgid "Price per Kg."
+msgstr "Precio por Kg."
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_form
+msgid "Prices"
+msgstr "Precios"
 
 #. module: idtx_printing
 #: model:ir.ui.menu,name:idtx_printing.print_menu
 #: model:res.groups.privilege,name:idtx_printing.module_print_user
+#: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
 msgid "Printing"
-msgstr ""
+msgstr "Estampado"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_res_company__printing_currency_id
+#: model:ir.model.fields,field_description:idtx_printing.field_res_config_settings__printing_currency_id
+msgid "Printing Currency"
+msgstr "Moneda de Estampado"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__printing_date
 msgid "Printing Date"
-msgstr ""
+msgstr "Fecha de Estampado"
 
 #. module: idtx_printing
 #: model:ir.actions.act_window,name:idtx_printing.action_printing_design
@@ -186,48 +471,172 @@ msgstr ""
 #: model:ir.ui.menu,name:idtx_printing.print_dev_menu
 #: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_form
 msgid "Printing Design"
-msgstr ""
+msgstr "Diseño"
+
+#. module: idtx_printing
+#: model:ir.model,name:idtx_printing.model_printing_design_price
+msgid "Printing Design Price"
+msgstr "Precio de Diseño"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__printing_type
 msgid "Printing Type"
-msgstr ""
+msgstr "Tipo de Estampado"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__range
+msgid "Range"
+msgstr "Rango"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__raport
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__raport
 msgid "Raport"
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__rating_ids
+msgid "Ratings"
 msgstr ""
 
 #. module: idtx_printing
 #: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__process_type_digital__reactive
 #: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__process_type_rotary__reactive
 msgid "Reactive"
+msgstr "Reactivo"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__activity_user_id
+msgid "Responsible User"
 msgstr ""
 
 #. module: idtx_printing
 #: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__printing_type__rotary
 msgid "Rotary"
-msgstr ""
+msgstr "Rotativo"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
+msgid "Rotary Min. Qty."
+msgstr "Can. Mín. Rotativo"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__rotary_unit_price_ids
+msgid "Rotary Prices"
+msgstr "Precios Rotativo"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__rotary_printing_id
+msgid "Rotary Printing"
+msgstr "Estampado Rotativo"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_res_company__rotary_printing_min_qty
+#: model:ir.model.fields,field_description:idtx_printing.field_res_config_settings__rotary_printing_min_qty
+msgid "Rotary Printing Min. Qty."
+msgstr "Can. Mín. Estampado Rotativo"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__process_type_rotary
 msgid "Rotary Process Type"
+msgstr "Tipo de Proceso"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__message_has_sms_error
+msgid "SMS Delivery error"
 msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__sample_min_qty
+msgid "Sample Min. Qty"
+msgstr "Cant. Mín. Muestras"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__sample_price
+msgid "Sample Price"
+msgstr "Precio de Muestra"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_res_company__sample_1_price
+#: model:ir.model.fields,field_description:idtx_printing.field_res_config_settings__sample_1_price
+msgid "Sample Price from 0 to 100 mts"
+msgstr "Precio de 0 a 100 mts"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
+msgid "Sample Price from 0 to 100 mts."
+msgstr "Precio de 0 a 100 mts."
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_res_company__sample_2_price
+#: model:ir.model.fields,field_description:idtx_printing.field_res_config_settings__sample_2_price
+msgid "Sample Price from 101 to 200 mts"
+msgstr "Precio de 101 a 200 mts"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
+msgid "Sample Price from 101 to 200 mts."
+msgstr "Precio de 101 a 200 mts."
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_res_company__sample_3_price
+#: model:ir.model.fields,field_description:idtx_printing.field_res_config_settings__sample_3_price
+msgid "Sample Price from 201 to 300 mts"
+msgstr "Precio de 201 a 300 mts"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
+msgid "Sample Price from 201 to 300 mts."
+msgstr "Precio de 201 a 300 mts."
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
+msgid "Sample Prices"
+msgstr "Precio de Muestras"
+
+#. module: idtx_printing
+#: model:ir.actions.act_window,name:idtx_printing.action_idtx_printing_config
+#: model:ir.ui.menu,name:idtx_printing.print_menu_settings_config
+msgid "Settings"
+msgstr "Ajustes"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__shrinkage
 msgid "Shrinkage"
+msgstr "Encogimiento"
+
+#. module: idtx_printing
+#: model:ir.model.fields,help:idtx_printing.field_printing_design__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
 msgstr ""
 
 #. module: idtx_printing
-#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__total_price
-msgid "Total Price"
+#: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
+msgid "Stike Off Price"
+msgstr "Precio Strike Off"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__strike_off
+#: model:ir.model.fields,field_description:idtx_printing.field_res_company__strike_off
+#: model:ir.model.fields,field_description:idtx_printing.field_res_config_settings__strike_off
+#: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
+msgid "Strike Off Price"
+msgstr "Precio Strike Off"
+
+#. module: idtx_printing
+#: model:ir.model.fields,help:idtx_printing.field_printing_design__activity_exception_decoration
+msgid "Type of the exception activity on record."
 msgstr ""
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__unit_price
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__unit_price
 msgid "Unit Price"
-msgstr ""
+msgstr "Precio"
 
 #. module: idtx_printing
 #: model:res.groups,name:idtx_printing.group_module_print_user
@@ -235,6 +644,21 @@ msgid "User"
 msgstr ""
 
 #. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__website_message_ids
+msgid "Website Messages"
+msgstr ""
+
+#. module: idtx_printing
+#: model:ir.model.fields,help:idtx_printing.field_printing_design__website_message_ids
+msgid "Website communication history"
+msgstr ""
+
+#. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__yield_meter
 msgid "Yield"
+msgstr "Rendimiento"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__sequence
+msgid "sequence"
 msgstr ""

@@ -1,0 +1,83 @@
+/* Saltos y título */
+.o_ps_pagebreak { page-break-before: always; }
+.o_ps_title { margin: 0 0 10px 0; font-size: 18px; font-weight: 700; }
+
+/* Tabla principal */
+.o_ps_table{
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 11px;
+  line-height: 1.25;
+}
+.o_ps_table thead{ display: table-header-group; } /* header se repite */
+.o_ps_th, .o_ps_td{
+  border: 1px solid #222;
+  padding: 6px 8px;
+  vertical-align: middle;
+}
+.o_ps_right{ text-align: right; }
+.o_ps_center{ text-align: center; }
+.o_ps_vtop{ vertical-align: top; }
+
+/* CLAVE wkhtmltopdf: evita cortar un item */
+.o_ps_item_group{ page-break-inside: avoid; }
+
+/* Anchuras (ajusta si quieres) */
+.o_ps_w_product{ width: 20%; }
+.o_ps_w_design{ width: 15%; }
+.o_ps_w_technique{ width: 10%; }
+.o_ps_w_techdata{ width: 16%; }
+.o_ps_w_colors{ width: 8%; }
+.o_ps_w_production{ width: 45%; }
+.o_ps_w_sample{ width: 35%; }
+.o_ps_w_range{ width: 18%; }
+.o_ps_w_price{ width: 8%; }
+.o_ps_w_strike{ width: 10%; }
+.o_ps_prices_raport{ width: 20%; }
+.o_ps_prices_color_qty{ width: 20%; }
+.o_ps_prices_sample_qty{ width: 20%; }
+
+/* Design */
+.o_ps_design_code{ font-size: 12px; margin-bottom: 2px; }
+.o_ps_design_desc{ color: #444; margin-bottom: 6px; }
+
+/* Imagen estable en PDF */
+.o_ps_img{
+  /* width: 2cm; */
+  height: 3cm;
+  overflow: hidden;
+  display: inline-block;
+  border: 1px solid #222; 
+}
+
+.o_nowrap{ white-space: nowrap; }
+
+/* Tech data subtabla 3 filas */
+.o_ps_td_techdata{ padding: 0; }
+.o_ps_tech_table{
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.o_ps_tech_table td{
+  border: 1px solid #222;
+  padding: 6px 8px;
+}
+.o_ps_tech_k{ font-weight: 700; width: 55%; }
+.o_ps_tech_v{ width: 45%; }
+
+/* Subtabla de precios 6 filas */
+.o_ps_td_prices{ padding: 0; }
+.o_ps_prices_table{
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.o_ps_prices_table td{
+  border: 1px solid #222;
+  padding: 6px 8px;
+}
+.o_ps_prices_range{ width: 70%; }
+.o_ps_prices_price{ width: 30%; }
+.o_ps_prices_table tr:nth-child(even) td{ background: #fafafa; }

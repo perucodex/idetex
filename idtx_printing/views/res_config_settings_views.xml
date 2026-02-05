@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="res_config_settings_view_form" model="ir.ui.view">
+            <field name="name">res.config.settings.view.form.inherit.printing</field>
+            <field name="model">res.config.settings</field>
+            <field name="priority" eval="40"/>
+            <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form" position="inside">
+                    <app data-string="Printing" string="Printing" name="idtx_printing" groups="idtx_printing.group_module_print_manager">
+                        <block title="Printing" name="default_printing_setting_container">
+                            <setting id="default_printing" string="Default Minimum Printing" company_dependent="1" help="Default minimum printing quantity applied when selecting products.">
+                                <div class="content-group">
+                                    <field name="printing_currency_id" invisible="1"/>
+                                    <div class="row mt16">
+                                        <label string="Rotary Min. Qty." for="rotary_printing_min_qty" class="col-lg-3 o_light_label"/>
+                                        <field name="rotary_printing_min_qty"/>
+                                    </div>
+                                </div>
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <label string="Digital Min. Qty." for="digital_printing_min_qty" class="col-lg-3 o_light_label"/>
+                                        <field name="digital_printing_min_qty"/>
+                                    </div>
+                                </div>
+                            </setting>
+                            <setting id="strike_off_price_printing" string="Strike Off Price" company_dependent="1" help="Default strike off price for printing applied when selecting products.">
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <label string="Stike Off Price" for="strike_off" class="col-lg-3 o_light_label"/>
+                                        <field name="strike_off"/>
+                                    </div>
+                                </div>
+                            </setting>
+                            <setting id="cylinder_price_printing" string="Cylinder Prices" company_dependent="1" help="Default prices for rotary printing applied when selecting products.">
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <label string="Cylinder Price Raport 64" for="cylinder_64_price" class="col-lg-3 o_light_label"/>
+                                        <field name="cylinder_64_price"/>
+                                    </div>
+                                </div>
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <label string="Cylinder Price Raport 82" for="cylinder_82_price" class="col-lg-3 o_light_label"/>
+                                        <field name="cylinder_82_price"/>
+                                    </div>
+                                </div>
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <label string="Cylinder Price Raport 102" for="cylinder_102_price" class="col-lg-3 o_light_label"/>
+                                        <field name="cylinder_102_price"/>
+                                    </div>
+                                </div>
+                            </setting>
+                            <setting id="sample_price_printing" string="Sample Prices" company_dependent="1" help="Default sample prices for rotary printing applied when selecting products.">
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <label string="Sample Price from 0 to 100 mts." for="sample_1_price" class="col-lg-3 o_light_label"/>
+                                        <field name="sample_1_price"/>
+                                    </div>
+                                </div>
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <label string="Sample Price from 101 to 200 mts." for="sample_2_price" class="col-lg-3 o_light_label"/>
+                                        <field name="sample_2_price"/>
+                                    </div>
+                                </div>
+                                <div class="content-group">
+                                    <div class="row mt16">
+                                        <label string="Sample Price from 201 to 300 mts." for="sample_3_price" class="col-lg-3 o_light_label"/>
+                                        <field name="sample_3_price"/>
+                                    </div>
+                                </div>
+                            </setting>
+                        </block>
+                    </app>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="action_idtx_printing_config" model="ir.actions.act_window">
+            <field name="name">Settings</field>
+            <field name="res_model">res.config.settings</field>
+            <field name="view_mode">form</field>
+            <field name="context">{'module' : 'idtx_printing', 'bin_size': False}</field>
+        </record>
+
+    </data>
+</odoo>

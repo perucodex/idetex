@@ -14,10 +14,10 @@
                 </menuitem>
                 <!-- <menuitem id="print_product_menu" name="Products" sequence="20">
                     <menuitem id="print_chemical_template_menu" name="Chemical" action="product_product_action_chemical" sequence="10"/>
-                </menuitem>
+                </menuitem> -->
                 <menuitem id="print_settings_menu" name="Configuration" sequence="200">
                     <menuitem id="print_menu_settings_config" name="Settings" action="action_idtx_printing_config" groups="base.group_system" sequence="0"/>
-                    <menuitem id="print_color_process_base_template_menu" name="Process Base Template" sequence="10">
+                    <!-- <menuitem id="print_color_process_base_template_menu" name="Process Base Template" sequence="10">
                         <menuitem id="print_color_process_base_menu" name="Color Process Base" action="base_process_action" sequence="10"/>
                         <menuitem id="print_color_process_line_base_menu" name="Process Base Line" action="base_process_line_action" sequence="20"/>
                     </menuitem>
@@ -26,8 +26,8 @@
                         <menuitem id="print_color_range_menu" name="Color Range" action="color_range_action" sequence="20"/>
                         <menuitem id="print_color_intensity_menu" name="Color Intensity" action="color_intensity_action" sequence="30"/>
                         <menuitem id="print_color_fiber_menu" name="Color Fiber" action="color_fiber_action" sequence="40"/>
-                    </menuitem>
-                </menuitem> -->
+                    </menuitem> -->
+                </menuitem>
         </menuitem>
 
     </data>

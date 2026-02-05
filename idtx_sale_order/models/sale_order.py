@@ -28,6 +28,24 @@ class SaleOrder(models.Model):
     color_name_warning = fields.Boolean(default=False)
     need_approval = fields.Boolean('need_approval?', compute='_compute_need_approval')
     state = fields.Selection(selection_add=[('for_app', 'For Approval')])
+    is_printing = fields.Boolean(compute='_compute_is_printing')
+    is_rotary = fields.Boolean(compute='_compute_is_rotary')
+    is_digital = fields.Boolean(compute='_compute_is_digital')
+
+    @api.depends('order_line.is_printing')
+    def _compute_is_printing(self):
+        for rec in self:
+            rec.is_printing = bool(any(l.is_printing for l in rec.order_line))
+
+    @api.depends('order_line.is_printing')
+    def _compute_is_rotary(self):
+        for rec in self:
+            rec.is_rotary = bool(any(l.printing_design_id.printing_type == 'rotary' for l in rec.order_line))
+
+    @api.depends('order_line.is_printing')
+    def _compute_is_digital(self):
+        for rec in self:
+            rec.is_digital = bool(any(l.printing_design_id.printing_type == 'digital' for l in rec.order_line))
 
     @api.depends('order_line.dis_app')
     def _compute_need_approval(self):
@@ -141,6 +159,10 @@ class SaleOrder(models.Model):
     def open_sales(self):
         return self.sale_order_ids._get_records_action(name=_("Sale Orders"))
     
+    def refresh_warnings(self):
+        for rec in self:
+            rec.order_line._compute_price_unit()
+    
     @api.depends('order_line','partner_id','pricelist_id')
     def _compute_weaving_warning(self):
         for order in self:
@@ -181,6 +203,8 @@ class SaleOrder(models.Model):
                         order.weaving_warning += _(('Product %s has an old price. Quotation is %s days old') %( line.product_id.product_tmpl_id.name, line.diff_days)) + '\n'
                     if not line.product_template_id.bom_ids:
                         order.weaving_warning += _(('Product %s does not have any bom. Please check with product development.')  % line.product_id.product_tmpl_id.name) + '\n'
+                    if not line.product_id.analysis_id.weaving_price:
+                        order.weaving_warning += _(('Product %s has no weaving price. Please check with product development') % line.product_id.product_tmpl_id.name) + '\n'
             # Si se limpian los warnings, calculamos los precios nuevamente
             if has_warning and not order.weaving_warning:
                 for l in order.order_line:

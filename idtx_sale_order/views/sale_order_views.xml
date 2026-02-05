@@ -64,10 +64,10 @@
                 <button name="action_price_preview" type="object" string="Prices" class="btn-secondary" groups="sales_team.group_sale_salesman_all_leads" invisible="not is_quote or not is_company_produce or is_subscription"/>
             </xpath>
             <xpath expr="//header" position="after">
-                <div class="alert alert-warning d-flex justify-content-between align-items-center" role="alert"
-                    invisible="not weaving_warning or not is_company_produce">
+                <div class="alert alert-warning d-flex justify-content-between align-items-center" role="alert" invisible="not weaving_warning or not is_company_produce">
                     <div>
                         <field name="weaving_warning" class="w-auto"/>
+                        <button name="refresh_warnings" type="object" class="oe_link py-0 text-decoration-underline" string="Update warnings"/>
                     </div>
                     <field name="color_name_warning" invisible="1"/>
                     <button name="update_color_names" type="object" class="oe_link py-0 text-decoration-underline" string="Update name" invisible="not color_name_warning"/>
