@@ -17,12 +17,14 @@
                                     <div class="row mt16">
                                         <label string="Rotary Min. Qty." for="rotary_printing_min_qty" class="col-lg-3 o_light_label"/>
                                         <field name="rotary_printing_min_qty"/>
+                                        <span class="ms-1 oe_inline">mts.</span>
                                     </div>
                                 </div>
                                 <div class="content-group">
                                     <div class="row mt16">
                                         <label string="Digital Min. Qty." for="digital_printing_min_qty" class="col-lg-3 o_light_label"/>
                                         <field name="digital_printing_min_qty"/>
+                                        <span class="ms-1 oe_inline">mts.</span>
                                     </div>
                                 </div>
                             </setting>

@@ -6,15 +6,16 @@
         <field name="name">purchase.analytic.report.pivot</field>
         <field name="model">purchase.order.line.analytic.report</field>
         <field name="arch" type="xml">
-            <pivot string="Compras por Centro de Costo">
+            <pivot string="Compras por Centro de Costo" js_class="analytic_pivot">
                 <field name="product_qty" type="measure"/>
                 <field name="price_subtotal" type="measure"/>
                 <field name="price_total" type="measure"/>
-                <field name="date_order" type="col"/>
+                <field name="date_order" interval="month" type="col"/>
                 <field name="currency_id" type="col"/>
                 <!-- <field name="currency_id" type="row"/> -->
-                <field name="order_id" type="row"/>
-                <field name="product_id" type="row"/>
+                <field name="company_id" type="row"/>
+                <field name="analytic_account_id" type="row"/>
+                <!-- <field name="product_id" type="row"/> -->
                 <!-- <field name="date_order" interval="month"/> -->
                 <field name="company_id"/>
             </pivot>
@@ -29,13 +30,39 @@
             <list string="Compras por Centro de Costo">
                 <field name="date_order"/>
                 <field name="order_id"/>
+                <field name="buyer"/>
                 <field name="product_id"/>
                 <field name="analytic_account_id"/>
                 <field name="code"/>
                 <field name="product_qty"/>
                 <field name="price_subtotal"/>
                 <field name="price_total"/>
+                <field name="company_id"/>
             </list>
+        </field>
+    </record>
+
+    <record id="view_purchase_analytic_report_search" model="ir.ui.view">
+        <field name="name">purchase.analytic.report.search</field>
+        <field name="model">purchase.order.line.analytic.report</field>
+        <field name="arch" type="xml">
+            <search string="Compras por Centro de Costo">
+                <field name="analytic_account_id"/>
+                <field name="order_id"/>
+                <field name="product_id"/>
+                <field name="buyer"/>
+                <field name="company_id"/>
+                <field name="date_order"/>
+                <group>
+                    <filter name="group_buyer" domain="[]" context="{'group_by':'buyer'}"/>
+                    <filter name="group_aa" domain="[]" context="{'group_by':'analytic_account_id'}"/>
+                    <filter name="group_order" domain="[]" context="{'group_by':'order_id'}"/>
+                    <filter name="group_product" domain="[]" context="{'group_by':'product_id'}"/>
+                    <filter name="group_month" domain="[]" context="{'group_by':'date_order:month'}"/>
+                    <filter name="group_currency" domain="[]" context="{'group_by':'currency_id'}"/>
+                    <filter name="group_company" domain="[]" context="{'group_by':'company_id'}"/>
+                </group>
+            </search>
         </field>
     </record>
 
@@ -44,6 +71,7 @@
         <field name="name">Compras por Centro de Costo</field>
         <field name="res_model">purchase.order.line.analytic.report</field>
         <field name="view_mode">pivot,list</field>
+        <field name="domain">[('company_id', 'in', allowed_company_ids)]</field>
     </record>
 
 </odoo>

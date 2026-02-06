@@ -81,99 +81,127 @@ class PriceItemsPopover extends Component {
     }
 
     async recalculateDerivedItems() {
-        // 2) Filtra por claves FIJAS (inglés) → comparación fiable
-        const baseItems = this.items.filter(item =>
-            !["Weaving Loss", "Production Loss", "Financial Percentage", "Incoterm"].includes(item.key)
+        const WEAV_LOSS_KEY = "Weaving Loss";
+        const PROD_LOSS_KEY = "Production Loss";
+        const FINANCIAL_KEY = "Financial Percentage";
+        const INCOTERM_KEY  = "Incoterm";
+        const baseItems = this.items.filter(it =>
+            ![WEAV_LOSS_KEY, PROD_LOSS_KEY, FINANCIAL_KEY, INCOTERM_KEY].includes(it.key)
         );
-
-        let total = baseItems.reduce((acc, it) => acc + (parseFloat(it.price) || 0), 0);
-
+        const round2 = (n) => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
+        const sum = (arr) => arr.reduce((a, it) => a + (Number(it.price) || 0), 0);
         const lineId = this.props.record.resId;
-        const [lineData] = await this.orm.read("sale.order.line", [lineId], ["weaving_loss", "order_id"]);
-        const scrap = lineData?.weaving_loss || 0;
-        const [lineData1] = await this.orm.read("sale.order.line", [lineId], ["production_loss", "order_id"]);
-        const prod_scrap = lineData1?.production_loss || 0;
-
+        const [line] = await this.orm.read(
+            "sale.order.line",
+            [lineId],
+            [
+                "weaving_loss",
+                "production_loss",
+                "order_id",
+                "is_weaving",
+                "printing_design_id",
+                "product_uom_qty",
+                "min_qty",
+            ]
+        );
+        const scrap = Number(line?.weaving_loss) || 0;
+        const prod_scrap = Number(line?.production_loss) || 0;
+        const isWeavingLine = !!line?.has_weaving_operation;
+        let saleType = "";
         let financialPercentage = 0;
         let incotermPrice = 0;
-        let incotermCode = '';
-        let aux = total;
-
-        if (lineData?.order_id) {
-            const [orderData] = await this.orm.read("sale.order", [lineData.order_id[0]], ["payment_term_id", "incoterm"]);
-            
-            if (orderData?.payment_term_id) {
-                const [termData] = await this.orm.read("account.payment.term", [orderData.payment_term_id[0]], ["financial_percentage"]);
-                financialPercentage = termData?.financial_percentage || 0;
+        let incotermCode = "";
+        if (line?.order_id?.[0]) {
+            const [order] = await this.orm.read(
+                "sale.order",
+                [line.order_id[0]],
+                ["payment_term_id", "incoterm", "sale_type"]
+            );
+            saleType = order?.sale_type || "";
+            if (order?.payment_term_id?.[0]) {
+                const [term] = await this.orm.read(
+                    "account.payment.term",
+                    [order.payment_term_id[0]],
+                    ["financial_percentage"]
+                );
+                financialPercentage = Number(term?.financial_percentage) || 0;
             }
-
-            if (orderData?.incoterm) {
-                const [incotermData] = await this.orm.read("account.incoterms", [orderData.incoterm[0]], ["unit_price", "code"]);
-                incotermPrice = incotermData?.unit_price || 0;
-                incotermCode = incotermData?.code || '';
+            if (order?.incoterm?.[0]) {
+                const [inc] = await this.orm.read(
+                    "account.incoterms",
+                    [order.incoterm[0]],
+                    ["unit_price", "code"]
+                );
+                incotermPrice = Number(inc?.unit_price) || 0;
+                incotermCode = inc?.code || "";
             }
         }
-
+        let total = round2(sum(baseItems));
+        const thread_total = round2(sum(baseItems.filter(it => it.meta?.is_thread)));
         const derived = [];
-        const round2 = (num) => Math.round(num * 100) / 100;
-
-        if (scrap) {
-            const loss = round2(total * scrap);
-            aux += loss;
+        if (isWeavingLine && scrap) {
+            const loss = round2(thread_total * scrap);
+            total = round2(total + loss);
             derived.push({
-                key: "Weaving Loss",                         // fijo
+                key: WEAV_LOSS_KEY,
                 price: loss,
-                label: _t("Weaving Loss: %s %", [(scrap * 100).toFixed(2)])
+                label: _t("Weaving Loss: %s %", [(scrap * 100).toFixed(2)]),
+                meta: {},
             });
         }
-
-        if (prod_scrap) {
+        if ( prod_scrap) {
             const loss = round2(total * prod_scrap);
-            aux += loss;
+            total = round2(total / (1 - prod_scrap));
             derived.push({
-                key: "Production Loss",                         // fijo
+                key: PROD_LOSS_KEY,
                 price: loss,
-                label: _t("Production Loss: %s %", [(prod_scrap * 100).toFixed(2)])
+                label: _t("Production Loss: %s %", [(prod_scrap * 100).toFixed(2)]),
+                meta: {},
             });
         }
-
         if (financialPercentage) {
-            const financial = round2(aux * financialPercentage);
-            aux += financial;
+            const financial = round2(total * financialPercentage);
+            total = round2(total + financial);
             derived.push({
-                key: "Financial Percentage",                    // fijo
+                key: FINANCIAL_KEY,
                 price: financial,
-                label: _t("Financial Percentage: %s %", [(financialPercentage * 100).toFixed(2)])
+                label: _t("Financial Percentage: %s %", [(financialPercentage * 100).toFixed(2)]),
+                meta: {},
             });
         }
-
         if (incotermPrice) {
             derived.push({
-                key: "Incoterm",                                // fijo
-                price: parseFloat(incotermPrice.toFixed(2)),
-                label: _t("Incoterm: %s", [incotermCode])
+                key: INCOTERM_KEY,
+                price: round2(incotermPrice),
+                label: _t("Incoterm: %s", [incotermCode]),
+                meta: {},
             });
         }
-
-        // 3) Reemplaza TODOS los items (claves fijas)
-        this.items.splice(0, this.items.length,
-            ...baseItems,
-            ...derived.map(d => ({ key: d.key, price: d.price, label: d.label }))
-        );
+        this.items.splice(0, this.items.length, ...baseItems, ...derived);
     }
 
     get total() {
         return this.items.reduce((acc, it) => acc + (parseFloat(it.price) || 0), 0);
     }
 
-    save() {
+    async save() {
+        await this.recalculateDerivedItems();
+        const printing = this.items.find(it => it.key === "PRINTING");
+        if (printing) {
+            printing.meta = printing.meta || {};
+            printing.meta.design_id = printing.meta.design_id ?? this.props.record.data.printing_design_id?.[0];
+            printing.meta.qty = printing.meta.qty ?? this.props.record.data.product_uom_qty;
+            printing.meta.min_qty = printing.meta.min_qty ?? this.props.record.data.min_qty;
+            printing.label = printing.label || _t("PRINTING");
+        }
         const dict = this.items.reduce((acc, it) => {
-            acc[it.key] = { ...it.meta, price: parseFloat(it.price) || 0, label: it.label };
+            acc[it.key] = { ...(it.meta || {}), price: parseFloat(it.price) || 0, label: it.label };
             return acc;
         }, {});
         this.props.onSave(dict);
         this.props.close();
     }
+
 }
 
 // ---------- WIDGET ----------

@@ -46,6 +46,12 @@ class SaleOrderLine(models.Model):
     # Manejo de tallas para rectilineos
     is_rect = fields.Boolean(related='product_id.product_tmpl_id.is_rect')
     size_qty_ids = fields.One2many('sale.order.line.size', 'line_id', string='Size / Qty')
+    has_weaving_operation = fields.Boolean(compute="_compute_has_weaving_operation", store=True)
+
+    @api.depends('operation_ids')
+    def _compute_has_weaving_operation(self):
+        for line in self:
+            line.has_weaving_operation = any(op.operation_id.operation_type == "weaving" for op in line.operation_ids)
     
     @api.onchange('printing_design_id')
     def _onchange_printing_design_id(self):
@@ -55,9 +61,9 @@ class SaleOrderLine(models.Model):
             else:
                 yield_meter = rec.printing_design_id.yield_meter
             if rec.printing_design_id and rec.printing_design_id.printing_type == 'rotary':
-                rec.min_qty = round(self.env.company.rotary_printing_min_qty / yield_meter)
+                rec.min_qty = float_round(self.env.company.rotary_printing_min_qty / yield_meter)
             elif rec.printing_design_id and rec.printing_design_id.printing_type == 'digital':
-                rec.min_qty = round(self.env.company.digital_printing_min_qty / yield_meter)
+                rec.min_qty = float_round(self.env.company.digital_printing_min_qty / yield_meter)
             else:
                 rec.min_qty = 1000
 
@@ -137,7 +143,8 @@ class SaleOrderLine(models.Model):
                  'order_id.payment_term_id',
                  'order_id.incoterm',
                  'printing_design_id',
-                 'min_qty')
+                 'min_qty',
+                 'order_id.sale_type')
     def _compute_price_unit(self):
         res = super()._compute_price_unit()
         #Solo calcula el precio si la compañía produce
@@ -178,10 +185,11 @@ class SaleOrderLine(models.Model):
             # ------------------------------------------------------------------
             currency = self.order_id.pricelist_id.currency_id
             bom_id = self.bom_id or self.product_template_id.bom_ids[0]
-            weaving = any(operation.operation_id.operation_type == 'weaving' for operation in self.operation_ids)
+            weaving = self.has_weaving_operation #any(operation.operation_id.operation_type == 'weaving' for operation in self.operation_ids)
+            thread_total = 0
 
             if not price_dict:
-                if weaving:
+                if weaving and self.order_id.sale_type == 'sale':
                     for bom_line in bom_id.bom_line_ids.filtered(lambda l: l.product_tmpl_id.categ_id in self.env.company.thread_category_ids):
                         pricelist_item_id = self.order_id.pricelist_id._get_product_rule(
                             bom_line.product_id,
@@ -205,35 +213,41 @@ class SaleOrderLine(models.Model):
                                 fields.Date.context_today(self),
                                 round=False
                             )
-                        if 'DUPONT' in bom_line.product_id.name.upper():
-                            qty = 1
-                        else:
-                            qty = bom_line.product_qty 
-                        price = round(bom_line_price * qty, 2)
+                        # if 'DUPONT' in bom_line.product_id.name.upper():
+                        #     qty = 1
+                        # else:
+                        qty = bom_line.product_qty 
+                        price = float_round(bom_line_price * qty, 2)
                         product_name = bom_line.product_id.name
                         price_dict.setdefault(product_name, {'label': product_name, 'price': 0.0})
-                        price_dict[product_name]['price'] += round(bom_line_price * qty, 2)
+                        price_dict[product_name]['price'] += float_round(bom_line_price * qty, 2)
+
+                    for v in price_dict.values():
+                        v['is_thread'] = True
+
+                # elif not price_dict:
+                #     thread_total = float_round(sum([v['price'] for v in price_dict.values() if v.get('is_thread')]), 2) if price_dict else 0
 
                 for operation in self.operation_ids.sorted(key=lambda r: r.sequence):
                     if operation.operation_id.operation_type == 'weaving':
-                        price = round(self.product_template_id.analysis_id.weaving_price,2)
+                        price = float_round(self.product_template_id.analysis_id.weaving_price,2)
                     else:
                         if operation.operation_id.type_prices == 'col' and self.product_color_id.is_lab_color:
                             operation_color_line = operation.operation_id.product_color_price_ids.search([
                                 ('product_color_id', '=', self.product_color_id.id),
                                 ('mrwo_id', '=', operation.operation_id._origin.id)
                             ])
-                            price = round(operation_color_line.unit_price, 2) if operation_color_line else 0
+                            price = float_round(operation_color_line.unit_price, 2) if operation_color_line else 0
                         else:
-                            price = round(operation.operation_id.unit_price, 2)
+                            price = float_round(operation.operation_id.unit_price, 2)
                     
                     # Si el precio varia por titulo de hilo
                     if operation.operation_id.per_title:
                         if operation.operation_id.type_prices == 'col':
                             if self.product_color_id.is_lab_color:
-                                price += round(self.product_template_id.analysis_id.product_title_id.unit_price, 2)
+                                price = float_round(price + self.product_template_id.analysis_id.product_title_id.unit_price, 2)
                         else:
-                            price += round(self.product_template_id.analysis_id.product_title_id.unit_price, 2)
+                            price = float_round(price + self.product_template_id.analysis_id.product_title_id.unit_price, 2)
 
                     src_currency = operation.operation_id.currency_id
                     if src_currency != currency:
@@ -248,28 +262,60 @@ class SaleOrderLine(models.Model):
                     # price_dict.update({operation.operation_id.name: price})
                         price_dict.update({operation.operation_id.name: {'label': operation.operation_id.name, 'price': price}})
 
+            # Agregamos precio de estampado si existiera# Agregamos precio de estampado si existiera
+            if self.printing_design_id:
+                printing = price_dict.get('PRINTING')
+                if not printing or printing.get('design_id') != self.printing_design_id.id or printing.get('qty') != self.product_uom_qty or printing.get('min_qty') != self.min_qty:
+                    price_dict.pop('PRINTING', None)
+                    yield_meter = float_round(self.bom_id.technical_sheet_id.yield_meter if self.bom_id.technical_sheet_id else self.printing_design_id.yield_meter, 2)
+                    if self.order_id.is_quote:
+                        total_qty = float_round(self.min_qty * yield_meter)
+                    else:
+                        total_qty = float_round(self.product_uom_qty * yield_meter)
+                    price = 0
+                    if self.printing_design_id.printing_type == 'digital':
+                        if total_qty > 59.99:
+                            for line in self.printing_design_id.digital_unit_price_ids:
+                                if total_qty >= line.min_qty and total_qty <= line.max_qty:
+                                    price = float_round(line.unit_price * yield_meter, 2)
+                        else:
+                            price = self.printing_design_id.digital_unit_price_ids[0].unit_price
+                    else:
+                        price = float_round(self.printing_design_id.unit_price * yield_meter, 2)
+                    price_dict['PRINTING'] = {
+                        'label': _('PRINTING'),
+                        'price': price,
+                        'design_id': self.printing_design_id.id,
+                        'min_qty': self.min_qty,
+                        'qty': self.product_uom_qty,
+                    }
+            else:
+                price_dict.pop('PRINTING', None)
+
             # 4) Totales y derivados con clave FIJA + label traducible
             # ------------------------------------------------------------------
-            total = float_round(sum([v["price"] for v in price_dict.values() if not v.get('exclude_scrap')]), 2) if price_dict else 0
+            total = float_round(sum([v["price"] for v in price_dict.values()]), 2) if price_dict else 0
 
             if weaving:
+                thread_total = float_round(sum([v['price'] for v in price_dict.values() if v.get('is_thread')]), 2) if price_dict else 0
                 scrap = self.weaving_loss or bom_id.technical_sheet_id.scrap
                 if scrap:
-                    loss = float_round(total * scrap, 2)
-                    total = float_round(total / (1 - scrap), 2)
+                    loss = float_round(thread_total * scrap, 2)
+                    total = float_round(total + loss, 2)
                     price_dict[WEAV_LOSS_KEY] = {
                         "price": loss,
                         "label": _("Weaving Loss:") + " %.2f %%" % (scrap * 100)
                     }
+            
+            prod_scrap = self.production_loss or bom_id.technical_sheet_id.prod_scrap
 
-                prod_scrap = self.production_loss or bom_id.technical_sheet_id.prod_scrap
-                if prod_scrap:
-                    loss = float_round(total * prod_scrap, 2)
-                    total = float_round(total / (1 - prod_scrap), 2)
-                    price_dict[PROD_LOSS_KEY] = {
-                        "price": loss,
-                        "label": _("Production Loss:") + " %.2f %%" % (prod_scrap * 100)
-                    }
+            if prod_scrap:
+                loss = float_round(total * prod_scrap, 2)
+                total = float_round(total / (1 - prod_scrap), 2)
+                price_dict[PROD_LOSS_KEY] = {
+                    "price": loss,
+                    "label": _("Production Loss:") + " %.2f %%" % (prod_scrap * 100)
+                }
 
             if self.order_id.payment_term_id and self.order_id.payment_term_id.financial_percentage:
                 financial = float_round(total * self.order_id.payment_term_id.financial_percentage, 2)
@@ -284,37 +330,6 @@ class SaleOrderLine(models.Model):
                     "price": self.order_id.incoterm.unit_price,
                     "label": _("Incoterm:") + " %s" % (self.order_id.incoterm.code or '')
                 }
-
-            # Agregamos precio de estampado si existiera# Agregamos precio de estampado si existiera
-            if self.printing_design_id:
-                printing = price_dict.get('PRINTING')
-                if not printing or printing.get('design_id') != self.printing_design_id.id or printing.get('qty') != self.product_uom_qty or printing.get('min_qty') != self.min_qty:
-                    price_dict.pop('PRINTING', None)
-                    yield_meter = round(self.bom_id.technical_sheet_id.yield_meter if self.bom_id.technical_sheet_id else self.printing_design_id.yield_meter, 2)
-                    if self.order_id.is_quote:
-                        total_qty = round(self.min_qty * yield_meter)
-                    else:
-                        total_qty = round(self.product_uom_qty * yield_meter)
-                    price = 0
-                    if self.printing_design_id.printing_type == 'digital':
-                        if total_qty > 59.99:
-                            for line in self.printing_design_id.digital_unit_price_ids:
-                                if total_qty >= line.min_qty and total_qty <= line.max_qty:
-                                    price = round(line.unit_price * yield_meter, 2)
-                        else:
-                            price = self.printing_design_id.digital_unit_price_ids[0].unit_price
-                    else:
-                        price = round(self.printing_design_id.unit_price * yield_meter, 2)
-                    price_dict['PRINTING'] = {
-                        'label': _('PRINTING'),
-                        'price': price,
-                        'design_id': self.printing_design_id.id,
-                        'min_qty': self.min_qty,
-                        'qty': self.product_uom_qty,
-                        'exclude_scrap': True,
-                    }
-            else:
-                price_dict.pop('PRINTING', None)
 
             # 5) Guarda JSON con estructura {key: {"price": float, "label": str}}
             total = float_round(sum([v["price"] for v in price_dict.values()]), 2) if price_dict else 0
@@ -351,7 +366,7 @@ class SaleOrderLine(models.Model):
             ('product_id', '=', self.product_id.id),
             ('product_color_id', '=', self.product_color_id.id),
             # ('order_id.is_quote', '=', True),
-            ('operation_ids','=', self.operation_ids.ids)
+            ('operation_ids','=', self.operation_ids.ids),
             ('order_id.state', 'in', ('draft','sent')),
         ])
         # ordenamos en Python por validez (más reciente primero)

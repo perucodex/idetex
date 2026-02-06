@@ -50,7 +50,7 @@
                 <field name="applicant_id" required="is_company_produce and not is_subscription" invisible="not partner_id or not is_company_produce or is_subscription" readonly="state == 'sale'" domain="[('parent_id','=',partner_id)]" context="{'default_parent_id': partner_id}"/>
             </xpath>
             <xpath expr="//field[@name='payment_term_id']" position="before">
-                <field name="sale_type" required="is_company_produce or not is_subscription" options="{'no_create': True, 'no_open': True}" invisible="not is_quote or not is_company_produce or is_subscription"/>
+                <field name="sale_type" required="is_company_produce or not is_subscription" options="{'no_create': True, 'no_open': True}" invisible="not is_company_produce or is_subscription"/>
             </xpath>
             <xpath expr="//field[@name='payment_term_id']" position="after">
                 <field name="lab_dev_ids" widget="many2many_tags" required="state == 'sale'" options="{'no_create': True, 'no_open': True}" invisible="is_quote or not is_company_produce or not need_labdev" readonly="state == 'sale'"/>

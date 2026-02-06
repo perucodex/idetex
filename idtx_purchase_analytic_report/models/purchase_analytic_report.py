@@ -14,6 +14,7 @@ class PurchaseOrderLineAnalyticReport(models.Model):
     code = fields.Char(readonly=True)
     company_id = fields.Many2one('res.company', readonly=True)
     date_order = fields.Datetime(readonly=True)
+    buyer = fields.Many2one('res.partner', readonly=True)
     product_qty = fields.Float(readonly=True)
     price_subtotal = fields.Monetary(readonly=True)
     price_total = fields.Monetary(readonly=True)
@@ -21,7 +22,7 @@ class PurchaseOrderLineAnalyticReport(models.Model):
 
     def init(self):
         tools.drop_view_if_exists(self.env.cr, self._table)
-        self.env.cr.execute("""
+        self.env.cr.execute(f"""
             CREATE OR REPLACE VIEW purchase_order_line_analytic_report AS (
                 SELECT
                     row_number() OVER () AS id,
@@ -32,8 +33,8 @@ class PurchaseOrderLineAnalyticReport(models.Model):
                     aa.code AS code,
                     po.company_id,
                     po.date_order,
+                    ru.partner_id as buyer,
                     po.currency_id,
-                    -- pol.product_qty,
                     (
                         pol.product_qty
                         * (dist.value::numeric / 100.0)
@@ -47,12 +48,11 @@ class PurchaseOrderLineAnalyticReport(models.Model):
                         * (dist.value::numeric / 100.0)
                     ) AS price_total
                 FROM purchase_order_line pol
-                JOIN purchase_order po
-                    ON po.id = pol.order_id
-                JOIN LATERAL jsonb_each(pol.analytic_distribution) dist(key, value)
-                    ON TRUE
-                JOIN account_analytic_account aa
-                    ON aa.id = dist.key::int
+                JOIN purchase_order po ON po.id = pol.order_id
+                JOIN res_users ru ON ru.id = po.user_id
+                --JOIN res_partner rp ON rp.id = ru.partner_id
+                JOIN LATERAL jsonb_each(pol.analytic_distribution) dist(key, value) ON TRUE
+                JOIN account_analytic_account aa ON aa.id = dist.key::int
                 WHERE pol.display_type IS NULL
                   AND po.state IN ('purchase', 'done')
                   AND pol.analytic_distribution IS NOT NULL
