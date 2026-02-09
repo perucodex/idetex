@@ -69,7 +69,7 @@
                             <th class="o_ps_th o_ps_w_strike o_ps_right">Price / Strike</th>
                         </tr>
                     </thead>
-                    <t t-foreach="doc.order_line.filtered(lambda l: l.printing_design_id and l.printing_design_id.printing_type == 'digital' and not any(operation.operation_id.operation_type == 'weaving' for operation in l.operation_ids))" t-as="line">
+                    <t t-foreach="doc.order_line.filtered(lambda l: l.printing_design_id and l.printing_design_id.printing_type == 'digital')" t-as="line">
                         <t t-set="design" t-value="line.printing_design_id"/>
                         <t t-set="prices" t-value="(design.digital_unit_price_ids.sorted('sequence') or [])[:6]"/>
                         <tbody class="o_ps_item_group">
@@ -183,7 +183,7 @@
                             <th>Sample Price</th>
                         </tr>
                     </thead>
-                    <t t-foreach="doc.order_line.filtered(lambda l: l.printing_design_id and l.printing_design_id.printing_type == 'rotary' and not any(operation.operation_id.operation_type == 'weaving' for operation in l.operation_ids))" t-as="line">
+                    <t t-foreach="doc.order_line.filtered(lambda l: l.printing_design_id and l.printing_design_id.printing_type == 'rotary')" t-as="line">
                         <t t-set="design" t-value="line.printing_design_id"/>
                         <t t-set="prices" t-value="(design.rotary_unit_price_ids.sorted('sequence') or [])[:3]"/>
                         <tbody class="o_ps_item_group">

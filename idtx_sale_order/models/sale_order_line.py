@@ -61,9 +61,9 @@ class SaleOrderLine(models.Model):
             else:
                 yield_meter = rec.printing_design_id.yield_meter
             if rec.printing_design_id and rec.printing_design_id.printing_type == 'rotary':
-                rec.min_qty = float_round(self.env.company.rotary_printing_min_qty / yield_meter)
+                rec.min_qty = round(self.env.company.rotary_printing_min_qty / yield_meter)
             elif rec.printing_design_id and rec.printing_design_id.printing_type == 'digital':
-                rec.min_qty = float_round(self.env.company.digital_printing_min_qty / yield_meter)
+                rec.min_qty = round(self.env.company.digital_printing_min_qty / yield_meter)
             else:
                 rec.min_qty = 1000
 
@@ -269,9 +269,9 @@ class SaleOrderLine(models.Model):
                     price_dict.pop('PRINTING', None)
                     yield_meter = float_round(self.bom_id.technical_sheet_id.yield_meter if self.bom_id.technical_sheet_id else self.printing_design_id.yield_meter, 2)
                     if self.order_id.is_quote:
-                        total_qty = float_round(self.min_qty * yield_meter)
+                        total_qty = round(self.min_qty * yield_meter)
                     else:
-                        total_qty = float_round(self.product_uom_qty * yield_meter)
+                        total_qty = round(self.product_uom_qty * yield_meter)
                     price = 0
                     if self.printing_design_id.printing_type == 'digital':
                         if total_qty > 59.99:
