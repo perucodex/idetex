@@ -10,14 +10,13 @@ class PosOrderLine(models.Model):
     def _compute_lot_color_name(self):
         for line in self:
             if line.pack_lot_ids:
-                print(line.pack_lot_ids)
                 # Buscamos el lote por nombre
                 lot = self.env['stock.lot'].search([
                     ('name', '=', line.pack_lot_ids[0].lot_name),
                     ('product_id', '=', line.product_id.id),
                 ], limit=1)
                 if lot.color_code and lot.color_name:
-                    line.lot_color_name = ('[' + lot.color_code + '] ' + lot.color_name) or ''
+                    line.lot_color_name = f"[{lot.color_code}] {lot.color_name}"
                 else:
                     line.lot_color_name = ''
             else:

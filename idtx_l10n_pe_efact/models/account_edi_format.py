@@ -16,7 +16,6 @@ from zeep.transports import Transport
 class DebugTransport(Transport):
     def post_xml(self, address, envelope, headers):
         # quitar encabezados WSA generados por zeep
-        print(envelope)
         for n in envelope.xpath('//wsa:*', namespaces={'wsa': 'http://www.w3.org/2005/08/addressing'}):
             n.getparent().remove(n)
         return super().post_xml(address, envelope, headers)
@@ -46,6 +45,9 @@ class AccountEdiFormat(models.Model):
         credentials = self._l10n_pe_edi_get_efact_credentials(company)
         if not company.sudo().l10n_pe_edi_certificate_id:
             return {'error': _("No valid certificate found for %s company.", company.display_name)}
+
+        if not edi_str:
+            return {'error': _("Empty EDI string provided for signing. XML generation might have failed."), 'blocking_level': 'error'}
 
         # Sign the document.
         edi_tree = objectify.fromstring(edi_str)
@@ -239,7 +241,6 @@ class AccountEdiFormat(models.Model):
             response_tree = etree.fromstring(soap_response)
         except etree.LxmlError:
             return {'error': self._l10n_pe_edi_get_general_error_messages()['L10NPE08']}
-        print(etree.tostring(response_tree, pretty_print=True, encoding='unicode'))
         if response_tree.find('.//{*}Fault') is not None:
             if response_tree.find('.//{*}message') is not None:  # It comes from Estela (formerly Digiflow)
                 message_element, code = self._l10n_pe_edi_response_code_digiflow(response_tree)
