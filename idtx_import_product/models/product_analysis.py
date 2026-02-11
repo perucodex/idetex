@@ -163,7 +163,8 @@ class ProductAnalysis(models.Model):
     _inherit = 'product.analysis'
 
     is_problem = fields.Boolean('is_problem?')
-    state = fields.Selection(selection_add=[('impo', 'Imported')],)    
+    state = fields.Selection(selection_add=[('impo', 'Imported')],)
+    sitpro_code = fields.Char('sitpro_code') 
     
     @api.onchange('product_code','partner_id')
     def _onchange_is_problem(self):
@@ -354,6 +355,7 @@ class ProductAnalysis(models.Model):
                         'product_code': code[1:],
                         'is_problem': is_problem,
                         'mrp_base_process_id': base_process_id.id,
+                        'sitpro_code': code,
                     }
                     product_analysis = self.create(vals)
                     # Actualizamos el detalle de las rutas desde la base

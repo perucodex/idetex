@@ -46,6 +46,9 @@
                         <field name="sale_count" string="Sales" widget="statinfo"/>
                 </button>
             </xpath>
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="domain">[('is_company','=', True)]</attribute>
+            </xpath>
             <xpath expr="//field[@name='partner_id']" position="after">
                 <field name="applicant_id" required="is_company_produce and not is_subscription" invisible="not partner_id or not is_company_produce or is_subscription" readonly="state == 'sale'" domain="[('parent_id','=',partner_id)]" context="{'default_parent_id': partner_id}"/>
             </xpath>

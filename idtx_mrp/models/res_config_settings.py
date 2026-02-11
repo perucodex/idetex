@@ -6,10 +6,11 @@ import ipaddress
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
+    is_printer = fields.Boolean(related='company_id.is_printer', readonly=False)
     zpl_printer_ip = fields.Char(related='company_id.zpl_printer_ip', readonly=False)
 
     def test_zpl_printer_ip(self):
-        if self.zpl_printer_ip:
+        if self.zpl_printer_ip and self.is_printer:
             self._print_zpl_to_network(self.create_zpl(), self.zpl_printer_ip)
 
     def create_zpl(self):

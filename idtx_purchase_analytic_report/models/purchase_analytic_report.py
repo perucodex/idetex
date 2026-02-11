@@ -10,6 +10,7 @@ class PurchaseOrderLineAnalyticReport(models.Model):
     order_id = fields.Many2one('purchase.order', readonly=True)
     order_line_id = fields.Many2one('purchase.order.line', readonly=True)
     product_id = fields.Many2one('product.product', readonly=True)
+    categ_id = fields.Many2one('product.category', string='Category')
     analytic_account_id = fields.Many2one('account.analytic.account', readonly=True)
     code = fields.Char(readonly=True)
     company_id = fields.Many2one('res.company', readonly=True)
@@ -29,6 +30,7 @@ class PurchaseOrderLineAnalyticReport(models.Model):
                     pol.id AS order_line_id,
                     po.id AS order_id,
                     pol.product_id,
+					pc.id as categ_id,
                     aa.id AS analytic_account_id,
                     aa.code AS code,
                     po.company_id,
@@ -49,6 +51,9 @@ class PurchaseOrderLineAnalyticReport(models.Model):
                     ) AS price_total
                 FROM purchase_order_line pol
                 JOIN purchase_order po ON po.id = pol.order_id
+                JOIN product_product pp ON pp.id = pol.product_id
+				JOIN product_template pt ON pt.id = pp.product_tmpl_id
+                JOIN product_category pc ON pc.id = pt.categ_id
                 JOIN res_users ru ON ru.id = po.user_id
                 --JOIN res_partner rp ON rp.id = ru.partner_id
                 JOIN LATERAL jsonb_each(pol.analytic_distribution) dist(key, value) ON TRUE

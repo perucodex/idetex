@@ -13,11 +13,11 @@
                 <field name="date_order" interval="month" type="col"/>
                 <field name="currency_id" type="col"/>
                 <!-- <field name="currency_id" type="row"/> -->
-                <field name="company_id" type="row"/>
                 <field name="analytic_account_id" type="row"/>
+                <field name="categ_id" type="row"/>
                 <!-- <field name="product_id" type="row"/> -->
                 <!-- <field name="date_order" interval="month"/> -->
-                <field name="company_id"/>
+                <!-- <field name="company_id"/> -->
             </pivot>
         </field>
     </record>
@@ -32,6 +32,7 @@
                 <field name="order_id"/>
                 <field name="buyer"/>
                 <field name="product_id"/>
+                <field name="categ_id"/>
                 <field name="analytic_account_id"/>
                 <field name="code"/>
                 <field name="product_qty"/>

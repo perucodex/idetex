@@ -29,6 +29,9 @@
                                     <field name="technical_sheet_count" widget="statinfo" string="Technical Sheets"/>
                             </button>
                         </div>
+                        <div class="float-end fs-6 border-0" invisible="not production_state">
+                            <field name="production_state" widget="badge" readonly="1" decoration-success="production_state == 'Production'" decoration-info="production_state == 'Pilot'" decoration-warning="production_state == 'Sample'"/>
+                        </div>
                         <div class="oe_title">
                             <h1>
                                 <field name="name" readonly="1"/>
@@ -128,6 +131,7 @@
                     <field name="product_code"/>
                     <field name="product_description"/>
                     <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="production_state" widget="badge" decoration-success="production_state == 'Production'" decoration-info="production_state == 'Pilot'" decoration-warning="production_state == 'Sample'"/>
                     <field name="state" widget="badge" decoration-success="state == 'prod'"/>
                 </list>
             </field>

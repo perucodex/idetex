@@ -30,3 +30,12 @@ class MrpWorkorder(models.Model):
             'date_finished': False,
         })
         return True
+    
+    def button_start(self, raise_on_invalid_state=False):
+        for wo in self:
+            if wo.workcenter_id.operation_type == 'weaving':
+                if not wo.equipment_ids:
+                    raise UserError(_('Please asign workorder equipments to work with.'))
+                if not wo.employee_assigned_ids:
+                    raise UserError(_('Please asign employees to the workorder.'))
+        return super().button_start(raise_on_invalid_state=raise_on_invalid_state)

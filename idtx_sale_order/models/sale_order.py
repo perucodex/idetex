@@ -274,3 +274,8 @@ class SaleOrder(models.Model):
         res = super().action_cancel()
         self.order_line.production_id.with_context(delete_from_sale_order=True).unlink() 
         return res
+    
+    @api.onchange('partner_id')
+    def _onchange_partner_id(self):
+        for rec in self:
+            rec.applicant_id = False

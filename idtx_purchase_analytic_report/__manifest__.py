@@ -29,6 +29,7 @@ Basado en purchase.order.line
 
     # always loaded
     'data': [
+        'security/group_par.xml',
         'security/ir.model.access.csv',
         'views/purchase_analytic_report_views.xml',
         'views/purchase_analytic_report_menu.xml',

@@ -18,6 +18,22 @@
       </list>
     </field>
   </record>
+  <!-- ============ Cabecera: Tree ============ -->
+  <record id="view_control_pedido_line_tree" model="ir.ui.view">
+    <field name="name">control.pedido.line.tree</field>
+    <field name="model">control.pedido.line</field>
+    <field name="arch" type="xml">
+      <list decoration-danger="area == 'AREA NO CONOCIDA'" create="0">
+        <field name="batch"/>
+        <field name="pedido_id"/>
+        <field name="route"/>
+        <field name="barcodreo"/>
+        <field name="process"/>
+        <field name="area"/>
+        <field name="kilograms"/>
+      </list>
+    </field>
+  </record>
 
   <!-- ============ Cabecera: Form (TODOS los campos) ============ -->
   <record id="view_control_pedido_form" model="ir.ui.view">
@@ -81,11 +97,45 @@
     </field>
   </record>
 
+  <!-- ============ Cabecera: Form (TODOS los campos) ============ -->
+  <record id="view_control_pedido_line_form" model="ir.ui.view">
+    <field name="name">control.pedido.line.form</field>
+    <field name="model">control.pedido.line</field>
+    <field name="arch" type="xml">
+      <form>
+        <sheet>
+          <div class="oe_title">
+            <h1>
+              <field name="batch" readonly="1"/>
+            </h1>
+          </div>
+          <group>
+            <group>
+              <field name="pedido_id" readonly="1"/>
+              <field name="route" readonly="1"/>
+              <field name="barcodreo" readonly="1"/>
+              <field name="process" readonly="1"/>
+              <field name="area" readonly="1"/>
+            </group>
+            <group>
+              <field name="kilograms" readonly="1"/>
+              <field name="start_date" readonly="1"/>
+              <field name="end_date" readonly="1"/>
+              <field name="colorcode" readonly="1"/>
+              <field name="colorname" readonly="1"/>
+            </group>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
   <record id="control_pedido_view_search" model="ir.ui.view">
       <field name="name">control.pedido.view.search</field>
       <field name="model">control.pedido</field>
       <field name="arch" type="xml">
           <search string="Search">
+              <field name="line_ids" string="Batch" filter_domain="[('line_ids.batch', 'ilike', self)]"/>
               <field name="numordped"/>
               <field name="area"/>
               <field name="process"/>
@@ -106,6 +156,27 @@
       </field>
   </record>
 
+  <record id="control_pedido_line_view_search" model="ir.ui.view">
+      <field name="name">control.pedido.line.view.search</field>
+      <field name="model">control.pedido.line</field>
+      <field name="arch" type="xml">
+          <search string="Search">
+              <field name="batch"/>
+              <field name="pedido_id"/>
+              <field name="route"/>
+              <field name="barcodreo"/>
+              <field name="process"/>
+              <field name="area"/>
+              <field name="colorcode"/>
+              <field name="colorname"/>
+              <group>
+                  <filter string="Process" name="group_by_process" domain="[]" context="{'group_by': 'process'}"/>
+                  <filter string="Area" name="group_by_area" domain="[]" context="{'group_by': 'area'}"/>
+              </group>
+          </search>
+      </field>
+  </record>
+
   <!-- ============ Action / Menu ============ -->
   <record id="action_control_pedido" model="ir.actions.act_window">
     <field name="name">Pedidos control</field>
@@ -114,5 +185,16 @@
     <field name="context">{"search_default_not_done":1}</field>
   </record>
 
-  <menuitem id="menu_control_pedidos" name="Control de Pedidos" parent="sale.sale_order_menu" sequence="40" action="action_control_pedido"/>
+  <!-- ============ Action / Menu ============ -->
+  <record id="action_control_partida" model="ir.actions.act_window">
+    <field name="name">Pedidos control</field>
+    <field name="res_model">control.pedido.line</field>
+    <field name="view_mode">list,form</field>
+    <!-- <field name="context">{"search_default_not_done":1}</field> -->
+  </record>
+
+  <menuitem id="menu_sitpro_texplus" name="Sitpro &amp; Texplus" parent="sale.sale_order_menu" sequence="40">
+    <menuitem id="menu_control_pedido" name="Pedidos" sequence="10" action="action_control_pedido"/>
+    <menuitem id="menu_control_partida" name="Partidas" sequence="20" action="action_control_partida"/>
+  </menuitem>
 </odoo>

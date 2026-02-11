@@ -23,7 +23,8 @@ class MrpProductionRoll(models.Model):
 
     def reprint(self):
         for rec in self:
-            rec._print_zpl_to_network(rec.create_zpl(rec.quantity), self.env.company.zpl_printer_ip)
+            if rec.env.company.is_printer:
+                rec._print_zpl_to_network(rec.create_zpl(rec.quantity), self.env.company.zpl_printer_ip)
 
     #=== CRUD METHODS ===#
 

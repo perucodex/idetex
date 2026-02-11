@@ -22,9 +22,9 @@ class BatchAddWizard(models.TransientModel):
     def _compute_count_products(self):
         for rec in self:
             if rec.batch_id:
-                rec.all_products = rec.batch_id.wo_roll_ids.product_id
-                rec.count_products = len(rec.batch_id.wo_roll_ids.product_id)
-                rec.product_id = rec.batch_id.wo_roll_ids.product_id if rec.count_products <= 1 else False
+                rec.all_products = rec.batch_id.wo_roll_ids.mapped('product_id')
+                rec.count_products = len(rec.all_products)
+                rec.product_id = rec.all_products[0] if rec.count_products >= 1 else False
             else:
                 rec.all_products = False
                 rec.count_products = 0
@@ -36,7 +36,8 @@ class BatchAddWizard(models.TransientModel):
     def action_add(self):
         """Crear los registros reales y MANTENER el wizard abierto."""
         for line in self:
-            prd = line.batch_id.wo_roll_ids[0].workorder_id.production_id
+            prd = line.batch_id.wo_roll_ids.filtered(lambda r: r.product_id == line.product_id).workorder_id.production_id
+            # for prd in prds:
             lot_id = self.env['stock.lot'].create(self._get_lot_vals(prd, line))
             roll = self.env['mrp.production.roll'].create({
                 'production_id': prd.id,

@@ -60,6 +60,8 @@ class ProductAnalysis(models.Model):
     # Precio de tejido por producto
     currency_id = fields.Many2one('res.currency', string='Currency', default=lambda self: self.env.ref('base.USD'))
     weaving_price = fields.Monetary('Weaving Price')
+    # Manejo de producto por estado
+    production_state = fields.Char(string='Production State')
 
     _check_standard_width = models.Constraint(
         'CHECK(standard_width > 0)',

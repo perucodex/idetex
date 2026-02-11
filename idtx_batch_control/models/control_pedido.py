@@ -514,6 +514,7 @@ class ControlPedido(models.Model):
 class ControlPedidoLine(models.Model):
     _name = "control.pedido.line"
     _description = "Control Pedido (Detalle)"
+    _rec_name = 'batch'
 
     pedido_id = fields.Many2one("control.pedido", required=True, ondelete="cascade")
     route = fields.Char(string="Route")

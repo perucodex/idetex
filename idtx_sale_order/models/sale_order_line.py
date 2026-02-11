@@ -354,7 +354,6 @@ class SaleOrderLine(models.Model):
                         self.diff_days = (today - line.order_id.validity_date ).days
                     return line
                 else:
-                    # if quote:
                     raise UserError(_('Product %s with color %s can\'t be found in any quotation or sale order. Please quotate first.') %(product.name, color.name))
             return line
         else:
