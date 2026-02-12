@@ -7,7 +7,7 @@ from odoo.exceptions import UserError
 class MrpProduction(models.Model):
     _inherit = 'mrp.production'
 
-    sale_order_line_id = fields.Many2one('sale.order.line', string='Sale Order Line')
+    sale_order_line_id = fields.Many2one('sale.order.line', string='Sale Order Line', copy=True)
     color_recipe_id = fields.Many2one('color.recipe', string='Color Recipe', compute='_compute_color_recipe', store=True)
     color_code = fields.Char(related='color_recipe_id.color_code')
     color_name = fields.Char(related='color_recipe_id.color_name')

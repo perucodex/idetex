@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Entrada de vacaciones -->
+        <record id="work_entry_type_vac" model="hr.work.entry.type">
+            <field name="name">Vacaciones</field>
+            <field name="display_code">VAC</field>
+            <field name="code">VAC</field>
+            <field name="is_leave">True</field>
+        </record>
+
+    </data>
+</odoo>

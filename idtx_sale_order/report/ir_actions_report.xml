@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_technical_sheet_customer" model="ir.actions.report">
+        <field name="name">Technical Sheet</field>
+        <field name="model">technical.sheet</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">idtx_sale_order.report_technical_sheet_customer</field>
+        <field name="report_file">idtx_sale_order.report_technical_sheet_customer</field>
+        <field name="print_report_name">'Technical Sheet - %s' % (object.name)</field>
+        <field name="paperformat_id" ref="idtx_product_development.paperformat_dev_report_paper"/>
+        <field name="binding_model_id" ref="idtx_product_development.model_technical_sheet"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

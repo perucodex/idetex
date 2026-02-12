@@ -8,21 +8,22 @@
             <field name="inherit_id" ref="idtx_mrp.mrp_routing_workcenter_operation_form_view"/>
             <field name="arch" type="xml">
                 <field name="company_id" position="before">
-                    <field name="currency_id" groups="idtx_product_development.group_module_product_development_manager"/>
-                    <field name="type_prices" groups="idtx_product_development.group_module_product_development_manager"/>
-                    <field name="unit_price" invisible = "type_prices == 'col'" groups="idtx_product_development.group_module_product_development_manager"/>
+                    <field name="type_prices" invisible="operation_type == 'weaving'" groups="idtx_product_development.group_module_product_development_manager"/>
+                    <field name="per_title" invisible="operation_type == 'weaving'" widget="boolean_toggle" groups="idtx_product_development.group_module_product_development_manager"/>
+                    <field name="currency_id" invisible="operation_type == 'weaving'" groups="idtx_product_development.group_module_product_development_manager"/>
+                    <field name="unit_price" invisible = "type_prices == 'col' or operation_type == 'weaving'" groups="idtx_product_development.group_module_product_development_manager"/>
                 </field>
-                <notebook position="inside">
-                    <page name="prices_page" string="Prices" invisible = "type_prices == 'pp'" groups="idtx_product_development.group_module_product_development_manager">
+                <page name="parameter_page" position="before">
+                    <page name="prices_page" string="Prices" invisible = "type_prices == 'pp'or operation_type == 'weaving'" groups="idtx_product_development.group_module_product_development_manager">
                         <field name="product_color_price_ids">
                             <list editable="bottom">
-                                <field name="product_color_id" />
-                                <field name="unit_price" />
+                                <field name="product_color_id"/>
+                                <field name="unit_price"/>
                                 <field name="currency_id" column_invisible="1"/>
                             </list> 
                         </field>
                     </page>
-                </notebook>
+                </page>
             </field>
         </record>
 

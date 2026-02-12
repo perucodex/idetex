@@ -1,5 +1,6 @@
 /** @odoo-module **/
 
+import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
 import { usePopover } from "@web/core/popover/popover_hook";
 import { Component, useState } from "@odoo/owl";
@@ -16,14 +17,17 @@ class PriceItemsPopover extends Component {
     };
 
     setup() {
-        console.log('[PriceItemsWidget] parent_is_quote =', this.props.record?.data?.parent_is_quote,
-                    'order_id =', this.props.record?.data?.order_id,
-                    'is_quote =', this.props.record?.data?.order_id?.data?.is_quote);
+        // 1) Deserializa: {key: {"price": float, "label": str}}
         const raw = this.props.record.data.price_items || "{}";
         try {
             const dict = JSON.parse(raw);
             this.items = useState(
-                Object.entries(dict).map(([k, v]) => ({ key: k, value: Number(v) }))
+                Object.entries(dict).map(([k, v]) => ({
+                    key: k,               // fijo, inglés
+                    price: Number(v.price),
+                    label: v.label,        // traducible
+                    meta: v, // ← guarda todo
+                }))
             );
         } catch {
             this.items = useState([]);
@@ -72,92 +76,132 @@ class PriceItemsPopover extends Component {
         val = val.replace(/,/g, "");
         val = val.replace(/[^0-9.]/g, "");
         val = val.replace(/^([^.]*\.)|\./g, (m, g1) => g1 || "");
-        item.value = parseFloat(val) || 0;
-
+        item.price = parseFloat(val) || 0;
         await this.recalculateDerivedItems();
     }
 
     async recalculateDerivedItems() {
-        const baseItems = this.items.filter(item =>
-            !item.key.startsWith("Production Loss") &&
-            !item.key.startsWith("Financial Percentage") &&
-            !item.key.startsWith("Incoterm")
+        const WEAV_LOSS_KEY = "Weaving Loss";
+        const PROD_LOSS_KEY = "Production Loss";
+        const FINANCIAL_KEY = "Financial Percentage";
+        const INCOTERM_KEY  = "Incoterm";
+        const baseItems = this.items.filter(it =>
+            ![WEAV_LOSS_KEY, PROD_LOSS_KEY, FINANCIAL_KEY, INCOTERM_KEY].includes(it.key)
         );
-
-        let total = baseItems.reduce((acc, it) => acc + (parseFloat(it.value) || 0), 0);
-
+        const round2 = (n) => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
+        const sum = (arr) => arr.reduce((a, it) => a + (Number(it.price) || 0), 0);
         const lineId = this.props.record.resId;
-        const [lineData] = await this.orm.read("sale.order.line", [lineId], ["weaving_loss", "order_id"]);
-        const scrap = lineData?.weaving_loss || 0;
-
+        const [line] = await this.orm.read(
+            "sale.order.line",
+            [lineId],
+            [
+                "weaving_loss",
+                "production_loss",
+                "order_id",
+                "is_weaving",
+                "printing_design_id",
+                "product_uom_qty",
+                "min_qty",
+            ]
+        );
+        const scrap = Number(line?.weaving_loss) || 0;
+        const prod_scrap = Number(line?.production_loss) || 0;
+        const isWeavingLine = !!line?.has_weaving_operation;
+        let saleType = "";
         let financialPercentage = 0;
         let incotermPrice = 0;
-        let incotermCode = '';
-        let aux = total;
-
-        if (lineData?.order_id) {
-            const [orderData] = await this.orm.read("sale.order", [lineData.order_id[0]], ["payment_term_id", "incoterm"]);
-            
-            if (orderData?.payment_term_id) {
-                const [termData] = await this.orm.read("account.payment.term", [orderData.payment_term_id[0]], ["financial_percentage"]);
-                financialPercentage = termData?.financial_percentage || 0;
+        let incotermCode = "";
+        if (line?.order_id?.[0]) {
+            const [order] = await this.orm.read(
+                "sale.order",
+                [line.order_id[0]],
+                ["payment_term_id", "incoterm", "sale_type"]
+            );
+            saleType = order?.sale_type || "";
+            if (order?.payment_term_id?.[0]) {
+                const [term] = await this.orm.read(
+                    "account.payment.term",
+                    [order.payment_term_id[0]],
+                    ["financial_percentage"]
+                );
+                financialPercentage = Number(term?.financial_percentage) || 0;
             }
-
-            if (orderData?.incoterm) {
-                const [incotermData] = await this.orm.read("account.incoterms", [orderData.incoterm[0]], ["unit_price", "code"]);
-                incotermPrice = incotermData?.unit_price || 0;
-                incotermCode = incotermData?.code || '';
+            if (order?.incoterm?.[0]) {
+                const [inc] = await this.orm.read(
+                    "account.incoterms",
+                    [order.incoterm[0]],
+                    ["unit_price", "code"]
+                );
+                incotermPrice = Number(inc?.unit_price) || 0;
+                incotermCode = inc?.code || "";
             }
         }
-
+        let total = round2(sum(baseItems));
+        const thread_total = round2(sum(baseItems.filter(it => it.meta?.is_thread)));
         const derived = [];
-
-        const round2 = (num) => Math.round(num * 100) / 100;
-
-        if (scrap) {
-            const loss = round2(total * scrap);
-            aux = aux + loss;
+        if (isWeavingLine && scrap) {
+            const loss = round2(thread_total * scrap);
+            total = round2(total + loss);
             derived.push({
-                key: `Production Loss: ${(scrap * 100).toFixed(2)} %`,
-                value: loss
+                key: WEAV_LOSS_KEY,
+                price: loss,
+                label: _t("Weaving Loss: %s %", [(scrap * 100).toFixed(2)]),
+                meta: {},
             });
         }
-
+        if ( prod_scrap) {
+            const loss = round2(total * prod_scrap);
+            total = round2(total / (1 - prod_scrap));
+            derived.push({
+                key: PROD_LOSS_KEY,
+                price: loss,
+                label: _t("Production Loss: %s %", [(prod_scrap * 100).toFixed(2)]),
+                meta: {},
+            });
+        }
         if (financialPercentage) {
-            const financial = round2(aux * financialPercentage);
-            aux = aux + financial
+            const financial = round2(total * financialPercentage);
+            total = round2(total + financial);
             derived.push({
-                key: `Financial Percentage: ${(financialPercentage * 100).toFixed(2)} %`,
-                value: financial
+                key: FINANCIAL_KEY,
+                price: financial,
+                label: _t("Financial Percentage: %s %", [(financialPercentage * 100).toFixed(2)]),
+                meta: {},
             });
         }
-
         if (incotermPrice) {
             derived.push({
-                key: `Incoterm: ${incotermCode}`,
-                value: parseFloat(incotermPrice.toFixed(2))
+                key: INCOTERM_KEY,
+                price: round2(incotermPrice),
+                label: _t("Incoterm: %s", [incotermCode]),
+                meta: {},
             });
         }
-
-        this.items.splice(0, this.items.length, 
-            ...baseItems,
-            ...derived.map(d => ({ key: d.key, value: d.value }))
-        );
-
+        this.items.splice(0, this.items.length, ...baseItems, ...derived);
     }
 
     get total() {
-        return this.items.reduce((acc, it) => acc + (parseFloat(it.value) || 0), 0);
+        return this.items.reduce((acc, it) => acc + (parseFloat(it.price) || 0), 0);
     }
 
-    save() {
+    async save() {
+        await this.recalculateDerivedItems();
+        const printing = this.items.find(it => it.key === "PRINTING");
+        if (printing) {
+            printing.meta = printing.meta || {};
+            printing.meta.design_id = printing.meta.design_id ?? this.props.record.data.printing_design_id?.[0];
+            printing.meta.qty = printing.meta.qty ?? this.props.record.data.product_uom_qty;
+            printing.meta.min_qty = printing.meta.min_qty ?? this.props.record.data.min_qty;
+            printing.label = printing.label || _t("PRINTING");
+        }
         const dict = this.items.reduce((acc, it) => {
-            acc[it.key] = parseFloat(it.value) || 0;
+            acc[it.key] = { ...(it.meta || {}), price: parseFloat(it.price) || 0, label: it.label };
             return acc;
         }, {});
         this.props.onSave(dict);
         this.props.close();
     }
+
 }
 
 // ---------- WIDGET ----------

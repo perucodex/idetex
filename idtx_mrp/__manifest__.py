@@ -22,6 +22,7 @@ Módulo base para los desarrollos de producción para empresas textiles
     # any module necessary for this one to work correctly
     'depends': [
             'base',
+            'mrp',
             'portal',
             'mrp_workorder',
             'mrp_maintenance',
@@ -43,13 +44,17 @@ Módulo base para los desarrollos de producción para empresas textiles
         'views/res_config_settings_views.xml',
         'views/scale_registry_views.xml',
         'views/stock_quant_views.xml',
-        'wizard/add_production_roll.xml',
-        'wizard/additional_workorder_views.xml',
-        'wizard/split_roll_views.xml',
+        'wizards/add_production_roll.xml',
+        'wizards/additional_workorder_views.xml',
         'views/mrp_menu.xml',
     ],
     'demo': [
         'demo/mrp.routing.workcenter.operation.csv',
     ],
+    "assets": {
+        "web.assets_backend": [
+            "idtx_mrp/static/src/js/print_zpl_simple.js",
+        ],
+    },
 }
 

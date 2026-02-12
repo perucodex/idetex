@@ -10,16 +10,16 @@ $o-row-stripe:        #fafafa;
 // }
 
 .o_info_small {
-    font-size: 10px;          // tamaño deseado
+    font-size: 12px;          // tamaño deseado
     line-height: 1.2;
 
     strong {                // etiquetas “Buyer”, “Order Date”, etc.
-        font-size: 10px;
+        font-size: 12px;
     }
 }
 
 .o_small_text {
-    font-size: 10px !important;
+    font-size: 12px !important;
     line-height: 1.1;
 
     strong {               // etiqueta “Payment Terms:”
@@ -36,20 +36,20 @@ $o-row-stripe:        #fafafa;
 .o_table_boxed_purchase {
     
     div[name="address"] {          /* único bloque que contiene la dirección */
-        font-size: 9px !important;
+        font-size: 14px !important;
         line-height: 1.1 !important;
 
         strong, span, p, div {     /* cualquier texto dentro */
-            font-size: 9px !important;
+            font-size: 14px !important;
         }
     }
 
     div[name="information_block"] {  /* shipping address */
-        font-size: 9px !important;
+        font-size: 14px !important;
         line-height: 1.1 !important;
 
         strong, span, p, div {
-            font-size: 9px !important;
+            font-size: 14px !important;
         }
 
         /* si quieres también quitar el recuadro de shipping */
@@ -70,7 +70,7 @@ $o-row-stripe:        #fafafa;
     // ---------- HEADER / FOOTER ----------
     .header {
         margin-bottom: 20px;
-        font-size: 12px;
+        font-size: 18px;
         .row > div { padding: 0; }
         h4 { margin: 0; font-weight: 700; }
     }
@@ -86,7 +86,7 @@ $o-row-stripe:        #fafafa;
 
     // ---------- TABLE WRAPPER ----------
     table.table {
-        font-size: 10px;
+        font-size: 12px;
         border-collapse: separate;
         border-spacing: 0;
         width: 100%;
@@ -168,10 +168,11 @@ $o-row-stripe:        #fafafa;
         .o_total {
             font-weight: 700;
             border-top: 2px solid #505050;
+            font-size: 18px;
         }
     }
 
     // ---------- SMALL PRINT ----------
-    .text-muted.small { font-size: 10px; }
+    .text-muted.small { font-size: 12px; }
 
 }

@@ -10,8 +10,15 @@ class MrpRoutingWorkcenterOperation(models.Model):
     type_prices = fields.Selection([
         ('pp', 'By Process'),
         ('col', 'By Color'),
-    ], string='Type Prices', default = 'pp')   
+    ], string='Type Prices', default = 'pp')
+    per_title = fields.Boolean('Per Thread Title')
     product_color_price_ids = fields.One2many('product.color.price', 'mrwo_id', string='product_color_price')
+
+    @api.onchange('type_prices')
+    def _onchange_type_prices(self):
+        for rec in self:
+            if rec.type_prices == 'col':
+                rec.unit_price = 0
 
 class ProductColorPrice (models.Model):
     _name = 'product.color.price'
@@ -19,5 +26,5 @@ class ProductColorPrice (models.Model):
 
     product_color_id = fields.Many2one('product.color', string='Product Color')
     unit_price = fields.Monetary('Unit Price' , currency_field='currency_id')
-    mrwo_id = fields.Many2one('mrp.routing.workcenter.operation', string='mrp_rout_wngWorkcenter_operation')
+    mrwo_id = fields.Many2one('mrp.routing.workcenter.operation', string='mrp_routing_workcenter_operation')
     currency_id = fields.Many2one(related='mrwo_id.currency_id')

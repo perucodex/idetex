@@ -9,10 +9,10 @@
             <xpath expr="//field[@name='lot_id']" position="after">
                 <field name="is_thread" column_invisible="True"/>
             </xpath>
-            <xpath expr="//field[@name='lot_name']" position="after">
+            <!-- <xpath expr="//field[@name='lot_name']" position="after">
                 <field name="bags" column_invisible="not is_thread" required="is_thread"/>
                 <field name="cones" column_invisible="not is_thread" required="is_thread"/>
-            </xpath>
+            </xpath> -->
         </field>
     </record>
 

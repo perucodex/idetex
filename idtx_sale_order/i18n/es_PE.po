@@ -1,0 +1,1167 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* idtx_sale_order
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-04 16:53+0000\n"
+"PO-Revision-Date: 2026-02-04 16:53+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: idtx_sale_order
+#: model:ir.actions.report,print_report_name:idtx_sale_order.action_report_technical_sheet_customer
+msgid "'Technical Sheet - %s' % (object.name)"
+msgstr "'Ficha Tecnica - %s' % (object.name)"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "<span>Code:</span>"
+msgstr "<span>Código:</span>"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "<span>Customer:</span>"
+msgstr "<span>Cliente:</span>"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "<span>Fabric:</span>"
+msgstr "<span>Tela:</span>"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "<span>Technical Date:</span>"
+msgstr "<span>Fecha de Ficha:</span>"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "<strong>Applicant</strong>"
+msgstr "<strong>Solicitante</strong>"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "<strong>Datos de Acabado</strong>"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "<strong>Datos de Crudo</strong>"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "<strong>Pocess</strong>"
+msgstr "<strong>Procesos</strong>"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "<strong>Rectilinear Size Chart</strong>"
+msgstr "<strong>Tallas de Rectilineos</strong>"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "ATX"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_batch_add_wizard
+msgid "Agregar registros en lote"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__analysis_id
+msgid "Analysis"
+msgstr "Análisis"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.view_sizq_qty_wizard_form
+msgid "Aplicar"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__applicant_id
+msgid "Applicant"
+msgstr "Solicitante"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_order_view_form_inherit_sale
+msgid "Approve Discount"
+msgstr "Approbar Descuento"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__has_approved_lab_line
+msgid "Approved"
+msgstr "Aprobado"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__available_operation_ids
+msgid "Available Operations"
+msgstr "Operaciones Disponibles"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "Body"
+msgstr "Cuerpo"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__bom_id
+msgid "Bom"
+msgstr "LdM"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Bonding Price / mt."
+msgstr "Precio de Bondeo / mt."
+
+#. module: idtx_sale_order
+#: model:ir.model.fields.selection,name:idtx_sale_order.selection__mrp_routing_workcenter_operation__type_prices__col
+msgid "By Color"
+msgstr "Por Color"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields.selection,name:idtx_sale_order.selection__mrp_routing_workcenter_operation__type_prices__pp
+msgid "By Process"
+msgstr "Por Proceso"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_portal_sign_modal_remove_amount_sentence
+msgid "By signing, you confirm acceptance on behalf of"
+msgstr "Al firmar, confirma la aceptación en nombre de"
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+msgid "Can't create Lab Dev some lines have no color name."
+msgstr "No se puede crear LD algunas líneas no tiene nombre de color."
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/mrp_production.py:0
+msgid "Can't delete production in %s"
+msgstr "No se puede eliminar la producción %s"
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+msgid "Can't send quotation without approval for discount."
+msgstr "No se puede enviar sin aprobación de descuento."
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.view_sizq_qty_wizard_form
+msgid "Cancelar"
+msgstr ""
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+msgid "Cant't confirm a quotation."
+msgstr "No se puede confirmar una cotización"
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+msgid "Cant't confirm sale order without LD"
+msgstr "No se puede confirmar el pedido sin una LD"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_price_items_preview
+msgid "Capturar pantalla completa"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__product_color_id
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_price_items_preview
+msgid "Color"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_production__color_code
+msgid "Color Code"
+msgstr "Código de Color"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_production__color_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__color_name
+msgid "Color Name"
+msgstr "Nombre de Color"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__color_name_warning
+msgid "Color Name Warning"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Color Qty."
+msgstr "Can. Colores"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_production__color_recipe_id
+msgid "Color Recipe"
+msgstr "Receta"
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+msgid ""
+"Color changed in line <b>%s</b>: <br/> %s <i class=\"o-mail-Message-"
+"trackingSeparator fa fa-long-arrow-right mx-2 text-600\"></i> <span "
+"class=\"text-info fw-bold\">%s</span>"
+msgstr ""
+"El color en la línea <b>%s</b> ha cambiado: <br/> %s <i class=\"o-mail-"
+"Message-trackingSeparator fa fa-long-arrow-right mx-2 text-600\"></i> <span "
+"class=\"text-info fw-bold\">%s</span>"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Colors"
+msgstr "Colores"
+
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_res_company
+msgid "Companies"
+msgstr "Empresas"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color__company_id
+msgid "Company"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "Composition"
+msgstr "Composición"
+
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_res_config_settings
+msgid "Config Settings"
+msgstr "Ajustes de configuración"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_order_view_form_inherit_sale
+msgid "Create LabDev"
+msgstr "Crear LD"
+
+#. module: idtx_sale_order
+#: model_terms:ir.actions.act_window,help:idtx_sale_order.product_color_action
+msgid "Create a new product color"
+msgstr "Crear nuevo color de producto"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color__create_uid
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color_price__create_uid
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line_size__create_uid
+#: model:ir.model.fields,field_description:idtx_sale_order.field_size_qty_wizard__create_uid
+#: model:ir.model.fields,field_description:idtx_sale_order.field_size_qty_wizard_line__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color__create_date
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color_price__create_date
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line_size__create_date
+#: model:ir.model.fields,field_description:idtx_sale_order.field_size_qty_wizard__create_date
+#: model:ir.model.fields,field_description:idtx_sale_order.field_size_qty_wizard_line__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_account_incoterms__currency_id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_routing_workcenter_operation__currency_id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color_price__currency_id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_title__currency_id
+msgid "Currency"
+msgstr "Moneda"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_price_items_preview
+msgid "Customer:"
+msgstr "Cliente:"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Cylinder Price"
+msgstr "Precio del Cilindro"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "Density"
+msgstr "Densidad"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Density:"
+msgstr "Densidad:"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__printing_design_id
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Design"
+msgstr "Diseño"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__printing_design_name
+msgid "Design Name"
+msgstr "Nombre de Diseño"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Digital Printing Design Service Price Summary"
+msgstr "Detalle de Precios de Estampado Digital"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_account_incoterms__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_account_payment_term__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_batch_add_wizard__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mail_compose_message__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_production__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_routing_workcenter_operation__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color_price__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_template__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_title__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_res_company__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_res_config_settings__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line_size__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_size_qty_wizard__display_name
+#: model:ir.model.fields,field_description:idtx_sale_order.field_size_qty_wizard_line__display_name
+msgid "Display Name"
+msgstr "Nombre en pantalla"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_order_view_form_inherit_sale
+msgid "Edit Sizes Qty Rectilinear"
+msgstr "Editar Tallas y Can. Rectilineo"
+
+#. module: idtx_sale_order
+#. odoo-javascript
+#: code:addons/idtx_sale_order/static/src/price_items/price_items_widget.xml:0
+msgid "Edit prices"
+msgstr "Editar precios"
+
+#. module: idtx_sale_order
+#. odoo-javascript
+#: code:addons/idtx_sale_order/static/src/price_items/price_items_widget.xml:0
+msgid "Editar precios por ítem"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_mail_compose_message
+msgid "Email composition wizard"
+msgstr "Asistente de redacción de correo electrónico"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Fabric Base"
+msgstr "Fondo de Tela"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "Ficha Sitpro"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_account_payment_term__financial_percentage
+msgid "Financial Percentage"
+msgstr "Porcentaje Financiero"
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order_line.py:0
+msgid "Financial Percentage:"
+msgstr "Porcentaje Financiero:"
+
+#. module: idtx_sale_order
+#. odoo-javascript
+#: code:addons/idtx_sale_order/static/src/price_items/price_items_widget.js:0
+msgid "Financial Percentage: %s %"
+msgstr "Porcentaje Financiero: %s %"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "First wash shrinkage"
+msgstr "Encogimiento primero lavado"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "First wash twist"
+msgstr "Revirado primer lavado"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields.selection,name:idtx_sale_order.selection__sale_order__state__for_app
+msgid "For Approval"
+msgstr "Por Aprobar"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "Gauge"
+msgstr "Galga"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_account_incoterms__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_account_payment_term__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_batch_add_wizard__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mail_compose_message__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_production__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_routing_workcenter_operation__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color_price__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_template__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_title__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_res_company__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_res_config_settings__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line_size__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_size_qty_wizard__id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_size_qty_wizard_line__id
+msgid "ID"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.res_config_settings_view_form
+msgid "Idetex Settings"
+msgstr "Ajuste"
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order_line.py:0
+msgid "Incoterm:"
+msgstr ""
+
+#. module: idtx_sale_order
+#. odoo-javascript
+#: code:addons/idtx_sale_order/static/src/price_items/price_items_widget.js:0
+msgid "Incoterm: %s"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_account_incoterms
+msgid "Incoterms"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__is_digital
+msgid "Is Digital"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__is_printing
+msgid "Is Printing"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_product__is_rect
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_template__is_rect
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__is_rect
+msgid "Is Rect"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__is_rotary
+msgid "Is Rotary"
+msgstr ""
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__lab_dev_ids
+msgid "Lab Dev"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__lab_dev_line_id
+msgid "Lab Dev Line"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_order_view_form_inherit_sale
+msgid "Lab Dev's"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.mrp_production_form_view_inherit
+msgid "Labdev Recipe"
+msgstr "Receta LavDev"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color__write_uid
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color_price__write_uid
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line_size__write_uid
+#: model:ir.model.fields,field_description:idtx_sale_order.field_size_qty_wizard__write_uid
+#: model:ir.model.fields,field_description:idtx_sale_order.field_size_qty_wizard_line__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color__write_date
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color_price__write_date
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line_size__write_date
+#: model:ir.model.fields,field_description:idtx_sale_order.field_size_qty_wizard__write_date
+#: model:ir.model.fields,field_description:idtx_sale_order.field_size_qty_wizard_line__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "Length"
+msgstr "Longitud"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "Logo"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_production__manual_color_recipe_id
+msgid "Manual Color Recipe"
+msgstr "Receta Manual"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.mrp_production_form_view_inherit
+msgid "Manual Recipe"
+msgstr "Receta Manual"
+
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_mrp_production
+msgid "Manufacturing Order"
+msgstr "Orden de fabricación"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_res_company__max_discount
+#: model:ir.model.fields,field_description:idtx_sale_order.field_res_config_settings__max_discount
+msgid "Max. Discount"
+msgstr "Descuento Máx."
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.res_config_settings_view_form
+msgid "Maximum Discount"
+msgstr "Descuento Máximo"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.res_config_settings_view_form
+msgid "Maximum Settings"
+msgstr "Ajuste de Máximos"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.res_config_settings_view_form
+msgid "Maximum discount authorized for salesmans without approval."
+msgstr "Descuento máximo autorizado por vendedores sin aprobación."
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "Mesh Lenght"
+msgstr "Longitud de Malla"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_portal_hide_amounts_when_quote
+msgid "Min Qty"
+msgstr "Cant. Mín."
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Min. Qty."
+msgstr "Cant. Mín."
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__min_qty
+msgid "Minimum Qty"
+msgstr "Cant. Mínima"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Mitchell Admin"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "NE"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__need_labdev
+msgid "Need LabDev?"
+msgstr "Necesita LD?"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "Needles"
+msgstr "Agujas"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "Notes"
+msgstr "Observaciones"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__operation_ids
+msgid "Operations"
+msgstr "Operaciones"
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order_line.py:0
+msgid "PRINTING"
+msgstr "ESTAMPADO"
+
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_account_payment_term
+msgid "Payment Terms"
+msgstr "Términos de pago"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_routing_workcenter_operation__per_title
+msgid "Per Thread Title"
+msgstr "Por Título de Hilado"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields.selection,name:idtx_sale_order.selection__sale_order__sale_type__pilot
+msgid "Pilot"
+msgstr "Piloto"
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+msgid "Please solve all the warnings first."
+msgstr "Por favor resuelva las adevertencias peimero."
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "Plies"
+msgstr "Cabos"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_price_items_preview
+msgid "Price"
+msgstr "Precio"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Price / Strike"
+msgstr "Precio / Strike Off"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Price / mt."
+msgstr "Precio / mt."
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__price_items
+msgid "Price Items"
+msgstr "Items de Precio"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.mrp_routing_workcenter_operation_form_view_inherit
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_order_view_form_inherit_sale
+msgid "Prices"
+msgstr "Precios"
+
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_product_template
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_price_items_preview
+msgid "Product"
+msgstr "Producto"
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+msgid "Product %s color %s does not match lab color name %s."
+msgstr ""
+"El producto %s con color %s no concuerda con el nombre de color %s de la LD."
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+msgid ""
+"Product %s does not have any bom. Please check with product development."
+msgstr "El producto %s no tiene LdM. Porfavor revisar con desarrollo."
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+msgid "Product %s has an old price. Quotation is %s days old"
+msgstr ""
+"El producto %s tiene un precio antiguo. La cotización tiene %s dias de "
+"vencido"
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+msgid ""
+"Product %s has product [%s] %s on its bom and does not have a price in %s "
+"price list. The price is obtained from its own sale price."
+msgstr ""
+"El producto %s tiene [%s] %s en su LdM y no tiene precio en la lista %s El "
+"precio se obtiene directamente del producto."
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order_line.py:0
+msgid ""
+"Product %s with color %s can't be found in any quotation or sale order. "
+"Please quotate first."
+msgstr ""
+"El producto %s con color %s no se encuentra en ninguna cotizacion o pedido. "
+"Por favor cotice primero."
+
+#. module: idtx_sale_order
+#: model:ir.actions.act_window,name:idtx_sale_order.product_color_action
+#: model:ir.model,name:idtx_sale_order.model_product_color
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color_price__product_color_id
+#: model:ir.ui.menu,name:idtx_sale_order.sale_product_color_menu
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.product_color_tree_view
+msgid "Product Color"
+msgstr "Color de Producto"
+
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_product_color_price
+msgid "Product Color Price"
+msgstr "Precio de Color de Producto"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line_size__product_qty
+#: model:ir.model.fields,field_description:idtx_sale_order.field_size_qty_wizard_line__product_qty
+msgid "Product Qty"
+msgstr "Cant. Producto"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "Product Technical Sheet"
+msgstr "Ficha Técnica de Producto"
+
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_product_title
+msgid "Product Title"
+msgstr "Título"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__production_id
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Production"
+msgstr "Producción"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__is_company_produce
+msgid "Production Company"
+msgstr "Compañía Productiva"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__production_count
+msgid "Production Count"
+msgstr "Contador de Producción"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__production_loss
+msgid "Production Loss"
+msgstr "Merma de Producción"
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order_line.py:0
+msgid "Production Loss:"
+msgstr "Merma de Producción:"
+
+#. module: idtx_sale_order
+#. odoo-javascript
+#: code:addons/idtx_sale_order/static/src/price_items/price_items_widget.js:0
+msgid "Production Loss: %s %"
+msgstr "Merma de Producción: %s %"
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/mrp_production.py:0
+msgid "Production must have a recipe."
+msgstr "La producción debe tener una receta."
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_order_view_form_inherit_sale
+msgid "Productions"
+msgstr "Producciones"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "Program"
+msgstr "Programa"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__quotation_id
+msgid "Quotation"
+msgstr "Cotización"
+
+#. module: idtx_sale_order
+#: model:ir.actions.act_window,name:idtx_sale_order.sale_quotation_action
+#: model:ir.ui.menu,name:idtx_sale_order.idtx_quotation_menu
+msgid "Quotations"
+msgstr "Cotizaciones"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Range"
+msgstr "Rango"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Raport"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_order_view_form_inherit_sale
+msgid "Request Approval"
+msgstr "Solicitar Aprobación"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color__is_lab_color
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__is_lab_color
+msgid "Require LabDev"
+msgstr "LD Requerido"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Rotary Printing Design Service Price Summary"
+msgstr "Detalle de Precios de Estampado Rotativo"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields.selection,name:idtx_sale_order.selection__sale_order__sale_type__sale
+msgid "Sale"
+msgstr "Venta"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_order_view_form_inherit_sale
+msgid "Sale Order"
+msgstr "Pedido de Venta"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_production__sale_order_line_id
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line_size__line_id
+msgid "Sale Order Line"
+msgstr "Línea de Pedido de Venta"
+
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_sale_order_line_size
+msgid "Sale Order Line Size"
+msgstr "Línea de Talla de línea de venta"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_price_items_preview
+msgid "Sale Order:"
+msgstr "Pedido de Venta:"
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__sale_order_ids
+msgid "Sale Orders"
+msgstr "Pedidos de Venta"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__sale_type
+msgid "Sale Type"
+msgstr "Tipo de Venta"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_order_view_form_inherit_sale
+msgid "Sales"
+msgstr "Ventas"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__sale_count
+msgid "Sales Count"
+msgstr "Contador de Ventas"
+
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_sale_order
+msgid "Sales Order"
+msgstr "Orden de venta"
+
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_sale_order_line
+msgid "Sales Order Line"
+msgstr "Línea de la orden de venta"
+
+#. module: idtx_sale_order
+#: model:ir.actions.act_window,name:idtx_sale_order.sale_order_action
+#: model:ir.ui.menu,name:idtx_sale_order.idtx_sale_order_menu
+msgid "Sales Orders"
+msgstr "Pedidos de Ventas"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields.selection,name:idtx_sale_order.selection__sale_order__sale_type__sample
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Sample"
+msgstr "Muestra"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Sample Price"
+msgstr "Precio de Muestra"
+
+#. module: idtx_sale_order
+#. odoo-javascript
+#: code:addons/idtx_sale_order/static/src/price_items/price_items_widget.xml:0
+msgid "Save"
+msgstr "Guardar"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "Scrap"
+msgstr "Merma"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line_size__sequence
+#: model:ir.model.fields,field_description:idtx_sale_order.field_size_qty_wizard_line__sequence
+msgid "Sequence"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields.selection,name:idtx_sale_order.selection__sale_order__sale_type__service
+msgid "Service"
+msgstr "Servicio"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line_size__size
+#: model:ir.model.fields,field_description:idtx_sale_order.field_size_qty_wizard_line__size
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "Size"
+msgstr "Talla"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__size_qty_ids
+msgid "Size / Qty"
+msgstr "Cant. / Talla"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.view_sizq_qty_wizard_form
+msgid "Size Qty (Rectilinear)"
+msgstr "Cant. Talla (Rectilineo)"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_size_qty_wizard__line_ids
+msgid "Sizes"
+msgstr "Tallas"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__state
+msgid "Status"
+msgstr "Estado"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Tech Data"
+msgstr "Datos Técnicos"
+
+#. module: idtx_sale_order
+#: model:ir.actions.report,name:idtx_sale_order.action_report_technical_sheet_customer
+msgid "Technical Sheet"
+msgstr "Ficha Técnica"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__lab_dev_count
+msgid "Technical Sheet Count"
+msgstr "Contador de Fichas Tecnicas"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Technique"
+msgstr "Técnica"
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+msgid ""
+"The type prices of %s operation is by color. The color %s does not exists in"
+" the operation color list, product %s."
+msgstr ""
+"El tipo de precios de la operación %s es por color. El color %s no existe en"
+" la  lista de colores de la operacion, producto %s"
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order.py:0
+msgid "This sale order has no price list or the option is not activated."
+msgstr ""
+"Este pedido de venta no tiene lista de precios o la opción no esta activada"
+
+#. module: idtx_sale_order
+#. odoo-javascript
+#: code:addons/idtx_sale_order/static/src/price_items/price_items_widget.xml:0
+msgid "Total"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "Tubular"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_routing_workcenter_operation__type_prices
+msgid "Type Prices"
+msgstr "Tipo de Precios"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_account_incoterms__unit_price
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_routing_workcenter_operation__unit_price
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color_price__unit_price
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_title__unit_price
+msgid "Unit Price"
+msgstr "Precio Unitario"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_order_view_form_inherit_sale
+msgid "Update name"
+msgstr "Actualizar Nombre"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "Weave type"
+msgstr "Tipo de Tejido"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__weaving_loss
+msgid "Weaving Loss"
+msgstr "Merma de Tejido"
+
+#. module: idtx_sale_order
+#. odoo-python
+#: code:addons/idtx_sale_order/models/sale_order_line.py:0
+msgid "Weaving Loss:"
+msgstr "Merma de Tejido:"
+
+#. module: idtx_sale_order
+#. odoo-javascript
+#: code:addons/idtx_sale_order/static/src/price_items/price_items_widget.js:0
+msgid "Weaving Loss: %s %"
+msgstr "Merma de Tejido: %s %"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "Widening"
+msgstr "Ensanchamiento"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "Width"
+msgstr "Ancho"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Width:"
+msgstr "Ancho:"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_size_qty_wizard_line__wizard_id
+msgid "Wizard"
+msgstr "Asistente"
+
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_size_qty_wizard_line
+msgid "Wizard Line Size Qty Rectilinear"
+msgstr "Asistente de Cantidad por línea de Tallas "
+
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_size_qty_wizard
+msgid "Wizard Size Qty Rectilinear"
+msgstr "Asistente de Cant. Tallas Rectilineo"
+
+#. module: idtx_sale_order
+#: model:ir.model,name:idtx_sale_order.model_mrp_routing_workcenter_operation
+msgid "Workcenter Operation"
+msgstr "Operación"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_technical_sheet_customer_document
+msgid "Yield"
+msgstr "Rendimiento"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
+msgid "Yield:"
+msgstr "Rendimiento:"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__dieying_info
+msgid "dieying_info"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__diff_days
+msgid "diff_days"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__dis_app
+msgid "dis_app?"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_portal_sign_modal_remove_amount_sentence
+msgid "for the"
+msgstr "para el presupuesto por un importe de"
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__is_printing
+msgid "is_printing"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__is_quote
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__parent_is_quote
+msgid "is_quote"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__is_salesman
+msgid "is_salesman?"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__is_weaving
+msgid "is_weaving"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_production__manual_recipe
+msgid "manual_recipe"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_product_color_price__mrwo_id
+msgid "mrp_routing_workcenter_operation"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__need_approval
+msgid "need_approval?"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_routing_workcenter_operation__product_color_price_ids
+msgid "product_color_price"
+msgstr ""
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_portal_sign_modal_remove_amount_sentence
+msgid "quote."
+msgstr "."
+
+#. module: idtx_sale_order
+#: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__weaving_warning
+msgid "weaving_warning"
+msgstr ""

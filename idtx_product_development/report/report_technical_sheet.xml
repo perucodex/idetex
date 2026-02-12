@@ -44,12 +44,24 @@
         <table class="table o_main_table">
           <tbody style="font-size: 0.7rem">
             <tr>
+              <td style="padding: 2px;">Composition</td>
+              <td colspan="5" style="
+                padding: 2px 4px;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                line-height: 1.1;
+                vertical-align: top;
+              "><t t-esc="doc.fabric_composition"/>
+              </td>
+            </tr>
+            <tr>
               <td style="padding: 2px;">Program</td>
               <td style="padding: 2px;"><t t-esc="doc.program"/></td>
-              <td style="padding: 2px;">Composition</td>
-              <td style="padding: 2px;"><t t-esc="doc.fabric_composition"/></td>
               <td style="padding: 2px;">ATX</td>
               <td style="padding: 2px;"><t t-esc="doc.atx"/></td>
+              <td style="padding: 2px;">Ficha Sitpro</td>
+              <td style="padding: 2px;"><t t-esc="doc.sitpro_sheet"/></td>
             </tr>
             <tr>
               <td style="padding: 2px;">Density</td>
@@ -65,11 +77,11 @@
               <td style="padding: 2px;">First wash twist</td>
               <td style="padding: 2px;"><t t-esc="doc.first_wash_twist"/></td>
               <td style="padding: 2px;">Yield</td>
-              <td style="padding: 2px;"><t t-raw="'{:.2f} %'.format(doc.yield_meter * 100)"/></td>
+              <td style="padding: 2px;"><t t-raw="'{:.2f} m/kg'.format(doc.yield_meter)"/></td>
             </tr>
             <tr>
               <td style="padding: 2px;">Scrap</td>
-              <td style="padding: 2px;"><t t-esc="'{:.2f} %'.format(doc.scrap)"/></td>
+              <td style="padding: 2px;"><t t-esc="'{:.2f} %'.format(doc.scrap * 100)"/></td>
               <td style="padding: 2px;">Weave type</td>
               <td style="padding: 2px;"><span t-field="doc.weave_type"/></td>
               <td style="padding: 2px;">Mesh Lenght</td>
@@ -112,35 +124,90 @@
             </div>
           </div>
         </t>
+<style>
+  /* Bloque de proceso */
+  .process-block {
+    margin: 0 !important;
+    padding: 0 !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Tabla de procesos */
+  .process-block table {
+    margin: 0 !important;
+    border-collapse: collapse;
+  }
+
+  /* Título del proceso */
+  .process-title td {
+    padding: 4px 6px !important;
+    line-height: 1.5;
+  }
+
+  /* Filas normales de parámetros */
+  .process-block td {
+    padding: 2px 4px !important;
+    line-height: 1.5;
+    vertical-align: top;
+  }
+</style>
 
         <!-- Tabla principal de procesos -->
-        <table class="table o_main_table">
-          <t t-foreach="doc.route_line_ids" t-as="p" t-key="p.id">
-            <thead style="font-size: 0.7rem">
-                <tr>
-                  <td colspan="10" style="background-color: #c2c2c2;"><t t-esc="p.operation_id.name"/></td>
-                </tr>
-            </thead>
-            <tbody style="font-size: 0.7rem">
-              <t t-set="lines" t-value="p.line_parameter_ids"/>
-              <t t-foreach="range(0, len(lines), 4)" t-as="i">
-                <tr>
-                  <t t-foreach="lines[i:i+4]" t-as="line">
-                    <td style="padding: 2px;"><strong><t t-esc="line.name"/></strong></td>
-                    <td style="padding: 2px;"><t t-esc="line.value"/></td>
-                  </t>
-                  <!-- Completa con celdas vacías si faltan -->
-                  <t t-set="faltan" t-value="4 - len(lines[i:i+4])"/>
-                  <t t-if="faltan > 0">
-                    <t t-foreach="range(faltan)" t-as="j">
-                      <td style="padding: 2px;"></td><td style="padding: 2px;"></td>
-                    </t>
-                  </t>
-                </tr>
-              </t>
-            </tbody>
+  <t t-foreach="doc.route_line_ids" t-as="p" t-key="p.id">
+  <div class="process-block">
+ <table class="table o_main_table">
+    <tbody style="
+        font-size: 0.7rem;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    ">
+      <tr>
+        <td colspan="10" style="background-color: #c2c2c2;">
+          <t t-esc="p.operation_id.name"/>
+        </td>
+      </tr>
+      <t t-set="lines" t-value="p.line_parameter_ids"/>
+      <t t-set="normal_lines" t-value="[l for l in lines if not l.is_observation]"/>
+      <t t-set="obs_lines" t-value="[l for l in lines if l.is_observation]"/>
+
+      <t t-foreach="range(0, len(normal_lines), 4)" t-as="i">
+        <tr>
+          <t t-foreach="normal_lines[i:i+4]" t-as="line">
+            <td style="padding: 2px;"><strong><t t-esc="line.name"/></strong></td>
+            <td style="padding: 2px;"><t t-esc="line.value"/></td>
           </t>
-        </table>
+          <t t-set="faltan" t-value="4 - len(normal_lines[i:i+4])"/>
+          <t t-if="faltan > 0">
+            <t t-foreach="range(faltan)" t-as="j">
+              <td></td><td></td>
+            </t>
+          </t>
+        </tr>
+      </t>
+      <t t-foreach="obs_lines" t-as="obs">
+        <tr>
+          <td colspan="8" style="padding: 6px;">
+            <strong><t t-esc="obs.name"/></strong>
+          </td>
+        </tr>
+        <tr>
+          <td colspan="8" style="
+            padding: 2px 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            line-height: 1.1;
+            vertical-align: top;
+          "><t t-esc="obs.value"/>
+          </td>
+        </tr>
+      </t>
+    </tbody>
+</table>
+  </div>
+  </t>
+
         
         <!-- Imprime solo si es rectilineo y tiene datos -->
         <t t-if="doc.weave_type == 'rect' and doc.size_chart_ids">

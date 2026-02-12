@@ -55,10 +55,13 @@
 
         <!-- Agregar la celda correspondiente antes de la descripción -->
         <xpath expr="//td[@id='product']" position="before">
-            <td name="td_item" class="text-start">
-                <span t-esc="line_index + 1"/>  <!-- o cualquier contador o campo que quieras mostrar -->
+            <td class="text-start">
+                <t t-if="not line.display_type">
+                    <span t-esc="len(o.order_line.filtered(lambda l: not l.display_type and l.sequence &lt;= line.sequence))"/>
+                </t>
             </td>
         </xpath>
+        
         <!-- 1. Agregar columna en el encabezado -->
         <xpath expr="//th[@name='th_discount']" position="after">
             <th name="th_price_unit_discounted" class="text-end" t-if="any(line.discount for line in o.order_line if not line.display_type)">
@@ -73,11 +76,29 @@
             </td>
         </xpath>
 
+        <xpath expr="//th[@name='th_description']" position="after">
+            <th name="th_price_unit_discounted" t-if="any(line.analytic_distribution for line in o.order_line if not line.display_type)">
+                <strong>Distr.</strong>
+            </th>
+        </xpath>
+
+        <xpath expr="//table[hasclass('o_main_table')]//tbody//tr[not(hasclass('o_line_section')) and not(hasclass('o_line_note'))]//td[position()=2]" position="after">
+            <t t-if="line.analytic_distribution and not line.display_type">
+                <td>
+                    <span t-foreach="line.analytic_distribution" t-as="distribution">
+                        <span t-out="line.env['account.analytic.account'].browse(int(distribution))[0].code"/>:
+                        <span t-out="'%.2f' % (line.analytic_distribution.get(distribution))"/>%
+                        <br/>
+                    </span>
+                </td>
+            </t>
+        </xpath>
+
         <!-- Crear la columna correspondiente en el tbody -->
         <!-- <xpath expr="//td[@id='product']/span[1]" position="before">
             <span t-field="line.product_id"/>
-        </xpath> -->
-        
+            </xpath> -->
+
     </template>
     
 </odoo>

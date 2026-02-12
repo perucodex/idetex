@@ -19,7 +19,7 @@ class TechnicalSheet(models.Model):
     # Tejido
     stylo = fields.Char('Stylo')
     program = fields.Char('Program')
-    fabric_composition = fields.Char('Fabric Composition')
+    fabric_composition = fields.Text('Fabric Composition')
     atx = fields.Char('ATX')
     density = fields.Integer('Density')
     width = fields.Float('Width')
@@ -27,7 +27,8 @@ class TechnicalSheet(models.Model):
     first_wash_shrinkage = fields.Char('First Wash Shrinkage')
     first_wash_twist = fields.Char('First Wash Twist')
     yield_meter = fields.Float('Yield', compute='_compute_yield_meter')
-    scrap = fields.Float('Scrap', default=0.01)
+    scrap = fields.Float('Weaving Scrap', default=0.01)
+    prod_scrap = fields.Float('Production Scrap', compute='_compute_prod_scrap')
     weave_type = fields.Selection(related='analysis_id.weave_type', store=True)
     mesh_length = fields.Float('Mesh Length')
     # Datos de crudo
@@ -55,58 +56,18 @@ class TechnicalSheet(models.Model):
     user_id = fields.Many2one('res.users','Prepared by',default=lambda self: self.env.user)
     size_chart_ids = fields.One2many('technical.size.line', 'technical_id', string='Size Chart')
     route_line_ids = fields.One2many('technical.route.line', 'technical_id', string='Route Line')
+    bom_id = fields.Many2one('mrp.bom', string='LdM')
+    mrp_base_process_id = fields.Many2one(related='analysis_id.mrp_base_process_id')
+
+    def _compute_prod_scrap(self):
+        for rec in self:
+            rec.prod_scrap = 0.09
 
     @api.depends('density','width')
     def _compute_yield_meter(self):
         for rec in self:
             rec.yield_meter = 1000 / (rec.density * (rec.width / 100)) if (rec.density and rec.width) else 1
 
-    # def action_fetch_from_mysql(self):
-
-    #     connector = MySQLConnector(
-    #         host="170.233.144.110",
-    #         user="root",
-    #         password="Server01",
-    #         database="prueba_covatex"
-    #     )
-    #     # _logger.info("clave1:******************************" + MySQLConnector.decrypt_data('X9vPTUu4s85CrJqn7IilfudhiMVlBvKN0mqx9yrhjQyL91VOKWyV/GQROQ5zqWlH'))
-    #     # print(str(round(self.density, 2)))
-    #     values = {
-    #         'id_usuarios': 23,
-    #         'fecha': fields.Date.context_today(self),
-    #         'articulo': MySQLConnector.encrypt_data(self.analysis_id.product_description or ''),
-    #         'cod_articulo': MySQLConnector.encrypt_data(self.analysis_id.product_code or ''),
-    #         'cod_cliente': MySQLConnector.encrypt_data(str(self.partner_id.id) or ''),
-    #         'programa': MySQLConnector.encrypt_data(self.program or ''),
-    #         'composicion_tela': MySQLConnector.encrypt_data(self.fabric_composition or ''),
-    #         'atx': MySQLConnector.encrypt_data(self.atx or ''),
-    #         'densidad': MySQLConnector.encrypt_data(str(round(self.density, 2)) or ''),
-    #         'ancho': MySQLConnector.encrypt_data(str(round(self.width, 2)) or ''),
-    #         'primera_lav_encog': MySQLConnector.encrypt_data(self.first_wash_shrinkage or ''),
-    #         'primera_lav_revir': MySQLConnector.encrypt_data(self.first_wash_twist or ''),
-    #         'rendimiento': MySQLConnector.encrypt_data(str(self.yield_meter) or ''),
-    #         'merma': MySQLConnector.encrypt_data(str(self.scrap) or ''),
-    #         'tipo_tejido': MySQLConnector.encrypt_data('ABIERTO' if self.weave_type == 'open' else 'TUBULAR'),
-    #         'tipo_operacion': MySQLConnector.encrypt_data('VENTA'),
-    #         'partida': MySQLConnector.encrypt_data(self.batch or ''),
-    #         'galga': MySQLConnector.encrypt_data(self.analysis_id.gauge_id.code or ''),
-    #         'observacion': MySQLConnector.encrypt_data(self.notes or ''),
-    #         'cantidad_procesos': MySQLConnector.encrypt_data(str(len(self.route_line_ids)) or ''),
-    #         'hilanderia': MySQLConnector.encrypt_data(''),
-    #     }
-    #     connector.insert("rutas", values)
-
-    # @api.onchange('gauge_id','width','density')
-    # def _onchange_product_code(self):
-    #     for rec in self:
-    #         rec.product_code = (rec.analysis_id.product_family_id.code or '') + \
-    #                 (rec.analysis_id.product_title_id.code or '') + \
-    #                 (rec.analysis_id.product_fiber_id.code or '') + \
-    #                 (rec.gauge_id.code or '') + \
-    #                 (rec.analysis_id.product_appearance_id.code or '') + \
-    #                 (str(int(rec.width)).replace('.','') or '') + \
-    #                 (str(int(rec.density)).replace('.','') or '')
-                
     #=== CRUD METHODS ===#
 
     @api.model_create_multi
@@ -134,12 +95,12 @@ class TechnicalSheet(models.Model):
                 'operation_id': route.operation_id.id,
                 'workcenter_id': route.workcenter_id.id,
             }) for route in self.route_line_ids.sorted(key=lambda r: r.sequence)],
-            'bom_line_ids': [Command.create({'product_id': f.product_template_id.product_variant_id.id, 'product_qty': f.percentage}) for f in analysis_line.fiber_ids],
+            'bom_line_ids': [Command.create({'product_id': f.product_template_id.product_variant_id.id, 'product_qty': f.percentage}) for f in analysis_line.fiber_ids if f.product_template_id and f.percentage],
         })
         # Consumir el hilo en tejeduria
         # Solo si existe un producto de hilado
         if any(p.is_thread for p in analysis_line.fiber_ids.product_template_id.product_variant_id):
-            weaving_operation = bom_id.operation_ids.filtered(lambda o: o.operation_id.workcenter_id.operation_type == 'weaving')
+            weaving_operation = bom_id.operation_ids.filtered(lambda o: o.operation_id.operation_type == 'weaving')
             if weaving_operation:
                 for l in bom_id.bom_line_ids:
                     l.operation_id = weaving_operation
@@ -148,6 +109,7 @@ class TechnicalSheet(models.Model):
                 if bom_id.bom_line_ids:
                     raise UserError(_('There is no weaving operation in bom. Please check your product routing!'))
         self.product_id.bom_ids += bom_id
+        self.bom_id = bom_id
 
     def action_return(self):
         self.state = 'done' if self.state == 'prod' else 'draft'
@@ -190,4 +152,5 @@ class RouteLineParameter(models.Model):
 
     technical_route_id = fields.Many2one('technical.route.line', string='Technical Routing Line')
     name = fields.Char('Parameter')
-    value = fields.Char('Value')
+    value = fields.Text('Value')
+    is_observation = fields.Boolean('Observación?')

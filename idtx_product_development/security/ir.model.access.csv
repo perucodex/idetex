@@ -10,6 +10,7 @@ access_product_family,product_family,model_product_family,base.group_user,1,1,1,
 access_product_fiber,product_fiber,model_product_fiber,base.group_user,1,1,1,1
 access_product_gauge,product_gauge,model_product_gauge,base.group_user,1,1,1,1
 access_product_title,product_title,model_product_title,base.group_user,1,1,1,1
+access_ligament_type,ligament_type,model_ligament_type,base.group_user,1,1,1,1
 access_technical_sheet,access_technical_sheet,model_technical_sheet,base.group_user,1,1,1,1
 access_technical_size_line,access_technical_size_line,model_technical_size_line,base.group_user,1,1,1,1
 access_technical_route_line,access_technical_route_line,model_technical_route_line,base.group_user,1,1,1,1
@@ -17,3 +18,4 @@ access_route_line_parameter,access_route_line_parameter,model_route_line_paramet
 access_configurate_svg_example,access_configurate_svg_example,model_configurate_svg_example,base.group_user,1,1,1,1
 access_mrp_base_process,access_mrp_base_process,model_mrp_base_process,base.group_user,1,1,1,1
 access_mrp_base_process_line,access_mrp_base_process_line,model_mrp_base_process_line,base.group_user,1,1,1,1
+access_split_roll,split_roll,model_split_roll,base.group_user,1,1,1,1

@@ -27,12 +27,16 @@ Localización peruana para trabajar planillas de todo tipo
     # always loaded
     'data': [
         'data/hr_afp.xml',
+        'data/hr_payroll_structure_type.xml',
         'data/hr_payroll_structure.xml',
+        'data/hr_payslip_input_type.xml',
         'data/hr_salary_rule_category.xml',
-        'data/hr_salary_rule.xml',
+        'data/hr_salary_rule_weekly_textil.xml',
+        'data/hr_work_entry_type.xml',
         'security/ir.model.access.csv',
         'views/hr_afp_views.xml',
         'views/hr_contract_salary_views.xml',
+        'views/res_config_settings_views.xml',
     ],
 }
 

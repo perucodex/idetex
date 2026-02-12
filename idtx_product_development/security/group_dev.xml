@@ -24,7 +24,7 @@
         </record>
 
         <!-- Reglas para multi-company -->
-        <record id="product_analysis_company_rule" model="ir.rule">
+        <!-- <record id="product_analysis_company_rule" model="ir.rule">
             <field name="name">Product Analysis multi-company</field>
             <field name="model_id" ref="model_product_analysis"/>
             <field name="domain_force">[('company_id', 'parent_of', company_ids)]</field>
@@ -34,7 +34,7 @@
             <field name="name">Technical Sheet multi-company</field>
             <field name="model_id" ref="model_technical_sheet"/>
             <field name="domain_force">[('company_id', 'parent_of', company_ids)]</field>
-        </record>
+        </record> -->
 
     </data>
 </odoo>

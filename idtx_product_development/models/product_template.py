@@ -1,5 +1,4 @@
 from odoo import fields, models, api, _
-import hashlib
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'

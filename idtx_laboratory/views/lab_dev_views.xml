@@ -7,6 +7,7 @@
             <field name="arch" type="xml">
                 <form string="Lab Dev">
                     <header>
+                        <button name="action_development" type="object" string="Develop" class="oe_highlight" invisible="state != 'draft'" confirm="Are you sure you want to develop this colors ?"/>
                         <field name="state" widget="statusbar"/>
                     </header>
                     <sheet>
@@ -35,11 +36,24 @@
                             </group>
                         </group>
                         <notebook>
-                            <page name="color_page" string="Colors">
+                            <page name="color_page" string="Colors" invisible="state == 'draft'">
                                 <field name="lab_dev_line_ids" context="{'form_view_ref': 'idtx_laboratory.lab_dev_line_view_form'}">
                                     <list editable="top" open_form_view="True">
                                         <field name="product_id" readonly="1"/>  
                                         <field name="color_name" readonly="1"/>
+                                        <field name="color_code" readonly="1"/>
+                                        <field name="color" widget="color" readonly="1"/>
+                                        <field name="color" string="Hex" readonly="1"/>
+                                        <field name="color_recipe_ids"/>
+                                        <field name="state" widget="badge" decoration-success="state == 'approved'"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page name="color_page_edit" string="Colors" invisible="state != 'draft'">
+                                <field name="lab_dev_line_ids" context="{'form_view_ref': 'idtx_laboratory.lab_dev_line_view_form'}">
+                                    <list editable="bottom">
+                                        <field name="product_id"/>  
+                                        <field name="color_name"/>
                                         <field name="color_code" readonly="1"/>
                                         <field name="color" widget="color" readonly="1"/>
                                         <field name="color" string="Hex" readonly="1"/>
@@ -68,6 +82,31 @@
                     <field name="lab_dev_line_ids"/>
                     <field name="state" widget="badge" decoration-success="state == 'approved'"/>
                 </list>
+            </field>
+        </record>
+
+        <record id="lab_dev_view_search" model="ir.ui.view">
+            <field name="name">lab.dev.view.search</field>
+            <field name="model">lab.dev</field>
+            <field name="arch" type="xml">
+                <search string="">
+                    <field name="name"/>
+                    <field name="lab_dev_date"/>
+                    <field name="sale_order_id"/>
+                    <field name="partner_id"/>
+                    <field name="lab_dev_line_ids" string="Product" filter_domain="[('lab_dev_line_ids.product_id', 'ilike', self)]"/>
+                    <field name="lab_dev_line_ids" string="Color Code" filter_domain="[('lab_dev_line_ids.color_code', 'ilike', self)]"/>
+                    <field name="lab_dev_line_ids" string="Color Name" filter_domain="[('lab_dev_line_ids.color_name', 'ilike', self)]"/>
+                    <filter name="approved" string="Approved" domain="[('state','=','approved')]"/>
+                    <filter name="test" string="Test" domain="[('state','=','test')]"/>
+                    <group>
+                        <filter string="Lav Dev Date" name="group_by_lab_dev_date" domain="[]" context="{'group_by': 'lab_dev_date'}"/>
+                        <filter string="Sale Order" name="group_by_sale_order" domain="[]" context="{'group_by': 'sale_order_id'}"/>
+                        <filter string="Customer" name="group_by_partner" domain="[]" context="{'group_by': 'partner_id'}"/>
+                        <!-- <filter string="Color Code" name="group_by_color_code" domain="[]" context="{'group_by': 'color_code'}"/>
+                        <filter string="Color Name" name="group_by_color_name" domain="[]" context="{'group_by': 'color_name'}"/> -->
+                    </group>
+                </search>
             </field>
         </record>
 

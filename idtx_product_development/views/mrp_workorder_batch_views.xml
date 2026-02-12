@@ -6,10 +6,12 @@
         <field name="model">mrp.workorder.batch</field>
         <field name="inherit_id" ref="idtx_mrp.mrp_workorder_batch_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//notebook/page/field[@name='wo_roll_ids']/list/field[@name='gross_weight']" position="after">
+                <button name="split" type="object" class="oe_highlight" string="Split" column_invisible="parent.state != 'draft'"/>
+            </xpath>
             <xpath expr="//notebook/page/field[@name='wo_roll_ids']/list/field[@name='uom_id']" position="after">
                 <field name="size_id"/>
             </xpath>
-
             <xpath expr="//notebook/page/field[@name='wo_roll_ids']/form//field[@name='uom_id']" position="after">
                 <field name="size_id"/>
             </xpath>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="product_analysis_form_inherit_view" model="ir.ui.view">
+            <field name="name">product.analysis.list.inherit</field>
+            <field name="model">product.analysis</field>
+            <field name="inherit_id" ref="idtx_product_development.product_analysis_form_view"/>
+            <field name="arch" type="xml">
+                <field name="state" position="attributes">
+                    <attribute name="statusbar_visible">draft,prod</attribute>
+                </field>
+                <field name="partner_id" position="after">
+                    <field name="is_problem" invisible="1" force_save="1"/>
+                </field>
+                <field name="partner_id" position="attributes">
+                    <attribute name="readonly">state == 'prod' or state == 'impo' and not is_problem</attribute>
+                    <attribute name="force_save">1</attribute>
+                </field>
+                <field name="product_family_id" position="attributes">
+                    <attribute name="readonly">state == 'prod' or state == 'impo' and not is_problem</attribute>
+                    <attribute name="force_save">1</attribute>
+                </field>
+                <field name="product_appearance_id" position="attributes">
+                    <attribute name="readonly">state == 'prod' or state == 'impo' and not is_problem</attribute>
+                    <attribute name="force_save">1</attribute>
+                </field>
+                <field name="product_fiber_id" position="attributes">
+                    <attribute name="readonly">state == 'prod' or state == 'impo' and not is_problem</attribute>
+                    <attribute name="force_save">1</attribute>
+                </field>
+                <field name="product_title_id" position="attributes">
+                    <attribute name="readonly">state == 'prod' or state == 'impo' and not is_problem</attribute>
+                    <attribute name="force_save">1</attribute>
+                </field>
+                <field name="gauge_id" position="attributes">
+                    <attribute name="readonly">state == 'prod' or state == 'impo' and not is_problem</attribute>
+                    <attribute name="force_save">1</attribute>
+                </field>
+            </field>
+        </record>
+
+        <record id="view_product_analysis_inherit_tree" model="ir.ui.view">
+            <field name="name">product.analysis.list.inherit</field>
+            <field name="model">product.analysis</field>
+            <field name="inherit_id" ref="idtx_product_development.product_analysis_tree_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//list" position="inside">
+                    <header>
+                        <button name="sync_from_sql" string="Update" type="object"/>
+                    </header>
+                </xpath>
+                <xpath expr="//list" position="attributes">
+                    <attribute name="decoration-danger">is_problem</attribute>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="analysis_weaving_data_view_tree_inherit_view" model="ir.ui.view">
+            <field name="name">analysis.weaving.data.list.inherit</field>
+            <field name="model">analysis.weaving.data</field>
+            <field name="inherit_id" ref="idtx_product_development.analysis_weaving_data_view_tree"/>
+            <field name="arch" type="xml">
+                <field name="technical_sheet_id" position="after">
+                    <field name="sitpro_sheet"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="technical_sheet_form_view_inherit_view" model="ir.ui.view">
+            <field name="name">technical.sheet.form.inherit</field>
+            <field name="model">technical.sheet</field>
+            <field name="inherit_id" ref="idtx_product_development.technical_sheet_form_view"/>
+            <field name="arch" type="xml">
+                <field name="product_code" position="after">
+                    <field name="sitpro_sheet" readonly="1"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="technical_sheet_tree_view_inherit_view" model="ir.ui.view">
+            <field name="name">technical.sheet.list.inherit</field>
+            <field name="model">technical.sheet</field>
+            <field name="inherit_id" ref="idtx_product_development.technical_sheet_tree_view"/>
+            <field name="arch" type="xml">
+                <field name="mesh_length" position="after">
+                    <field name="sitpro_sheet" optional="hide"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="technical_sheet_search_view_inherit_view" model="ir.ui.view">
+            <field name="name">technical.sheet.list.inherit</field>
+            <field name="model">technical.sheet</field>
+            <field name="inherit_id" ref="idtx_product_development.technical_sheet_search_view"/>
+            <field name="arch" type="xml">
+                <field name="name" position="after">
+                    <field name="sitpro_sheet"/>
+                </field>
+            </field>
+        </record>
+
+    </data>
+</odoo>

@@ -21,8 +21,16 @@ class MrpWorkorderRoll(models.Model):
     employee_id = fields.Many2one('hr.employee', string='Employee')
 
     def reprint(self):
-        for rec in self:
-            rec._print_zpl_to_network(rec.create_zpl(), self.env.company.zpl_printer_ip)
+        # self.ensure_one()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'print_zpl_ip',
+            "params": {
+                "record_ids": self.ids,
+            }
+        }
+        # for rec in self:
+        #     rec._print_zpl_to_network(rec.create_zpl(), self.env.company.zpl_printer_ip)
 
     #=== CRUD METHODS ===#
 
@@ -40,17 +48,6 @@ class MrpWorkorderRoll(models.Model):
         if roll_names:
             raise UserError(_('Can\'t delete a roll that is in a batch process.\nRolls:\n%s') %roll_names)
         return super().unlink()
-
-    def split(self):
-        return {
-            'name': _('Divide Roll'),
-            'view_mode': 'form',
-            'res_model': 'split.roll',
-            'views': [(self.env.ref('idtx_mrp.split_roll_form').id, 'form')],
-            'type': 'ir.actions.act_window',
-            'target': 'new',
-            'context': dict(self.env.context)
-        }
 
     def create_zpl(self):
         self.ensure_one()
@@ -105,4 +102,15 @@ class MrpWorkorderRoll(models.Model):
             with socket.create_connection((ip, port), timeout=5) as sock:
                 sock.sendall(zpl_code.encode('utf-8'))
         except (socket.error, UnicodeError, ValueError) as e:
-            raise UserError("No se pudo imprimir (verificá IP): %s" % e)
+            raise UserError("No se pudo imprimir: %s" % e)
+        
+
+    def print_zpl_with_ip(self, printer_ip):
+        for rec in self:
+            try:
+                ipaddress.ip_address(printer_ip)
+                rec.ensure_one()
+                rec._print_zpl_to_network(rec.create_zpl(), printer_ip)
+            except (socket.error, UnicodeError, ValueError) as e:
+                raise UserError("No se pudo imprimir: %s" % e)
+        return True

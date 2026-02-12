@@ -28,6 +28,9 @@ class LabDev(models.Model):
         ('dev', 'Development'),
         ('approved', 'Approved'),
     ], string='State', default='draft')
+    
+    def action_development(self):
+        self.state = 'dev'
 
     def open_recipes(self):
         return self.lab_dev_line_ids.color_recipe_ids._get_records_action(name=_('Recipes'), context={'group_by': 'color_name'})

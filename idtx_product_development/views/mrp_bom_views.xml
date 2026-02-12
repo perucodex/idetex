@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="mrp_bom_form_view_inherit_dev_form" model="ir.ui.view">
+        <field name="name">mrp.bom.form.dev</field>
+        <field name="model">mrp.bom</field>
+        <field name="inherit_id" ref="mrp.mrp_bom_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('o_row')]" position="after">
+                <field name="technical_sheet_id" invisible="not technical_sheet_id" readonly="1"/>
+            </xpath>
+        </field>
+    </record>
+    
+</odoo>

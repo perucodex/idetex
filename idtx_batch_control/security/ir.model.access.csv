@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_control_pedido,control_pedido,model_control_pedido,base.group_user,1,1,1,1
+access_control_pedido_line,control_pedido_line,model_control_pedido_line,base.group_user,1,1,1,1

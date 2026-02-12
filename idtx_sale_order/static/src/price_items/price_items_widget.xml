@@ -2,7 +2,7 @@
 <templates xml:space="preserve">
 
     <t t-name="idtx_laboratory.PriceItemsWidget">
-        <t t-if="props.record and props.record.resId and props.record.data.parent_is_quote">
+        <t t-if="props.record and props.record.resId and props.record.data.parent_is_quote and !props.record.data.is_salesman">
             <a t-on-click="showPopover"
                 t-att-class="props.record.data.is_weaving ? 'fa fa-edit cursor-pointer ml-1' : 'd-none'"
                 title="Editar precios por ítem"/>
@@ -16,17 +16,17 @@
                 <table class="table table-sm">
                     <tbody>
                         <tr t-foreach="items" t-as="item" t-key="item.key">
-                            <td t-if="item.value &gt; 0"><t t-esc="item.key"/></td>
-                            <td class="text-end" t-if="item.value &gt; 0">
-                                <t t-if="item.key.startsWith('Production Loss') or item.key.startsWith('Financial Percentage') or item.key.startsWith('Incoterm')">
-                                    <t t-esc="item.value.toFixed(2)"/>
+                            <td><t t-esc="item.label or item.key"/></td>
+                            <td class="text-end">
+                                <t t-if="['Weaving Loss', 'Production Loss', 'Financial Percentage', 'Incoterm'].includes(item.key)">
+                                    <t t-esc="item.price.toFixed(2)"/>
                                 </t>
                                 <t t-else="">
                                     <input type="text"
                                         class="form-control form-control-sm w-auto text-end"
                                         inputmode="decimal"
                                         pattern="^[0-9]*\.?[0-9]+$"
-                                        t-model="item.value"
+                                        t-model="item.price"
                                         t-att-readonly="ui.readonly"
                                         t-on-input="!ui.readonly and ((ev) => this.onNumberInput(ev, item))"/>
                                 </t>

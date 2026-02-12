@@ -36,6 +36,7 @@ y ficha técnica
         'data/product.fiber.csv',
         'data/product.gauge.csv',
         'data/product.title.csv',
+        'data/ligament.type.csv',
         'security/group_dev.xml',
         'security/ir.model.access.csv',
         'report/report_product_analysis.xml',
@@ -43,6 +44,7 @@ y ficha técnica
         'report/ir_actions_report.xml',
         'views/configurate_svg_example.xml',
         'views/mrp_base_process_views.xml',
+        'views/mrp_bom_views.xml',
         'views/mrp_workorder_batch_views.xml',
         'views/mrp_workorder_roll_views.xml',
         'views/mrp_workorder_views.xml',
@@ -52,6 +54,7 @@ y ficha técnica
         'views/product_template_views.xml',
         'views/res_config_settings_views.xml',
         'views/technical_sheet_views.xml',
+        'wizards/split_roll_views.xml',
         'views/dev_menu.xml',
     ],
     

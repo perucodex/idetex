@@ -1,7 +1,6 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 from odoo import models, api
 
-
 class StockLot(models.Model):
     _name = "stock.lot"
     _inherit = ["stock.lot", "pos.load.mixin"]

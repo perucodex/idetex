@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="sitpro_sale_type_list_view" model="ir.ui.view">
+        <field name="name">sitpro.sale.type.list</field>
+        <field name="model">sitpro.sale.type</field>
+        <field name="arch" type="xml">
+            <list editable="top">
+                <field name="code"/>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+    
+    <record id="action_sitpro_sale_type" model="ir.actions.act_window">
+        <field name="name">Sitpro Sale Type</field>
+        <field name="res_model">sitpro.sale.type</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_sitpro_sale_types" name="Sitpro Sale Type" parent="sale.menu_sales_config" sequence="900" action="action_sitpro_sale_type"/>
+
+</odoo>

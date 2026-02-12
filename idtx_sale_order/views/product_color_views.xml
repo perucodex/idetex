@@ -5,8 +5,9 @@
             <field name="name">product.color.tree</field>
             <field name="model">product.color</field>
             <field name="arch" type="xml">
-                <list string="Product Color">
+                <list string="Product Color" editable="top">
                     <field name="name"/>
+                    <field name="is_lab_color"/>
                     <field name="company_id" groups="base.group_multi_company" optional="hide" readonly="1"/>
                 </list>
             </field>

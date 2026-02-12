@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="lab_dev_form_view_inherit" model="ir.ui.view">
+            <field name="name">lab.dev.form.inherit</field>
+            <field name="model">lab.dev</field>
+            <field name="inherit_id" ref="idtx_laboratory.lab_dev_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//sheet/notebook/page[2]/field[@name='lab_dev_line_ids']/list/field[@name='product_id']" position="attributes">
+                    <attribute name="domain">[('is_weaving','=', True)]</attribute>                
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>
