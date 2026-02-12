@@ -31,7 +31,7 @@ export class SelectScaleDialog extends ConfirmationDialog {
         this.menu = useService("menu");
         this.notification = useService("notification");
         this.scales = this.props.scales || [];
-        this.employees = this.props.employees || [];
+        this.employees = this.props.employees || [];    
         this.equipments = this.props.equipments || [];
         this.state = useState({
             selectedEmployee: this.props.selectedEmployee || "",
@@ -39,10 +39,21 @@ export class SelectScaleDialog extends ConfirmationDialog {
             selectedMode: "manual",
             selectedScaleId: null,
             manualWeight: "",
+            isManualAuthorized: false,
+
+            // 👇 NUEVO: auth dentro del dialog
+            authLogin: "",
+            authPassword: "",
+            authError: "",
+            isAuthChecking: false,
         });
         this.isDisplayStandalone = isDisplayStandalone();
 
         this.manualInputRef = useRef("manualInput");
+
+        // 👇 NUEVO: refs para auth
+        this.authLoginRef = useRef("authLogin");
+        this.authPasswordRef = useRef("authPassword");
 
         onMounted(() => {
             if (this.manualInputRef.el) {
@@ -61,6 +72,21 @@ export class SelectScaleDialog extends ConfirmationDialog {
             if (!this.equipments.length) {
                 await this._loadEquipments();
             }
+
+            // 👇 seleccionar primera balanza por defecto
+            if (this.scales.length && !this.state.selectedScaleId) {
+                this.state.selectedMode = "scale";
+                this.state.selectedScaleId = this.scales[0].id;
+            }
+
+            // 👇 NUEVO: recuperar autorización desde la sesión (persiste hasta logout)
+            try {
+                const ok = await this.ormService.call("res.users", "is_manual_access_enabled", []);
+                this.state.isManualAuthorized = !!ok;
+            } catch (e) {
+                // si no existe el método aún o falla, no rompe el dialog
+                this.state.isManualAuthorized = false;
+            }
         });
     }
 
@@ -69,16 +95,99 @@ export class SelectScaleDialog extends ConfirmationDialog {
     }
     
     get isConfirmEnabled() {
-    if (this.state.selectedMode === "scale") {
-        return !!this.state.selectedScaleId;
-    }
-    const w = parseFloat((this.state.manualWeight || ""));
-    return !isNaN(w) && w > 0;
+        if (this.state.selectedMode === "scale") {
+            return !!this.state.selectedScaleId;
+        }
+        // 👇 manual requiere autorización
+        if (!this.state.isManualAuthorized) {
+            return false;
+        }
+        const w = parseFloat((this.state.manualWeight || ""));
+        return !isNaN(w) && w > 0;
     }
 
-    selectManual() {
+    async selectManual() {
         this.state.selectedMode = "manual";
         this.state.selectedScaleId = null;
+        this.state.manualWeight = "";
+        this.state.authError = "";
+        this.state.isAuthChecking = false;
+
+        // Si ya está autorizado en sesión, enfocamos el input manual.
+        // Si no, enfocamos el usuario.
+        setTimeout(() => {
+            if (this.state.isManualAuthorized) {
+                if (this.manualInputRef.el) {
+                    this.manualInputRef.el.focus();
+                    this.manualInputRef.el.select();
+                }
+            } else {
+                if (this.authLoginRef.el) {
+                    this.authLoginRef.el.focus();
+                    this.authLoginRef.el.select();
+                }
+            }
+        }, 0);
+    }
+
+    // 👇 NUEVO: validar credenciales (sin prompt)
+    async confirmManualAuth() {
+        if (!this.state.authLogin || !this.state.authPassword) return;
+
+        this.state.isAuthChecking = true;
+        this.state.authError = "";
+
+        try {
+            await this.ormService.call("res.users", "validate_manual_access", [this.state.authLogin, this.state.authPassword]);
+
+            this.state.isManualAuthorized = true;
+            this.state.authPassword = ""; // limpiar password en memoria
+
+            setTimeout(() => {
+                if (this.manualInputRef.el) {
+                    this.manualInputRef.el.focus();
+                    this.manualInputRef.el.select();
+                }
+            }, 0);
+
+        } catch (e) {
+            this.state.isManualAuthorized = false;
+            this.state.authError = _t("Acceso denegado: se requiere MRP Manager.");
+        } finally {
+            this.state.isAuthChecking = false;
+        }
+    }
+
+    // 👇 NUEVO: Enter para validar auth
+    onAuthKeyDown(ev) {
+        if (ev.key === "Enter") {
+            this.confirmManualAuth();
+        }
+    }
+
+    // 👇 NUEVO: desactivar manual (borra sesión y vuelve a pedir credenciales)
+    async deactivateManual() {
+        try {
+            await this.ormService.call("res.users", "disable_manual_access", []);
+        } catch (e) {
+            // no rompe si no existe aún
+        }
+        this.state.isManualAuthorized = false;
+        this.state.manualWeight = "";
+        this.state.authLogin = "";
+        this.state.authPassword = "";
+        this.state.authError = "";
+        this.state.isAuthChecking = false;
+
+        // se queda en manual, mostrando auth form
+        this.state.selectedMode = "manual";
+
+        setTimeout(() => {
+            if (this.authLoginRef.el) {
+                this.authLoginRef.el.focus();
+                this.authLoginRef.el.select();
+            }
+        }, 0);
     }
 
     onManualInput(ev) {
@@ -98,6 +207,12 @@ export class SelectScaleDialog extends ConfirmationDialog {
     selectScale(scale) {
         this.state.selectedMode = "scale";
         this.state.selectedScaleId = scale.id;
+
+        // 👇 NO reseteamos isManualAuthorized (debe persistir en la sesión)
+        this.state.manualWeight = "";
+        this.state.authError = "";
+        this.state.isAuthChecking = false;
+        this.state.authPassword = ""; // por seguridad
     }
 
     confirm() {
@@ -113,7 +228,7 @@ export class SelectScaleDialog extends ConfirmationDialog {
             scale_id: this.state.selectedMode === "scale" ? this.state.selectedScaleId : false,
             employee_id: this.state.selectedEmployee || false,
             equipment_id: this.state.selectedEquipment || false,
-            manual_weight: this.state.selectedMode === "manual"
+            manual_weight: (this.state.selectedMode === "manual" && this.state.isManualAuthorized)
                 ? parseFloat(this.state.manualWeight)
                 : false,
         };
