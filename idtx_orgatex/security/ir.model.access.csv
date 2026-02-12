@@ -1,2 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_new_module,new_module,model_new_module,base.group_user,1,1,1,1
+access_integration_orgatex,integration_orgatex,model_integration_orgatex,base.group_user,1,1,1,1
+access_orgatex_header,integration.orgatex,model_integration_orgatex,,1,1,1,1
+access_orgatex_procedure,integration.orgatex.procedure,model_integration_orgatex_procedure,,1,1,1,1
+access_orgatex_recipe,integration.orgatex.recipe,model_integration_orgatex_recipe,,1,1,1,1

@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_idtx_tela_user,idtx.tela.user,model_idtx_tela,base.group_user,1,1,1,1
+access_idtx_tela_manager,idtx.tela.manager,model_idtx_tela,base.group_system,1,1,1,1
+access_tdtx_inventory_movement_user,access_idtx_inventory_movement_user,model_inventory_movement,base.group_user,1,1,1,1

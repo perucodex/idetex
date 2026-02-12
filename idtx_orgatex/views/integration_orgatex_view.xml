@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- TREE VIEW -->
+    <record id="view_integration_orgatex_tree" model="ir.ui.view">
+        <field name="name">integration.orgatex.tree</field>
+        <field name="model">integration.orgatex</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="dyelot"/>
+                <field name="machine"/>
+                <field name="recipe_no"/>
+                <field name="weight"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- FORM VIEW -->
+    <record id="view_integration_orgatex_form" model="ir.ui.view">
+        <field name="name">integration.orgatex.form</field>
+        <field name="model">integration.orgatex</field>
+        <field name="arch" type="xml">
+            <form string="Orgatex Dyelot">
+
+                <header>
+                    <button name="action_insert_all"
+                            type="object"
+                            string="Enviar a Orgatex"
+                            class="btn-primary"
+                            invisible="state == 'approved'"/>
+
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="pending,approved,denied"/>
+                </header>
+
+                <sheet>
+
+                    <group string="Dyelot Cabecera">
+                        <group>
+                            <field name="dyelot"/>
+                            <field name="customer"/>
+                            <field name="article"/>
+                            <field name="colourNo"/>
+                        </group>
+                        <group>
+                            <field name="machine"/>
+                            <field name="redye"/>
+                            <field name="program_creation_type"/>
+                        </group>
+                        <group>
+                            <field name="recipe_no"/>
+                            <field name="recipe_state"/>
+                            <field name="import_state"/>
+                        </group>
+                    </group>
+
+                    <group string="Proceso">
+                        <group>
+                            <field name="liquor_ratio"/>
+                            <field name="weight"/>
+                        </group>
+                        <group>
+                            <field name="procedure_no"/>
+                            <field name="parameter7"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+
+                        <page string="Procedures">
+                            <field name="procedure_ids">
+                                <list editable="bottom">
+                                    <field name="redye"/>
+                                    <field name="treatment_cnt"/>
+                                    <field name="treatment_no"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Recipes">
+                            <field name="recipe_ids">
+                                <list editable="bottom">
+                                    <field name="correction_number"/>
+                                    <field name="redye"/>
+                                    <field name="call_off"/>
+                                    <field name="counter"/>
+                                    <field name="product_name"/>
+                                    <field name="product_short_name"/>
+                                    <field name="product_code"/>
+                                    <field name="amount"/>
+                                    <field name="amount_per_machine"/>
+                                    <field name="unit"/>
+                                    <field name="kind_of_station"/>
+                                    <field name="state"/>
+                                    <field name="specific_weight"/>
+                                    <field name="no_of_station"/>
+                                </list>
+                            </field>
+                        </page>
+
+                    </notebook>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ACTION -->
+    <record id="action_integration_orgatex_menu" model="ir.actions.act_window">
+        <field name="name">Orgatex Integration</field>
+        <field name="res_model">integration.orgatex</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- MENU -->
+    <menuitem id="menu_orgatex_data"
+              name="Orgatex"
+              parent="orga_operations_menu"
+              action="action_integration_orgatex_menu"/>
+
+</odoo>
