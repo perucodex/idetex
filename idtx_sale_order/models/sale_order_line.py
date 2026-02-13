@@ -149,7 +149,7 @@ class SaleOrderLine(models.Model):
         res = super()._compute_price_unit()
         #Solo calcula el precio si la compañía produce
         for line in self.filtered(lambda l: l.is_weaving):
-            if self.company_id.is_company_produce and line.product_id.is_weaving:
+            if line.company_id.is_company_produce and line.product_id.is_weaving:
                 # Diferenciar si es un producto tejido para calcular su precio
                 # for line in self.filtered(lambda l: l.is_weaving):
                 if line.product_template_id.bom_ids:
