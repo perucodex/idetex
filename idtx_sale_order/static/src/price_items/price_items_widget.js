@@ -168,7 +168,7 @@ class PriceItemsPopover extends Component {
                 label: _t("Financial Percentage: %s %", [(financialPercentage * 100).toFixed(2)]),
                 meta: {},
             });
-        } 
+        }
         if (incotermPrice) {
             derived.push({
                 key: INCOTERM_KEY,
