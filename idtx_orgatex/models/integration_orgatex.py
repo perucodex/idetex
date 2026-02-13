@@ -1,4 +1,3 @@
-from typing import Required
 import pyodbc
 from odoo import models, fields
 from odoo.exceptions import UserError
@@ -11,10 +10,10 @@ class IntegrationOrgatex(models.Model):
     # =============================
     # CABECERA DYELLOT
     # =============================
-    dyelot = fields.Char(required=True)
-    customer = fields.Char(required=True)
-    article = fields.Char(required=True)
-    colourNo= fields.Char(required=True)
+    dyelot = fields.Char()
+    customer = fields.Char()
+    article = fields.Char()
+    colourNo= fields.Char()
     redye = fields.Integer()
     machine = fields.Char()
     program_creation_type = fields.Integer()

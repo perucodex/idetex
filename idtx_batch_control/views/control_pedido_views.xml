@@ -86,6 +86,19 @@
                   <field name="end_date"/>
                   <field name="colorcode"/>
                   <field name="colorname"/>
+
+                  <!-- BOTONES -->
+                  <button name="action_start_process"
+                          type="object"
+                          string="Iniciar"
+                          class="btn-primary"
+                          invisible="start_date"/>
+
+                  <button name="action_end_process"
+                          type="object"
+                          string="Finalizar"
+                          class="btn-success"
+                          invisible="not start_date or end_date"/>
                 </list>
               </field>
             </page>
@@ -125,12 +138,67 @@
               <field name="colorname" readonly="1"/>
             </group>
           </group>
+          <notebook>
+            <page string="Procesos">
+              <field name="proceso_ids" readonly="1">
+                <list decoration-success="barFasDTF">
+                  <field name="barcod"/>
+                  <field name="barOrdLin"/>
+                  <field name="fasCod"/>
+                  <field name="maqCodBis"/>
+                  <field name="barFasDTI"/>
+                  <field name="barFasDTF"/>
+                  <button name="action_start"
+                          type="object"
+                          string="Iniciar"
+                          class="btn-primary"
+                          invisible="barFasDTI"/>
+                  <button name="action_finish"
+                          type="object"
+                          string="Finalizar"
+                          class="btn-success"
+                          invisible="not barFasDTI or barFasDTF"/>
+                </list>
+              </field>
+            </page>
+          </notebook>
         </sheet>
       </form>
     </field>
   </record>
 
-  <record id="control_pedido_view_search" model="ir.ui.view">
+    <!-- ================= TREE PROCESOS ================= -->
+  <record id="view_control_proceso_line_list" model="ir.ui.view">
+    <field name="name">control.proceso.lines.list</field>
+    <field name="model">control.proceso.lines</field>
+    <field name="arch" type="xml">
+      <list decoration-success="barFasDTF">
+
+        <field name="pedido_line_id"/>
+        <field name="barcod"/>
+        <field name="barOrdLin"/>
+        <field name="fasCod"/>
+        <field name="maqCodBis"/>
+        <field name="barFasDTI"/>
+        <field name="barFasDTF"/>
+
+        <button name="action_start"
+                type="object"
+                string="Iniciar"
+                class="btn-primary"
+                invisible="barFasDTI"/>
+
+        <button name="action_finish"
+                type="object"
+                string="Finalizar"
+                class="btn-success"
+                invisible="not barFasDTI or barFasDTF"/>
+
+      </list>
+    </field>
+  </record>
+
+  <!-- <record id="control_pedido_view_search" model="ir.ui.view">
       <field name="name">control.pedido.view.search</field>
       <field name="model">control.pedido</field>
       <field name="arch" type="xml">
@@ -154,9 +222,9 @@
               </group>
           </search>
       </field>
-  </record>
+  </record> -->
 
-  <record id="control_pedido_line_view_search" model="ir.ui.view">
+  <!-- <record id="control_pedido_line_view_search" model="ir.ui.view">
       <field name="name">control.pedido.line.view.search</field>
       <field name="model">control.pedido.line</field>
       <field name="arch" type="xml">
@@ -175,9 +243,9 @@
               </group>
           </search>
       </field>
-  </record>
+  </record> -->
 
-  <!-- ============ Action / Menu ============ -->
+  <!-- ================= ACTIONS ================= -->
   <record id="action_control_pedido" model="ir.actions.act_window">
     <field name="name">Pedidos control</field>
     <field name="res_model">control.pedido</field>
@@ -185,16 +253,24 @@
     <field name="context">{"search_default_not_done":1}</field>
   </record>
 
-  <!-- ============ Action / Menu ============ -->
   <record id="action_control_partida" model="ir.actions.act_window">
-    <field name="name">Pedidos control</field>
+    <field name="name">Partidas</field>
     <field name="res_model">control.pedido.line</field>
     <field name="view_mode">list,form</field>
-    <!-- <field name="context">{"search_default_not_done":1}</field> -->
   </record>
+
+  <record id="action_control_proceso_line" model="ir.actions.act_window">
+    <field name="name">Procesos</field>
+    <field name="res_model">control.proceso.lines</field>
+    <field name="view_mode">list,form</field>
+  </record>
+
+<menuitem id="menu_control_proceso" name="Procesos" parent="menu_sitpro_texplus" action="action_control_proceso_line" sequence="30"/>
+
 
   <menuitem id="menu_sitpro_texplus" name="Sitpro &amp; Texplus" parent="sale.sale_order_menu" sequence="40">
     <menuitem id="menu_control_pedido" name="Pedidos" sequence="10" action="action_control_pedido"/>
     <menuitem id="menu_control_partida" name="Partidas" sequence="20" action="action_control_partida"/>
+    <menuitem id="menu_control_proceso" name="Procesos" sequence="30" action="action_control_proceso_line"/>
   </menuitem>
 </odoo>

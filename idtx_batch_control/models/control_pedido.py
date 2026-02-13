@@ -431,6 +431,7 @@ class ControlPedido(models.Model):
                 h.Partida,
                 h.BarCod AS HojaDeRuta,
                 h.BarCodReo,
+                h.BarCodPar,
                 h.ColorCode,
                 h.ColorName,
                 ISNULL(k.Kilos, 0) AS PesoTotal,
@@ -471,6 +472,64 @@ class ControlPedido(models.Model):
             cols = [c[0] for c in cursor.description]
             rows = [dict(zip(cols, row)) for row in cursor.fetchall()]
 
+            # --- 5.1) Traer detalle de procesos (BARFAS) para las hojas de ruta encontradas ---
+            barcods = set()
+            for r in rows:
+                bc = _safe_str(r.get("HojaDeRuta"))
+                if bc:
+                    barcods.add(bc)
+
+            processes_by_valid_key = {}
+            if barcods:
+                # Ojo con el límite de parámetros en SQL Server (2100). Si son muchos, lotear.
+                # Por ahora asumimos que no excede (nums de pedidos -> barcods razonables)
+                # Si barcods es muy grande, hacer chunks.
+                unique_barcods = list(barcods)
+                
+                # Chunking simple por si acaso (ej. 1000 en 1000)
+                chunk_size = 1000
+                for i in range(0, len(unique_barcods), chunk_size):
+                    chunk = unique_barcods[i:i + chunk_size]
+                    placeholders_bc = ",".join(["?"] * len(chunk))
+                    
+                    q_procs = f"""
+                        SELECT 
+                            bf.BarCod, bf.BarOrdLin, bf.FasCod, bf.MaqCodBis, bf.BarFasDTI, bf.BarFasDTF,
+                            bf.BarCodReo, bf.BarCodPar,
+                            fp.FasDsc
+                        FROM BARFAS bf
+                        LEFT JOIN FASPRO fp ON fp.FasCod = bf.FasCod
+                        WHERE bf.BarCod IN ({placeholders_bc})
+                        ORDER BY bf.BarCod, bf.BarOrdLin
+                    """
+                    cursor.execute(q_procs, *chunk)
+                    p_cols = [c[0] for c in cursor.description]
+                    p_rows = [dict(zip(p_cols, row)) for row in cursor.fetchall()]
+
+                    for pr in p_rows:
+                        bc = _safe_str(pr.get("BarCod"))
+                        # Clave compuesta: (BarCod, BarCodReo, BarCodPar)
+                        # Ojo: BarCodPar puede ser NULL o vacío en BD, normalizar a '' para coincidir
+                        bcreo = _safe_str(pr.get("BarCodReo")) or ''
+                        bcpar = _safe_str(pr.get("BarCodPar")) or ''
+                        
+                        key = (bc, bcreo, bcpar)
+
+                        # Map FasDsc to fasCod field for display
+                        desc = _safe_str(pr.get("FasDsc")) or _safe_str(pr.get("FasCod"))
+                        
+                        # Mapeo a campos de control.proceso.lines
+                        vals_proc = {
+                            "barcod": bc,
+                            "barOrdLin": int(pr.get("BarOrdLin") or 0),
+                            "fasCod": desc,
+                            "maqCodBis": _safe_str(pr.get("MaqCodBis")),
+                            # Fechas: cuidado con formats. _safe_date maneja selects de pyodbc (datetime)
+                            "barFasDTI": pr.get("BarFasDTI"), 
+                            "barFasDTF": pr.get("BarFasDTF"),
+                        }
+                        processes_by_valid_key.setdefault(key, []).append((0, 0, vals_proc))
+
         finally:
             try:
                 cursor.close()
@@ -490,6 +549,17 @@ class ControlPedido(models.Model):
                 continue
 
             vals_line = self.env["control.pedido.line"]._vals_from_det_row(dr)
+            
+            # Inyectar procesos si existen (Match por clave compuesta)
+            bc = _safe_str(dr.get("HojaDeRuta"))
+            bcreo = _safe_str(dr.get("BarCodReo")) or ''
+            bcpar = _safe_str(dr.get("BarCodPar")) or ''
+
+            key = (bc, bcreo, bcpar)
+            
+            if key in processes_by_valid_key:
+                vals_line["proceso_ids"] = processes_by_valid_key[key]
+
             line_cmds_by_pedido.setdefault(pedido.id, []).append((0, 0, vals_line))
 
         # Write por pedido que tenga líneas (normalmente mucho menos que N)
@@ -528,6 +598,12 @@ class ControlPedidoLine(models.Model):
     colorcode = fields.Char('Color Code')
     colorname = fields.Char('Color Name')
 
+    proceso_ids = fields.One2many(
+        "control.proceso.lines",
+        "pedido_line_id",
+        string="Procesos"
+    )
+
     @api.model
     def _vals_from_det_row(self, dr):
         user_tz = pytz.timezone(self.env.user.tz or 'UTC')
@@ -543,3 +619,92 @@ class ControlPedidoLine(models.Model):
             "colorcode": _safe_str(dr["ColorCode"]),
             "colorname": _safe_str(dr["ColorName"]),
         }
+
+    def action_start_process(self):
+        for rec in self:
+            rec.start_date = fields.Datetime.now()
+
+    def action_end_process(self):
+        for rec in self:
+            rec.end_date = fields.Datetime.now()
+
+
+# =====================================================
+# MODELO PROCESOS
+# =====================================================
+
+class ControlProcesoLine(models.Model):
+    _name = "control.proceso.lines"
+    _description = "Procesos BARFAS"
+    _order = "barOrdLin asc"
+
+    pedido_line_id = fields.Many2one(
+        "control.pedido.line",
+        required=True,
+        ondelete="cascade"
+    )
+
+    barcod = fields.Char("Hoja de Ruta")
+    barOrdLin = fields.Integer("Orden")
+    fasCod = fields.Char("Proceso")
+    maqCodBis = fields.Char("Máquina")
+
+    barFasDTI = fields.Datetime("Fecha Inicio")
+    barFasDTF = fields.Datetime("Fecha Fin")
+
+    # =====================================
+
+    def action_start(self):
+        for rec in self:
+
+            if rec.barFasDTI:
+                raise UserError("Este proceso ya fue iniciado.")
+
+            prev = self.search([
+                ("pedido_line_id", "=", rec.pedido_line_id.id),
+                ("barOrdLin", "<", rec.barOrdLin),
+                ("barFasDTF", "=", False)
+            ])
+
+            if prev:
+                raise UserError("Debe finalizar el proceso anterior primero.")
+
+            now = fields.Datetime.now()
+
+            rec._update_sql("BarFasDTI", now)
+            rec.barFasDTI = now
+
+    # =====================================
+
+    def action_finish(self):
+        for rec in self:
+
+            if not rec.barFasDTI:
+                raise UserError("Debe iniciar el proceso primero.")
+
+            if rec.barFasDTF:
+                raise UserError("Este proceso ya fue finalizado.")
+
+            now = fields.Datetime.now()
+
+            rec._update_sql("BarFasDTF", now)
+            rec.barFasDTF = now
+
+    # =====================================
+
+    def _update_sql(self, field_name, value):
+        conn = self.pedido_line_id.pedido_id._get_sql_connection()
+        cursor = conn.cursor()
+
+        query = f"""
+            UPDATE BARFAS
+            SET {field_name} = ?
+            WHERE BarCod = ?
+              AND BarOrdLin = ?
+        """
+
+        cursor.execute(query, value, self.barcod, self.barOrdLin)
+        conn.commit()
+
+        cursor.close()
+        conn.close()
