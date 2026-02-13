@@ -17,7 +17,7 @@ class MrpWorkorder(models.Model):
                 url = f'http://{client_ip}:5001/peso'
                 resp = requests.get(url, timeout=3)
                 resp.raise_for_status()
-                data = resp.json()
+                data = resp.json() 
 
                 if data.get('ok') and data.get('peso') is not None:
                     peso = 27.77#data['peso']

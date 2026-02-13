@@ -19,6 +19,8 @@ class MrpWorkorderRoll(models.Model):
     new_weight = fields.Float('Split new weight')
     equipment_id = fields.Many2one('maintenance.equipment', string='Equipment')
     employee_id = fields.Many2one('hr.employee', string='Employee')
+    roll_start = fields.Datetime('Start Date')
+    roll_end = fields.Datetime('End Date')
 
     def reprint(self):
         # self.ensure_one()
