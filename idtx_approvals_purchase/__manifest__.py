@@ -26,6 +26,7 @@ de crar la orden de compra se cren nuevas lineas y no se juntan todas en una sol
     # always loaded
     'data': [
         # 'security/ir.model.access.csv',
+        'security/groups_app.xml',
         'views/approval_product_line_views.xml',
         # 'views/templates.xml',
     ],

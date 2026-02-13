@@ -128,6 +128,14 @@ class RollPublicController(http.Controller):
                     <span class="label">Color:</span>
                     <span class="value">[{roll.workorder_id.production_id.color_recipe_id.color_code}] {roll.workorder_id.production_id.color_recipe_id.color_name}</span>
                 </div>
+                <div class="row">
+                    <span class="label">Inicio:</span>
+                    <span class="value">[{roll.workorder_id.roll_start}] {roll.workorder_id.production_id.color_recipe_id.color_name}</span>
+                </div>
+                <div class="row">
+                    <span class="label">Fin:</span>
+                    <span class="value">[{roll.workorder_id.roll_end}] {roll.workorder_id.production_id.color_recipe_id.color_name}</span>
+                </div>
             </div>
         </body>
         </html>

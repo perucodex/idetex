@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <function model="ir.rule" name="write">
+        <value eval="[ref('approvals.approval_approver_user_change_own')]"/>
+        <value eval="{'domain_force': &quot;['|',('user_id','=',user.id),('request_id.request_owner_id','=',user.id)]&quot;}"/>
+    </function>
+  
+</odoo>
