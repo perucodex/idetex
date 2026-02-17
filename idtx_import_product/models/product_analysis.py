@@ -283,7 +283,9 @@ class ProductAnalysis(models.Model):
             last_weaving_data_id = self.env['analysis.weaving.data']
             cursor_result = cursor.fetchall()
             total = len(cursor_result)
-            weaving_workcenter = self.env['mrp.workcenter'].create({'name': 'TEJEDURIA', 'operation_type': 'weaving'})
+            weaving_workcenter = self.env['mrp.workcenter'].search([('name','=','TEJEDURIA')])
+            if not weaving_workcenter:
+                weaving_workcenter = self.env['mrp.workcenter'].create({'name': 'TEJEDURIA', 'operation_type': 'weaving'})
             weaving_process = self.env['mrp.routing.workcenter.operation'].search([('name','=','TEJIDO CRUDO')])
             if not weaving_process:
                 weaving_process = self.env['mrp.routing.workcenter.operation'].create({'name': 'TEJIDO CRUDO', 'workcenter_id': weaving_workcenter.id})
