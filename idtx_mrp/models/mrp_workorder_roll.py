@@ -55,7 +55,7 @@ class MrpWorkorderRoll(models.Model):
     def create_zpl(self):
         self.ensure_one()
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') #"https://odoo.gestionidtx.com/rollo"
-        url = f"{base_url}/rollo/{self.id}/datos"
+        url = f"{base_url}/rollo/datos/{self.id}"
         zpl_code = f"""^XA
                     ^PW600
                     ^LL600

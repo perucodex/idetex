@@ -4,7 +4,7 @@ import datetime
 
 class RollPublicController(http.Controller):
 
-    @http.route('/rollo/<int:roll_id>/datos', type='http', auth='public', website=True)
+    @http.route('/rollo/datos/<int:roll_id>', type='http', auth='public', website=True)
     def roll_public_data(self, roll_id, **kwargs):
         roll = request.env['mrp.workorder.roll'].sudo().browse(roll_id)
         if not roll.exists():
@@ -167,3 +167,10 @@ class RollPublicController(http.Controller):
         </html>
         """
         return html
+    
+    @http.route('/rollo/datos/<string:name>', type='http', auth='public', website=True)
+    def roll_public_by_name_data(self, name, **kwargs):
+        roll = request.env['mrp.workorder.roll'].sudo().search([('name', '=', name)], limit=1)
+        if not roll.exists():
+            return request.not_found()
+        return self.roll_public_data(roll.id)
