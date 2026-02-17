@@ -8,6 +8,8 @@ class MrpProduction(models.Model):
     _inherit = 'mrp.production'
 
     sale_order_line_id = fields.Many2one('sale.order.line', string='Sale Order Line', copy=True)
+    order_id = fields.Many2one('sale.order', string='Sale Order', related='sale_order_line_id.order_id', store=True)
+    need_recipe = fields.Boolean('Need Recipe', compute='_compute_need_recipe')
     color_recipe_id = fields.Many2one('color.recipe', string='Color Recipe', compute='_compute_color_recipe', store=True)
     color_code = fields.Char(related='color_recipe_id.color_code')
     color_name = fields.Char(related='color_recipe_id.color_name')
@@ -38,6 +40,10 @@ class MrpProduction(models.Model):
                     production.move_raw_ids = [Command.delete(move.id) for move in production.move_raw_ids.filtered(lambda m: m.bom_line_id)]    
             production.move_raw_ids = list_move_raw
 
+    def _compute_need_recipe(self):
+        for rec in self:
+            rec.need_recipe = True if rec.sale_order_line_id and rec.sale_order_line_id.lab_dev_line_id else False
+
     @api.depends('manual_color_recipe_id','sale_order_line_id')
     def _compute_color_recipe(self):
         for rec in self:
@@ -59,8 +65,8 @@ class MrpProduction(models.Model):
         return super().unlink()
 
     def action_confirm(self):
-        if not self.color_recipe_id:
-            raise UserError(_('Production must have a recipe.'))
+        if self.need_recipe and not self.color_recipe_id:
+            raise UserError(_('Production must have an approved recipe.'))
         return super().action_confirm()
     
     def action_manual(self):

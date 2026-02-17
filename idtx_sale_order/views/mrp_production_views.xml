@@ -9,15 +9,37 @@
             <field name="arch" type="xml">
                 <button name="action_confirm" position="after">
                     <field name="manual_recipe" invisible="1"/>
-                    <button name="action_manual" invisible="manual_recipe or state != 'draft' or not bom_id or manual_color_recipe_id or color_recipe_id" string="Manual Recipe" type="object" class="oe_highlight" data-hotkey="q"/>
-                    <button name="action_manual" invisible="not manual_recipe or state != 'draft' or not bom_id or manual_color_recipe_id" string="Labdev Recipe" type="object" class="oe_highlight" data-hotkey="q"/>
+                    <button name="action_manual" invisible="not need_recipe or manual_recipe or state != 'draft' or not bom_id or manual_color_recipe_id or color_recipe_id" string="Manual Recipe" type="object" class="oe_highlight" data-hotkey="q"/>
+                    <button name="action_manual" invisible="not need_recipe or not manual_recipe or state != 'draft' or not bom_id or manual_color_recipe_id" string="Labdev Recipe" type="object" class="oe_highlight" data-hotkey="q"/>
                 </button>
                 <div name="bom_div" position="after">
-                    <field name="color_recipe_id" readonly="1" invisible="manual_recipe"/>
-                    <field name="color_code" readonly="1" invisible="not color_recipe_id"/>
-                    <field name="color_name" readonly="1" invisible="not color_recipe_id"/>
-                    <field name="manual_color_recipe_id" invisible="not manual_recipe or state != 'draft'" domain="[('product_id','=', product_id),('state','=','approved')]" options="{'no_create': True, 'no_edit': True}"/>
+                    <field name="color_recipe_id" readonly="1" invisible="not need_recipe or manual_recipe"/>
+                    <field name="color_code" readonly="1" invisible="not need_recipe or not color_recipe_id"/>
+                    <field name="color_name" readonly="1" invisible="not need_recipe or not color_recipe_id"/>
+                    <field name="manual_color_recipe_id" invisible="not need_recipe or not manual_recipe or state != 'draft'" domain="[('product_id','=', product_id),('state','=','approved')]" options="{'no_create': True, 'no_edit': True}"/>
                 </div>
+            </field>
+        </record>
+
+        <record id="mrp_production_sale_order_tree_view" model="ir.ui.view">
+            <field name="name">mrp.production.sale.order.list</field>
+            <field name="model">mrp.production</field>
+            <field name="inherit_id" ref="mrp.mrp_production_tree_view" />
+            <field name="arch" type="xml">
+                <field name="product_id" position="after">
+                    <field name="color_name" string="Color" readonly="1"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="mrp_production_view_search_inherit_sale_order" model="ir.ui.view">
+            <field name="name">mrp.production.search.view.inherit.sale.order</field>
+            <field name="model">mrp.production</field>
+            <field name="inherit_id" ref="mrp.view_mrp_production_filter"/>
+            <field name="arch" type="xml">
+                <filter name="date" position="after">
+                    <filter string="Order" name="order" domain="[]" context="{'group_by': 'order_id'}"/>
+                </filter>
             </field>
         </record>
 

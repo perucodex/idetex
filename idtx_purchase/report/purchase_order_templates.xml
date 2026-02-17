@@ -86,7 +86,7 @@
             <t t-if="line.analytic_distribution and not line.display_type">
                 <td>
                     <span t-foreach="line.analytic_distribution" t-as="distribution">
-                        <span t-out="line.env['account.analytic.account'].browse(int(distribution))[0].code"/>:
+                        <span t-out="', '.join(line.env['account.analytic.account'].browse([int(x) for x in str(distribution).split(',') if x]).mapped('code'))"/>:
                         <span t-out="'%.2f' % (line.analytic_distribution.get(distribution))"/>%
                         <br/>
                     </span>

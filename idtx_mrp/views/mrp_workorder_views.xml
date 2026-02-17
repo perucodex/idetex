@@ -37,6 +37,14 @@
                 <field name="equipment_ids" widget="many2many_tags" domain="[('workcenter_id','=',workcenter_id)]"/>
             </xpath>
             <xpath expr="//notebook" position="inside">
+                <page string="Options" name="options" invisible="operation_type != 'weaving'">
+                    <field name="option_ids" context="{'default_workorder_id': id}">
+                        <list>
+                            <field name="name" readonly="1" force_save="1"/>
+                            <!-- <field name="option_line_ids" widget="many2many_tags" readonly="1" force_save="1"/> -->
+                        </list>
+                    </field>
+                </page>
                 <page string="Rolls" name="rolls" invisible="operation_type != 'weaving'">
                     <field name="roll_ids" readonly="state != 'progress'">
                         <list editable="bottom" delete="0">
@@ -49,6 +57,9 @@
                             <field name="in_batch" column_invisible="1"/>
                             <field name="gross_weight" sum="Total" required="1" readonly="in_batch"/>
                             <field name="net_weight" sum="Total" required="1"/>
+                            <field name="roll_start"/>
+                            <field name="roll_end"/>
+                            <field name="option_id"/>
                             <button name="unlink" icon="fa-trash" type="object" invisible="gross_weight" title="Delete" id="unlink_button_weight"/>
                             <button name="unlink" icon="fa-trash" type="object" invisible="quantity" title="Delete" id="unlink_button_quantity"/>
                         </list>

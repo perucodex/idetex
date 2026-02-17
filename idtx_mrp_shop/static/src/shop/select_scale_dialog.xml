@@ -18,6 +18,17 @@
                     </t>
                 </select>
             </div>
+            <div class="mt-4" t-if="options and options.length">
+                <h5 class="fw-bold">Option</h5>
+                <select class="form-select fs-4" t-model="state.selectedOption" t-on-change="onOptionChange">
+                    <option value=""> </option>
+                    <t t-foreach="options" t-as="opt" t-key="opt.id">
+                        <option t-att-value="'' + opt.id"
+                                t-att-selected="state.selectedOption == ('' + opt.id)"
+                                t-esc="opt.name"/>
+                    </t>
+                </select>
+            </div>
             <div class="o_select_scale_dialog w-100">
                 <t t-foreach="scales" t-as="scale" t-key="scale.id">
                     <div class="form-check py-2 fs-3 pointer-cursor" t-on-click="() => this.selectScale(scale)">
@@ -93,16 +104,18 @@
                 </div>
 
                 <t t-set-slot="footer">
-                    <button class="btn btn-primary"
+                        <button class="btn btn-primary"
+                            data-select-confirm="1"
                             t-att-disabled="!isConfirmEnabled"
+                            t-att-style="!isConfirmEnabled ? 'pointer-events:none;opacity:0.6' : ''"
                             t-on-click="confirm">
                         Confirm
                     </button>
                     <!-- <button class="btn btn-primary" t-att-class="{'disabled': props.radioMode &amp;&amp; !state.activeScales.length}" t-on-click="confirm">Confirm</button> -->
-                    <a t-if="!isDisplayStandalone &amp;&amp; !props.radioMode"
-                       class="btn btn-secondary"
-                       t-attf-href="/scoped_app?app_id=mrp_shop_floor&amp;path=scoped_app/shop-floor&amp;app_name={{appName}}"
-                       target="_blank">Install App</a>
+                          <a t-if="!isDisplayStandalone &amp;&amp; !props.radioMode"
+                              class="btn btn-secondary"
+                              t-attf-href="/scoped_app?app_id=mrp_shop_floor&amp;path=scoped_app/shop-floor&amp;app_name={appName}"
+                              target="_blank">Install App</a>
                 </t>
             </div>
         </Dialog>

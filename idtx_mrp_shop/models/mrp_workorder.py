@@ -1,11 +1,11 @@
-from odoo import _, models
+from odoo import _, models, fields
 from odoo.exceptions import RedirectWarning
 import requests
 
 class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'
 
-    def action_read_scale(self, id, employee_id, equipment_id, manual_weight=None):
+    def action_read_scale(self, id, employee_id, equipment_id, option_id, manual_weight=None):
         '''Leer la balanza desde el endpoint Flask'''
         '''Los parametros vienen de JavaScript'''
         try:
@@ -24,6 +24,11 @@ class MrpWorkorder(models.Model):
                 else:
                     return {'status': 'danger', 'message': _('No communication with the scale')}
             if peso:
+                # if int(option_id) not in self.option_ids.ids:
+                #     raise ValueError(_('Selected option is not valid for this workorder'))
+                qty_rolls = len(self.roll_ids)
+                start = self.time_ids[-1].date_start if qty_rolls == 0 else self.roll_ids[-1].roll_end
+                end = fields.Datetime.now()
                 roll = self.roll_ids.create({
                     'sequence': len(self.roll_ids),
                     'workorder_id': self.id,
@@ -31,6 +36,9 @@ class MrpWorkorder(models.Model):
                     'net_weight': peso,
                     'employee_id': int(employee_id),
                     'equipment_id': int(equipment_id),
+                    'roll_start': start,
+                    'roll_end': end,
+                    'option_id': int(option_id),
                 })
                 if not self.env.company.zpl_printer_ip:
                     raise RedirectWarning(

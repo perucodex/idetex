@@ -40,6 +40,7 @@ Módulo base para los desarrollos de producción para empresas textiles
         'views/mrp_workorder_batch_views.xml',
         'views/mrp_workorder_roll_views.xml',
         'views/mrp_workorder_views.xml',
+        'views/mrp_workorder_option_views.xml',
         'views/res_company_views.xml',
         'views/res_config_settings_views.xml',
         'views/scale_registry_views.xml',
