@@ -28,19 +28,30 @@ class RollPublicController(http.Controller):
         
         # Construcción condicional del bloque de opción
         option_html = ""
-        if roll.option_id and roll.option_id.notes:
+        if roll.option_id:
             option_html = f"""
+                <div class="row">
+                    <span class="label">Opción:</span>
+                    <span class="value">{roll.option_id.name}</span>
+                </div>"""
+            if roll.option_id.notes:
+                option_html += f"""
                 <div class="row">
                     <span class="label">Observación:</span>
                     <span class="value">{roll.option_id.notes}</span>
                 </div>"""
         color_html = ""
         if roll.workorder_id.production_id.color_recipe_id and roll.workorder_id.production_id.color_recipe_id.state == 'approved':
-            print(roll.workorder_id.production_id.color_recipe_id)
             color_html = f"""
                 <div class="row">
                     <span class="label">Color:</span>
                     <span class="value">[{roll.workorder_id.production_id.color_recipe_id.color_code}] {roll.workorder_id.production_id.color_recipe_id.color_name}</span>
+                </div>"""
+        else:
+            color_html = f"""
+                <div class="row">
+                    <span class="label">Color:</span>
+                    <span class="value">{roll.workorder_id.production_id.sale_order_line_id.product_color_id.name}</span>
                 </div>"""
         technical_sheet_id = roll.workorder_id.production_id.bom_id.technical_sheet_id
         weaving_data_id = roll.workorder_id.product_id.product_tmpl_id.analysis_id.weaving_data_ids.filtered(lambda w: w.technical_sheet_id == technical_sheet_id)
@@ -49,7 +60,7 @@ class RollPublicController(http.Controller):
                                 <tr>
                                     <td>{fiber.product_template_id.name or ''}</td>
                                     <td>{(fiber.percentage or 0) * 100:.2f} %</td>
-                                    <td>{roll.option_id.option_line_ids.filtered(lambda l: l.product_id.product_tmpl_id == fiber.product_template_id).mapped('lot_id').name}</td>
+                                    <td>{roll.option_id.option_line_ids.filtered(lambda l: l.product_id.product_tmpl_id == fiber.product_template_id).mapped('lot_id').name if roll.option_id else roll.workorder_id.production_id.move_raw_ids.filtered(lambda l: l.product_id.product_tmpl_id == fiber.product_template_id).move_line_ids.mapped('lot_id').name}</td>
                                 </tr>
                             """
             
@@ -149,10 +160,6 @@ class RollPublicController(http.Controller):
                 <div class="row">
                     <span class="label">Fin:</span>
                     <span class="value">{roll.roll_end}</span>
-                </div>
-                <div class="row">
-                    <span class="label">Opción:</span>
-                    <span class="value">{roll.option_id.name}</span>
                 </div>
                 {option_html}
             </div>
