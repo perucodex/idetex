@@ -1,4 +1,6 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_control_pedido,control_pedido,model_control_pedido,base.group_user,1,1,1,1
 access_control_pedido_line,control_pedido_line,model_control_pedido_line,base.group_user,1,1,1,1
-access_control_proceso_line,control_proceso_line,model_control_proceso_lines,base.group_user,1,1,1,1
+access_control_proceso_lines,control_proceso_lines,model_control_proceso_lines,base.group_user,1,1,1,1
+access_control_route_edit_wizard,control_route_edit_wizard,model_control_route_edit_wizard,base.group_user,1,1,1,1
+access_control_route_edit_wizard_line,control_route_edit_wizard_line,model_control_route_edit_wizard_line,base.group_user,1,1,1,1

@@ -141,17 +141,15 @@
           <notebook>
             <page string="Procesos">
               <field name="proceso_ids">
-                <list decoration-success="barFasDTF">
+                <list decoration-success="barFasDTF" delete="0">
 
                   <field name="barcod"/>
                   <field name="barOrdLin"/>
 
                   <!-- Editable solo si no ha iniciado -->
-                  <field name="fasCod"
-                        attrs="{'readonly':[('barFasDTI','!=',False)]}"/>
+                  <field name="fasCod"/>
 
-                  <field name="maqCodBis"
-                        attrs="{'readonly':[('barFasDTI','!=',False)]}"/>
+                  <field name="maqCodBis"/>
 
                   <field name="barFasDTI"/>
                   <field name="barFasDTF"/>
@@ -160,22 +158,21 @@
                   <button name="action_edit_process"
                           type="object"
                           string="Editar"
-                          class="btn-secondary"
-                          attrs="{'invisible':[('barFasDTI','!=',False)]}"/>
+                          class="btn-secondary"/>
 
                   <!-- BOTON INICIAR -->
                   <button name="action_start"
                           type="object"
                           string="Iniciar"
                           class="btn-primary"
-                          attrs="{'invisible':[('barFasDTI','!=',False)]}"/>
+                          invisible="barFasDTI != False"/>
 
                   <!-- BOTON FINALIZAR -->
                   <button name="action_finish"
                           type="object"
                           string="Finalizar"
                           class="btn-success"
-                          attrs="{'invisible':[('barFasDTI','=',False),('barFasDTF','!=',False)]}"/>
+                          invisible="barFasDTI == False or barFasDTF != False"/>
 
                 </list>
               </field>
@@ -191,7 +188,7 @@
     <field name="name">control.proceso.lines.list</field>
     <field name="model">control.proceso.lines</field>
     <field name="arch" type="xml">
-      <list decoration-success="barFasDTF">
+      <list decoration-success="barFasDTF" >
 
         <field name="pedido_line_id"/>
         <field name="barcod"/>
@@ -204,12 +201,12 @@
         <button name="action_start"
                 type="object"
                 string="Iniciar"
-                attrs="{'invisible':[('barFasDTI','!=',False)]}"/>
+                invisible="barFasDTI != False"/>
 
         <button name="action_finish"
                 type="object"
                 string="Finalizar"
-                attrs="{'invisible':[('barFasDTI','=',False),('barFasDTF','!=',False)]}"/>
+                invisible="barFasDTI == False or barFasDTF != False"/>
                 
         <button name="action_open_edit_wizard"
                 type="object"
@@ -277,15 +274,22 @@
           <form string="Editar Procesos BARFAS">
               <group>
                   <field name="barcod" readonly="1"/>
+                  <group>
+                    <field name="barcodreo" readonly="1"/>
+                    <field name="barcodpar" readonly="1"/>
+                  </group>
               </group>
-
-              <field name="line_ids">
-                  <tree editable="bottom">
-                      <field name="barOrdLin" readonly="1"/>
-                      <field name="fasCod"/>
-                      <field name="maqCodBis"/>
-                  </tree>
-              </field>
+              <notebook>
+                <page string="Procesos">
+                  <field name="line_ids">
+                      <list editable="bottom" create="0" delete="0">
+                          <field name="barOrdLin" readonly="1"/>
+                          <field name="fasCod"/>
+                          <field name="maqCodBis"/>
+                      </list>
+                  </field>
+                </page>
+              </notebook>
 
               <footer>
                   <button string="Guardar"
@@ -320,12 +324,8 @@
     <field name="view_mode">list,form</field>
   </record>
 
-<menuitem id="menu_control_proceso" name="Procesos" parent="menu_sitpro_texplus" action="action_control_proceso_line" sequence="30"/>
-
-
-  <menuitem id="menu_sitpro_texplus" name="Sitpro &amp; Texplus" parent="sale.sale_order_menu" sequence="40">
-    <menuitem id="menu_control_pedido" name="Pedidos" sequence="10" action="action_control_pedido"/>
-    <menuitem id="menu_control_partida" name="Partidas" sequence="20" action="action_control_partida"/>
-    <menuitem id="menu_control_proceso" name="Procesos" sequence="30" action="action_control_proceso_line"/>
-  </menuitem>
+  <menuitem id="menu_sitpro_texplus" name="Sitpro &amp; Texplus" parent="sale.sale_order_menu" sequence="40"/>
+  <menuitem id="menu_control_pedido" name="Pedidos" parent="menu_sitpro_texplus" sequence="10" action="action_control_pedido"/>
+  <menuitem id="menu_control_partida" name="Partidas" parent="menu_sitpro_texplus" sequence="20" action="action_control_partida"/>
+  <menuitem id="menu_control_proceso" name="Procesos" parent="menu_sitpro_texplus" sequence="30" action="action_control_proceso_line"/>
 </odoo>
