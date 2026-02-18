@@ -60,7 +60,7 @@ class RollPublicController(http.Controller):
                                 <tr>
                                     <td>{fiber.product_template_id.name or ''}</td>
                                     <td>{(fiber.percentage or 0) * 100:.2f} %</td>
-                                    <td>{roll.option_id.option_line_ids.filtered(lambda l: l.product_id.product_tmpl_id == fiber.product_template_id).mapped('lot_id').name if roll.option_id else roll.workorder_id.production_id.move_raw_ids.filtered(lambda l: l.product_id.product_tmpl_id == fiber.product_template_id).move_line_ids.mapped('lot_id').name}</td>
+                                    <td>{roll.option_id.option_line_ids.filtered(lambda l: l.product_id.product_tmpl_id == fiber.product_template_id).mapped('lot_id').name if roll.option_id else roll.workorder_id.production_id.move_raw_ids.filtered(lambda l: l.product_id.product_tmpl_id == fiber.product_template_id).move_line_ids.mapped('lot_id')[0].name}</td>
                                 </tr>
                             """
             
