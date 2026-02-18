@@ -43,7 +43,7 @@
       <form string="Pedido control">
         <header>
           <!-- Se ejecuta con el cron pero dejo el boton por si se necesita hacer algo manualmente -->
-          <!-- <button name="action_sync_from_dbf" type="object" string="Sincronizar desde DBF" class="btn-primary"/> -->
+          <button name="action_sync_from_dbf" type="object" string="Sincronizar desde DBF" class="btn-primary"/>
           <button name="settle_order" type="object" string="Liquidar Orden" class="btn-primary" invisible="state == 'se'"/>
           <button name="settle_order" type="object" string="Revertir Liquidación" class="btn-primary" invisible="state != 'se'"/>
           <field name="state" widget="statusbar"/>
@@ -140,24 +140,43 @@
           </group>
           <notebook>
             <page string="Procesos">
-              <field name="proceso_ids" readonly="1">
+              <field name="proceso_ids">
                 <list decoration-success="barFasDTF">
+
                   <field name="barcod"/>
                   <field name="barOrdLin"/>
-                  <field name="fasCod"/>
-                  <field name="maqCodBis"/>
+
+                  <!-- Editable solo si no ha iniciado -->
+                  <field name="fasCod"
+                        attrs="{'readonly':[('barFasDTI','!=',False)]}"/>
+
+                  <field name="maqCodBis"
+                        attrs="{'readonly':[('barFasDTI','!=',False)]}"/>
+
                   <field name="barFasDTI"/>
                   <field name="barFasDTF"/>
+
+                  <!-- BOTON EDITAR -->
+                  <button name="action_edit_process"
+                          type="object"
+                          string="Editar"
+                          class="btn-secondary"
+                          attrs="{'invisible':[('barFasDTI','!=',False)]}"/>
+
+                  <!-- BOTON INICIAR -->
                   <button name="action_start"
                           type="object"
                           string="Iniciar"
                           class="btn-primary"
-                          invisible="barFasDTI"/>
+                          attrs="{'invisible':[('barFasDTI','!=',False)]}"/>
+
+                  <!-- BOTON FINALIZAR -->
                   <button name="action_finish"
                           type="object"
                           string="Finalizar"
                           class="btn-success"
-                          invisible="not barFasDTI or barFasDTF"/>
+                          attrs="{'invisible':[('barFasDTI','=',False),('barFasDTF','!=',False)]}"/>
+
                 </list>
               </field>
             </page>
@@ -185,14 +204,17 @@
         <button name="action_start"
                 type="object"
                 string="Iniciar"
-                class="btn-primary"
-                invisible="barFasDTI"/>
+                attrs="{'invisible':[('barFasDTI','!=',False)]}"/>
 
         <button name="action_finish"
                 type="object"
                 string="Finalizar"
-                class="btn-success"
-                invisible="not barFasDTI or barFasDTF"/>
+                attrs="{'invisible':[('barFasDTI','=',False),('barFasDTF','!=',False)]}"/>
+                
+        <button name="action_open_edit_wizard"
+                type="object"
+                string="Editar Ruta"
+                class="btn-secondary"/>
 
       </list>
     </field>
@@ -244,6 +266,39 @@
           </search>
       </field>
   </record> -->
+
+
+ <!-- ================= AQUI PEGAS EL WIZARD ================= -->
+
+  <record id="view_control_route_edit_wizard" model="ir.ui.view">
+      <field name="name">control.route.edit.wizard.form</field>
+      <field name="model">control.route.edit.wizard</field>
+      <field name="arch" type="xml">
+          <form string="Editar Procesos BARFAS">
+              <group>
+                  <field name="barcod" readonly="1"/>
+              </group>
+
+              <field name="line_ids">
+                  <tree editable="bottom">
+                      <field name="barOrdLin" readonly="1"/>
+                      <field name="fasCod"/>
+                      <field name="maqCodBis"/>
+                  </tree>
+              </field>
+
+              <footer>
+                  <button string="Guardar"
+                          type="object"
+                          name="action_save"
+                          class="btn-primary"/>
+                  <button string="Cancelar" special="cancel"/>
+              </footer>
+          </form>
+      </field>
+  </record>
+
+
 
   <!-- ================= ACTIONS ================= -->
   <record id="action_control_pedido" model="ir.actions.act_window">
