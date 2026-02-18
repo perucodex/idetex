@@ -15,8 +15,8 @@ class SaleOrder(models.Model):
     sale_type = fields.Selection([
         ('sale', 'Sale'),
         ('service', 'Service'),
-        ('sample', 'Sample'),
-        ('pilot', 'Pilot'),
+        # ('sample', 'Sample'),
+        # ('pilot', 'Pilot'),
     ], string='Sale Type', default='sale')
     production_count = fields.Integer('Production Count', compute='_compute_production_count')
     sale_count = fields.Integer('Sales Count', compute='_compute_sale_count')
@@ -248,6 +248,7 @@ class SaleOrder(models.Model):
                         'product_qty': line.product_uom_qty,
                         'bom_id': line.bom_id.id,
                         'sale_order_line_id': line.id,
+                        'sale_type': rec.sale_type,
                     })
                     # wo_to_delete = prd.workorder_ids.filtered(lambda wo: wo.mrwo_id in operations_to_delete)
                     # wo_to_delete.unlink()
