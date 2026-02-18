@@ -1,10 +1,11 @@
-from odoo import _, models
+from odoo import _, models, fields
+from odoo.exceptions import RedirectWarning
 import requests
 
 class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'
 
-    def action_read_scale(self, id, employee_id, equipment_id, manual_weight=None):
+    def action_read_scale(self, id, employee_id, equipment_id, option_id, manual_weight=None):
         '''Leer la balanza desde el endpoint Flask'''
         '''Los parametros vienen de JavaScript'''
         try:
@@ -16,13 +17,18 @@ class MrpWorkorder(models.Model):
                 url = f'http://{client_ip}:5001/peso'
                 resp = requests.get(url, timeout=3)
                 resp.raise_for_status()
-                data = resp.json()
+                data = resp.json() 
 
                 if data.get('ok') and data.get('peso') is not None:
                     peso = 27.77#data['peso']
                 else:
                     return {'status': 'danger', 'message': _('No communication with the scale')}
             if peso:
+                # if int(option_id) not in self.option_ids.ids:
+                #     raise ValueError(_('Selected option is not valid for this workorder'))
+                qty_rolls = len(self.roll_ids)
+                start = self.time_ids[-1].date_start if qty_rolls == 0 else self.roll_ids[-1].roll_end
+                end = fields.Datetime.now()
                 roll = self.roll_ids.create({
                     'sequence': len(self.roll_ids),
                     'workorder_id': self.id,
@@ -30,8 +36,18 @@ class MrpWorkorder(models.Model):
                     'net_weight': peso,
                     'employee_id': int(employee_id),
                     'equipment_id': int(equipment_id),
+                    'roll_start': start,
+                    'roll_end': end,
+                    'option_id': int(option_id),
                 })
-                roll._print_zpl_to_network(roll.create_zpl(), self.env.company.zpl_printer_ip)
+                if not self.env.company.zpl_printer_ip:
+                    raise RedirectWarning(
+                        _('This company does not have any zpl printer configured.'),
+                        self.env.ref('account.action_account_config').id,
+                        _("Go to the configuration panel"),
+                        )
+                if self.env.company.is_printer:
+                    roll._print_zpl_to_network(roll.create_zpl(), self.env.company.zpl_printer_ip)
                 self.qty_producing = sum(self.roll_ids.mapped('gross_weight'))
                 return {
                     'status': 'success',

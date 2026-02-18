@@ -21,6 +21,7 @@ class ProductAnalysis(models.Model):
         ('open', 'Open'),
         ('tubu', 'Tubular'),
         ('rect', 'Rectilinear'),
+        ('othe', 'Other'),
     ], string='Weave Type')
     column_qty = fields.Integer('Column Qty')
     width = fields.Float('Analysis Width', compute='_compute_width')
@@ -48,14 +49,19 @@ class ProductAnalysis(models.Model):
         ('test', 'Test'),
         ('prod', 'Product'),
     ], string='State', default='test')
-    ligament_row = fields.Integer("Rows",default=0)
-    ligament_column = fields.Integer("Columns",default=0)
-    ligament_join_row_column = fields.Char("Union")
-    grid_data = fields.Text(string="Data Widget")
+    ligament_row = fields.Integer('Rows',default=0)
+    ligament_column = fields.Integer('Columns',default=0)
+    ligament_join_row_column = fields.Char('Union')
+    grid_data = fields.Text(string='Data Widget')
     # technical_sheet_id = fields.Many2one('technical.sheet', string='Technical Sheet')
-    technical_sheet_count = fields.Integer(string="Technical Sheet Count", compute='_get_technical_sheets')
+    technical_sheet_count = fields.Integer(string='Technical Sheet Count', compute='_get_technical_sheets')
     technical_sheet_ids = fields.One2many('technical.sheet', 'analysis_id', string='Technical Sheet')
     mrp_base_process_id = fields.Many2one('mrp.base.process', string='Base Process')
+    # Precio de tejido por producto
+    currency_id = fields.Many2one('res.currency', string='Currency', default=lambda self: self.env.ref('base.USD'))
+    weaving_price = fields.Monetary('Weaving Price')
+    # Manejo de producto por estado
+    production_state = fields.Char(string='Production State')
 
     _check_standard_width = models.Constraint(
         'CHECK(standard_width > 0)',
@@ -64,6 +70,15 @@ class ProductAnalysis(models.Model):
     _check_density = models.Constraint(
         'CHECK(density > 0)',
         'Density should be grather than zero.',
+    )
+    _check_weaving_price = models.Constraint(
+        'CHECK(weaving_price > 0)',
+        'Weaving Price should be grather than zero.',
+    )
+
+    _product_code_unique = models.Constraint(
+        'unique(product_code)',
+        'Product code must be unique!',
     )
 
     @api.onchange('mrp_base_process_id')
@@ -103,6 +118,7 @@ class ProductAnalysis(models.Model):
                     (rec.product_appearance_id.code or '00') + \
                     (str(int(rec.standard_width)) or '000').zfill(3) + \
                     (str(int(rec.density)) or '000').zfill(3)
+            rec.product_id.default_code = rec.product_code
                 
     @api.onchange('gauge_id')
     def _onchange_gauge_id(self):
@@ -116,17 +132,20 @@ class ProductAnalysis(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
-            if vals.get('name', _("New")) == _("New"):
+            if vals.get('name', _('New')) == _('New'):
                 seq_date = fields.Datetime.context_timestamp(
                     self, fields.Datetime.to_datetime(vals['analysis_date'])
                 ) if 'analysis_date' in vals else None
                 vals['name'] = self.env['ir.sequence'].with_company(vals.get('company_id')).next_by_code(
-                    'product.analysis', sequence_date=seq_date) or _("New")
-
+                    'product.analysis', sequence_date=seq_date) or _('New')
         return super().create(vals_list)
     
+    def write(self, vals):
+        return super().write(vals)
+    
     def action_product(self):
-        uom = self.env.ref('uom.product_uom_kgm') if self.weave_type != 'rect' else self.env.ref('uom.product_uom_unit')
+        # Modificamos la línea porque los rectilíneos tambien se venden por kilo
+        uom = self.env.ref('uom.product_uom_kgm') #if self.weave_type != 'rect' else self.env.ref('uom.product_uom_unit')
         self.product_id = self.env['product.template'].create({
             'name': self.product_description,
             'is_storable': True,
@@ -147,10 +166,10 @@ class ProductAnalysis(models.Model):
                 'product_code': self.product_code,
                 'product_id': self.product_id.id,
                 'partner_id': rec.partner_id.id,
-                'fabric_composition': ' '.join([
+                'fabric_composition': '\n'.join([
                     f'{round(f.percentage * 100)}% {f.product_template_id.name}'
                     for f in rec.fiber_ids if f.product_template_id
-                ]),
+                ]).strip(),
                 'density': self.density,
                 'width': self.standard_width,
                 'gauge_id': self.gauge_id.id,
@@ -196,32 +215,32 @@ class ProductAnalysis(models.Model):
         self.state = 'test'
 
     def open_tech(self):
-        return self.technical_sheet_ids._get_records_action(name=_("Technical Sheet"))
+        return self.technical_sheet_ids._get_records_action(name=_('Technical Sheet'))
     
     def open_product(self):
-        return self.product_id._get_records_action(name=_("Product"))
+        return self.product_id._get_records_action(name=_('Product'))
     
     def action_generate(self):
         row = self.ligament_row
         column = self.ligament_column
         if not row or row <= 0:
-            raise UserError("Row number must be greater than 0")
+            raise UserError('Row number must be greater than 0')
         if not column or column <= 0:
-            raise UserError("Column number must be greater than 0")
-        self.ligament_join_row_column = "%s, %s"%(row,column)
+            raise UserError('Column number must be greater than 0')
+        self.ligament_join_row_column = '%s, %s'%(row,column)
         self.grid_data = ''
 
     def get_svg_grid(self):
         self.ensure_one()
         try:
-            raw = json.loads(self.grid_data or "{}")
+            raw = json.loads(self.grid_data or '{}')
         except Exception:
             raw = {}
 
         # Traemos todos los SVGs de golpe
         svg_ids = set(raw.values())
         svg_map = {
-            rec.id: (rec.svg_content or "")
+            rec.id: (rec.svg_content or '')
             for rec in self.env['configurate.svg.example'].browse(svg_ids)
         }
 
@@ -229,14 +248,14 @@ class ProductAnalysis(models.Model):
         for r in range(self.ligament_row or 0):
             row = []
             for c in range(self.ligament_column or 0):
-                key0 = f"{r}_0_{c}"
-                key1 = f"{r}_1_{c}"
-                map0 = svg_map.get(raw.get(key0), "")
-                map1 = svg_map.get(raw.get(key1), "")
+                key0 = f'{r}_0_{c}'
+                key1 = f'{r}_1_{c}'
+                map0 = svg_map.get(raw.get(key0), '')
+                map1 = svg_map.get(raw.get(key1), '')
                 if map0 or map1:
                     row.append({
-                        'svg0': map0,#svg_map.get(raw.get(key0), ""),
-                        'svg1': map1,#svg_map.get(raw.get(key1), ""),
+                        'svg0': map0,#svg_map.get(raw.get(key0), ''),
+                        'svg1': map1,#svg_map.get(raw.get(key1), ''),
                     })
             if row:
                 grid.append(row)
@@ -259,7 +278,7 @@ class AnalysisWeavingData(models.Model):
             self.partner_id = self.analysis_id.partner_id
     
     def open_tech(self):
-        return self.technical_sheet_id._get_records_action(name=_("Technical Sheet"))
+        return self.technical_sheet_id._get_records_action(name=_('Technical Sheet'))
     
     def print_analysis_report(self):
         return self.env.ref('idtx_product_development.action_report_product_analysis').report_action(self)
@@ -287,6 +306,7 @@ class AnalysisFiber(models.Model):
     thread_qty = fields.Integer('Thread Quantity')
     thread_title = fields.Float('Thread Title', compute='_compute_thread_title')
     product_template_id = fields.Many2one('product.template', string='Thread', domain=lambda self: [('categ_id', 'in', self.env.company.thread_category_ids.ids)], ondelete='restrict')
+    ligament_id = fields.Many2one('ligament.type', string='Ligament')
     percentage = fields.Float('Percentage', compute='_compute_percentage')
     line_ids = fields.One2many('analysis.fiber.line', 'analysis_fiber_id', string='Lines')
 
@@ -343,3 +363,15 @@ class AnalysisRouteLine(models.Model):
     analysis_id = fields.Many2one('product.analysis', string='Product Analysis')
     operation_id = fields.Many2one('mrp.routing.workcenter.operation', string='Operation Name', ondelete='restrict')
     workcenter_id = fields.Many2one(related='operation_id.workcenter_id')
+
+    @api.constrains('analysis_id', 'operation_id')
+    def _check_unique_weaving_per_analysis(self):
+        for line in self:
+            if not line.analysis_id or not line.operation_id:
+                continue
+            if line.operation_id.operation_type != 'weaving':
+                continue
+
+            other_weaving = line.analysis_id.routing_ids.filtered(lambda l: l.id != line.id and l.operation_id and l.operation_id.operation_type == 'weaving')
+            if other_weaving:
+                raise UserError(_('Only one weaving operation is allowed'))

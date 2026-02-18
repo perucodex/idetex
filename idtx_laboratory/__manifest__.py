@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "Laboratory & Product Development",
+    'name': "Laboratory",
 
-    'summary': "Laboratory and Product Development modulo created for IDETEX",
+    'summary': "Laboratory module created for IDETEX",
 
     'description': """
-Laboratory & Product Development module allows for the creation of products, bills of materials, 
-colors, technical sheets, coding, and customer quotes based on fibers, inputs, and production routes.
+Laboratory  module allows colors for dieying
     """,
 
     'author': "Codex Development",

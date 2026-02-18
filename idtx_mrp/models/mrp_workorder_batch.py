@@ -25,6 +25,8 @@ class MrpWorkorderBatch(models.Model):
         for rec in self:
             if rec.wo_roll_ids:
                 rec.total_weight = sum(rec.wo_roll_ids.mapped('gross_weight'))
+            else:
+                rec.total_weight = 0
     
     #=== CRUD METHODS ===#
 

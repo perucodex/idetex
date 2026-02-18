@@ -1,7 +1,13 @@
 from odoo import models, _
+from odoo.exceptions import UserError
 
 class ApprovalRequest(models.Model):
     _inherit = 'approval.request'
+
+    def action_cancel(self):
+        if self.request_status == 'approved':
+            raise UserError(_('Cant\'t cancel an approved request.'))
+        return super().action_cancel()
 
     def _create_purchase_orders(self):
         self.product_line_ids._check_products_vendor()

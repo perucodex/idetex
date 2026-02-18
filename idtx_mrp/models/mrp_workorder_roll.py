@@ -19,6 +19,9 @@ class MrpWorkorderRoll(models.Model):
     new_weight = fields.Float('Split new weight')
     equipment_id = fields.Many2one('maintenance.equipment', string='Equipment')
     employee_id = fields.Many2one('hr.employee', string='Employee')
+    roll_start = fields.Datetime('Start Date')
+    roll_end = fields.Datetime('End Date')
+    option_id = fields.Many2one('mrp.workorder.option', string='Option')
 
     def reprint(self):
         # self.ensure_one()
@@ -52,7 +55,7 @@ class MrpWorkorderRoll(models.Model):
     def create_zpl(self):
         self.ensure_one()
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') #"https://odoo.gestionidtx.com/rollo"
-        url = f"{base_url}/rollo/{self.id}/datos"
+        url = f"{base_url}/rollo/datos/{self.id}"
         zpl_code = f"""^XA
                     ^PW600
                     ^LL600

@@ -25,8 +25,9 @@ Gestión de recetas e integración con sistema textil Orgatex, proyecciones y kp
     # always loaded
     'data': [
         'security/group_orgatex.xml',
-        # 'security/ir.model.access.csv',
+        'security/ir.model.access.csv',
         'views/orgatex_menu.xml',
+        'views/integration_orgatex_view.xml',
     ],
 }
 

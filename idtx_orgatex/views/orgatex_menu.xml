@@ -9,7 +9,7 @@
             web_icon="idtx_orgatex,static/description/icon.png"
             groups="idtx_orgatex.group_module_orga_manager,idtx_orgatex.group_module_orga_user">
                 <menuitem id="orga_operations_menu" name="Operations" sequence="10">
-                    <menuitem id="orga_dev_menu" name="Lab Dev" action="idtx_laboratory.lab_dev_action" sequence="10"/>
+                    <!-- <menuitem id="orga_dev_menu" name="Lab Dev" action="idtx_laboratory.lab_dev_action" sequence="10"/> -->
                 </menuitem>
         </menuitem>
 

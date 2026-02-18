@@ -23,8 +23,8 @@ class ZPLPrintController(http.Controller):
         roll = request.env['mrp.workorder.roll'].sudo().browse(int(record_id))
         if not roll.exists():
             raise UserError("Registro no encontrado")
-
-        zpl = roll.create_zpl()
-        roll._print_zpl_to_network(zpl, printer_ip)
+        
+        if self.env.company.is_printer:
+            roll._print_zpl_to_network(roll.create_zpl(), printer_ip)
 
         return {"ok": True}

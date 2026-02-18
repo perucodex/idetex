@@ -13,6 +13,7 @@
                     <block title="Impresoras" name="mrp_printers_block">
                         <setting id="mrp_zpl_printer"
                                 help="Permite imprimir etiquetas de codigos de barra para la producción de telas.">
+                            <field name="is_printer" string="Enable zpl printer"/>
                             <field name="zpl_printer_ip"/>
                             <div style="display:flex; justify-content:flex-end; align-items:flex-start; height:100%;">
                                 <button name="test_zpl_printer_ip" type="object" string="Test Printer"/>

@@ -3,6 +3,8 @@ access_mrp_production_roll,mrp_production_roll,model_mrp_production_roll,base.gr
 access_mrp_routing_workcenter_operation,mrp_routing_workcenter_operation,model_mrp_routing_workcenter_operation,base.group_user,1,1,1,1
 access_mrp_workorder_roll,mrp_workorder_roll,model_mrp_workorder_roll,base.group_user,1,1,1,1
 access_mrp_workorder_batch,mrp_workorder_batch,model_mrp_workorder_batch,base.group_user,1,1,1,1
+access_mrp_workorder_option,mrp_workorder_option,model_mrp_workorder_option,base.group_user,1,1,1,1
+access_mrp_workorder_option_line,mrp_workorder_option_line,model_mrp_workorder_option_line,base.group_user,1,1,1,1
 access_operation_parameter,access_operation_parameter,model_operation_parameter,base.group_user,1,1,1,1
 access_scale_registry,scale_registry,model_scale_registry,base.group_user,1,1,1,1
 access_batch_add_wizard,batch_add_wizard,model_batch_add_wizard,base.group_user,1,1,1,1

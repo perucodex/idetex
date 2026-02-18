@@ -1,0 +1,99 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* idtx_purchase_analytic_report
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-06 15:21+0000\n"
+"PO-Revision-Date: 2026-02-06 15:21+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: idtx_purchase_analytic_report
+#: model:ir.model.fields,field_description:idtx_purchase_analytic_report.field_purchase_order_line_analytic_report__analytic_account_id
+msgid "Analytic Account"
+msgstr "Cuenta Analítica"
+
+#. module: idtx_purchase_analytic_report
+#: model:ir.model.fields,field_description:idtx_purchase_analytic_report.field_purchase_order_line_analytic_report__buyer
+msgid "Buyer"
+msgstr "Comprador"
+
+#. module: idtx_purchase_analytic_report
+#: model:ir.model.fields,field_description:idtx_purchase_analytic_report.field_purchase_order_line_analytic_report__code
+msgid "Code"
+msgstr "Código"
+
+#. module: idtx_purchase_analytic_report
+#: model:ir.model.fields,field_description:idtx_purchase_analytic_report.field_purchase_order_line_analytic_report__company_id
+msgid "Company"
+msgstr "Empresa"
+
+#. module: idtx_purchase_analytic_report
+#: model:ir.actions.act_window,name:idtx_purchase_analytic_report.action_purchase_analytic_report
+#: model:ir.ui.menu,name:idtx_purchase_analytic_report.menu_purchase_analytic_report
+#: model_terms:ir.ui.view,arch_db:idtx_purchase_analytic_report.view_purchase_analytic_report_list
+#: model_terms:ir.ui.view,arch_db:idtx_purchase_analytic_report.view_purchase_analytic_report_pivot
+msgid "Compras por Centro de Costo"
+msgstr ""
+
+#. module: idtx_purchase_analytic_report
+#: model:ir.model.fields,field_description:idtx_purchase_analytic_report.field_purchase_order_line_analytic_report__currency_id
+msgid "Currency"
+msgstr "Moneda"
+
+#. module: idtx_purchase_analytic_report
+#: model:ir.model.fields,field_description:idtx_purchase_analytic_report.field_purchase_order_line_analytic_report__date_order
+msgid "Date Order"
+msgstr "Fecha de Orden"
+
+#. module: idtx_purchase_analytic_report
+#: model:ir.model.fields,field_description:idtx_purchase_analytic_report.field_purchase_order_line_analytic_report__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: idtx_purchase_analytic_report
+#: model:ir.model.fields,field_description:idtx_purchase_analytic_report.field_purchase_order_line_analytic_report__id
+msgid "ID"
+msgstr ""
+
+#. module: idtx_purchase_analytic_report
+#: model:ir.model.fields,field_description:idtx_purchase_analytic_report.field_purchase_order_line_analytic_report__order_id
+msgid "Order"
+msgstr "Orden"
+
+#. module: idtx_purchase_analytic_report
+#: model:ir.model.fields,field_description:idtx_purchase_analytic_report.field_purchase_order_line_analytic_report__order_line_id
+msgid "Order Line"
+msgstr "Línea de Orden"
+
+#. module: idtx_purchase_analytic_report
+#: model:ir.model.fields,field_description:idtx_purchase_analytic_report.field_purchase_order_line_analytic_report__price_subtotal
+msgid "Price Subtotal"
+msgstr "Subtotal"
+
+#. module: idtx_purchase_analytic_report
+#: model:ir.model.fields,field_description:idtx_purchase_analytic_report.field_purchase_order_line_analytic_report__price_total
+msgid "Price Total"
+msgstr "Total"
+
+#. module: idtx_purchase_analytic_report
+#: model:ir.model.fields,field_description:idtx_purchase_analytic_report.field_purchase_order_line_analytic_report__product_id
+msgid "Product"
+msgstr "Producto"
+
+#. module: idtx_purchase_analytic_report
+#: model:ir.model.fields,field_description:idtx_purchase_analytic_report.field_purchase_order_line_analytic_report__product_qty
+msgid "Product Qty"
+msgstr "Cantidad"
+
+#. module: idtx_purchase_analytic_report
+#: model:ir.model,name:idtx_purchase_analytic_report.model_purchase_order_line_analytic_report
+msgid "Purchase Order Line Analytic Report"
+msgstr "Reporte de Línea de Orden Analítico"
