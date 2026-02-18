@@ -540,7 +540,10 @@ class ControlPedido(models.Model):
                         # Mapeo a campos de control.proceso.lines
                         vals_proc = {
                             "barcod": bc,
+                            "barcodreo": bcreo,
+                            "barcodpar": bcpar,
                             "barOrdLin": int(pr.get("BarOrdLin") or 0),
+                            "fas_code": _safe_str(pr.get("FasCod")),
                             "fasCod": desc,
                             "maqCodBis": _safe_str(pr.get("MaqCodBis")),
                             # Fechas: cuidado con formats. _safe_date maneja selects de pyodbc (datetime)
@@ -682,8 +685,11 @@ class ControlProcesoLine(models.Model):
     )
 
     barcod = fields.Char("Hoja de Ruta")
+    barcodreo = fields.Char("Reproceso")
+    barcodpar = fields.Char("Partida")
     barOrdLin = fields.Integer("Orden")
-    fasCod = fields.Char("Proceso")
+    fas_code = fields.Char("Código Proceso")
+    fasCod = fields.Char("Proceso (Descr)")
     maqCodBis = fields.Char("Máquina")
 
     barFasDTI = fields.Datetime("Fecha Inicio")
@@ -691,11 +697,20 @@ class ControlProcesoLine(models.Model):
 
   # 👇👇👇 AGREGA ESTO AQUÍ 👇👇👇
 
+    def action_edit_process(self):
+        self.ensure_one()
+        # if self.barFasDTI:
+        #      raise UserError("No se puede editar porque el proceso ya fue iniciado.")
+        return self.action_open_edit_wizard()
+
+
     def action_open_edit_wizard(self):
         self.ensure_one()
 
         wizard = self.env["control.route.edit.wizard"].create({
-            "barcod": self.barcod
+            "barcod": self.barcod,
+            "barcodreo": self.barcodreo,
+            "barcodpar": self.barcodpar,
         })
 
         wizard.load_processes()
@@ -707,21 +722,6 @@ class ControlProcesoLine(models.Model):
             "res_id": wizard.id,
             "target": "new",
         }
-
-
-    # can_edit = fields.Boolean(compute="_compute_can_edit")
-
-    # @api.depends('barFasDTI')
-    # def _compute_can_edit(self):
-    #     for rec in self:
-    #         rec.can_edit = not bool(rec.barFasDTI)
-
-    # =====================================
-
-    def action_edit_process(self):
-        for rec in self:
-            if rec.barFasDTI:
-                raise UserError("No se puede editar porque el proceso ya fue iniciado.")
 
 
     def action_start(self):
@@ -770,6 +770,8 @@ class ControlRouteEditWizard(models.TransientModel):
     _description = "Editar FasCod y MaqCodBis"
 
     barcod = fields.Char("Hoja de Ruta", required=True)
+    barcodreo = fields.Char("Reproceso")
+    barcodpar = fields.Char("Partida")
     line_ids = fields.One2many(
         "control.route.edit.wizard.line",
         "wizard_id",
@@ -783,11 +785,13 @@ class ControlRouteEditWizard(models.TransientModel):
         query = """
             SELECT BarOrdLin, FasCod, MaqCodBis
             FROM BARFAS
-            WHERE BarCod = ?
+            WHERE BarCod = ? 
+              AND ISNULL(BarCodReo, 0) = ?
+              AND ISNULL(BarCodPar, '') = ?
             ORDER BY BarOrdLin
         """
 
-        cursor.execute(query, self.barcod)
+        cursor.execute(query, self.barcod, self.barcodreo or 0, self.barcodpar or '')
 
         self.line_ids.unlink()
 
@@ -795,7 +799,7 @@ class ControlRouteEditWizard(models.TransientModel):
             self.env["control.route.edit.wizard.line"].create({
                 "wizard_id": self.id,
                 "barOrdLin": row[0],
-                "fasCod": row[1],
+                "fasCod": row[1], # Here we load the CODE for editing
                 "maqCodBis": row[2],
             })
 
@@ -812,15 +816,19 @@ class ControlRouteEditWizard(models.TransientModel):
             query = """
                 UPDATE BARFAS
                 SET FasCod = ?, MaqCodBis = ?
-                WHERE BarCod = ?
-                AND BarOrdLin = ?
+                WHERE BarCod = ? 
+                  AND ISNULL(BarCodReo, 0) = ?
+                  AND ISNULL(BarCodPar, '') = ?
+                  AND BarOrdLin = ?
             """
 
             cursor.execute(
                 query,
-                line.fasCod,
-                line.maqCodBis,
+                line.fasCod or '',
+                line.maqCodBis or '',
                 self.barcod,
+                self.barcodreo or 0,
+                self.barcodpar or '',
                 line.barOrdLin
             )
 
@@ -828,7 +836,8 @@ class ControlRouteEditWizard(models.TransientModel):
         cursor.close()
         conn.close()
 
-        # Refrescar Odoo
+        # Refrescar Odoo (opcional, podrías solo actualizar el modelo local si no quieres re-sincronizar todo)
+        # Pero sync_from_dbf es lo más seguro para ver los cambios reflejados.
         self.env["control.pedido"].sync_from_dbf()
 
         return {"type": "ir.actions.act_window_close"}
