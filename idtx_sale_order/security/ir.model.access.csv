@@ -1,6 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_product_color,product_color,model_product_color,idtx_laboratory.group_module_laboratory_user,1,1,1,1
 access_product_color_price,access_product_color_price,model_product_color_price,base.group_user,1,1,1,1
+access_product_color_title_price,access_product_color_title_price,model_product_color_title_price,base.group_user,1,1,1,1
 access_sale_order_line_size,access_sale_order_line_size,model_sale_order_line_size,base.group_user,1,1,1,1
 access_size_qty_wizard,access_size_qty_wizard,model_size_qty_wizard,base.group_user,1,1,1,1
 access_size_qty_wizard_line,access_size_qty_wizard_line,model_size_qty_wizard_line,base.group_user,1,1,1,1

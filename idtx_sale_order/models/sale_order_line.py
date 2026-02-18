@@ -232,22 +232,27 @@ class SaleOrderLine(models.Model):
                     if operation.operation_id.operation_type == 'weaving':
                         price = float_round(self.product_template_id.analysis_id.weaving_price,2)
                     else:
-                        if operation.operation_id.type_prices == 'col' and self.product_color_id.is_lab_color:
+                        if operation.operation_id.type_prices == 'col':
                             operation_color_line = operation.operation_id.product_color_price_ids.search([
                                 ('product_color_id', '=', self.product_color_id.id),
                                 ('mrwo_id', '=', operation.operation_id._origin.id)
                             ])
-                            price = float_round(operation_color_line.unit_price, 2) if operation_color_line else 0
+                            # Si el precio varia por titulo de hilo
+                            if operation.operation_id.per_title:
+                                operation_color_title_line = operation_color_line.color_title_price_ids.filtered(lambda l: self.product_template_id.analysis_id.product_title_id in l.title_ids)
+                                price = float_round(operation_color_title_line.unit_price, 2) if operation_color_title_line else 0
+                            else:
+                                price = float_round(operation_color_line.unit_price, 2) if operation_color_line else 0
                         else:
                             price = float_round(operation.operation_id.unit_price, 2)
                     
                     # Si el precio varia por titulo de hilo
-                    if operation.operation_id.per_title:
-                        if operation.operation_id.type_prices == 'col':
-                            if self.product_color_id.is_lab_color:
-                                price = float_round(price + self.product_template_id.analysis_id.product_title_id.unit_price, 2)
-                        else:
-                            price = float_round(price + self.product_template_id.analysis_id.product_title_id.unit_price, 2)
+                    # if operation.operation_id.per_title:
+                    #     if operation.operation_id.type_prices == 'col':
+                    #         if self.product_color_id.is_lab_color:
+                    #             price = float_round(price + self.product_template_id.analysis_id.product_title_id.unit_price, 2)
+                    #     else:
+                    #         price = float_round(price + self.product_template_id.analysis_id.product_title_id.unit_price, 2)
 
                     src_currency = operation.operation_id.currency_id
                     if src_currency != currency:
