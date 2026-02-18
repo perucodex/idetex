@@ -18,6 +18,11 @@
             <field name="privilege_id" ref="module_product_development_user"/>
             <field name="implied_ids" eval="[(4, ref('group_module_product_development_user'))]"/>
         </record>
+        <record id="group_module_product_development_price_editor" model="res.groups">
+            <field name="name">Price Editor</field>
+            <field name="privilege_id" ref="module_product_development_user"/>
+            <field name="implied_ids" eval="[(4, ref('group_module_product_development_manager'))]"/>
+        </record>
         
         <record id="base.user_admin" model="res.users">
             <field name="group_ids" eval="[Command.link(ref('group_module_product_development_manager'))]"/>

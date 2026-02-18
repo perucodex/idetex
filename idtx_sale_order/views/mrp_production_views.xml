@@ -13,6 +13,7 @@
                     <button name="action_manual" invisible="not need_recipe or not manual_recipe or state != 'draft' or not bom_id or manual_color_recipe_id" string="Labdev Recipe" type="object" class="oe_highlight" data-hotkey="q"/>
                 </button>
                 <div name="bom_div" position="after">
+                    <field name="sale_type" readonly="state != 'draft'"/>
                     <field name="color_recipe_id" readonly="1" invisible="not need_recipe or manual_recipe"/>
                     <field name="color_code" readonly="1" invisible="not need_recipe or not color_recipe_id"/>
                     <field name="color_name" readonly="1" invisible="not need_recipe or not color_recipe_id"/>
