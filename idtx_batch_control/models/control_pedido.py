@@ -492,6 +492,11 @@ class ControlPedido(models.Model):
                     chunk = unique_barcods[i:i + chunk_size]
                     placeholders_bc = ",".join(["?"] * len(chunk))
                     
+                    if '05033-25' in barcods or '320154' in barcods:
+                        print("si existe")
+                    else:
+                        print("no existe")    
+                        
                     q_procs = f"""
                         SELECT 
                             bf.BarCod, bf.BarOrdLin, bf.FasCod, bf.MaqCodBis, bf.BarFasDTI, bf.BarFasDTF,
@@ -506,18 +511,32 @@ class ControlPedido(models.Model):
                     p_cols = [c[0] for c in cursor.description]
                     p_rows = [dict(zip(p_cols, row)) for row in cursor.fetchall()]
 
+                    
                     for pr in p_rows:
                         bc = _safe_str(pr.get("BarCod"))
                         # Clave compuesta: (BarCod, BarCodReo, BarCodPar)
                         # Ojo: BarCodPar puede ser NULL o vacío en BD, normalizar a '' para coincidir
-                        bcreo = _safe_str(pr.get("BarCodReo")) or ''
+                        bcreo = _safe_float(pr.get("BarCodReo")) or ''
                         bcpar = _safe_str(pr.get("BarCodPar")) or ''
-                        
+
+                        # print("-" + bc + "-")
+                        # if bc.strip() == '323405':
+                        #     x = 1
+                            
                         key = (bc, bcreo, bcpar)
 
                         # Map FasDsc to fasCod field for display
                         desc = _safe_str(pr.get("FasDsc")) or _safe_str(pr.get("FasCod"))
                         
+                        start = pr.get("BarFasDTI")
+                        end = pr.get("BarFasDTF")
+
+                        if start and start.year <= 1753:
+                            start = False
+
+                        if end and end.year <= 1753:
+                            end = False
+
                         # Mapeo a campos de control.proceso.lines
                         vals_proc = {
                             "barcod": bc,
@@ -525,8 +544,8 @@ class ControlPedido(models.Model):
                             "fasCod": desc,
                             "maqCodBis": _safe_str(pr.get("MaqCodBis")),
                             # Fechas: cuidado con formats. _safe_date maneja selects de pyodbc (datetime)
-                            "barFasDTI": pr.get("BarFasDTI"), 
-                            "barFasDTF": pr.get("BarFasDTF"),
+                            "barFasDTI": start,
+                            "barFasDTF": end,
                         }
                         processes_by_valid_key.setdefault(key, []).append((0, 0, vals_proc))
 
@@ -552,13 +571,20 @@ class ControlPedido(models.Model):
             
             # Inyectar procesos si existen (Match por clave compuesta)
             bc = _safe_str(dr.get("HojaDeRuta"))
-            bcreo = _safe_str(dr.get("BarCodReo")) or ''
+            bcreo = _safe_float(dr.get("BarCodReo")) or ''
             bcpar = _safe_str(dr.get("BarCodPar")) or ''
+
+            # if bc.strip() == '323405':
+            #     x = 1
 
             key = (bc, bcreo, bcpar)
             
             if key in processes_by_valid_key:
                 vals_line["proceso_ids"] = processes_by_valid_key[key]
+            else:
+                 # Debug info if no match found for expected ones
+                 if bc == '319226': # Specific debug for the case in screenshot
+                     print(f"DEBUG: No process match for key {key}. Available keys sample: {list(processes_by_valid_key.keys())[:5]}")
 
             line_cmds_by_pedido.setdefault(pedido.id, []).append((0, 0, vals_line))
 
@@ -607,6 +633,17 @@ class ControlPedidoLine(models.Model):
     @api.model
     def _vals_from_det_row(self, dr):
         user_tz = pytz.timezone(self.env.user.tz or 'UTC')
+
+        start = _safe_date(dr.get("FechaInicio"), user_tz)
+        end = _safe_date(dr.get("FechaFinal"), user_tz)
+
+        if start and start.year <= 1753:
+            start = False 
+    
+        if end and end.year <= 1753:
+            end = False
+
+
         return {
             "route": _safe_str(dr["HojaDeRuta"]),
             "barcodreo": _safe_str(dr["BarCodReo"]),
@@ -614,8 +651,8 @@ class ControlPedidoLine(models.Model):
             "kilograms": _safe_float(dr["PesoTotal"]),
             "process": _safe_str(dr["Proceso_Ultimo"]) or 'SIN AVANCE',
             "area": _safe_str(dr["Area"]) or 'VOUCHER',
-            "start_date": _safe_date(dr["FechaInicio"], user_tz),
-            "end_date": _safe_date(dr["FechaFinal"], user_tz),
+            "start_date": start,
+            "end_date": end,
             "colorcode": _safe_str(dr["ColorCode"]),
             "colorname": _safe_str(dr["ColorName"]),
         }
@@ -652,55 +689,69 @@ class ControlProcesoLine(models.Model):
     barFasDTI = fields.Datetime("Fecha Inicio")
     barFasDTF = fields.Datetime("Fecha Fin")
 
+  # 👇👇👇 AGREGA ESTO AQUÍ 👇👇👇
+
+    def action_open_edit_wizard(self):
+        self.ensure_one()
+
+        wizard = self.env["control.route.edit.wizard"].create({
+            "barcod": self.barcod
+        })
+
+        wizard.load_processes()
+
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": "control.route.edit.wizard",
+            "view_mode": "form",
+            "res_id": wizard.id,
+            "target": "new",
+        }
+
+
+    # can_edit = fields.Boolean(compute="_compute_can_edit")
+
+    # @api.depends('barFasDTI')
+    # def _compute_can_edit(self):
+    #     for rec in self:
+    #         rec.can_edit = not bool(rec.barFasDTI)
+
     # =====================================
+
+    def action_edit_process(self):
+        for rec in self:
+            if rec.barFasDTI:
+                raise UserError("No se puede editar porque el proceso ya fue iniciado.")
+
 
     def action_start(self):
         for rec in self:
 
-            if rec.barFasDTI:
-                raise UserError("Este proceso ya fue iniciado.")
-
-            prev = self.search([
-                ("pedido_line_id", "=", rec.pedido_line_id.id),
-                ("barOrdLin", "<", rec.barOrdLin),
-                ("barFasDTF", "=", False)
-            ])
-
-            if prev:
-                raise UserError("Debe finalizar el proceso anterior primero.")
-
             now = fields.Datetime.now()
 
-            rec._update_sql("BarFasDTI", now)
-            rec.barFasDTI = now
+            # rec._update_sql("BarFasDTI", now)
 
-    # =====================================
+            rec.barFasDTI = now
 
     def action_finish(self):
         for rec in self:
 
-            if not rec.barFasDTI:
-                raise UserError("Debe iniciar el proceso primero.")
-
-            if rec.barFasDTF:
-                raise UserError("Este proceso ya fue finalizado.")
-
             now = fields.Datetime.now()
 
-            rec._update_sql("BarFasDTF", now)
-            rec.barFasDTF = now
+            # rec._update_sql("BarFasDTF", now)
 
-    # =====================================
+            rec.barFasDTF = now
 
     def _update_sql(self, field_name, value):
         conn = self.pedido_line_id.pedido_id._get_sql_connection()
         cursor = conn.cursor()
 
         query = f"""
-            UPDATE BARFAS
-            SET {field_name} = ?
-            WHERE BarCod = ?
-              AND BarOrdLin = ?
+                UPDATE BARFAS
+                SET {field_name} = ?,
+                    BarFasEst = 2
+                WHERE BarCod = ?
+                AND BarOrdLin = ?
         """
 
         cursor.execute(query, value, self.barcod, self.barOrdLin)
@@ -708,3 +759,88 @@ class ControlProcesoLine(models.Model):
 
         cursor.close()
         conn.close()
+
+
+# ============================================
+# WIZARD EDITAR FASCOD Y MAQCODBIS
+# ============================================
+
+class ControlRouteEditWizard(models.TransientModel):
+    _name = "control.route.edit.wizard"
+    _description = "Editar FasCod y MaqCodBis"
+
+    barcod = fields.Char("Hoja de Ruta", required=True)
+    line_ids = fields.One2many(
+        "control.route.edit.wizard.line",
+        "wizard_id",
+        string="Procesos"
+    )
+
+    def load_processes(self):
+        conn = self.env["control.pedido"]._get_sql_connection()
+        cursor = conn.cursor()
+
+        query = """
+            SELECT BarOrdLin, FasCod, MaqCodBis
+            FROM BARFAS
+            WHERE BarCod = ?
+            ORDER BY BarOrdLin
+        """
+
+        cursor.execute(query, self.barcod)
+
+        self.line_ids.unlink()
+
+        for row in cursor.fetchall():
+            self.env["control.route.edit.wizard.line"].create({
+                "wizard_id": self.id,
+                "barOrdLin": row[0],
+                "fasCod": row[1],
+                "maqCodBis": row[2],
+            })
+
+        cursor.close()
+        conn.close()
+
+    def action_save(self):
+
+        conn = self.env["control.pedido"]._get_sql_connection()
+        cursor = conn.cursor()
+
+        for line in self.line_ids:
+
+            query = """
+                UPDATE BARFAS
+                SET FasCod = ?, MaqCodBis = ?
+                WHERE BarCod = ?
+                AND BarOrdLin = ?
+            """
+
+            cursor.execute(
+                query,
+                line.fasCod,
+                line.maqCodBis,
+                self.barcod,
+                line.barOrdLin
+            )
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        # Refrescar Odoo
+        self.env["control.pedido"].sync_from_dbf()
+
+        return {"type": "ir.actions.act_window_close"}
+
+
+class ControlRouteEditWizardLine(models.TransientModel):
+    _name = "control.route.edit.wizard.line"
+    _description = "Lineas Edicion Ruta"
+
+    wizard_id = fields.Many2one("control.route.edit.wizard")
+
+    barOrdLin = fields.Integer("Orden", readonly=True)
+    fasCod = fields.Char("Proceso")
+    maqCodBis = fields.Char("Máquina")
+
