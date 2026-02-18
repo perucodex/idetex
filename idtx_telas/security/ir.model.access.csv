@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_idtx_fabric_user,idtx.fabric.user,model_idtx_fabric,base.group_user,1,1,1,1
+access_idtx_fabric_composition_user,idtx.fabric.composition.user,model_idtx_fabric_composition,base.group_user,1,1,1,1
+access_idtx_fabric_tag_user,idtx.fabric.tag.user,model_idtx_fabric_tag,base.group_user,1,1,1,1

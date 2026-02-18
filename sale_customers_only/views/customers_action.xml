@@ -1,0 +1,7 @@
+<odoo>
+    <!-- Sobrescribe la acción que estás usando en Ventas -->
+    <record id="account.res_partner_action_customer" model="ir.actions.act_window">
+        <!-- Solo clientes -->
+        <field name="domain">[('customer_rank', '&gt;', 0), ('parent_id', '=', False)]</field>
+    </record>
+</odoo>

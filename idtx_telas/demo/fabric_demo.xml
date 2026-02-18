@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Composition Data -->
+        <record id="demo_comp_cotton" model="idtx.fabric.composition">
+            <field name="name">100% Algodón</field>
+        </record>
+        <record id="demo_comp_poly_blend" model="idtx.fabric.composition">
+            <field name="name">60% Poliéster / 40% Algodón</field>
+        </record>
+        <record id="demo_comp_silk" model="idtx.fabric.composition">
+            <field name="name">100% Seda Natural</field>
+        </record>
+
+        <!-- Tags -->
+        <record id="demo_tag_summer" model="idtx.fabric.tag">
+            <field name="name">Verano 2025</field>
+            <field name="color">1</field>
+        </record>
+        <record id="demo_tag_eco" model="idtx.fabric.tag">
+            <field name="name">Eco-Friendly</field>
+            <field name="color">4</field>
+        </record>
+        <record id="demo_tag_luxury" model="idtx.fabric.tag">
+            <field name="name">Lujo</field>
+            <field name="color">3</field>
+        </record>
+
+        <!-- Fabric 1: Cotton Jersey (Validated, High Priority) -->
+        <record id="demo_fabric_1" model="idtx.fabric">
+            <field name="name">Algodón Jersey Premium</field>
+            <field name="code">JER-001-COT</field>
+            <field name="barcode">1234567890123</field>
+            <field name="state">validated</field>
+            <field name="priority">2</field>
+            <field name="stock_qty">1500.0</field>
+            <field name="uom_name">m</field>
+            <field name="is_sustainable" eval="True"/>
+            <field name="fabric_grade">9</field>
+            <field name="kanban_color">4</field>
+            <field name="tag_ids" eval="[(6, 0, [ref('demo_tag_summer'), ref('demo_tag_eco')])]"/>
+            <field name="composition_id" ref="demo_comp_cotton"/>
+            <field name="gsm">180.0</field>
+            <field name="width">160.0</field>
+            <field name="weaving_type">knit</field>
+            <field name="color">Blanco Nieve</field>
+            <field name="pattern">Liso</field>
+            <field name="thread_count">N/A</field>
+            <field name="cost_price">4.50</field>
+            <field name="list_price">8.00</field>
+            <field name="description">Un jersey de algodón supersuave, perfecto para camisetas y ropa de bebé. Certificación GOTS.</field>
+            <field name="care_instructions"><![CDATA[
+                <ul>
+                    <li>Lavar a 30°C máximo</li>
+                    <li>No usar lejía</li>
+                    <li>Planchar a temperatura media</li>
+                </ul>
+            ]]></field>
+        </record>
+
+        <!-- Fabric 2: Polyester Twill (Development, Normal Priority) -->
+        <record id="demo_fabric_2" model="idtx.fabric">
+            <field name="name">Sarga Poliéster Resistente</field>
+            <field name="code">TWL-200-POLY</field>
+            <field name="state">development</field>
+            <field name="priority">1</field>
+            <field name="stock_qty">0.0</field>
+            <field name="uom_name">m</field>
+            <field name="fabric_grade">5</field>
+            <field name="kanban_color">2</field>
+            <field name="composition_id" ref="demo_comp_poly_blend"/>
+            <field name="gsm">240.0</field>
+            <field name="width">150.0</field>
+            <field name="weaving_type">twill</field>
+            <field name="color">Azul Marino</field>
+            <field name="pattern">Diagonal</field>
+            <field name="cost_price">2.20</field>
+            <field name="list_price">0.00</field>
+            <field name="description">Tejido de prueba para uniformes escolares. Alta resistencia.</field>
+        </record>
+
+        <!-- Fabric 3: Silk Satin (Sampling, Very High Priority) -->
+        <record id="demo_fabric_3" model="idtx.fabric">
+            <field name="name">Satén de Seda Imperial</field>
+            <field name="code">SAT-900-SLK</field>
+            <field name="state">sampling</field>
+            <field name="priority">3</field>
+            <field name="stock_qty">15.5</field>
+            <field name="uom_name">yd</field>
+            <field name="is_sustainable" eval="False"/>
+            <field name="fabric_grade">10</field>
+            <field name="kanban_color">3</field>
+            <field name="tag_ids" eval="[(6, 0, [ref('demo_tag_luxury')])]"/>
+            <field name="composition_id" ref="demo_comp_silk"/>
+            <field name="gsm">80.0</field>
+            <field name="width">140.0</field>
+            <field name="weaving_type">satin</field>
+            <field name="color">Rojo Rubí</field>
+            <field name="pattern">Brillante</field>
+            <field name="thread_count">600TC</field>
+            <field name="cost_price">25.00</field>
+            <field name="list_price">45.00</field>
+            <field name="description">Seda exquisita para vestidos de noche. Manejar con extremo cuidado.</field>
+        </record>
+
+        <!-- Fabric 4: Denim Heavyweight (Draft, Normal Priority) -->
+        <record id="demo_fabric_4" model="idtx.fabric">
+            <field name="name">Denim Crudo 14oz</field>
+            <field name="code">DNM-14OZ-RAW</field>
+            <field name="state">draft</field>
+            <field name="priority">0</field>
+            <field name="stock_qty">0.0</field>
+            <field name="uom_name">m</field>
+            <field name="fabric_grade">7</field>
+            <field name="kanban_color">1</field>
+            <field name="composition_id" ref="demo_comp_cotton"/>
+            <field name="gsm">400.0</field>
+            <field name="width">160.0</field>
+            <field name="weaving_type">twill</field>
+            <field name="color">Indigo Oscuro</field>
+            <field name="pattern">Denim</field>
+            <field name="cost_price">6.00</field>
+            <field name="list_price">12.00</field>
+            <field name="description">Denim pesado para jeans clásicos. Requiere lavado previo.</field>
+        </record>
+
+        <!-- Fabric 5: Linen Blend (Obsolete, Low Priority) -->
+        <record id="demo_fabric_5" model="idtx.fabric">
+            <field name="name">Lino Rústico Antiguo</field>
+            <field name="code">LIN-OLD-05</field>
+            <field name="state">obsolete</field>
+            <field name="priority">0</field>
+            <field name="stock_qty">2.0</field>
+            <field name="uom_name">m</field>
+            <field name="kanban_color">9</field>
+            <field name="composition_id" ref="demo_comp_poly_blend"/>
+            <field name="gsm">190.0</field>
+            <field name="weaving_type">plain</field>
+            <field name="color">Beige Natural</field>
+            <field name="description">Referencia descatalogada. Solo queda retazo.</field>
+        </record>
+    </data>
+</odoo>
