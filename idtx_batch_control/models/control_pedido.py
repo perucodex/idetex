@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from dbf import Char
 import datetime
 import pytz
 import dbf
@@ -406,6 +407,7 @@ class ControlPedido(models.Model):
             WITH PedidoHDR AS (
                 SELECT
                     bc.BarCod,
+                    bc.BarSerDsc,
                     bc.BarCodReo,
                     bc.BarCodPar,
                     bc.BarItem2 AS Pedido,
@@ -624,27 +626,29 @@ class ControlPedido(models.Model):
                 def_maq = _safe_str(row[2])
                 if not code: continue
                 
-                existing = self.env['control.faspro.definition'].sudo().search([('code', '=', code)], limit=1)
-                vals = {'name': name or code, 'default_maq_code': def_maq}
-                if existing:
-                    existing.write(vals)
+                # 1) Sincronizar con la tabla de definiciones (legacy/referencia)
+                existing_def = self.env['control.faspro.definition'].sudo().search([('code', '=', code)], limit=1)
+                vals_def = {'name': name or code, 'default_maq_code': def_maq}
+                if existing_def:
+                    existing_def.write(vals_def)
                 else:
-                    self.env['control.faspro.definition'].sudo().create({'code': code, **vals})
+                    self.env['control.faspro.definition'].sudo().create({'code': code, **vals_def})
 
-            # --- Sync FASPRO (Procesos) ---
-            cursor.execute("SELECT FasCod, FasDsc, MaqCod FROM FASPRO")
-            for row in cursor.fetchall():
-                code = _safe_str(row[0])
-                name = _safe_str(row[1])
-                def_maq = _safe_str(row[2])
-                if not code: continue
+                # 2) Sincronizar con Operaciones de Manufactura (mrp.routing.workcenter.operation)
+                # Buscamos por nombre o por el mismo fas_code ya asignado
+                operation = self.env['mrp.routing.workcenter.operation'].sudo().search([
+                    '|', ('fas_code', '=', code), ('name', '=', name)
+                ], limit=1)
                 
-                existing = self.env['control.faspro.definition'].sudo().search([('code', '=', code)], limit=1)
-                vals = {'name': name or code, 'default_maq_code': def_maq}
-                if existing:
-                    existing.write(vals)
-                else:
-                    self.env['control.faspro.definition'].sudo().create({'code': code, **vals})
+                if operation:
+                    # Si la encontramos, aseguramos que tenga el código mssql para el wizard
+                    operation.write({'fas_code': code})
+                    
+                    # Opcionalmente, si el centro de trabajo no coincide y tenemos el código de máquina
+                    if def_maq and not operation.workcenter_id:
+                        wc = self.env['mrp.workcenter'].sudo().search([('code', '=', def_maq)], limit=1)
+                        if wc:
+                            operation.write({'workcenter_id': wc.id})
             
         finally:
             conn.close()
@@ -657,6 +661,7 @@ class ControlPedidoLine(models.Model):
 
     pedido_id = fields.Many2one("control.pedido", required=True, ondelete="cascade")
     route = fields.Char(string="Route")
+    description = fields.Char('Articulo')
     barcodreo = fields.Char('Reprocess')
     batch = fields.Char('Batch')
     process = fields.Char(string="Next Process")
@@ -690,6 +695,7 @@ class ControlPedidoLine(models.Model):
         return {
             "route": _safe_str(dr["HojaDeRuta"]),
             "barcodreo": _safe_str(dr["BarCodReo"]),
+            "description": _safe_str(dr["BarSerDsc"]),
             "batch": _safe_str(dr["Partida"]),
             "kilograms": _safe_float(dr["PesoTotal"]),
             "process": _safe_str(dr["Proceso_Ultimo"]) or 'SIN AVANCE',
@@ -854,7 +860,7 @@ class ControlProcesoLineWizard(models.TransientModel):
 
     # Campos Proceso
     fas_old_str = fields.Char("Proceso Anterior", readonly=True)
-    fas_id_new = fields.Many2one("control.faspro.definition", string="Nuevo Proceso")
+    fas_id_new = fields.Many2one("mrp.routing.workcenter.operation", string="Nuevo Proceso")
 
     # Campos Maquina
     maq_old_str = fields.Char("Máquina Anterior", readonly=True)
@@ -863,7 +869,7 @@ class ControlProcesoLineWizard(models.TransientModel):
     @api.onchange('fas_id_new')
     def _onchange_fas_id_new(self):
         if self.fas_id_new:
-            self.maq_id_new = self.fas_id_new.default_maq_code
+            self.maq_id_new = self.fas_id_new.workcenter_id.code
 
     @api.model
     def default_get(self, fields_list):
@@ -878,11 +884,11 @@ class ControlProcesoLineWizard(models.TransientModel):
             })
             
             # Buscamos los registros en los maestros para pre-seleccionar los "Nuevos"
-            fas_def = self.env['control.faspro.definition'].sudo().search([('code', '=', line.fas_code)], limit=1)
+            fas_def = self.env['mrp.routing.workcenter.operation'].sudo().search([('fas_code', '=', line.fas_code)], limit=1)
             
             if fas_def:
                 res['fas_id_new'] = fas_def.id
-                res['maq_id_new'] = line.maqCodBis or fas_def.default_maq_code
+                res['maq_id_new'] = line.maqCodBis or fas_def.workcenter_id.code
             else:
                 res['maq_id_new'] = line.maqCodBis
         return res
@@ -897,7 +903,7 @@ class ControlProcesoLineWizard(models.TransientModel):
             
             # Actualizar FasCod y MaqCodBis
             # Si es 'start', también actualizamos la fecha de inicio
-            new_fas_code = self.fas_id_new.code if self.fas_id_new else self.line_id.fas_code
+            new_fas_code = self.fas_id_new.fas_code if self.fas_id_new else self.line_id.fas_code
             new_maq_code = self.maq_id_new or self.line_id.maqCodBis
             
             query = """

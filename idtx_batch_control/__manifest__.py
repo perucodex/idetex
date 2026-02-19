@@ -23,6 +23,7 @@ de foxpro (dbf) SITPRO y conección con MSSql server para obtener data del TEXPL
     'depends': [
         'base',
         'portal',
+        'idtx_mrp',
     ],
 
     # always loaded

@@ -27,6 +27,7 @@
         <field name="batch"/>
         <field name="pedido_id"/>
         <field name="route"/>
+        <field name="description"/>
         <field name="barcodreo"/>
         <field name="process"/>
         <field name="area"/>
@@ -127,6 +128,7 @@
               <field name="pedido_id" readonly="1"/>
               <field name="route" readonly="1"/>
               <field name="barcodreo" readonly="1"/>
+              <field name="description" readonly="1"/>
               <field name="process" readonly="1"/>
               <field name="area" readonly="1"/>
             </group>
