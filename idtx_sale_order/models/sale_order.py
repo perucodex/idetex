@@ -185,26 +185,26 @@ class SaleOrder(models.Model):
                                 date=line._get_order_date(),
                             )
                             if not pricelist_item_id and order.partner_id:
-                                order.weaving_warning += _(('Product %s has product [%s] %s on its bom and does not have a price in %s price list. The price is obtained from its own sale price.') %( line.product_id.product_tmpl_id.name, bom_line.product_id.product_tmpl_id.default_code, bom_line.product_id.product_tmpl_id.name, order.pricelist_id.name)) + '\n'
+                                order.weaving_warning += _(('Product %s has product %s on its bom and does not have a price in %s price list. The price is obtained from its own sale price.') %( line.product_id.product_tmpl_id.display_name, bom_line.product_id.product_tmpl_id.display_name, order.pricelist_id.name)) + '\n'
                         for operation in bom_id.operation_ids:
                             if operation.operation_id.type_prices == 'col' and line.product_color_id.is_lab_color:
                                 operation_color_line = operation.operation_id.product_color_price_ids.search([('product_color_id','=',line.product_color_id.id),('mrwo_id','=', operation.operation_id.id)])
                                 if not operation_color_line:
-                                    order.weaving_warning += (_('The type prices of %s operation is by color. The color %s does not exists in the operation color list, product %s.') %(operation.operation_id.name, line.product_color_id.name, line.product_id.product_tmpl_id.name)) + '\n'
+                                    order.weaving_warning += (_('The type prices of %s operation is by color. The color %s does not exists in the operation color list, product %s.') %(operation.operation_id.name, line.product_color_id.name, line.product_id.product_tmpl_id.display_name)) + '\n'
                 for line in order.order_line.filtered(lambda l: l.product_template_id.is_weaving):
                     if line.lab_dev_line_id and line.color_name:
                         if line.color_name.upper() != line.lab_dev_line_id.color_name.upper():
-                            order.weaving_warning += (_('Product %s color %s does not match lab color name %s.') %(line.product_id.product_tmpl_id.name, line.color_name, line.lab_dev_line_id.color_name)) + '\n'
+                            order.weaving_warning += (_('Product %s color %s does not match lab color name %s.') %(line.product_id.product_tmpl_id.display_name, line.color_name, line.lab_dev_line_id.color_name)) + '\n'
                             order.color_name_warning = True
                     else:
                         if not line.color_name:
                             line.color_name = line.lab_dev_line_id.color_name
                     if line.diff_days:                        
-                        order.weaving_warning += _(('Product %s has an old price. Quotation is %s days old') %( line.product_id.product_tmpl_id.name, line.diff_days)) + '\n'
+                        order.weaving_warning += _(('Product %s has an old price. Quotation is %s days old') %( line.product_id.product_tmpl_id.display_name, line.diff_days)) + '\n'
                     if not line.product_template_id.bom_ids:
-                        order.weaving_warning += _(('Product %s does not have any bom. Please check with product development.')  % line.product_id.product_tmpl_id.name) + '\n'
+                        order.weaving_warning += _(('Product %s does not have any bom. Please check with product development.')  % line.product_id.product_tmpl_id.display_name) + '\n'
                     if not line.product_id.analysis_id.weaving_price:
-                        order.weaving_warning += _(('Product %s has no weaving price. Please check with product development') % line.product_id.product_tmpl_id.name) + '\n'
+                        order.weaving_warning += _(('Product %s has no weaving price. Please check with product development') % line.product_id.product_tmpl_id.display_name) + '\n'
             # Si se limpian los warnings, calculamos los precios nuevamente
             if has_warning and not order.weaving_warning:
                 for l in order.order_line:
