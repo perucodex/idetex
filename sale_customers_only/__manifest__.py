@@ -1,7 +1,9 @@
 {
     "name": "Customers Only (Sales)",
     "version": "1.0",
-    "depends": ["account"],  # porque la acción es account.res_partner_action_customer
+    'author': "Joe",
+    'license': 'LGPL-3',
+    "depends": ["account"],  
     "data": [
         "views/customers_action.xml",
     ],
