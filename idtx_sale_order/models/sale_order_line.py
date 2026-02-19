@@ -113,9 +113,25 @@ class SaleOrderLine(models.Model):
     def js_compute_price_unit(self):
         self._compute_price_unit()
 
-    @api.onchange('product_id','product_color_id','operation_ids')
+    @api.onchange('product_id','product_color_id','operation_ids','printing_design_id')
     def _onchange_product_or_color(self):
-        self.price_items = '{}'
+        for rec in self:
+            if rec.parent_is_quote and rec.product_color_id:
+                # Validar que no exista otra línea con el mismo color en esta cotización
+                existing_lines = rec.order_id.order_line.filtered(
+                    lambda l: l.product_color_id == rec.product_color_id and l.product_id == rec.product_id
+                ) - rec
+                if existing_lines:
+                    # Si es printing, permitir si el diseño es diferente
+                    if rec.is_printing:
+                        same_design_lines = existing_lines.filtered(
+                            lambda l: l.printing_design_id == rec.printing_design_id and l.is_printing
+                        )
+                        if same_design_lines:
+                            raise UserError(_('Cannot quote the same color with the same design twice.'))
+                    else:
+                        raise UserError(_('Cannot quote the same color twice.'))
+            rec.price_items = '{}'
         # self._compute_price_unit()
 
     @api.onchange('lab_dev_line_id')
@@ -342,15 +358,15 @@ class SaleOrderLine(models.Model):
 
         # Si NO es cotización → tu lógica anterior (sin cambios)
         else:
-            line = self.get_product_from_quote(self.product_id, self.product_color_id, self.bom_id)
+            line = self.get_product_from_quote(self.product_id, self.product_color_id, self.bom_id, self.printing_design_id)
             total = line.price_unit if line else 1
 
         return float_round(total, 2)
     
-    def get_product_from_quote(self, product, color, bom):
+    def get_product_from_quote(self, product, color, bom, printing_design_id):
         if product and color:
             quote = self.order_id.quotation_id
-            line = quote.order_line.filtered(lambda l: l.product_id == product and l.product_color_id == color and l.bom_id == bom)
+            line = quote.order_line.filtered(lambda l: l.product_id == product and l.product_color_id == color and l.bom_id == bom and l.printing_design_id == printing_design_id)
             if not line:
                 today = fields.Date.context_today(self)
                 line = self._get_last_quotation_price(today)
@@ -369,6 +385,7 @@ class SaleOrderLine(models.Model):
             ('order_id.partner_id', '=', self.order_partner_id.id),
             ('product_id', '=', self.product_id.id),
             ('product_color_id', '=', self.product_color_id.id),
+            ('printing_design_id', '=', self.printing_design_id.id),
             # ('order_id.is_quote', '=', True),
             ('operation_ids','=', self.operation_ids.ids),
             ('order_id.state', 'in', ('draft','sent')),
