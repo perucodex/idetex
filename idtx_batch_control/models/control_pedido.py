@@ -492,10 +492,10 @@ class ControlPedido(models.Model):
                     chunk = unique_barcods[i:i + chunk_size]
                     placeholders_bc = ",".join(["?"] * len(chunk))
                     
-                    if '05033-25' in barcods or '320154' in barcods:
-                        print("si existe")
-                    else:
-                        print("no existe")    
+                    # if '05033-25' in barcods or '320154' in barcods:
+                    #     print("si existe")
+                    # else:
+                    #     print("no existe")    
                         
                     q_procs = f"""
                         SELECT 
@@ -598,6 +598,8 @@ class ControlPedido(models.Model):
 
 
     def action_sync_from_dbf(self):
+        # Sync Master Data first
+        self.sync_master_data()
         res = self.sync_from_dbf()
         return {
             "type": "ir.actions.client",
@@ -608,6 +610,44 @@ class ControlPedido(models.Model):
                 "sticky": False,
             }
         }
+
+    def sync_master_data(self):
+        conn = self._get_sql_connection()
+        try:
+            cursor = conn.cursor()
+            
+            # --- Sync FASPRO (Procesos) ---
+            cursor.execute("SELECT FasCod, FasDsc, MaqCod FROM FASPRO")
+            for row in cursor.fetchall():
+                code = _safe_str(row[0])
+                name = _safe_str(row[1])
+                def_maq = _safe_str(row[2])
+                if not code: continue
+                
+                existing = self.env['control.faspro.definition'].sudo().search([('code', '=', code)], limit=1)
+                vals = {'name': name or code, 'default_maq_code': def_maq}
+                if existing:
+                    existing.write(vals)
+                else:
+                    self.env['control.faspro.definition'].sudo().create({'code': code, **vals})
+
+            # --- Sync FASPRO (Procesos) ---
+            cursor.execute("SELECT FasCod, FasDsc, MaqCod FROM FASPRO")
+            for row in cursor.fetchall():
+                code = _safe_str(row[0])
+                name = _safe_str(row[1])
+                def_maq = _safe_str(row[2])
+                if not code: continue
+                
+                existing = self.env['control.faspro.definition'].sudo().search([('code', '=', code)], limit=1)
+                vals = {'name': name or code, 'default_maq_code': def_maq}
+                if existing:
+                    existing.write(vals)
+                else:
+                    self.env['control.faspro.definition'].sudo().create({'code': code, **vals})
+            
+        finally:
+            conn.close()
 
 
 class ControlPedidoLine(models.Model):
@@ -695,32 +735,52 @@ class ControlProcesoLine(models.Model):
     barFasDTI = fields.Datetime("Fecha Inicio")
     barFasDTF = fields.Datetime("Fecha Fin")
 
+    previous_finished = fields.Boolean(compute="_compute_previous_finished", store=False)
+
+    @api.depends('pedido_line_id.proceso_ids.barFasDTF')
+    def _compute_previous_finished(self):
+        for rec in self:
+            # Buscar el proceso anterior en la secuencia por barOrdLin
+            # Filtramos los procesos de la misma partida (pedido_line_id)
+            all_procs = rec.pedido_line_id.proceso_ids.sorted('barOrdLin')
+            idx = all_procs.ids.index(rec.id) if rec.id in all_procs.ids else -1
+            
+            if idx <= 0:
+                # Es el primero o no se encontró, está habilitado
+                rec.previous_finished = True
+            else:
+                # Verificamos si el anterior tiene fecha de fin
+                prev_proc = all_procs[idx-1]
+                rec.previous_finished = bool(prev_proc.barFasDTF)
+
   # 👇👇👇 AGREGA ESTO AQUÍ 👇👇👇
 
     def action_edit_process(self):
         self.ensure_one()
-        # if self.barFasDTI:
-        #      raise UserError("No se puede editar porque el proceso ya fue iniciado.")
-        return self.action_open_edit_wizard()
-
-
-    def action_open_edit_wizard(self):
-        self.ensure_one()
-
-        wizard = self.env["control.route.edit.wizard"].create({
-            "barcod": self.barcod,
-            "barcodreo": self.barcodreo,
-            "barcodpar": self.barcodpar,
-        })
-
-        wizard.load_processes()
-
         return {
-            "type": "ir.actions.act_window",
-            "res_model": "control.route.edit.wizard",
-            "view_mode": "form",
-            "res_id": wizard.id,
-            "target": "new",
+            'name': 'Editar Proceso',
+            'type': 'ir.actions.act_window',
+            'res_model': 'control.proceso.line.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_line_id': self.id,
+                'default_action_type': 'edit',
+            }
+        }
+
+    def action_start_with_wizard(self):
+        self.ensure_one()
+        return {
+            'name': 'Iniciar Proceso',
+            'type': 'ir.actions.act_window',
+            'res_model': 'control.proceso.line.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_line_id': self.id,
+                'default_action_type': 'start',
+            }
         }
 
 
@@ -762,94 +822,116 @@ class ControlProcesoLine(models.Model):
 
 
 # ============================================
-# WIZARD EDITAR FASCOD Y MAQCODBIS
+# MASTER DATA DEFINITIONS
 # ============================================
 
-class ControlRouteEditWizard(models.TransientModel):
-    _name = "control.route.edit.wizard"
-    _description = "Editar FasCod y MaqCodBis"
+class ControlFasproDefinition(models.Model):
+    _name = "control.faspro.definition"
+    _description = "Definicion de Procesos FASPRO"
+    _rec_names_search = ['code', 'name']
 
-    barcod = fields.Char("Hoja de Ruta", required=True)
-    barcodreo = fields.Char("Reproceso")
-    barcodpar = fields.Char("Partida")
-    line_ids = fields.One2many(
-        "control.route.edit.wizard.line",
-        "wizard_id",
-        string="Procesos"
-    )
+    code = fields.Char("Código", required=True, index=True)
+    name = fields.Char("Nombre")
+    default_maq_code = fields.Char("Máquina por Defecto")
 
-    def load_processes(self):
-        conn = self.env["control.pedido"]._get_sql_connection()
-        cursor = conn.cursor()
+    def _compute_display_name(self):
+        for rec in self:
+            rec.display_name = f"[{rec.code}] {rec.name or ''}"
 
-        query = """
-            SELECT BarOrdLin, FasCod, MaqCodBis
-            FROM BARFAS
-            WHERE BarCod = ? 
-              AND ISNULL(BarCodReo, 0) = ?
-              AND ISNULL(BarCodPar, '') = ?
-            ORDER BY BarOrdLin
-        """
+# Se elimina ControlMaquinaDefinition ya que ahora todo se maneja desde FASPRO (MaqCod)
+# como solicitó el usuario.
 
-        cursor.execute(query, self.barcod, self.barcodreo or 0, self.barcodpar or '')
+# ============================================
+# WIZARD EDICION INDIVIDUAL
+# ============================================
 
-        self.line_ids.unlink()
+class ControlProcesoLineWizard(models.TransientModel):
+    _name = "control.proceso.line.wizard"
+    _description = "Wizard para editar un proceso individual"
 
-        for row in cursor.fetchall():
-            self.env["control.route.edit.wizard.line"].create({
-                "wizard_id": self.id,
-                "barOrdLin": row[0],
-                "fasCod": row[1], # Here we load the CODE for editing
-                "maqCodBis": row[2],
+    line_id = fields.Many2one("control.proceso.lines", string="Línea de Proceso", required=True)
+    action_type = fields.Selection([('edit', 'Editar'), ('start', 'Iniciar')], string="Acción")
+
+    # Campos Proceso
+    fas_old_str = fields.Char("Proceso Anterior", readonly=True)
+    fas_id_new = fields.Many2one("control.faspro.definition", string="Nuevo Proceso")
+
+    # Campos Maquina
+    maq_old_str = fields.Char("Máquina Anterior", readonly=True)
+    maq_id_new = fields.Char("Nueva Máquina")
+
+    @api.onchange('fas_id_new')
+    def _onchange_fas_id_new(self):
+        if self.fas_id_new:
+            self.maq_id_new = self.fas_id_new.default_maq_code
+
+    @api.model
+    def default_get(self, fields_list):
+        res = super().default_get(fields_list)
+        line_id = res.get('line_id') or self.env.context.get('default_line_id')
+        if line_id:
+            line = self.env['control.proceso.lines'].browse(line_id)
+            # El valor "Anterior" lo sacamos de la descripción que ya trae la línea de Odoo
+            res.update({
+                'fas_old_str': f"[{line.fas_code}] {line.fasCod}" if line.fas_code else line.fasCod,
+                'maq_old_str': line.maqCodBis,
             })
+            
+            # Buscamos los registros en los maestros para pre-seleccionar los "Nuevos"
+            fas_def = self.env['control.faspro.definition'].sudo().search([('code', '=', line.fas_code)], limit=1)
+            
+            if fas_def:
+                res['fas_id_new'] = fas_def.id
+                res['maq_id_new'] = line.maqCodBis or fas_def.default_maq_code
+            else:
+                res['maq_id_new'] = line.maqCodBis
+        return res
 
-        cursor.close()
-        conn.close()
-
-    def action_save(self):
-
-        conn = self.env["control.pedido"]._get_sql_connection()
-        cursor = conn.cursor()
-
-        for line in self.line_ids:
-
+    def action_confirm(self):
+        self.ensure_one()
+        
+        # Guardar en SQL Server
+        conn = self.line_id.pedido_line_id.pedido_id._get_sql_connection()
+        try:
+            cursor = conn.cursor()
+            
+            # Actualizar FasCod y MaqCodBis
+            # Si es 'start', también actualizamos la fecha de inicio
+            new_fas_code = self.fas_id_new.code if self.fas_id_new else self.line_id.fas_code
+            new_maq_code = self.maq_id_new or self.line_id.maqCodBis
+            
             query = """
                 UPDATE BARFAS
                 SET FasCod = ?, MaqCodBis = ?
+            """
+            params = [new_fas_code, new_maq_code]
+            
+            if self.action_type == 'start':
+                now = datetime.datetime.now()
+                query += ", BarFasDTI = ?, BarFasEst = 2 "
+                params.append(now)
+            
+            query += """
                 WHERE BarCod = ? 
                   AND ISNULL(BarCodReo, 0) = ?
                   AND ISNULL(BarCodPar, '') = ?
                   AND BarOrdLin = ?
             """
+            params.extend([
+                self.line_id.barcod,
+                self.line_id.barcodreo or 0,
+                self.line_id.barcodpar or '',
+                self.line_id.barOrdLin
+            ])
+            
+            cursor.execute(query, *params)
+            conn.commit()
+            
+        finally:
+            conn.close()
 
-            cursor.execute(
-                query,
-                line.fasCod or '',
-                line.maqCodBis or '',
-                self.barcod,
-                self.barcodreo or 0,
-                self.barcodpar or '',
-                line.barOrdLin
-            )
+        # Refrescar Odoo
+        self.line_id.pedido_line_id.pedido_id.sync_from_dbf()
+        return {'type': 'ir.actions.act_window_close'}
 
-        conn.commit()
-        cursor.close()
-        conn.close()
-
-        # Refrescar Odoo (opcional, podrías solo actualizar el modelo local si no quieres re-sincronizar todo)
-        # Pero sync_from_dbf es lo más seguro para ver los cambios reflejados.
-        self.env["control.pedido"].sync_from_dbf()
-
-        return {"type": "ir.actions.act_window_close"}
-
-
-class ControlRouteEditWizardLine(models.TransientModel):
-    _name = "control.route.edit.wizard.line"
-    _description = "Lineas Edicion Ruta"
-
-    wizard_id = fields.Many2one("control.route.edit.wizard")
-
-    barOrdLin = fields.Integer("Orden", readonly=True)
-    fasCod = fields.Char("Proceso")
-    maqCodBis = fields.Char("Máquina")
 

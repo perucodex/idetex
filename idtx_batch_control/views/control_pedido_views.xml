@@ -141,7 +141,7 @@
           <notebook>
             <page string="Procesos">
               <field name="proceso_ids">
-                <list decoration-success="barFasDTF" delete="0">
+                <list decoration-success="barFasDTF" delete="0" editable="top" edit="0">
 
                   <field name="barcod"/>
                   <field name="barOrdLin"/>
@@ -154,18 +154,21 @@
                   <field name="barFasDTI"/>
                   <field name="barFasDTF"/>
 
+                  <field name="previous_finished" column_invisible="1"/>
+
                   <!-- BOTON EDITAR -->
                   <button name="action_edit_process"
                           type="object"
                           string="Editar"
-                          class="btn-secondary"/>
+                          class="btn-secondary"
+                          invisible="barFasDTI != False or barFasDTF != False or previous_finished == False"/>
 
                   <!-- BOTON INICIAR -->
-                  <button name="action_start"
+                  <button name="action_start_with_wizard"
                           type="object"
                           string="Iniciar"
                           class="btn-primary"
-                          invisible="barFasDTI != False"/>
+                          invisible="barFasDTI != False or barFasDTF != False or previous_finished == False"/>
 
                   <!-- BOTON FINALIZAR -->
                   <button name="action_finish"
@@ -184,7 +187,7 @@
   </record>
 
     <!-- ================= TREE PROCESOS ================= -->
-  <record id="view_control_proceso_line_list" model="ir.ui.view">
+  <!-- <record id="view_control_proceso_line_list" model="ir.ui.view">
     <field name="name">control.proceso.lines.list</field>
     <field name="model">control.proceso.lines</field>
     <field name="arch" type="xml">
@@ -198,24 +201,27 @@
         <field name="barFasDTI"/>
         <field name="barFasDTF"/>
 
-        <button name="action_start"
+        <field name="previous_finished" column_invisible="1"/>
+
+        <button name="action_start_with_wizard"
                 type="object"
                 string="Iniciar"
-                invisible="barFasDTI != False"/>
+                invisible="barFasDTI != False or barFasDTF != False or previous_finished == False"/>
 
         <button name="action_finish"
                 type="object"
                 string="Finalizar"
                 invisible="barFasDTI == False or barFasDTF != False"/>
                 
-        <button name="action_open_edit_wizard"
+        <button name="action_edit_process"
                 type="object"
-                string="Editar Ruta"
-                class="btn-secondary"/>
+                string="Editar"
+                class="btn-secondary"
+                invisible="barFasDTI != False or barFasDTF != False or previous_finished == False"/>
 
       </list>
     </field>
-  </record>
+  </record> -->
 
   <!-- <record id="control_pedido_view_search" model="ir.ui.view">
       <field name="name">control.pedido.view.search</field>
@@ -267,34 +273,31 @@
 
  <!-- ================= AQUI PEGAS EL WIZARD ================= -->
 
-  <record id="view_control_route_edit_wizard" model="ir.ui.view">
-      <field name="name">control.route.edit.wizard.form</field>
-      <field name="model">control.route.edit.wizard</field>
+  <record id="view_control_proceso_line_wizard" model="ir.ui.view">
+      <field name="name">control.proceso.line.wizard.form</field>
+      <field name="model">control.proceso.line.wizard</field>
       <field name="arch" type="xml">
-          <form string="Editar Procesos BARFAS">
-              <group>
-                  <field name="barcod" readonly="1"/>
-                  <group>
-                    <field name="barcodreo" readonly="1"/>
-                    <field name="barcodpar" readonly="1"/>
+          <form string="Editar/Iniciar Proceso">
+              <sheet>
+                <group>
+                    <field name="line_id" invisible="1"/>
+                    <field name="action_type" invisible="1"/>
+                  <group string="Valores Actuales (Anterior)">
+                      <field name="fas_old_str" string="Proceso Anterior"/>
+                      <field name="maq_old_str" string="Máquina Anterior"/>
                   </group>
-              </group>
-              <notebook>
-                <page string="Procesos">
-                  <field name="line_ids">
-                      <list editable="bottom" create="0" delete="0">
-                          <field name="barOrdLin" readonly="1"/>
-                          <field name="fasCod"/>
-                          <field name="maqCodBis"/>
-                      </list>
-                  </field>
-                </page>
-              </notebook>
+                  
+                  <group string="Nuevos Valores (Lista de Selección)">
+                      <field name="fas_id_new" required="1" options="{'no_create': True}" string="Proceso Nuevo"/>
+                      <field name="maq_id_new" readonly="1" force_save="1" string="Máquina Nueva"/>
+                  </group>
+                </group>
+              </sheet>
 
               <footer>
-                  <button string="Guardar"
+                  <button string="Aceptar"
                           type="object"
-                          name="action_save"
+                          name="action_confirm"
                           class="btn-primary"/>
                   <button string="Cancelar" special="cancel"/>
               </footer>
@@ -318,14 +321,14 @@
     <field name="view_mode">list,form</field>
   </record>
 
-  <record id="action_control_proceso_line" model="ir.actions.act_window">
+  <!-- <record id="action_control_proceso_line" model="ir.actions.act_window">
     <field name="name">Procesos</field>
     <field name="res_model">control.proceso.lines</field>
-    <field name="view_mode">list,form</field>
-  </record>
+    <field name="view_mode">list</field>
+  </record> -->
 
   <menuitem id="menu_sitpro_texplus" name="Sitpro &amp; Texplus" parent="sale.sale_order_menu" sequence="40"/>
   <menuitem id="menu_control_pedido" name="Pedidos" parent="menu_sitpro_texplus" sequence="10" action="action_control_pedido"/>
   <menuitem id="menu_control_partida" name="Partidas" parent="menu_sitpro_texplus" sequence="20" action="action_control_partida"/>
-  <menuitem id="menu_control_proceso" name="Procesos" parent="menu_sitpro_texplus" sequence="30" action="action_control_proceso_line"/>
+  <!-- <menuitem id="menu_control_proceso" name="Procesos" parent="menu_sitpro_texplus" sequence="30" action="action_control_proceso_line"/> -->
 </odoo>
