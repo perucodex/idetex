@@ -392,9 +392,17 @@ class ControlPedido(models.Model):
 
             pedidos |= pedido
 
-        # 4) BORRADO MASIVO de líneas (una sola vez)
+        # 4) NO BORRAR - Vamos a actualizar o crear líneas inteligentemente
+        # Traemos las líneas existentes agrupadas por pedido para matching
+        existing_lines_by_pedido = {}
         if pedidos:
-            self.env["control.pedido.line"].search([("pedido_id", "in", pedidos.ids)]).unlink()
+            for line in self.env["control.pedido.line"].search([("pedido_id", "in", pedidos.ids)]):
+                pedido_id = line.pedido_id.id
+                if pedido_id not in existing_lines_by_pedido:
+                    existing_lines_by_pedido[pedido_id] = {}
+                # Clave única: route (HojaDeRuta) + barcodreo + batch (Partida)
+                key = (line.route, line.barcodreo, line.batch)
+                existing_lines_by_pedido[pedido_id][key] = line
 
         # 5) UNA sola conexión y UNA sola consulta MSSQL para todos los pedidos
         conn = self._get_sql_connection()
@@ -434,6 +442,7 @@ class ControlPedido(models.Model):
                 h.BarCod AS HojaDeRuta,
                 h.BarCodReo,
                 h.BarCodPar,
+                h.BarSerDsc,
                 h.ColorCode,
                 h.ColorName,
                 ISNULL(k.Kilos, 0) AS PesoTotal,
@@ -564,8 +573,11 @@ class ControlPedido(models.Model):
             except Exception:
                 pass
 
-        # 6) Insertar líneas en batch por pedido (sin write repetitivo)
+        # 6) Actualizar o crear líneas intelligentemente (sin borrar)
         line_cmds_by_pedido = {}
+        lines_updated_or_created = 0
+        procesos_a_crear = []  # Lista de (line_id, vals_proc) para crear después
+        
         for dr in rows:
             num = _safe_str(dr.get("Pedido"))
             pedido = existing_map.get(num)
@@ -586,16 +598,72 @@ class ControlPedido(models.Model):
             
             if key in processes_by_valid_key:
                 vals_line["proceso_ids"] = processes_by_valid_key[key]
+
+            # --- Buscar si ya existe esta línea ---
+            line_key = (vals_line.get("route"), vals_line.get("barcodreo"), vals_line.get("batch"))
+            existing_line = existing_lines_by_pedido.get(pedido.id, {}).get(line_key)
+            
+            if existing_line:
+                # ACTUALIZAR: únicamente los campos que pueden cambiar
+                existing_line.write({
+                    'kilograms': vals_line.get('kilograms'),
+                    'process': vals_line.get('process'),
+                    'area': vals_line.get('area'),
+                    'start_date': vals_line.get('start_date'),
+                    'end_date': vals_line.get('end_date'),
+                })
+                # Para procesos, actualizar o crear sin borrar
+                if "proceso_ids" in vals_line and vals_line["proceso_ids"]:
+                    # Obtener procesos existentes indexados por clave única
+                    existing_procs = {}
+                    for proc in existing_line.proceso_ids:
+                        proc_key = (proc.barcod, proc.barcodreo, proc.barcodpar, proc.barOrdLin)
+                        existing_procs[proc_key] = proc
+                    
+                    # Actualizar o crear procesos
+                    for cmd in vals_line["proceso_ids"]:
+                        vals_proc = cmd[2].copy()
+                        vals_proc['pedido_line_id'] = existing_line.id
+                        
+                        # Clave única del proceso
+                        proc_key = (vals_proc.get('barcod'), vals_proc.get('barcodreo'), vals_proc.get('barcodpar'), vals_proc.get('barOrdLin'))
+                        
+                        if proc_key in existing_procs:
+                            # ACTUALIZAR proceso existente
+                            existing_procs[proc_key].write(vals_proc)
+                        else:
+                            # CREAR nuevo proceso
+                            self.env['control.proceso.lines'].create(vals_proc)
+                lines_updated_or_created += 1
             else:
-                 # Debug info if no match found for expected ones
-                 if bc == '319226': # Specific debug for the case in screenshot
-                     print(f"DEBUG: No process match for key {key}. Available keys sample: {list(processes_by_valid_key.keys())[:5]}")
+                # CREAR línea nueva - sin incluir proceso_ids inicialmente
+                procesos_temp = vals_line.pop("proceso_ids", None)
+                line_cmds_by_pedido.setdefault(pedido.id, []).append((0, 0, vals_line))
+                # Guardar los procesos para crearlos DESPUÉS de que se cree la línea
+                if procesos_temp:
+                    procesos_a_crear.append((pedido.id, line_key, procesos_temp))
+                lines_updated_or_created += 1
 
-            line_cmds_by_pedido.setdefault(pedido.id, []).append((0, 0, vals_line))
-
-        # Write por pedido que tenga líneas (normalmente mucho menos que N)
+        # Write por pedido que tenga nuevas líneas
         for pid, cmds in line_cmds_by_pedido.items():
             self.browse(pid).write({"line_ids": cmds})
+        
+        # Crear procesos para las líneas nuevas ya creadas
+        for pedido_id, line_key, procesos_list in procesos_a_crear:
+            # Buscar la línea que acabamos de crear
+            new_line = self.env["control.pedido.line"].search([
+                ("pedido_id", "=", pedido_id),
+                ("route", "=", line_key[0]),
+                ("barcodreo", "=", line_key[1]),
+                ("batch", "=", line_key[2]),
+            ], limit=1)
+            
+            if new_line:
+                for cmd in procesos_list:
+                    vals_proc = cmd[2].copy()
+                    vals_proc['pedido_line_id'] = new_line.id
+                    self.env['control.proceso.lines'].create(vals_proc)
+        
         return {"created": created, "updated": updated}
 
 

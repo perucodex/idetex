@@ -31,7 +31,7 @@
         <field name="barcodreo"/>
         <field name="process"/>
         <field name="area"/>
-        <field name="kilograms"/>
+        <field name="kilograms" sum="Total"/>
       </list>
     </field>
   </record>
@@ -188,6 +188,29 @@
     </field>
   </record>
 
+  <record id="control_pedido_line_view_search" model="ir.ui.view">
+    <field name="name">control.pedido.line.view.search</field>
+    <field name="model">control.pedido.line</field>
+    <field name="arch" type="xml">
+      <search string="Search Control Pedido Line">
+        <field name="batch"/>
+        <field name="pedido_id"/>
+        <field name="route"/>
+        <field name="description"/>
+        <field name="colorcode"/>
+        <field name="colorname"/>
+        <!-- <filter name="test" string="Test" domain="[('state','=','test')]"/>
+        <filter name="prod" string="Product" domain="[('state','=','prod')]"/>
+        <filter name="tech" string="Technical Sheet" domain="[('state','=','tech')]"/> -->
+        <group>
+            <filter string="Pedido" name="group_by_pedido_id" domain="[]" context="{'group_by': 'pedido_id'}"/>
+            <filter string="Producto" name="group_by_description" domain="[]" context="{'group_by': 'description'}"/>
+            <filter string="Batch" name="group_by_batch" domain="[]" context="{'group_by': 'batch'}"/>
+        </group>
+      </search>
+    </field>
+  </record>
+
     <!-- ================= TREE PROCESOS ================= -->
   <!-- <record id="view_control_proceso_line_list" model="ir.ui.view">
     <field name="name">control.proceso.lines.list</field>
@@ -329,8 +352,9 @@
     <field name="view_mode">list</field>
   </record> -->
 
-  <menuitem id="menu_sitpro_texplus" name="Sitpro &amp; Texplus" parent="sale.sale_order_menu" sequence="40"/>
-  <menuitem id="menu_control_pedido" name="Pedidos" parent="menu_sitpro_texplus" sequence="10" action="action_control_pedido"/>
-  <menuitem id="menu_control_partida" name="Partidas" parent="menu_sitpro_texplus" sequence="20" action="action_control_partida"/>
-  <!-- <menuitem id="menu_control_proceso" name="Procesos" parent="menu_sitpro_texplus" sequence="30" action="action_control_proceso_line"/> -->
+  <menuitem id="menu_sitpro_texplus" name="Sitpro &amp; Texplus" parent="mrp.menu_mrp_root" sequence="40">
+    <menuitem id="menu_control_pedido" name="Pedidos" sequence="10" action="action_control_pedido"/>
+    <menuitem id="menu_control_partida" name="Partidas" sequence="20" action="action_control_partida"/>
+  </menuitem>
+    
 </odoo>
