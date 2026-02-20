@@ -32,7 +32,7 @@ Módulo base para los desarrollos de producción para empresas textiles
     'data': [
         'data/ir_module_category_data.xml',
         'data/ir_sequence.xml',
-        'data/mrp.workcenter.csv',
+        'data/mrp_workcenter.xml',
         'security/ir.model.access.csv',
         'views/mrp_production_roll_views.xml',
         'views/mrp_production_views.xml',

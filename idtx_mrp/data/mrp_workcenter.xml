@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data noupdate="1">
+        <record id="mrp_wc_1" model="mrp.workcenter">
+            <field name="name">TEJEDURIA</field>
+            <field name="operation_type">weaving</field>
+        </record>
+        <record id="mrp_wc_2" model="mrp.workcenter">
+            <field name="name">TINTORERIA</field>
+            <field name="operation_type">dyeing</field>
+        </record>
+        <record id="mrp_wc_3" model="mrp.workcenter">
+            <field name="name">ESTAMPADO</field>
+            <field name="operation_type">printing</field>
+        </record>
+        <record id="mrp_wc_4" model="mrp.workcenter">
+            <field name="name">ACABADO</field>
+            <field name="operation_type">finishing</field>
+        </record>
+        <record id="mrp_wc_5" model="mrp.workcenter">
+            <field name="name">CALIDAD</field>
+            <field name="operation_type">quality</field>
+        </record>
+    </data>
+
+</odoo>

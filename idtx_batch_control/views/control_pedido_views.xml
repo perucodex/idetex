@@ -143,7 +143,7 @@
           <notebook>
             <page string="Procesos">
               <field name="proceso_ids">
-                <list decoration-success="barFasDTF" delete="0" editable="top" edit="0">
+                <list decoration-success="barFasDTF" delete="0" edit="0">
 
                   <field name="barcod"/>
                   <field name="barOrdLin"/>

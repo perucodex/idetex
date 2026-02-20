@@ -26,9 +26,10 @@ class MrpWorkorder(models.Model):
             if peso:
                 # if int(option_id) not in self.option_ids.ids:
                 #     raise ValueError(_('Selected option is not valid for this workorder'))
-                qty_rolls = len(self.roll_ids)
-                last_date = self.roll_ids.sorted('roll_end', reverse=True)[0].roll_end
-                start = self.time_ids[-1].date_start if qty_rolls == 0 else last_date
+                # qty_rolls = len(self.roll_ids)
+                rolls = self.roll_ids.filtered(lambda r: r.equipment_id.id == int(equipment_id))
+                last_date = rolls.sorted('roll_end', reverse=True)[0].roll_end if rolls else None
+                start = self.time_ids[-1].date_start if not last_date else last_date
                 end = fields.Datetime.now()
                 roll = self.roll_ids.create({
                     'sequence': len(self.roll_ids),
