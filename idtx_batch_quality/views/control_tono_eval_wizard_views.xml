@@ -7,10 +7,10 @@
                 <sheet>
                     <field name="pedido_line_id" invisible="1"/>
                     <field name="is_concesionado" invisible="1"/>
+                    <field name="can_show_decision_buttons" invisible="1"/>
 
-                    <!-- ✅ Datos en dos columnas -->
+                    <!-- Datos (2 columnas) -->
                     <group>
-                        <!-- Columna izquierda -->
                         <group>
                             <field name="cliente" readonly="1"/>
                             <field name="tela" readonly="1"/>
@@ -19,7 +19,6 @@
                             <field name="hdr" readonly="1"/>
                         </group>
 
-                        <!-- Columna derecha -->
                         <group>
                             <field name="color_code" readonly="1"/>
                             <field name="color_name" readonly="1"/>
@@ -27,39 +26,42 @@
                         </group>
                     </group>
 
-                    <!-- ✅ Campos editables -->
+                    <!-- Recetas -->
                     <group>
                         <group>
                             <field name="receta" placeholder="Ej: 100"/>
                         </group>
                         <group>
-                            <field name="receta_rutero" placeholder="Ej: 101" required="1"/>
+                            <field name="receta_rutero" placeholder="Ej: 101"/>
                         </group>
                     </group>
                 </sheet>
 
                 <footer>
-                    <!-- Botón normal -->
+                    <!-- Aprobar normal -->
                     <button string="Aprobar"
                             name="action_aprobar"
                             type="object"
                             class="btn-primary"
-                            invisible="is_concesionado or not receta_rutero"/>
+                            invisible="not can_show_decision_buttons or is_concesionado"/>
 
-                    <!-- Botón cuando receta != receta_rutero -->
+                    <!-- Concesionado si Receta != Receta Rutero -->
                     <button string="Concesionado"
                             name="action_aprobar"
                             type="object"
                             class="btn-primary"
-                            invisible="not is_concesionado or not receta_rutero"/>
+                            invisible="not can_show_decision_buttons or not is_concesionado"/>
 
                     <button string="Rechazar"
                             name="action_rechazar"
                             type="object"
                             class="btn-danger"
-                            invisible="not receta_rutero"/>
+                            invisible="not can_show_decision_buttons"/>
 
-                    <button string="Cancelar" special="cancel" class="btn-secondary"/>
+                    <!-- Empujado a la derecha -->
+                    <button string="Cancelar"
+                            special="cancel"
+                            class="btn-secondary ms-auto"/>
                 </footer>
             </form>
         </field>

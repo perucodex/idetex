@@ -6,7 +6,9 @@
         <field name="priority">100</field>
 
         <field name="arch" type="xml">
-            <xpath expr="//form[not(header)]/sheet" position="before">
+
+            <!-- Header en la forma de Partida -->
+            <xpath expr="//form/sheet" position="before">
                 <header>
                     <button name="action_evaluar_tono"
                             type="object"
@@ -22,7 +24,29 @@
 
                     <field name="tono_state" widget="statusbar"/>
                 </header>
+            </xpath>
 
+            <!-- Pestaña Evaluaciones solo si tiene datos -->
+            <xpath expr="//notebook/page[field[@name='proceso_ids']]" position="after">
+                <page string="Evaluaciones" invisible="not has_tono_eval_logs">
+                    <field name="tono_eval_log_ids" readonly="1">
+                        <list create="0" delete="0">
+                            <field name="fecha_eval"/>
+                            <field name="user_id"/>
+                            <field name="resultado"/>
+                            <field name="receta"/>
+                            <field name="receta_rutero"/>
+
+                            <!-- Icono eliminar al final -->
+                            <button name="action_delete_log"
+                                    type="object"
+                                    icon="fa-trash"
+                                    string=""
+                                    class="btn-link text-danger"
+                                    confirm="¿Eliminar esta evaluación de tono?"/>
+                        </list>
+                    </field>
+                </page>
             </xpath>
 
         </field>
