@@ -4,7 +4,7 @@ from odoo import models, fields
 class ControlTonoEvalLog(models.Model):
     _name = "control.tono.eval.log"
     _description = "Historial Evaluación de Tono"
-    _order = "fecha_eval desc, id desc"
+    _order = "fecha_eval, id desc"
 
     pedido_line_id = fields.Many2one(
         "control.pedido.line",
@@ -83,13 +83,13 @@ class ControlTonoEvalLog(models.Model):
         self._sync_line_after_log_change(lines)
         return res
 
-    def action_delete_log(self):
-        """
-        Elimina el registro desde la lista (icono papelera) y recarga la vista.
-        Al recargar:
-        - si era el último, desaparece la pestaña Evaluaciones
-        - Odoo vuelve a mostrar la pestaña disponible (Procesos)
-        """
-        self.ensure_one()
-        self.sudo().unlink()
-        return {"type": "ir.actions.client", "tag": "reload"}
+    # def action_delete_log(self):
+    #     """
+    #     Elimina el registro desde la lista (icono papelera) y recarga la vista.
+    #     Al recargar:
+    #     - si era el último, desaparece la pestaña Evaluaciones
+    #     - Odoo vuelve a mostrar la pestaña disponible (Procesos)
+    #     """
+    #     self.ensure_one()
+    #     self.sudo().unlink()
+    #     return {"type": "ir.actions.client", "tag": "reload"}

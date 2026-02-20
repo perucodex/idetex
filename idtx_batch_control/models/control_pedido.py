@@ -614,10 +614,10 @@ class ControlPedido(models.Model):
                 })
                 # Para procesos, actualizar o crear sin borrar
                 if "proceso_ids" in vals_line and vals_line["proceso_ids"]:
-                    # Obtener procesos existentes indexados por clave única
+                    # Obtener procesos existentes indexados por clave única: (barcod, barOrdLin)
                     existing_procs = {}
                     for proc in existing_line.proceso_ids:
-                        proc_key = (proc.barcod, proc.barcodreo, proc.barcodpar, proc.barOrdLin)
+                        proc_key = (proc.barcod, proc.barOrdLin)
                         existing_procs[proc_key] = proc
                     
                     # Actualizar o crear procesos
@@ -625,8 +625,8 @@ class ControlPedido(models.Model):
                         vals_proc = cmd[2].copy()
                         vals_proc['pedido_line_id'] = existing_line.id
                         
-                        # Clave única del proceso
-                        proc_key = (vals_proc.get('barcod'), vals_proc.get('barcodreo'), vals_proc.get('barcodpar'), vals_proc.get('barOrdLin'))
+                        # Clave única del proceso: (barcod, barOrdLin)
+                        proc_key = (vals_proc.get('barcod'), vals_proc.get('barOrdLin'))
                         
                         if proc_key in existing_procs:
                             # ACTUALIZAR proceso existente
