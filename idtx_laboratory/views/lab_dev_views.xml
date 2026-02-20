@@ -145,7 +145,7 @@
                         </group>
                         <notebook>
                             <page name="recipe_page" string="Recipes">
-                                <field name="color_recipe_ids" readonly="state == 'approved'" context="{'form_view_ref': 'idtx_laboratory.color_recipe_form_view'}">
+                                <field name="color_recipe_ids" readonly="state == 'approved' or not color_code" context="{'form_view_ref': 'idtx_laboratory.color_recipe_form_view'}">
                                     <list editable="top" open_form_view="True">
                                         <field name="name" readonly="1"/>
                                         <field name="recipe_date" readonly="1"/>
