@@ -15,9 +15,20 @@ class ProductTemplate(models.Model):
 
     @api.depends('categ_id')
     def _compute_product_category(self):
+        weaving_categories = set(self.env.company.weaving_category_ids)
+        thread_categories = set(self.env.company.thread_category_ids)
         for rec in self:
-            rec.is_weaving = True if rec.categ_id in self.env.company.weaving_category_ids else False
-            rec.is_thread = True if rec.categ_id in self.env.company.thread_category_ids else False
+            category = rec.categ_id
+            is_weaving = False
+            is_thread = False
+            while category and not (is_weaving and is_thread):
+                if category in weaving_categories:
+                    is_weaving = True
+                if category in thread_categories:
+                    is_thread = True
+                category = category.parent_id
+            rec.is_weaving = is_weaving
+            rec.is_thread = is_thread
 
     def open_analysis(self):
         return self.analysis_id.technical_sheet_ids._get_records_action(name=_("Technical Sheets"))

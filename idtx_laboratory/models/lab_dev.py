@@ -6,6 +6,7 @@ class LabDev(models.Model):
     _name = 'lab.dev'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Laboratory Development'
+    _order = 'name desc'
 
     name = fields.Char('Name', copy=False, default=lambda self: _('New'))
     lab_dev_date = fields.Date('Lab Dev Date', default=fields.Date.context_today)

@@ -38,7 +38,7 @@
                         <notebook>
                             <page name="color_page" string="Colors" invisible="state == 'draft'">
                                 <field name="lab_dev_line_ids" context="{'form_view_ref': 'idtx_laboratory.lab_dev_line_view_form'}">
-                                    <list editable="top" open_form_view="True">
+                                    <list editable="top" open_form_view="True" delete="0" create="0">
                                         <field name="product_id" readonly="1"/>  
                                         <field name="color_name" readonly="1"/>
                                         <field name="color_code" readonly="1"/>
