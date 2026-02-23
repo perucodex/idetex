@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_control_pedido_line_tree" model="ir.ui.view">
+        <field name="name">control.pedido.line.tree</field>
+        <field name="model">control.pedido.line</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="area == 'AREA NO CONOCIDA'" create="0">
+                <field name="batch"/>
+                <field name="pedido_id"/>
+                <field name="route"/>
+                <field name="description"/>
+                <field name="barcodreo"/>
+                <field name="process"/>
+                <field name="area"/>
+                <field name="kilograms" sum="Total"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_control_pedido_line_form" model="ir.ui.view">
+        <field name="name">control.pedido.line.form</field>
+        <field name="model">control.pedido.line</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_open_start_wizard" type="object" string="Iniciar Partida" class="btn-primary" invisible="start_date"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="batch" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="pedido_id" readonly="1"/>
+                            <field name="route" readonly="1"/>
+                            <field name="barcodreo" readonly="1"/>
+                            <field name="description" readonly="1"/>
+                            <field name="process" readonly="1"/>
+                            <field name="area" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="kilograms" readonly="1"/>
+                            <field name="start_date" readonly="1"/>
+                            <field name="end_date" readonly="1"/>
+                            <field name="colorcode" readonly="1"/>
+                            <field name="colorname" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Procesos">
+                            <field name="proceso_ids">
+                                <list decoration-success="barFasDTF" delete="0" edit="0">
+                                    <field name="barcod"/>
+                                    <field name="barOrdLin"/>
+                                    <field name="fasCod"/>
+                                    <field name="maqCodBis"/>
+                                    <field name="barFasDTI"/>
+                                    <field name="barFasDTF"/>
+                                    <field name="previous_finished" column_invisible="1"/>
+                                    <button name="action_edit_process" type="object" string="Editar" class="btn-secondary" invisible="barFasDTI != False or barFasDTF != False or previous_finished == False"/>
+                                    <button name="action_start_with_wizard" type="object" string="Iniciar" class="btn-primary" invisible="barFasDTI != False or barFasDTF != False or previous_finished == False"/>
+                                    <button name="action_finish" type="object" string="Finalizar" class="btn-success" invisible="barFasDTI == False or barFasDTF != False"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="control_pedido_line_view_search" model="ir.ui.view">
+        <field name="name">control.pedido.line.view.search</field>
+        <field name="model">control.pedido.line</field>
+        <field name="arch" type="xml">
+            <search string="Search Control Pedido Line">
+                <field name="batch"/>
+                <field name="pedido_id"/>
+                <field name="route"/>
+                <field name="description"/>
+                <field name="colorcode"/>
+                <field name="colorname"/>
+                <group>
+                    <filter string="Pedido" name="group_by_pedido_id" domain="[]" context="{'group_by': 'pedido_id'}"/>
+                    <filter string="Producto" name="group_by_description" domain="[]" context="{'group_by': 'description'}"/>
+                    <filter string="Batch" name="group_by_batch" domain="[]" context="{'group_by': 'batch'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_control_partida" model="ir.actions.act_window">
+        <field name="name">Partidas</field>
+        <field name="res_model">control.pedido.line</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

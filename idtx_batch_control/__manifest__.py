@@ -28,9 +28,14 @@ de foxpro (dbf) SITPRO y conección con MSSql server para obtener data del TEXPL
 
     # always loaded
     'data': [
-        'data/service_cron.xml',
         'security/ir.model.access.csv',
+        'data/service_cron.xml',
+        'wizard/control_proceso_line_wizard_views.xml',
+        'wizard/btn_inicio_fase_views.xml',
+        'views/control_pedido_line_views.xml',
+        'views/control_faspro_definition_views.xml',
         'views/control_pedido_views.xml',
+        'views/menus.xml',
         'views/kiosk_templates.xml',
     ],
     'assets': {

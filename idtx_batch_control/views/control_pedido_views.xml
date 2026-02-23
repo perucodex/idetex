@@ -1,360 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
 <odoo>
-  <!-- ============ Cabecera: Tree ============ -->
-  <record id="view_control_pedido_tree" model="ir.ui.view">
-    <field name="name">control.pedido.tree</field>
-    <field name="model">control.pedido</field>
-    <field name="arch" type="xml">
-      <list decoration-danger="area == 'AREA NO CONOCIDA'" create="0">
-        <field name="fecha"/>
-        <field name="fecoc"/>
-        <field name="numordped"/>
-        <field name="customer" optional="hide"/>
-        <field name="salesman" optional="hide"/>
-        <field name="tipoventa" optional="hide"/>
-        <field name="num_days"/>
-        <field name="area"/>
-        <field name="process"/>
-        <field name="state" widget="badge" decoration-danger="state == 'de'" decoration-info="state == 'on'" decoration-success="state == 'do'"/>
-      </list>
-    </field>
-  </record>
-  <!-- ============ Cabecera: Tree ============ -->
-  <record id="view_control_pedido_line_tree" model="ir.ui.view">
-    <field name="name">control.pedido.line.tree</field>
-    <field name="model">control.pedido.line</field>
-    <field name="arch" type="xml">
-      <list decoration-danger="area == 'AREA NO CONOCIDA'" create="0">
-        <field name="batch"/>
-        <field name="pedido_id"/>
-        <field name="route"/>
-        <field name="description"/>
-        <field name="barcodreo"/>
-        <field name="process"/>
-        <field name="area"/>
-        <field name="kilograms" sum="Total"/>
-      </list>
-    </field>
-  </record>
+    <record id="view_control_pedido_tree" model="ir.ui.view">
+        <field name="name">control.pedido.list</field>
+        <field name="model">control.pedido</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="area == 'AREA NO CONOCIDA'" create="0">
+                <field name="fecha"/>
+                <field name="fecoc"/>
+                <field name="numordped"/>
+                <field name="customer" optional="hide"/>
+                <field name="salesman" optional="hide"/>
+                <field name="tipoventa" optional="hide"/>
+                <field name="num_days"/>
+                <field name="area"/>
+                <field name="process"/>
+                <field name="state" widget="badge" decoration-danger="state == 'de'" decoration-info="state == 'on'" decoration-success="state == 'do'"/>
+            </list>
+        </field>
+    </record>
 
-  <!-- ============ Cabecera: Form (TODOS los campos) ============ -->
-  <record id="view_control_pedido_form" model="ir.ui.view">
-    <field name="name">control.pedido.form</field>
-    <field name="model">control.pedido</field>
-    <field name="arch" type="xml">
-      <form string="Pedido control">
-        <header>
-          <!-- Se ejecuta con el cron pero dejo el boton por si se necesita hacer algo manualmente -->
-          <button name="action_sync_from_dbf" type="object" string="Sincronizar desde DBF" class="btn-primary"/>
-          <button name="settle_order" type="object" string="Liquidar Orden" class="btn-primary" invisible="state == 'se'"/>
-          <button name="settle_order" type="object" string="Revertir Liquidación" class="btn-primary" invisible="state != 'se'"/>
-          <field name="state" widget="statusbar"/>
-        </header>
+    <record id="view_control_pedido_form" model="ir.ui.view">
+        <field name="name">control.pedido.form</field>
+        <field name="model">control.pedido</field>
+        <field name="arch" type="xml">
+            <form string="Pedido control">
+                <header>
+                    <button name="action_sync_from_dbf" type="object" string="Sincronizar desde DBF" class="btn-primary"/>
+                    <button name="settle_order" type="object" string="Liquidar Orden" class="btn-primary" invisible="state == 'se'"/>
+                    <button name="settle_order" type="object" string="Revertir Liquidación" class="btn-primary" invisible="state != 'se'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="numordped" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="fecha" readonly="1"/>
+                            <field name="fecoc" readonly="1"/>
+                            <field name="customer" readonly="1"/>
+                            <field name="salesman" readonly="1"/>
+                            <field name="tipoventa" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="num_days"/>
+                            <field name="process"/>
+                            <field name="area"/>
+                            <field name="total_weight" readonly="1"/>
+                            <field name="produced_weight" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Detalle">
+                            <field name="line_ids" readonly="1">
+                                <list decoration-danger="process == 'SIN AVANCE'">
+                                    <field name="route"/>
+                                    <field name="barcodreo"/>
+                                    <field name="batch"/>
+                                    <field name="kilograms" sum="Total"/>
+                                    <field name="process"/>
+                                    <field name="area"/>
+                                    <field name="start_date"/>
+                                    <field name="end_date"/>
+                                    <field name="colorcode"/>
+                                    <field name="colorname"/>
+                                    <button name="action_open_start_wizard" type="object" string="Iniciar" class="btn-primary" invisible="start_date"/>
+                                    <button name="action_end_process" type="object" string="Finalizar" class="btn-success" invisible="not start_date or end_date"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
 
-        <sheet>
-          <div class="oe_title">
-            <h1>
-              <field name="numordped" readonly="1"/>
-            </h1>
-          </div>
-          <group>
-            <group>
-              <field name="fecha" readonly="1"/>
-              <field name="fecoc" readonly="1"/>
-              <field name="customer" readonly="1"/>
-              <field name="salesman" readonly="1"/>
-              <field name="tipoventa" readonly="1"/>
-            </group>
-            <group>
-              <field name="num_days"/>
-              <field name="process"/>
-              <field name="area"/>
-              <field name="total_weight" readonly="1"/>
-              <field name="produced_weight" readonly="1"/>
-            </group>
-          </group>
+    <record id="control_pedido_view_search" model="ir.ui.view">
+        <field name="name">control.pedido.search</field>
+        <field name="model">control.pedido</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="numordped"/>
+                <field name="customer"/>
+                <filter name="not_done" string="En proceso" domain="[('state', 'in', ['on', 'de'])]"/>
+                <filter name="done" string="Terminado" domain="[('state', '=', 'do')]"/>
+            </search>
+        </field>
+    </record>
 
-          <notebook>
-            <page string="Detalle">
-              <field name="line_ids" readonly="1">
-                <list decoration-danger="process == 'SIN AVANCE'">
-                  <field name="route"/>
-                  <field name="barcodreo"/>
-                  <field name="batch"/>
-                  <field name="kilograms" sum="Total"/>
-                  <field name="process"/>
-                  <field name="area"/>
-                  <field name="start_date"/>
-                  <field name="end_date"/>
-                  <field name="colorcode"/>
-                  <field name="colorname"/>
+    <record id="action_control_pedido" model="ir.actions.act_window">
+        <field name="name">Pedidos control</field>
+        <field name="res_model">control.pedido</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{"search_default_not_done": 1}</field>
+    </record>
 
-                  <!-- BOTONES -->
-                  <button name="action_start_process"
-                          type="object"
-                          string="Iniciar"
-                          class="btn-primary"
-                          invisible="start_date"/>
-
-                  <button name="action_end_process"
-                          type="object"
-                          string="Finalizar"
-                          class="btn-success"
-                          invisible="not start_date or end_date"/>
-                </list>
-              </field>
-            </page>
-
-          </notebook>
-        </sheet>
-        <chatter/>
-      </form>
-    </field>
-  </record>
-
-  <!-- ============ Cabecera: Form (TODOS los campos) ============ -->
-  <record id="view_control_pedido_line_form" model="ir.ui.view">
-    <field name="name">control.pedido.line.form</field>
-    <field name="model">control.pedido.line</field>
-    <field name="arch" type="xml">
-      <form>
-        <sheet>
-          <div class="oe_title">
-            <h1>
-              <field name="batch" readonly="1"/>
-            </h1>
-          </div>
-          <group>
-            <group>
-              <field name="pedido_id" readonly="1"/>
-              <field name="route" readonly="1"/>
-              <field name="barcodreo" readonly="1"/>
-              <field name="description" readonly="1"/>
-              <field name="process" readonly="1"/>
-              <field name="area" readonly="1"/>
-            </group>
-            <group>
-              <field name="kilograms" readonly="1"/>
-              <field name="start_date" readonly="1"/>
-              <field name="end_date" readonly="1"/>
-              <field name="colorcode" readonly="1"/>
-              <field name="colorname" readonly="1"/>
-            </group>
-          </group>
-          <notebook>
-            <page string="Procesos">
-              <field name="proceso_ids">
-                <list decoration-success="barFasDTF" delete="0" edit="0">
-
-                  <field name="barcod"/>
-                  <field name="barOrdLin"/>
-
-                  <!-- Editable solo si no ha iniciado -->
-                  <field name="fasCod"/>
-
-                  <field name="maqCodBis"/>
-
-                  <field name="barFasDTI"/>
-                  <field name="barFasDTF"/>
-
-                  <field name="previous_finished" column_invisible="1"/>
-
-                  <!-- BOTON EDITAR -->
-                  <button name="action_edit_process"
-                          type="object"
-                          string="Editar"
-                          class="btn-secondary"
-                          invisible="barFasDTI != False or barFasDTF != False or previous_finished == False"/>
-
-                  <!-- BOTON INICIAR -->
-                  <button name="action_start_with_wizard"
-                          type="object"
-                          string="Iniciar"
-                          class="btn-primary"
-                          invisible="barFasDTI != False or barFasDTF != False or previous_finished == False"/>
-
-                  <!-- BOTON FINALIZAR -->
-                  <button name="action_finish"
-                          type="object"
-                          string="Finalizar"
-                          class="btn-success"
-                          invisible="barFasDTI == False or barFasDTF != False"/>
-
-                </list>
-              </field>
-            </page>
-          </notebook>
-        </sheet>
-      </form>
-    </field>
-  </record>
-
-  <record id="control_pedido_line_view_search" model="ir.ui.view">
-    <field name="name">control.pedido.line.view.search</field>
-    <field name="model">control.pedido.line</field>
-    <field name="arch" type="xml">
-      <search string="Search Control Pedido Line">
-        <field name="batch"/>
-        <field name="pedido_id"/>
-        <field name="route"/>
-        <field name="description"/>
-        <field name="colorcode"/>
-        <field name="colorname"/>
-        <!-- <filter name="test" string="Test" domain="[('state','=','test')]"/>
-        <filter name="prod" string="Product" domain="[('state','=','prod')]"/>
-        <filter name="tech" string="Technical Sheet" domain="[('state','=','tech')]"/> -->
-        <group>
-            <filter string="Pedido" name="group_by_pedido_id" domain="[]" context="{'group_by': 'pedido_id'}"/>
-            <filter string="Producto" name="group_by_description" domain="[]" context="{'group_by': 'description'}"/>
-            <filter string="Batch" name="group_by_batch" domain="[]" context="{'group_by': 'batch'}"/>
-        </group>
-      </search>
-    </field>
-  </record>
-
-    <!-- ================= TREE PROCESOS ================= -->
-  <!-- <record id="view_control_proceso_line_list" model="ir.ui.view">
-    <field name="name">control.proceso.lines.list</field>
-    <field name="model">control.proceso.lines</field>
-    <field name="arch" type="xml">
-      <list decoration-success="barFasDTF" >
-
-        <field name="pedido_line_id"/>
-        <field name="barcod"/>
-        <field name="barOrdLin"/>
-        <field name="fasCod"/>
-        <field name="maqCodBis"/>
-        <field name="barFasDTI"/>
-        <field name="barFasDTF"/>
-
-        <field name="previous_finished" column_invisible="1"/>
-
-        <button name="action_start_with_wizard"
-                type="object"
-                string="Iniciar"
-                invisible="barFasDTI != False or barFasDTF != False or previous_finished == False"/>
-
-        <button name="action_finish"
-                type="object"
-                string="Finalizar"
-                invisible="barFasDTI == False or barFasDTF != False"/>
-                
-        <button name="action_edit_process"
-                type="object"
-                string="Editar"
-                class="btn-secondary"
-                invisible="barFasDTI != False or barFasDTF != False or previous_finished == False"/>
-
-      </list>
-    </field>
-  </record> -->
-
-  <!-- <record id="control_pedido_view_search" model="ir.ui.view">
-      <field name="name">control.pedido.view.search</field>
-      <field name="model">control.pedido</field>
-      <field name="arch" type="xml">
-          <search string="Search">
-              <field name="line_ids" string="Batch" filter_domain="[('line_ids.batch', 'ilike', self)]"/>
-              <field name="numordped"/>
-              <field name="area"/>
-              <field name="process"/>
-              <field name="state"/>
-              <field name="line_ids" string="Color Code" filter_domain="[('line_ids.colorcode', 'ilike', self)]"/>
-              <field name="line_ids" string="Color Name" filter_domain="[('line_ids.colorname', 'ilike', self)]"/>
-              <filter name="not_done" string="Active" domain="[('state', 'in', ['de','on'])]"/>
-              <filter name="done" string="Done" domain="[('state', '=', 'do')]"/>
-              <filter name="settle" string="Settle" domain="[('state', '=', 'se')]"/>
-              <group>
-                  <filter string="Customer" name="group_by_customer" domain="[]" context="{'group_by': 'customer'}"/>
-                  <filter string="Salesman" name="group_by_salesman" domain="[]" context="{'group_by': 'salesman'}"/>
-                  <filter string="Area" name="group_by_area" domain="[]" context="{'group_by': 'area'}"/>
-                  <filter string="Process" name="group_by_process" domain="[]" context="{'group_by': 'process'}"/>
-                  <filter string="State" name="group_by_state" domain="[]" context="{'group_by': 'state'}"/>
-              </group>
-          </search>
-      </field>
-  </record> -->
-
-  <!-- <record id="control_pedido_line_view_search" model="ir.ui.view">
-      <field name="name">control.pedido.line.view.search</field>
-      <field name="model">control.pedido.line</field>
-      <field name="arch" type="xml">
-          <search string="Search">
-              <field name="batch"/>
-              <field name="pedido_id"/>
-              <field name="route"/>
-              <field name="barcodreo"/>
-              <field name="process"/>
-              <field name="area"/>
-              <field name="colorcode"/>
-              <field name="colorname"/>
-              <group>
-                  <filter string="Process" name="group_by_process" domain="[]" context="{'group_by': 'process'}"/>
-                  <filter string="Area" name="group_by_area" domain="[]" context="{'group_by': 'area'}"/>
-              </group>
-          </search>
-      </field>
-  </record> -->
-
-
- <!-- ================= AQUI PEGAS EL WIZARD ================= -->
-
-  <record id="view_control_proceso_line_wizard" model="ir.ui.view">
-      <field name="name">control.proceso.line.wizard.form</field>
-      <field name="model">control.proceso.line.wizard</field>
-      <field name="arch" type="xml">
-          <form string="Editar/Iniciar Proceso">
-              <sheet>
-                <group>
-                    <field name="line_id" invisible="1"/>
-                    <field name="action_type" invisible="1"/>
-                  <group string="Valores Actuales (Anterior)">
-                      <field name="fas_old_str" string="Proceso Anterior"/>
-                      <field name="maq_old_str" string="Máquina Anterior"/>
-                  </group>
-                  
-                  <group string="Nuevos Valores (Lista de Selección)">
-                      <field name="fas_id_new" required="1" options="{'no_create': True}" string="Proceso Nuevo"/>
-                      <field name="maq_id_new" readonly="1" force_save="1" string="Máquina Nueva"/>
-                  </group>
-                </group>
-              </sheet>
-
-              <footer>
-                  <button string="Aceptar"
-                          type="object"
-                          name="action_confirm"
-                          class="btn-primary"/>
-                  <button string="Cancelar" special="cancel"/>
-              </footer>
-          </form>
-      </field>
-  </record>
-
-
-
-  <!-- ================= ACTIONS ================= -->
-  <record id="action_control_pedido" model="ir.actions.act_window">
-    <field name="name">Pedidos control</field>
-    <field name="res_model">control.pedido</field>
-    <field name="view_mode">list,form</field>
-    <field name="context">{"search_default_not_done":1}</field>
-  </record>
-
-  <record id="action_control_partida" model="ir.actions.act_window">
-    <field name="name">Partidas</field>
-    <field name="res_model">control.pedido.line</field>
-    <field name="view_mode">list,form</field>
-  </record>
-
-  <!-- <record id="action_control_proceso_line" model="ir.actions.act_window">
-    <field name="name">Procesos</field>
-    <field name="res_model">control.proceso.lines</field>
-    <field name="view_mode">list</field>
-  </record> -->
-
-  <menuitem id="menu_sitpro_texplus" name="Sitpro &amp; Texplus" parent="mrp.menu_mrp_root" sequence="40">
-    <menuitem id="menu_control_pedido" name="Pedidos" sequence="10" action="action_control_pedido"/>
-    <menuitem id="menu_control_partida" name="Partidas" sequence="20" action="action_control_partida"/>
-  </menuitem>
-    
 </odoo>

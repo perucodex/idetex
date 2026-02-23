@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menú Principal -->
+    <menuitem id="menu_sitpro_texplus" 
+              name="Sitpro &amp; Texplus" 
+              parent="mrp.menu_mrp_root" 
+              sequence="40"/>
+
+    <!-- Acciones vinculadas a menús -->
+    <menuitem id="menu_control_pedido" 
+              name="Pedidos" 
+              sequence="10" 
+              parent="menu_sitpro_texplus" 
+              action="action_control_pedido"/>
+
+    <menuitem id="menu_control_partida" 
+              name="Partidas" 
+              sequence="20" 
+              parent="menu_sitpro_texplus" 
+              action="action_control_partida"/>
+
+    <menuitem id="menu_control_faspro_definition" 
+              name="Definición de Procesos" 
+              sequence="30" 
+              parent="menu_sitpro_texplus" 
+              action="action_control_faspro_definition"/>
+</odoo>

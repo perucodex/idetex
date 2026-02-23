@@ -4,3 +4,4 @@ access_control_pedido_line,control_pedido_line,model_control_pedido_line,base.gr
 access_control_proceso_lines,control_proceso_lines,model_control_proceso_lines,base.group_user,1,1,1,1
 access_control_faspro_definition,control_faspro_definition,model_control_faspro_definition,base.group_user,1,1,1,1
 access_control_proceso_line_wizard,control_proceso_line_wizard,model_control_proceso_line_wizard,base.group_user,1,1,1,1
+access_btn_inicio_fase_wizard,btn_inicio_fase_wizard,model_btn_inicio_fase_wizard,base.group_user,1,1,1,1
