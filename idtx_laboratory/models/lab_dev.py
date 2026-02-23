@@ -6,6 +6,7 @@ class LabDev(models.Model):
     _name = 'lab.dev'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Laboratory Development'
+    _order = 'name desc'
 
     name = fields.Char('Name', copy=False, default=lambda self: _('New'))
     lab_dev_date = fields.Date('Lab Dev Date', default=fields.Date.context_today)
@@ -108,7 +109,7 @@ class LabDevLine(models.Model):
                 products = record.sale_order_id.order_line.product_template_id.filtered(lambda p: p.is_weaving).ids
             record.available_product_ids = products
     
-    @api.onchange('color_process_type_id','color_range_id','color_intensity_id')
+    @api.onchange('color_process_type_id','color_range_id','color_intensity_id','color_recipe_ids')
     def _onchange_color_code(self):
         for rec in self:
             # Verifica que los tres campos requeridos estén presentes
@@ -137,9 +138,10 @@ class LabDevLine(models.Model):
                 # Asigna el nuevo código
                 rec.color_code = prefix + next_counter
             else:
-                rec.color_code = (rec.color_process_type_id.code or '') + \
-                        (rec.color_range_id.code or '') + \
-                        (rec.color_intensity_id.code or '')
+                rec.color_code = ''
+                # (rec.color_process_type_id.code or '') + \
+                #         (rec.color_range_id.code or '') + \
+                #         (rec.color_intensity_id.code or '')
                 
     def unlink(self):
         if any(r.state == 'approved' for r in self.color_recipe_ids):
