@@ -48,6 +48,7 @@ class MrpWorkorderOption(models.Model):
     name = fields.Char('Name')
     workorder_id = fields.Many2one('mrp.workorder', string='Workorder')
     notes = fields.Text('Notes')
+    equipment_id = fields.Many2one('maintenance.equipment', string='Equipment')
     option_line_ids = fields.One2many('mrp.workorder.option.line', 'option_id', string='Option Lines')
     available_thread_product_ids = fields.Many2many(
         'product.product',

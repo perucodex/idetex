@@ -11,6 +11,7 @@
                     <group>
                         <field name="name" required="1"/>
                         <field name="workorder_id" readonly="1"/>
+                        <field name="equipment_id" required="1"/>
                         <field name="available_thread_product_ids" invisible="1"/>
                         <field name="notes"/>
                     </group>

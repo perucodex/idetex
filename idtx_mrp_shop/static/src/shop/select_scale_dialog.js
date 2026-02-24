@@ -34,7 +34,6 @@ export class SelectScaleDialog extends ConfirmationDialog {
         this.notification = useService("notification");
         this.scales = this.props.scales || [];
         this.employees = this.props.employees || [];    
-        this.equipments = this.props.equipments || [];
         this.options = this.props.options || [];
         
         // Initialize selectedOption from props when provided (e.g., last roll)
@@ -55,6 +54,9 @@ export class SelectScaleDialog extends ConfirmationDialog {
             authPassword: "",
             authError: "",
             isAuthChecking: false,
+            
+            // Make equipments reactive so UI updates when list changes
+            equipments: this.props.equipments || [],
         });
         this.isDisplayStandalone = isDisplayStandalone();
  
@@ -80,11 +82,13 @@ export class SelectScaleDialog extends ConfirmationDialog {
             if (!this.employees.length) {
                 await this._loadEmployees();
             }
-            if (!this.equipments.length) {
+            if (!this.state.equipments.length) {
                 await this._loadEquipments();
             }
             if (!this.options.length) {
                 await this._loadOptions();
+            } else {
+                await this._hydrateOptions();
             }
 
             // After loading options, restore persisted selection for this workorder (if any)
@@ -109,7 +113,12 @@ export class SelectScaleDialog extends ConfirmationDialog {
             } catch (e) {
                 // ignore
             }
-            try { console.log('SelectScaleDialog:onWillStart -> after _loadOptions selectedOption=', this.state.selectedOption, 'options=', this.options, 'isConfirmEnabled=', this.isConfirmEnabled); } catch (e) {}
+            
+            // Only sync equipment from option if an option is actually selected
+            // Otherwise it clears the equipment restored from localStorage
+            if (this.state.selectedOption) {
+                await this._syncEquipmentFromOption();
+            }
 
             // 👇 seleccionar primera balanza por defecto
             if (this.scales.length && !this.state.selectedScaleId) {
@@ -353,8 +362,9 @@ export class SelectScaleDialog extends ConfirmationDialog {
 
     async _loadEquipments() {
         const equipment_ids = this.props.equipment_ids || [];
-        this.equipments = await this.ormService.searchRead("maintenance.equipment", [['id','in',equipment_ids]], ["name"]);
-        if (!this.equipments.length) {
+        const equipments = await this.ormService.searchRead("maintenance.equipment", [['id','in',equipment_ids]], ["name"]);
+        this.state.equipments = equipments;
+        if (!this.state.equipments.length) {
             this.notification.add(
                 _t("No equipments are available, please assign one first to add it to the shop floor view"),
                 { type: "danger" }
@@ -367,9 +377,14 @@ export class SelectScaleDialog extends ConfirmationDialog {
         try {
             const workorderId = this.props.active && this.props.active.length ? this.props.active[0] : null;
             if (workorderId) {
-                const raw = await this.ormService.searchRead('mrp.workorder.option', [['workorder_id', '=', workorderId]], ['name', 'id']);
+                const raw = await this.ormService.searchRead(
+                    'mrp.workorder.option',
+                    [['workorder_id', '=', workorderId]],
+                    ['name', 'id', 'equipment_id']
+                );
                 // Ensure all items have valid id before assigning
                 this.options = (raw || []).filter(opt => opt && opt.id);
+                await this._ensureEquipmentsForOptions();
             } else {
                 this.options = [];
             }
@@ -385,14 +400,13 @@ export class SelectScaleDialog extends ConfirmationDialog {
         }
     }
 
-    onOptionChange(ev) {
-        // t-model already updates state.selectedOption; persist it immediately
+    async onOptionChange(ev) {
+        // Ensure selectedOption is updated before syncing equipment
+        this.state.selectedOption = ev?.target?.value || "";
         this.state.optionTouched = true;
-        try {
-            console.log("SelectScaleDialog:onOptionChange -> selectedOption:", this.state.selectedOption, "options:", this.options);
-        } catch (e) {
-            // ignore
-        }
+        
+        await this._syncEquipmentFromOption(this.state.selectedOption);
+        
         try {
             const workorderId = this.props.active && this.props.active.length ? this.props.active[0] : null;
             const LS_KEY = workorderId ? `idtx_mrp.last_selection.${workorderId}` : 'idtx_mrp.last_selection';
@@ -403,6 +417,75 @@ export class SelectScaleDialog extends ConfirmationDialog {
             parsed.employee_id = this.state.selectedEmployee ? String(this.state.selectedEmployee) : false;
             parsed.equipment_id = this.state.selectedEquipment ? String(this.state.selectedEquipment) : false;
             window.localStorage.setItem(LS_KEY, JSON.stringify(parsed));
+        } catch (e) {
+            // ignore
+        }
+    }
+
+    async _syncEquipmentFromOption(optionId = null) {
+        const selectedOptionId = optionId ?? this.state.selectedOption;
+        
+        if (!selectedOptionId || !this.options?.length) {
+            // Don't clear equipment if no option selected - user might have manually selected equipment
+            return;
+        }
+        const selected = this.options.find(o => String(o.id) === String(selectedOptionId));
+        
+        if (!selected || !selected.equipment_id) {
+            this.state.selectedEquipment = "";
+            return;
+        }
+        const equipmentId = Array.isArray(selected.equipment_id)
+            ? selected.equipment_id[0]
+            : selected.equipment_id;
+        
+        if (equipmentId) {
+            await this._ensureEquipmentsForOptions([equipmentId]);
+        }
+        this.state.selectedEquipment = equipmentId ? String(equipmentId) : "";
+    }
+
+    async _hydrateOptions() {
+        const optionIds = (this.options || []).map(o => o.id).filter(Boolean);
+        if (!optionIds.length) {
+            return;
+        }
+        try {
+            const raw = await this.ormService.read(
+                'mrp.workorder.option',
+                optionIds,
+                ['name', 'id', 'equipment_id']
+            );
+            this.options = (raw || []).filter(opt => opt && opt.id);
+            await this._ensureEquipmentsForOptions();
+        } catch (e) {
+            // ignore
+        }
+    }
+
+    async _ensureEquipmentsForOptions(explicitIds = null) {
+        const optionEquipmentIds = explicitIds && explicitIds.length
+            ? explicitIds
+            : (this.options || [])
+                .map(opt => Array.isArray(opt.equipment_id) ? opt.equipment_id[0] : opt.equipment_id)
+                .filter(Boolean);
+        
+        if (!optionEquipmentIds.length) {
+            return;
+        }
+        const existingIds = new Set((this.state.equipments || []).map(e => e.id));
+        const missingIds = optionEquipmentIds.filter(id => !existingIds.has(id));
+        
+        if (!missingIds.length) {
+            return;
+        }
+        try {
+            const extraEquipments = await this.ormService.read(
+                "maintenance.equipment",
+                missingIds,
+                ["name"]
+            );
+            this.state.equipments = [...(this.state.equipments || []), ...(extraEquipments || [])];
         } catch (e) {
             // ignore
         }

@@ -83,6 +83,23 @@
             </field>
         </record>
 
+        <record id="color_recipe_view_search" model="ir.ui.view">
+            <field name="name">color.recipe.view.search</field>
+            <field name="model">color.recipe</field>
+            <field name="arch" type="xml">
+                <search string="Color Recipe">
+                    <field name="name"/>
+                    <field name="product_id"/>
+                    <field name="color_name"/>
+                    <field name="recipe_color_code"/>
+                    <filter name="approved" string="Approved" domain="[('state', '=', 'approved')]"/>
+                    <group>
+                        <filter string="Product" name="group_by_product_id" domain="[]" context="{'group_by': 'product_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
         <record id="color_recipe_action" model="ir.actions.act_window">
             <field name="name">Color Recipe</field>
             <field name="res_model">color.recipe</field>

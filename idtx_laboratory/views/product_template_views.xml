@@ -5,8 +5,9 @@
         <field name="name">chemical</field>
         <field name="res_model">product.template</field>
         <field name="view_mode">kanban,list,form,activity</field>
-        <field name="context">{'search_default_filter_chemical': 1}</field>
+        <field name="context" eval="{'default_categ_id': ref('product_categ_3'), 'default_is_chemical': True}"/>
         <field name="view_id" ref="product.product_template_tree_view"/>
+        <field name="domain">[('is_chemical', '=', True)]</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 Create a new chemical product

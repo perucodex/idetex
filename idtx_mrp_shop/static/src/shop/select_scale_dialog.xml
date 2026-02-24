@@ -2,6 +2,17 @@
 <templates xml:space="preserve">
     <t t-name="idtx_mrp_shop.SelectScaleDialog">
         <Dialog size="'md'" title="props.title" modalRef="modalRef">
+            <div class="mt-4" t-if="options and options.length">
+                <h5 class="fw-bold">Option</h5>
+                <select class="form-select fs-4" t-model="state.selectedOption" t-on-change="onOptionChange">
+                    <option value=""> </option>
+                    <t t-foreach="options" t-as="opt" t-key="opt.id">
+                        <option t-att-value="'' + opt.id"
+                                t-att-selected="state.selectedOption == ('' + opt.id)"
+                                t-esc="opt.name"/>
+                    </t>
+                </select>
+            </div>
             <div class="mt-4">
                 <h5 class="fw-bold">Employee</h5>
                 <select class="form-select fs-4" t-model="state.selectedEmployee">
@@ -13,19 +24,9 @@
             <div class="mt-4">
                 <h5 class="fw-bold">Equipment</h5>
                 <select class="form-select fs-4" t-model="state.selectedEquipment">
-                    <t t-foreach="equipments" t-as="eqp" t-key="eqp.id">
-                        <option t-att-value="eqp.id" t-esc="eqp.name"/>
-                    </t>
-                </select>
-            </div>
-            <div class="mt-4" t-if="options and options.length">
-                <h5 class="fw-bold">Option</h5>
-                <select class="form-select fs-4" t-model="state.selectedOption" t-on-change="onOptionChange">
-                    <option value=""> </option>
-                    <t t-foreach="options" t-as="opt" t-key="opt.id">
-                        <option t-att-value="'' + opt.id"
-                                t-att-selected="state.selectedOption == ('' + opt.id)"
-                                t-esc="opt.name"/>
+                    <option value=""></option>
+                    <t t-foreach="state.equipments" t-as="eqp" t-key="eqp.id">
+                        <option t-att-value="'' + eqp.id" t-esc="eqp.name"/>
                     </t>
                 </select>
             </div>

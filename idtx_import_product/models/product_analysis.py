@@ -431,7 +431,7 @@ class ProductAnalysis(models.Model):
                     l.cb,
                     l.ints
                 FROM vta_labs v
-                INNER JOIN lab_colores l
+                INNER JOIN lab_colores02 l
                     ON LTRIM(RTRIM(v.cdgcolor)) =
                     LTRIM(RTRIM(ISNULL(l.gt,''))) +
                     LTRIM(RTRIM(ISNULL(l.cb,''))) +
