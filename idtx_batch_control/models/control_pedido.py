@@ -358,6 +358,7 @@ class ControlPedido(models.Model):
 
     def action_sync_from_dbf(self):
         self.sync_master_data()
+        self.sync_operators()
         res = self.sync_from_dbf()
         return {"type": "ir.actions.client", "tag": "display_notification", "params": {"title": "FoxPro → Odoo", "message": f"Creados: {res['created']} | Actualizados: {res['updated']}", "sticky": False}}
 
@@ -379,5 +380,20 @@ class ControlPedido(models.Model):
                     if def_maq and not operation.workcenter_id:
                         wc = self.env['mrp.workcenter'].sudo().search([('code', '=', def_maq)], limit=1)
                         if wc: operation.write({'workcenter_id': wc.id})
+        finally:
+            conn.close()
+
+    def sync_operators(self):
+        conn = self._get_sql_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT OpeCod, OpeNom FROM OPERAR")
+            for row in cursor.fetchall():
+                code, name = _safe_str(row[0]), _safe_str(row[1])
+                if not code: continue
+                existing = self.env['control.operator'].sudo().search([('code', '=', code)], limit=1)
+                vals = {'name': name or code}
+                if existing: existing.write(vals)
+                else: self.env['control.operator'].sudo().create({'code': code, **vals})
         finally:
             conn.close()

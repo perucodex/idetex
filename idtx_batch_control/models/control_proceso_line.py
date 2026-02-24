@@ -12,10 +12,6 @@ class ControlProcesoLine(models.Model):
         required=True,
         ondelete="cascade"
     )
-
-    barcod = fields.Char("Hoja de Ruta")
-    barcodreo = fields.Char("Reproceso")
-    barcodpar = fields.Char("Partida")
     barOrdLin = fields.Integer("Orden")
     fas_code = fields.Char("Código Proceso")
     fasCod = fields.Char("Proceso (Descr)")
@@ -23,6 +19,7 @@ class ControlProcesoLine(models.Model):
 
     barFasDTI = fields.Datetime("Fecha Inicio")
     barFasDTF = fields.Datetime("Fecha Fin")
+    operator_name = fields.Char("Operario")
 
     previous_finished = fields.Boolean(compute="_compute_previous_finished", store=False)
 
@@ -64,12 +61,36 @@ class ControlProcesoLine(models.Model):
             }
         }
 
-    def action_start(self, fecha_inicio=False):
+    def action_start(self, fecha_odoo, fecha_inicio, operator_name):
         for rec in self:
-            dt_to_use = fecha_inicio or fields.Datetime.now()
-            # SQL Server usualmente acepta datetime.datetime
-            rec._update_sql("BarFasDTI", dt_to_use)
-            rec.barFasDTI = dt_to_use
+            rec.barFasDTI = fecha_odoo
+            rec.operator_name = operator_name
+            
+            # Actualizar SQL Server con fecha y operario
+            conn = rec.pedido_line_id.pedido_id._get_sql_connection()
+            try:
+                cursor = conn.cursor()
+                query = """
+                    UPDATE BARFAS
+                    SET BarFasDTI = ?,
+                        BarFasUsu = ?,
+                        BarFasEst = 2
+                    WHERE BarCod = ?
+                      AND ISNULL(BarCodReo, 0) = ?
+                      AND BarOrdLin = ?
+                """
+
+                params = (
+                    fecha_inicio, 
+                    operator_name.strip()[:8],
+                    int(rec.pedido_line_id.route), 
+                    int(rec.pedido_line_id.barcodreo), 
+                    rec.barOrdLin)
+                
+                cursor.execute(query, params)
+                conn.commit()
+            finally:
+                conn.close()
 
     def action_finish(self):
         for rec in self:
@@ -88,14 +109,12 @@ class ControlProcesoLine(models.Model):
                         BarFasEst = 2
                     WHERE BarCod = ?
                       AND ISNULL(BarCodReo, 0) = ?
-                      AND ISNULL(BarCodPar, '') = ?
                       AND BarOrdLin = ?
             """
             cursor.execute(query, 
                 value, 
-                self.barcod, 
-                self.barcodreo or 0, 
-                self.barcodpar or '', 
+                int(self.pedido_line_id.route), 
+                int(self.pedido_line_id.barcodreo), 
                 self.barOrdLin
             )
             conn.commit()

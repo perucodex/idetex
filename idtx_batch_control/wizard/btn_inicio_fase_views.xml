@@ -8,7 +8,9 @@
                 <sheet>
                     <group>
                         <field name="line_id" invisible="1"/>
-                        <field name="fecha_inicio"/>
+                        <field name="fecha_inicio" readonly="1"/>
+                        <field name="operator_code" placeholder="Escriba código de operario..."/>
+                        <field name="operator_name" force_save="1"/>
                     </group>
                     <p class="text-muted">
                         Seleccione la fecha y hora de inicio para esta partida.
