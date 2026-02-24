@@ -1,0 +1,46 @@
+<odoo>
+
+    <record id="view_control_pedido_line_form_inherit_eval_tono" model="ir.ui.view">
+        <field name="name">control.pedido.line.form.inherit.eval.tono</field>
+        <field name="model">control.pedido.line</field>
+        <field name="inherit_id" ref="idtx_batch_control.view_control_pedido_line_form"/>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+
+            <xpath expr="//form/sheet" position="before">
+                <header>
+                    <button name="action_evaluar_tono"
+                            type="object"
+                            string="Evaluar Tono Tacho"
+                            class="btn-primary"
+                            invisible="not can_eval_tono"/>
+                    <button name="action_evaluar_tono_acabado"
+                            type="object"
+                            string="Evaluar Tono Acabado"
+                            class="btn-primary"
+                            invisible="can_eval_tono or end_tono"/>
+                </header>
+            </xpath>
+
+            <xpath expr="//notebook/page[field[@name='proceso_ids']]" position="after">
+                <page string="Evaluaciones" invisible="not has_tono_eval_logs">
+
+                        <field name="tono_eval_log_ids" nolabel="1" context="{'form_view_ref': 'idtx_batch_quality.view_control_tono_log_form'}">
+                            <list delete="1" edit="0" create="0">
+                                <field name="fecha_eval"/>
+                                <field name="user_id"/>
+                                <field name="motivo"/>
+                                <field name="tono"/>
+                                <field name="resultado" widget="badge"
+                                       decoration-success="resultado == 'aprobado'"
+                                       decoration-danger="resultado == 'rechazado'"
+                                       decoration-warning="resultado == 'concesionado'"/>
+                            </list>
+                        </field>
+
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

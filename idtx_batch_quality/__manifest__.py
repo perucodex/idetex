@@ -17,8 +17,9 @@ Modulo de Calidad para el control de tonos en los pedidos de tintas. Permite eva
 
     'data': [
         'security/ir.model.access.csv',
-        'views/control_pedido_line_eval_tono_views.xml',
-        'views/control_tono_eval_wizard_views.xml',
+        'views/control_pedido_line_views.xml',
+        'views/control_tono_eval_log_views.xml',
+        'wizards/control_tono_wizard.xml',
     ],
 }
 
