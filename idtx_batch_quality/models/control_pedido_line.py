@@ -2,7 +2,7 @@ from odoo import models, fields, api
 from odoo.exceptions import UserError
 
 
-class ControlPedidoLineTonoAcabado(models.Model):
+class ControlPedidoLine(models.Model):
     _inherit = "control.pedido.line"
 
     tono_eval_log_ids = fields.One2many(
@@ -12,8 +12,14 @@ class ControlPedidoLineTonoAcabado(models.Model):
     )
 
     can_eval_tono = fields.Boolean(
-        string="Puede evaluar tono",
+        string="Puede evaluar tono tacho",
         compute="_compute_can_eval_tono",
+        store=False,
+    )
+
+    can_eval_tono_acabado = fields.Boolean(
+        string="Puede evaluar tono acabado",
+        compute="_compute_can_eval_tono_acabado",
         store=False,
     )
 
@@ -34,19 +40,53 @@ class ControlPedidoLineTonoAcabado(models.Model):
         for rec in self:
             rec.has_tono_eval_logs = bool(rec.tono_eval_log_ids)
 
-    @api.depends("tono_eval_log_ids.resultado")
+    @api.depends(
+        "tono_eval_log_ids.tono",
+        "tono_eval_log_ids.resultado",
+        "proceso_ids.fasCod",
+        "proceso_ids.barFasDTI",
+        "proceso_ids.barFasDTF",
+    )
     def _compute_can_eval_tono(self):
         for rec in self:
-            resultados = set(rec.tono_eval_log_ids.mapped("resultado"))
-            rec.can_eval_tono = not bool(resultados.intersection({"aprobado", "concesionado"}))
+            procesos_tenido = rec.proceso_ids.filtered(
+                lambda p: (p.fasCod or "").strip().upper() == "TEÑIDO"
+            )
+            tiene_tenido_cerrado = any(p.barFasDTI and p.barFasDTF for p in procesos_tenido)
 
-    @api.depends("tono_eval_log_ids.resultado")
+            if not tiene_tenido_cerrado:
+                rec.can_eval_tono = False
+                continue
+
+            logs_tacho = rec.tono_eval_log_ids.filtered(lambda l: l.tono == "tacho")
+            tiene_tacho_ok = any(l.resultado in ("aprobado", "concesionado") for l in logs_tacho)
+            rec.can_eval_tono = not tiene_tacho_ok
+
+    @api.depends("tono_eval_log_ids.tono", "tono_eval_log_ids.resultado")
+    def _compute_can_eval_tono_acabado(self):
+        for rec in self:
+            logs_tacho = rec.tono_eval_log_ids.filtered(lambda l: l.tono == "tacho")
+            logs_acabado = rec.tono_eval_log_ids.filtered(lambda l: l.tono == "acabado")
+
+            tiene_tacho_ok = any(l.resultado in ("aprobado", "concesionado") for l in logs_tacho)
+            tiene_acabado_final = any(l.resultado in ("aprobado", "concesionado") for l in logs_acabado)
+            rec.can_eval_tono_acabado = tiene_tacho_ok and not tiene_acabado_final
+
+    @api.depends("tono_eval_log_ids.tono", "tono_eval_log_ids.resultado")
     def _compute_end_tono(self):
         for rec in self:
-            resultados = set(rec.tono_eval_log_ids.filtered(lambda l: l.tono == "acabado").mapped("resultado"))
+            resultados = set(
+                rec.tono_eval_log_ids.filtered(lambda l: l.tono == "acabado").mapped("resultado")
+            )
             rec.end_tono = bool(resultados.intersection({"aprobado", "concesionado"}))
 
     def action_evaluar_tono(self):
+        self.ensure_one()
+        if not self.can_eval_tono:
+            raise UserError(
+                "La evaluación de Tono Tacho solo está disponible cuando el proceso TEÑIDO tenga inicio y fin, "
+                "y mientras no exista un Tacho aprobado o concesionado."
+            )
 
         return {
             "type": "ir.actions.act_window",
@@ -56,8 +96,14 @@ class ControlPedidoLineTonoAcabado(models.Model):
             "target": "new",
             "context": {"default_pedido_line_id": self.id},
         }
-    
+
     def action_evaluar_tono_acabado(self):
+        self.ensure_one()
+        if not self.can_eval_tono_acabado:
+            raise UserError(
+                "La evaluación de Tono Acabado solo está disponible después de aprobar o concesionar Tono Tacho, "
+                "y mientras no exista un cierre final de Acabado."
+            )
 
         return {
             "type": "ir.actions.act_window",

@@ -1,5 +1,4 @@
 <odoo>
-
     <record id="view_control_tono_wizard_form" model="ir.ui.view">
         <field name="name">control.tono.wizard.form</field>
         <field name="model">control.tono.wizard</field>
@@ -9,10 +8,11 @@
                     <field name="pedido_line_id" invisible="1"/>
                     <field name="is_concesionado" invisible="1"/>
                     <field name="can_show_decision_buttons" invisible="1"/>
+                    <field name="show_motivos" invisible="1"/>
                     <group>
                         <group>
                             <field name="cliente" readonly="1"/>
-                            <field name="tela" readonly="1"/>
+                            <field name="articulo" readonly="1"/>
                             <field name="pedido" readonly="1"/>
                             <field name="partida" readonly="1"/>
                         </group>
@@ -23,26 +23,52 @@
                             <field name="kilos" readonly="1"/>
                         </group>
                     </group>
-                    <group>
-                        <group><field name="receta"/></group>
-                        <group><field name="receta_tono"/></group>
+                    <group invisible="context.get('tono_acabado', False)">
+                        <group>
+                            <field name="receta" string="Receta Laboratorio"/>
+                        </group>
+                        <group>
+                            <field name="receta_tono" string="Receta Rutero"/>
+                        </group>
                     </group>
-
-                    <group>
-                        <field name="motivo" required="context.get('tono_acabado', False)" invisible="not context.get('tono_acabado', False)"/>
+                    <group invisible="not context.get('tono_acabado', False)">
+                        <group>
+                            <field name="receta" string="Receta Acabado"/>
+                        </group>
+                        <group>
+                            <field name="receta_tono" string="Receta Tacho" readonly="1"/>
+                        </group>
+                    </group>
+                    <group invisible="not show_motivos">
+                        <group string="Motivo">
+                            <field name="motivo_tono"/>
+                            <field name="motivo_tacto"/>
+                            <field name="motivo_apariencia"/>
+                        </group>
                     </group>
                 </sheet>
                 <footer>
-                    <button string="Aprobar" name="action_aprobar" type="object" class="btn-primary"
+                    <button string="Aprobar"
+                            name="action_aprobar"
+                            type="object"
+                            class="btn-primary"
                             invisible="not can_show_decision_buttons or is_concesionado"/>
-                    <button string="Concesionado" name="action_aprobar" type="object" class="btn-primary"
+
+                    <button string="Concesionado"
+                            name="action_aprobar"
+                            type="object"
+                            class="btn-primary"
                             invisible="not can_show_decision_buttons or not is_concesionado"/>
-                    <button string="Rechazar" name="action_rechazar" type="object" class="btn-danger"
+
+                    <button string="Rechazar"
+                            name="action_rechazar"
+                            type="object"
+                            class="btn-danger"
                             invisible="not can_show_decision_buttons"/>
+
                     <button string="Cancelar" special="cancel" class="btn-secondary ms-auto"/>
                 </footer>
             </form>
         </field>
     </record>
-
 </odoo>

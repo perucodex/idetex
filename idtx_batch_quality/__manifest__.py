@@ -3,8 +3,10 @@
 
     'summary': "Short (1 phrase/line) summary of the module's purpose",
 
-    'description': """
-Modulo de Calidad para el control de tonos en los pedidos de tintas. Permite evaluar los tonos de cada linea del pedido y registrar las evaluaciones realizadas.
+    'description': 
+    """
+        Modulo de Calidad para el control de tonos en los pedidos de tintas.
+        Permite evaluar los tonos de cada linea del pedido y registrar las evaluaciones realizadas.
     """,
 
     'author': "Joe Miranda",
@@ -21,5 +23,4 @@ Modulo de Calidad para el control de tonos en los pedidos de tintas. Permite eva
         'views/control_tono_eval_log_views.xml',
         'wizards/control_tono_wizard.xml',
     ],
-}
-
+} 

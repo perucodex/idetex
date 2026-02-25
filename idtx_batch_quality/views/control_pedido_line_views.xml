@@ -1,5 +1,4 @@
 <odoo>
-
     <record id="view_control_pedido_line_form_inherit_eval_tono" model="ir.ui.view">
         <field name="name">control.pedido.line.form.inherit.eval.tono</field>
         <field name="model">control.pedido.line</field>
@@ -18,7 +17,7 @@
                             type="object"
                             string="Evaluar Tono Acabado"
                             class="btn-primary"
-                            invisible="can_eval_tono or end_tono"/>
+                            invisible="not can_eval_tono_acabado"/>
                 </header>
             </xpath>
 
