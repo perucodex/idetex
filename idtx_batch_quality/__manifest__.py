@@ -20,7 +20,13 @@
     'data': [
         'security/ir.model.access.csv',
         'views/control_pedido_line_views.xml',
+        'views/control_apariencia_line_views.xml',
         'views/control_tono_eval_log_views.xml',
+        
+
+
         'wizards/control_tono_wizard.xml',
+        'wizards/control_apariencia_wizard.xml',
+
     ],
 } 

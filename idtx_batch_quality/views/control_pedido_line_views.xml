@@ -6,40 +6,62 @@
         <field name="priority">100</field>
         <field name="arch" type="xml">
 
-            <xpath expr="//form/sheet" position="before">
-                <header>
-                    <button name="action_evaluar_tono"
-                            type="object"
-                            string="Evaluar Tono Tacho"
-                            class="btn-primary"
-                            invisible="not can_eval_tono"/>
-                    <button name="action_evaluar_tono_acabado"
-                            type="object"
-                            string="Evaluar Tono Acabado"
-                            class="btn-primary"
-                            invisible="not can_eval_tono_acabado"/>
-                </header>
+            <xpath expr="//form/header" position="inside">
+                <button name="action_evaluar_tono"
+                        type="object"
+                        string="Evaluar Tono Tacho"
+                        class="btn-primary"
+                        invisible="not can_eval_tono"/>
+
+                <button name="action_evaluar_tono_acabado"
+                        type="object"
+                        string="Evaluar Tono Acabado"
+                        class="btn-primary"
+                        invisible="not can_eval_tono_acabado"/>
             </xpath>
 
             <xpath expr="//notebook/page[field[@name='proceso_ids']]" position="after">
-                <page string="Evaluaciones" invisible="not has_tono_eval_logs">
 
-                        <field name="tono_eval_log_ids" nolabel="1" context="{'form_view_ref': 'idtx_batch_quality.view_control_tono_log_form'}">
-                            <list delete="1" edit="0" create="0">
-                                <field name="fecha_eval"/>
-                                <field name="user_id"/>
-                                <field name="motivo"/>
-                                <field name="tono"/>
-                                <field name="resultado" widget="badge"
-                                       decoration-success="resultado == 'aprobado'"
-                                       decoration-danger="resultado == 'rechazado'"
-                                       decoration-warning="resultado == 'concesionado'"/>
-                            </list>
-                        </field>
+                <page string="Evaluaciones" invisible="not has_tono_eval_logs">
+                    <field name="tono_eval_log_ids" nolabel="1"
+                           context="{'form_view_ref': 'idtx_batch_quality.view_control_tono_log_form'}">
+                        <list delete="1" edit="0" create="0">
+                            <field name="fecha_eval"/>
+                            <field name="user_id"/>
+                            <field name="motivo"/>
+                            <field name="tono"/>
+                            <field name="resultado" widget="badge"
+                                   decoration-success="resultado == 'aprobado'"
+                                   decoration-danger="resultado == 'rechazado'"
+                                   decoration-warning="resultado == 'concesionado'"/>
+                        </list>
+                    </field>
+                </page>
+
+                <page string="Apariencia" invisible="not (can_apariencia or has_apariencia_lines)">
+
+                    <group>
+                        <button name="action_apariencia"
+                                type="object"
+                                string="Apariencia"
+                                class="btn-primary"
+                                invisible="not can_apariencia"/>
+                    </group>
+
+                    <field name="apariencia_line_ids" nolabel="1"
+                           context="{'form_view_ref': 'idtx_batch_quality.view_control_apariencia_line_form'}">
+                        <list delete="1" edit="0" create="0">
+                            <field name="create_date" string="Fecha"/>
+                            <field name="create_uid" string="Usuario"/>
+                            <field name="rollo_num" string="N° Rollo"/>
+                            <field name="defect_count" string="Cantidad Defectos"/>
+                            <field name="defect_total" string="Total Defectos"/>
+                        </list>
+                    </field>
 
                 </page>
-            </xpath>
 
+            </xpath>
         </field>
     </record>
 </odoo>

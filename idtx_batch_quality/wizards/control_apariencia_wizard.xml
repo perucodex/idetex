@@ -1,0 +1,65 @@
+<odoo>
+    <record id="view_control_apariencia_wizard_form" model="ir.ui.view">
+        <field name="name">control.apariencia.wizard.form</field>
+        <field name="model">control.apariencia.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Registrar Apariencia">
+                <sheet>
+                    <field name="pedido_line_id" invisible="1"/>
+
+                    <group>
+                        <group>
+                            <field name="cliente" readonly="1"/>
+                            <field name="articulo" readonly="1"/>
+                            <field name="pedido" readonly="1"/>
+                            <field name="partida" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="hdr" readonly="1"/>
+                            <field name="color_code" readonly="1"/>
+                            <field name="color_name" readonly="1"/>
+                            <field name="kilos" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <field name="rollo_num"/>
+                    </group>
+
+                    <group string="Defectos (Enteros)">
+                        <group>
+                            <field name="lineas_aceite"/>
+                            <field name="cont_polipropileno"/>
+                            <field name="anillado"/>
+                            <field name="barraduras"/>
+                            <field name="caida_tela"/>
+                            <field name="huecos"/>
+                            <field name="falla_aguja"/>
+                            <field name="manchas_colorante"/>
+                            <field name="puntos_oxido"/>
+                        </group>
+                        <group>
+                            <field name="manchas_blancas"/>
+                            <field name="jaladuras"/>
+                            <field name="raspaduras"/>
+                            <field name="migracion"/>
+                            <field name="quebraduras"/>
+                            <field name="manchas_suciedad"/>
+                            <field name="mancha_grasa"/>
+                            <field name="remalles"/>
+                            <field name="ancho_variado"/>
+                        </group>
+                    </group>
+
+                </sheet>
+                <footer>
+                    <button string="Guardar"
+                            name="action_guardar"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Cancelar" special="cancel" class="btn-secondary ms-auto"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

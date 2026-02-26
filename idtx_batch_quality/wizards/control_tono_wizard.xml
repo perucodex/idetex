@@ -28,7 +28,7 @@
                             <field name="receta" string="Receta Laboratorio"/>
                         </group>
                         <group>
-                            <field name="receta_tono" string="Receta Rutero"/>
+                            <field name="receta_tono" string="Receta Tacho"/>
                         </group>
                     </group>
                     <group invisible="not context.get('tono_acabado', False)">

@@ -20,7 +20,7 @@
                                    readonly="1"
                                    invisible="tono != 'tacho'"/>
                             <field name="receta_tono"
-                                   string="Receta Rutero"
+                                   string="Receta Tacho"
                                    readonly="1"
                                    invisible="tono != 'tacho'"/>
 
