@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <record id="mrp_production_workorder_tree_editable_view_dev_inherit" model="ir.ui.view">
+        <field name="name">mrp.workorder.list.editable.dev</field>
+        <field name="model">mrp.workorder</field>
+        <field name="inherit_id" ref="mrp.mrp_production_workorder_tree_editable_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list/button[@name='button_finish']" position="after">
+                <field name="progress" widget="progressbar"/>
+            </xpath>
+        </field>
+    </record>
+
     <record id="mrp_production_workorder_form_view_inherit_dev_form" model="ir.ui.view">
         <field name="name">mrp.work.order.form.dev</field>
         <field name="model">mrp.workorder</field>
