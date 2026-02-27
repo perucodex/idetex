@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-inherit="mrp_workorder.MrpDisplayWorkorderFooter" t-inherit-mode="extension">
+        <xpath expr="//button[@t-on-click='validate']" position="replace">
+            <div class="w-100 d-flex align-items-center gap-2">
+                <t t-set="progress_value" t-value="Math.max(0, Math.min(100, props.record.data.progress || 0))"/>
+                <div class="progress flex-grow-1" role="progressbar" aria-label="Progress" t-att-aria-valuenow="progress_value" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar bg-success" t-att-style="`width: ${progress_value}%`"/>
+                </div>
+                <span class="small fw-semibold" t-esc="`${Math.round(progress_value)}%`"/>
+            </div>
+        </xpath>
+    </t>
+</templates>

@@ -1,0 +1,33 @@
+.o_batch_registry_wizard .o_wizard_legend {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+.o_batch_registry_wizard .o_wizard_legend_editable {
+    background-color: #ffffff;
+    border: 1px solid #86b7fe;
+}
+
+.o_batch_registry_wizard .o_wizard_legend_readonly {
+    background-color: #e9ecef;
+    border: 1px solid #ced4da;
+}
+
+.o_batch_registry_wizard .form-control[readonly],
+.o_batch_registry_wizard input[readonly],
+.o_batch_registry_wizard textarea[readonly] {
+    background-color: #e9ecef;
+    border-color: #ced4da;
+    color: #495057;
+}
+
+.o_batch_registry_wizard .form-control:not([readonly]),
+.o_batch_registry_wizard .form-select,
+.o_batch_registry_wizard textarea.form-control:not([readonly]) {
+    border-color: #86b7fe;
+    background-color: #ffffff;
+}

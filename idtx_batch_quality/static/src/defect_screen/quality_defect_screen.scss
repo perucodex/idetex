@@ -1,0 +1,94 @@
+.o_quality_defect_screen {
+    min-height: 100dvh;
+
+    .o_full_step_card {
+        min-height: calc(100dvh - 150px);
+    }
+
+    .o_defect_card {
+        height: calc(100dvh - 260px);
+        min-height: 320px;
+        overflow: hidden;
+    }
+
+    .o_partida_results {
+        max-height: 280px;
+        overflow-y: auto;
+    }
+
+    .o_defect_stack {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .o_defect_stack::after {
+        content: "";
+        display: block;
+        height: 14px;
+        flex: 0 0 14px;
+    }
+
+    .o_defect_body {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+        scroll-padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+    }
+
+    .o_defect_stack_scroll {
+        flex: 0 0 auto;
+        min-height: auto;
+        overflow: visible;
+        padding-right: 0.75rem;
+        padding-bottom: 0;
+        scroll-padding-bottom: 0;
+    }
+
+    .o_defect_stack .btn {
+        min-height: 86px;
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+
+    .o_defect_stack .badge {
+        font-size: 1rem;
+    }
+
+    .o_defect_grid,
+    .o_size_grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .o_defect_btn,
+    .o_size_btn {
+        min-height: 64px;
+        font-size: 1rem;
+        font-weight: 600;
+        white-space: normal;
+    }
+
+    .o_size_popup_backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 1040;
+    }
+
+    .o_size_popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 92vw;
+        max-width: 680px;
+        max-height: 85vh;
+        overflow: auto;
+        z-index: 1050;
+    }
+}

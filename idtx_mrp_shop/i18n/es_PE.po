@@ -1,0 +1,432 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* idtx_mrp_shop
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-26 00:00+0000\n"
+"PO-Revision-Date: 2026-02-26 00:00+0000\n"
+"Last-Translator: Codex Development\n"
+"Language-Team: Spanish\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: idtx_mrp_shop
+msgid "Select a scale"
+msgstr "Seleccionar una balanza"
+
+#. module: idtx_mrp_shop
+msgid "Select size and quantity"
+msgstr "Seleccionar talla y cantidad"
+
+#. module: idtx_mrp_shop
+msgid "Select batch"
+msgstr "Seleccionar partida"
+
+#. module: idtx_mrp_shop
+msgid "You must select an employee."
+msgstr "Debe seleccionar un empleado."
+
+#. module: idtx_mrp_shop
+msgid "You must select an equipment."
+msgstr "Debe seleccionar una máquina."
+
+#. module: idtx_mrp_shop
+msgid "You must select a batch."
+msgstr "Debe seleccionar una partida."
+
+#. module: idtx_mrp_shop
+msgid "Batch, employee and equipment are required."
+msgstr "La partida, el empleado y la máquina son obligatorios."
+
+#. module: idtx_mrp_shop
+msgid "Error searching batches."
+msgstr "Error al buscar partidas."
+
+#. module: idtx_mrp_shop
+msgid "Error loading registry defaults."
+msgstr "Error al cargar los valores por defecto del registro."
+
+#. module: idtx_mrp_shop
+msgid "Missing water"
+msgstr "Falta agua"
+
+#. module: idtx_mrp_shop
+msgid "Add Salt and Alkali"
+msgstr "Agregar sal y álcali"
+
+#. module: idtx_mrp_shop
+msgid "Department 'Tintorería' not found. Please check the external ID."
+msgstr "No se encontró el departamento 'Tintorería'. Verifique el ID externo."
+
+#. module: idtx_mrp_shop
+msgid "Workcenter_id 'Tintorería' not found. Please check the external ID."
+msgstr "No se encontró el workcenter_id 'Tintorería'. Verifique el ID externo."
+
+#. module: idtx_mrp_shop
+msgid "No employees are available, please assign one first to add it to the shop floor view"
+msgstr "No hay empleados disponibles; asigne uno para mostrarlo en Shop Floor."
+
+#. module: idtx_mrp_shop
+msgid "No equipments are available, please assign one first to add it to the shop floor view"
+msgstr "No hay máquinas disponibles; asigne una para mostrarla en Shop Floor."
+
+#. module: idtx_mrp_shop
+msgid "No scales are available, please create one first to add it to the shop floor view"
+msgstr "No hay balanzas disponibles; cree una para mostrarla en Shop Floor."
+
+#. module: idtx_mrp_shop
+msgid "No options are available for this work order."
+msgstr "No hay opciones disponibles para esta orden de trabajo."
+
+#. module: idtx_mrp_shop
+msgid "Scale is not available."
+msgstr "La balanza no está disponible."
+
+#. module: idtx_mrp_shop
+msgid "No valid live weight from scale."
+msgstr "No hay un peso en vivo válido desde la balanza."
+
+#. module: idtx_mrp_shop
+msgid "Weight is unstable. Please wait until it stabilizes."
+msgstr "El peso está inestable. Espere a que se estabilice."
+
+#. module: idtx_mrp_shop
+msgid "Manual mode requires authorization."
+msgstr "El modo manual requiere autorización."
+
+#. module: idtx_mrp_shop
+msgid "You must enter a valid manual weight."
+msgstr "Debe ingresar un peso manual válido."
+
+#. module: idtx_mrp_shop
+msgid "No communication with the scale"
+msgstr "Sin comunicación con la balanza"
+
+#. module: idtx_mrp_shop
+msgid "Error reading scale"
+msgstr "Error al leer la balanza"
+
+#. module: idtx_mrp_shop
+msgid "Confirm"
+msgstr "Confirmar"
+
+#. module: idtx_mrp_shop
+msgid "Next"
+msgstr "Siguiente"
+
+#. module: idtx_mrp_shop
+msgid "Previous"
+msgstr "Anterior"
+
+#. module: idtx_mrp_shop
+msgid "Employee"
+msgstr "Empleado"
+
+#. module: idtx_mrp_shop
+msgid "Equipment"
+msgstr "Máquina"
+
+#. module: idtx_mrp_shop
+msgid "Batch"
+msgstr "Partida"
+
+#. module: idtx_mrp_shop
+msgid "Results"
+msgstr "Resultados"
+
+#. module: idtx_mrp_shop
+msgid "Search by code, client, color..."
+msgstr "Buscar por código, cliente, color..."
+
+#. module: idtx_mrp_shop
+msgid "Searching..."
+msgstr "Buscando..."
+
+#. module: idtx_mrp_shop
+msgid "No results."
+msgstr "Sin resultados."
+
+#. module: idtx_mrp_shop
+msgid "Selected:"
+msgstr "Seleccionado:"
+
+#. module: idtx_mrp_shop
+msgid "Client:"
+msgstr "Cliente:"
+
+#. module: idtx_mrp_shop
+msgid "Color:"
+msgstr "Color:"
+
+#. module: idtx_mrp_shop
+msgid "Date:"
+msgstr "Fecha:"
+
+#. module: idtx_mrp_shop
+msgid "Total:"
+msgstr "Total:"
+
+#. module: idtx_mrp_shop
+msgid "Op:"
+msgstr "Op:"
+
+#. module: idtx_mrp_shop
+msgid "Customer"
+msgstr "Cliente"
+
+#. module: idtx_mrp_shop
+msgid "Code"
+msgstr "Código"
+
+#. module: idtx_mrp_shop
+msgid "Weight"
+msgstr "Peso"
+
+#. module: idtx_mrp_shop
+msgid "Bath Ratio"
+msgstr "Relación de baño"
+
+#. module: idtx_mrp_shop
+msgid "Absorption Factor"
+msgstr "Factor de absorción"
+
+#. module: idtx_mrp_shop
+msgid "Recipe Salt"
+msgstr "Sal de receta"
+
+#. module: idtx_mrp_shop
+msgid "Recipe Carbonate"
+msgstr "Carbonato de receta"
+
+#. module: idtx_mrp_shop
+msgid "Recipe Soda"
+msgstr "Soda de receta"
+
+#. module: idtx_mrp_shop
+msgid "Total Volume"
+msgstr "Volumen total"
+
+#. module: idtx_mrp_shop
+msgid "Start Salt"
+msgstr "Inicio sal"
+
+#. module: idtx_mrp_shop
+msgid "Start Brine"
+msgstr "Inicio salmuera"
+
+#. module: idtx_mrp_shop
+msgid "Alkalis Volume"
+msgstr "Volumen de álcalis"
+
+#. module: idtx_mrp_shop
+msgid "Dyes Volume"
+msgstr "Volumen de colorantes"
+
+#. module: idtx_mrp_shop
+msgid "Salt Qty"
+msgstr "Cantidad de sal"
+
+#. module: idtx_mrp_shop
+msgid "Hydrophilicity"
+msgstr "Hidrofilidad"
+
+#. module: idtx_mrp_shop
+msgid "Ok"
+msgstr "Ok"
+
+#. module: idtx_mrp_shop
+msgid "Regular"
+msgstr "Regular"
+
+#. module: idtx_mrp_shop
+msgid "Bad"
+msgstr "Malo"
+
+#. module: idtx_mrp_shop
+msgid "Peroxide Residual"
+msgstr "Peróxido residual"
+
+#. module: idtx_mrp_shop
+msgid "Hardness Dyeing Water"
+msgstr "Dureza agua de teñido"
+
+#. module: idtx_mrp_shop
+msgid "Anti-pilling pH"
+msgstr "pH antipilling"
+
+#. module: idtx_mrp_shop
+msgid "Dye pH"
+msgstr "pH teñido"
+
+#. module: idtx_mrp_shop
+msgid "Previous pH"
+msgstr "pH anterior"
+
+#. module: idtx_mrp_shop
+msgid "Neutralized pH"
+msgstr "pH neutralizado"
+
+#. module: idtx_mrp_shop
+msgid "Pump Speed"
+msgstr "Velocidad de bomba"
+
+#. module: idtx_mrp_shop
+msgid "Reel Speed"
+msgstr "Velocidad de reel"
+
+#. module: idtx_mrp_shop
+msgid "Hydrovary"
+msgstr "Hydrovary"
+
+#. module: idtx_mrp_shop
+msgid "Rope 1"
+msgstr "Cuerda 1"
+
+#. module: idtx_mrp_shop
+msgid "Rope 2"
+msgstr "Cuerda 2"
+
+#. module: idtx_mrp_shop
+msgid "Rope 3"
+msgstr "Cuerda 3"
+
+#. module: idtx_mrp_shop
+msgid "Rope 4"
+msgstr "Cuerda 4"
+
+#. module: idtx_mrp_shop
+msgid "Rope 5"
+msgstr "Cuerda 5"
+
+#. module: idtx_mrp_shop
+msgid "Rope 6"
+msgstr "Cuerda 6"
+
+#. module: idtx_mrp_shop
+msgid "Salt Measurement"
+msgstr "Medición de sal"
+
+#. module: idtx_mrp_shop
+msgid "Water Batches"
+msgstr "Lotes de agua"
+
+#. module: idtx_mrp_shop
+msgid "Actual Volume"
+msgstr "Volumen actual"
+
+#. module: idtx_mrp_shop
+msgid "Total Tank Volume"
+msgstr "Volumen total de tanque"
+
+#. module: idtx_mrp_shop
+msgid "Final Volume"
+msgstr "Volumen final"
+
+#. module: idtx_mrp_shop
+msgid "Volume Variation"
+msgstr "Variación de volumen"
+
+#. module: idtx_mrp_shop
+msgid "Missing Water"
+msgstr "Falta agua"
+
+#. module: idtx_mrp_shop
+msgid "Add Salt"
+msgstr "Agregar sal"
+
+#. module: idtx_mrp_shop
+msgid "Add Carbonate"
+msgstr "Agregar carbonato"
+
+#. module: idtx_mrp_shop
+msgid "Add Soda"
+msgstr "Agregar soda"
+
+#. module: idtx_mrp_shop
+msgid "Tipo de Proceso"
+msgstr "Tipo de proceso"
+
+#. module: idtx_mrp_shop
+msgid "Imagen Proceso"
+msgstr "Imagen de proceso"
+
+#. module: idtx_mrp_shop
+msgid "pH Poly"
+msgstr "pH Poly"
+
+#. module: idtx_mrp_shop
+msgid "Red Wash"
+msgstr "Lavado rojo"
+
+#. module: idtx_mrp_shop
+msgid "Before Carbonate"
+msgstr "Antes de carbonato"
+
+#. module: idtx_mrp_shop
+msgid "First Carbonate"
+msgstr "Primer carbonato"
+
+#. module: idtx_mrp_shop
+msgid "Second Carbonate"
+msgstr "Segundo carbonato"
+
+#. module: idtx_mrp_shop
+msgid "Exhaustion"
+msgstr "Agotamiento"
+
+#. module: idtx_mrp_shop
+msgid "Neutralization"
+msgstr "Neutralización"
+
+#. module: idtx_mrp_shop
+msgid "Soaping"
+msgstr "Jabonado"
+
+#. module: idtx_mrp_shop
+msgid "Discharge"
+msgstr "Descarga"
+
+#. module: idtx_mrp_shop
+msgid "Observations"
+msgstr "Observaciones"
+
+#. module: idtx_mrp_shop
+msgid "The record will be created in state Done when you press Confirm."
+msgstr "El registro se creará en estado Hecho cuando presione Confirmar."
+
+#. module: idtx_mrp_shop
+msgid "No sizes on technical sheet of the product."
+msgstr "No hay tallas en la ficha técnica del producto."
+
+#. module: idtx_mrp_shop
+msgid "You must select a size and quantity."
+msgstr "Debe seleccionar una talla y una cantidad."
+
+#. module: idtx_mrp_shop
+msgid "Scale IP is not configured"
+msgstr "La IP de la balanza no está configurada"
+
+#. module: idtx_mrp_shop
+msgid "No valid weight was provided"
+msgstr "No se proporcionó un peso válido"
+
+#. module: idtx_mrp_shop
+msgid "Employee and equipment are required"
+msgstr "Empleado y máquina son obligatorios"
+
+#. module: idtx_mrp_shop
+msgid "The selected option does not belong to this workorder"
+msgstr "La opción seleccionada no pertenece a esta orden de trabajo"
+
+#. module: idtx_mrp_shop
+msgid "The selected employee is not assigned to this option"
+msgstr "El empleado seleccionado no está asignado a esta opción"
+
+#. module: idtx_mrp_shop
+msgid "The selected equipment is not assigned to this option"
+msgstr "La máquina seleccionada no está asignada a esta opción"
