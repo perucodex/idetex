@@ -1,0 +1,14 @@
+<odoo>
+    <!-- client action that loads our javascript screen -->
+    <record id="action_quality_defect_screen" model="ir.actions.client">
+        <field name="name">Registrar Apariencia</field>
+        <field name="tag">idtx_quality.defect_screen</field>
+    </record>
+
+    <!-- menu entry under Quality / Alertas de Calidad -->
+    <menuitem id="menu_quality_defect_screen"
+              name="Pantalla Apariencia"
+              parent="quality_control.menu_quality_control"
+              action="action_quality_defect_screen"
+              sequence="10"/>
+</odoo>

@@ -18,6 +18,11 @@
                         string="Evaluar Tono Acabado"
                         class="btn-primary"
                         invisible="not can_eval_tono_acabado"/>
+                <!-- <button name="action_apariencia"
+                        type="object"
+                        string="Apariencia"
+                        class="btn-primary"
+                        invisible="not can_apariencia"/> -->
             </xpath>
 
             <xpath expr="//notebook/page[field[@name='proceso_ids']]" position="after">
@@ -38,30 +43,86 @@
                     </field>
                 </page>
 
-                <page string="Apariencia" invisible="not (can_apariencia or has_apariencia_lines)">
-
-                    <group>
+                <page string="Auditoria" invisible="not (can_apariencia or has_apariencia_lines)">
+                    <!-- <group>
                         <button name="action_apariencia"
                                 type="object"
                                 string="Apariencia"
                                 class="btn-primary"
                                 invisible="not can_apariencia"/>
-                    </group>
+                    </group> -->
 
-                    <field name="apariencia_line_ids" nolabel="1"
-                           context="{'form_view_ref': 'idtx_batch_quality.view_control_apariencia_line_form'}">
-                        <list delete="1" edit="0" create="0">
+                    <field name="apariencia_line_ids" nolabel="1">
+                        <list>
                             <field name="create_date" string="Fecha"/>
                             <field name="create_uid" string="Usuario"/>
                             <field name="rollo_num" string="N° Rollo"/>
                             <field name="defect_count" string="Cantidad Defectos"/>
-                            <field name="defect_total" string="Total Defectos"/>
                         </list>
                     </field>
-
                 </page>
 
             </xpath>
         </field>
     </record>
+
+    <record id="control_apariencia_line_view_list" model="ir.ui.view">
+        <field name="name">control.apariencia.line.view.list</field>
+        <field name="model">control.apariencia.line</field>
+        <field name="arch" type="xml">
+            <form string="">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="create_date" string="Fecha" readonly="1"/>
+                            <field name="create_uid" string="Usuario" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="pedido_line_id" readonly="1"/>
+                            <field name="rollo_num"/>
+                            <field name="defect_count"/>
+                        </group>
+                    </group>
+                    <field name="defecto_line_ids" nolabel="1"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <record id="view_control_apariencia_defecto_list" model="ir.ui.view">
+        <field name="name">control.apariencia.defecto.line.list</field>
+        <field name="model">control.apariencia.defecto.line</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="defecto_id"/>
+                <field name="cantidad"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="control_apariencia_defecto_line_view_form" model="ir.ui.view">
+        <field name="name">control.apariencia.defecto.line.view.form</field>
+        <field name="model">control.apariencia.defecto.line</field>
+        <field name="arch" type="xml">
+            <form string="">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="defecto_id"/>
+                            <field name="is_hueco" invisible="1"/>
+                            <field name="cantidad"/>
+                        </group>
+                        <field name="tamano_defecto_ids" nolabel="1">
+                            <list editable="bottom">
+                                <field name="tamano" column_invisible="parent.is_hueco"/>
+                                <field name="tamano_hueco" column_invisible="not parent.is_hueco"/>
+                            </list>
+                        </field>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
 </odoo>

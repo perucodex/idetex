@@ -14,24 +14,16 @@
 
                         <group>
                             <field name="motivo" readonly="1" invisible="tono == 'tacho'"/>
-                            
-                            <field name="receta"
-                                   string="Receta Laboratorio"
-                                   readonly="1"
-                                   invisible="tono != 'tacho'"/>
-                            <field name="receta_tono"
-                                   string="Receta Tacho"
-                                   readonly="1"
-                                   invisible="tono != 'tacho'"/>
 
-                            <field name="receta"
-                                   string="Receta Acabado"
-                                   readonly="1"
-                                   invisible="tono != 'acabado'"/>
-                            <field name="receta_tono"
-                                   string="Receta Tacho"
-                                   readonly="1"
-                                   invisible="tono != 'acabado'"/>
+                            <group invisible="tono != 'tacho'">
+                                <field name="receta" string="Receta Laboratorio" readonly="1"/>
+                                <field name="receta_tono" string="Receta Tacho" readonly="1"/>
+                            </group>
+
+                            <group invisible="tono != 'acabado'">
+                                <field name="receta" string="Receta Acabado" readonly="1"/>
+                                <field name="receta_tono" string="Receta Tacho" readonly="1"/>
+                            </group>
 
                             <field name="resultado" readonly="1"/>
                         </group>

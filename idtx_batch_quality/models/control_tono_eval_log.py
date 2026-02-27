@@ -1,5 +1,6 @@
 from odoo import fields, models
 
+
 class ControlTonoEvalLog(models.Model):
     _name = "control.tono.eval.log"
     _description = "Historial Evaluación Tono"
@@ -25,22 +26,13 @@ class ControlTonoEvalLog(models.Model):
         required=True,
     )
     tono = fields.Selection(
-        [
-            ("tacho", "Tacho"),
-            ("acabado", "Acabado"),
-        ],
+        [("tacho", "Tacho"), ("acabado", "Acabado")],
         string="Tono",
         required=True,
     )
-
     motivo = fields.Char(string="Motivo")
-
     resultado = fields.Selection(
-        [
-            ("aprobado", "APROBADO"),
-            ("concesionado", "CONCESIONADO"),
-            ("rechazado", "RECHAZADO"),
-        ],
+        [("aprobado", "APROBADO"), ("concesionado", "CONCESIONADO"), ("rechazado", "RECHAZADO")],
         string="Resultado",
         required=True,
         index=True,

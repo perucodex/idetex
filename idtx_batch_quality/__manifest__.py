@@ -15,15 +15,15 @@
     'version': '0.1',
     'license': 'LGPL-3',
 
-    'depends': ['base', 'idtx_batch_control'],
+    'depends': ['base', "web", "mrp", "idtx_batch_control", 'quality_control'],
 
     'data': [
         'security/ir.model.access.csv',
-        'views/control_pedido_line_views.xml',
-        'views/control_apariencia_line_views.xml',
-        'views/control_tono_eval_log_views.xml',
-        
 
+        'views/control_pedido_line_views.xml',
+        'views/control_tono_eval_log_views.xml',
+        'views/control_apariencia_defecto_views.xml',
+        'views/quality_defect_screen.xml',
 
         'wizards/control_tono_wizard.xml',
         'wizards/control_apariencia_wizard.xml',

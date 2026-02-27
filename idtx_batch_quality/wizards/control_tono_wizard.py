@@ -23,23 +23,9 @@ class ControlTonoWizard(models.TransientModel):
     motivo_tacto = fields.Boolean(string="Tacto")
     motivo_apariencia = fields.Boolean(string="Apariencia")
 
-    can_show_decision_buttons = fields.Boolean(
-        string="Puede decidir",
-        compute="_compute_can_show_decision_buttons",
-        store=False,
-    )
-
-    is_concesionado = fields.Boolean(
-        string="Es concesionado",
-        compute="_compute_is_concesionado",
-        store=False,
-    )
-
-    show_motivos = fields.Boolean(
-        string="Mostrar motivos",
-        compute="_compute_show_motivos",
-        store=False,
-    )
+    can_show_decision_buttons = fields.Boolean(compute="_compute_can_show_decision_buttons", store=False)
+    is_concesionado = fields.Boolean(compute="_compute_is_concesionado", store=False)
+    show_motivos = fields.Boolean(compute="_compute_show_motivos", store=False)
 
     @api.depends("receta_tono", "receta")
     def _compute_is_concesionado(self):
@@ -51,17 +37,10 @@ class ControlTonoWizard(models.TransientModel):
     @api.depends("receta_tono", "receta", "is_concesionado")
     def _compute_show_motivos(self):
         for w in self:
-            es_acabado = bool(self.env.context.get("tono_acabado", False))
+            es_acabado = bool(w.env.context.get("tono_acabado", False))
             w.show_motivos = es_acabado and w.is_concesionado
 
-    @api.depends(
-        "receta_tono",
-        "receta",
-        "is_concesionado",
-        "motivo_tono",
-        "motivo_tacto",
-        "motivo_apariencia",
-    )
+    @api.depends("receta_tono", "receta", "is_concesionado", "motivo_tono", "motivo_tacto", "motivo_apariencia")
     def _compute_can_show_decision_buttons(self):
         for w in self:
             r_tono = (w.receta_tono or "").strip()
@@ -71,8 +50,7 @@ class ControlTonoWizard(models.TransientModel):
                 w.can_show_decision_buttons = False
                 continue
 
-            es_acabado = bool(self.env.context.get("tono_acabado", False))
-
+            es_acabado = bool(w.env.context.get("tono_acabado", False))
             if not es_acabado:
                 w.can_show_decision_buttons = True
                 continue
@@ -80,9 +58,7 @@ class ControlTonoWizard(models.TransientModel):
             if not w.is_concesionado:
                 w.can_show_decision_buttons = True
             else:
-                w.can_show_decision_buttons = bool(
-                    w.motivo_tono or w.motivo_tacto or w.motivo_apariencia
-                )
+                w.can_show_decision_buttons = bool(w.motivo_tono or w.motivo_tacto or w.motivo_apariencia)
 
     @api.model
     def default_get(self, fields_list):
@@ -100,10 +76,7 @@ class ControlTonoWizard(models.TransientModel):
         es_acabado = bool(self.env.context.get("tono_acabado", False))
 
         ultimo_tacho = self.env["control.tono.eval.log"].search(
-            [
-                ("pedido_line_id", "=", line.id),
-                ("tono", "=", "tacho"),
-            ],
+            [("pedido_line_id", "=", line.id), ("tono", "=", "tacho")],
             order="fecha_eval desc, id desc",
             limit=1,
         )
@@ -139,7 +112,6 @@ class ControlTonoWizard(models.TransientModel):
 
     def _create_log(self, line, resultado):
         self.ensure_one()
-
         es_acabado = bool(self.env.context.get("tono_acabado", False))
         motivo_texto = self._motivos_texto() if es_acabado and self.is_concesionado else False
 
@@ -159,18 +131,15 @@ class ControlTonoWizard(models.TransientModel):
 
         r_tono = (self.receta_tono or "").strip()
         r_actual = (self.receta or "").strip()
-
         if not r_tono or not r_actual:
             raise UserError("Debes completar las recetas.")
 
         es_acabado = bool(self.env.context.get("tono_acabado", False))
-
         if es_acabado and r_tono != r_actual:
             if not (self.motivo_tono or self.motivo_tacto or self.motivo_apariencia):
                 raise UserError("Debes seleccionar al menos un motivo.")
 
         resultado = "concesionado" if (r_tono != r_actual) else "aprobado"
-
         self._create_log(line, resultado)
         return {"type": "ir.actions.act_window_close"}
 
@@ -180,12 +149,10 @@ class ControlTonoWizard(models.TransientModel):
 
         r_tono = (self.receta_tono or "").strip()
         r_actual = (self.receta or "").strip()
-
         if not r_tono or not r_actual:
             raise UserError("Debes completar las recetas.")
 
         es_acabado = bool(self.env.context.get("tono_acabado", False))
-
         if es_acabado and r_tono != r_actual:
             if not (self.motivo_tono or self.motivo_tacto or self.motivo_apariencia):
                 raise UserError("Debes seleccionar al menos un motivo.")
