@@ -1,5 +1,6 @@
 from odoo import api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.fields import Domain
+from odoo.exceptions import UserError, ValidationError
 
 class ControlAparienciaLine(models.Model):
     _name = "control.apariencia.line"
@@ -45,6 +46,106 @@ class ControlAparienciaLine(models.Model):
     def _compute_defect_count(self):
         for rec in self:
             rec.defect_count = sum(1 for l in rec.defecto_line_ids if (l.cantidad or 0) > 0)
+
+    @api.model
+    def action_tablet_get_partidas(self, query="", limit=20):
+        query = (query or "").strip()
+        domain = Domain([])
+        if query:
+            terms = [term.strip() for term in query.split(",") if term.strip()]
+            if not terms:
+                terms = [query]
+
+            domains_per_term = []
+            for term in terms:
+                domains_per_term.append(
+                    Domain.OR([
+                        Domain("batch", "ilike", term),
+                        Domain("pedido_id.customer", "ilike", term),
+                        Domain("description", "ilike", term),
+                        Domain("colorname", "ilike", term),
+                        Domain("colorcode", "ilike", term),
+                    ])
+                )
+            domain = Domain.AND(domains_per_term)
+
+        safe_limit = min(max(int(limit or 20), 1), 100)
+        lines = self.env["control.pedido.line"].search(domain, order="batch desc, id desc", limit=safe_limit)
+        return [
+            {
+                "id": line.id,
+                "label": f"{line.batch or '-'} | {line.pedido_id.customer or '-'}",
+                "batch": line.batch or "",
+                "customer": line.pedido_id.customer or "",
+                "article": line.description or "",
+                "color_name": line.colorname or "",
+                "color_code": line.colorcode or "",
+            }
+            for line in lines
+        ]
+
+    @api.model
+    def action_tablet_get_defectos(self):
+        defectos = self.env["control.apariencia.defecto"].search(
+            [("is_active", "=", True)], order="name asc, id asc"
+        )
+        return [
+            {
+                "defecto_id": defecto.id,
+                "name": defecto.name,
+                "is_hueco": bool(defecto.is_hueco),
+            }
+            for defecto in defectos
+        ]
+
+    @api.model
+    def action_tablet_finalize(self, pedido_line_id, rollo_num, selections):
+        pedido_line = self.env["control.pedido.line"].browse(int(pedido_line_id))
+        if not pedido_line.exists():
+            raise UserError("La partida seleccionada no existe.")
+
+        rollo_num = int(rollo_num or 0)
+        if rollo_num <= 0:
+            raise UserError("El N° Rollo debe ser mayor a 0.")
+
+        apariencia = self.create({
+            "pedido_line_id": pedido_line.id,
+            "rollo_num": rollo_num,
+        })
+
+        defect_cmds = []
+        for item in selections or []:
+            defecto_id = int(item.get("defecto_id") or 0)
+            size_codes = item.get("sizes") or []
+            if not defecto_id or not size_codes:
+                continue
+
+            defecto = self.env["control.apariencia.defecto"].browse(defecto_id)
+            if not defecto.exists():
+                continue
+
+            size_cmds = []
+            for code in size_codes:
+                code = str(code)
+                if defecto.is_hueco:
+                    if code not in ("2", "4"):
+                        raise UserError("Tamaño de hueco inválido.")
+                    size_cmds.append((0, 0, {"tamano_hueco": code}))
+                else:
+                    if code not in ("1", "2", "3", "4"):
+                        raise UserError("Tamaño de defecto inválido.")
+                    size_cmds.append((0, 0, {"tamano": code}))
+
+            if size_cmds:
+                defect_cmds.append((0, 0, {
+                    "defecto_id": defecto.id,
+                    "tamano_defecto_ids": size_cmds,
+                }))
+
+        if defect_cmds:
+            apariencia.write({"defecto_line_ids": defect_cmds})
+
+        return {"ok": True, "apariencia_id": apariencia.id}
 
 
 class ControlAparienciaDefectoLine(models.Model):

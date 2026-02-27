@@ -122,10 +122,7 @@ class ControlPedidoLine(models.Model):
                 "(Aprobado o Concesionado)."
             )
         return {
-            "type": "ir.actions.act_window",
-            "name": "Registrar Apariencia",
-            "res_model": "control.apariencia.wizard",
-            "view_mode": "form",
-            "target": "new",
-            "context": {"default_pedido_line_id": self.id},
+            "type": "ir.actions.client",
+            "name": "Evaluar Apariencia",
+            "tag": "idtx_quality.defect_screen",
         }

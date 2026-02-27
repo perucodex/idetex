@@ -26,7 +26,14 @@
         'views/quality_defect_screen.xml',
 
         'wizards/control_tono_wizard.xml',
-        'wizards/control_apariencia_wizard.xml',
 
     ],
+
+    'assets': {
+        'web.assets_backend': [
+            'idtx_batch_quality/static/src/defect_screen/quality_defect_screen.js',
+            'idtx_batch_quality/static/src/defect_screen/quality_defect_screen.xml',
+            'idtx_batch_quality/static/src/defect_screen/quality_defect_screen.scss',
+        ],
+    },
 } 

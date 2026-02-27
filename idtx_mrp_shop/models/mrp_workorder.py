@@ -2,7 +2,6 @@ from odoo import _, models, fields
 from odoo.exceptions import RedirectWarning
 import requests
 
-
 class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'
 

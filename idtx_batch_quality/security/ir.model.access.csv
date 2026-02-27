@@ -2,9 +2,6 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_control_tono_eval_log_user,access_control_tono_eval_log_user,model_control_tono_eval_log,base.group_user,1,1,1,1
 access_control_tono_wizard_user,access.control.tono.wizard.user,model_control_tono_wizard,base.group_user,1,1,1,1
 access_control_apariencia_line_user,control.apariencia.line user,model_control_apariencia_line,base.group_user,1,1,1,1
-access_control_apariencia_wizard_user,control.apariencia.wizard user,model_control_apariencia_wizard,base.group_user,1,1,1,1
 access_control_apariencia_defecto_user,control.apariencia.defecto user,model_control_apariencia_defecto,base.group_user,1,1,1,1
 access_control_apariencia_defecto_line_user,control.apariencia.defecto.line user,model_control_apariencia_defecto_line,base.group_user,1,1,1,1
-access_control_apariencia_wizard_line_user,control.apariencia.wizard.line user,model_control_apariencia_wizard_line,base.group_user,1,1,1,1
 access_control_apariencia_tamano_defecto_user,control.apariencia.tamano.defecto user,model_control_apariencia_tamano_defecto,base.group_user,1,1,1,1
-access_control_apariencia_wizard_tamano_defecto_user,control.apariencia.wizard.tamano.defecto user,model_control_apariencia_wizard_tamano_defecto,base.group_user,1,1,1,1
