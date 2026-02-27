@@ -6,6 +6,10 @@
         <field name="model">mrp.workorder.batch</field>
         <field name="inherit_id" ref="idtx_mrp.mrp_workorder_batch_form"/>
         <field name="arch" type="xml">
+            <field name="mrwo_id" position="after">
+                <field name="partner_ids" readonly="1" widget="many2many_tags"/>
+                <field name="color_names" readonly="1"/>
+            </field>
             <notebook position="inside">
                 <page name="registry_page" string="Dyeing Registry">
                     <field name="registry_ids" readonly="1"/>

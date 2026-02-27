@@ -49,14 +49,13 @@
                     <notebook>
                         <page string="Procesos">
                             <field name="proceso_ids">
-                                <list decoration-success="barFasDTF" delete="0" edit="0">
-                                    <!-- <field name="barcod"/> -->
+                                <list decoration-success="barFasDTF" delete="0" edit="0" editable="bottom">
                                     <field name="barOrdLin"/>
                                     <field name="fasCod"/>
-                                    <field name="maqCodBis"/>
-                                    <field name="barFasDTI"/>
-                                    <field name="barFasDTF"/>
-                                    <field name="operator_name"/>
+                                    <field name="maqCodBis" force_save="1"/>
+                                    <field name="barFasDTI" force_save="1"/>
+                                    <field name="barFasDTF" force_save="1"/>
+                                    <field name="operator_name" force_save="1"/>
                                     <field name="previous_finished" column_invisible="1"/>
                                     <button name="action_edit_process" type="object" string="Editar" class="btn-secondary" invisible="barFasDTI != False or barFasDTF != False or previous_finished == False"/>
                                     <button name="action_start_with_wizard" type="object" string="Iniciar" class="btn-primary" invisible="barFasDTI != False or barFasDTF != False or previous_finished == False"/>

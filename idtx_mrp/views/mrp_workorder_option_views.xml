@@ -11,7 +11,8 @@
                     <group>
                         <field name="name" required="1"/>
                         <field name="workorder_id" readonly="1"/>
-                        <field name="equipment_id" required="1"/>
+                        <field name="employee_ids" widget="many2many_tags" required="1"/>
+                        <field name="equipment_ids" widget="many2many_tags" required="1"/>
                         <field name="available_thread_product_ids" invisible="1"/>
                         <field name="notes"/>
                     </group>
@@ -37,6 +38,8 @@
             <list>
                 <field name="name"/>
                 <field name="workorder_id"/>
+                <field name="employee_ids" widget="many2many_tags"/>
+                <field name="equipment_ids" widget="many2many_tags"/>
             </list>
         </field>
     </record>

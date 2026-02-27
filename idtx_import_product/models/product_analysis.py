@@ -429,7 +429,8 @@ class ProductAnalysis(models.Model):
                     v.obs,
                     l.gt,
                     l.cb,
-                    l.ints
+                    l.ints,
+                    L.corr
                 FROM vta_labs v
                 INNER JOIN lab_colores02 l
                     ON LTRIM(RTRIM(v.cdgcolor)) =
@@ -438,7 +439,14 @@ class ProductAnalysis(models.Model):
                     LTRIM(RTRIM(ISNULL(l.ints,''))) +
                     RIGHT('0000' + CAST(CAST(l.corr AS INT) AS VARCHAR(10)), 4)
                 INNER JOIN clientes c ON c.cdgclie = v.cdgclien
-                where v.cdgcolor is NOT NULL AND LTRIM(RTRIM(v.cdgcolor)) <> '';
+                where l.gt is NOT NULL 
+                AND l.cb is not null 
+                AND l.ints is not null 
+                AND l.corr is not null 
+                and LTRIM(RTRIM(l.gt)) <> ''
+                and LTRIM(RTRIM(l.cb)) <> ''
+                and LTRIM(RTRIM(l.ints)) <> ''
+                and LTRIM(RTRIM(l.corr)) <> '';
             """
             cursor.execute(query)
             cursor_result = cursor.fetchall()
@@ -454,12 +462,13 @@ class ProductAnalysis(models.Model):
                 range = self.env['color.range'].search([('code','=',row.cb.strip())])
                 intens = self.env['color.intensity'].search([('code','=',row.ints.strip())])
                 lab_dev_id = self.env['lab.dev'].search([('name','=', row.lab.strip())])
+                color_code = row.gt.strip() + row.cb.strip() + row.ints.strip() + row.corr.strip().zfill(4)
                 if lab_dev_id:
                     vals = {
                         'lab_dev_line_ids': [Command.create({
                             'product_id': product.id or False,
                             'color_name': row.descolor.strip(),
-                            'color_code': row.cdgcolor.strip(),
+                            'color_code': color_code,
                             'color_process_type_id': process.id,
                             'color_range_id': range.id,
                             'color_intensity_id': intens.id,
@@ -475,7 +484,7 @@ class ProductAnalysis(models.Model):
                         'lab_dev_line_ids': [Command.create({
                             'product_id': product.id or False,
                             'color_name': row.descolor.strip(),
-                            'color_code': row.cdgcolor.strip(),
+                            'color_code': color_code,
                             'color_process_type_id': process.id,
                             'color_range_id': range.id,
                             'color_intensity_id': intens.id,

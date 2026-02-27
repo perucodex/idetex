@@ -43,8 +43,8 @@ patch(MrpMenuDialog.prototype, {
         } else if (roll_field?.resIds) {
             roll_resIds = roll_field.resIds;
         }
-        let defaultEmployee = this.props.record.data.employee_assigned_ids?.resIds?.[0] || "";
-        let defaultEquipment = this.props.record.data.equipment_ids?.resIds?.[0] || "";
+        let defaultEmployee = "";
+        let defaultEquipment = "";
         let defaultOption = "";
         if (roll_resIds && roll_resIds.length) {
             const rolls = await this.orm.searchRead(
@@ -71,8 +71,6 @@ patch(MrpMenuDialog.prototype, {
             confirm: _selectScale,
             radioMode: true,
             scales: this.props.params.scales,
-            employee_ids: this.props.record.data.employee_assigned_ids.resIds,
-            equipment_ids: this.props.record.data.equipment_ids.resIds,
             selectedEmployee: defaultEmployee,
             selectedEquipment: defaultEquipment,
             selectedOption: defaultOption || "",
@@ -143,13 +141,12 @@ patch(MrpMenuDialog.prototype, {
     },
 
     async registerDyeBatch() {
-        // 1. Abrimos el segundo diálogo y esperamos su resultado
-        const result = await new Promise(resolve => {
+        await new Promise(resolve => {
             const _createRecord = async (payload) => {
                 const res = await this.orm.call(
                     "mrp.workorder",
                     "action_create_registry_record",
-                    [[this.props.record.resId], payload.batch_id, payload.employee_id, payload.equipment_id]
+                    [[this.props.record.resId], payload]
                 );
 
                 if (res) {
@@ -158,7 +155,7 @@ patch(MrpMenuDialog.prototype, {
                 await this.props.record.load();
                 this.props.removeFromCache(this.props.record.resId);
 
-                resolve(res); // <-- devolvemos el resultado
+                resolve(res);
             };
 
             document.activeElement?.blur?.();
@@ -169,21 +166,7 @@ patch(MrpMenuDialog.prototype, {
             });
         });
 
-        // 2. Cerramos el primer diálogo
         this.props.close();
-
-        // 3. Esperamos un tick para estabilizar el DOM
-        await new Promise(resolve => setTimeout(resolve, 0));
-
-        // 4. Abrimos el formulario con el resultado
-        if (result && result.batchId) {
-            await this.action.doAction({
-                type: "ir.actions.act_window",
-                res_model: "batch.registry",
-                views: [[false, "form"]],
-                res_id: result.batchId,
-            });
-        }
     }
 
 });

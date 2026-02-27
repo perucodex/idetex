@@ -43,35 +43,35 @@ class ControlProcesoLineWizard(models.TransientModel):
 
     def action_confirm(self):
         self.ensure_one()
-        try:
-            conn = self.line_id.pedido_line_id.pedido_id._get_sql_connection()
-            cursor = conn.cursor()
-            # Obtenemos los códigos desde la operación de Odoo seleccionada
-            op_name = self.new_op_id.name
-            barcod = self.line_id.pedido_line_id.route
-            barordlin = self.line_id.barOrdLin
-            query = """
-                UPDATE B
-                SET 
-                    B.FasCod = F.FasCod,
-                    B.MaqCodBis = F.MaqCod
-                FROM BARFAS B
-                INNER JOIN FASPRO F ON F.FasDsc = ?
-                WHERE B.BarCod = ?
-                AND B.BarOrdLin = ?
-                """
+        # try:
+        #     conn = self.line_id.pedido_line_id.pedido_id._get_sql_connection()
+        #     cursor = conn.cursor()
+        #     # Obtenemos los códigos desde la operación de Odoo seleccionada
+        #     op_name = self.new_op_id.name
+        #     barcod = self.line_id.pedido_line_id.route
+        #     barordlin = self.line_id.barOrdLin
+        #     query = """
+        #         UPDATE B
+        #         SET 
+        #             B.FasCod = F.FasCod,
+        #             B.MaqCodBis = F.MaqCod
+        #         FROM BARFAS B
+        #         INNER JOIN FASPRO F ON F.FasDsc = ?
+        #         WHERE B.BarCod = ?
+        #         AND B.BarOrdLin = ?
+        #         """
 
-            params = (
-                op_name,
-                barcod,
-                barordlin,
-            )
-            cursor.execute(query,params)
-            conn.commit()
-            self.line_id.fasCod = op_name
-        finally:
-            conn.close()
+        #     params = (
+        #         op_name,
+        #         barcod,
+        #         barordlin,
+        #     )
+        #     cursor.execute(query,params)
+        #     conn.commit()
+        #     self.line_id.fasCod = op_name
+        # finally:
+        #     conn.close()
         
         # Sincronizar para ver los cambios reflejados
         # self.line_id.pedido_line_id.pedido_id.sync_from_dbf()
-        return {'type': 'ir.actions.act_window_close'}
+        return
