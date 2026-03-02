@@ -7,4 +7,4 @@ class ControlAparienciaDefecto(models.Model):
     type_deffect = fields.Selection([
         ('quality', 'Quality'),
         ('printing', 'Printing'),
-    ], string='Deffect Type')
+    ], string='Deffect Type', default='quality')

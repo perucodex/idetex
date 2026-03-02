@@ -23,6 +23,7 @@ Long description of module's purpose
 
     # always loaded
     'data': [
+        'data/deffects.xml',
         'views/control_apariencia_defecto_views.xml',
         'views/control_pedido_line_views.xml',
         'views/printing_defect_screen.xml',
