@@ -83,6 +83,7 @@ class ControlAparienciaLine(models.Model):
                 "article": line.description or "",
                 "color_name": line.colorname or "",
                 "color_code": line.colorcode or "",
+                "kilograms": line.kilograms or 0.0,
             }
             for line in lines
         ]

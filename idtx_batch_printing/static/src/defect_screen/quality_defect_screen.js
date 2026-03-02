@@ -31,6 +31,11 @@ export class QualityDefectScreen extends Component {
             selectedPartidaData: null,
             defects: [],
             selectedDefectoId: false,
+            imagePreviewOpen: false,
+            previewLensVisible: false,
+            previewLensBgPos: "50% 50%",
+            previewLensLeft: 0,
+            previewLensTop: 0,
         });
 
         onWillStart(async () => {
@@ -139,6 +144,54 @@ export class QualityDefectScreen extends Component {
         defect.count = (defect.count || 0) + 1;
     }
 
+    openImagePreview() {
+        if (!this.state.selectedPartidaData?.design_image_url) {
+            return;
+        }
+        this.state.imagePreviewOpen = true;
+    }
+
+    onPreviewImageMouseMove(event) {
+        const rect = event.currentTarget.getBoundingClientRect();
+        if (!rect.width || !rect.height) {
+            return;
+        }
+        const x = ((event.clientX - rect.left) / rect.width) * 100;
+        const y = ((event.clientY - rect.top) / rect.height) * 100;
+        const xPct = Math.max(0, Math.min(100, x));
+        const yPct = Math.max(0, Math.min(100, y));
+
+        const lensSize = 440;
+        const offset = 24;
+        let left = event.clientX + offset;
+        let top = event.clientY + offset;
+        if (left + lensSize > window.innerWidth - 8) {
+            left = event.clientX - lensSize - offset;
+        }
+        if (top + lensSize > window.innerHeight - 8) {
+            top = event.clientY - lensSize - offset;
+        }
+
+        this.state.previewLensBgPos = `${xPct}% ${yPct}%`;
+        this.state.previewLensLeft = Math.max(8, left);
+        this.state.previewLensTop = Math.max(8, top);
+        this.state.previewLensVisible = true;
+    }
+
+    onPreviewImageMouseLeave() {
+        this.state.previewLensVisible = false;
+    }
+
+    get previewLensStyle() {
+        const imageUrl = this.state.selectedPartidaData?.design_image_url || "";
+        return `left: ${this.state.previewLensLeft}px; top: ${this.state.previewLensTop}px; background-image: url('${imageUrl}'); background-size: 350%; background-position: ${this.state.previewLensBgPos};`;
+    }
+
+    closeImagePreview() {
+        this.state.imagePreviewOpen = false;
+        this.state.previewLensVisible = false;
+    }
+
     async onFinalize() {
         if (this.isFinalizeDisabled) {
             return;
@@ -175,6 +228,11 @@ export class QualityDefectScreen extends Component {
         this.state.selectedPartidaData = null;
         this.state.defects = [];
         this.state.selectedDefectoId = false;
+        this.state.imagePreviewOpen = false;
+        this.state.previewLensVisible = false;
+        this.state.previewLensBgPos = "50% 50%";
+        this.state.previewLensLeft = 0;
+        this.state.previewLensTop = 0;
     }
 
     async close() {

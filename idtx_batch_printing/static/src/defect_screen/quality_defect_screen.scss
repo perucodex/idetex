@@ -91,4 +91,59 @@
         overflow: auto;
         z-index: 1050;
     }
+
+    .o_design_image_thumb_wrap {
+        overflow: hidden;
+        border-radius: 0.5rem;
+    }
+
+    .o_design_image_thumb {
+        cursor: zoom-in;
+        display: block;
+    }
+
+    .o_image_preview_backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.75);
+        z-index: 1060;
+    }
+
+    .o_image_preview_modal {
+        position: fixed;
+        inset: 0;
+        z-index: 1070;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .o_image_preview_full {
+        max-width: 96vw;
+        max-height: 96vh;
+        width: auto;
+        height: auto;
+        border-radius: 0.5rem;
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+
+    .o_image_preview_close {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1080;
+    }
+
+    .o_image_preview_lens {
+        position: fixed;
+        width: 440px;
+        height: 440px;
+        border: 2px solid rgba(255, 255, 255, 0.95);
+        border-radius: 0.5rem;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25), 0 10px 28px rgba(0, 0, 0, 0.45);
+        background-repeat: no-repeat;
+        z-index: 1085;
+        pointer-events: none;
+    }
 }

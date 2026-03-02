@@ -19,13 +19,13 @@ Long description of module's purpose
     'license': 'LGPL-3',
 
     # any module necessary for this one to work correctly
-    'depends': ['base', 'web', 'idtx_batch_quality'],
+    'depends': ['base', 'web', 'idtx_batch_quality', 'idtx_printing'],
 
     # always loaded
     'data': [
         'views/control_apariencia_defecto_views.xml',
         'views/control_pedido_line_views.xml',
-        'views/quality_defect_screen.xml',
+        'views/printing_defect_screen.xml',
     ],
 
     'assets': {

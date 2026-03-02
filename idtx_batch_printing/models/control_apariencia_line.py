@@ -1,5 +1,5 @@
 from odoo import api, fields, models
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import UserError
 
 class ControlAparienciaLine(models.Model):
     _inherit = 'control.apariencia.line'
@@ -13,6 +13,25 @@ class ControlAparienciaLine(models.Model):
         domain = super()._get_rollo_unique_domain(rec)
         domain.append(('type_deffect', '=', rec.type_deffect))
         return domain
+
+    @api.model
+    def action_tablet_get_partidas(self, query="", limit=20):
+        partidas = super().action_tablet_get_partidas(query=query, limit=limit)
+        if not partidas:
+            return partidas
+
+        line_ids = [partida.get('id') for partida in partidas if partida.get('id')]
+        lines = self.env['control.pedido.line'].browse(line_ids)
+        lines_by_id = {line.id: line for line in lines}
+
+        for partida in partidas:
+            line = lines_by_id.get(partida.get('id'))
+            if line and line.design_image:
+                partida['design_image_url'] = f"/web/image/control.pedido.line/{line.id}/design_image"
+            else:
+                partida['design_image_url'] = False
+
+        return partidas
 
     @api.model
     def action_tablet_get_defectos_printing(self):

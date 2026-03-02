@@ -64,7 +64,10 @@
                                                 t-att-class="isPartidaSelected(partida.id) ? 'list-group-item list-group-item-action active d-flex justify-content-between align-items-center' : 'list-group-item list-group-item-action d-flex justify-content-between align-items-center'"
                                                 t-on-click="() => this.selectPartida(partida.id)">
                                             <span class="fw-semibold" t-esc="partida.batch || '-'"/>
-                                            <span class="small" t-esc="partida.customer || '-'"/>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="badge rounded-pill text-bg-light" t-esc="(partida.kilograms || 0) + ' kg'"/>
+                                                <span class="small" t-esc="partida.customer || '-'"/>
+                                            </div>
                                         </button>
                                     </t>
                                 </t>
@@ -89,13 +92,22 @@
 
                 <t t-else="">
                     <div class="card mb-3">
-                        <div class="card-body py-3 px-4 d-flex flex-wrap gap-3 align-items-center">
-                            <div><span class="text-muted">Partida:</span> <span class="fw-bold" t-esc="state.selectedPartidaData?.batch || '-'"/></div>
-                            <div><span class="text-muted">Cliente:</span> <span class="fw-bold" t-esc="state.selectedPartidaData?.customer || '-'"/></div>
-                            <div><span class="text-muted">Artículo:</span> <span class="fw-bold" t-esc="state.selectedPartidaData?.article || '-'"/></div>
-                            <div><span class="text-muted">Código Color:</span> <span class="fw-bold" t-esc="state.selectedPartidaData?.color_code || '-'"/></div>
-                            <div><span class="text-muted">Color:</span> <span class="fw-bold" t-esc="state.selectedPartidaData?.color_name || '-'"/></div>
-                            <div><span class="text-muted">Rollo:</span> <span class="fw-bold" t-esc="state.rolloNum || '-'"/></div>
+                        <div class="card-body py-3 px-4 d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                            <div class="d-flex flex-wrap gap-3 align-items-center">
+                                <div><span class="text-muted">Partida:</span> <span class="fw-bold" t-esc="state.selectedPartidaData?.batch || '-'"/></div>
+                                <div><span class="text-muted">Cliente:</span> <span class="fw-bold" t-esc="state.selectedPartidaData?.customer || '-'"/></div>
+                                <div><span class="text-muted">Artículo:</span> <span class="fw-bold" t-esc="state.selectedPartidaData?.article || '-'"/></div>
+                                <div><span class="text-muted">Código Color:</span> <span class="fw-bold" t-esc="state.selectedPartidaData?.color_code || '-'"/></div>
+                                <div><span class="text-muted">Color:</span> <span class="fw-bold" t-esc="state.selectedPartidaData?.color_name || '-'"/></div>
+                                <div><span class="text-muted">Rollo:</span> <span class="fw-bold" t-esc="state.rolloNum || '-'"/></div>
+                            </div>
+                            <div t-if="state.selectedPartidaData?.design_image_url" class="ms-auto o_design_image_thumb_wrap">
+                                <img t-att-src="state.selectedPartidaData.design_image_url"
+                                     alt="Diseño estampado"
+                                     class="img-thumbnail o_design_image_thumb"
+                                     t-on-click="openImagePreview"
+                                     style="max-height: 90px; width: auto;"/>
+                            </div>
                         </div>
                     </div>
 
@@ -114,6 +126,24 @@
                         </div>
                     </div>
                 </t>
+            </t>
+
+            <t t-if="state.imagePreviewOpen and state.selectedPartidaData?.design_image_url">
+                <div class="o_image_preview_backdrop" t-on-click="closeImagePreview"/>
+                <div class="o_image_preview_modal" t-on-click="closeImagePreview">
+                    <button type="button" class="btn btn-light o_image_preview_close" t-on-click="closeImagePreview">
+                        <i class="fa fa-times"/>
+                    </button>
+                    <img t-att-src="state.selectedPartidaData.design_image_url"
+                         alt="Diseño estampado"
+                         class="o_image_preview_full"
+                        t-on-mousemove="onPreviewImageMouseMove"
+                        t-on-mouseleave="onPreviewImageMouseLeave"
+                         t-on-click.stop="() => {}"/>
+                    <div t-if="state.previewLensVisible"
+                        class="o_image_preview_lens"
+                        t-att-style="previewLensStyle"/>
+                </div>
             </t>
         </div>
     </t>
