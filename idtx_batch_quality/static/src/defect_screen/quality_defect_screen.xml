@@ -112,6 +112,7 @@
                                     </t>
                                 </t>
                             </div>
+                                                </div>
 
                                             <t t-if="shouldShowRolloInput">
                                                 <div class="o_qds_field">
@@ -133,6 +134,7 @@
                                             </t>
                                         </div>
                                     </div>
+                                </div>
                                 </div>
 
                                 <!-- Columna preview (solo si hay partida seleccionada) -->
