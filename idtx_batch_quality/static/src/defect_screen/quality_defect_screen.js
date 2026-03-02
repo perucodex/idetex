@@ -307,6 +307,10 @@ export class QualityDefectScreen extends Component {
         this._saveDraft();
     }
 
+    isPartidaSelected(partidaId) {
+        return `${partidaId}` === `${this.state.selectedPartidaId}`;
+    }
+
     clearSelectedPartida() {
         this.state.selectedPartidaId = "";
         this.state.selectedPartidaData = null;
