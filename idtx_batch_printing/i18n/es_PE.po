@@ -1,0 +1,340 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* idtx_batch_printing
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-02 22:21+0000\n"
+"PO-Revision-Date: 2026-03-02 22:21+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: idtx_batch_printing
+#: model:ir.model,name:idtx_batch_printing.model_control_apariencia_line
+msgid "Apariencia por Rollo"
+msgstr "Apariencia por Rollo"
+
+#. module: idtx_batch_printing
+#. odoo-javascript
+#: code:addons/idtx_batch_printing/static/src/defect_screen/quality_defect_screen.xml:0
+msgid "Artículo:"
+msgstr "Artículo:"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__numero_varilla_diametro
+msgid "Bar Number (diameter)"
+msgstr "Número de barra (diámetro)"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__ph_bano
+msgid "Bath pH"
+msgstr "pH del baño"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields.selection,name:idtx_batch_printing.selection__control_pedido_line__printing_direction__bi
+msgid "Bidirectional"
+msgstr "Bidireccional"
+
+#. module: idtx_batch_printing
+#. odoo-javascript
+#: code:addons/idtx_batch_printing/static/src/defect_screen/quality_defect_screen.xml:0
+msgid "Buscando..."
+msgstr "Buscando..."
+
+#. module: idtx_batch_printing
+#. odoo-javascript
+#: code:addons/idtx_batch_printing/static/src/defect_screen/quality_defect_screen.xml:0
+msgid "Buscar: partida, cliente"
+msgstr "Buscar: partida, cliente"
+
+#. module: idtx_batch_printing
+#. odoo-javascript
+#: code:addons/idtx_batch_printing/static/src/defect_screen/quality_defect_screen.xml:0
+msgid "Cargando partidas..."
+msgstr "Cargando partidas..."
+
+#. module: idtx_batch_printing
+#. odoo-javascript
+#: code:addons/idtx_batch_printing/static/src/defect_screen/quality_defect_screen.xml:0
+msgid "Cerrar"
+msgstr "Cerrar"
+
+#. module: idtx_batch_printing
+#. odoo-javascript
+#: code:addons/idtx_batch_printing/static/src/defect_screen/quality_defect_screen.xml:0
+msgid "Cliente:"
+msgstr "Cliente:"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__digital_color_management
+msgid ""
+"Color management, resolution, profiles (MatchPrint and Inedit software)"
+msgstr "Gestión del color, resolución y perfiles (software MatchPrint e Inedit)"
+
+#. module: idtx_batch_printing
+#. odoo-javascript
+#: code:addons/idtx_batch_printing/static/src/defect_screen/quality_defect_screen.xml:0
+msgid "Color:"
+msgstr "Color:"
+
+#. module: idtx_batch_printing
+#: model:ir.model,name:idtx_batch_printing.model_control_pedido_line
+msgid "Control Pedido (Detalle)"
+msgstr "Control Pedido (Detalle)"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__numero_cilindro_por_color
+msgid "Cylinder Number (per color)"
+msgstr "Número de cilindro (por color)"
+
+#. module: idtx_batch_printing
+#. odoo-javascript
+#: code:addons/idtx_batch_printing/static/src/defect_screen/quality_defect_screen.xml:0
+msgid "Código Color:"
+msgstr "Código Color:"
+
+#. module: idtx_batch_printing
+#: model:ir.model,name:idtx_batch_printing.model_control_apariencia_defecto
+msgid "Defectos Apariencia (Maestro)"
+msgstr "Defectos Apariencia (Maestro)"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_apariencia_defecto__type_deffect
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_apariencia_defecto_line__type_deffect
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_apariencia_line__type_deffect
+msgid "Deffect Type"
+msgstr "Tipo de Defecto"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__design_image
+msgid "Design Image"
+msgstr "Imagen de diseño"
+
+#. module: idtx_batch_printing
+#: model:ir.model,name:idtx_batch_printing.model_control_apariencia_defecto_line
+msgid "Detalle Defecto Apariencia"
+msgstr "Detalle Defecto Apariencia"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields.selection,name:idtx_batch_printing.selection__control_pedido_line__printing_type__digital
+msgid "Digital"
+msgstr "Digital"
+
+#. module: idtx_batch_printing
+#: model_terms:ir.ui.view,arch_db:idtx_batch_printing.view_control_pedido_line_form_inherit_eval_tono_inherit_printing
+msgid "Digital Printing"
+msgstr "Estampado Digital"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__digital_dye_steam_process
+msgid "Digital printing with dye/colorant steamed from 102 °C to 104 °C"
+msgstr "Estampado digital con tinte/colorante vaporizado de 102 °C a 104 °C"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__digital_pigment_polymerized_process
+msgid "Digital printing with polymerized pigment from 150 °C to 160 °C"
+msgstr "Estampado digital con pigmento polimerizado de 150 °C a 160 °C"
+
+#. module: idtx_batch_printing
+#. odoo-javascript
+#: code:addons/idtx_batch_printing/static/src/defect_screen/quality_defect_screen.xml:0
+msgid "Diseño estampado"
+msgstr "Diseño estampado"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_apariencia_defecto__display_name
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_apariencia_defecto_line__display_name
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_apariencia_line__display_name
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__display_name
+msgid "Display Name"
+msgstr "Nombre a mostrar"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__temperatura_secado_c
+msgid "Drying Temperature (°C)"
+msgstr "Temperatura de secado (°C)"
+
+#. module: idtx_batch_printing
+#. odoo-javascript
+#: code:addons/idtx_batch_printing/static/src/defect_screen/quality_defect_screen.xml:0
+msgid "Evaluar Apariencia"
+msgstr "Evaluar Apariencia"
+
+#. module: idtx_batch_printing
+#: model:ir.actions.client,name:idtx_batch_printing.action_printing_defect_screen_printing
+#: model:ir.ui.menu,name:idtx_batch_printing.menu_printing_defect_screen_printing
+msgid "Evaluar Apariencia Estampado"
+msgstr "Evaluar Apariencia Estampado"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__tension_tejido_vaporizador
+msgid "Fabric Tension (steamer)"
+msgstr "Tensión de tela (vaporizador)"
+
+#. module: idtx_batch_printing
+#. odoo-javascript
+#: code:addons/idtx_batch_printing/static/src/defect_screen/quality_defect_screen.xml:0
+msgid "Finalizar"
+msgstr "Finalizar"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_apariencia_defecto__id
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_apariencia_defecto_line__id
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_apariencia_line__id
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__id
+msgid "ID"
+msgstr "ID"
+
+#. module: idtx_batch_printing
+#. odoo-javascript
+#: code:addons/idtx_batch_printing/static/src/defect_screen/quality_defect_screen.xml:0
+msgid "Ingrese número de rollo"
+msgstr "Ingrese número de rollo"
+
+#. module: idtx_batch_printing
+#. odoo-javascript
+#: code:addons/idtx_batch_printing/static/src/defect_screen/quality_defect_screen.xml:0
+msgid "Iniciar captura"
+msgstr "Iniciar captura"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__presion_barilla_magnetica_klg
+msgid "Magnetic Bar Pressure Inside Cylinder (kg)"
+msgstr "Presión de barra magnética dentro del cilindro (kg)"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__pass_qty
+msgid "Number of Passes"
+msgstr "Cantidad de pases"
+
+#. module: idtx_batch_printing
+#. odoo-javascript
+#: code:addons/idtx_batch_printing/static/src/defect_screen/quality_defect_screen.xml:0
+msgid "N° Rollo"
+msgstr "N° Rollo"
+
+#. module: idtx_batch_printing
+#. odoo-javascript
+#: code:addons/idtx_batch_printing/static/src/defect_screen/quality_defect_screen.xml:0
+msgid "Partida"
+msgstr "Partida"
+
+#. module: idtx_batch_printing
+#. odoo-javascript
+#: code:addons/idtx_batch_printing/static/src/defect_screen/quality_defect_screen.xml:0
+msgid "Partida:"
+msgstr "Partida:"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__digital_paste_recipe
+msgid "Pasting recipe with transparent bath at around pH 10.5 (alkaline)"
+msgstr "Receta de empastado con baño transparente de pH alrededor de 10.5 (alcalino)"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__width_print
+msgid "Print Width (max 1.80 meters)"
+msgstr "Ancho de estampado (máx. 1.80 metros)"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields.selection,name:idtx_batch_printing.selection__control_apariencia_defecto__type_deffect__printing
+#: model:ir.model.fields.selection,name:idtx_batch_printing.selection__control_apariencia_line__type_deffect__printing
+#: model_terms:ir.ui.view,arch_db:idtx_batch_printing.view_control_pedido_line_form_inherit_eval_tono_inherit_printing
+msgid "Printing"
+msgstr "Estampado"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__printing_direction
+msgid "Printing Direction"
+msgstr "Dirección de estampado"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__velocidad_impresion_m_min
+msgid "Printing Speed (m/min)"
+msgstr "Velocidad de estampado (m/min)"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__printing_type
+msgid "Printing Type"
+msgstr "Tipo de estampado"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields.selection,name:idtx_batch_printing.selection__control_apariencia_defecto__type_deffect__quality
+#: model:ir.model.fields.selection,name:idtx_batch_printing.selection__control_apariencia_line__type_deffect__quality
+msgid "Quality"
+msgstr "Calidad"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_apariencia_defecto_line__printing_quantity
+msgid "Quantity"
+msgstr "Cantidad"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__presion_rodillo_ingreso_bar
+msgid "Roller Pressure at Inlet (bar)"
+msgstr "Presión del rodillo en el ingreso (bar)"
+
+#. module: idtx_batch_printing
+#. odoo-javascript
+#: code:addons/idtx_batch_printing/static/src/defect_screen/quality_defect_screen.xml:0
+msgid "Rollo:"
+msgstr "Rollo:"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields.selection,name:idtx_batch_printing.selection__control_pedido_line__printing_type__rotary
+msgid "Rotary"
+msgstr "Rotativo"
+
+#. module: idtx_batch_printing
+#: model_terms:ir.ui.view,arch_db:idtx_batch_printing.view_control_pedido_line_form_inherit_eval_tono_inherit_printing
+msgid "Rotary Printing"
+msgstr "Estampado Rotativo"
+
+#. module: idtx_batch_printing
+#. odoo-javascript
+#: code:addons/idtx_batch_printing/static/src/defect_screen/quality_defect_screen.xml:0
+msgid "Sin resultados"
+msgstr "Sin resultados"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__presion_vapor_vaporizadora
+msgid "Steam Pressure (steamer)"
+msgstr "Presión de vapor (vaporizador)"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__temperatura_vaporizado_c
+msgid "Steaming Temperature (°C)"
+msgstr "Temperatura de vaporizado (°C)"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__tiempo_vaporizado_mts_min
+msgid "Steaming Time (m/min)"
+msgstr "Tiempo de vaporizado (m/min)"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields.selection,name:idtx_batch_printing.selection__control_pedido_line__printing_direction__uni
+msgid "Unidirectional"
+msgstr "Unidireccional"
+
+#. module: idtx_batch_printing
+#. odoo-javascript
+#: code:addons/idtx_batch_printing/static/src/defect_screen/quality_defect_screen.xml:0
+msgid "Volver a cargar datos"
+msgstr "Volver a cargar datos"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__digital_wash_speed_mts_min
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__velocidad_lavado_mts_min
+msgid "Washing Speed (m/min)"
+msgstr "Velocidad de lavado (m/min)"
+
+#. module: idtx_batch_printing
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__digital_wash_temp_per_bath_c
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__temperatura_lavado_por_bano_c
+msgid "Washing Temperature per Bath (°C)"
+msgstr "Temperatura de lavado por baño (°C)"
