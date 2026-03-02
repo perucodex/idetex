@@ -11,27 +11,22 @@
                             <field name="user_id" readonly="1"/>
                             <field name="tono" readonly="1"/>
                         </group>
-
-                        <group>
+                        <group invisible="tono != 'tacho'">
                             <field name="motivo" readonly="1" invisible="tono == 'tacho'"/>
-
-                            <group invisible="tono != 'tacho'">
-                                <field name="receta" string="Receta Laboratorio" readonly="1"/>
-                                <field name="receta_tono" string="Receta Tacho" readonly="1"/>
-                            </group>
-
-                            <group invisible="tono != 'acabado'">
-                                <field name="receta" string="Receta Acabado" readonly="1"/>
-                                <field name="receta_tono" string="Receta Tacho" readonly="1"/>
-                            </group>
-
+                            <field name="receta" string="Receta Laboratorio" readonly="1"/>
+                            <field name="receta_tono" string="Receta Tacho" readonly="1"/>
+                            <field name="resultado" readonly="1"/>
+                        </group>
+                        <group invisible="tono != 'acabado'">
+                            <field name="receta" string="Receta Acabado" readonly="1"/>
+                            <field name="receta_tono" string="Receta Tacho" readonly="1"/>
                             <field name="resultado" readonly="1"/>
                         </group>
                     </group>
                 </sheet>
-                <footer>
+                <!-- <footer>
                     <button string="Cerrar" special="cancel" class="btn-secondary"/>
-                </footer>
+                </footer> -->
             </form>
         </field>
     </record>
