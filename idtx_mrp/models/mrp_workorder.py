@@ -27,9 +27,10 @@ class MrpWorkorder(models.Model):
         self.ensure_one()
         self.leave_id.unlink()
         self.write({
-            'state': 'ready',
+            'state': 'progress',
             'date_finished': False,
         })
+        self.write({'qty_produced': 0})
         return True
     
     def button_start(self, raise_on_invalid_state=False):

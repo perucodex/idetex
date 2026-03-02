@@ -20,41 +20,46 @@ class MrpWorkorder(models.Model):
     def _compute_progress(self):
         for rec in self:
             if rec.operation_type == 'weaving':
-                if rec.weave_type == 'rect':
+                if rec.state == 'done':
                     rec.quantity = sum(rec.roll_ids.mapped('quantity'))
-                    rec.progress = (rec.quantity / (rec.qty_remaining if rec.qty_remaining else rec.qty_production)) * 100
-                    rec.roll_weight = 0
-                else:
                     rec.roll_weight = sum(rec.roll_ids.mapped('gross_weight'))
-                    rec.progress = (rec.roll_weight / (rec.qty_remaining if rec.qty_remaining else rec.qty_production)) * 100
-                    rec.quantity = 0
+                    rec.progress = 100
+                    rec.state = 'progress'
+                    rec.qty_produced = rec.roll_weight if rec.roll_weight else rec.quantity
+                    rec.state = 'done'
+                else:
+                    if rec.weave_type == 'rect':
+                        rec.quantity = sum(rec.roll_ids.mapped('quantity'))
+                        rec.progress = (rec.quantity / (rec.qty_remaining if rec.qty_remaining else rec.qty_production)) * 100
+                        rec.roll_weight = 0
+                    else:
+                        rec.roll_weight = sum(rec.roll_ids.mapped('gross_weight'))
+                        rec.progress = (rec.roll_weight / (rec.qty_remaining if rec.qty_remaining else rec.qty_production)) * 100
+                        rec.quantity = 0
             elif rec.operation_type == 'dyeing':
                 if rec.batch_ids:
                     batch_rolls = rec.batch_ids.wo_roll_ids.filtered(
                         lambda r: r.workorder_id and r.workorder_id.production_id == rec.production_id
                     )
-                    if sum(batch_rolls.mapped('gross_weight')) > 0:
-                        rec.roll_weight = sum(batch_rolls.mapped('gross_weight'))
-                        if rec.state not in ('done', 'cancel'):
-                            rec.qty_produced = rec.roll_weight
-                        rec.progress = (rec.roll_weight / (rec.qty_remaining if rec.qty_remaining else rec.qty_production)) * 100
-                        rec.quantity = 0
+                    if rec.state == 'done':
+                        rec.quantity = sum(rec.roll_ids.mapped('quantity'))
+                        rec.roll_weight = sum(rec.roll_ids.mapped('gross_weight'))
+                        rec.progress = 100
                     else:
-                        rec.quantity = sum(batch_rolls.mapped('quantity'))
-                        if rec.state not in ('done', 'cancel'):
-                            rec.qty_produced = rec.quantity
-                        rec.progress = (rec.quantity / (rec.qty_remaining if rec.qty_remaining else rec.qty_production)) * 100
-                        rec.roll_weight = 0
+                        if sum(batch_rolls.mapped('gross_weight')) > 0:
+                            rec.roll_weight = sum(batch_rolls.mapped('gross_weight'))
+                            rec.progress = (rec.roll_weight / (rec.qty_remaining if rec.qty_remaining else rec.qty_production)) * 100
+                            rec.quantity = 0
+                        else:
+                            rec.quantity = sum(batch_rolls.mapped('quantity'))
+                            rec.progress = (rec.quantity / (rec.qty_remaining if rec.qty_remaining else rec.qty_production)) * 100
+                            rec.roll_weight = 0
                 else:
                     rec.quantity = 0
-                    if rec.state not in ('done', 'cancel'):
-                        rec.qty_produced = 0
                     rec.roll_weight = 0
                     rec.progress = 0
             else:
                 rec.quantity = 0
-                if rec.state not in ('done', 'cancel'):
-                    rec.qty_produced = 0
                 rec.roll_weight = 0
                 rec.progress = 0
         
