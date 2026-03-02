@@ -80,6 +80,12 @@
                                    placeholder="Ingrese número de rollo"
                                    t-on-input="onChangeRollo"
                                    t-att-value="state.rolloNum"/>
+                            <t t-if="state.isCheckingRollo">
+                                <div class="small text-muted mb-2">Validando número de rollo...</div>
+                            </t>
+                            <t t-if="state.rolloValidationError">
+                                <div class="small text-danger mb-2" t-esc="state.rolloValidationError"/>
+                            </t>
 
                             <button class="btn btn-primary btn-lg w-100"
                                     t-on-click="onStartCapture"

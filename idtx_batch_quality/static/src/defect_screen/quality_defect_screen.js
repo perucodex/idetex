@@ -44,6 +44,8 @@ export class QualityDefectScreen extends Component {
         this.notification = useService("notification");
         this.homeMenu = useService("home_menu");
         this._searchTimer = null;
+        this._rolloValidateTimer = null;
+        this._rolloValidateSeq = 0;
 
         this.state = useState({
             loading: true,
@@ -60,6 +62,8 @@ export class QualityDefectScreen extends Component {
             selectedPartidaId: "",
             selectedPartidaData: null,
             rolloNum: "",
+            rolloValidationError: "",
+            isCheckingRollo: false,
 
             // Session
             sessionActive: false,
@@ -112,7 +116,13 @@ export class QualityDefectScreen extends Component {
     }
 
     get canProceedBasics() {
-        return Boolean(this.state.selectedPartidaId) && Number(this.state.rolloNum) > 0 && !this.state.submitting;
+        return (
+            Boolean(this.state.selectedPartidaId) &&
+            Number(this.state.rolloNum) > 0 &&
+            !this.state.submitting &&
+            !this.state.isCheckingRollo &&
+            !this.state.rolloValidationError
+        );
     }
 
     get popupDefect() {
@@ -305,6 +315,9 @@ export class QualityDefectScreen extends Component {
         this._syncSelectedPartidaData();
         this.state.showPartidaDropdown = false;
         this._saveDraft();
+        if (Number(this.state.rolloNum) > 0) {
+            this._debouncedValidateRollo();
+        }
     }
 
     isPartidaSelected(partidaId) {
@@ -315,6 +328,8 @@ export class QualityDefectScreen extends Component {
         this.state.selectedPartidaId = "";
         this.state.selectedPartidaData = null;
         this.state.rolloNum = "";
+        this.state.rolloValidationError = "";
+        this.state.isCheckingRollo = false;
         this.state.partidaQuery = "";
         this.state.showPartidaDropdown = false;
         this._saveDraft();
@@ -323,12 +338,62 @@ export class QualityDefectScreen extends Component {
     // ---------- Rollo ----------
     onChangeRollo(event) {
         this.state.rolloNum = event.target.value;
+        this._debouncedValidateRollo();
         this._saveDraft();
+    }
+
+    _debouncedValidateRollo() {
+        if (this._rolloValidateTimer) {
+            clearTimeout(this._rolloValidateTimer);
+        }
+        this._rolloValidateTimer = setTimeout(() => {
+            this._validateRolloUnique();
+        }, 250);
+    }
+
+    async _validateRolloUnique() {
+        const pedidoLineId = Number(this.state.selectedPartidaId || 0);
+        const rolloNum = Number(this.state.rolloNum || 0);
+
+        if (!pedidoLineId || rolloNum <= 0) {
+            this.state.rolloValidationError = "";
+            this.state.isCheckingRollo = false;
+            return true;
+        }
+
+        const seq = ++this._rolloValidateSeq;
+        this.state.isCheckingRollo = true;
+        try {
+            const result = await this.orm.call(
+                "control.apariencia.line",
+                "action_tablet_check_rollo_available",
+                [pedidoLineId, rolloNum]
+            );
+            if (seq !== this._rolloValidateSeq) {
+                return false;
+            }
+            this.state.rolloValidationError = result?.ok ? "" : (result?.message || "Rollo no disponible.");
+            return Boolean(result?.ok);
+        } catch (error) {
+            if (seq === this._rolloValidateSeq) {
+                this.state.rolloValidationError = error.message || "No se pudo validar el número de rollo.";
+            }
+            return false;
+        } finally {
+            if (seq === this._rolloValidateSeq) {
+                this.state.isCheckingRollo = false;
+            }
+        }
     }
 
     // ---------- Paso 1 -> Paso 2 ----------
     async onNext() {
         if (!this.canProceedBasics) return;
+
+        const isRolloValid = await this._validateRolloUnique();
+        if (!isRolloValid) {
+            return;
+        }
 
         this.state.submitting = true;
         this.state.error = "";
@@ -451,6 +516,8 @@ export class QualityDefectScreen extends Component {
         this.state.selectedPartidaId = "";
         this.state.selectedPartidaData = null;
         this.state.rolloNum = "";
+        this.state.rolloValidationError = "";
+        this.state.isCheckingRollo = false;
         this.state.showPartidaDropdown = false;
 
         this.state.sessionActive = false;

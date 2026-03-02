@@ -14,6 +14,20 @@ class ControlAparienciaLine(models.Model):
         domain.append(('type_deffect', '=', rec.type_deffect))
         return domain
 
+    def _get_rollo_unique_create_domain(self, pedido_line_id, rollo_num):
+        domain = super()._get_rollo_unique_create_domain(pedido_line_id, rollo_num)
+        appearance_type = self.env.context.get('appearance_type', 'quality')
+        if appearance_type in ('quality', 'printing'):
+            domain.append(('type_deffect', '=', appearance_type))
+        return domain
+
+    def _get_tablet_apariencia_create_vals(self, pedido_line, rollo_num):
+        vals = super()._get_tablet_apariencia_create_vals(pedido_line, rollo_num)
+        appearance_type = self.env.context.get('appearance_type')
+        if appearance_type in ('quality', 'printing'):
+            vals['type_deffect'] = appearance_type
+        return vals
+
     @api.model
     def action_tablet_get_partidas(self, query="", limit=20):
         partidas = super().action_tablet_get_partidas(query=query, limit=limit)
@@ -48,6 +62,21 @@ class ControlAparienciaLine(models.Model):
         ]
 
     @api.model
+    def action_tablet_check_rollo_available_printing(self, pedido_line_id, rollo_num):
+        return self.with_context(appearance_type='printing').action_tablet_check_rollo_available(
+            pedido_line_id,
+            rollo_num,
+        )
+
+    @api.model
+    def action_tablet_finalize(self, pedido_line_id, rollo_num, selections):
+        return super(ControlAparienciaLine, self.with_context(appearance_type='quality')).action_tablet_finalize(
+            pedido_line_id,
+            rollo_num,
+            selections,
+        )
+    
+    @api.model
     def action_tablet_finalize_printing(self, pedido_line_id, rollo_num, selections):
         pedido_line = self.env['control.pedido.line'].browse(int(pedido_line_id))
         if not pedido_line.exists():
@@ -57,11 +86,11 @@ class ControlAparienciaLine(models.Model):
         if rollo_num <= 0:
             raise UserError('El N° Rollo debe ser mayor a 0.')
 
-        apariencia = self.create({
-            'pedido_line_id': pedido_line.id,
-            'rollo_num': rollo_num,
-            'type_deffect': 'printing',
-        })
+        create_vals = self.with_context(appearance_type='printing')._get_tablet_apariencia_create_vals(
+            pedido_line,
+            rollo_num,
+        )
+        apariencia = self.create(create_vals)
 
         defect_cmds = []
         for item in selections or []:

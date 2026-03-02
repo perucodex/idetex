@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "new_module",
+    'name': "Printing - Evaluación Apariencia",
 
-    'summary': "Short (1 phrase/line) summary of the module's purpose",
+    'summary': "Module for managing printing appearance evaluation",
 
     'description': """
-Long description of module's purpose
+Modulo de Evaluación de Apariencia para el proceso de estampado. Permite registrar defectos relacionados con la impresión, como problemas de estampado, manchas, etc., y diferenciarlos de los defectos de calidad general. Este módulo se integra con el control de calidad para ofrecer una visión completa del estado de las partidas en producción.
     """,
 
     'author': "Codex Development",

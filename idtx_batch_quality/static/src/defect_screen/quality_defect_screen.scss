@@ -1,7 +1,14 @@
 .o_quality_defect_screen.o_qds_root {
+    --qds-bg: var(--o-webclient-background-color, var(--o-view-background-color, #f8fafc));
+    --qds-surface: var(--o-control-panel-background-color, var(--o-view-background-color, #ffffff));
+    --qds-text: var(--o-main-text-color, #1f2937);
+    --qds-muted: var(--o-muted-color, #6b7280);
+    --qds-border: var(--o-border-color, rgba(15, 23, 42, 0.14));
+    --qds-soft-bg: rgba(15, 23, 42, 0.04);
+
     /* Fondo general: se adapta al tema (claro/oscuro) */
-    background: var(--o-webclient-background-color, var(--o-view-background-color, #0f172a));
-    color: var(--o-main-text-color, #e5e7eb);
+    background: var(--qds-bg);
+    color: var(--qds-text);
 
     min-height: 100vh;
     min-height: 100dvh;
@@ -19,7 +26,7 @@
         top: 0;
         z-index: 20;
 
-        background: var(--o-view-background-color, rgba(15, 23, 42, 0.95));
+        background: var(--qds-surface);
         backdrop-filter: blur(8px);
 
         padding: 0.75rem 0.75rem;
@@ -29,7 +36,7 @@
         align-items: center;
         justify-content: space-between;
 
-        border-bottom: 1px solid var(--o-border-color, rgba(255, 255, 255, 0.10));
+        border-bottom: 1px solid var(--qds-border);
     }
 
     .o_qds_title {
@@ -37,12 +44,12 @@
         font-weight: 800;
         line-height: 1.15;
         font-size: clamp(1.05rem, 2.4vw, 1.35rem);
-        color: var(--o-main-text-color, #e5e7eb);
+        color: var(--qds-text);
     }
 
     .o_qds_subtitle {
         font-size: clamp(0.82rem, 2vw, 0.95rem);
-        color: var(--o-muted-color, rgba(229, 231, 235, 0.75));
+        color: var(--qds-muted);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -65,6 +72,34 @@
         white-space: nowrap;
     }
 
+    .o_qds_btn.btn-outline-secondary {
+        color: var(--qds-text);
+        border-color: var(--qds-border);
+        background: transparent;
+    }
+
+    .o_qds_btn.btn-outline-secondary:hover,
+    .o_qds_btn.btn-outline-secondary:focus {
+        color: var(--qds-text);
+        background: var(--qds-soft-bg);
+        border-color: var(--qds-border);
+    }
+
+    .dropdown-menu {
+        background: var(--qds-surface);
+        border: 1px solid var(--qds-border);
+    }
+
+    .dropdown-item {
+        color: var(--qds-text);
+    }
+
+    .dropdown-item:hover,
+    .dropdown-item:focus {
+        color: var(--qds-text);
+        background: var(--qds-soft-bg);
+    }
+
     .o_qds_main {
         padding: 0 0.75rem;
         flex: 1 1 auto;
@@ -83,8 +118,8 @@
         width: 100%;
         border-radius: 1.1rem;
 
-        background: var(--o-control-panel-background-color, var(--o-view-background-color, rgba(17, 24, 39, 0.90)));
-        border: 1px solid var(--o-border-color, rgba(255, 255, 255, 0.10));
+        background: var(--qds-surface);
+        border: 1px solid var(--qds-border);
 
         box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
         overflow: hidden;
@@ -97,20 +132,20 @@
         gap: 0.75rem;
         padding: 0.85rem 1rem;
 
-        background: rgba(0, 0, 0, 0.18);
-        border-bottom: 1px solid var(--o-border-color, rgba(255, 255, 255, 0.10));
+        background: var(--qds-soft-bg);
+        border-bottom: 1px solid var(--qds-border);
     }
 
     .o_qds_card_title {
         font-weight: 800;
         font-size: 1rem;
-        color: var(--o-main-text-color, #e5e7eb);
+        color: var(--qds-text);
     }
 
     .o_qds_card_hint {
         font-size: 0.9rem;
         text-align: right;
-        color: var(--o-muted-color, rgba(229, 231, 235, 0.70));
+        color: var(--qds-muted);
     }
 
     .o_qds_card_body {
@@ -120,11 +155,11 @@
     .o_qds_hint {
         padding: 0.75rem 0.9rem;
         border-radius: 0.9rem;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: var(--qds-soft-bg);
+        border: 1px solid var(--qds-border);
         margin-bottom: 1rem;
         font-size: 0.95rem;
-        color: var(--o-main-text-color, #e5e7eb);
+        color: var(--qds-text);
     }
 
     .o_qds_field {
@@ -138,13 +173,13 @@
         font-size: clamp(1rem, 2.6vw, 1.15rem);
         padding: 0.9rem 1rem;
 
-        background: var(--o-input-background-color, rgba(255, 255, 255, 0.06));
-        color: var(--o-main-text-color, #e5e7eb);
-        border: 1px solid var(--o-border-color, rgba(255, 255, 255, 0.12));
+        background: var(--o-input-background-color, #ffffff);
+        color: var(--qds-text);
+        border: 1px solid var(--qds-border);
     }
 
     .o_qds_input::placeholder {
-        color: var(--o-muted-color, rgba(229, 231, 235, 0.55));
+        color: var(--qds-muted);
     }
 
     .o_qds_input:focus {
@@ -178,8 +213,8 @@
         border-radius: 1rem;
         overflow: hidden;
 
-        background: var(--o-view-background-color, rgba(17, 24, 39, 0.98));
-        border: 1px solid var(--o-border-color, rgba(255, 255, 255, 0.14));
+        background: var(--qds-surface);
+        border: 1px solid var(--qds-border);
         box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
 
         max-height: 420px;
@@ -195,8 +230,8 @@
         padding: 0.85rem 1rem;
         font-size: 1rem;
         line-height: 1.2;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        color: var(--o-main-text-color, #e5e7eb);
+        border-bottom: 1px solid var(--qds-border);
+        color: var(--qds-text);
     }
 
     .o_qds_dropdown_btn {
@@ -218,7 +253,7 @@
     .o_qds_dropdown_sub {
         margin-top: 0.2rem;
         font-size: 0.9rem;
-        color: var(--o-muted-color, rgba(229, 231, 235, 0.70));
+        color: var(--qds-muted);
     }
 
     .o_qds_primary {
@@ -235,7 +270,7 @@
         justify-content: space-between;
         gap: 1rem;
         padding: 0.55rem 0;
-        border-bottom: 1px dashed rgba(255, 255, 255, 0.14);
+        border-bottom: 1px dashed var(--qds-border);
     }
     .o_qds_kv:last-child {
         border-bottom: none;
@@ -294,10 +329,10 @@
     }
 
     .o_qds_summary_item {
-        border: 1px solid rgba(255, 255, 255, 0.10);
+        border: 1px solid var(--qds-border);
         border-radius: 1rem;
         padding: 0.85rem;
-        background: rgba(255, 255, 255, 0.04);
+        background: var(--qds-soft-bg);
     }
 
     .o_qds_summary_top {
@@ -334,10 +369,10 @@
         z-index: 1050;
         border-radius: 1.1rem;
 
-        background: var(--o-view-background-color, rgba(17, 24, 39, 0.98));
-        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: var(--qds-surface);
+        border: 1px solid var(--qds-border);
         box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
-        color: var(--o-main-text-color, #e5e7eb);
+        color: var(--qds-text);
     }
 
     .o_qds_size_grid {

@@ -1,6 +1,34 @@
 .o_quality_defect_screen {
     min-height: 100dvh;
 
+    .btn-outline-secondary {
+        color: var(--o-main-text-color, #1f2937);
+        border-color: var(--o-border-color, rgba(15, 23, 42, 0.2));
+        background: transparent;
+    }
+
+    .btn-outline-secondary:hover,
+    .btn-outline-secondary:focus {
+        color: var(--o-main-text-color, #1f2937);
+        background: rgba(15, 23, 42, 0.06);
+        border-color: var(--o-border-color, rgba(15, 23, 42, 0.25));
+    }
+
+    .dropdown-menu {
+        background: var(--o-control-panel-background-color, #ffffff);
+        border: 1px solid var(--o-border-color, rgba(15, 23, 42, 0.14));
+    }
+
+    .dropdown-item {
+        color: var(--o-main-text-color, #1f2937);
+    }
+
+    .dropdown-item:hover,
+    .dropdown-item:focus {
+        color: var(--o-main-text-color, #1f2937);
+        background: rgba(15, 23, 42, 0.06);
+    }
+
     .o_full_step_card {
         min-height: calc(100dvh - 150px);
     }

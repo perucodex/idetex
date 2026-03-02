@@ -5,7 +5,7 @@ from odoo.exceptions import UserError, ValidationError
 class ControlAparienciaLine(models.Model):
     _name = "control.apariencia.line"
     _description = "Apariencia por Rollo"
-    _order = "rollo_num asc, id asc"
+    _order = "create_date, rollo_num asc, id asc"
 
     pedido_line_id = fields.Many2one(
         "control.pedido.line",
@@ -44,6 +44,30 @@ class ControlAparienciaLine(models.Model):
             ("rollo_num", "=", rec.rollo_num),
             ("id", "!=", rec.id),
         ]
+
+    def _get_rollo_unique_create_domain(self, pedido_line_id, rollo_num):
+        return [
+            ("pedido_line_id", "=", pedido_line_id),
+            ("rollo_num", "=", rollo_num),
+        ]
+
+    @api.model
+    def action_tablet_check_rollo_available(self, pedido_line_id, rollo_num):
+        pedido_line_id = int(pedido_line_id or 0)
+        rollo_num = int(rollo_num or 0)
+
+        if not pedido_line_id:
+            return {"ok": False, "message": "Seleccione una partida."}
+        if rollo_num <= 0:
+            return {"ok": False, "message": "El N° Rollo debe ser mayor a 0."}
+
+        exists = bool(self.search_count(self._get_rollo_unique_create_domain(pedido_line_id, rollo_num)))
+        if exists:
+            return {
+                "ok": False,
+                "message": "Ya existe un registro con el mismo número de rollo en esta partida.",
+            }
+        return {"ok": True}
 
     @api.depends("defecto_line_ids.cantidad")
     def _compute_defect_count(self):
@@ -112,10 +136,7 @@ class ControlAparienciaLine(models.Model):
         if rollo_num <= 0:
             raise UserError("El N° Rollo debe ser mayor a 0.")
 
-        apariencia = self.create({
-            "pedido_line_id": pedido_line.id,
-            "rollo_num": rollo_num,
-        })
+        apariencia = self.create(self._get_tablet_apariencia_create_vals(pedido_line, rollo_num))
 
         defect_cmds = []
         for item in selections or []:
@@ -150,6 +171,12 @@ class ControlAparienciaLine(models.Model):
             apariencia.write({"defecto_line_ids": defect_cmds})
 
         return {"ok": True, "apariencia_id": apariencia.id}
+
+    def _get_tablet_apariencia_create_vals(self, pedido_line, rollo_num):
+        return {
+            "pedido_line_id": pedido_line.id,
+            "rollo_num": rollo_num,
+        }
 
 
 class ControlAparienciaDefectoLine(models.Model):
