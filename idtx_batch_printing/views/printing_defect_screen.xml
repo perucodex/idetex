@@ -1,0 +1,15 @@
+<odoo>
+    <!-- client action that loads our javascript screen -->
+    <record id="action_printing_defect_screen_printing" model="ir.actions.client">
+        <field name="name">Evaluar Apariencia Estampado</field>
+        <field name="tag">idtx_quality.defect_screen_printing</field>
+        <field name="target">fullscreen</field>
+    </record>
+
+    <!-- menu entry under Printing / Print Operations -->
+    <menuitem id="menu_printing_defect_screen_printing"
+              name="Evaluar Apariencia Estampado"
+              parent="idtx_printing.print_operations_menu"
+              action="action_printing_defect_screen_printing"
+              sequence="20"/>
+</odoo>
