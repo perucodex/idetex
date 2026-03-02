@@ -5,8 +5,13 @@
 
     min-height: 100vh;
     min-height: 100dvh;
+    height: 100vh;
+    height: 100dvh;
     padding-top: calc(0.75rem + env(safe-area-inset-top));
     padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 
     /* Header sticky usando colores del tema */
     .o_qds_header {
@@ -62,6 +67,11 @@
 
     .o_qds_main {
         padding: 0 0.75rem;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
     }
 
     .o_qds_basics_wrap {
@@ -352,6 +362,9 @@
         .o_qds_card_summary {
             height: auto;
             min-height: auto;
+        }
+        .o_qds_basics_wrap {
+            padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
         }
         .o_qds_header {
             align-items: flex-start;
