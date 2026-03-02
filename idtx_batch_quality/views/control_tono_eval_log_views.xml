@@ -12,21 +12,18 @@
                             <field name="tono" readonly="1"/>
                         </group>
                         <group invisible="tono != 'tacho'">
-                            <field name="motivo" readonly="1" invisible="tono == 'tacho'"/>
                             <field name="receta" string="Receta Laboratorio" readonly="1"/>
                             <field name="receta_tono" string="Receta Tacho" readonly="1"/>
                             <field name="resultado" readonly="1"/>
                         </group>
                         <group invisible="tono != 'acabado'">
+                            <field name="motivo" readonly="1"/>
                             <field name="receta" string="Receta Acabado" readonly="1"/>
                             <field name="receta_tono" string="Receta Tacho" readonly="1"/>
                             <field name="resultado" readonly="1"/>
                         </group>
                     </group>
                 </sheet>
-                <!-- <footer>
-                    <button string="Cerrar" special="cancel" class="btn-secondary"/>
-                </footer> -->
             </form>
         </field>
     </record>

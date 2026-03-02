@@ -79,8 +79,8 @@
                         </group>
                         <group>
                             <field name="pedido_line_id" readonly="1"/>
-                            <field name="rollo_num"/>
-                            <field name="defect_count"/>
+                            <field name="rollo_num" readonly="1"/>
+                            <field name="defect_count" readonly="1"/>
                         </group>
                     </group>
                     <field name="defecto_line_ids" nolabel="1"/>
@@ -94,7 +94,7 @@
         <field name="model">control.apariencia.defecto.line</field>
         <field name="arch" type="xml">
             <list>
-                <field name="defecto_id"/>
+                <field name="defecto_id" readonly="1"/>
                 <field name="cantidad"/>
             </list>
         </field>

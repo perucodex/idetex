@@ -31,7 +31,7 @@
         <field name="inherit_id" ref="idtx_batch_quality.control_apariencia_line_view_list"/>
         <field name="arch" type="xml">
             <field name="create_uid" position="after">
-                <field name="type_deffect"/>
+                <field name="type_deffect" readonly="1"/>
             </field>
         </field>
     </record>
