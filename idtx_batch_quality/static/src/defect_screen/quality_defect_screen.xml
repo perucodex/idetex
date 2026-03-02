@@ -1,26 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
     <t t-name="idtx_batch_quality.QualityDefectScreen">
-        <div class="o_quality_defect_screen container-fluid py-3 px-3 px-md-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 class="mb-0">Evaluar Apariencia</h3>
-                <div class="d-flex align-items-center gap-2">
-                    <button class="btn btn-success btn-lg"
-                            t-on-click="onFinalize"
-                            t-att-disabled="isFinalizeDisabled ? true : undefined">
-                        Finalizar
-                    </button>
+        <div class="o_quality_defect_screen o_qds_root container-fluid">
+            <header class="o_qds_header">
+                <div class="o_qds_header_left">
+                    <h3 class="o_qds_title">Evaluar Apariencia</h3>
+                    <t t-if="hasSession">
+                        <span class="o_qds_subtitle">
+                            Partida: <b t-esc="state.selectedPartidaData?.batch || '-'"/> ·
+                            Rollo: <b t-esc="state.rolloNum || '-'"/>
+                        </span>
+                    </t>
+                </div>
+
+                <div class="o_qds_header_right">
+                    <t t-if="hasSession">
+                        <button class="btn btn-success o_qds_btn"
+                                t-on-click="onFinalize"
+                                t-att-disabled="isFinalizeDisabled ? true : undefined">
+                            Finalizar
+                        </button>
+                    </t>
 
                     <div class="dropdown">
-                        <button class="btn btn-outline-secondary btn-lg" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <button class="btn btn-outline-secondary o_qds_btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fa fa-bars"/>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li>
                                 <button class="dropdown-item" t-on-click="onClickRefresh">
-                                    <i class="fa fa-refresh me-2"/>Volver a cargar datos
+                                    <i class="fa fa-refresh me-2"/>Recargar
                                 </button>
                             </li>
+                            <li>
+                                <button class="dropdown-item" t-on-click="onClearDraftClick">
+                                    <i class="fa fa-eraser me-2"/>Limpiar borrador
+                                </button>
+                            </li>
+                            <t t-if="hasSession">
+                                <li><hr class="dropdown-divider"/></li>
+                                <li>
+                                    <button class="dropdown-item" t-on-click="onBackToBasics">
+                                        <i class="fa fa-arrow-left me-2"/>Volver a partida/rollo
+                                    </button>
+                                </li>
+                            </t>
+                            <li><hr class="dropdown-divider"/></li>
                             <li>
                                 <button class="dropdown-item" t-on-click="close">
                                     <i class="fa fa-sign-out me-2"/>Cerrar
@@ -29,26 +54,41 @@
                         </ul>
                     </div>
                 </div>
-            </div>
+            </header>
 
-            <t t-if="state.error">
-                <div class="alert alert-danger" role="alert" t-esc="state.error"/>
-            </t>
+            <main class="o_qds_main">
+                <t t-if="state.error">
+                    <div class="alert alert-danger o_qds_alert" role="alert" t-esc="state.error"/>
+                </t>
 
-            <t t-if="state.loading">
-                <div class="alert alert-info">Cargando partidas...</div>
-            </t>
+                <t t-if="state.loading">
+                    <div class="alert alert-info o_qds_alert">Cargando...</div>
+                </t>
 
-            <t t-else="">
-                <t t-if="!hasSession">
-                    <div class="card o_full_step_card">
-                        <div class="card-body p-4 p-md-5">
-                            <label class="form-label fw-bold">Partida</label>
-                            <input type="text"
-                                   class="form-control form-control-lg mb-2"
-                                   placeholder="Buscar: partida, cliente"
-                                   t-on-input="onPartidaQueryInput"
-                                   t-att-value="state.partidaQuery"/>
+                <t t-else="">
+                    <!-- PASO 1 -->
+                    <t t-if="!hasSession">
+                        <div class="o_qds_basics_wrap">
+                            <div class="row g-3">
+                                <!-- Columna inputs -->
+                                <div class="col-12 col-lg-7">
+                                    <div class="o_qds_card">
+                                        <div class="o_qds_card_body">
+                                            <div class="o_qds_hint">
+                                                <i class="fa fa-save me-2"/>
+                                                Se guarda un <b>borrador local</b> (sin BD). Si refrescas, se restaura.
+                                            </div>
+
+                                            <div class="o_qds_field">
+                                                <label class="form-label fw-bold mb-1">Partida</label>
+
+                                                <div class="o_qds_autocomplete">
+                                                    <input type="text"
+                                                           class="form-control form-control-lg o_qds_input"
+                                                           placeholder="Escribe la Partida..."
+                                                           t-on-input="onPartidaQueryInput"
+                                                           t-on-focus="onPartidaInputFocus"
+                                                           t-att-value="state.partidaQuery"/>
 
                             <div class="list-group mb-3 o_partida_results">
                                 <t t-if="state.isSearchingPartida">
@@ -73,76 +113,172 @@
                                 </t>
                             </div>
 
-                            <label class="form-label fw-bold">N° Rollo</label>
-                            <input type="number"
-                                   class="form-control form-control-lg mb-3"
-                                   min="1"
-                                   placeholder="Ingrese número de rollo"
-                                   t-on-input="onChangeRollo"
-                                   t-att-value="state.rolloNum"/>
+                                            <t t-if="shouldShowRolloInput">
+                                                <div class="o_qds_field">
+                                                    <label class="form-label fw-bold mb-1">N° Rollo</label>
+                                                    <input type="number"
+                                                           class="form-control form-control-lg o_qds_input"
+                                                           min="1"
+                                                           inputmode="numeric"
+                                                           placeholder="Ingrese número de rollo"
+                                                           t-on-input="onChangeRollo"
+                                                           t-att-value="state.rolloNum"/>
+                                                </div>
 
-                            <button class="btn btn-primary btn-lg w-100"
-                                    t-on-click="onStartCapture"
-                                    t-att-disabled="canStart ? undefined : true">
-                                Iniciar captura
-                            </button>
-                        </div>
-                    </div>
-                </t>
-
-                <t t-else="">
-                    <div class="card mb-3">
-                        <div class="card-body py-3 px-4 d-flex flex-wrap gap-3 align-items-center">
-                            <div><span class="text-muted">Partida:</span> <span class="fw-bold" t-esc="state.selectedPartidaData?.batch || '-'"/></div>
-                            <div><span class="text-muted">Cliente:</span> <span class="fw-bold" t-esc="state.selectedPartidaData?.customer || '-'"/></div>
-                            <div><span class="text-muted">Artículo:</span> <span class="fw-bold" t-esc="state.selectedPartidaData?.article || '-'"/></div>
-                            <div><span class="text-muted">Código Color:</span> <span class="fw-bold" t-esc="state.selectedPartidaData?.color_code || '-'"/></div>
-                            <div><span class="text-muted">Color:</span> <span class="fw-bold" t-esc="state.selectedPartidaData?.color_name || '-'"/></div>
-                            <div><span class="text-muted">Rollo:</span> <span class="fw-bold" t-esc="state.rolloNum || '-'"/></div>
-                        </div>
-                    </div>
-
-                    <div class="card o_full_step_card o_defect_card">
-                        <div class="card-body py-4 ps-4 ps-md-5 pe-0 o_defect_body">
-                            <div class="o_defect_stack o_defect_stack_scroll">
-                                <t t-foreach="state.defects" t-as="defect" t-key="defect.defecto_id">
-                                    <button class="btn btn-outline-dark btn-lg w-100 d-flex justify-content-between align-items-center"
-                                            t-att-class="defect.defecto_id === state.selectedDefectoId ? 'btn-dark btn-lg w-100 d-flex justify-content-between align-items-center' : 'btn-outline-dark btn-lg w-100 d-flex justify-content-between align-items-center'"
-                                            t-on-click="() => this.onSelectDefect(defect.defecto_id)">
-                                        <span t-esc="defect.name"/>
-                                        <span class="badge rounded-pill text-bg-light" t-esc="defect.count"/>
-                                    </button>
-                                </t>
-                            </div>
-                        </div>
-                    </div>
-
-                    <t t-if="state.sizePopupOpen">
-                        <div class="o_size_popup_backdrop" t-on-click="closeSizePopup"/>
-                        <div class="o_size_popup card">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h5 class="mb-0">Seleccionar tamaño</h5>
-                                    <button class="btn btn-sm btn-outline-secondary" t-on-click="closeSizePopup">Cerrar</button>
+                                                <button class="btn btn-primary btn-lg o_qds_primary"
+                                                        t-on-click="onNext"
+                                                        t-att-disabled="canProceedBasics ? undefined : true">
+                                                    Siguiente
+                                                </button>
+                                            </t>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="mb-3">
-                                    <span class="text-muted">Defecto:</span>
-                                    <span class="fw-bold" t-esc="popupDefect?.name || '-'"/>
-                                </div>
-                                <div class="o_size_grid">
-                                    <t t-foreach="sizeOptions" t-as="opt" t-key="opt.value">
-                                        <button class="btn btn-primary btn-lg o_size_btn"
-                                                t-att-disabled="state.submitting ? true : undefined"
-                                                t-on-click="() => this.onSelectSize(opt.value)">
-                                            <span t-esc="opt.label"/>
-                                        </button>
+
+                                <!-- Columna preview (solo si hay partida seleccionada) -->
+                                <div class="col-12 col-lg-5">
+                                    <t t-if="state.selectedPartidaId and state.selectedPartidaData">
+                                        <div class="o_qds_card o_qds_preview_card">
+                                            <div class="o_qds_card_head">
+                                                <div class="o_qds_card_title">Detalle de Partida</div>
+                                            </div>
+                                            <div class="o_qds_card_body">
+                                                <div class="o_qds_kv">
+                                                    <span class="text-muted">Partida</span>
+                                                    <b t-esc="state.selectedPartidaData.batch || '-'"/>
+                                                </div>
+                                                <div class="o_qds_kv">
+                                                    <span class="text-muted">Cliente</span>
+                                                    <b t-esc="state.selectedPartidaData.customer || '-'"/>
+                                                </div>
+                                                <div class="o_qds_kv">
+                                                    <span class="text-muted">Artículo</span>
+                                                    <b t-esc="state.selectedPartidaData.article || '-'"/>
+                                                </div>
+                                                <div class="o_qds_kv">
+                                                    <span class="text-muted">Color</span>
+                                                    <b>
+                                                        <t t-esc="state.selectedPartidaData.color_code || '-'"/> -
+                                                        <t t-esc="state.selectedPartidaData.color_name || '-'"/>
+                                                    </b>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </t>
                                 </div>
                             </div>
                         </div>
                     </t>
+
+                    <!-- PASO 2 (sin cambios aquí) -->
+                    <t t-else="">
+                        <div class="row g-3 o_qds_grid">
+                            <div class="col-12 col-lg-7">
+                                <div class="o_qds_card o_qds_card_defects">
+                                    <div class="o_qds_card_head">
+                                        <div class="o_qds_card_title">Defectos</div>
+                                        <div class="o_qds_card_hint text-muted">Toca un defecto y selecciona tamaño</div>
+                                    </div>
+                                    <div class="o_qds_card_body o_qds_scroll">
+                                        <div class="o_qds_btn_stack">
+                                            <t t-foreach="state.defects" t-as="defect" t-key="defect.defecto_id">
+                                                <button class="btn o_qds_defect_btn"
+                                                        t-att-class="defect.defecto_id === state.selectedDefectoId ? 'btn-dark o_qds_defect_btn' : 'btn-outline-dark o_qds_defect_btn'"
+                                                        t-on-click="() => this.onSelectDefect(defect.defecto_id)">
+                                                    <span class="o_qds_defect_name" t-esc="defect.name"/>
+                                                    <span class="badge rounded-pill text-bg-light o_qds_badge" t-esc="defect.count"/>
+                                                </button>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-5">
+                                <div class="o_qds_card o_qds_card_summary">
+                                    <div class="o_qds_card_head">
+                                        <div class="o_qds_card_title">Resumen</div>
+                                        <button class="btn btn-outline-danger o_qds_small_btn"
+                                                t-att-disabled="!selectedDefects.length || state.submitting ? true : undefined"
+                                                t-on-click="clearAllSelections">
+                                            Limpiar todo
+                                        </button>
+                                    </div>
+                                    <div class="o_qds_card_body o_qds_scroll">
+                                        <t t-if="!selectedDefects.length">
+                                            <div class="text-muted">Aún no has agregado defectos.</div>
+                                        </t>
+                                        <t t-else="">
+                                            <div class="o_qds_summary_list">
+                                                <t t-foreach="selectedDefects" t-as="sd" t-key="sd.defecto_id">
+                                                    <div class="o_qds_summary_item">
+                                                        <div class="o_qds_summary_top">
+                                                            <div class="o_qds_summary_name">
+                                                                <div class="fw-semibold" t-esc="sd.name"/>
+                                                                <div class="o_qds_summary_breakdown">
+                                                                    <t t-set="breakdown" t-value="this.getSizeBreakdown(sd)"/>
+                                                                    <t t-if="breakdown.length">
+                                                                        <t t-foreach="breakdown" t-as="b" t-key="b.value">
+                                                                            <span class="badge text-bg-secondary me-1 mb-1">
+                                                                                <t t-esc="b.qty"/>× <t t-esc="b.label"/>
+                                                                            </span>
+                                                                        </t>
+                                                                    </t>
+                                                                </div>
+                                                            </div>
+                                                            <div class="o_qds_summary_total">
+                                                                <span class="badge rounded-pill text-bg-dark" t-esc="sd.count"/>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="o_qds_summary_actions">
+                                                            <button class="btn btn-outline-secondary o_qds_small_btn"
+                                                                    t-on-click="() => this.removeLastOccurrence(sd.defecto_id)"
+                                                                    t-att-disabled="state.submitting ? true : undefined">
+                                                                <i class="fa fa-undo me-1"/>Quitar 1
+                                                            </button>
+                                                            <button class="btn btn-outline-danger o_qds_small_btn"
+                                                                    t-on-click="() => this.clearDefect(sd.defecto_id)"
+                                                                    t-att-disabled="state.submitting ? true : undefined">
+                                                                <i class="fa fa-trash me-1"/>Eliminar
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <t t-if="state.sizePopupOpen">
+                            <div class="o_qds_backdrop" t-on-click="closeSizePopup"/>
+                            <div class="o_qds_modal card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="mb-0">Seleccionar tamaño</h5>
+                                        <button class="btn btn-sm btn-outline-secondary" t-on-click="closeSizePopup">Cerrar</button>
+                                    </div>
+                                    <div class="mb-2">
+                                        <span class="text-muted">Defecto:</span>
+                                        <span class="fw-bold" t-esc="popupDefect?.name || '-'"/>
+                                    </div>
+                                    <div class="o_qds_size_grid">
+                                        <t t-foreach="sizeOptions" t-as="opt" t-key="opt.value">
+                                            <button class="btn btn-primary btn-lg o_qds_size_btn"
+                                                    t-att-disabled="state.submitting ? true : undefined"
+                                                    t-on-click="() => this.onSelectSize(opt.value)">
+                                                <span t-esc="opt.label"/>
+                                            </button>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
                 </t>
-            </t>
+            </main>
         </div>
     </t>
 </templates>
