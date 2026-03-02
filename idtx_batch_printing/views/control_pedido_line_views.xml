@@ -1,0 +1,59 @@
+<odoo>
+
+    <record id="view_control_pedido_line_form_inherit_eval_tono" model="ir.ui.view">
+        <field name="name">control.pedido.line.form.inherit.eval.tono</field>
+        <field name="model">control.pedido.line</field>
+        <field name="inherit_id" ref="idtx_batch_control.view_control_pedido_line_form"/>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <xpath expr="//form/sheet/div[hasclass('oe_title')]" position="before">
+                <field name="design_image" widget="image" class="oe_avatar" options="{'convert_to_webp': True}"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="view_control_pedido_line_form_inherit_eval_tono_inherit_printing" model="ir.ui.view">
+        <field name="name">control.pedido.line.form.inherit.eval.tono.inherit.printing</field>
+        <field name="model">control.pedido.line</field>
+        <field name="inherit_id" ref="idtx_batch_quality.view_control_pedido_line_form_inherit_eval_tono"/>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <xpath expr="//form/sheet/notebook/page[@id='audit_page']/field[@name='apariencia_line_ids']/list/field[@name='create_uid']" position="after">
+                <field name="type_deffect"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="control_apariencia_line_view_list_inherit_printing" model="ir.ui.view">
+        <field name="name">control.apariencia.line.view.list.inherit.printing</field>
+        <field name="model">control.apariencia.line</field>
+        <field name="inherit_id" ref="idtx_batch_quality.control_apariencia_line_view_list"/>
+        <field name="arch" type="xml">
+            <field name="create_uid" position="after">
+                <field name="type_deffect"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="control_apariencia_defecto_line_view_form_inherit_printing" model="ir.ui.view">
+        <field name="name">control.apariencia.defecto.line.view.form.inherit.printing</field>
+        <field name="model">control.apariencia.defecto.line</field>
+        <field name="inherit_id" ref="idtx_batch_quality.control_apariencia_defecto_line_view_form"/>
+        <field name="arch" type="xml">
+            <field name="tamano_defecto_ids" position="before">
+                <field name="type_deffect" invisible="1"/>
+            </field>
+            <field name="tamano_defecto_ids" position="attributes">
+                <attribute name="invisible">type_deffect != 'quality'</attribute>
+            </field>
+            <field name="cantidad" position="attributes">
+                <attribute name="invisible">type_deffect != 'quality'</attribute>
+            </field>
+            <field name="cantidad" position="after">
+                <field name="printing_quantity" invisible="type_deffect == 'quality'"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

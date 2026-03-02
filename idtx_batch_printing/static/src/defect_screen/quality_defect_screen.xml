@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="idtx_batch_printing.QualityDefectScreen">
+        <div class="o_quality_defect_screen container-fluid py-3 px-3 px-md-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0">Evaluar Apariencia</h3>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-success btn-lg"
+                            t-on-click="onFinalize"
+                            t-att-disabled="isFinalizeDisabled ? true : undefined">
+                        Finalizar
+                    </button>
+
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary btn-lg" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa fa-bars"/>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <button class="dropdown-item" t-on-click="onClickRefresh">
+                                    <i class="fa fa-refresh me-2"/>Volver a cargar datos
+                                </button>
+                            </li>
+                            <li>
+                                <button class="dropdown-item" t-on-click="close">
+                                    <i class="fa fa-sign-out me-2"/>Cerrar
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <t t-if="state.error">
+                <div class="alert alert-danger" role="alert" t-esc="state.error"/>
+            </t>
+
+            <t t-if="state.loading">
+                <div class="alert alert-info">Cargando partidas...</div>
+            </t>
+
+            <t t-else="">
+                <t t-if="!hasSession">
+                    <div class="card o_full_step_card">
+                        <div class="card-body p-4 p-md-5">
+                            <label class="form-label fw-bold">Partida</label>
+                            <input type="text"
+                                   class="form-control form-control-lg mb-2"
+                                   placeholder="Buscar: partida, cliente"
+                                   t-on-input="onPartidaQueryInput"
+                                   t-att-value="state.partidaQuery"/>
+
+                            <div class="list-group mb-3 o_partida_results">
+                                <t t-if="state.isSearchingPartida">
+                                    <div class="list-group-item text-muted">Buscando...</div>
+                                </t>
+                                <t t-elif="!state.partidas.length">
+                                    <div class="list-group-item text-muted">Sin resultados</div>
+                                </t>
+                                <t t-else="">
+                                    <t t-foreach="state.partidas" t-as="partida" t-key="partida.id">
+                                        <button type="button"
+                                                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                                                t-att-class="isPartidaSelected(partida.id) ? 'list-group-item list-group-item-action active d-flex justify-content-between align-items-center' : 'list-group-item list-group-item-action d-flex justify-content-between align-items-center'"
+                                                t-on-click="() => this.selectPartida(partida.id)">
+                                            <span class="fw-semibold" t-esc="partida.batch || '-'"/>
+                                            <span class="small" t-esc="partida.customer || '-'"/>
+                                        </button>
+                                    </t>
+                                </t>
+                            </div>
+
+                            <label class="form-label fw-bold">N° Rollo</label>
+                            <input type="number"
+                                   class="form-control form-control-lg mb-3"
+                                   min="1"
+                                   placeholder="Ingrese número de rollo"
+                                   t-on-input="onChangeRollo"
+                                   t-att-value="state.rolloNum"/>
+
+                            <button class="btn btn-primary btn-lg w-100"
+                                    t-on-click="onStartCapture"
+                                    t-att-disabled="canStart ? undefined : true">
+                                Iniciar captura
+                            </button>
+                        </div>
+                    </div>
+                </t>
+
+                <t t-else="">
+                    <div class="card mb-3">
+                        <div class="card-body py-3 px-4 d-flex flex-wrap gap-3 align-items-center">
+                            <div><span class="text-muted">Partida:</span> <span class="fw-bold" t-esc="state.selectedPartidaData?.batch || '-'"/></div>
+                            <div><span class="text-muted">Cliente:</span> <span class="fw-bold" t-esc="state.selectedPartidaData?.customer || '-'"/></div>
+                            <div><span class="text-muted">Artículo:</span> <span class="fw-bold" t-esc="state.selectedPartidaData?.article || '-'"/></div>
+                            <div><span class="text-muted">Código Color:</span> <span class="fw-bold" t-esc="state.selectedPartidaData?.color_code || '-'"/></div>
+                            <div><span class="text-muted">Color:</span> <span class="fw-bold" t-esc="state.selectedPartidaData?.color_name || '-'"/></div>
+                            <div><span class="text-muted">Rollo:</span> <span class="fw-bold" t-esc="state.rolloNum || '-'"/></div>
+                        </div>
+                    </div>
+
+                    <div class="card o_full_step_card o_defect_card">
+                        <div class="card-body py-4 ps-4 ps-md-5 pe-0 o_defect_body">
+                            <div class="o_defect_stack o_defect_stack_scroll">
+                                <t t-foreach="state.defects" t-as="defect" t-key="defect.defecto_id">
+                                    <button class="btn btn-outline-dark btn-lg w-100 d-flex justify-content-between align-items-center"
+                                            t-att-class="defect.defecto_id === state.selectedDefectoId ? 'btn-dark btn-lg w-100 d-flex justify-content-between align-items-center' : 'btn-outline-dark btn-lg w-100 d-flex justify-content-between align-items-center'"
+                                            t-on-click="() => this.onSelectDefect(defect.defecto_id)">
+                                        <span t-esc="defect.name"/>
+                                        <span class="badge rounded-pill text-bg-light" t-esc="defect.count"/>
+                                    </button>
+                                </t>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </div>
+    </t>
+</templates>

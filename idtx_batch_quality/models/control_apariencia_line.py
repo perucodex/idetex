@@ -34,13 +34,16 @@ class ControlAparienciaLine(models.Model):
     def _check_rollo_num_unique(self):
         for rec in self:
             if rec.pedido_line_id:
-                same_rollo = self.search([
-                    ("pedido_line_id", "=", rec.pedido_line_id.id),
-                    ("rollo_num", "=", rec.rollo_num),
-                    ("id", "!=", rec.id)
-                ])
+                same_rollo = self.search(self._get_rollo_unique_domain(rec))
                 if same_rollo:
                     raise ValidationError("Ya existe un registro con el mismo número de rollo en esta partida.")
+
+    def _get_rollo_unique_domain(self, rec):
+        return [
+            ("pedido_line_id", "=", rec.pedido_line_id.id),
+            ("rollo_num", "=", rec.rollo_num),
+            ("id", "!=", rec.id),
+        ]
 
     @api.depends("defecto_line_ids.cantidad")
     def _compute_defect_count(self):

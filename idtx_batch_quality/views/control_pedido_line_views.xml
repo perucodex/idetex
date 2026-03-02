@@ -43,7 +43,7 @@
                     </field>
                 </page>
 
-                <page string="Auditoria" invisible="not (can_apariencia or has_apariencia_lines)">
+                <page string="Auditoria" id="audit_page" invisible="not (can_apariencia or has_apariencia_lines)">
                     <!-- <group>
                         <button name="action_apariencia"
                                 type="object"

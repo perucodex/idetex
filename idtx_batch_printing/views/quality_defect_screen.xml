@@ -1,0 +1,15 @@
+<odoo>
+    <!-- client action that loads our javascript screen -->
+    <record id="action_quality_defect_screen_printing" model="ir.actions.client">
+        <field name="name">Evaluar Apariencia Estampado</field>
+        <field name="tag">idtx_quality.defect_screen_printing</field>
+        <field name="target">fullscreen</field>
+    </record>
+
+    <!-- menu entry under Quality / Alertas de Calidad -->
+    <menuitem id="menu_quality_defect_screen_printing"
+              name="Evaluar Apariencia Estampado"
+              parent="quality_control.menu_quality_control"
+              action="action_quality_defect_screen_printing"
+              sequence="910"/>
+</odoo>
