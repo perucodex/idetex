@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-02 22:21+0000\n"
-"PO-Revision-Date: 2026-03-02 22:21+0000\n"
+"POT-Creation-Date: 2026-03-03 14:22+0000\n"
+"PO-Revision-Date: 2026-03-03 14:22+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -27,12 +27,12 @@ msgid "Artículo:"
 msgstr "Artículo:"
 
 #. module: idtx_batch_printing
-#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__numero_varilla_diametro
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__bar_number_diameter
 msgid "Bar Number (diameter)"
 msgstr "Número de barra (diámetro)"
 
 #. module: idtx_batch_printing
-#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__ph_bano
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__bath_ph
 msgid "Bath pH"
 msgstr "pH del baño"
 
@@ -75,7 +75,8 @@ msgstr "Cliente:"
 #: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__digital_color_management
 msgid ""
 "Color management, resolution, profiles (MatchPrint and Inedit software)"
-msgstr "Gestión del color, resolución y perfiles (software MatchPrint e Inedit)"
+msgstr ""
+"Gestión del color, resolución y perfiles (software MatchPrint e Inedit)"
 
 #. module: idtx_batch_printing
 #. odoo-javascript
@@ -89,7 +90,7 @@ msgid "Control Pedido (Detalle)"
 msgstr "Control Pedido (Detalle)"
 
 #. module: idtx_batch_printing
-#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__numero_cilindro_por_color
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__cylinder_number_per_color
 msgid "Cylinder Number (per color)"
 msgstr "Número de cilindro (por color)"
 
@@ -156,7 +157,7 @@ msgid "Display Name"
 msgstr "Nombre a mostrar"
 
 #. module: idtx_batch_printing
-#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__temperatura_secado_c
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__drying_temperature_c
 msgid "Drying Temperature (°C)"
 msgstr "Temperatura de secado (°C)"
 
@@ -173,7 +174,7 @@ msgid "Evaluar Apariencia Estampado"
 msgstr "Evaluar Apariencia Estampado"
 
 #. module: idtx_batch_printing
-#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__tension_tejido_vaporizador
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__fabric_tension_steamer
 msgid "Fabric Tension (steamer)"
 msgstr "Tensión de tela (vaporizador)"
 
@@ -204,7 +205,7 @@ msgid "Iniciar captura"
 msgstr "Iniciar captura"
 
 #. module: idtx_batch_printing
-#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__presion_barilla_magnetica_klg
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__magnetic_bar_pressure_kg
 msgid "Magnetic Bar Pressure Inside Cylinder (kg)"
 msgstr "Presión de barra magnética dentro del cilindro (kg)"
 
@@ -234,7 +235,8 @@ msgstr "Partida:"
 #. module: idtx_batch_printing
 #: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__digital_paste_recipe
 msgid "Pasting recipe with transparent bath at around pH 10.5 (alkaline)"
-msgstr "Receta de empastado con baño transparente de pH alrededor de 10.5 (alcalino)"
+msgstr ""
+"Receta de empastado con baño transparente de pH alrededor de 10.5 (alcalino)"
 
 #. module: idtx_batch_printing
 #: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__width_print
@@ -254,7 +256,7 @@ msgid "Printing Direction"
 msgstr "Dirección de estampado"
 
 #. module: idtx_batch_printing
-#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__velocidad_impresion_m_min
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__printing_speed_m_min
 msgid "Printing Speed (m/min)"
 msgstr "Velocidad de estampado (m/min)"
 
@@ -275,7 +277,7 @@ msgid "Quantity"
 msgstr "Cantidad"
 
 #. module: idtx_batch_printing
-#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__presion_rodillo_ingreso_bar
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__inlet_roller_pressure_bar
 msgid "Roller Pressure at Inlet (bar)"
 msgstr "Presión del rodillo en el ingreso (bar)"
 
@@ -302,17 +304,17 @@ msgid "Sin resultados"
 msgstr "Sin resultados"
 
 #. module: idtx_batch_printing
-#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__presion_vapor_vaporizadora
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__steam_pressure_steamer
 msgid "Steam Pressure (steamer)"
 msgstr "Presión de vapor (vaporizador)"
 
 #. module: idtx_batch_printing
-#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__temperatura_vaporizado_c
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__steaming_temperature_c
 msgid "Steaming Temperature (°C)"
 msgstr "Temperatura de vaporizado (°C)"
 
 #. module: idtx_batch_printing
-#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__tiempo_vaporizado_mts_min
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__steaming_time_m_min
 msgid "Steaming Time (m/min)"
 msgstr "Tiempo de vaporizado (m/min)"
 
@@ -324,17 +326,23 @@ msgstr "Unidireccional"
 #. module: idtx_batch_printing
 #. odoo-javascript
 #: code:addons/idtx_batch_printing/static/src/defect_screen/quality_defect_screen.xml:0
+msgid "Validando número de rollo..."
+msgstr "Validando número de rollo..."
+
+#. module: idtx_batch_printing
+#. odoo-javascript
+#: code:addons/idtx_batch_printing/static/src/defect_screen/quality_defect_screen.xml:0
 msgid "Volver a cargar datos"
 msgstr "Volver a cargar datos"
 
 #. module: idtx_batch_printing
 #: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__digital_wash_speed_mts_min
-#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__velocidad_lavado_mts_min
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__washing_speed_m_min
 msgid "Washing Speed (m/min)"
 msgstr "Velocidad de lavado (m/min)"
 
 #. module: idtx_batch_printing
 #: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__digital_wash_temp_per_bath_c
-#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__temperatura_lavado_por_bano_c
+#: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__washing_temperature_per_bath_c
 msgid "Washing Temperature per Bath (°C)"
 msgstr "Temperatura de lavado por baño (°C)"
