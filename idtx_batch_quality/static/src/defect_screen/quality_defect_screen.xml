@@ -56,7 +56,8 @@
                 </div>
             </header>
 
-            <main class="o_qds_main">
+            <main class="o_qds_main"
+                t-att-class="(!hasSession ? 'o_qds_main_basic ' : '') + ((!hasSession and state.showPartidaDropdown and !state.selectedPartidaId) ? 'o_qds_main_basic_locked' : '')">
                 <t t-if="state.error">
                     <div class="alert alert-danger o_qds_alert" role="alert" t-esc="state.error"/>
                 </t>
@@ -74,18 +75,31 @@
                                 <div class="col-12 col-lg-7">
                                     <div class="o_qds_card">
                                         <div class="o_qds_card_body">
-                                            <!-- <div class="o_qds_hint">
-                                                <i class="fa fa-save me-2"/>
-                                                Se guarda un <b>borrador local</b> (sin BD). Si refrescas, se restaura.
-                                            </div> -->
+
+                                            <div class="o_qds_field">
+                                                <label class="form-label fw-bold mb-1">Control de Apariencia</label>
+                                                <select class="form-select form-select-lg o_qds_input"
+                                                        t-model="state.selectedAparienciaId"
+                                                        t-on-change="onAparienciaSelectChange">
+                                                    <option value="">Seleccione control de apariencia...</option>
+                                                    <t t-foreach="state.apariencias" t-as="apariencia" t-key="apariencia.id">
+                                                        <option t-att-value="'' + apariencia.id" t-esc="apariencia.name || '-'"/>
+                                                    </t>
+                                                </select>
+                                            </div>
 
                                             <div class="o_qds_field">
                                                 <label class="form-label fw-bold mb-1">Partida</label>
+
+                                                <t t-if="!state.selectedAparienciaId">
+                                                    <div class="small text-muted mb-2">Seleccione primero el control de apariencia.</div>
+                                                </t>
 
                                                 <div class="o_qds_autocomplete">
                                                     <input type="text"
                                                            class="form-control form-control-lg o_qds_input"
                                                            placeholder="Escribe la Partida..."
+                                                           t-att-disabled="!state.selectedAparienciaId ? true : undefined"
                                                            t-on-input="onPartidaQueryInput"
                                                            t-on-focus="onPartidaInputFocus"
                                                            t-att-value="state.partidaQuery"/>
@@ -124,6 +138,7 @@
                                                         </div>
                                                     </t>
                                                 </div>
+                                            </div>
 
                                             <t t-if="shouldShowRolloInput">
                                                 <div class="o_qds_field">
@@ -163,7 +178,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                </div>
 
                                 <!-- Columna preview (solo si hay partida seleccionada) -->
                                 <div class="col-12 col-lg-5">
@@ -173,6 +187,10 @@
                                                 <div class="o_qds_card_title">Detalle de Partida</div>
                                             </div>
                                             <div class="o_qds_card_body">
+                                                <div class="o_qds_kv">
+                                                    <span class="text-muted">Control de Apariencia</span>
+                                                    <b t-esc="state.selectedAparienciaData?.name || '-'"/>
+                                                </div>
                                                 <div class="o_qds_kv">
                                                     <span class="text-muted">Partida</span>
                                                     <b t-esc="state.selectedPartidaData.batch || '-'"/>
@@ -200,8 +218,8 @@
                         </div>
                     </t>
 
-                    <!-- PASO 2 (sin cambios aquí) -->
-                    <t t-else="">
+                    <!-- PASO 2 -->
+                    <t t-if="hasSession">
                         <div class="row g-3 o_qds_grid">
                             <div class="col-12 col-lg-7">
                                 <div class="o_qds_card o_qds_card_defects">

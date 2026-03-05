@@ -105,13 +105,37 @@
         padding: 0 0.75rem;
         flex: 1 1 auto;
         min-height: 0;
+        display: flex;
+        flex-direction: column;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
         overscroll-behavior: contain;
     }
 
+    .o_qds_main_basic {
+        overflow-y: auto;
+    }
+
+    .o_qds_main_basic_locked {
+        overflow: hidden;
+    }
+
     .o_qds_basics_wrap {
         padding: 0.25rem 0 1rem;
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .o_qds_basics_wrap .row {
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    .o_qds_basics_wrap .col-12 {
+        display: flex;
+        min-height: 0;
     }
 
     /* Cards: ya NO blanco fijo. Usan variables del tema */
@@ -124,6 +148,17 @@
 
         box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
         overflow: hidden;
+    }
+
+    .o_qds_basics_wrap .o_qds_card {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: visible;
+    }
+
+    .o_qds_basics_wrap .o_qds_card_body {
+        max-height: none;
+        overflow: visible;
     }
 
     .o_qds_card_head {
@@ -209,7 +244,7 @@
         left: 0;
         right: 0;
         top: calc(100% + 0.35rem);
-        z-index: 30;
+        z-index: 120;
 
         border-radius: 1rem;
         overflow: hidden;
@@ -218,11 +253,12 @@
         border: 1px solid var(--qds-border);
         box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
 
-        max-height: 420px;
-        height: 50vh;
+        height: auto;
+        max-height: 45dvh;
     }
 
     .o_qds_dropdown_body {
+        max-height: inherit;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
     }
@@ -398,6 +434,18 @@
         .o_qds_card_summary {
             height: auto;
             min-height: auto;
+        }
+
+        .o_qds_basics_wrap .col-12 {
+            display: block;
+        }
+
+        .o_qds_basics_wrap .o_qds_card {
+            overflow: visible;
+        }
+
+        .o_qds_dropdown {
+            max-height: 50dvh;
         }
         .o_qds_basics_wrap {
             padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));

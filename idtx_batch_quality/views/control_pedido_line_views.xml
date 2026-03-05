@@ -49,6 +49,7 @@
                         <list>
                             <field name="create_date" string="Fecha"/>
                             <field name="create_uid" string="Usuario"/>
+                            <field name="apariencia_id" string="Apariencia"/>
                             <field name="rollo_num" string="N° Rollo"/>
                             <field name="width" string="Ancho"/>
                             <field name="meters" string="Metros"/>
@@ -71,9 +72,10 @@
                         <group>
                             <field name="create_date" string="Fecha" readonly="1"/>
                             <field name="create_uid" string="Usuario" readonly="1"/>
+                            <field name="pedido_line_id" readonly="1"/>
+                            <field name="apariencia_id"/>
                         </group>
                         <group>
-                            <field name="pedido_line_id" readonly="1"/>
                             <field name="rollo_num"/>
                             <field name="width"/>
                             <field name="meters"/>
@@ -105,7 +107,7 @@
                 <sheet>
                     <group>
                         <group>
-                            <field name="defecto_id"/>
+                            <field name="defecto_id" domain="[('apariencia_id', '=', parent.apariencia_id)]"/>
                             <field name="is_hueco" invisible="1"/>
                             <field name="cantidad"/>
                         </group>

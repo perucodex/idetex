@@ -14,6 +14,7 @@ class ControlAparienciaLine(models.Model):
         ondelete="cascade",
         index=True,
     )
+    apariencia_id = fields.Many2one('control.apariencia', string='Apariencia', required=True)
     rollo_num = fields.Integer(string="N° Rollo", required=True, index=True)
     width = fields.Float('Width (meters)', digits=(10, 2), required=True)
     meters = fields.Float('Meters', digits=(10, 2), required=True)
@@ -30,14 +31,6 @@ class ControlAparienciaLine(models.Model):
         store=True,
         readonly=True,
     )
-
-    @api.constrains("rollo_num", "pedido_line_id")
-    def _check_rollo_num_unique(self):
-        for rec in self:
-            if rec.pedido_line_id:
-                same_rollo = self.search(self._get_rollo_unique_domain(rec))
-                if same_rollo:
-                    raise ValidationError("Ya existe un registro con el mismo número de rollo en esta partida.")
 
     @api.constrains("width", "meters")
     def _check_positive_width_and_meters(self):
@@ -69,19 +62,30 @@ class ControlAparienciaLine(models.Model):
             return {"ok": False, "message": "Seleccione una partida."}
         if rollo_num <= 0:
             return {"ok": False, "message": "El N° Rollo debe ser mayor a 0."}
-
-        exists = bool(self.search_count(self._get_rollo_unique_create_domain(pedido_line_id, rollo_num)))
-        if exists:
-            return {
-                "ok": False,
-                "message": "Ya existe un registro con el mismo número de rollo en esta partida.",
-            }
         return {"ok": True}
 
     @api.depends("defecto_line_ids.cantidad")
     def _compute_defect_count(self):
         for rec in self:
             rec.defect_count = sum(1 for l in rec.defecto_line_ids if (l.cantidad or 0) > 0)
+
+    @api.model
+    def action_tablet_get_apariencias(self, query="", limit=20):
+        query = (query or "").strip()
+        domain = Domain([])
+        if query:
+            domain = Domain.AND([domain, Domain("name", "ilike", query)])
+
+        safe_limit = min(max(int(limit or 20), 1), 100)
+        apariencias = self.env["control.apariencia"].search(domain, order="name asc, id asc", limit=safe_limit)
+        return [
+            {
+                "id": ap.id,
+                "name": ap.name or "",
+                "label": ap.name or "-",
+            }
+            for ap in apariencias
+        ]
 
     @api.model
     def action_tablet_get_partidas(self, query="", limit=20):
@@ -122,9 +126,14 @@ class ControlAparienciaLine(models.Model):
         ]
 
     @api.model
-    def action_tablet_get_defectos(self):
+    def action_tablet_get_defectos(self, apariencia_id=None):
+        apariencia_id = int(apariencia_id or 0)
+        if not apariencia_id:
+            return []
+
         defectos = self.env["control.apariencia.defecto"].search(
-            [("is_active", "=", True)], order="name asc, id asc"
+            [("is_active", "=", True), ("apariencia_id", "=", apariencia_id)],
+            order="sequence asc, name asc, id asc",
         )
         return [
             {
@@ -136,10 +145,15 @@ class ControlAparienciaLine(models.Model):
         ]
 
     @api.model
-    def action_tablet_finalize(self, pedido_line_id, rollo_num, selections, width=None, meters=None):
+    def action_tablet_finalize(self, pedido_line_id, rollo_num, selections, width=None, meters=None, apariencia_id=None):
         pedido_line = self.env["control.pedido.line"].browse(int(pedido_line_id))
         if not pedido_line.exists():
             raise UserError("La partida seleccionada no existe.")
+
+        apariencia_id = int(apariencia_id or 0)
+        apariencia = self.env["control.apariencia"].browse(apariencia_id)
+        if not apariencia.exists():
+            raise UserError("Seleccione un control de apariencia válido.")
 
         rollo_num = int(rollo_num or 0)
         if rollo_num <= 0:
@@ -153,7 +167,9 @@ class ControlAparienciaLine(models.Model):
         if meters <= 0:
             raise UserError("El metraje debe ser mayor a 0.")
 
-        apariencia = self.create(self._get_tablet_apariencia_create_vals(pedido_line, rollo_num, width, meters))
+        apariencia_line = self.create(
+            self._get_tablet_apariencia_create_vals(pedido_line, apariencia, rollo_num, width, meters)
+        )
 
         defect_cmds = []
         for item in selections or []:
@@ -164,6 +180,8 @@ class ControlAparienciaLine(models.Model):
 
             defecto = self.env["control.apariencia.defecto"].browse(defecto_id)
             if not defecto.exists():
+                continue
+            if defecto.apariencia_id.id != apariencia.id:
                 continue
 
             size_cmds = []
@@ -185,13 +203,14 @@ class ControlAparienciaLine(models.Model):
                 }))
 
         if defect_cmds:
-            apariencia.write({"defecto_line_ids": defect_cmds})
+            apariencia_line.write({"defecto_line_ids": defect_cmds})
 
-        return {"ok": True, "apariencia_id": apariencia.id}
+        return {"ok": True, "apariencia_line_id": apariencia_line.id}
 
-    def _get_tablet_apariencia_create_vals(self, pedido_line, rollo_num, width, meters):
+    def _get_tablet_apariencia_create_vals(self, pedido_line, apariencia, rollo_num, width, meters):
         return {
             "pedido_line_id": pedido_line.id,
+            "apariencia_id": apariencia.id,
             "rollo_num": rollo_num,
             "width": width,
             "meters": meters,
@@ -242,7 +261,7 @@ class ControlAparienciaTamanoDefecto(models.Model):
         ('2', '> 7.5 cm y hasta 15 cm'),
         ('3', '> 15 cm y hasta 23 cm'),
         ('4', '> 23 cm'),
-    ], string='Tamaño del Defecto')
+    ], string='Tamaño del Defecto Calidad')
     tamano_hueco = fields.Selection([
         ('2', '<= 3 cm'),
         ('4', '> 3 cm'),

@@ -16,7 +16,7 @@ const HUECO_SIZE_OPTIONS = [
     { value: "4", label: "> 3 cm" },
 ];
 
-const DRAFT_STORAGE_KEY = "idtx_batch_quality.defect_screen.draft.v2";
+const DRAFT_STORAGE_KEY = "idtx_batch_quality.defect_screen.draft.v3";
 
 function safeJsonParse(value) {
     try {
@@ -58,6 +58,14 @@ export class QualityDefectScreen extends Component {
             submitting: false,
             error: "",
 
+            // Apariencias (autocomplete)
+            apariencias: [],
+            aparienciaQuery: "",
+            selectedAparienciaId: "",
+            selectedAparienciaData: null,
+            isSearchingApariencia: false,
+            showAparienciaDropdown: false,
+
             // Partidas (autocomplete)
             partidas: [],
             partidaQuery: "",
@@ -84,6 +92,7 @@ export class QualityDefectScreen extends Component {
 
         onWillStart(async () => {
             this._restoreDraft();
+            await this.loadApariencias();
             await this.loadPartidas();
 
             if (this.state.sessionActive) {
@@ -126,6 +135,7 @@ export class QualityDefectScreen extends Component {
 
     get canProceedBasics() {
         return (
+            Boolean(this.state.selectedAparienciaId) &&
             Boolean(this.state.selectedPartidaId) &&
             Number(this.state.rolloNum) > 0 &&
             parsePositiveFloat(this.state.width) > 0 &&
@@ -154,7 +164,15 @@ export class QualityDefectScreen extends Component {
 
     // Rollo aparece SOLO cuando ya se seleccionó una partida (y aún no empezó captura)
     get shouldShowRolloInput() {
-        return Boolean(this.state.selectedPartidaId) && !this.hasSession;
+        return Boolean(this.state.selectedAparienciaId) && Boolean(this.state.selectedPartidaId) && !this.hasSession;
+    }
+
+    get filteredApariencias() {
+        const q = normalizeText(this.state.aparienciaQuery);
+        if (!q) return (this.state.apariencias || []).slice(0, 20);
+        return (this.state.apariencias || [])
+            .filter((a) => normalizeText(a.name).includes(q))
+            .slice(0, 20);
     }
 
     get filteredPartidas() {
@@ -175,7 +193,10 @@ export class QualityDefectScreen extends Component {
     // ---------- Draft persistence ----------
     _saveDraft() {
         const draft = {
+            aparienciaQuery: this.state.aparienciaQuery || "",
+            selectedAparienciaId: this.state.selectedAparienciaId ? String(this.state.selectedAparienciaId) : "",
             partidaQuery: this.state.partidaQuery || "",
+            showAparienciaDropdown: Boolean(this.state.showAparienciaDropdown),
             showPartidaDropdown: Boolean(this.state.showPartidaDropdown),
             selectedPartidaId: this.state.selectedPartidaId ? String(this.state.selectedPartidaId) : "",
             rolloNum: this.state.rolloNum ? String(this.state.rolloNum) : "",
@@ -207,6 +228,8 @@ export class QualityDefectScreen extends Component {
         const draft = safeJsonParse(raw);
         if (!draft || typeof draft !== "object") return;
 
+        this.state.aparienciaQuery = typeof draft.aparienciaQuery === "string" ? draft.aparienciaQuery : "";
+        this.state.selectedAparienciaId = draft.selectedAparienciaId ? String(draft.selectedAparienciaId) : "";
         this.state.partidaQuery = typeof draft.partidaQuery === "string" ? draft.partidaQuery : "";
         this.state.selectedPartidaId = draft.selectedPartidaId ? String(draft.selectedPartidaId) : "";
         this.state.rolloNum = draft.rolloNum ? String(draft.rolloNum) : "";
@@ -214,10 +237,14 @@ export class QualityDefectScreen extends Component {
         this.state.meters = draft.meters ? String(draft.meters) : "";
 
         const hasBasics =
+            Boolean(this.state.selectedAparienciaId) &&
             Boolean(this.state.selectedPartidaId) &&
             Number(this.state.rolloNum) > 0 &&
             parsePositiveFloat(this.state.width) > 0;
         this.state.sessionActive = Boolean(draft.sessionActive) && hasBasics;
+
+        this.state.showAparienciaDropdown =
+            Boolean(draft.showAparienciaDropdown) && !this.state.selectedAparienciaId && !this.state.sessionActive;
 
         this.state.showPartidaDropdown =
             Boolean(draft.showPartidaDropdown) && !this.state.selectedPartidaId && !this.state.sessionActive;
@@ -235,6 +262,18 @@ export class QualityDefectScreen extends Component {
         this._draftDefectsSizes = {};
     }
 
+    _syncSelectedAparienciaData() {
+        if (!this.state.selectedAparienciaId) {
+            this.state.selectedAparienciaData = null;
+            return;
+        }
+        const found = (this.state.apariencias || []).find((a) => `${a.id}` === `${this.state.selectedAparienciaId}`);
+        this.state.selectedAparienciaData = found || this.state.selectedAparienciaData || null;
+        if (this.state.selectedAparienciaData?.name && !this.state.sessionActive) {
+            this.state.aparienciaQuery = String(this.state.selectedAparienciaData.name);
+        }
+    }
+
     _syncSelectedPartidaData() {
         if (!this.state.selectedPartidaId) {
             this.state.selectedPartidaData = null;
@@ -250,11 +289,16 @@ export class QualityDefectScreen extends Component {
     }
 
     async _restoreSessionDefectsFromServer() {
+        if (!this.state.selectedAparienciaId) {
+            this.state.sessionActive = false;
+            this.state.defects = [];
+            return;
+        }
         try {
             const defects = await this.orm.call(
                 "control.apariencia.line",
                 "action_tablet_get_defectos",
-                [],
+                [Number(this.state.selectedAparienciaId)],
                 { context: { appearance_type: "quality" } }
             );
             const sizesMap = this._draftDefectsSizes || {};
@@ -274,6 +318,20 @@ export class QualityDefectScreen extends Component {
     }
 
     // ---------- Data loading ----------
+    async loadApariencias() {
+        this.state.loading = true;
+        this.state.error = "";
+        try {
+            const apariencias = await this.orm.call("control.apariencia.line", "action_tablet_get_apariencias", ["", 50]);
+            this.state.apariencias = apariencias || [];
+            this._syncSelectedAparienciaData();
+        } catch (error) {
+            this.state.error = error.message || "No se pudo cargar la lista de apariencias.";
+        } finally {
+            this.state.loading = false;
+        }
+    }
+
     async loadPartidas() {
         this.state.loading = true;
         this.state.error = "";
@@ -287,6 +345,73 @@ export class QualityDefectScreen extends Component {
         } finally {
             this.state.loading = false;
         }
+    }
+
+    // ---------- Autocomplete Apariencia ----------
+    onAparienciaSelectChange(event) {
+        this.state.selectedAparienciaId = event.target.value || this.state.selectedAparienciaId || "";
+        this._syncSelectedAparienciaData();
+        this._saveDraft();
+    }
+
+    onAparienciaQueryInput(event) {
+        const value = event.target.value || "";
+        this.state.aparienciaQuery = value;
+
+        if (this.state.selectedAparienciaId) {
+            const currentName = this.state.selectedAparienciaData?.name ? String(this.state.selectedAparienciaData.name) : "";
+            if (value !== currentName) {
+                this.state.selectedAparienciaId = "";
+                this.state.selectedAparienciaData = null;
+            }
+        }
+
+        this.state.showAparienciaDropdown = Boolean(value) && !this.state.selectedAparienciaId;
+        this._saveDraft();
+        this._debouncedAparienciaSearch(value);
+    }
+
+    onAparienciaInputFocus() {
+        if (!this.state.selectedAparienciaId && this.state.aparienciaQuery) {
+            this.state.showAparienciaDropdown = true;
+            this._saveDraft();
+        }
+    }
+
+    _debouncedAparienciaSearch(query) {
+        if (this._aparienciaSearchTimer) clearTimeout(this._aparienciaSearchTimer);
+        this._aparienciaSearchTimer = setTimeout(() => this.searchApariencias(query), 250);
+    }
+
+    async searchApariencias(query) {
+        this.state.isSearchingApariencia = true;
+        this.state.error = "";
+        try {
+            const q = (query || "").trim();
+            const apariencias = await this.orm.call("control.apariencia.line", "action_tablet_get_apariencias", [q, 50]);
+            this.state.apariencias = apariencias || [];
+            this._syncSelectedAparienciaData();
+            this._saveDraft();
+        } catch (error) {
+            this.state.error = error.message || "No se pudo buscar apariencias.";
+        } finally {
+            this.state.isSearchingApariencia = false;
+        }
+    }
+
+    selectApariencia(aparienciaId) {
+        this.state.selectedAparienciaId = String(aparienciaId);
+        this._syncSelectedAparienciaData();
+        this.state.showAparienciaDropdown = false;
+        this._saveDraft();
+    }
+
+    clearSelectedApariencia() {
+        this.state.selectedAparienciaId = "";
+        this.state.selectedAparienciaData = null;
+        this.state.aparienciaQuery = "";
+        this.state.showAparienciaDropdown = false;
+        this._saveDraft();
     }
 
     // ---------- Autocomplete Partida ----------
@@ -432,6 +557,10 @@ export class QualityDefectScreen extends Component {
 
     // ---------- Paso 1 -> Paso 2 ----------
     async onNext() {
+        if (!this.state.selectedAparienciaId) {
+            this.notification.add("Seleccione un control de apariencia.", { type: "warning" });
+            return;
+        }
         if (!this.canProceedBasics) return;
 
         const isRolloValid = await this._validateRolloUnique();
@@ -445,7 +574,7 @@ export class QualityDefectScreen extends Component {
             const defects = await this.orm.call(
                 "control.apariencia.line",
                 "action_tablet_get_defectos",
-                [],
+                [Number(this.state.selectedAparienciaId)],
                 { context: { appearance_type: "quality" } }
             );
             this.state.defects = (defects || []).map((defect) => ({ ...defect, sizes: [], count: 0 }));
@@ -568,6 +697,7 @@ export class QualityDefectScreen extends Component {
                 selections,
                 parsePositiveFloat(this.state.width),
                 metersValue,
+                Number(this.state.selectedAparienciaId),
             ]);
 
             this.notification.add("Registro guardado.", { type: "success" });
@@ -585,6 +715,14 @@ export class QualityDefectScreen extends Component {
         const selectedPartidaId = this.state.selectedPartidaId;
         const selectedPartidaData = this.state.selectedPartidaData;
         const partidaQuery = selectedPartidaData?.batch ? String(selectedPartidaData.batch) : this.state.partidaQuery;
+        const selectedAparienciaId = this.state.selectedAparienciaId;
+        const selectedAparienciaData = this.state.selectedAparienciaData;
+        const aparienciaQuery = selectedAparienciaData?.name ? String(selectedAparienciaData.name) : this.state.aparienciaQuery;
+
+        this.state.aparienciaQuery = aparienciaQuery || "";
+        this.state.selectedAparienciaId = selectedAparienciaId || "";
+        this.state.selectedAparienciaData = selectedAparienciaData || null;
+        this._syncSelectedAparienciaData();
 
         this.state.partidaQuery = partidaQuery || "";
         this.state.selectedPartidaId = selectedPartidaId || "";
@@ -607,6 +745,11 @@ export class QualityDefectScreen extends Component {
     }
 
     resetScreen() {
+        this.state.aparienciaQuery = "";
+        this.state.selectedAparienciaId = "";
+        this.state.selectedAparienciaData = null;
+        this.state.showAparienciaDropdown = false;
+
         this.state.partidaQuery = "";
         this.state.selectedPartidaId = "";
         this.state.selectedPartidaData = null;

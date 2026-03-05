@@ -19,7 +19,8 @@
 
     'data': [
         'security/ir.model.access.csv',
-        'data/defectos_calidad.xml',
+        'data/control_apariencia.xml',
+        'data/defectos.xml',
 
         'views/control_pedido_line_views.xml',
         'views/control_tono_eval_log_views.xml',
