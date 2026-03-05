@@ -556,7 +556,7 @@ class ProductAnalysis(models.Model):
 
                 lab_dev.write({
                     'lab_dev_line_ids': [Command.create({
-                        'product_id': False,
+                        # 'product_id': False,
                         'color_name': desc or color_code,
                         'color_code': color_code,
                         'color_process_type_id': process.id,
