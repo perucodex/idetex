@@ -136,9 +136,10 @@ class SaleOrderLine(models.Model):
 
     @api.onchange('lab_dev_line_id')
     def _onchange_lab_dev_line_id(self):
-        self._compute_has_approved_lab_line()
-        if not self.color_name:
-            self.color_name = self.lab_dev_line_id.color_name
+        for rec in self:
+            rec._compute_has_approved_lab_line()
+            if rec.lab_dev_line_id and not rec.color_name:
+                rec.color_name = rec.lab_dev_line_id.color_name
 
     @api.onchange('product_id')
     def _onchange_product_id(self):

@@ -346,3 +346,23 @@ msgstr "Velocidad de lavado (m/min)"
 #: model:ir.model.fields,field_description:idtx_batch_printing.field_control_pedido_line__washing_temperature_per_bath_c
 msgid "Washing Temperature per Bath (°C)"
 msgstr "Temperatura de lavado por baño (°C)"
+
+#. module: idtx_batch_printing
+#: code:addons/idtx_batch_printing/models/control_apariencia_line.py:0
+msgid "An evaluation already exists for this roll number with the same defect type in this batch."
+msgstr "Ya existe una evaluación para este número de rollo con el mismo tipo de defecto en esta partida."
+
+#. module: idtx_batch_printing
+#: code:addons/idtx_batch_printing/models/control_apariencia_line.py:0
+msgid "The selected batch does not exist."
+msgstr "La partida seleccionada no existe."
+
+#. module: idtx_batch_printing
+#: code:addons/idtx_batch_printing/models/control_apariencia_line.py:0
+msgid "The roll number must be greater than 0."
+msgstr "El N° de rollo debe ser mayor que 0."
+
+#. module: idtx_batch_printing
+#: code:addons/idtx_batch_printing/models/control_apariencia_line.py:0
+msgid "You must select a defect before saving the line."
+msgstr "Debe seleccionar un defecto antes de guardar la línea."

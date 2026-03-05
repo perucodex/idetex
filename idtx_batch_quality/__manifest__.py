@@ -24,6 +24,7 @@
         'views/control_pedido_line_views.xml',
         'views/control_tono_eval_log_views.xml',
         'views/control_apariencia_defecto_views.xml',
+        'views/quality_tone_screen.xml',
         'views/quality_defect_screen.xml',
 
         'wizards/control_tono_wizard.xml',
@@ -32,6 +33,9 @@
 
     'assets': {
         'web.assets_backend': [
+            'idtx_batch_quality/static/src/tone_screen/quality_tone_screen.js',
+            'idtx_batch_quality/static/src/tone_screen/quality_tone_screen.xml',
+            'idtx_batch_quality/static/src/tone_screen/quality_tone_screen.scss',
             'idtx_batch_quality/static/src/defect_screen/quality_defect_screen.js',
             'idtx_batch_quality/static/src/defect_screen/quality_defect_screen.xml',
             'idtx_batch_quality/static/src/defect_screen/quality_defect_screen.scss',

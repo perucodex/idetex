@@ -1,26 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
     <t t-name="idtx_batch_printing.QualityDefectScreen">
-        <div class="o_quality_defect_screen container-fluid py-3 px-3 px-md-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 class="mb-0">Evaluar Apariencia</h3>
-                <div class="d-flex align-items-center gap-2">
-                    <button class="btn btn-success btn-lg"
-                            t-on-click="onFinalize"
-                            t-att-disabled="isFinalizeDisabled ? true : undefined">
-                        Finalizar
-                    </button>
+        <div class="o_quality_defect_screen o_qds_root container-fluid">
+            <header class="o_qds_header">
+                <div class="o_qds_header_left">
+                    <h3 class="o_qds_title">Evaluar Apariencia</h3>
+                    <t t-if="hasSession">
+                        <span class="o_qds_subtitle">
+                            Partida: <b t-esc="state.selectedPartidaData?.batch || '-'"/> ·
+                            Rollo: <b t-esc="state.rolloNum || '-'"/>
+                        </span>
+                    </t>
+                </div>
+
+                <div class="o_qds_header_right">
+                    <t t-if="hasSession">
+                        <button class="btn btn-success o_qds_btn"
+                                t-on-click="onFinalize"
+                                t-att-disabled="isFinalizeDisabled ? true : undefined">
+                            Finalizar
+                        </button>
+                    </t>
 
                     <div class="dropdown">
-                        <button class="btn btn-outline-secondary btn-lg" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <button class="btn btn-outline-secondary o_qds_btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fa fa-bars"/>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li>
                                 <button class="dropdown-item" t-on-click="onClickRefresh">
-                                    <i class="fa fa-refresh me-2"/>Volver a cargar datos
+                                    <i class="fa fa-refresh me-2"/>Recargar
                                 </button>
                             </li>
+                            <li>
+                                <button class="dropdown-item" t-on-click="onClearDraftClick">
+                                    <i class="fa fa-eraser me-2"/>Limpiar borrador
+                                </button>
+                            </li>
+                            <t t-if="hasSession">
+                                <li><hr class="dropdown-divider"/></li>
+                                <li>
+                                    <button class="dropdown-item" t-on-click="onBackToBasics">
+                                        <i class="fa fa-arrow-left me-2"/>Volver a partida/rollo
+                                    </button>
+                                </li>
+                            </t>
+                            <li><hr class="dropdown-divider"/></li>
                             <li>
                                 <button class="dropdown-item" t-on-click="close">
                                     <i class="fa fa-sign-out me-2"/>Cerrar
@@ -29,7 +54,9 @@
                         </ul>
                     </div>
                 </div>
-            </div>
+            </header>
+
+            <main class="o_qds_main">
 
             <t t-if="state.error">
                 <div class="alert alert-danger" role="alert" t-esc="state.error"/>
@@ -41,57 +68,132 @@
 
             <t t-else="">
                 <t t-if="!hasSession">
-                    <div class="card o_full_step_card">
-                        <div class="card-body p-4 p-md-5">
-                            <label class="form-label fw-bold">Partida</label>
-                            <input type="text"
-                                   class="form-control form-control-lg mb-2"
-                                   placeholder="Buscar: partida, cliente"
-                                   t-on-input="onPartidaQueryInput"
-                                   t-att-value="state.partidaQuery"/>
+                    <div class="o_qds_basics_wrap">
+                        <div class="row g-3">
+                            <div class="col-12 col-lg-7">
+                                <div class="o_qds_card">
+                                    <div class="o_qds_card_body">
+                                        <!-- <div class="o_qds_hint">
+                                            <i class="fa fa-save me-2"/>
+                                            Se guarda un <b>borrador local</b> (sin BD). Si refrescas, se restaura.
+                                        </div> -->
 
-                            <div class="list-group mb-3 o_partida_results">
-                                <t t-if="state.isSearchingPartida">
-                                    <div class="list-group-item text-muted">Buscando...</div>
-                                </t>
-                                <t t-elif="!state.partidas.length">
-                                    <div class="list-group-item text-muted">Sin resultados</div>
-                                </t>
-                                <t t-else="">
-                                    <t t-foreach="state.partidas" t-as="partida" t-key="partida.id">
-                                        <button type="button"
-                                                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-                                                t-att-class="isPartidaSelected(partida.id) ? 'list-group-item list-group-item-action active d-flex justify-content-between align-items-center' : 'list-group-item list-group-item-action d-flex justify-content-between align-items-center'"
-                                                t-on-click="() => this.selectPartida(partida.id)">
-                                            <span class="fw-semibold" t-esc="partida.batch || '-'"/>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <span class="badge rounded-pill text-bg-light" t-esc="(partida.kilograms || 0) + ' kg'"/>
-                                                <span class="small" t-esc="partida.customer || '-'"/>
+                                        <div class="o_qds_field">
+                                            <label class="form-label fw-bold mb-1">Partida</label>
+
+                                            <div class="o_qds_autocomplete">
+                                                <input type="text"
+                                                       class="form-control form-control-lg o_qds_input"
+                                                       placeholder="Escribe la Partida..."
+                                                       t-on-input="onPartidaQueryInput"
+                                                       t-on-focus="onPartidaInputFocus"
+                                                       t-att-value="state.partidaQuery"/>
+
+                                                <button t-if="state.selectedPartidaId and !hasSession"
+                                                        type="button"
+                                                        class="btn btn-sm btn-outline-secondary o_qds_clear_btn"
+                                                        t-on-click="clearSelectedPartida"
+                                                        title="Quitar partida seleccionada">
+                                                    <i class="fa fa-times"/>
+                                                </button>
+
+                                                <t t-if="state.showPartidaDropdown and !state.selectedPartidaId">
+                                                    <div class="o_qds_dropdown">
+                                                        <div class="o_qds_dropdown_body">
+                                                            <t t-if="state.isSearchingPartida">
+                                                                <div class="o_qds_dropdown_item text-muted">Buscando...</div>
+                                                            </t>
+                                                            <t t-elif="!filteredPartidas.length">
+                                                                <div class="o_qds_dropdown_item text-muted">Sin resultados</div>
+                                                            </t>
+                                                            <t t-else="">
+                                                                <t t-foreach="filteredPartidas" t-as="partida" t-key="partida.id">
+                                                                    <button type="button"
+                                                                            class="o_qds_dropdown_item o_qds_dropdown_btn"
+                                                                            t-on-click="() => this.selectPartida(partida.id)">
+                                                                        <div class="o_qds_dropdown_main" t-esc="partida.batch || '-'"/>
+                                                                        <div class="o_qds_dropdown_sub">
+                                                                            <span t-esc="partida.customer || '-'"/> ·
+                                                                            <span t-esc="(partida.kilograms || 0) + ' kg'"/>
+                                                                        </div>
+                                                                    </button>
+                                                                </t>
+                                                            </t>
+                                                        </div>
+                                                    </div>
+                                                </t>
                                             </div>
-                                        </button>
-                                    </t>
-                                </t>
+
+                                            <t t-if="shouldShowRolloInput">
+                                                <div class="o_qds_field">
+                                                    <label class="form-label fw-bold mb-1">N° Rollo</label>
+                                                    <input type="number"
+                                                           class="form-control form-control-lg o_qds_input"
+                                                           min="1"
+                                                           inputmode="numeric"
+                                                           placeholder="Ingrese número de rollo"
+                                                           t-on-input="onChangeRollo"
+                                                           t-att-value="state.rolloNum"/>
+                                                    <t t-if="state.isCheckingRollo">
+                                                        <div class="small text-muted mt-1">Validando número de rollo...</div>
+                                                    </t>
+                                                    <t t-if="state.rolloValidationError">
+                                                        <div class="small text-danger mt-1" t-esc="state.rolloValidationError"/>
+                                                    </t>
+                                                </div>
+
+                                                <div class="o_qds_field">
+                                                    <label class="form-label fw-bold mb-1">Ancho</label>
+                                                       <input type="text"
+                                                           class="form-control form-control-lg o_qds_input"
+                                                           inputmode="decimal"
+                                                           pattern="[0-9]+([\.,][0-9]+)?"
+                                                           placeholder="Ingrese ancho"
+                                                           t-on-input="onChangeWidth"
+                                                           t-att-value="state.width"/>
+                                                </div>
+
+                                                <button class="btn btn-primary btn-lg o_qds_primary"
+                                                        t-on-click="onNext"
+                                                        t-att-disabled="canProceedBasics ? undefined : true">
+                                                    Siguiente
+                                                </button>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <label class="form-label fw-bold">N° Rollo</label>
-                            <input type="number"
-                                   class="form-control form-control-lg mb-3"
-                                   min="1"
-                                   placeholder="Ingrese número de rollo"
-                                   t-on-input="onChangeRollo"
-                                   t-att-value="state.rolloNum"/>
-                            <t t-if="state.isCheckingRollo">
-                                <div class="small text-muted mb-2">Validando número de rollo...</div>
-                            </t>
-                            <t t-if="state.rolloValidationError">
-                                <div class="small text-danger mb-2" t-esc="state.rolloValidationError"/>
-                            </t>
-
-                            <button class="btn btn-primary btn-lg w-100"
-                                    t-on-click="onStartCapture"
-                                    t-att-disabled="canStart ? undefined : true">
-                                Iniciar captura
-                            </button>
+                            <div class="col-12 col-lg-5">
+                                <t t-if="state.selectedPartidaId and state.selectedPartidaData">
+                                    <div class="o_qds_card o_qds_preview_card">
+                                        <div class="o_qds_card_head">
+                                            <div class="o_qds_card_title">Detalle de Partida</div>
+                                        </div>
+                                        <div class="o_qds_card_body">
+                                            <div class="o_qds_kv">
+                                                <span class="text-muted">Partida</span>
+                                                <b t-esc="state.selectedPartidaData.batch || '-'"/>
+                                            </div>
+                                            <div class="o_qds_kv">
+                                                <span class="text-muted">Cliente</span>
+                                                <b t-esc="state.selectedPartidaData.customer || '-'"/>
+                                            </div>
+                                            <div class="o_qds_kv">
+                                                <span class="text-muted">Artículo</span>
+                                                <b t-esc="state.selectedPartidaData.article || '-'"/>
+                                            </div>
+                                            <div class="o_qds_kv">
+                                                <span class="text-muted">Color</span>
+                                                <b>
+                                                    <t t-esc="state.selectedPartidaData.color_code || '-'"/> -
+                                                    <t t-esc="state.selectedPartidaData.color_name || '-'"/>
+                                                </b>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
                         </div>
                     </div>
                 </t>
@@ -117,40 +219,147 @@
                         </div>
                     </div>
 
-                    <div class="card o_full_step_card o_defect_card">
-                        <div class="card-body py-4 ps-4 ps-md-5 pe-0 o_defect_body">
-                            <div class="o_defect_stack o_defect_stack_scroll">
-                                <t t-foreach="state.defects" t-as="defect" t-key="defect.defecto_id">
-                                    <button class="btn btn-outline-dark btn-lg w-100 d-flex justify-content-between align-items-center"
-                                            t-att-class="defect.defecto_id === state.selectedDefectoId ? 'btn-dark btn-lg w-100 d-flex justify-content-between align-items-center' : 'btn-outline-dark btn-lg w-100 d-flex justify-content-between align-items-center'"
-                                            t-on-click="() => this.onSelectDefect(defect.defecto_id)">
-                                        <span t-esc="defect.name"/>
-                                        <span class="badge rounded-pill text-bg-light" t-esc="defect.count"/>
+                    <div class="row g-3 o_qds_grid">
+                        <div class="col-12 col-lg-7">
+                            <div class="o_qds_card o_qds_card_defects">
+                                <div class="o_qds_card_head">
+                                    <div class="o_qds_card_title">Defectos</div>
+                                    <div class="o_qds_card_hint text-muted">Toca un defecto y selecciona tamaño</div>
+                                </div>
+                                <div class="o_qds_card_body o_qds_scroll">
+                                    <div class="o_qds_btn_stack">
+                                        <t t-foreach="state.defects" t-as="defect" t-key="defect.defecto_id">
+                                            <button class="btn o_qds_defect_btn"
+                                                    t-att-class="defect.defecto_id === state.selectedDefectoId ? 'btn-dark o_qds_defect_btn' : 'btn-outline-dark o_qds_defect_btn'"
+                                                    t-on-click="() => this.onSelectDefect(defect.defecto_id)">
+                                                <span class="o_qds_defect_name" t-esc="defect.name"/>
+                                                <span class="badge rounded-pill text-bg-light o_qds_badge" t-esc="defect.count"/>
+                                            </button>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-lg-5">
+                            <div class="o_qds_card o_qds_card_summary">
+                                <div class="o_qds_card_head">
+                                    <div class="o_qds_card_title">Resumen</div>
+                                    <button class="btn btn-outline-danger o_qds_small_btn"
+                                            t-att-disabled="!selectedDefects.length || state.submitting ? true : undefined"
+                                            t-on-click="clearAllSelections">
+                                        Limpiar todo
                                     </button>
-                                </t>
+                                </div>
+                                <div class="o_qds_card_body o_qds_scroll">
+                                    <t t-if="!selectedDefects.length">
+                                        <div class="text-muted">Aún no has agregado defectos.</div>
+                                    </t>
+                                    <t t-else="">
+                                        <div class="o_qds_summary_list">
+                                            <t t-foreach="selectedDefects" t-as="sd" t-key="sd.defecto_id">
+                                                <div class="o_qds_summary_item">
+                                                    <div class="o_qds_summary_top">
+                                                        <div class="o_qds_summary_name">
+                                                            <div class="fw-semibold" t-esc="sd.name"/>
+                                                            <div class="o_qds_summary_breakdown">
+                                                                <t t-set="breakdown" t-value="this.getSizeBreakdown(sd)"/>
+                                                                <t t-if="breakdown.length">
+                                                                    <t t-foreach="breakdown" t-as="b" t-key="b.value">
+                                                                        <span class="badge text-bg-secondary me-1 mb-1">
+                                                                            <t t-esc="b.qty"/>× <t t-esc="b.label"/>
+                                                                        </span>
+                                                                    </t>
+                                                                </t>
+                                                            </div>
+                                                        </div>
+                                                        <div class="o_qds_summary_total">
+                                                            <span class="badge rounded-pill text-bg-dark" t-esc="sd.count"/>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="o_qds_summary_actions">
+                                                        <button class="btn btn-outline-secondary o_qds_small_btn"
+                                                                t-on-click="() => this.removeLastOccurrence(sd.defecto_id)"
+                                                                t-att-disabled="state.submitting ? true : undefined">
+                                                            <i class="fa fa-undo me-1"/>Quitar 1
+                                                        </button>
+                                                        <button class="btn btn-outline-danger o_qds_small_btn"
+                                                                t-on-click="() => this.clearDefect(sd.defecto_id)"
+                                                                t-att-disabled="state.submitting ? true : undefined">
+                                                            <i class="fa fa-trash me-1"/>Eliminar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </t>
+                                        </div>
+                                    </t>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </t>
             </t>
 
-            <t t-if="state.imagePreviewOpen and state.selectedPartidaData?.design_image_url">
-                <div class="o_image_preview_backdrop" t-on-click="closeImagePreview"/>
-                <div class="o_image_preview_modal" t-on-click="closeImagePreview">
-                    <button type="button" class="btn btn-light o_image_preview_close" t-on-click="closeImagePreview">
-                        <i class="fa fa-times"/>
-                    </button>
-                    <img t-att-src="state.selectedPartidaData.design_image_url"
-                         alt="Diseño estampado"
-                         class="o_image_preview_full"
-                        t-on-mousemove="onPreviewImageMouseMove"
-                        t-on-mouseleave="onPreviewImageMouseLeave"
-                         t-on-click.stop="() => {}"/>
-                    <div t-if="state.previewLensVisible"
-                        class="o_image_preview_lens"
-                        t-att-style="previewLensStyle"/>
+            <t t-if="state.sizePopupOpen">
+                <div class="o_qds_backdrop" t-on-click="closeSizePopup"/>
+                <div class="o_qds_modal card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">Seleccionar tamaño</h5>
+                            <button class="btn btn-sm btn-outline-secondary" t-on-click="closeSizePopup">Cerrar</button>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-muted">Defecto:</span>
+                            <span class="fw-bold" t-esc="popupDefect?.name || '-'"/>
+                        </div>
+                        <div class="o_qds_size_grid">
+                            <t t-foreach="sizeOptions" t-as="opt" t-key="opt.value">
+                                <button class="btn btn-primary btn-lg o_qds_size_btn"
+                                        t-att-disabled="state.submitting ? true : undefined"
+                                        t-on-click="() => this.onSelectSize(opt.value)">
+                                    <span t-esc="opt.label"/>
+                                </button>
+                            </t>
+                        </div>
+                    </div>
                 </div>
             </t>
+
+            <t t-if="state.meterPopupOpen">
+                <div class="o_qds_backdrop" t-on-click="closeMeterPopup"/>
+                <div class="o_qds_modal card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">Registrar metraje</h5>
+                            <button class="btn btn-sm btn-outline-secondary" t-on-click="closeMeterPopup">Cerrar</button>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-muted">Partida:</span>
+                            <span class="fw-bold" t-esc="state.selectedPartidaData?.batch || '-'"/>
+                        </div>
+                        <div class="o_qds_field">
+                            <label class="form-label fw-bold mb-1">Metraje</label>
+                            <input type="text"
+                                   class="form-control form-control-lg o_qds_input"
+                                   inputmode="decimal"
+                                   pattern="[0-9]+([\.,][0-9]+)?"
+                                   placeholder="Ingrese metraje"
+                                   t-on-input="onChangeMeters"
+                                   t-att-value="state.meters"/>
+                        </div>
+                        <div class="d-grid">
+                            <button class="btn btn-primary btn-lg"
+                                    t-att-disabled="state.submitting ? true : undefined"
+                                    t-on-click="confirmFinalize">
+                                Finalizar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </t>
+
+            </main>
         </div>
     </t>
 </templates>

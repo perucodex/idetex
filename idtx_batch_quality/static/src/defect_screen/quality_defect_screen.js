@@ -30,6 +30,12 @@ function normalizeText(v) {
     return (v || "").toString().toLowerCase().trim();
 }
 
+function parsePositiveFloat(value) {
+    const normalized = (value || "").toString().replace(",", ".").trim();
+    const parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+}
+
 export class QualityDefectScreen extends Component {
     static props = {
         action: { type: Object, optional: true },
@@ -62,6 +68,8 @@ export class QualityDefectScreen extends Component {
             selectedPartidaId: "",
             selectedPartidaData: null,
             rolloNum: "",
+            width: "",
+            meters: "",
             rolloValidationError: "",
             isCheckingRollo: false,
 
@@ -71,6 +79,7 @@ export class QualityDefectScreen extends Component {
             selectedDefectoId: false,
             sizePopupOpen: false,
             popupDefectId: false,
+            meterPopupOpen: false,
         });
 
         onWillStart(async () => {
@@ -119,6 +128,7 @@ export class QualityDefectScreen extends Component {
         return (
             Boolean(this.state.selectedPartidaId) &&
             Number(this.state.rolloNum) > 0 &&
+            parsePositiveFloat(this.state.width) > 0 &&
             !this.state.submitting &&
             !this.state.isCheckingRollo &&
             !this.state.rolloValidationError
@@ -147,11 +157,18 @@ export class QualityDefectScreen extends Component {
         return Boolean(this.state.selectedPartidaId) && !this.hasSession;
     }
 
-    // FILTRO: SOLO por Partida (batch)
     get filteredPartidas() {
         const q = normalizeText(this.state.partidaQuery);
         if (!q) return (this.state.partidas || []).slice(0, 20);
-        const res = (this.state.partidas || []).filter((p) => normalizeText(p.batch).includes(q));
+        const res = (this.state.partidas || []).filter((p) => {
+            return (
+                normalizeText(p.batch).includes(q) ||
+                normalizeText(p.customer).includes(q) ||
+                normalizeText(p.article).includes(q) ||
+                normalizeText(p.color_name).includes(q) ||
+                normalizeText(p.color_code).includes(q)
+            );
+        });
         return res.slice(0, 20);
     }
 
@@ -162,6 +179,8 @@ export class QualityDefectScreen extends Component {
             showPartidaDropdown: Boolean(this.state.showPartidaDropdown),
             selectedPartidaId: this.state.selectedPartidaId ? String(this.state.selectedPartidaId) : "",
             rolloNum: this.state.rolloNum ? String(this.state.rolloNum) : "",
+            width: this.state.width ? String(this.state.width) : "",
+            meters: this.state.meters ? String(this.state.meters) : "",
             sessionActive: Boolean(this.state.sessionActive),
             defectsSizes: {},
         };
@@ -191,8 +210,13 @@ export class QualityDefectScreen extends Component {
         this.state.partidaQuery = typeof draft.partidaQuery === "string" ? draft.partidaQuery : "";
         this.state.selectedPartidaId = draft.selectedPartidaId ? String(draft.selectedPartidaId) : "";
         this.state.rolloNum = draft.rolloNum ? String(draft.rolloNum) : "";
+        this.state.width = draft.width ? String(draft.width) : "";
+        this.state.meters = draft.meters ? String(draft.meters) : "";
 
-        const hasBasics = Boolean(this.state.selectedPartidaId) && Number(this.state.rolloNum) > 0;
+        const hasBasics =
+            Boolean(this.state.selectedPartidaId) &&
+            Number(this.state.rolloNum) > 0 &&
+            parsePositiveFloat(this.state.width) > 0;
         this.state.sessionActive = Boolean(draft.sessionActive) && hasBasics;
 
         this.state.showPartidaDropdown =
@@ -227,7 +251,12 @@ export class QualityDefectScreen extends Component {
 
     async _restoreSessionDefectsFromServer() {
         try {
-            const defects = await this.orm.call("control.apariencia.line", "action_tablet_get_defectos", []);
+            const defects = await this.orm.call(
+                "control.apariencia.line",
+                "action_tablet_get_defectos",
+                [],
+                { context: { appearance_type: "quality" } }
+            );
             const sizesMap = this._draftDefectsSizes || {};
             this.state.defects = (defects || []).map((defect) => {
                 const savedSizes = sizesMap[String(defect.defecto_id)] || [];
@@ -272,6 +301,8 @@ export class QualityDefectScreen extends Component {
                 this.state.selectedPartidaId = "";
                 this.state.selectedPartidaData = null;
                 this.state.rolloNum = "";
+                this.state.width = "";
+                this.state.meters = "";
             }
         }
 
@@ -328,6 +359,8 @@ export class QualityDefectScreen extends Component {
         this.state.selectedPartidaId = "";
         this.state.selectedPartidaData = null;
         this.state.rolloNum = "";
+        this.state.width = "";
+        this.state.meters = "";
         this.state.rolloValidationError = "";
         this.state.isCheckingRollo = false;
         this.state.partidaQuery = "";
@@ -339,6 +372,16 @@ export class QualityDefectScreen extends Component {
     onChangeRollo(event) {
         this.state.rolloNum = event.target.value;
         this._debouncedValidateRollo();
+        this._saveDraft();
+    }
+
+    onChangeWidth(event) {
+        this.state.width = event.target.value;
+        this._saveDraft();
+    }
+
+    onChangeMeters(event) {
+        this.state.meters = event.target.value;
         this._saveDraft();
     }
 
@@ -367,7 +410,8 @@ export class QualityDefectScreen extends Component {
             const result = await this.orm.call(
                 "control.apariencia.line",
                 "action_tablet_check_rollo_available",
-                [pedidoLineId, rolloNum]
+                [pedidoLineId, rolloNum],
+                { context: { appearance_type: "quality" } }
             );
             if (seq !== this._rolloValidateSeq) {
                 return false;
@@ -398,7 +442,12 @@ export class QualityDefectScreen extends Component {
         this.state.submitting = true;
         this.state.error = "";
         try {
-            const defects = await this.orm.call("control.apariencia.line", "action_tablet_get_defectos", []);
+            const defects = await this.orm.call(
+                "control.apariencia.line",
+                "action_tablet_get_defectos",
+                [],
+                { context: { appearance_type: "quality" } }
+            );
             this.state.defects = (defects || []).map((defect) => ({ ...defect, sizes: [], count: 0 }));
 
             this._syncSelectedPartidaData();
@@ -488,6 +537,24 @@ export class QualityDefectScreen extends Component {
     async onFinalize() {
         if (this.isFinalizeDisabled) return;
 
+        this.state.meterPopupOpen = true;
+        this._saveDraft();
+    }
+
+    closeMeterPopup() {
+        this.state.meterPopupOpen = false;
+        this._saveDraft();
+    }
+
+    async confirmFinalize() {
+        if (this.isFinalizeDisabled) return;
+
+        const metersValue = parsePositiveFloat(this.state.meters);
+        if (metersValue <= 0) {
+            this.notification.add("El metraje debe ser mayor a 0.", { type: "warning" });
+            return;
+        }
+
         this.state.submitting = true;
         this.state.error = "";
         try {
@@ -499,10 +566,13 @@ export class QualityDefectScreen extends Component {
                 Number(this.state.selectedPartidaId),
                 Number(this.state.rolloNum),
                 selections,
+                parsePositiveFloat(this.state.width),
+                metersValue,
             ]);
 
             this.notification.add("Registro guardado.", { type: "success" });
-            this.resetScreen();
+            this.state.meterPopupOpen = false;
+            this.prepareNextRoll();
             await this.loadPartidas();
         } catch (error) {
             this.state.error = error.message || "No se pudo finalizar el registro.";
@@ -511,11 +581,17 @@ export class QualityDefectScreen extends Component {
         }
     }
 
-    resetScreen() {
-        this.state.partidaQuery = "";
-        this.state.selectedPartidaId = "";
-        this.state.selectedPartidaData = null;
+    prepareNextRoll() {
+        const selectedPartidaId = this.state.selectedPartidaId;
+        const selectedPartidaData = this.state.selectedPartidaData;
+        const partidaQuery = selectedPartidaData?.batch ? String(selectedPartidaData.batch) : this.state.partidaQuery;
+
+        this.state.partidaQuery = partidaQuery || "";
+        this.state.selectedPartidaId = selectedPartidaId || "";
+        this.state.selectedPartidaData = selectedPartidaData || null;
         this.state.rolloNum = "";
+        this.state.width = "";
+        this.state.meters = "";
         this.state.rolloValidationError = "";
         this.state.isCheckingRollo = false;
         this.state.showPartidaDropdown = false;
@@ -525,6 +601,28 @@ export class QualityDefectScreen extends Component {
         this.state.selectedDefectoId = false;
         this.state.sizePopupOpen = false;
         this.state.popupDefectId = false;
+        this.state.meterPopupOpen = false;
+
+        this._saveDraft();
+    }
+
+    resetScreen() {
+        this.state.partidaQuery = "";
+        this.state.selectedPartidaId = "";
+        this.state.selectedPartidaData = null;
+        this.state.rolloNum = "";
+        this.state.width = "";
+        this.state.meters = "";
+        this.state.rolloValidationError = "";
+        this.state.isCheckingRollo = false;
+        this.state.showPartidaDropdown = false;
+
+        this.state.sessionActive = false;
+        this.state.defects = [];
+        this.state.selectedDefectoId = false;
+        this.state.sizePopupOpen = false;
+        this.state.popupDefectId = false;
+        this.state.meterPopupOpen = false;
 
         this._clearDraft();
     }
@@ -532,6 +630,10 @@ export class QualityDefectScreen extends Component {
     // ---------- UI ----------
     async close() {
         this._saveDraft();
+        if (window.history.length > 1) {
+            window.history.back();
+            return;
+        }
         await this.homeMenu.toggle();
     }
 

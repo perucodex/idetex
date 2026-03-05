@@ -15,7 +15,8 @@ class ControlAparienciaLine(models.Model):
         index=True,
     )
     rollo_num = fields.Integer(string="N° Rollo", required=True, index=True)
-
+    width = fields.Float('Width (meters)', digits=(10, 2), required=True)
+    meters = fields.Float('Meters', digits=(10, 2), required=True)
     defecto_line_ids = fields.One2many(
         "control.apariencia.defecto.line",
         "apariencia_id",
@@ -37,6 +38,14 @@ class ControlAparienciaLine(models.Model):
                 same_rollo = self.search(self._get_rollo_unique_domain(rec))
                 if same_rollo:
                     raise ValidationError("Ya existe un registro con el mismo número de rollo en esta partida.")
+
+    @api.constrains("width", "meters")
+    def _check_positive_width_and_meters(self):
+        for rec in self:
+            if rec.width <= 0:
+                raise ValidationError(f"El ancho del rollo {rec.rollo_num} debe ser mayor a 0.")
+            if rec.meters <= 0:
+                raise ValidationError("El metraje debe ser mayor a 0.")
 
     def _get_rollo_unique_domain(self, rec):
         return [
@@ -127,7 +136,7 @@ class ControlAparienciaLine(models.Model):
         ]
 
     @api.model
-    def action_tablet_finalize(self, pedido_line_id, rollo_num, selections):
+    def action_tablet_finalize(self, pedido_line_id, rollo_num, selections, width=None, meters=None):
         pedido_line = self.env["control.pedido.line"].browse(int(pedido_line_id))
         if not pedido_line.exists():
             raise UserError("La partida seleccionada no existe.")
@@ -136,7 +145,15 @@ class ControlAparienciaLine(models.Model):
         if rollo_num <= 0:
             raise UserError("El N° Rollo debe ser mayor a 0.")
 
-        apariencia = self.create(self._get_tablet_apariencia_create_vals(pedido_line, rollo_num))
+        width = float(width or 0.0)
+        if width <= 0:
+            raise UserError("El ancho del rollo debe ser mayor a 0.")
+
+        meters = float(meters or 0.0)
+        if meters <= 0:
+            raise UserError("El metraje debe ser mayor a 0.")
+
+        apariencia = self.create(self._get_tablet_apariencia_create_vals(pedido_line, rollo_num, width, meters))
 
         defect_cmds = []
         for item in selections or []:
@@ -172,10 +189,12 @@ class ControlAparienciaLine(models.Model):
 
         return {"ok": True, "apariencia_id": apariencia.id}
 
-    def _get_tablet_apariencia_create_vals(self, pedido_line, rollo_num):
+    def _get_tablet_apariencia_create_vals(self, pedido_line, rollo_num, width, meters):
         return {
             "pedido_line_id": pedido_line.id,
             "rollo_num": rollo_num,
+            "width": width,
+            "meters": meters,
         }
 
 

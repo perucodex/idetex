@@ -39,7 +39,7 @@ Gestiona la carga de precios y productos en tus cotizaciones
         'report/report_technical_sheet_customer.xml',
         'views/account_incoterms_views.xml',
         'views/account_payment_term_views.xml',
-        'views/lab_dev_views.xml',
+        # 'views/lab_dev_views.xml',
         'views/mrp_production_views.xml',
         'views/mrp_routing_views.xml',
         # 'views/mrp_workorder_batch_views.xml',

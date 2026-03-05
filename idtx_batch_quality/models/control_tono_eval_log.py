@@ -30,7 +30,9 @@ class ControlTonoEvalLog(models.Model):
         string="Tono",
         required=True,
     )
-    motivo = fields.Char(string="Motivo")
+    motivo_tono = fields.Boolean(string="Tono")
+    motivo_tacto = fields.Boolean(string="Tacto")
+    motivo_apariencia = fields.Boolean(string="Apariencia")
     resultado = fields.Selection(
         [("aprobado", "APROBADO"), ("concesionado", "CONCESIONADO"), ("rechazado", "RECHAZADO")],
         string="Resultado",

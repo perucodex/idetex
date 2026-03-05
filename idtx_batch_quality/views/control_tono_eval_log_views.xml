@@ -17,7 +17,9 @@
                             <field name="resultado" readonly="1"/>
                         </group>
                         <group invisible="tono != 'acabado'">
-                            <field name="motivo" readonly="1"/>
+                            <field name="motivo_tono" string="Tono" readonly="1"/>
+                            <field name="motivo_tacto" string="Tacto" readonly="1"/>
+                            <field name="motivo_apariencia" string="Apariencia" readonly="1"/>
                             <field name="receta" string="Receta Acabado" readonly="1"/>
                             <field name="receta_tono" string="Receta Tacho" readonly="1"/>
                             <field name="resultado" readonly="1"/>

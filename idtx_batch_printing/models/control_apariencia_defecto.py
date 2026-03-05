@@ -8,3 +8,8 @@ class ControlAparienciaDefecto(models.Model):
         ('quality', 'Quality'),
         ('printing', 'Printing'),
     ], string='Deffect Type', default='quality', required=True)
+    type_printing = fields.Selection([
+        ('digital', 'Digital'),
+        ('rotary', 'Rotary'),
+        ('both', 'Both'),
+    ], string='Printing Type', default='digital')

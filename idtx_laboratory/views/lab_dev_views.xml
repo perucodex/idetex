@@ -39,7 +39,7 @@
                             <page name="color_page" string="Colors" invisible="state == 'draft'">
                                 <field name="lab_dev_line_ids" context="{'form_view_ref': 'idtx_laboratory.lab_dev_line_view_form'}">
                                     <list editable="top" open_form_view="True" delete="0" create="0">
-                                        <field name="product_id" readonly="1"/>  
+                                        <!-- <field name="product_id" readonly="1"/>   -->
                                         <field name="color_name" readonly="1"/>
                                         <field name="color_code" readonly="1"/>
                                         <field name="color" widget="color" readonly="1"/>
@@ -52,7 +52,7 @@
                             <page name="color_page_edit" string="Colors" invisible="state != 'draft'">
                                 <field name="lab_dev_line_ids" context="{'form_view_ref': 'idtx_laboratory.lab_dev_line_view_form'}">
                                     <list editable="bottom">
-                                        <field name="product_id"/>  
+                                        <!-- <field name="product_id"/>   -->
                                         <field name="color_name"/>
                                         <field name="color_code" readonly="1"/>
                                         <field name="color" widget="color" readonly="1"/>
@@ -121,16 +121,16 @@
                     <sheet>
                         <group>
                             <group>
-                                <field name="available_product_ids" invisible="1"/> 
+                                <!-- <field name="available_product_ids" invisible="1"/>  -->
                                 <field name="sale_order_id" invisible="1"/> 
-                                <field name="product_id" required="1" readonly="sale_order_id or color_recipe_ids" domain="[('id', 'in', available_product_ids)]" force_save="1"/>  
+                                <!-- <field name="product_id" required="1" readonly="sale_order_id or color_recipe_ids" domain="[('id', 'in', available_product_ids)]" force_save="1"/>   -->
                                 <field name="color_name" required="1" readonly="sale_order_id or color_recipe_ids" force_save="1"/>
                                 <field name="color_code" readonly="1" force_save="1"/>
                             </group>   
                             <group>
                                 <field name="color" widget="color" readonly="color_recipe_ids" force_save="1"/>
                                 <field name="color" string="Hex" readonly="color_recipe_ids" force_save="1"/>
-                                <field name="bath_ratio" readonly="color_recipe_ids" force_save="1"/>
+                                <!-- <field name="bath_ratio" readonly="color_recipe_ids" force_save="1"/> -->
                             </group>   
                             <group colspan="2" string="Color Code Composition">
                                 <group>
@@ -149,7 +149,7 @@
                                     <list editable="top" open_form_view="True">
                                         <field name="name" readonly="1"/>
                                         <field name="recipe_date" readonly="1"/>
-                                        <field name="product_id"/>
+                                        <!-- <field name="product_id"/> -->
                                         <field name="color_name"/>
                                         <field name="recipe_color_code" readonly="1"/>
                                         <field name="company_id" groups="base.group_multi_company" readonly="1"/>

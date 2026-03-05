@@ -5,9 +5,22 @@
         <field name="target">fullscreen</field>
     </record>
 
+    <record id="action_quality_partida" model="ir.actions.act_window">
+        <field name="name">Partidas</field>
+        <field name="res_model">control.pedido.line</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_quality_partida"
+              name="Partidas"
+              parent="quality_control.menu_quality_control"
+              action="action_quality_partida"
+              sequence="900"/>
+
     <menuitem id="menu_quality_defect_screen"
               name="Evaluar Apariencia"
               parent="quality_control.menu_quality_control"
               action="action_quality_defect_screen"
-              sequence="900"/>
+              sequence="910"/>
+
 </odoo>

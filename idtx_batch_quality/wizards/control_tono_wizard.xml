@@ -7,6 +7,7 @@
                 <sheet>
                     <field name="pedido_line_id" invisible="1"/>
                     <field name="is_concesionado" invisible="1"/>
+                    <field name="has_motivos_selected" invisible="1"/>
                     <field name="can_show_decision_buttons" invisible="1"/>
                     <field name="show_motivos" invisible="1"/>
 
@@ -57,13 +58,13 @@
                             name="action_aprobar"
                             type="object"
                             class="btn-primary"
-                            invisible="not can_show_decision_buttons or is_concesionado"/>
+                            invisible="not can_show_decision_buttons or (context.get('tono_acabado', False) and has_motivos_selected)"/>
 
                     <button string="Concesionado"
-                            name="action_aprobar"
+                            name="action_concesionar"
                             type="object"
                             class="btn-primary"
-                            invisible="not can_show_decision_buttons or not is_concesionado"/>
+                            invisible="not can_show_decision_buttons or (context.get('tono_acabado', False) and not has_motivos_selected)"/>
 
                     <button string="Rechazar"
                             name="action_rechazar"

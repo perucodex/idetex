@@ -1,6 +1,7 @@
 from odoo import models, fields, api
+from odoo.fields import Domain
 from odoo.exceptions import UserError
-
+import statistics
 
 class ControlPedidoLine(models.Model):
     _inherit = "control.pedido.line"
@@ -23,6 +24,26 @@ class ControlPedidoLine(models.Model):
     )
     has_apariencia_lines = fields.Boolean(compute="_compute_has_apariencia_lines", store=False)
     can_apariencia = fields.Boolean(compute="_compute_can_apariencia", store=False)
+    quality_point = fields.Float(string="Quality Point", digits=(16, 2), compute='_compute_quality_point', store=True)
+
+    # Funcion dummy para filtrar por tipo de defecto en el cálculo de puntos, se sobreescribe en estampado
+    def _filter_lines(self, for_printing=False):
+        return self.apariencia_line_ids
+
+    @api.depends('apariencia_line_ids')
+    def _compute_quality_point(self):
+        for rec in self:
+            filtered_lines = rec._filter_lines()
+            points = 0
+            width = statistics.mean([roll.width for roll in filtered_lines]) if filtered_lines else 0
+            meters = sum([roll.meters for roll in filtered_lines]) if filtered_lines else 0
+            for roll in filtered_lines:
+                for tamano in roll.defecto_line_ids.tamano_defecto_ids:
+                    if tamano.defecto_line_id.is_hueco:
+                        points += int(tamano.tamano_hueco)
+                    else:
+                        points += int(tamano.tamano)
+            rec.quality_point = ((points * 100) / (width * meters)) if width and meters else 0
 
     @api.depends("tono_eval_log_ids")
     def _compute_has_tono_eval_logs(self):
@@ -125,4 +146,184 @@ class ControlPedidoLine(models.Model):
             "type": "ir.actions.client",
             "name": "Evaluar Apariencia",
             "tag": "idtx_quality.defect_screen",
+        }
+
+    # ---------- Tablet Tono Screen ----------
+    def _has_tenido_cerrado(self):
+        self.ensure_one()
+        procesos_tenido = self.proceso_ids.filtered(
+            lambda p: "TEÑIDO" in ((p.fasCod or "").strip().upper())
+        )
+        return any(p.barFasDTI and p.barFasDTF for p in procesos_tenido)
+
+    def _get_tono_tablet_state(self):
+        self.ensure_one()
+
+        if self.can_eval_tono:
+            return {
+                "can_evaluate": True,
+                "mode": "tacho",
+                "reason": "",
+            }
+
+        if self.can_eval_tono_acabado:
+            return {
+                "can_evaluate": True,
+                "mode": "acabado",
+                "reason": "",
+            }
+
+        if not self._has_tenido_cerrado():
+            reason = (
+                "La evaluación de tono está disponible cuando exista un proceso que contenga 'TEÑIDO' "
+                "con inicio y fin."
+            )
+        elif self.end_tono:
+            reason = "La evaluación de tono ya fue cerrada para esta partida."
+        else:
+            reason = "La partida no está disponible para evaluar tono en este momento."
+
+        return {
+            "can_evaluate": False,
+            "mode": False,
+            "reason": reason,
+        }
+
+    def _build_tono_partida_payload(self):
+        self.ensure_one()
+        state = self._get_tono_tablet_state()
+        mode = state.get("mode")
+        mode_label = "Tacho" if mode == "tacho" else "Acabado" if mode == "acabado" else "No disponible"
+        return {
+            "id": self.id,
+            "label": f"{self.batch or '-'} | {self.pedido_id.customer or '-'}",
+            "batch": self.batch or "",
+            "customer": self.pedido_id.customer or "",
+            "article": self.description or "",
+            "color_name": self.colorname or "",
+            "color_code": self.colorcode or "",
+            "kilograms": self.kilograms or 0.0,
+            "pedido": self.pedido_id.numordped or "",
+            "hdr": self.route or "",
+            "mode": mode,
+            "mode_label": mode_label,
+            "can_evaluate": bool(state.get("can_evaluate")),
+            "reason": state.get("reason") or "",
+        }
+
+    @api.model
+    def action_tablet_get_partidas_tono(self, query="", limit=20):
+        query = (query or "").strip()
+        domain = Domain([])
+        if query:
+            terms = [term.strip() for term in query.split(",") if term.strip()]
+            if not terms:
+                terms = [query]
+
+            domains_per_term = []
+            for term in terms:
+                domains_per_term.append(
+                    Domain.OR([
+                        Domain("batch", "ilike", term),
+                        Domain("pedido_id.customer", "ilike", term),
+                        Domain("description", "ilike", term),
+                        Domain("colorname", "ilike", term),
+                        Domain("colorcode", "ilike", term),
+                    ])
+                )
+            domain = Domain.AND(domains_per_term)
+
+        safe_limit = min(max(int(limit or 20), 1), 100)
+        lines = self.search(domain, order="batch desc, id desc", limit=safe_limit)
+        return [line._build_tono_partida_payload() for line in lines]
+
+    @api.model
+    def action_tablet_get_tono_context(self, pedido_line_id):
+        line = self.browse(int(pedido_line_id or 0))
+        if not line.exists():
+            raise UserError("La partida seleccionada no existe.")
+
+        payload = line._build_tono_partida_payload()
+        state = line._get_tono_tablet_state()
+        mode = state.get("mode")
+
+        ultimo_tacho = self.env["control.tono.eval.log"].search(
+            [("pedido_line_id", "=", line.id), ("tono", "=", "tacho")],
+            order="fecha_eval desc, id desc",
+            limit=1,
+        )
+
+        payload.update({
+            "receta": "",
+            "receta_tono": (ultimo_tacho.receta_tono or "") if mode == "acabado" and ultimo_tacho else "",
+            "show_motivos": bool(mode == "acabado"),
+            "can_show_decision_buttons": bool(state.get("can_evaluate")),
+        })
+        return payload
+
+    @api.model
+    def action_tablet_submit_tono(
+        self,
+        pedido_line_id,
+        decision,
+        receta,
+        receta_tono,
+        motivo_tono=False,
+        motivo_tacto=False,
+        motivo_apariencia=False,
+    ):
+        line = self.browse(int(pedido_line_id or 0))
+        if not line.exists():
+            raise UserError("La partida seleccionada no existe.")
+
+        decision = (decision or "").strip().lower()
+        if decision not in ("aprobado", "concesionado", "rechazado"):
+            raise UserError("Decisión inválida.")
+
+        state = line._get_tono_tablet_state()
+        if not state.get("can_evaluate"):
+            raise UserError(state.get("reason") or "La partida no está disponible para evaluar tono.")
+
+        mode = state.get("mode")
+
+        receta = (receta or "").strip()
+        receta_tono = (receta_tono or "").strip()
+        if not receta or not receta_tono:
+            raise UserError("Debes completar las recetas.")
+
+        motivo_tono = bool(motivo_tono)
+        motivo_tacto = bool(motivo_tacto)
+        motivo_apariencia = bool(motivo_apariencia)
+        has_motivos_selected = bool(motivo_tono or motivo_tacto or motivo_apariencia)
+
+        if mode == "acabado":
+            ultimo_tacho = self.env["control.tono.eval.log"].search(
+                [("pedido_line_id", "=", line.id), ("tono", "=", "tacho")],
+                order="fecha_eval desc, id desc",
+                limit=1,
+            )
+            receta_tono = (ultimo_tacho.receta_tono or receta_tono).strip()
+
+        if decision == "aprobado" and mode == "acabado" and has_motivos_selected:
+            raise UserError("Si seleccionas motivos, debes usar Concesionado.")
+
+        if decision == "concesionado" and mode == "acabado" and not has_motivos_selected:
+            raise UserError("Debes seleccionar al menos un motivo para concesionar.")
+
+        self.env["control.tono.eval.log"].sudo().create({
+            "pedido_line_id": line.id,
+            "tono": mode,
+            "motivo_tono": motivo_tono,
+            "motivo_tacto": motivo_tacto,
+            "motivo_apariencia": motivo_apariencia,
+            "resultado": decision,
+            "receta_tono": receta_tono,
+            "receta": receta,
+            "user_id": self.env.user.id,
+        })
+
+        return {
+            "ok": True,
+            "mode": mode,
+            "resultado": decision,
         }

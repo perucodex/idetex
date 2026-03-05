@@ -10,7 +10,7 @@
                     <!-- botón flotante -->
                     <div class="row align-items-center mb-3">
                         <div class="col">
-                            <h1>Sale Order: <t t-esc="sale_order.name"/></h1>
+                            <h1>Quotation: <t t-esc="sale_order.name"/></h1>
                             <h3>Customer: <t t-esc="sale_order.partner_id.name"/></h3>
                         </div>      
                         <div class="col-auto">

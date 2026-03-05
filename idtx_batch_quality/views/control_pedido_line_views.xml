@@ -18,12 +18,11 @@
                         string="Evaluar Tono Acabado"
                         class="btn-primary"
                         invisible="not can_eval_tono_acabado"/>
-                <!-- <button name="action_apariencia"
-                        type="object"
-                        string="Apariencia"
-                        class="btn-primary"
-                        invisible="not can_apariencia"/> -->
             </xpath>
+
+            <field name="colorname" position="after">
+                <field name="quality_point"/>
+            </field>
 
             <xpath expr="//notebook/page[field[@name='proceso_ids']]" position="after">
 
@@ -33,7 +32,9 @@
                         <list delete="1" edit="0" create="0">
                             <field name="fecha_eval"/>
                             <field name="user_id"/>
-                            <field name="motivo"/>
+                            <field name="motivo_tono"/>
+                            <field name="motivo_tacto"/>
+                            <field name="motivo_apariencia"/>
                             <field name="tono"/>
                             <field name="resultado" widget="badge"
                                    decoration-success="resultado == 'aprobado'"
@@ -44,19 +45,13 @@
                 </page>
 
                 <page string="Auditoria" id="audit_page" invisible="not (can_apariencia or has_apariencia_lines)">
-                    <!-- <group>
-                        <button name="action_apariencia"
-                                type="object"
-                                string="Apariencia"
-                                class="btn-primary"
-                                invisible="not can_apariencia"/>
-                    </group> -->
-
                     <field name="apariencia_line_ids" nolabel="1">
                         <list>
                             <field name="create_date" string="Fecha"/>
                             <field name="create_uid" string="Usuario"/>
                             <field name="rollo_num" string="N° Rollo"/>
+                            <field name="width" string="Ancho"/>
+                            <field name="meters" string="Metros"/>
                             <field name="defect_count" string="Cantidad Defectos"/>
                         </list>
                     </field>
@@ -79,7 +74,9 @@
                         </group>
                         <group>
                             <field name="pedido_line_id" readonly="1"/>
-                            <field name="rollo_num" readonly="1"/>
+                            <field name="rollo_num"/>
+                            <field name="width"/>
+                            <field name="meters"/>
                             <field name="defect_count" readonly="1"/>
                         </group>
                     </group>
