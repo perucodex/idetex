@@ -75,6 +75,7 @@ export class QualityDefectScreen extends Component {
             // Selected basics
             selectedPartidaId: "",
             selectedPartidaData: null,
+            selectedEvaluacionId: "",
             rolloNum: "",
             width: "",
             meters: "",
@@ -199,6 +200,7 @@ export class QualityDefectScreen extends Component {
             showAparienciaDropdown: Boolean(this.state.showAparienciaDropdown),
             showPartidaDropdown: Boolean(this.state.showPartidaDropdown),
             selectedPartidaId: this.state.selectedPartidaId ? String(this.state.selectedPartidaId) : "",
+            selectedEvaluacionId: this.state.selectedEvaluacionId ? String(this.state.selectedEvaluacionId) : "",
             rolloNum: this.state.rolloNum ? String(this.state.rolloNum) : "",
             width: this.state.width ? String(this.state.width) : "",
             meters: this.state.meters ? String(this.state.meters) : "",
@@ -232,6 +234,7 @@ export class QualityDefectScreen extends Component {
         this.state.selectedAparienciaId = draft.selectedAparienciaId ? String(draft.selectedAparienciaId) : "";
         this.state.partidaQuery = typeof draft.partidaQuery === "string" ? draft.partidaQuery : "";
         this.state.selectedPartidaId = draft.selectedPartidaId ? String(draft.selectedPartidaId) : "";
+        this.state.selectedEvaluacionId = draft.selectedEvaluacionId ? String(draft.selectedEvaluacionId) : "";
         this.state.rolloNum = draft.rolloNum ? String(draft.rolloNum) : "";
         this.state.width = draft.width ? String(draft.width) : "";
         this.state.meters = draft.meters ? String(draft.meters) : "";
@@ -425,6 +428,7 @@ export class QualityDefectScreen extends Component {
             if (value !== currentBatch) {
                 this.state.selectedPartidaId = "";
                 this.state.selectedPartidaData = null;
+                this.state.selectedEvaluacionId = "";
                 this.state.rolloNum = "";
                 this.state.width = "";
                 this.state.meters = "";
@@ -483,6 +487,7 @@ export class QualityDefectScreen extends Component {
     clearSelectedPartida() {
         this.state.selectedPartidaId = "";
         this.state.selectedPartidaData = null;
+        this.state.selectedEvaluacionId = "";
         this.state.rolloNum = "";
         this.state.width = "";
         this.state.meters = "";
@@ -535,7 +540,7 @@ export class QualityDefectScreen extends Component {
             const result = await this.orm.call(
                 "control.apariencia.line",
                 "action_tablet_check_rollo_available",
-                [pedidoLineId, rolloNum],
+                [pedidoLineId, rolloNum, Number(this.state.selectedEvaluacionId || 0)],
                 { context: { appearance_type: "quality" } }
             );
             if (seq !== this._rolloValidateSeq) {
@@ -571,6 +576,18 @@ export class QualityDefectScreen extends Component {
         this.state.submitting = true;
         this.state.error = "";
         try {
+            const evaluacion = await this.orm.call(
+                "control.apariencia.eval",
+                "action_tablet_get_or_create_evaluacion",
+                [
+                    Number(this.state.selectedPartidaId),
+                    Number(this.state.selectedAparienciaId),
+                    Number(this.state.selectedEvaluacionId || 0),
+                ],
+                { context: { appearance_type: "quality" } }
+            );
+            this.state.selectedEvaluacionId = evaluacion?.id ? String(evaluacion.id) : "";
+
             const defects = await this.orm.call(
                 "control.apariencia.line",
                 "action_tablet_get_defectos",
@@ -698,6 +715,7 @@ export class QualityDefectScreen extends Component {
                 parsePositiveFloat(this.state.width),
                 metersValue,
                 Number(this.state.selectedAparienciaId),
+                Number(this.state.selectedEvaluacionId || 0),
             ]);
 
             this.notification.add("Registro guardado.", { type: "success" });
@@ -727,6 +745,7 @@ export class QualityDefectScreen extends Component {
         this.state.partidaQuery = partidaQuery || "";
         this.state.selectedPartidaId = selectedPartidaId || "";
         this.state.selectedPartidaData = selectedPartidaData || null;
+        this.state.selectedEvaluacionId = this.state.selectedEvaluacionId || "";
         this.state.rolloNum = "";
         this.state.width = "";
         this.state.meters = "";
@@ -753,6 +772,7 @@ export class QualityDefectScreen extends Component {
         this.state.partidaQuery = "";
         this.state.selectedPartidaId = "";
         this.state.selectedPartidaData = null;
+        this.state.selectedEvaluacionId = "";
         this.state.rolloNum = "";
         this.state.width = "";
         this.state.meters = "";

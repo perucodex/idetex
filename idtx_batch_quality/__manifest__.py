@@ -19,6 +19,7 @@
 
     'data': [
         'security/ir.model.access.csv',
+        'data/ir_sequence.xml',
         'data/control_apariencia.xml',
         'data/defectos.xml',
 

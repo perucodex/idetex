@@ -1,7 +1,6 @@
 from odoo import models, fields, api
 from odoo.fields import Domain
 from odoo.exceptions import UserError
-import statistics
 
 class ControlPedidoLine(models.Model):
     _inherit = "control.pedido.line"
@@ -22,38 +21,23 @@ class ControlPedidoLine(models.Model):
         "pedido_line_id",
         string="Apariencia",
     )
+    apariencia_eval_ids = fields.One2many(
+        "control.apariencia.eval",
+        "pedido_line_id",
+        string="Evaluaciones de Apariencia",
+    )
     has_apariencia_lines = fields.Boolean(compute="_compute_has_apariencia_lines", store=False)
     can_apariencia = fields.Boolean(compute="_compute_can_apariencia", store=False)
-    quality_point = fields.Float(string="Quality Point", digits=(16, 2), compute='_compute_quality_point', store=True)
-
-    # Funcion dummy para filtrar por tipo de defecto en el cálculo de puntos, se sobreescribe en estampado
-    def _filter_lines(self, for_printing=False):
-        return self.apariencia_line_ids
-
-    @api.depends('apariencia_line_ids')
-    def _compute_quality_point(self):
-        for rec in self:
-            filtered_lines = rec._filter_lines()
-            points = 0
-            width = statistics.mean([roll.width for roll in filtered_lines]) if filtered_lines else 0
-            meters = sum([roll.meters for roll in filtered_lines]) if filtered_lines else 0
-            for roll in filtered_lines:
-                for tamano in roll.defecto_line_ids.tamano_defecto_ids:
-                    if tamano.defecto_line_id.is_hueco:
-                        points += int(tamano.tamano_hueco)
-                    else:
-                        points += int(tamano.tamano)
-            rec.quality_point = ((points * 100) / (width * meters)) if width and meters else 0
 
     @api.depends("tono_eval_log_ids")
     def _compute_has_tono_eval_logs(self):
         for rec in self:
             rec.has_tono_eval_logs = bool(rec.tono_eval_log_ids)
 
-    @api.depends("apariencia_line_ids")
+    @api.depends("apariencia_line_ids", "apariencia_eval_ids.line_ids")
     def _compute_has_apariencia_lines(self):
         for rec in self:
-            rec.has_apariencia_lines = bool(rec.apariencia_line_ids)
+            rec.has_apariencia_lines = bool(rec.apariencia_line_ids or rec.apariencia_eval_ids)
 
     @api.depends(
         "tono_eval_log_ids.tono",
