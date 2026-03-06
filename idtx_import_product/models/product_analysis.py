@@ -552,19 +552,25 @@ class ProductAnalysis(models.Model):
 
                 existing_line = lab_dev.lab_dev_line_ids.filtered(lambda l: (l.color_code or '').strip().upper() == color_code.upper())[:1]
                 if existing_line:
-                    continue
-
-                lab_dev.write({
-                    'lab_dev_line_ids': [Command.create({
-                        # 'product_id': False,
-                        'color_name': desc or color_code,
-                        'color_code': color_code,
-                        'color_process_type_id': process.id,
-                        'color_range_id': color_range.id,
-                        'color_intensity_id': intens_obj.id,
-                        'state': 'approved',
-                    })],
-                })
+                    if not existing_line.color_recipe_ids:
+                        existing_line.color_recipe_ids = [Command.create({
+                            'state': 'approved',
+                        })]
+                else:
+                    lab_dev.write({
+                        'lab_dev_line_ids': [Command.create({
+                            # 'product_id': False,
+                            'color_name': desc or color_code,
+                            'color_code': color_code,
+                            'color_process_type_id': process.id,
+                            'color_range_id': color_range.id,
+                            'color_intensity_id': intens_obj.id,
+                            'color_recipe_ids': [Command.create({
+                                'state': 'approved',
+                            })],
+                            'state': 'approved',
+                        })],
+                    })
         finally:
             try:
                 cursor.close()
