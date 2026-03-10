@@ -22,6 +22,8 @@ class MrpWorkorderRoll(models.Model):
     roll_start = fields.Datetime('Start Date')
     roll_end = fields.Datetime('End Date')
     option_id = fields.Many2one('mrp.workorder.option', string='Option')
+    equipment_ids = fields.Many2many(related='option_id.equipment_ids')
+    employee_ids = fields.Many2many(related='option_id.employee_ids')
 
     def reprint(self):
         # self.ensure_one()

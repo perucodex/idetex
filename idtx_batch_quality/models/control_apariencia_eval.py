@@ -8,7 +8,7 @@ class ControlAparienciaEval(models.Model):
     _description = "Evaluacion de Apariencia"
     _order = "create_date desc, id desc"
 
-    name = fields.Char(string="Evaluacion", default=_('New'), required=True, copy=False)
+    name = fields.Char(string="Evaluacion", default=lambda self: _('New'), required=True, copy=False)
     pedido_line_id = fields.Many2one(
         "control.pedido.line",
         string="Partida",

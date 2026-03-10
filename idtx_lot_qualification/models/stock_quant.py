@@ -9,14 +9,14 @@ class StockQuant(models.Model):
 
         # Si venimos desde una orden de producción con restricciones
         if self.env.context.get('is_company_produce') and self.env.context.get('mrp_production_id') and product_id.is_thread:
-            # Restricción de color intensity
-            allowed_colors = self.env.context.get('allowed_color_intensity_ids')
-            if allowed_colors:
-                domains = Domain.AND([domains, Domain('lot_id.color_intensity_ids', 'not in', allowed_colors)])
+            # Los IDs del contexto son del producto a fabricar.
+            # Si un lote comparte alguno de esos IDs, debe excluirse de la reserva.
+            restricted_color_ids = self.env.context.get('allowed_color_intensity_ids')
+            if restricted_color_ids:
+                domains = Domain.AND([domains, Domain('lot_id.color_intensity_ids', 'not in', restricted_color_ids)])
 
-            # Restricción de product family
-            allowed_families = self.env.context.get('allowed_product_family_ids')
-            if allowed_families:
-                domains = Domain.AND([domains, Domain('lot_id.product_family_ids', 'not in', allowed_families)])
+            restricted_family_ids = self.env.context.get('allowed_product_family_ids')
+            if restricted_family_ids:
+                domains = Domain.AND([domains, Domain('lot_id.product_family_ids', 'not in', restricted_family_ids)])
 
         return domains

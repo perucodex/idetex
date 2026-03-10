@@ -36,12 +36,12 @@
             <field name="net_weight" position="attributes">
                 <attribute name="column_invisible">parent.weave_type == 'rect'</attribute>
             </field>
-            <button id="unlink_button_weight" position="attributes">
+            <!-- <button id="unlink_button_weight" position="attributes">
                 <attribute name="invisible">parent.weave_type == 'rect' or gross_weight</attribute>
             </button>
             <button id="unlink_button_quantity" position="attributes">
                 <attribute name="invisible">parent.weave_type == 'rect' or quantity</attribute>
-            </button>
+            </button> -->
         </field>
     </record>
     

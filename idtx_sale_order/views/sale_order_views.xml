@@ -56,10 +56,10 @@
                 <field name="sale_type" required="is_company_produce or not is_subscription" options="{'no_create': True, 'no_open': True}" invisible="not is_company_produce or is_subscription"/>
             </xpath>
             <xpath expr="//field[@name='payment_term_id']" position="after">
-                <field name="lab_dev_ids" widget="many2many_tags" required="state == 'sale'" options="{'no_create': True, 'no_open': True}" invisible="is_quote or not is_company_produce or not need_labdev" readonly="state == 'sale'"/>
+                <field name="lab_dev_ids" widget="many2many_tags" required="state == 'sale'" options="{'no_create': True, 'no_open': True}" invisible="is_quote or not is_company_produce or not need_labdev" readonly="state == 'sale'" force_save="1"/>
             </xpath>
             <xpath expr="//header/button[@name='action_confirm'][1]" position="after">
-                <button name="create_labdev" class="btn-primary" string="Create LabDev" type="object" invisible="lab_dev_ids or is_quote or not is_company_produce or not need_labdev"/>
+                <button name="create_labdev" class="btn-primary" string="Create LabDev" type="object" invisible="is_quote or not is_company_produce or not has_pending_labdev_lines"/>
                 <!-- <button name="manual_labdev" class="btn-secondary" string="Manual LabDev" type="object" invisible="lab_dev_ids or is_quote"/> -->
                 <button name="action_create_sale_order" type="object" string="Sale Order" class="btn-primary" groups="base.group_user" invisible="state != 'sent' or not is_quote or not is_company_produce or need_approval"/>
                 <button name="action_request_approval" type="object" string="Request Approval" class="btn-primary" invisible="not need_approval or state == 'for_app' or not is_company_produce"/>
@@ -77,6 +77,7 @@
                 </div>
                 <field name="is_company_produce" invisible="1"/>
                 <field name="need_approval" invisible="1"/>
+                <field name="has_pending_labdev_lines" invisible="1"/>
             </xpath>
             <xpath expr="//notebook/page/field[@name='order_line']/list/field[@name='product_template_id']" position="after">
                 <field name="available_operation_ids" column_invisible="1"/>

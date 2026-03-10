@@ -17,7 +17,9 @@ class MrpProduction(models.Model):
     def button_mark_done(self):
         res = super().button_mark_done()
         for rec in self:
-            if rec.production_type == 'sale' or rec.production_type == 'servide':
+            if not rec.production_type:
+                raise UserError(_('Please select a production type before marking as done.'))
+            if rec.production_type == 'sale' or rec.production_type == 'service':
                 prod_state = 'Production'
             elif rec.production_type == 'pilot':
                 prod_state = 'Pilot'

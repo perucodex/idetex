@@ -185,7 +185,7 @@ class SaleOrder(models.Model):
             det_values = {
                 'NUMORDPED': orden[:10],
                 'ITEM': item,
-                'CDGART': line.product_id.analysis_is.sitpro_code or line.product_id.default_code or '',
+                'CDGART': line.product_id.analysis_id.sitpro_code or line.product_id.default_code or '',
                 'DESCRIP': line.product_id.name or '',
                 'CDGCOL': (line.lab_dev_line_id.color_code or '0XDS0001') if line.color_name else '',
                 'DESCOL': line.lab_dev_line_id.color_name or '',

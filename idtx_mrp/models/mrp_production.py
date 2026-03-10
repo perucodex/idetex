@@ -33,6 +33,8 @@ class MrpProduction(models.Model):
                 new_lines += delete_line.copy({'quantity': roll.gross_weight, 'lot_id': roll.lot_id.id, 'packaging_uom_qty': roll.gross_weight})
                 new_lots += roll.lot_id
             self.finished_move_line_ids = [Command.link(l.id) for l in new_lines]
+            if not self.roll_ids:
+                raise UserError(_("No rolls defined for this production. Please add at least one roll to proceed."))
             self.product_qty = sum(self.roll_ids.mapped('gross_weight'))
             delete_line.unlink()
         return super().button_mark_done()

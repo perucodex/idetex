@@ -25,6 +25,7 @@ class SaleOrder(models.Model):
     lab_dev_count = fields.Integer(string="Technical Sheet Count", compute='_compute_lab_dev_count')
     is_company_produce = fields.Boolean(related='company_id.is_company_produce')
     need_labdev = fields.Boolean('Need LabDev?', compute='_compute_need_labdev', default=False)
+    has_pending_labdev_lines = fields.Boolean('Has Pending LabDev Lines', compute='_compute_need_labdev', default=False)
     color_name_warning = fields.Boolean(default=False)
     need_approval = fields.Boolean('need_approval?', compute='_compute_need_approval')
     state = fields.Selection(selection_add=[('for_app', 'For Approval')])
@@ -79,9 +80,22 @@ class SaleOrder(models.Model):
     
     def write(self, vals):
         res = super().write(vals)
+        if not self.env.context.get('skip_original_labdev_guard') and ('lab_dev_ids' in vals or 'order_line' in vals):
+            self._ensure_original_lab_devs()
         if 'lab_dev_ids' in vals:
             self._cleanup_orphan_lab_dev_lines()
         return res
+
+    def _ensure_original_lab_devs(self):
+        for order in self:
+            if not order.id:
+                continue
+            original_lab_devs = self.env['lab.dev'].search([('sale_order_id', '=', order.id)])
+            missing = original_lab_devs - order.lab_dev_ids
+            if missing:
+                super(SaleOrder, order.with_context(skip_original_labdev_guard=True)).write({
+                    'lab_dev_ids': [Command.link(lab.id) for lab in missing],
+                })
 
     def _cleanup_orphan_lab_dev_lines(self):
         for order in self:
@@ -101,10 +115,14 @@ class SaleOrder(models.Model):
             l.color_name = l.lab_dev_line_id.color_name
         self.color_name_warning = False
 
-    @api.depends('order_line')
+    @api.depends('order_line.product_template_id', 'order_line.product_template_id.is_weaving', 'order_line.product_color_id', 'order_line.product_color_id.is_lab_color', 'order_line.lab_dev_line_id')
     def _compute_need_labdev(self):
         for rec in self:
-            rec.need_labdev = any(line.product_template_id.is_weaving and line.product_color_id.is_lab_color for line in self.order_line)
+            target_lines = rec.order_line.filtered(
+                lambda l: l.product_template_id.is_weaving and l.product_color_id.is_lab_color
+            )
+            rec.need_labdev = bool(target_lines)
+            rec.has_pending_labdev_lines = any(not line.lab_dev_line_id for line in target_lines)
 
     @api.depends('lab_dev_ids')
     def _compute_lab_dev_count(self):
@@ -134,18 +152,27 @@ class SaleOrder(models.Model):
     @api.onchange('order_line')
     def _onchange_order_line_lab_dev_line_id(self):
         for order in self:
-            order.with_context(syncing_lab_dev_from_lines=True).lab_dev_ids = (
-                order.lab_dev_ids | order.order_line.mapped('lab_dev_line_id.lab_dev_id')
-            )
+            # Mantener siempre los LD creados desde esta orden,
+            # aunque temporalmente no aparezcan en las lineas.
+            original_lab_devs = self.env['lab.dev']
+            if order.id:
+                original_lab_devs = self.env['lab.dev'].search([('sale_order_id', '=', order.id)])
+            line_lab_devs = order.order_line.mapped('lab_dev_line_id.lab_dev_id')
+            # Recalcular desde fuentes reales para permitir quitar LD agregadas manualmente
+            # que ya no esten vinculadas a lineas.
+            order.lab_dev_ids = original_lab_devs | line_lab_devs
 
     @api.onchange('lab_dev_ids')
     def _onchange_lab_dev_ids(self):
-        if self.env.context.get('syncing_lab_dev_from_lines'):
-            return
         for order in self:
             current_ids = set(order.lab_dev_ids.ids)
             for line in order.order_line:
-                if line.lab_dev_line_id and line.lab_dev_line_id.lab_dev_id.id not in current_ids:
+                if not line.lab_dev_line_id:
+                    continue
+                # No borrar vinculacion si la linea pertenece a un LD original de la orden.
+                if line.lab_dev_line_id.lab_dev_id.sale_order_id == order:
+                    continue
+                if line.lab_dev_line_id.lab_dev_id.id not in current_ids:
                     line.lab_dev_line_id = False
 
     def create_labdev(self):
@@ -157,13 +184,13 @@ class SaleOrder(models.Model):
             'sale_order_id': self.id,
             'partner_id': self.partner_id.id,
             'lab_dev_line_ids': [Command.create({
-                 'product_id': line.product_template_id.id,
+                #  'product_id': line.product_template_id.id,
                  'color_name': line.color_name or line.product_color_id.name,
                  'sale_order_line_id': line.id,
-            }) for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.product_color_id.is_lab_color)]
+            }) for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.product_color_id.is_lab_color and not l.lab_dev_line_id)]
         }
         lab_dev = self.env['lab.dev'].create(data)
-        self.lab_dev_ids = [Command.link(lab_dev.id)]
+        self.lab_dev_ids = self.lab_dev_ids | lab_dev
         for ld_line in lab_dev.lab_dev_line_ids:
             if ld_line.sale_order_line_id:
                 ld_line.sale_order_line_id.lab_dev_line_id = ld_line.id

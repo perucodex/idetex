@@ -28,7 +28,7 @@ class ColorRecipe(models.Model):
     state = fields.Selection([
         ('test', 'Test'),
         ('approved', 'Approved'),
-    ], string='State', default='test')
+    ], string='State', default='test', tracking=True)
     
     #=== CRUD METHODS ===#
 

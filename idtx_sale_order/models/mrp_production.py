@@ -48,9 +48,11 @@ class MrpProduction(models.Model):
 
     def _compute_need_recipe(self):
         for rec in self:
-            rec.need_recipe = True if rec.sale_order_line_id and rec.sale_order_line_id.lab_dev_line_id else False
+            # Si no viene de venta, permitimos receta manual.
+            # Si viene de venta, requiere tener lab_dev_line para trabajar con receta.
+            rec.need_recipe = bool((not rec.sale_order_line_id) or rec.sale_order_line_id.lab_dev_line_id)
 
-    @api.depends('manual_color_recipe_id','sale_order_line_id')
+    @api.depends('manual_recipe', 'manual_color_recipe_id', 'sale_order_line_id', 'sale_order_line_id.lab_dev_line_id', 'sale_order_line_id.lab_dev_line_id.color_recipe_ids.state')
     def _compute_color_recipe(self):
         for rec in self:
             if rec.manual_recipe:

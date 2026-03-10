@@ -28,10 +28,15 @@ class LabDev(models.Model):
         ('draft', 'Draft'),
         ('dev', 'Development'),
         ('approved', 'Approved'),
-    ], string='State', default='draft')
+    ], string='State', default='draft', tracking=True)
     
     def action_development(self):
         self.state = 'dev'
+
+    def action_approve(self):
+        if any(line.state != 'approved' for line in self.lab_dev_line_ids):
+            raise UserError(_('All lab dev lines must be approved before approving the lab dev.'))
+        self.state = 'approved'
 
     def open_recipes(self):
         return self.lab_dev_line_ids.color_recipe_ids._get_records_action(name=_('Recipes'), context={'group_by': 'color_name'})
@@ -77,7 +82,7 @@ class LabDevLine(models.Model):
     state = fields.Selection([
         ('test', 'Test'),
         ('approved', 'Approved'),
-    ], string='State', default='test')
+    ], string='State', default='test', tracking=True)
     available_product_ids = fields.Many2many(
         'product.template',
         compute='_compute_available_products',
@@ -120,7 +125,7 @@ class LabDevLine(models.Model):
 
                 # Busca los registros existentes con ese mismo prefijo
                 last_line = self.env['lab.dev.line'].search(
-                    [('color_code', 'like', f'{prefix}%')],
+                    [('color_code', '=like', f'{prefix}%')],
                     order='color_code desc',
                     limit=1
                 )

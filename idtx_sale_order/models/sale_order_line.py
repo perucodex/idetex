@@ -134,12 +134,15 @@ class SaleOrderLine(models.Model):
             rec.price_items = '{}'
         # self._compute_price_unit()
 
-    @api.onchange('lab_dev_line_id')
+    @api.onchange('lab_dev_line_id','lab_dev_line_id.state')
     def _onchange_lab_dev_line_id(self):
         for rec in self:
             rec._compute_has_approved_lab_line()
             if rec.lab_dev_line_id and not rec.color_name:
                 rec.color_name = rec.lab_dev_line_id.color_name
+            # Actualiza las ordenes de producción relacionadas con esta línea de venta para que tengan el lab_dev_line_id asignado
+            if rec.lab_dev_line_id and rec.lab_dev_line_id.state == 'approved' and rec.production_id:
+                rec.production_id.color_recipe_id = rec.lab_dev_line_id.color_recipe_ids.filtered(lambda cr: cr.state == 'approved')
 
     @api.onchange('product_id')
     def _onchange_product_id(self):

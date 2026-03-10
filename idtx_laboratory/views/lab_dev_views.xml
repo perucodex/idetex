@@ -8,6 +8,7 @@
                 <form string="Lab Dev">
                     <header>
                         <button name="action_development" type="object" string="Develop" class="oe_highlight" invisible="state != 'draft'" confirm="Are you sure you want to develop this colors ?"/>
+                        <button name="action_approve" type="object" string="Approve" class="oe_highlight" invisible="state != 'dev'"/>
                         <field name="state" widget="statusbar"/>
                     </header>
                     <sheet>
@@ -80,7 +81,7 @@
                     <field name="partner_id"/>
                     <field name="company_id" groups="base.group_multi_company"/>
                     <field name="lab_dev_line_ids"/>
-                    <field name="state" widget="badge" decoration-success="state == 'approved'"/>
+                    <field name="state" widget="badge" decoration-success="state == 'approved'" decoration-warning="state == 'dev'"/>
                 </list>
             </field>
         </record>
@@ -99,6 +100,7 @@
                     <field name="lab_dev_line_ids" string="Color Name" filter_domain="[('lab_dev_line_ids.color_name', 'ilike', self)]"/>
                     <filter name="approved" string="Approved" domain="[('state','=','approved')]"/>
                     <filter name="test" string="Test" domain="[('state','=','test')]"/>
+                    <filter name="progress" string="In Progress" domain="[('state', 'in', ('draft', 'dev'))]"/>
                     <group>
                         <filter string="Lav Dev Date" name="group_by_lab_dev_date" domain="[]" context="{'group_by': 'lab_dev_date'}"/>
                         <filter string="Sale Order" name="group_by_sale_order" domain="[]" context="{'group_by': 'sale_order_id'}"/>
@@ -170,6 +172,7 @@
             <field name="arch" type="xml">
                 <list string="Lab Dev Line">
                     <field name="lab_dev_id"/>
+                    <field name="color_code" optional="hide"/>
                     <field name="display_name"/>
                     <field name="color" widget="color"/>
                     <field name="color" string="Hex"/>
@@ -178,11 +181,26 @@
             </field>
         </record>
 
+        <record id="lab_dev_line_search_view" model="ir.ui.view">
+            <field name="name">lab.dev.line.search</field>
+            <field name="model">lab.dev.line</field>
+            <field name="arch" type="xml">
+                <search string="Lab Dev Line">
+                    <field name="color_code"/>
+                    <field name="color_name"/>
+                    <group>
+                        <filter string="Lab Dev" name="group_by_lab_dev" domain="[]" context="{'group_by': 'lab_dev_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
         <record id="lab_dev_action" model="ir.actions.act_window">
             <field name="name">Lab Dev</field>
             <field name="res_model">lab.dev</field>
             <field name="view_mode">list,form</field>
             <field name="view_id" ref="lab_dev_tree_view"/>
+            <field name="context">{'search_default_progress': 1}</field>
             <field name="help" type="html">
               <p class="o_view_nocontent_smiling_face">
                 Create a new lab dev
