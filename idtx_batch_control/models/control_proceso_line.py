@@ -99,36 +99,36 @@ class ControlProcesoLine(models.Model):
             rec.operator_name = operator_name
             
             # Actualizar SQL Server con fecha y operario
-            conn = rec.pedido_line_id.pedido_id._get_sql_connection()
-            try:
-                cursor = conn.cursor()
-                query = """
-                    UPDATE BARFAS
-                    SET BarFasDTI = ?,
-                        BarFasUsu = ?,
-                        BarFasEst = 2
-                    WHERE BarCod = ?
-                      AND ISNULL(BarCodReo, 0) = ?
-                      AND BarOrdLin = ?
-                """
+            # conn = rec.pedido_line_id.pedido_id._get_sql_connection()
+            # try:
+            #     cursor = conn.cursor()
+            #     query = """
+            #         UPDATE BARFAS
+            #         SET BarFasDTI = ?,
+            #             BarFasUsu = ?,
+            #             BarFasEst = 2
+            #         WHERE BarCod = ?
+            #           AND ISNULL(BarCodReo, 0) = ?
+            #           AND BarOrdLin = ?
+            #     """
 
-                params = (
-                    fecha_inicio, 
-                    operator_name.strip()[:8],
-                    int(rec.pedido_line_id.route), 
-                    int(rec.pedido_line_id.barcodreo), 
-                    rec.barOrdLin)
+            #     params = (
+            #         fecha_inicio, 
+            #         operator_name.strip()[:8],
+            #         int(rec.pedido_line_id.route), 
+            #         int(rec.pedido_line_id.barcodreo), 
+            #         rec.barOrdLin)
                 
-                cursor.execute(query, params)
-                conn.commit()
-            finally:
-                conn.close()
+            #     cursor.execute(query, params)
+            #     conn.commit()
+            # finally:
+            #     conn.close()
 
     def action_finish(self):
         for rec in self:
             now_sql = datetime.datetime.now()
             now_odoo = fields.Datetime.now()
-            rec._update_sql("BarFasDTF", now_sql)
+            # rec._update_sql("BarFasDTF", now_sql)
             rec.barFasDTF = now_odoo
 
     def _update_sql(self, field_name, value):

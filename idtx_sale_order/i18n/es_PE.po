@@ -861,8 +861,8 @@ msgstr "Línea de Talla de línea de venta"
 
 #. module: idtx_sale_order
 #: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_price_items_preview
-msgid "Sale Order:"
-msgstr "Pedido de Venta:"
+msgid "Quotation:"
+msgstr "Cotización:"
 
 #. module: idtx_sale_order
 #. odoo-python

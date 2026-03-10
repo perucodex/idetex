@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+import unicodedata
 import pyodbc
 pyodbc.setDecimalSeparator(".")
 from odoo import models, fields, api, _
@@ -415,75 +416,161 @@ class ProductAnalysis(models.Model):
                 pass
 
     def sync_lab(self):
+        def _strip(v):
+            return (str(v or '')).strip()
+
+        def _norm(text):
+            text = _strip(text).upper()
+            if not text:
+                return ''
+            text = ''.join(ch for ch in unicodedata.normalize('NFD', text) if unicodedata.category(ch) != 'Mn')
+            text = re.sub(r'[^A-Z0-9\s]', ' ', text)
+            return re.sub(r'\s+', ' ', text).strip()
+
+        def _extract_ld_name(obs_text):
+            norm_obs = _norm(obs_text)
+            if not norm_obs:
+                return False
+            match = re.search(r'\bL\s*D\s*[-/ ]?\s*0*(\d{3,7})\b', norm_obs)
+            if match:
+                return f"LD-{int(match.group(1))}"
+            return False
+
+        def _build_partner_index():
+            stop = {
+                'SAC', 'S A C', 'SA', 'S A', 'SOCIEDAD', 'ANONIMA', 'COMPANIA',
+                'CIA', 'EIRL', 'SRL', 'SRL', 'PERU', 'DEL', 'DE', 'LA', 'EL', 'LOS', 'LAS', 'Y'
+            }
+            partners = self.env['res.partner'].search([('is_company', '=', True)])
+            data = []
+            for partner in partners:
+                nname = _norm(partner.name)
+                if not nname:
+                    continue
+                tokens = [t for t in nname.split() if len(t) > 2 and t not in stop]
+                data.append((partner, nname, set(tokens)))
+            return data
+
+        def _extract_partner(obs_text, partner_index):
+            norm_obs = _norm(obs_text)
+            if not norm_obs:
+                return False
+
+            alias_map = {
+                'WTS': 'WT SOURCING PERU',
+            }
+            for alias, target in alias_map.items():
+                if re.search(rf'\b{re.escape(alias)}\b', norm_obs):
+                    target_norm = _norm(target)
+                    for partner, pname_norm, _ in partner_index:
+                        if target_norm in pname_norm:
+                            return partner
+
+            best_partner = False
+            best_score = 0
+            obs_tokens = set(norm_obs.split())
+            for partner, pname_norm, ptokens in partner_index:
+                if pname_norm and pname_norm in norm_obs:
+                    return partner
+                if not ptokens:
+                    continue
+                overlap = len(ptokens & obs_tokens)
+                if overlap > best_score:
+                    best_score = overlap
+                    best_partner = partner
+
+            return best_partner if best_score >= 2 else False
+
+        def _get_or_create_lab_dev(ld_name, partner, date_value):
+            LabDev = self.env['lab.dev']
+            lab_dev = LabDev.search([('name', '=', ld_name)], limit=1)
+            if not lab_dev and ld_name.startswith('LD-'):
+                number = ld_name.split('-', 1)[1]
+                lab_dev = LabDev.search([('name', 'ilike', f"LD%{number}")], limit=1)
+            if not lab_dev:
+                lab_dev = LabDev.create({
+                    'name': ld_name,
+                    'lab_dev_date': date_value or fields.Date.context_today(self),
+                    'partner_id': partner.id if partner else False,
+                    'state': 'approved',
+                })
+            elif partner and not lab_dev.partner_id:
+                lab_dev.partner_id = partner.id
+            return lab_dev
+
         try:
             conn = self._get_sql_connection()
             cursor = conn.cursor()
             query = f"""
                 SELECT
-                    v.fecha,
-                    v.lab,
-                    c.ruc,
-                    v.cdgart,
-                    v.cdgcolor,
-                    v.descolor,
-                    v.obs,
                     l.gt,
                     l.cb,
-                    l.ints
-                FROM vta_labs v
-                INNER JOIN lab_colores l
-                    ON LTRIM(RTRIM(v.cdgcolor)) =
-                    LTRIM(RTRIM(ISNULL(l.gt,''))) +
-                    LTRIM(RTRIM(ISNULL(l.cb,''))) +
-                    LTRIM(RTRIM(ISNULL(l.ints,''))) +
-                    RIGHT('0000' + CAST(CAST(l.corr AS INT) AS VARCHAR(10)), 4)
-                INNER JOIN clientes c ON c.cdgclie = v.cdgclien
-                where v.cdgcolor is NOT NULL AND LTRIM(RTRIM(v.cdgcolor)) <> '';
+                    l.ints,
+                    l.corr,
+                    l.descrip,
+                    l.obs
+                FROM lab_colores02 l
+                where l.gt is NOT NULL 
+                AND l.cb is not null 
+                AND l.ints is not null 
+                AND l.corr is not null 
+                and LTRIM(RTRIM(l.gt)) <> ''
+                and LTRIM(RTRIM(l.cb)) <> ''
+                and LTRIM(RTRIM(l.ints)) <> ''
+                and LTRIM(RTRIM(l.corr)) <> '';
             """
             cursor.execute(query)
-            cursor_result = cursor.fetchall()
+            columns = [col[0].lower() for col in cursor.description]
+            cursor_result = [dict(zip(columns, row)) for row in cursor.fetchall()]
             total = len(cursor_result)
+            company_partner = self.env.company.partner_id
+            partner_index = _build_partner_index()
+            generic_ld_name = 'LD-GENERICA'
+
             for contador, row in enumerate(cursor_result, 1):
                 _logger.info(str(contador) + ' / ' + str(total) + '  ' + str(int((contador / total)*100)) + '%')
-                partner = self.env['res.partner'].search([('vat','=', row.ruc.strip()),('is_company','=', True)])
-                codigo = row.cdgart[1:].strip()
-                product = self.env['product.template'].search([('default_code','=', codigo)])
-                if not partner or not product:
+                gt = _strip(row.get('gt'))
+                cb = _strip(row.get('cb'))
+                ints = _strip(row.get('ints'))
+                corr_raw = _strip(row.get('corr'))
+                obs = _strip(row.get('obs'))
+                desc = _strip(row.get('descrip'))
+
+                if not (gt and cb and ints and corr_raw):
                     continue
-                process = self.env['color.process.type'].search([('code','=',row.gt.strip())])
-                range = self.env['color.range'].search([('code','=',row.cb.strip())])
-                intens = self.env['color.intensity'].search([('code','=',row.ints.strip())])
-                lab_dev_id = self.env['lab.dev'].search([('name','=', row.lab.strip())])
-                if lab_dev_id:
-                    vals = {
-                        'lab_dev_line_ids': [Command.create({
-                            'product_id': product.id or False,
-                            'color_name': row.descolor.strip(),
-                            'color_code': row.cdgcolor.strip(),
-                            'color_process_type_id': process.id,
-                            'color_range_id': range.id,
-                            'color_intensity_id': intens.id,
+
+                corr = str(a_int(corr_raw)).zfill(4) if a_int(corr_raw) else corr_raw.zfill(4)
+                color_code = f"{gt}{cb}{ints}{corr}"
+
+                process = self.env['color.process.type'].search([('code', '=', gt)], limit=1)
+                color_range = self.env['color.range'].search([('code', '=', cb)], limit=1)
+                intens_obj = self.env['color.intensity'].search([('code', '=', ints)], limit=1)
+
+                partner = _extract_partner(obs, partner_index) or company_partner
+                ld_name = _extract_ld_name(obs) or generic_ld_name
+                lab_dev = _get_or_create_lab_dev(ld_name, partner, fields.Date.context_today(self))
+
+                existing_line = lab_dev.lab_dev_line_ids.filtered(lambda l: (l.color_code or '').strip().upper() == color_code.upper())[:1]
+                if existing_line:
+                    if not existing_line.color_recipe_ids:
+                        existing_line.color_recipe_ids = [Command.create({
                             'state': 'approved',
-                        })],
-                    }
-                    lab_dev_id.write(vals)
+                        })]
                 else:
-                    vals = {
-                        'lab_dev_date': row.fecha,
-                        'name': row.lab.strip(),
-                        'partner_id': partner.id or False,
+                    lab_dev.write({
                         'lab_dev_line_ids': [Command.create({
-                            'product_id': product.id or False,
-                            'color_name': row.descolor.strip(),
-                            'color_code': row.cdgcolor.strip(),
+                            # 'product_id': False,
+                            'color_name': desc or color_code,
+                            'color_code': color_code,
                             'color_process_type_id': process.id,
-                            'color_range_id': range.id,
-                            'color_intensity_id': intens.id,
+                            'color_range_id': color_range.id,
+                            'color_intensity_id': intens_obj.id,
+                            'color_recipe_ids': [Command.create({
+                                'state': 'approved',
+                            })],
                             'state': 'approved',
                         })],
-                        'state': 'approved',
-                    }
-                    lab_dev_id.create(vals)
+                    })
         finally:
             try:
                 cursor.close()

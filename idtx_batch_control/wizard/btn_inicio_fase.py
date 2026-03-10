@@ -71,4 +71,4 @@ class BtnInicioFaseWizard(models.TransientModel):
             fecha_peru,
             self.operator_name
         )
-        return {'type': 'ir.actions.act_window_close'}
+        return

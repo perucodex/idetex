@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Instructivo técnico - Alta de nueva balanza (Windows + Flask + Odoo)</title>
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #0f766e;
+      --primary-soft: #ecfeff;
+      --warning: #92400e;
+      --warning-soft: #fffbeb;
+      --danger: #991b1b;
+      --danger-soft: #fef2f2;
+      --ok: #166534;
+      --ok-soft: #f0fdf4;
+      --border: #e5e7eb;
+      --code: #111827;
+      --code-bg: #f3f4f6;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    .container {
+      max-width: 1050px;
+      margin: 24px auto;
+      padding: 0 16px 32px;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #0f766e 0%, #155e75 100%);
+      color: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 25px rgba(0,0,0,.08);
+    }
+
+    .header h1 {
+      margin: 0 0 8px;
+      font-size: 1.65rem;
+    }
+
+    .header p {
+      margin: 0;
+      opacity: .95;
+    }
+
+    .toc, .section, .note, .warn, .ok {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-top: 16px;
+    }
+
+    .toc h2, .section h2 {
+      margin: 0 0 12px;
+      font-size: 1.15rem;
+      color: var(--primary);
+    }
+
+    .section h3 {
+      margin: 16px 0 8px;
+      font-size: 1rem;
+      color: #0f172a;
+    }
+
+    .toc ol {
+      margin: 0;
+      padding-left: 18px;
+      columns: 2;
+      column-gap: 24px;
+    }
+
+    .toc li { margin: 4px 0; }
+    .toc a { color: #0f4c81; text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+
+    ul, ol { padding-left: 20px; }
+    li { margin: 4px 0; }
+
+    code {
+      background: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-family: Consolas, Monaco, monospace;
+      font-size: .92em;
+    }
+
+    pre {
+      background: var(--code);
+      color: #f9fafb;
+      padding: 12px;
+      border-radius: 10px;
+      overflow-x: auto;
+      font-size: .9rem;
+      line-height: 1.35;
+      margin: 8px 0 12px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+    }
+
+    .pill {
+      display: inline-block;
+      font-size: .82rem;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      border: 1px solid #a5f3fc;
+      margin: 2px 6px 2px 0;
+    }
+
+    .note {
+      border-left: 5px solid #0284c7;
+      background: #f0f9ff;
+    }
+
+    .warn {
+      border-left: 5px solid #f59e0b;
+      background: var(--warning-soft);
+      color: var(--warning);
+    }
+
+    .ok {
+      border-left: 5px solid #16a34a;
+      background: var(--ok-soft);
+      color: var(--ok);
+    }
+
+    .checklist li {
+      list-style: none;
+      margin: 6px 0;
+      position: relative;
+      padding-left: 28px;
+    }
+
+    .checklist li::before {
+      content: "☐";
+      position: absolute;
+      left: 0;
+      top: 0;
+      font-size: 1rem;
+      color: #334155;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .footer {
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: .9rem;
+      text-align: center;
+    }
+
+    @media (max-width: 860px) {
+      .toc ol { columns: 1; }
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .container { max-width: none; margin: 0; padding: 0; }
+      .header { box-shadow: none; border-radius: 0; }
+      .section, .toc, .note, .warn, .ok { break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <header class="header">
+      <h1>Instructivo técnico para implementar una nueva balanza</h1>
+      <p>Windows + Python + Flask + Odoo (Shop Floor) • Guía estándar para programadores de la empresa</p>
+      <div style="margin-top:10px;">
+        <span class="pill">Arquitectura multi-balanza</span>
+        <span class="pill">Odoo vía Apache HTTPS</span>
+        <span class="pill">Proxy interno en Odoo</span>
+        <span class="pill">Lectura serial (COM)</span>
+      </div>
+    </header>
+
+    <section class="note">
+      <strong>Arquitectura usada (recomendada):</strong><br>
+      El navegador <strong>no</strong> se conecta directo a la balanza. El flujo es:
+      <br><br>
+      <code>Frontend Odoo (HTTPS)</code> → <code>Controller Odoo /idtx_scale/peso</code> → <code>Flask en PC de balanza (HTTP:5001)</code>
+      <br><br>
+      Esto evita problemas de <em>mixed content</em>, CORS y certificados en cada PC de balanza.
+    </section>
+
+    <section class="toc">
+      <h2>Índice</h2>
+      <ol>
+        <li><a href="#objetivo">Objetivo</a></li>
+        <li><a href="#requisitos">Requisitos previos</a></li>
+        <li><a href="#windows">Preparar PC de balanza (Windows)</a></li>
+        <li><a href="#python">Instalación de Python y dependencias</a></li>
+        <li><a href="#script">Configuración de <code>scale_server.py</code></a></li>
+        <li><a href="#com">Identificar puerto COM</a></li>
+        <li><a href="#prueba-local">Prueba local del servidor Flask</a></li>
+        <li><a href="#firewall">Firewall de Windows</a></li>
+        <li><a href="#prueba-red">Prueba desde servidor Odoo</a></li>
+        <li><a href="#autostart">Inicio automático al arrancar Windows</a></li>
+        <li><a href="#odoo">Configuración de la balanza en Odoo</a></li>
+        <li><a href="#pruebas-e2e">Pruebas end-to-end</a></li>
+        <li><a href="#manual">Modo manual (contingencia)</a></li>
+        <li><a href="#checklist">Checklist de alta</a></li>
+        <li><a href="#errores">Errores comunes y solución</a></li>
+        <li><a href="#estandar">Estandarización recomendada</a></li>
+      </ol>
+    </section>
+
+    <section class="section" id="objetivo">
+      <h2>1) Objetivo</h2>
+      <p>Dejar una nueva balanza operativa para que Odoo lea el peso en tiempo real desde Shop Floor con estabilidad (<code>ST</code>/<code>US</code>), y con opción de ingreso manual autorizado como contingencia.</p>
+      <div class="ok">
+        <strong>Resultado esperado:</strong> al abrir el diálogo en Odoo, el peso aparece en vivo, muestra “Estable/Inestable” y solo permite confirmar cuando el peso es válido y estable.
+      </div>
+    </section>
+
+    <section class="section" id="requisitos">
+      <h2>2) Requisitos previos</h2>
+      <h3>2.1 Información mínima que debes tener</h3>
+      <ul>
+        <li>PC conectada físicamente a la balanza.</li>
+        <li>Puerto serie asignado (ej. <code>COM1</code>, <code>COM3</code>).</li>
+        <li>IP fija de la PC en red (recomendado) o reserva DHCP.</li>
+        <li>Baudrate de la balanza (normalmente <code>9600</code>).</li>
+        <li>Confirmar si la balanza transmite en continuo o por demanda (si requiere comando).</li>
+      </ul>
+
+      <h3>2.2 Recomendación de red</h3>
+      <p>Usar IP fija para evitar que el registro en Odoo quede apuntando a una IP que cambie.</p>
+      <pre>Ejemplo:
+IP PC balanza: 172.16.66.50
+Puerto Flask: 5001
+Endpoint local: http://172.16.66.50:5001/peso</pre>
+    </section>
+
+    <section class="section" id="windows">
+      <h2>3) Preparar PC de balanza (Windows)</h2>
+      <h3>3.1 Crear carpeta estándar</h3>
+      <p>Crear la carpeta de trabajo:</p>
+      <pre>C:\ScaleServer</pre>
+      <p>Se recomienda que esta carpeta contenga:</p>
+      <ul>
+        <li><code>scale_server.py</code></li>
+        <li><code>run_scale_server.bat</code></li>
+        <li><code>scale_server.log</code> (se crea solo)</li>
+        <li><code>venv\</code> (opcional, si usan entorno virtual)</li>
+      </ul>
+    </section>
+
+    <section class="section" id="python">
+      <h2>4) Instalación de Python y dependencias</h2>
+      <h3>4.1 Instalar Python</h3>
+      <ol>
+        <li>Instalar <strong>Python 3.13</strong> (Windows x64).</li>
+        <li>Marcar <strong>Add Python to PATH</strong> durante la instalación.</li>
+      </ol>
+
+      <h3>4.2 Verificar instalación</h3>
+      <pre>python --version
+pip --version</pre>
+
+      <h3>4.3 Instalar dependencias (simple)</h3>
+      <pre>cd C:\ScaleServer
+pip install flask pyserial</pre>
+
+      <h3>4.4 Instalar dependencias (opcional con entorno virtual)</h3>
+      <pre>cd C:\ScaleServer
+python -m venv venv
+venv\Scripts\activate
+pip install flask pyserial</pre>
+
+      <p class="small">Si la empresa estandariza el uso de <code>venv</code>, usar siempre la opción 4.4.</p>
+    </section>
+
+    <section class="section" id="script">
+      <h2>5) Configuración del archivo <code>scale_server.py</code></h2>
+      <p>Copiar el archivo estándar de la empresa en <code>C:\ScaleServer\scale_server.py</code>.</p>
+
+      <h3>5.1 Variables que se deben revisar siempre</h3>
+      <pre>SERIAL_PORT = "COM1"      # Cambiar según puerto real
+BAUDRATE = 9600           # Cambiar si la balanza usa otro baudrate
+HTTP_HOST = "0.0.0.0"     # Dejar así
+HTTP_PORT = 5001          # Dejar estándar
+READ_COMMAND = None       # Si la balanza es por demanda, configurar comando</pre>
+
+      <h3>5.2 Significado</h3>
+      <ul>
+        <li><code>SERIAL_PORT</code>: puerto COM físico de la balanza.</li>
+        <li><code>BAUDRATE</code>: velocidad serial.</li>
+        <li><code>READ_COMMAND</code>: comando serial si la balanza no transmite continuamente.</li>
+      </ul>
+
+      <div class="warn">
+        <strong>Importante:</strong> si la balanza es “por demanda” y no configuras <code>READ_COMMAND</code>, el endpoint puede responder <code>ok: false</code> aunque el puerto esté correcto.
+      </div>
+    </section>
+
+    <section class="section" id="com">
+      <h2>6) Identificar el puerto COM correcto</h2>
+      <ol>
+        <li>Abrir <strong>Administrador de dispositivos</strong>.</li>
+        <li>Ir a <strong>Puertos (COM y LPT)</strong>.</li>
+        <li>Ubicar la balanza (ejemplo: <code>USB Serial Port (COM3)</code>).</li>
+        <li>Copiar ese COM y colocarlo en <code>SERIAL_PORT</code>.</li>
+      </ol>
+
+      <h3>6.1 Ejemplo</h3>
+      <pre>Si Windows muestra: USB Serial Port (COM3)
+Entonces en scale_server.py:
+SERIAL_PORT = "COM3"</pre>
+    </section>
+
+    <section class="section" id="prueba-local">
+      <h2>7) Prueba local del servidor Flask (primera vez)</h2>
+      <h3>7.1 Ejecutar manualmente</h3>
+      <p>Desde CMD en la PC de balanza:</p>
+      <pre>cd C:\ScaleServer
+python scale_server.py</pre>
+
+      <h3>7.2 Validar endpoints localmente</h3>
+      <p>Abrir en navegador de la misma PC:</p>
+      <ul>
+        <li><code>http://127.0.0.1:5001/health</code></li>
+        <li><code>http://127.0.0.1:5001/status</code></li>
+        <li><code>http://127.0.0.1:5001/peso</code></li>
+      </ul>
+
+      <h3>7.3 Respuesta esperada en <code>/peso</code></h3>
+      <pre>{
+  "ok": true,
+  "peso": 22.50,
+  "unidad": "kg",
+  "stable": true,
+  "raw": "ST,GS,   22.50KG",
+  "age_s": 0.2,
+  "port": "COM1",
+  "baudrate": 9600
+}</pre>
+
+      <p><strong>Interpretación:</strong></p>
+      <ul>
+        <li><code>ok: true</code> → la lectura está vigente.</li>
+        <li><code>stable: true</code> → peso estable (<code>ST</code>).</li>
+        <li><code>stable: false</code> → peso inestable (<code>US</code>).</li>
+      </ul>
+    </section>
+
+    <section class="section" id="firewall">
+      <h2>8) Configurar Firewall de Windows (obligatorio)</h2>
+      <p>El servidor Odoo debe poder conectarse a la PC de balanza por el puerto <code>5001</code>.</p>
+
+      <h3>8.1 Crear regla de entrada (TCP 5001)</h3>
+      <ol>
+        <li>Abrir <strong>Windows Defender Firewall con seguridad avanzada</strong>.</li>
+        <li>Ir a <strong>Reglas de entrada</strong> → <strong>Nueva regla</strong>.</li>
+        <li>Seleccionar <strong>Puerto</strong>.</li>
+        <li>TCP → puerto específico: <code>5001</code>.</li>
+        <li>Seleccionar <strong>Permitir la conexión</strong>.</li>
+        <li>Aplicar a perfiles necesarios (Dominio/Privado).</li>
+        <li>Nombre sugerido: <code>ScaleServer 5001</code>.</li>
+      </ol>
+
+      <div class="note">
+        <strong>Recomendación de seguridad:</strong> si es posible, restringir la regla para permitir solo la IP del servidor Odoo.
+      </div>
+    </section>
+
+    <section class="section" id="prueba-red">
+      <h2>9) Probar conectividad desde el servidor Odoo</h2>
+      <p>Desde el servidor Linux donde corre Odoo (o el host donde se ejecuta Odoo), probar:</p>
+      <pre>curl http://IP_PC_BALANZA:5001/health
+curl http://IP_PC_BALANZA:5001/peso</pre>
+
+      <h3>Ejemplo</h3>
+      <pre>curl http://172.16.66.50:5001/health
+curl http://172.16.66.50:5001/peso</pre>
+
+      <div class="warn">
+        Si esto falla, <strong>Odoo no podrá leer la balanza</strong>. Revisar: IP, firewall, cableado/red, puerto 5001, ejecución del Flask.
+      </div>
+    </section>
+
+    <section class="section" id="autostart">
+      <h2>10) Inicio automático al arrancar Windows (Programador de tareas)</h2>
+      <h3>10.1 Crear script de arranque <code>.bat</code></h3>
+      <p>Crear <code>C:\ScaleServer\run_scale_server.bat</code>.</p>
+
+      <h4>Opción A: sin entorno virtual</h4>
+      <pre>@echo off
+cd /d C:\ScaleServer
+python scale_server.py >> C:\ScaleServer\scale_server.log 2>&1</pre>
+
+      <h4>Opción B: con entorno virtual</h4>
+      <pre>@echo off
+cd /d C:\ScaleServer
+call C:\ScaleServer\venv\Scripts\activate.bat
+python scale_server.py >> C:\ScaleServer\scale_server.log 2>&1</pre>
+
+      <h3>10.2 Crear tarea en Programador de tareas</h3>
+      <ol>
+        <li>Abrir <strong>Programador de tareas</strong>.</li>
+        <li>Seleccionar <strong>Crear tarea</strong> (no “tarea básica”).</li>
+        <li><strong>General:</strong>
+          <ul>
+            <li>Nombre: <code>Scale Server</code></li>
+            <li>✅ Ejecutar tanto si el usuario inició sesión como si no</li>
+            <li>✅ Ejecutar con privilegios más altos</li>
+          </ul>
+        </li>
+        <li><strong>Desencadenadores:</strong>
+          <ul>
+            <li>Nuevo → <strong>Al iniciar el sistema</strong></li>
+            <li>(Opcional) retrasar 30 segundos</li>
+          </ul>
+        </li>
+        <li><strong>Acciones:</strong>
+          <ul>
+            <li>Programa/script: <code>C:\ScaleServer\run_scale_server.bat</code></li>
+          </ul>
+        </li>
+        <li><strong>Condiciones:</strong> desmarcar restricciones no deseadas (ej. energía AC).</li>
+        <li><strong>Configuración:</strong> permitir ejecución manual y reintentos si falla.</li>
+      </ol>
+
+      <h3>10.3 Probar la tarea</h3>
+      <p>En el Programador de tareas, clic derecho → <strong>Ejecutar</strong>. Luego validar:</p>
+      <pre>http://IP_PC_BALANZA:5001/health</pre>
+    </section>
+
+    <section class="section" id="odoo">
+      <h2>11) Configuración de la nueva balanza en Odoo</h2>
+
+      <h3>11.1 Requisitos del módulo Odoo</h3>
+      <p>El módulo debe tener cargado:</p>
+      <ul>
+        <li>Modelo <code>scale.registry</code> con campo <code>ip</code></li>
+        <li>Controller <code>/idtx_scale/peso</code> (proxy Odoo → balanza)</li>
+        <li>JS + XML del diálogo con lectura en vivo y estado de estabilidad</li>
+      </ul>
+
+      <h3>11.2 Crear/validar equipo en Mantenimiento</h3>
+      <ol>
+        <li>Ir a <strong>Mantenimiento → Equipos</strong>.</li>
+        <li>Crear o ubicar el equipo asociado a esa balanza (ej. “Balanza Tinte 02”).</li>
+      </ol>
+
+      <h3>11.3 Registrar la balanza en <code>Scale Registry</code></h3>
+      <p>Crear un registro con:</p>
+      <ul>
+        <li><strong>Equipment</strong>: equipo de mantenimiento</li>
+        <li><strong>Scale IP</strong>: IP de la PC de balanza (ej. <code>172.16.66.50</code>)</li>
+      </ul>
+
+      <div class="note">
+        En <strong>Scale IP</strong> colocar solo la IP (sin <code>http://</code>, sin puerto).
+      </div>
+
+      <h3>11.4 Validación del endpoint en Odoo</h3>
+      <p>Con sesión iniciada en Odoo, probar en navegador:</p>
+      <pre>https://odoo.gestionidtx.com/idtx_scale/peso?scale_id=ID_DE_LA_BALANZA</pre>
+      <p>Debe devolver JSON con <code>ok</code>, <code>peso</code>, <code>stable</code>.</p>
+    </section>
+
+    <section class="section" id="pruebas-e2e">
+      <h2>12) Pruebas end-to-end (Odoo)</h2>
+      <ol>
+        <li>Abrir una orden de trabajo en Shop Floor.</li>
+        <li>Abrir el diálogo para agregar rollo / leer balanza.</li>
+        <li>Seleccionar la balanza.</li>
+        <li>Verificar:
+          <ul>
+            <li>El peso se actualiza automáticamente.</li>
+            <li>Se muestra <strong>Estable</strong> o <strong>Inestable</strong>.</li>
+            <li>El botón <strong>Confirm</strong> se habilita solo con peso &gt; 0 y estable.</li>
+          </ul>
+        </li>
+      </ol>
+    </section>
+
+    <section class="section" id="manual">
+      <h2>13) Modo manual (contingencia)</h2>
+      <p>Si la balanza falla o no está disponible:</p>
+      <ol>
+        <li>Seleccionar <strong>Manual</strong> en el diálogo.</li>
+        <li>Ingresar credenciales de autorización (usuario con permisos definidos).</li>
+        <li>Ingresar peso manualmente.</li>
+        <li>Confirmar.</li>
+      </ol>
+
+      <div class="warn">
+        El modo manual debe usarse solo como contingencia. El flujo normal es lectura en vivo de balanza.
+      </div>
+    </section>
+
+    <section class="section" id="checklist">
+      <h2>14) Checklist de alta de una nueva balanza</h2>
+
+      <div class="grid">
+        <div>
+          <h3>PC de balanza (Windows)</h3>
+          <ul class="checklist">
+            <li>Python instalado</li>
+            <li><code>flask</code> y <code>pyserial</code> instalados</li>
+            <li><code>scale_server.py</code> copiado en <code>C:\ScaleServer</code></li>
+            <li><code>SERIAL_PORT</code> correcto (COMx)</li>
+            <li><code>BAUDRATE</code> correcto</li>
+            <li><code>/peso</code> responde localmente</li>
+            <li>Puerto 5001 abierto en firewall</li>
+            <li>Tarea programada creada y funcional</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3>Servidor Odoo / Aplicación</h3>
+          <ul class="checklist">
+            <li><code>curl http://IP_BALANZA:5001/peso</code> responde desde servidor Odoo</li>
+            <li>Registro creado en <code>scale.registry</code> con IP correcta</li>
+            <li><code>/idtx_scale/peso?scale_id=...</code> responde en Odoo</li>
+            <li>En Shop Floor se visualiza peso en vivo</li>
+            <li>Se muestra estado de estabilidad</li>
+            <li>Confirmación de rollo funciona correctamente</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="errores">
+      <h2>15) Errores comunes y solución</h2>
+
+      <h3>15.1 Error: “No se pudo abrir COMx”</h3>
+      <p><strong>Causa:</strong> puerto incorrecto o ocupado por otro programa.</p>
+      <p><strong>Solución:</strong> revisar Administrador de dispositivos, validar COM real y cerrar software que use el puerto.</p>
+
+      <h3>15.2 <code>/peso</code> responde pero <code>ok: false</code></h3>
+      <p><strong>Causa:</strong> no hay lectura reciente, baudrate incorrecto o balanza por demanda sin comando.</p>
+      <p><strong>Solución:</strong> revisar <code>raw</code>, <code>BAUDRATE</code> y <code>READ_COMMAND</code>.</p>
+
+      <h3>15.3 Odoo no puede conectarse a la balanza</h3>
+      <p><strong>Causa:</strong> problema de red o firewall.</p>
+      <p><strong>Solución:</strong> abrir 5001/TCP, probar <code>curl</code> desde servidor Odoo, verificar IP correcta.</p>
+
+      <h3>15.4 En Odoo aparece “Error reading scale”</h3>
+      <p><strong>Causa probable:</strong> endpoint de balanza caído o controller de Odoo no cargado.</p>
+      <p><strong>Solución:</strong> probar <code>/idtx_scale/peso?scale_id=...</code>, revisar logs de Odoo y <code>controllers/__init__.py</code>.</p>
+
+      <h3>15.5 El peso aparece pero no deja confirmar</h3>
+      <p><strong>Causa:</strong> peso 0, peso inestable (<code>US</code>) o faltan empleado/equipo.</p>
+      <p><strong>Solución:</strong> esperar estabilidad, validar selección de datos y peso &gt; 0.</p>
+    </section>
+
+    <section class="section" id="estandar">
+      <h2>16) Estandarización recomendada (empresa)</h2>
+
+      <h3>16.1 Convención en PC de balanza</h3>
+      <ul>
+        <li>Carpeta: <code>C:\ScaleServer</code></li>
+        <li>Puerto HTTP del servicio: <code>5001</code></li>
+        <li>Log: <code>C:\ScaleServer\scale_server.log</code></li>
+        <li>Tarea de Windows: <code>Scale Server</code></li>
+      </ul>
+
+      <h3>16.2 Convención en Odoo</h3>
+      <ul>
+        <li><code>scale.registry.ip</code> = IP fija de la PC de balanza</li>
+        <li><code>equipment_id</code> = equipo de mantenimiento asociado</li>
+      </ul>
+
+      <h3>16.3 Nota sobre Apache / HTTPS</h3>
+      <p>No se debe crear una ruta Apache por cada balanza. Apache solo proxya Odoo por HTTPS. El acceso a cada balanza se resuelve dinámicamente desde Odoo mediante <code>scale.registry.ip</code>.</p>
+
+      <div class="ok">
+        <strong>Buenas prácticas:</strong>
+        <ul>
+          <li>Documentar por cada balanza: IP, COM, baudrate, fecha de instalación, responsable.</li>
+          <li>Probar <code>/health</code> y <code>/peso</code> después de cada reinicio de PC.</li>
+          <li>Revisar periódicamente <code>scale_server.log</code> si hay fallas intermitentes.</li>
+        </ul>
+      </div>
+    </section>
+
+    <div class="footer">
+      Documento interno de TI • Alta y soporte de balanzas para Odoo Shop Floor
+    </div>
+  </div>
+</body>
+</html>

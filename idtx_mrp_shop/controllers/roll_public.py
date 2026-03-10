@@ -55,7 +55,7 @@ class RollPublicController(http.Controller):
                 </div>"""
         technical_sheet_id = roll.workorder_id.production_id.bom_id.technical_sheet_id
         weaving_data_id = roll.workorder_id.product_id.product_tmpl_id.analysis_id.weaving_data_ids.filtered(lambda w: w.technical_sheet_id == technical_sheet_id)
-        for fiber in weaving_data_id.fiber_ids:
+        for fiber in weaving_data_id.fiber_ids if roll.workorder_id.production_id.state != 'cancel' else []:
             fibers_html += f"""
                                 <tr>
                                     <td>{fiber.product_template_id.name or ''}</td>

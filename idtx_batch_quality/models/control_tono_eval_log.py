@@ -1,5 +1,5 @@
-from odoo import api, fields, models
-from odoo.exceptions import UserError
+from odoo import fields, models
+
 
 class ControlTonoEvalLog(models.Model):
     _name = "control.tono.eval.log"
@@ -25,24 +25,16 @@ class ControlTonoEvalLog(models.Model):
         default=lambda self: self.env.user,
         required=True,
     )
-    tono = fields.Selection([
-        ('tacho', 'Tacho'),
-        ('acabado', 'Acabado'),
-    ], string='tono')
-    motivo = fields.Selection(
-        [
-            ("tono", "Tono"),
-            ("tacto", "Tacto"),
-            ("apariencia", "Apariencia"),
-        ],
-        string="Motivo"
+    tono = fields.Selection(
+        [("tacho", "Tacho"), ("acabado", "Acabado")],
+        string="Tono",
+        required=True,
     )
+    motivo_tono = fields.Boolean(string="Tono")
+    motivo_tacto = fields.Boolean(string="Tacto")
+    motivo_apariencia = fields.Boolean(string="Apariencia")
     resultado = fields.Selection(
-        [
-            ("aprobado", "APROBADO"),
-            ("concesionado", "CONCESIONADO"),
-            ("rechazado", "RECHAZADO"),
-        ],
+        [("aprobado", "APROBADO"), ("concesionado", "CONCESIONADO"), ("rechazado", "RECHAZADO")],
         string="Resultado",
         required=True,
         index=True,

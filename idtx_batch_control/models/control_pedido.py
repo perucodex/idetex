@@ -311,7 +311,7 @@ class ControlPedido(models.Model):
                         if start and start.year <= 1753: start = False
                         if end and end.year <= 1753: end = False
                         vals_proc = {
-                            "barcod": bc, "barcodreo": bcreo, "barcodpar": bcpar, "barOrdLin": int(pr.get("BarOrdLin") or 0),
+                            "barOrdLin": int(pr.get("BarOrdLin") or 0),
                             "fas_code": _safe_str(pr.get("FasCod")), "fasCod": desc, "maqCodBis": _safe_str(pr.get("MaqCodBis")),
                             "barFasDTI": start, "barFasDTF": end,
                         }
@@ -335,11 +335,11 @@ class ControlPedido(models.Model):
             if existing_line:
                 existing_line.write({'kilograms': vals_line.get('kilograms'), 'process': vals_line.get('process'), 'area': vals_line.get('area'), 'start_date': vals_line.get('start_date'), 'end_date': vals_line.get('end_date')})
                 if "proceso_ids" in vals_line and vals_line["proceso_ids"]:
-                    existing_procs = {(proc.barcod, proc.barOrdLin): proc for proc in existing_line.proceso_ids}
+                    existing_procs = {proc.barOrdLin: proc for proc in existing_line.proceso_ids}
                     for cmd in vals_line["proceso_ids"]:
                         vals_proc = cmd[2].copy()
                         vals_proc['pedido_line_id'] = existing_line.id
-                        proc_key = (vals_proc.get('barcod'), vals_proc.get('barOrdLin'))
+                        proc_key = vals_proc.get('barOrdLin')
                         if proc_key in existing_procs: existing_procs[proc_key].write(vals_proc)
                         else: self.env['control.proceso.lines'].create(vals_proc)
             else:

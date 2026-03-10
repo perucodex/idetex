@@ -62,7 +62,7 @@ class LabDevLine(models.Model):
     _rec_name = 'color_name'
 
     lab_dev_id = fields.Many2one('lab.dev', string='Lab Dev', ondelete='cascade')
-    product_id = fields.Many2one('product.template','Product', ondelete='restrict')
+    # product_id = fields.Many2one('product.template','Product', ondelete='restrict')
     color_name = fields.Char('Color Name')
     color_code = fields.Char('Color Code')
     color = fields.Char('Color')
@@ -106,7 +106,7 @@ class LabDevLine(models.Model):
         for record in self:
             products = self.env['product.template'].search([('is_weaving','=', True)])
             if record.sale_order_id:
-                products = record.sale_order_id.order_line.product_template_id.filtered(lambda p: p.is_weaving).ids
+                products = record.sale_order_id.order_line.mapped('product_template_id').filtered(lambda p: p.is_weaving).ids
             record.available_product_ids = products
     
     @api.onchange('color_process_type_id','color_range_id','color_intensity_id','color_recipe_ids')

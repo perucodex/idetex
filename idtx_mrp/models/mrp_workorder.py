@@ -27,20 +27,22 @@ class MrpWorkorder(models.Model):
         self.ensure_one()
         self.leave_id.unlink()
         self.write({
-            'state': 'ready',
+            'state': 'progress',
             'date_finished': False,
         })
+        self.write({'qty_produced': 0})
         return True
     
     def button_start(self, raise_on_invalid_state=False):
         for wo in self:
             if wo.workcenter_id.operation_type == 'weaving':
-                if not wo.equipment_ids:
-                    raise UserError(_('Please asign workorder equipments to work with.'))
-                if not wo.employee_assigned_ids:
-                    raise UserError(_('Please asign employees to the workorder.'))
+                if not wo.option_ids:
+                    raise UserError(_('Please create at least one option before starting the workorder.'))
+                invalid_options = wo.option_ids.filtered(lambda opt: not opt.employee_ids or not opt.equipment_ids)
+                if invalid_options:
+                    raise UserError(_('All options must have assigned employees and equipments before starting.'))
         return super().button_start(raise_on_invalid_state=raise_on_invalid_state)
-    
+
 class MrpWorkorderOption(models.Model):
     _name = 'mrp.workorder.option'
     _description = 'Workorder Option'
@@ -48,6 +50,8 @@ class MrpWorkorderOption(models.Model):
     name = fields.Char('Name')
     workorder_id = fields.Many2one('mrp.workorder', string='Workorder')
     notes = fields.Text('Notes')
+    employee_ids = fields.Many2many('hr.employee', string='Employees')
+    equipment_ids = fields.Many2many('maintenance.equipment', string='Equipments')
     option_line_ids = fields.One2many('mrp.workorder.option.line', 'option_id', string='Option Lines')
     available_thread_product_ids = fields.Many2many(
         'product.product',

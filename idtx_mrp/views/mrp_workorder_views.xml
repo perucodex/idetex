@@ -33,14 +33,13 @@
             <xpath expr="//field[@name='qty_remaining']" position="after">
                 <field name="operation_type"/>
             </xpath>
-            <xpath expr="//field[@name='employee_assigned_ids']" position="after">
-                <field name="equipment_ids" widget="many2many_tags" domain="[('workcenter_id','=',workcenter_id)]"/>
-            </xpath>
             <xpath expr="//notebook" position="inside">
                 <page string="Options" name="options" invisible="operation_type != 'weaving'">
                     <field name="option_ids" context="{'default_workorder_id': id}">
                         <list>
                             <field name="name" readonly="1" force_save="1"/>
+                            <field name="employee_ids" widget="many2many_tags"/>
+                            <field name="equipment_ids" widget="many2many_tags" domain="[('workcenter_id','=',parent.workcenter_id)]"/>
                             <!-- <field name="option_line_ids" widget="many2many_tags" readonly="1" force_save="1"/> -->
                         </list>
                     </field>
@@ -50,8 +49,9 @@
                         <list editable="bottom" delete="0">
                             <field name="sequence" widget="handle"/>
                             <field name="name"/>
-                            <field name="equipment_id" domain="[('id','in',parent.equipment_ids)]" required="1"/>
-                            <field name="employee_id" domain="[('id','in',parent.employee_assigned_ids)]" required="1"/>
+                            <field name="option_id" required="1"/>
+                            <field name="equipment_id" domain="[('id','in',option_id.equipment_ids)]" required="1"/>
+                            <field name="employee_id" domain="[('id','in',option_id.employee_ids)]" required="1"/>
                             <field name="uom_id"/>
                             <field name="quantity"/>
                             <field name="in_batch" column_invisible="1"/>
@@ -59,7 +59,6 @@
                             <field name="net_weight" sum="Total" required="1"/>
                             <field name="roll_start"/>
                             <field name="roll_end"/>
-                            <field name="option_id"/>
                             <button name="unlink" icon="fa-trash" type="object" invisible="gross_weight" title="Delete" id="unlink_button_weight"/>
                             <button name="unlink" icon="fa-trash" type="object" invisible="quantity" title="Delete" id="unlink_button_quantity"/>
                         </list>

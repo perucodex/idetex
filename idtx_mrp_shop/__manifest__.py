@@ -22,7 +22,6 @@ luego armar las partidas
 
     # any module necessary for this one to work correctly
     'depends': [
-            'idtx_mrp',
             'idtx_sale_order',
         ],
 

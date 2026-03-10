@@ -2,25 +2,13 @@
 <templates xml:space="preserve">
     <t t-name="idtx_mrp_shop.SelectScaleDialog">
         <Dialog size="'md'" title="props.title" modalRef="modalRef">
-            <div class="mt-4">
-                <h5 class="fw-bold">Employee</h5>
-                <select class="form-select fs-4" t-model="state.selectedEmployee">
-                    <t t-foreach="employees" t-as="emp" t-key="emp.id">
-                        <option t-att-value="emp.id" t-esc="emp.name"/>
-                    </t>
-                </select>
-            </div>
-            <div class="mt-4">
-                <h5 class="fw-bold">Equipment</h5>
-                <select class="form-select fs-4" t-model="state.selectedEquipment">
-                    <t t-foreach="equipments" t-as="eqp" t-key="eqp.id">
-                        <option t-att-value="eqp.id" t-esc="eqp.name"/>
-                    </t>
-                </select>
-            </div>
+
+            <!-- Option -->
             <div class="mt-4" t-if="options and options.length">
                 <h5 class="fw-bold">Option</h5>
-                <select class="form-select fs-4" t-model="state.selectedOption" t-on-change="onOptionChange">
+                <select class="form-select fs-4"
+                        t-model="state.selectedOption"
+                        t-on-change="onOptionChange">
                     <option value=""> </option>
                     <t t-foreach="options" t-as="opt" t-key="opt.id">
                         <option t-att-value="'' + opt.id"
@@ -29,11 +17,45 @@
                     </t>
                 </select>
             </div>
-            <div class="o_select_scale_dialog w-100">
+
+            <!-- Employee -->
+            <div class="mt-4">
+                <h5 class="fw-bold">Employee</h5>
+                <select class="form-select fs-4"
+                        t-model="state.selectedEmployee"
+                        t-on-change="onEmployeeChange">
+                    <option value=""></option>
+                    <t t-foreach="state.employees" t-as="emp" t-key="emp.id">
+                        <option t-att-value="'' + emp.id"
+                                t-att-selected="state.selectedEmployee == ('' + emp.id)"
+                                t-esc="emp.name"/>
+                    </t>
+                </select>
+            </div>
+
+            <!-- Equipment -->
+            <div class="mt-4">
+                <h5 class="fw-bold">Equipment</h5>
+                <select class="form-select fs-4"
+                        t-model="state.selectedEquipment"
+                        t-on-change="onEquipmentChange">
+                    <option value=""></option>
+                    <t t-foreach="state.equipments" t-as="eqp" t-key="eqp.id">
+                        <option t-att-value="'' + eqp.id"
+                                t-att-selected="state.selectedEquipment == ('' + eqp.id)"
+                                t-esc="eqp.name"/>
+                    </t>
+                </select>
+            </div>
+
+            <div class="o_select_scale_dialog w-100 mt-3">
+
+                <!-- Lista de balanzas -->
                 <t t-foreach="scales" t-as="scale" t-key="scale.id">
-                    <div class="form-check py-2 fs-3 pointer-cursor" t-on-click="() => this.selectScale(scale)">
+                    <div class="form-check py-2 fs-3 pointer-cursor"
+                         t-on-click="() => this.selectScale(scale)">
                         <input t-att-type="props.radioMode ? 'radio' : 'checkbox'"
-                               t-att-name="scale.equipment_name"
+                               t-att-name="'scaleChoice'"
                                class="form-check-input"
                                t-att-checked="state.selectedMode === 'scale' and state.selectedScaleId === scale.id"/>
                         <label class="form-check-label">
@@ -42,14 +64,48 @@
                     </div>
                 </t>
 
-                <!-- Radio: Manual -->
+                <!-- Manual -->
                 <div class="form-check py-2 fs-3 pointer-cursor" t-on-click="() => this.selectManual()">
                     <input type="radio" name="scaleChoice" class="form-check-input"
                            t-att-checked="state.selectedMode === 'manual'"/>
                     <label class="form-check-label">Manual</label>
                 </div>
 
-                <!-- Auth manual (solo si no autorizado) -->
+                <!-- Peso Balanza -->
+                <div t-if="state.selectedMode === 'scale'" class="mt-3">
+                    <label class="form-label fs-4">Peso Balanza</label>
+
+                    <input type="text"
+                           class="form-control fs-4"
+                           t-att-value="state.manualWeight"
+                           readonly="readonly"/>
+
+                    <div class="mt-2 fs-6 d-flex flex-wrap gap-2 align-items-center" t-if="!state.scaleReadError">
+                        <span class="badge rounded-pill bg-secondary">
+                            Unidad: <t t-esc="state.scaleUnit"/>
+                        </span>
+
+                        <span t-if="state.scaleStable === true" class="badge rounded-pill bg-success">
+                            Estable
+                        </span>
+                        <span t-if="state.scaleStable === false" class="badge rounded-pill bg-warning text-dark">
+                            Inestable
+                        </span>
+                        <span t-if="state.scaleStable === null" class="badge rounded-pill bg-light text-dark border">
+                            Sin estado
+                        </span>
+                    </div>
+
+                    <div class="mt-1 text-danger fs-6" t-if="state.scaleReadError">
+                        <t t-esc="state.scaleReadError"/>
+                    </div>
+
+                    <div class="mt-1 text-muted fs-6" t-if="state.scaleStable === false and !state.scaleReadError">
+                        Espera a que el peso esté estable para confirmar.
+                    </div>
+                </div>
+
+                <!-- Auth manual -->
                 <div t-if="state.selectedMode === 'manual' and !state.isManualAuthorized" class="mt-3">
                     <div class="alert alert-warning">
                         Se requiere autorización para ingreso manual.
@@ -93,6 +149,7 @@
                         </button>
                     </div>
 
+                    <label class="form-label fs-4">Peso manual</label>
                     <input type="text" class="form-control fs-4"
                            placeholder="Enter weight (kg)"
                            inputmode="decimal"
@@ -104,18 +161,20 @@
                 </div>
 
                 <t t-set-slot="footer">
-                        <button class="btn btn-primary"
+                    <button class="btn btn-primary"
                             data-select-confirm="1"
                             t-att-disabled="!isConfirmEnabled"
                             t-att-style="!isConfirmEnabled ? 'pointer-events:none;opacity:0.6' : ''"
                             t-on-click="confirm">
                         Confirm
                     </button>
-                    <!-- <button class="btn btn-primary" t-att-class="{'disabled': props.radioMode &amp;&amp; !state.activeScales.length}" t-on-click="confirm">Confirm</button> -->
-                          <a t-if="!isDisplayStandalone &amp;&amp; !props.radioMode"
-                              class="btn btn-secondary"
-                              t-attf-href="/scoped_app?app_id=mrp_shop_floor&amp;path=scoped_app/shop-floor&amp;app_name={appName}"
-                              target="_blank">Install App</a>
+
+                    <a t-if="!isDisplayStandalone and !props.radioMode"
+                       class="btn btn-secondary"
+                       t-attf-href="/scoped_app?app_id=mrp_shop_floor&amp;path=scoped_app/shop-floor&amp;app_name={appName}"
+                       target="_blank">
+                        Install App
+                    </a>
                 </t>
             </div>
         </Dialog>

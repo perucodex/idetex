@@ -78,7 +78,18 @@ class SaleOrder(models.Model):
         return action
     
     def write(self, vals):
-        return super().write(vals)
+        res = super().write(vals)
+        if 'lab_dev_ids' in vals:
+            self._cleanup_orphan_lab_dev_lines()
+        return res
+
+    def _cleanup_orphan_lab_dev_lines(self):
+        for order in self:
+            orphan_lines = order.order_line.filtered(
+                lambda l: l.lab_dev_line_id and l.lab_dev_line_id.lab_dev_id not in order.lab_dev_ids
+            )
+            if orphan_lines:
+                orphan_lines.lab_dev_line_id = False
     
     def update_color_names(self):
         for l in self.order_line:
@@ -120,14 +131,22 @@ class SaleOrder(models.Model):
     def _onchange_payment_term_id(self):
         self.order_line._compute_price_unit()
 
+    @api.onchange('order_line')
+    def _onchange_order_line_lab_dev_line_id(self):
+        for order in self:
+            order.with_context(syncing_lab_dev_from_lines=True).lab_dev_ids = (
+                order.lab_dev_ids | order.order_line.mapped('lab_dev_line_id.lab_dev_id')
+            )
+
     @api.onchange('lab_dev_ids')
     def _onchange_lab_dev_ids(self):
-        for line in self.order_line:
-            ld_line = self.lab_dev_ids._origin.lab_dev_line_ids.filtered(lambda l: l.sale_order_line_id == line._origin)
-            if ld_line:
-                line.lab_dev_line_id = ld_line
-            else:
-                line.lab_dev_line_id = False
+        if self.env.context.get('syncing_lab_dev_from_lines'):
+            return
+        for order in self:
+            current_ids = set(order.lab_dev_ids.ids)
+            for line in order.order_line:
+                if line.lab_dev_line_id and line.lab_dev_line_id.lab_dev_id.id not in current_ids:
+                    line.lab_dev_line_id = False
 
     def create_labdev(self):
         if any(not line.color_name for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.product_color_id.is_lab_color)):
