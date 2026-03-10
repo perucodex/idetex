@@ -150,7 +150,7 @@ def parse_log_temperature_family(path: Path) -> list[dict[str, Any]]:
     - setpoint_raw -> temperatura programada interna
     """
     data = path.read_bytes()
-    samples: list[dict[str, Any]] = []
+    grouped: dict[tuple[int, int], list[dict[str, Any]]] = {}
 
     for i in range(4, len(data) - 14):
         if not is_ts6(data, i):
@@ -163,24 +163,54 @@ def parse_log_temperature_family(path: Path) -> list[dict[str, Any]]:
         v3 = int.from_bytes(data[i + 10 : i + 12], "little")
         v4 = int.from_bytes(data[i + 12 : i + 14], "little")
 
-        if pre1 != 3 or v3 != 200:
-            continue
-
         y, m, d, hh, mm, ss = data[i : i + 6]
         ts = datetime(1900 + y, m, d, hh, mm, ss)
+        row = {
+            "timestamp": ts,
+            "actual_raw": v1,
+            "setpoint_raw": v2,
+            "step": v4,
+            "counter": pre0,
+            "marker_pre1": pre1,
+            "marker_v3": v3,
+            "offset": i,
+        }
+        grouped.setdefault((pre1, v3), []).append(row)
 
-        samples.append(
-            {
-                "timestamp": ts,
-                "actual_raw": v1,
-                "setpoint_raw": v2,
-                "step": v4,
-                "counter": pre0,
-                "marker_pre1": pre1,
-                "marker_v3": v3,
-                "offset": i,
-            }
-        )
+    def family_score(rows: list[dict[str, Any]]) -> tuple[int, int, int]:
+        # Buscamos familias de telemetria con setpoint repetido y valores de temperatura plausibles.
+        if len(rows) < 80:
+            return (0, 0, 0)
+        setpoints = [int(r["setpoint_raw"]) for r in rows]
+        actuals = [int(r["actual_raw"]) for r in rows]
+        if not setpoints or not actuals:
+            return (0, 0, 0)
+        med_sp = statistics.median(setpoints)
+        med_ac = statistics.median(actuals)
+        if not (200 <= med_sp <= 9000 and 200 <= med_ac <= 9000):
+            return (0, 0, 0)
+        repeats = Counter(setpoints).most_common(1)[0][1]
+        if repeats < 20:
+            return (0, 0, 0)
+        # Priorizamos repeticion de setpoint y luego volumen de muestras.
+        return (repeats, len(rows), -len(set(setpoints)))
+
+    best_key: tuple[int, int] | None = None
+    best_rows: list[dict[str, Any]] = []
+    best_score = (0, 0, 0)
+    for key, rows in grouped.items():
+        score = family_score(rows)
+        if score > best_score:
+            best_score = score
+            best_key = key
+            best_rows = rows
+
+    # Fallback para el patron conocido del archivo PR132295.LOG.
+    if not best_rows and (3, 200) in grouped:
+        best_key = (3, 200)
+        best_rows = grouped[(3, 200)]
+
+    samples = best_rows
 
     samples.sort(key=lambda s: (s["timestamp"], s["offset"]))
 
@@ -195,8 +225,16 @@ def parse_log_temperature_family(path: Path) -> list[dict[str, Any]]:
     return deduped
 
 
-def infer_scale(samples: list[dict[str, Any]], palette: list[float]) -> float:
-    repeated = Counter(round(s["setpoint_raw"] / 100.0, 2) for s in samples if s["setpoint_raw"] > 0)
+def infer_raw_divisor(samples: list[dict[str, Any]]) -> float:
+    if not samples:
+        return 100.0
+    med_sp = statistics.median(s["setpoint_raw"] for s in samples)
+    # En algunos LOG el valor viene en centesimas (x100), en otros en decimas (x10).
+    return 100.0 if med_sp >= 1500 else 10.0
+
+
+def infer_scale(samples: list[dict[str, Any]], palette: list[float], raw_divisor: float = 100.0) -> float:
+    repeated = Counter(round(s["setpoint_raw"] / raw_divisor, 2) for s in samples if s["setpoint_raw"] > 0)
     encoded = sorted(v for v, c in repeated.items() if c >= 20)
     if not encoded:
         return 1.0
@@ -220,15 +258,15 @@ def infer_scale(samples: list[dict[str, Any]], palette: list[float]) -> float:
     return float(min(candidates, key=score))
 
 
-def add_scaled_temperatures(samples: list[dict[str, Any]], scale: float) -> list[dict[str, Any]]:
+def add_scaled_temperatures(samples: list[dict[str, Any]], scale: float, raw_divisor: float = 100.0) -> list[dict[str, Any]]:
     out: list[dict[str, Any]] = []
     for s in samples:
         row = dict(s)
         row["timestamp"] = s["timestamp"].isoformat(sep=" ")
-        row["actual_base"] = round(s["actual_raw"] / 100.0, 4)
-        row["setpoint_base"] = round(s["setpoint_raw"] / 100.0, 4)
-        row["actual_c"] = round((s["actual_raw"] / 100.0) * scale, 4)
-        row["setpoint_c"] = round((s["setpoint_raw"] / 100.0) * scale, 4)
+        row["actual_base"] = round(s["actual_raw"] / raw_divisor, 4)
+        row["setpoint_base"] = round(s["setpoint_raw"] / raw_divisor, 4)
+        row["actual_c"] = round((s["actual_raw"] / raw_divisor) * scale, 4)
+        row["setpoint_c"] = round((s["setpoint_raw"] / raw_divisor) * scale, 4)
         out.append(row)
     return out
 
@@ -331,8 +369,9 @@ def build_payload(prg_path: Path, log_path: Path, force_scale: float | None = No
             palette.append(needed)
     palette = sorted(set(palette))
 
-    scale = float(force_scale) if force_scale else infer_scale(raw_samples, palette)
-    temp_samples = add_scaled_temperatures(raw_samples, scale)
+    raw_divisor = infer_raw_divisor(raw_samples)
+    scale = float(force_scale) if force_scale else infer_scale(raw_samples, palette, raw_divisor=raw_divisor)
+    temp_samples = add_scaled_temperatures(raw_samples, scale, raw_divisor=raw_divisor)
 
     payload = {
         "metadata": {
@@ -342,7 +381,11 @@ def build_payload(prg_path: Path, log_path: Path, force_scale: float | None = No
             "machine": log_header.get("machine"),
             "reference": log_header.get("reference"),
             "inferred_scale": round(scale, 6),
-            "temperature_family_signature": {"pre1": 3, "v3": 200},
+            "raw_divisor": raw_divisor,
+            "temperature_family_signature": {
+                "pre1": temp_samples[0]["marker_pre1"] if temp_samples else None,
+                "v3": temp_samples[0]["marker_v3"] if temp_samples else None,
+            },
             "prg_palette": palette,
             "sample_count": len(temp_samples),
             "start_time": temp_samples[0]["timestamp"] if temp_samples else None,
