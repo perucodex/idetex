@@ -19,19 +19,12 @@ async function printZPLWithIP(env, action) {
         localStorage.setItem("zpl_printer_ip", printerIp);
     }
 
-    // 3️⃣ Llamar a Python para imprimir
-    // try {
-    console.log(recordIds)
-    console.log(printerIp)
     await rpc("/web/dataset/call_kw", {
         model: "mrp.workorder.roll",
         method: "print_zpl_with_ip",
-        args: [recordIds, printerIp],  // 👈 MUY IMPORTANTE
+        args: [recordIds, printerIp],
         kwargs: {},
     });
-    // } catch (err) {
-    //     alert("Error al imprimir:\n" + err);
-    // }
 }
 
 registry.category("actions").add("print_zpl_ip", printZPLWithIP);

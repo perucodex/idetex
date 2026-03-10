@@ -6,6 +6,8 @@
             <list editable="top">
                 <field name="equipment_id"/>
                 <field name="ip"/>
+                <field name="printer_id"/>
+                <field name="printer_ip"/>
             </list>
         </field>
     </record>

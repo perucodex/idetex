@@ -65,6 +65,7 @@ class MrpWorkorder(models.Model):
             employee_id = int(employee_id) if employee_id else False
             equipment_id = int(equipment_id) if equipment_id else False
             option_id = int(option_id) if option_id else False
+            scale = self.env['scale.registry'].browse(int(1))
 
             if not employee_id or not equipment_id:
                 return {'status': 'danger', 'message': _('Employee and equipment are required')}
@@ -90,7 +91,6 @@ class MrpWorkorder(models.Model):
                 if not id:
                     return {'status': 'danger', 'message': _('No scale selected and no weight provided')}
 
-                scale = self.env['scale.registry'].browse(int(id))
                 client_ip = scale.ip
                 if not client_ip:
                     return {'status': 'danger', 'message': _('Scale IP is not configured')}
@@ -134,15 +134,15 @@ class MrpWorkorder(models.Model):
 
             roll = self.roll_ids.create(vals)
 
-            if not self.env.company.zpl_printer_ip:
-                raise RedirectWarning(
-                    _('This company does not have any zpl printer configured.'),
-                    self.env.ref('account.action_account_config').id,
-                    _("Go to the configuration panel"),
-                )
+            # if not self.env.company.zpl_printer_ip:
+            #     raise RedirectWarning(
+            #         _('This company does not have any zpl printer configured.'),
+            #         self.env.ref('account.action_account_config').id,
+            #         _("Go to the configuration panel"),
+            #     )
 
-            if self.env.company.is_printer:
-                roll._print_zpl_to_network(roll.create_zpl(), self.env.company.zpl_printer_ip)
+            if scale.printer_ip:
+                roll._print_zpl_to_network(roll.create_zpl(), scale.printer_ip)
 
             self.qty_producing = sum(self.roll_ids.mapped('gross_weight'))
 
