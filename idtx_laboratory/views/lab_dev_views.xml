@@ -98,7 +98,7 @@
                     <field name="lab_dev_line_ids" string="Product" filter_domain="[('lab_dev_line_ids.product_id', 'ilike', self)]"/>
                     <field name="lab_dev_line_ids" string="Color Code" filter_domain="[('lab_dev_line_ids.color_code', 'ilike', self)]"/>
                     <field name="lab_dev_line_ids" string="Color Name" filter_domain="[('lab_dev_line_ids.color_name', 'ilike', self)]"/>
-                    <filter name="approved" string="Approved" domain="[('state','=','approved')]"/>
+                    <filter name="done" string="Done" domain="[('state','=','done')]"/>
                     <filter name="test" string="Test" domain="[('state','=','test')]"/>
                     <filter name="progress" string="In Progress" domain="[('state', 'in', ('draft', 'dev'))]"/>
                     <group>
@@ -147,7 +147,7 @@
                         </group>
                         <notebook>
                             <page name="recipe_page" string="Recipes">
-                                <field name="color_recipe_ids" readonly="state == 'approved' or not color_code" context="{'form_view_ref': 'idtx_laboratory.color_recipe_form_view'}">
+                                <field name="color_recipe_ids" readonly="state == 'done' or not color_code" context="{'form_view_ref': 'idtx_laboratory.color_recipe_form_view'}">
                                     <list editable="top" open_form_view="True">
                                         <field name="name" readonly="1"/>
                                         <field name="recipe_date" readonly="1"/>

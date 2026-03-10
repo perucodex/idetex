@@ -21,7 +21,7 @@ class MrpProduction(models.Model):
         ('sample', 'Sample'),
         ('pilot', 'Pilot'),
     ], string='Sale Type', default='sale')
-
+    
     @api.onchange('color_recipe_id')
     def _onchange_color_recipe_id(self):
         for production in self:

@@ -49,6 +49,7 @@ Laboratory  module allows colors for dieying
         'views/color_code_system_views.xml',
         'views/color_recipe_views.xml',
         'views/lab_dev_views.xml',
+        'views/mrp_routing_views.xml',
         'views/product_template_views.xml',
         'views/res_config_settings_views.xml',
         'views/lab_menu.xml',
