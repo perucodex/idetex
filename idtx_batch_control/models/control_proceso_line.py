@@ -21,18 +21,50 @@ class ControlProcesoLine(models.Model):
     barFasDTF = fields.Datetime("Fecha Fin")
     operator_name = fields.Char("Operario")
 
-    previous_finished = fields.Boolean(compute="_compute_previous_finished", store=False)
+    previous_finished = fields.Boolean(string="Proceso Anterior Finalizado",compute="_compute_previous_finished", store=False)
+    state = fields.Selection([
+        ('pending', 'Pendiente'),
+        ('ready', 'Listo'),
+        ('in_progress', 'En Proceso'),
+        ('done', 'Terminado'),
+    ], string="Estado", compute="_compute_state", store=False)
 
-    @api.depends('pedido_line_id.proceso_ids.barFasDTF')
+    @api.depends('barFasDTI', 'barFasDTF', 'previous_finished')
+    def _compute_state(self):
+        for rec in self:
+            if rec.barFasDTF:
+                rec.state = 'done'
+            elif rec.barFasDTI:
+                rec.state = 'in_progress'
+            elif rec.previous_finished:
+                rec.state = 'ready'
+            else:
+                rec.state = 'pending'
+
+    @api.depends('pedido_line_id.proceso_ids.barFasDTF', 'pedido_line_id.proceso_ids.barOrdLin')
     def _compute_previous_finished(self):
         for rec in self:
-            all_procs = rec.pedido_line_id.proceso_ids.sorted('barOrdLin')
-            idx = all_procs.ids.index(rec.id) if rec.id in all_procs.ids else -1
-            if idx <= 0:
+            rec.previous_finished = False
+
+            if not rec.pedido_line_id:
+                continue
+
+            # Ordenar todos los procesos por orden
+            all_procs = rec.pedido_line_id.proceso_ids.sorted(key=lambda r: r.barOrdLin or 0)
+
+            previous_proc = False
+            for proc in all_procs:
+                if proc.id == rec.id:
+                    break
+                previous_proc = proc
+
+            # Si no hay proceso anterior, está habilitado
+            if not previous_proc:
                 rec.previous_finished = True
             else:
-                prev_proc = all_procs[idx-1]
-                rec.previous_finished = bool(prev_proc.barFasDTF)
+                # Está habilitado solo si el anterior terminó
+                rec.previous_finished = bool(previous_proc.barFasDTF)
+
 
     def action_edit_process(self):
         self.ensure_one()

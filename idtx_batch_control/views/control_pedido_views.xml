@@ -46,13 +46,24 @@
                             <field name="num_days"/>
                             <field name="process"/>
                             <field name="area"/>
-                            <field name="total_weight" readonly="1"/>
-                            <field name="produced_weight" readonly="1"/>
+                            <div class="oe_button_box" name="button_box">
+
+                            <button type="object" class="oe_stat_button" icon="fa-balance-scale">
+                                <field name="total_weight" widget="statinfo" string="Kilos Totales"/>
+                            </button>
+
+                            <button type="object" class="oe_stat_button" icon="fa-industry">
+                                <field name="produced_weight" widget="statinfo" string="Kilos Producidos"/>
+                            </button>
+
+                        </div>
+                           <!-- <field name="total_weight" readonly="1"/>
+                            <field name="produced_weight" readonly="1"/>-->
                         </group>
                     </group>
                     <notebook>
                         <page string="Detalle">
-                            <field name="line_ids" readonly="1">
+                            <field name="line_ids" readonly="1" create="0" edit="0">
                                 <list decoration-danger="process == 'SIN AVANCE'">
                                     <field name="route"/>
                                     <field name="barcodreo"/>
@@ -60,7 +71,7 @@
                                     <field name="kilograms" sum="Total"/>
                                     <field name="process"/>
                                     <field name="area"/>
-                                    <field name="start_date"/>
+                                    <field name="start_date" widget="datetime"/>
                                     <field name="end_date"/>
                                     <field name="colorcode"/>
                                     <field name="colorname"/>

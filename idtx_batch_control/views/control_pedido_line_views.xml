@@ -4,7 +4,20 @@
         <field name="name">control.pedido.line.tree</field>
         <field name="model">control.pedido.line</field>
         <field name="arch" type="xml">
-            <list decoration-danger="area == 'AREA NO CONOCIDA'" create="0">
+
+        <list decoration-danger="process == 'SIN AVANCE'" create="0" edit="0" delete="0">
+            <field name="pedido_id"/>
+            <field name="route"/>
+            <field name="batch"/>
+            <field name="description"/>
+            <field name="process"/>
+            <field name="area"/>
+            <field name="kilograms" sum="Total"/>
+            <field name="start_date"/>
+            <field name="end_date"/>
+        </list>
+    
+            <!-- <list decoration-danger="area == 'AREA NO CONOCIDA'" create="0">
                 <field name="batch"/>
                 <field name="pedido_id"/>
                 <field name="route"/>
@@ -13,6 +26,27 @@
                 <field name="process"/>
                 <field name="area"/>
                 <field name="kilograms" sum="Total"/>
+            </list> -->
+        </field>
+    </record>
+
+    <record id="view_control_proceso_lines_tree" model="ir.ui.view">
+        <field name="name">control.proceso.lines.tree</field>
+        <field name="model">control.proceso.lines</field>
+        <field name="arch" type="xml">
+            <list create="0" delete="0">
+                <field name="barOrdLin"/>
+                <field name="pedido_line_id"/>
+                <field name="fasCod"/>
+                <field name="maqCodBis"/>
+                <field name="state" widget="badge" 
+                       decoration-success="state == 'done'" 
+                       decoration-warning="state == 'in_progress'"
+                       decoration-info="state == 'ready'"
+                       decoration-muted="state == 'pending'"/>
+                <field name="barFasDTI"/>
+                <field name="barFasDTF"/>
+                <field name="operator_name" widget="badge"/>
             </list>
         </field>
     </record>
@@ -49,18 +83,28 @@
                     <notebook>
                         <page string="Procesos">
                             <field name="proceso_ids">
-                                <list decoration-success="barFasDTF" delete="0" edit="0">
-                                    <!-- <field name="barcod"/> -->
+                                <list delete="0" edit="0">
                                     <field name="barOrdLin"/>
                                     <field name="fasCod"/>
                                     <field name="maqCodBis"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'done'" 
+                                           decoration-warning="state == 'in_progress'"
+                                           decoration-info="state == 'ready'"
+                                           decoration-muted="state == 'pending'"/>
                                     <field name="barFasDTI"/>
                                     <field name="barFasDTF"/>
-                                    <field name="operator_name"/>
+                                    <field name="operator_name" widget="badge"/>
                                     <field name="previous_finished" column_invisible="1"/>
-                                    <button name="action_edit_process" type="object" string="Editar" class="btn-secondary" invisible="barFasDTI != False or barFasDTF != False or previous_finished == False"/>
-                                    <button name="action_start_with_wizard" type="object" string="Iniciar" class="btn-primary" invisible="barFasDTI != False or barFasDTF != False or previous_finished == False"/>
-                                    <button name="action_finish" type="object" confirm= "Estas seguro de finalizar le proceso?" string="Finalizar" class="btn-success" invisible="barFasDTI == False or barFasDTF != False"/>
+                                    
+                                    <button name="action_edit_process" type="object" icon="fa-edit" class="btn-secondary" 
+                                            invisible="state != 'ready'" title="edit"/>
+                                    
+                                    <button name="action_start_with_wizard" type="object" icon="fa-play" class="btn-primary" 
+                                            invisible="state != 'ready'" title="play"/>
+                                            
+                                    <button name="action_finish" type="object" confirm="¿Estás seguro de finalizar el proceso?" icon="fa-check" class="btn-success" 
+                                            invisible="state != 'in_progress'" title="finalizar"/>
                                 </list>
                             </field>
                         </page>
