@@ -142,6 +142,8 @@ class SaleOrderLine(models.Model):
                 rec.color_name = rec.lab_dev_line_id.color_name
             # Actualiza las ordenes de producción relacionadas con esta línea de venta para que tengan el lab_dev_line_id asignado
             if rec.lab_dev_line_id and rec.lab_dev_line_id.state == 'approved' and rec.production_id:
+                if rec.production_id.state == 'confirmed':
+                    raise UserError(_('Can\'t change production recipe if production is in confirmed state.'))
                 rec.production_id.color_recipe_id = rec.lab_dev_line_id.color_recipe_ids.filtered(lambda cr: cr.state == 'approved')
 
     @api.onchange('product_id')

@@ -27,16 +27,16 @@ class LabDev(models.Model):
     state = fields.Selection([
         ('draft', 'Draft'),
         ('dev', 'Development'),
-        ('approved', 'Approved'),
+        ('done', 'Done'),
     ], string='State', default='draft', tracking=True)
     
     def action_development(self):
         self.state = 'dev'
 
-    def action_approve(self):
-        if any(line.state != 'approved' for line in self.lab_dev_line_ids):
-            raise UserError(_('All lab dev lines must be approved before approving the lab dev.'))
-        self.state = 'approved'
+    def action_done(self):
+        if any(line.state != 'done' for line in self.lab_dev_line_ids):
+            raise UserError(_('All lab dev lines must be done before marking the lab dev as done.'))
+        self.state = 'done'
 
     def open_recipes(self):
         return self.lab_dev_line_ids.color_recipe_ids._get_records_action(name=_('Recipes'), context={'group_by': 'color_name'})
