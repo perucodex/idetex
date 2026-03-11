@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<!--
+    Plantilla QWeb para el reporte de Cierre y Control de Caja (PDF).
+    Diseñada para imprimirse en formato horizontal (Landscape).
+    Consolida ventas (blanco) y movimientos manuales de caja (amarillo claro).
+-->
+    <template id="report_closing_control">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <style>
+                    .report-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        font-size: 8pt;
+                    }
+                    .report-table th, .report-table td {
+                        border: 1px solid #dee2e6;
+                        padding: 4px;
+                    }
+                    .report-table th {
+                        background-color: #f8f9fa;
+                        text-align: center;
+                        font-weight: bold;
+                    }
+                    .text-right { text-align: right; }
+                    .text-center { text-align: center; }
+                    .header-section { margin-bottom: 20px; }
+                    .total-row { font-weight: bold; background-color: #f1f1f1; }
+                </style>
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="header-section text-center">
+                            <h3>Reporte Cierre y Control de Caja</h3>
+                            <span>Sesión: <strong><t t-esc="o.session_id.name"/></strong></span> | 
+                            <span>Responsable: <strong><t t-esc="o.session_id.user_id.name"/></strong></span>
+                        </div>
+
+                        <div class="row mb-3" style="font-size: 9pt;">
+                            <div class="col-6">
+                                <strong>Apertura:</strong> <t t-esc="o.session_id.start_at" t-options='{"widget": "datetime"}'/><br/>
+                                <strong>Cierre:</strong> <t t-esc="o.session_id.stop_at" t-options='{"widget": "datetime"}'/>
+                            </div>
+                            <div class="col-6 text-end">
+                                <strong>Saldo Inicial:</strong> 
+                                <span t-esc="opening_balance" t-options='{"widget": "monetary", "display_currency": o.session_id.currency_id}'/>
+                            </div>
+                        </div>
+
+                        <table class="report-table">
+                            <thead>
+                                <tr>
+                                    <th>Kilos</th>
+                                    <th>Cód. Prod.</th>
+                                    <th>Descripción</th>
+                                    <th>Cód. Col.</th>
+                                    <th>Color</th>
+                                    <th>Partida</th>
+                                    <th>Ref.</th>
+                                    <th>Lote</th>
+                                    <th>Precio</th>
+                                    <th>Documento</th>
+                                    <th>Efectivo</th>
+                                    <th>Cta. Cliente</th>
+                                    <th>Tarjeta</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="entries" t-as="entry">
+                                    <tr t-att-style="'background-color: #fff9e6;' if entry['type'] == 'cash_move' else ''">
+                                        <td class="text-right">
+                                            <t t-if="entry['kilos'] != 0">
+                                                <t t-esc="'%.2f' % entry['kilos']"/>
+                                            </t>
+                                        </td>
+                                        <td><t t-esc="entry['product_code']"/></td>
+                                        <td>
+                                            <t t-if="entry['type'] == 'sale'">
+                                                <t t-esc="entry['product_name']"/>
+                                            </t>
+                                            <t t-else="">
+                                                <strong><t t-esc="entry['name_color']"/></strong>
+                                            </t>
+                                        </td>
+                                        <td class="text-center"><t t-esc="entry['color_code']"/></td>
+                                        <td><t t-esc="entry['color_name']"/></td>
+                                        <td><t t-esc="entry['batch']"/></td>
+                                        <td><t t-esc="entry['ref']"/></td>
+                                        <td><t t-esc="entry['lot_name']"/></td>
+                                        <td class="text-right">
+                                            <t t-if="entry['price'] != 0">
+                                                <t t-esc="entry['price']" t-options='{"widget": "monetary", "display_currency": o.session_id.currency_id}'/>
+                                            </t>
+                                        </td>
+                                        <td><t t-esc="entry['number']"/></td>
+                                        <td class="text-right">
+                                            <t t-if="entry['efectivo'] != 0">
+                                                <t t-esc="entry['efectivo']" t-options='{"widget": "monetary", "display_currency": o.session_id.currency_id}'/>
+                                            </t>
+                                        </td>
+                                        <td class="text-right">
+                                            <t t-if="entry['cuenta'] != 0">
+                                                <t t-esc="entry['cuenta']" t-options='{"widget": "monetary", "display_currency": o.session_id.currency_id}'/>
+                                            </t>
+                                        </td>
+                                        <td class="text-right">
+                                            <t t-if="entry['tarjeta'] != 0">
+                                                <t t-esc="entry['tarjeta']" t-options='{"widget": "monetary", "display_currency": o.session_id.currency_id}'/>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                            <tfoot>
+                                <tr class="total-row">
+                                    <td class="text-right"><t t-esc="'%.2f' % total_kilos"/></td>
+                                    <td colspan="7">TOTALES</td>
+                                    <td></td>
+                                    <td></td>
+                                    <td class="text-right"><t t-esc="total_efectivo" t-options='{"widget": "monetary", "display_currency": o.session_id.currency_id}'/></td>
+                                    <td class="text-right"><t t-esc="total_cuenta" t-options='{"widget": "monetary", "display_currency": o.session_id.currency_id}'/></td>
+                                    <td class="text-right"><t t-esc="total_tarjeta" t-options='{"widget": "monetary", "display_currency": o.session_id.currency_id}'/></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <div class="row justify-content-end mt-4" style="font-size: 10pt;">
+                            <div class="col-4">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td>Saldo Apertura:</td>
+                                        <td class="text-end"><t t-esc="opening_balance" t-options='{"widget": "monetary", "display_currency": o.session_id.currency_id}'/></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Total Ventas/Mov. Efectivo:</td>
+                                        <td class="text-end"><t t-esc="total_efectivo" t-options='{"widget": "monetary", "display_currency": o.session_id.currency_id}'/></td>
+                                    </tr>
+                                    <tr style="border-top: 2px solid #000; font-weight: bold;">
+                                        <td>Saldo Final Efectivo:</td>
+                                        <td class="text-end">
+                                            <span t-esc="final_cash_balance" t-options='{"widget": "monetary", "display_currency": o.session_id.currency_id}'/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista Lista personalizada (Tabla Interactiva) -->
+    <record id="idtx_view_pos_closing_report_line_list" model="ir.ui.view">
+        <field name="name">pos.closing.report.line.list</field>
+        <field name="model">pos.closing.report.line</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0" js_class="idtx_pos_closing_report_list">
+                <field name="kilos" sum="Total Cantidad"/>
+                <field name="product_name" optional="show" width="250px"/>
+                <field name="product_code" optional="hide"/>
+                <field name="color_name" optional="show" width="150px"/>
+                <field name="color_code" optional="hide"/>
+                <field name="batch" optional="show"/>
+                <field name="ref" optional="show" width="60px"/>
+                <field name="lot_name" optional="hide"/>
+                <field name="price_unit" widget="monetary" optional="show"/>
+                <field name="doc_number" optional="show" width="100px"/>
+                <field name="amount_cash" sum="Total Efectivo" widget="monetary"/>
+                <field name="amount_account" sum="Total Deposito" widget="monetary"/>
+                <field name="amount_card" sum="Total Tarjeta" widget="monetary"/>
+                <field name="partner_name" optional="show"/>
+                <field name="partner_vat" optional="show"/>
+                <field name="date"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vista de Búsqueda con SearchPanel orientado al Usuario -->
+    <record id="idtx_view_pos_closing_report_line_search" model="ir.ui.view">
+        <field name="name">pos.closing.report.line.search</field>
+        <field name="model">pos.closing.report.line</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="product_name"/>
+                <field name="doc_number"/>
+                <field name="partner_name" string="Cliente"/>
+                <field name="partner_vat" string="RUC"/>
+                <field name="session_display_name" string="Numero de sesion"/>
+                <field name="session_id" column_invisible="1"/>
+                <filter string="Ventas" name="filter_sale" domain="[('entry_type', '=', 'sale')]"/>
+                <filter string="Mov. Caja" name="filter_cash" domain="[('entry_type', '=', 'cash_move')]"/>
+                <group>
+                    <filter string="Sesión" name="session_group" domain="[]" context="{'group_by': 'session_display_name'}"/>
+                    <filter string="Producto" name="group_product" domain="[]" context="{'group_by': 'product_name'}"/>
+                </group>
+                <searchpanel>
+                    <field name="session_display_name" string="Sesión" icon="fa-cutlery" enable_counters="1"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+
+    <!-- Acción de Servidor para abrir el reporte (Punto de entrada) -->
+    <record id="idtx_action_server_open_closing_report" model="ir.actions.server">
+        <field name="name">Cierre de Caja Detallado</field>
+        <field name="model_id" ref="model_pos_closing_report_line"/>
+        <field name="state">code</field>
+        <field name="code">
+            action = model.action_open_closing_report()
+        </field>
+    </record>
+
+    <menuitem id="menu_pos_closing_control_report"
+              name="Reporte Cierre y Control de Caja"
+              action="idtx_action_server_open_closing_report"
+              parent="point_of_sale.menu_point_rep"
+              sequence="100"/>
+</odoo>

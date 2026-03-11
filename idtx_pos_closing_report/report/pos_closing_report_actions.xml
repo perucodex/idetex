@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_closing_control" model="ir.actions.report">
+        <field name="name">Reporte Cierre y Control de Caja</field>
+        <field name="model">pos.closing.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">idtx_pos_closing_report.report_closing_control</field>
+        <field name="report_file">idtx_pos_closing_report.report_closing_control</field>
+        <field name="print_report_name">'Reporte_Cierre_Caja_%s' % (object.session_id.name)</field>
+        <field name="paperformat_id" ref="idtx_pos_closing_report.paperformat_landscape_pos"/>
+        <field name="binding_model_id" ref="model_pos_closing_report_wizard"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

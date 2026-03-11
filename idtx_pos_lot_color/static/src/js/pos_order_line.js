@@ -6,8 +6,8 @@ patch(PosOrderline.prototype, {
     get lotColorName() {
         if (!this.pack_lot_ids?.length) return "";
         const lotName = this.pack_lot_ids[0].lot_name;
-        if (!lotName) return "";
-        const lot = this.models["stock.lot"]?.find(l =>
+        if (!lotName || !this.models) return "";
+        const lot = (this.models["stock.lot"] || []).find(l =>
             l.name === lotName
         );
         if (!lot) return "";

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_pos_closing_report_line_list_min" model="ir.ui.view">
+        <field name="name">pos.closing.report.line.list.min</field>
+        <field name="model">pos.closing.report.line</field>
+        <field name="arch" type="xml">
+            <list string="Detalle de Caja">
+                <field name="date"/>
+                <field name="product_name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_pos_closing_report_line_min" model="ir.actions.act_window">
+        <field name="name">Vista Detallada</field>
+        <field name="res_model">pos.closing.report.line</field>
+        <field name="view_mode">list</field>
+    </record>
+</odoo>
