@@ -9,6 +9,7 @@ class MrpProduction(models.Model):
 
     sale_order_line_id = fields.Many2one('sale.order.line', string='Sale Order Line', copy=True)
     order_id = fields.Many2one('sale.order', string='Sale Order', related='sale_order_line_id.order_id', store=True)
+    partner_id = fields.Many2one('res.partner', string='Client', related='order_id.partner_id', store=True)
     need_recipe = fields.Boolean('Need Recipe', compute='_compute_need_recipe')
     color_recipe_id = fields.Many2one('color.recipe', string='Color Recipe', compute='_compute_color_recipe', store=True)
     color_code = fields.Char(related='color_recipe_id.color_code')
