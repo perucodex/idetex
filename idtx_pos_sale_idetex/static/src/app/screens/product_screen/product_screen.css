@@ -1,0 +1,78 @@
+.idtx-stock-table-container {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.idtx-stock-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+    width: 100%;
+}
+
+.idtx-stock-table thead th {
+    background-color: #6C5B7B;
+    /* Color Botón Pago */
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+    border-bottom: none;
+}
+
+.idtx-stock-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.idtx-stock-table tbody tr:hover {
+    background-color: rgba(0, 125, 255, 0.05) !important;
+    transform: scale(1.002);
+}
+
+.idtx-row-selected {
+    background-color: rgba(0, 125, 255, 0.08) !important;
+}
+
+.idtx-row-disabled {
+    background-color: #f8f9fa !important;
+    opacity: 0.6;
+    cursor: not-allowed !important;
+}
+
+.idtx-ref-pill {
+    background: #e9ecef;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    color: #495057;
+    border: 1px solid #dee2e6;
+    display: inline-block;
+}
+
+.md-checkbox {
+    width: 1.25rem;
+    height: 1.25rem;
+    cursor: pointer;
+}
+
+.idtx-action-bar {
+    z-index: 10;
+}
+
+/* Custom scrollbar for better look */
+.overflow-y-auto::-webkit-scrollbar {
+    width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}

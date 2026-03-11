@@ -1,0 +1,145 @@
+.idtx-stock-table-container {
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+
+    .idtx-stock-table {
+        font-size: 0.9rem;
+        border-collapse: separate;
+        border-spacing: 0;
+
+        thead {
+            tr {
+                th {
+                    background-color: #6C5B7B; // Color Botón Pago
+                    color: white;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    border: none;
+                }
+            }
+        }
+
+        tbody {
+            tr {
+                transition: background-color 0.2s;
+
+                &:nth-child(even) {
+                    background-color: rgba(0, 0, 0, 0.02);
+                }
+
+                &:hover {
+                    background-color: #e9ecef !important;
+                }
+
+                td {
+                    border-bottom: 1px solid #dee2e6;
+                    vertical-align: middle;
+                }
+            }
+        }
+
+        .cursor-pointer {
+            cursor: pointer;
+        }
+
+        .bg-white-hover:hover {
+            background-color: #f1f3f5;
+        }
+
+        // Columna Referencia específica
+        .idtx-col-ref {
+            width: 120px !important;
+            min-width: 120px !important;
+            max-width: 120px !important;
+            padding: 2px !important;
+            overflow: hidden;
+            vertical-align: middle;
+
+            .idtx-ref-text {
+                display: block;
+                width: 100%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: clip; // Cortar si es demasiado largo
+                font-size: 0.85rem;
+
+                // Si el texto es muy largo, intentamos que se vea pequeño
+                // Odoo 19 permite usar variables CSS o selectores de longitud si fuera necesario
+                // por ahora usamos un tamaño base pequeño y seguro.
+                line-height: 1;
+            }
+        }
+    }
+}
+
+// Barra de acciones superior para selección múltiple
+.idtx-action-bar {
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+
+    .btn-primary {
+        background-color: #004a99;
+        border-color: #003366;
+        font-weight: 600;
+
+        &:disabled {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            opacity: 0.6;
+        }
+    }
+}
+
+// Filas deshabilitadas (ya en el pedido)
+.idtx-row-disabled {
+    background-color: #f1f3f5 !important;
+    color: #adb5bd !important;
+    cursor: not-allowed !important;
+    opacity: 0.8;
+
+    td {
+        pointer-events: none; // Evitar clics internos
+    }
+
+    .idtx-ref-text {
+        color: #adb5bd !important;
+    }
+}
+
+// Optimización de la tabla para checkboxes
+.idtx-stock-table {
+    .form-check-input {
+        cursor: pointer;
+        width: 1.2rem;
+        height: 1.2rem;
+        margin-top: 0;
+    }
+}
+
+// Ocultar categorías para maximizar espacio
+.product-screen .rightpane .category-selector {
+    display: none !important;
+}
+
+// Ajuste del contenedor para que la tabla use todo el espacio
+.product-screen .rightpane .overflow-hidden {
+    display: flex;
+    flex-direction: column;
+}
+
+// Estilos para el precio unitario en el carrito (Orderline)
+.orderline {
+    .idtx-unit-price {
+        white-space: nowrap;
+        color: #6c757d; // Gris suave
+        font-family: inherit;
+        letter-spacing: -0.2px;
+    }
+
+    .price {
+        min-width: 80px;
+        text-align: right;
+    }
+}

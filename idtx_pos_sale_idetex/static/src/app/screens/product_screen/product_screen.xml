@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- 
+        Extensión optimizada de ProductScreen para Odoo 19.
+        Unificamos el reemplazo de la zona de productos para evitar errores de herencia (Xpath).
+    -->
+    <t t-name="idtx_pos_sale_idetex.ProductScreen" t-inherit="point_of_sale.ProductScreen" t-inherit-mode="extension" owl="1">
+        
+        <!-- Reemplazamos el contenedor interno de la derecha para controlar la visibilidad -->
+        <xpath expr="//div[hasclass('rightpane')]//div[hasclass('position-relative')]" position="replace">
+            <div class="position-relative d-flex flex-column flex-grow-1 overflow-hidden">
+                
+                <!-- 1. Desactivamos categorías (Se mantiene el componente por compatibilidad pero oculto) -->
+                <CategorySelector t-if="false" />
+
+                <!-- 2. Mantener escáner de video nativo -->
+                <BarcodeVideoScanner t-if="pos.scanning" t-props="barcodeVideoScannerProps" />
+                
+                <!-- 3. Informe Técnico Idetex (Visible si no se está escaneando) -->
+                <div t-else="" class="idtx-stock-table-container d-flex flex-column h-100 bg-light">
+                    
+                    <!-- Barra superior vinculada a idtxState -->
+                    <div class="idtx-action-bar p-3 bg-white border-bottom d-flex justify-content-between align-items-center shadow-sm">
+                        <div class="d-flex flex-column">
+                            <span class="fs-4 fw-bold text-primary">Existencias Técnicas</span>
+                            <span class="text-muted small">
+                                <i class="fa fa-check-square-o me-1"/>
+                                <t t-esc="idtxState.selectedCount"/> rollos seleccionados
+                            </span>
+                        </div>
+                        <button class="btn btn-primary btn-lg d-flex align-items-center gap-2 px-4 shadow-sm" 
+                                t-on-click="addSelectedQuants"
+                                t-att-disabled="idtxState.selectedCount == 0">
+                            <i class="fa fa-plus-circle"/> 
+                            <span class="fw-bold">AGREGAR AL PEDIDO</span>
+                        </button>
+                    </div>
+
+                    <!-- Tabla de existencias técnica -->
+                    <div class="flex-grow-1 overflow-y-auto px-3 py-2">
+                        <table class="table table-hover idtx-stock-table text-nowrap rounded-3 overflow-hidden shadow-sm bg-white">
+                            <thead class="bg-primary text-white sticky-top">
+                                <tr>
+                                    <th class="p-3 text-center" style="width: 50px;">Sel.</th>
+                                    <th class="p-3" style="width: 12%;">Código</th>
+                                    <th class="p-3" style="width: 25%;">Descripción</th>
+                                    <th class="p-3" style="width: 15%;">Color</th>
+                                    <th class="p-3" style="width: 18%;">Lote</th>
+                                    <th class="p-3 text-center" style="width: 15%;">Referencia</th>
+                                    <th class="p-3 text-end" style="width: 15%;">Stock (Kg)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="align-middle">
+                                <t t-foreach="quantsToDisplay" t-as="quant" t-key="quant.id">
+                                    <t t-set="inOrder" t-value="this.isQuantInOrder(quant)"/>
+                                    <tr t-att-class="{'idtx-row-disabled': inOrder, 'cursor-pointer': !inOrder, 'idtx-row-selected': idtxState.selectedQuants[quant.id]}" 
+                                        t-on-click="() => this.toggleQuantSelection(quant)">
+                                        <td class="p-3 text-center">
+                                            <div class="form-check d-inline-block">
+                                                <input type="checkbox" 
+                                                       t-att-checked="idtxState.selectedQuants[quant.id]"
+                                                       t-att-disabled="inOrder"
+                                                       class="form-check-input md-checkbox"
+                                                       t-on-click.stop="() => this.toggleQuantSelection(quant)"/>
+                                            </div>
+                                        </td>
+                                        <td class="p-3 fw-bold text-truncate"><t t-esc="quant.product_code"/></td>
+                                        <td class="p-3 fw-bold text-truncate" title="quant.product_name"><t t-esc="quant.product_name"/></td>
+                                        <td class="p-3 fw-bold text-truncate"><t t-esc="quant.color_name"/></td>
+                                        <td class="p-3 fw-bold text-truncate"><t t-esc="quant.lot_name"/></td>
+                                        <td class="p-3 idtx-col-ref text-center">
+                                            <span class="idtx-ref-pill shadow-xs fw-bold"><t t-esc="quant.roll_name"/></span>
+                                        </td>
+                                        <td class="p-3 text-end fw-bold">
+                                            <t t-esc="this.getFormattedStock(quant.quantity)"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                                <t t-if="quantsToDisplay.length == 0">
+                                    <tr>
+                                        <td colspan="7" class="text-center py-5">
+                                            <div class="d-flex flex-column align-items-center text-muted">
+                                                <i class="fa fa-search fa-3x mb-3 opacity-25"/>
+                                                <p class="fs-5">No se encontraron existencias con esa búsqueda.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </t>
+</templates>

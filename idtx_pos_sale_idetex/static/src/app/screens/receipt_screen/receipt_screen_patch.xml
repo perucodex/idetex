@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="idtx_pos_sale_idetex.ReceiptScreen" t-inherit="point_of_sale.ReceiptScreen" t-inherit-mode="extension">
+        <!-- Agregar botón de Toggle en la barra de acciones -->
+        <xpath expr="//div[hasclass('receipt-options')]/div[hasclass('d-flex')]" position="inside">
+             <button class="button print btn btn-lg btn-light w-100 py-3 mt-1 text-primary border-primary" 
+                    t-on-click="togglePrintDetailed">
+                <i t-attf-class="fa {{ receiptState.printDetailed ? 'fa-compress' : 'fa-expand' }} me-1" />
+                <span t-esc="receiptState.printDetailed ? 'Imprimir Agrupado' : 'Imprimir Detallado'"/>
+            </button>
+        </xpath>
+
+        <!-- Pasar el prop 'detailed' a OrderReceipt -->
+        <xpath expr="//OrderReceipt" position="attributes">
+            <attribute name="detailed">receiptState.printDetailed</attribute>
+        </xpath>
+    </t>
+</templates>

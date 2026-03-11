@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="idtx_pos_sale_idetex.GroupOrderline">
+        <div class="group-orderline d-flex flex-column mb-1">
+            <!-- Header del Grupo -->
+            <div class="group-header d-flex align-items-center p-2 bg-view border-bottom"
+                 t-on-click="onClick"
+                 t-att-class="{ 'selected': group.selected }">
+                
+                <!-- Icono Expandir/Colapsar -->
+                <div class="me-2 cursor-pointer" t-on-click="toggleExplode">
+                    <i t-attf-class="fa fa-{{ state.expanded ? 'minus-square' : 'plus-square' }} fs-4 text-primary"/>
+                </div>
+
+                <!-- Info del Grupo -->
+                <div class="flex-grow-1 d-flex flex-column">
+                    <div class="fw-bolder fs-5">
+                        <t t-esc="group.key_name"/>
+                    </div>
+                    <div class="text-muted small">
+                        <t t-esc="group.children.length"/> rollos
+                    </div>
+                </div>
+
+                <!-- Totales -->
+                <div class="d-flex flex-column align-items-end">
+                    <div class="fw-bold fs-5">
+                        <t t-esc="displayPrice"/>
+                    </div>
+                    <div class="fw-bold text-success">
+                        <t t-esc="totalQuantity"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Hijos (Expandible) -->
+            <div t-if="state.expanded" class="group-children ps-4 pe-2 bg-100">
+                <t t-foreach="group.children" t-as="line" t-key="line.uuid">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                             <Orderline line="line" 
+                                onClick="(ev) => this.props.onLineClick(ev, line)"
+                             />
+                        </div>
+                        <div class="p-2 cursor-pointer text-danger" t-on-click.stop="() => this.onDeleteItem(line)">
+                            <i class="fa fa-trash fs-4"/>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

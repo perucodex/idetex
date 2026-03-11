@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="idtx_pos_sale_idetex.OrderTabs" t-inherit="point_of_sale.OrderTabs" t-inherit-mode="extension">
+        <xpath expr="//button" position="attributes">
+            <attribute name="t-esc"></attribute>
+            <attribute name="class" add="d-flex flex-column align-items-center justify-content-center py-1 px-2 mx-1" separator=" "/>
+            <attribute name="style">min-width: 6.5rem; min-height: 3.5rem; line-height: 1.1;</attribute>
+        </xpath>
+        <xpath expr="//button" position="inside">
+            <div class="fw-bold" t-esc="order.getName()" />
+            <div t-if="order.getPartnerName()" 
+                 class="w-100 text-truncate text-center mt-1" 
+                 style="font-size: 0.65rem; opacity: 0.9; font-weight: normal;"
+                 t-esc="order.getPartnerName().slice(0, 12)" />
+        </xpath>
+    </t>
+</templates>
