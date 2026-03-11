@@ -16,6 +16,11 @@ const HUECO_SIZE_OPTIONS = [
     { value: "4", label: "> 3 cm" },
 ];
 
+const VOICE_STOPWORDS = new Set([
+    "de", "del", "la", "las", "el", "los", "y", "en", "con", "por", "para", "un", "una",
+    "falla", "falla", "defecto", "defectos", "tamano", "tamaño", "numero", "n", "size",
+]);
+
 const DRAFT_STORAGE_KEY = "idtx_batch_quality.defect_screen.draft.v3";
 
 function safeJsonParse(value) {
@@ -28,6 +33,31 @@ function safeJsonParse(value) {
 
 function normalizeText(v) {
     return (v || "").toString().toLowerCase().trim();
+}
+
+function normalizeSpeechText(v) {
+    return normalizeText(v)
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        // Homogeneiza confusiones frecuentes de voz: ll <-> y
+        .replace(/ll/g, "y")
+        .replace(/[^a-z0-9\s\.]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function singularToken(token) {
+    if (!token) return token;
+    if (token.endsWith("es") && token.length > 4) return token.slice(0, -2);
+    if (token.endsWith("s") && token.length > 3) return token.slice(0, -1);
+    return token;
+}
+
+function voiceTokens(v) {
+    return normalizeSpeechText(v)
+        .split(" ")
+        .map((t) => singularToken(t))
+        .filter((t) => t.length >= 3 && !VOICE_STOPWORDS.has(t));
 }
 
 function parsePositiveFloat(value) {
@@ -52,6 +82,10 @@ export class QualityDefectScreen extends Component {
         this._searchTimer = null;
         this._rolloValidateTimer = null;
         this._rolloValidateSeq = 0;
+        this._speechRecognition = null;
+        this._voiceRestartTimer = null;
+        this._voiceRestartAttempts = 0;
+        this._voiceAudioCtx = null;
 
         this.state = useState({
             loading: true,
@@ -89,6 +123,12 @@ export class QualityDefectScreen extends Component {
             sizePopupOpen: false,
             popupDefectId: false,
             meterPopupOpen: false,
+
+            // Voice input
+            voiceSupported: false,
+            voiceActive: false,
+            voiceTranscript: "",
+            voiceShouldStayOn: false,
         });
 
         onWillStart(async () => {
@@ -103,6 +143,8 @@ export class QualityDefectScreen extends Component {
         });
 
         onMounted(() => {
+            this._initVoiceRecognition();
+
             this._beforeUnloadHandler = () => this._saveDraft();
             window.addEventListener("beforeunload", this._beforeUnloadHandler);
 
@@ -119,6 +161,19 @@ export class QualityDefectScreen extends Component {
         });
 
         onWillUnmount(() => {
+            this._stopVoiceRecognition();
+            if (this._voiceRestartTimer) {
+                clearTimeout(this._voiceRestartTimer);
+                this._voiceRestartTimer = null;
+            }
+            if (this._voiceAudioCtx) {
+                try {
+                    this._voiceAudioCtx.close();
+                } catch {
+                    // ignore
+                }
+                this._voiceAudioCtx = null;
+            }
             if (this._beforeUnloadHandler) {
                 window.removeEventListener("beforeunload", this._beforeUnloadHandler);
             }
@@ -134,9 +189,44 @@ export class QualityDefectScreen extends Component {
         return Boolean(this.state.sessionActive);
     }
 
+    _resolveAparienciaIdFromState() {
+        const fromId = Number(this.state.selectedAparienciaId || 0);
+        if (fromId > 0) return fromId;
+
+        const fromDataId = Number(this.state.selectedAparienciaData?.id || 0);
+        if (fromDataId > 0) return fromDataId;
+
+        const selectedName = String(this.state.selectedAparienciaData?.name || "").trim();
+        if (!selectedName) return 0;
+
+        const byName = (this.state.apariencias || []).find((a) => String(a?.name || "").trim() === selectedName);
+        return Number(byName?.id || 0);
+    }
+
+    _resolveAparienciaIdFromDom() {
+        if (!this.el) return 0;
+        const selectEl = this.el.querySelector(".o_qds_apariencia_select");
+        return Number(selectEl?.value || 0);
+    }
+
+    _ensureResolvedAparienciaSelection() {
+        let aparienciaId = this._resolveAparienciaIdFromState();
+        if (!aparienciaId) {
+            aparienciaId = this._resolveAparienciaIdFromDom();
+        }
+        if (!aparienciaId) return 0;
+
+        this.state.selectedAparienciaId = String(aparienciaId);
+        const found = (this.state.apariencias || []).find((a) => Number(a?.id || 0) === aparienciaId);
+        if (found) {
+            this.state.selectedAparienciaData = found;
+        }
+        return aparienciaId;
+    }
+
     get canProceedBasics() {
         return (
-            Boolean(this.state.selectedAparienciaId) &&
+            Boolean(this._resolveAparienciaIdFromState()) &&
             Boolean(this.state.selectedPartidaId) &&
             Number(this.state.rolloNum) > 0 &&
             parsePositiveFloat(this.state.width) > 0 &&
@@ -159,13 +249,17 @@ export class QualityDefectScreen extends Component {
         return !this.hasSession || this.state.submitting;
     }
 
+    get canUseVoice() {
+        return this.hasSession && this.state.voiceSupported && !this.state.submitting;
+    }
+
     get selectedDefects() {
         return (this.state.defects || []).filter((d) => (d.sizes || []).length);
     }
 
     // Rollo aparece SOLO cuando ya se seleccionó una partida (y aún no empezó captura)
     get shouldShowRolloInput() {
-        return Boolean(this.state.selectedAparienciaId) && Boolean(this.state.selectedPartidaId) && !this.hasSession;
+        return Boolean(this._resolveAparienciaIdFromState()) && Boolean(this.state.selectedPartidaId) && !this.hasSession;
     }
 
     get filteredApariencias() {
@@ -352,7 +446,11 @@ export class QualityDefectScreen extends Component {
 
     // ---------- Autocomplete Apariencia ----------
     onAparienciaSelectChange(event) {
-        this.state.selectedAparienciaId = event.target.value || this.state.selectedAparienciaId || "";
+        const value = String(event.target.value || "");
+        this.state.selectedAparienciaId = value;
+        if (!value) {
+            this.state.selectedAparienciaData = null;
+        }
         this._syncSelectedAparienciaData();
         this._saveDraft();
     }
@@ -527,6 +625,7 @@ export class QualityDefectScreen extends Component {
     async _validateRolloUnique() {
         const pedidoLineId = Number(this.state.selectedPartidaId || 0);
         const rolloNum = Number(this.state.rolloNum || 0);
+        const aparienciaId = Number(this._ensureResolvedAparienciaSelection() || 0);
 
         if (!pedidoLineId || rolloNum <= 0) {
             this.state.rolloValidationError = "";
@@ -540,7 +639,7 @@ export class QualityDefectScreen extends Component {
             const result = await this.orm.call(
                 "control.apariencia.line",
                 "action_tablet_check_rollo_available",
-                [pedidoLineId, rolloNum, Number(this.state.selectedEvaluacionId || 0)],
+                [pedidoLineId, rolloNum, aparienciaId, Number(this.state.selectedEvaluacionId || 0)],
                 { context: { appearance_type: "quality" } }
             );
             if (seq !== this._rolloValidateSeq) {
@@ -562,11 +661,30 @@ export class QualityDefectScreen extends Component {
 
     // ---------- Paso 1 -> Paso 2 ----------
     async onNext() {
-        if (!this.state.selectedAparienciaId) {
+        const aparienciaId = this._ensureResolvedAparienciaSelection();
+
+        if (!aparienciaId) {
             this.notification.add("Seleccione un control de apariencia.", { type: "warning" });
             return;
         }
-        if (!this.canProceedBasics) return;
+        if (!this.state.selectedPartidaId) {
+            this.notification.add("Seleccione una partida.", { type: "warning" });
+            return;
+        }
+
+        if (Number(this.state.rolloNum) <= 0) {
+            this.notification.add("Ingrese un numero de rollo valido.", { type: "warning" });
+            return;
+        }
+
+        if (parsePositiveFloat(this.state.width) <= 0) {
+            this.notification.add("Ingrese un ancho valido.", { type: "warning" });
+            return;
+        }
+
+        if (this.state.submitting || this.state.isCheckingRollo || this.state.rolloValidationError) {
+            return;
+        }
 
         const isRolloValid = await this._validateRolloUnique();
         if (!isRolloValid) {
@@ -581,7 +699,7 @@ export class QualityDefectScreen extends Component {
                 "action_tablet_get_or_create_evaluacion",
                 [
                     Number(this.state.selectedPartidaId),
-                    Number(this.state.selectedAparienciaId),
+                    aparienciaId,
                     Number(this.state.selectedEvaluacionId || 0),
                 ],
                 { context: { appearance_type: "quality" } }
@@ -591,7 +709,7 @@ export class QualityDefectScreen extends Component {
             const defects = await this.orm.call(
                 "control.apariencia.line",
                 "action_tablet_get_defectos",
-                [Number(this.state.selectedAparienciaId)],
+                [aparienciaId],
                 { context: { appearance_type: "quality" } }
             );
             this.state.defects = (defects || []).map((defect) => ({ ...defect, sizes: [], count: 0 }));
@@ -640,6 +758,396 @@ export class QualityDefectScreen extends Component {
         this.state.sizePopupOpen = false;
         this.state.popupDefectId = false;
         this._saveDraft();
+    }
+
+    // ---------- Voz ----------
+    _initVoiceRecognition() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            this.state.voiceSupported = false;
+            return;
+        }
+
+        this.state.voiceSupported = true;
+        const recognition = new SpeechRecognition();
+        recognition.lang = "es-PE";
+        recognition.continuous = true;
+        recognition.interimResults = false;
+
+        recognition.onresult = (event) => {
+            this._voiceRestartAttempts = 0;
+            let finalText = "";
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                if (event.results[i].isFinal) {
+                    finalText += `${event.results[i][0].transcript} `;
+                }
+            }
+            finalText = finalText.trim();
+            if (!finalText) return;
+            this.state.voiceTranscript = finalText;
+            this._processVoiceCommand(finalText);
+        };
+
+        recognition.onerror = (event) => {
+            // Algunos navegadores cortan reconocimiento por limite interno de sesion.
+            // Reintentamos en errores recuperables mientras la sesion de voz siga activa.
+            if (!this.state.voiceShouldStayOn || !this.canUseVoice) {
+                this.state.voiceActive = false;
+                return;
+            }
+
+            const code = event?.error || "";
+            const fatal = ["not-allowed", "service-not-allowed", "audio-capture"];
+            if (fatal.includes(code)) {
+                this.state.voiceActive = false;
+                this.state.voiceShouldStayOn = false;
+                this.notification.add("No se pudo continuar con voz. Verifique permisos del micrófono.", { type: "warning" });
+                return;
+            }
+
+            this._scheduleVoiceRestart();
+        };
+
+        recognition.onend = () => {
+            // Mantener escucha continua mientras la sesion de voz siga activa.
+            if (!this.state.voiceShouldStayOn || !this.canUseVoice) {
+                this.state.voiceActive = false;
+                return;
+            }
+            this._scheduleVoiceRestart();
+        };
+
+        this._speechRecognition = recognition;
+    }
+
+    toggleVoiceInput() {
+        if (!this.state.voiceSupported) {
+            this.notification.add("Este navegador no soporta reconocimiento de voz.", { type: "warning" });
+            return;
+        }
+        if (!this.hasSession) {
+            this.notification.add("Primero inicie la captura de defectos.", { type: "warning" });
+            return;
+        }
+        if (this.state.voiceActive) {
+            this._stopVoiceRecognition();
+            this.notification.add("Micrófono desactivado.", { type: "info" });
+        } else {
+            this._startVoiceRecognition();
+            this.notification.add("Micrófono activado. Puede decir defecto y tamaño.", { type: "success" });
+        }
+    }
+
+    _startVoiceRecognition() {
+        if (!this._speechRecognition || !this.canUseVoice) return;
+        this.state.voiceShouldStayOn = true;
+        this._voiceRestartAttempts = 0;
+        this.state.voiceActive = true;
+        this._ensureVoiceAudioContext();
+        try {
+            this._speechRecognition.start();
+        } catch {
+            // ignore repeated start errors
+        }
+    }
+
+    _stopVoiceRecognition() {
+        this.state.voiceShouldStayOn = false;
+        this.state.voiceActive = false;
+        this._voiceRestartAttempts = 0;
+        if (this._voiceRestartTimer) {
+            clearTimeout(this._voiceRestartTimer);
+            this._voiceRestartTimer = null;
+        }
+        if (this._speechRecognition) {
+            try {
+                this._speechRecognition.stop();
+            } catch {
+                // ignore stop errors
+            }
+        }
+    }
+
+    _scheduleVoiceRestart() {
+        if (!this.state.voiceShouldStayOn || !this.canUseVoice) {
+            this.state.voiceActive = false;
+            return;
+        }
+        if (this._voiceRestartTimer) {
+            clearTimeout(this._voiceRestartTimer);
+        }
+
+        const delay = Math.min(1200, 250 + this._voiceRestartAttempts * 150);
+        this._voiceRestartAttempts += 1;
+        this._voiceRestartTimer = setTimeout(() => {
+            if (!this.state.voiceShouldStayOn || !this.canUseVoice) {
+                this.state.voiceActive = false;
+                return;
+            }
+            try {
+                this._speechRecognition.start();
+                this.state.voiceActive = true;
+            } catch {
+                this.state.voiceActive = false;
+            }
+        }, delay);
+    }
+
+    _processVoiceCommand(rawText) {
+        if (!this.hasSession) return;
+
+        const text = normalizeSpeechText(rawText);
+        if (/\b(finalizar|terminar)\b/.test(text)) {
+            this._stopVoiceRecognition();
+            this.onFinalize();
+            this._playVoiceCue("ok");
+            this.notification.add("Comando de voz: finalizar.", { type: "info" });
+            return;
+        }
+
+        if (/\b(detener|parar)\b/.test(text) && /\b(microfono|micro|voz)\b/.test(text)) {
+            this._stopVoiceRecognition();
+            this.notification.add("Micrófono desactivado por voz.", { type: "info" });
+            return;
+        }
+
+        const defect = this._findDefectByVoice(text);
+        const popupDefect = this.popupDefect;
+
+        // Si no encontró defecto, permitimos usar solo tamaño sobre popup abierto.
+        if (!defect && this.state.sizePopupOpen && popupDefect) {
+            const sizeOnlyList = this._extractSizesFromVoice(text, popupDefect);
+            if (sizeOnlyList.length) {
+                for (const sizeCode of sizeOnlyList) {
+                    this.onSelectDefect(popupDefect.defecto_id);
+                    this.onSelectSize(sizeCode);
+                }
+                this._playVoiceCue("ok");
+                this.notification.add(`Registrado por voz: ${popupDefect.name} (${sizeOnlyList.join(", ")}).`, { type: "success" });
+                return;
+            }
+        }
+
+        if (!defect) {
+            this._playVoiceCue("error");
+            this.notification.add(`No reconocí el defecto en: "${rawText}"`, { type: "warning" });
+            return;
+        }
+
+        const sizeCodes = this._extractSizesFromVoice(text, defect);
+        if (!sizeCodes.length) {
+            if (this._hasInvalidSizeMention(text, defect)) {
+                this._playVoiceCue("error");
+                this.notification.add(`No encontré ese tamaño para ${defect.name}.`, { type: "warning" });
+                return;
+            }
+            this.onSelectDefect(defect.defecto_id);
+            this.notification.add(`Defecto reconocido: ${defect.name}. Ahora diga el tamaño.`, { type: "info" });
+            return;
+        }
+
+        for (const sizeCode of sizeCodes) {
+            this.onSelectDefect(defect.defecto_id);
+            this.onSelectSize(sizeCode);
+        }
+        this._playVoiceCue("ok");
+        this.notification.add(`Registrado por voz: ${defect.name} (${sizeCodes.join(", ")}).`, { type: "success" });
+    }
+
+    _ensureVoiceAudioContext() {
+        if (this._voiceAudioCtx) return this._voiceAudioCtx;
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return null;
+        try {
+            this._voiceAudioCtx = new Ctx();
+        } catch {
+            this._voiceAudioCtx = null;
+        }
+        return this._voiceAudioCtx;
+    }
+
+    _playVoiceCue(type) {
+        const ctx = this._ensureVoiceAudioContext();
+        if (!ctx) return;
+
+        if (ctx.state === "suspended") {
+            try {
+                ctx.resume();
+            } catch {
+                return;
+            }
+        }
+
+        const now = ctx.currentTime;
+
+        const tone = (freq, start, duration, gain = 0.045, wave = "sine") => {
+            const osc = ctx.createOscillator();
+            const vol = ctx.createGain();
+            osc.type = wave;
+            osc.frequency.value = freq;
+            vol.gain.setValueAtTime(0.0001, start);
+            vol.gain.exponentialRampToValueAtTime(gain, start + 0.01);
+            vol.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+            osc.connect(vol);
+            vol.connect(ctx.destination);
+            osc.start(start);
+            osc.stop(start + duration + 0.01);
+        };
+
+        if (type === "ok") {
+            // Exito: doble tono agudo corto
+            tone(1200, now, 0.07, 0.05, "triangle");
+            tone(1600, now + 0.09, 0.09, 0.05, "triangle");
+            return;
+        }
+
+        // Error/no reconocido: dos tonos graves largos (claramente distinto)
+        tone(260, now, 0.18, 0.06, "square");
+        tone(180, now + 0.22, 0.22, 0.06, "square");
+    }
+
+    _findDefectByVoice(text) {
+        const defects = this.state.defects || [];
+        if (!defects.length) return null;
+
+        const normalizedDefects = defects.map((d) => ({
+            defect: d,
+            name: normalizeSpeechText(d.name),
+            tokens: voiceTokens(d.name),
+        }));
+
+        const textTokens = voiceTokens(text);
+        const textTokenSet = new Set(textTokens);
+
+        // 1) Coincidencia directa por nombre completo
+        const directMatches = normalizedDefects
+            .filter((d) => d.name && text.includes(d.name))
+            .sort((a, b) => b.name.length - a.name.length);
+        if (directMatches.length) {
+            return directMatches[0].defect;
+        }
+
+        // 1.1) Token distintivo unico: si el usuario dice una palabra clave unica.
+        const tokenToDefects = new Map();
+        for (const d of normalizedDefects) {
+            for (const tk of d.tokens) {
+                if (!tokenToDefects.has(tk)) tokenToDefects.set(tk, []);
+                tokenToDefects.get(tk).push(d);
+            }
+        }
+        for (const tk of textTokenSet) {
+            const owners = tokenToDefects.get(tk) || [];
+            if (owners.length === 1) {
+                return owners[0].defect;
+            }
+        }
+
+        // 2) Coincidencia por superposición de tokens
+        let best = null;
+        let bestScore = 0;
+        let bestCommon = 0;
+        for (const d of normalizedDefects) {
+            const tokens = d.tokens || [];
+            if (!tokens.length) continue;
+
+            let common = 0;
+            for (const tk of tokens) {
+                const matched = textTokens.some((spoken) => this._voiceTokenMatch(spoken, tk));
+                if (matched) common++;
+            }
+
+            const score = common / tokens.length;
+            if ((score > bestScore || (score === bestScore && common > bestCommon)) && score >= 0.34 && common >= 1) {
+                bestScore = score;
+                bestCommon = common;
+                best = d.defect;
+            }
+        }
+        return best;
+    }
+
+    _voiceTokenMatch(spoken, target) {
+        if (!spoken || !target) return false;
+        if (spoken === target) return true;
+        if (spoken.length >= 5 && target.length >= 5) {
+            if (spoken.startsWith(target) || target.startsWith(spoken)) return true;
+        }
+        return false;
+    }
+
+    _extractSizeFromVoice(text, defect) {
+        const all = this._extractSizesFromVoice(text, defect);
+        return all.length ? all[0] : null;
+    }
+
+    _extractSizesFromVoice(text, defect) {
+        const allowed = (defect?.is_hueco ? HUECO_SIZE_OPTIONS : DEFECT_SIZE_OPTIONS).map((o) => o.value);
+
+        const numberWords = {
+            uno: "1",
+            una: "1",
+            dos: "2",
+            tres: "3",
+            cuatro: "4",
+        };
+
+        const out = [];
+        const addIfAllowed = (value) => {
+            const code = numberWords[value] || value;
+            if (allowed.includes(code)) {
+                out.push(code);
+            }
+        };
+
+        // Captura listas: "tamano 1, 2 y 3", "size 2 y 4", etc.
+        const listAfterSize = text.match(/(?:tamano|tamaño|size)\s*(?:numero|n)?\s*([\w\s,\.y]+)/);
+        if (listAfterSize && listAfterSize[1]) {
+            const matches = listAfterSize[1].match(/\b(1|2|3|4|uno|una|dos|tres|cuatro)\b/g) || [];
+            for (const m of matches) addIfAllowed(m);
+            if (out.length) return out;
+        }
+
+        const explicitMatch = text.match(/(?:tamano|tamaño|size)\s*(?:numero|n)?\s*(1|2|3|4|uno|una|dos|tres|cuatro)\b/);
+        if (explicitMatch) {
+            addIfAllowed(explicitMatch[1]);
+            if (out.length) return out;
+        }
+
+        const directNumMatches = text.match(/\b(1|2|3|4|uno|una|dos|tres|cuatro)\b/g) || [];
+        for (const m of directNumMatches) {
+            addIfAllowed(m);
+        }
+        if (out.length) return out;
+
+        if (defect?.is_hueco) {
+            if (/hasta\s*3|menor|menor\s*igual|pequeno|pequeno/.test(text) && allowed.includes("2")) return ["2"];
+            if (/mas\s*de\s*3|mayor\s*de\s*3|grande/.test(text) && allowed.includes("4")) return ["4"];
+        } else {
+            if (/7\.5|siete/.test(text) && allowed.includes("1")) return ["1"];
+            if (/15|quince/.test(text) && allowed.includes("2")) return ["2"];
+            if (/23|veintitres|veinte\s*y\s*tres/.test(text) && allowed.includes("3")) return ["3"];
+            if (/mas\s*de\s*23|mayor\s*de\s*23/.test(text) && allowed.includes("4")) return ["4"];
+        }
+
+        return [];
+    }
+
+    _hasInvalidSizeMention(text, defect) {
+        if (!text) return false;
+
+        // Si el usuario menciona explicitamente "tamano/size" con un valor fuera de rango, lo tratamos como invalido.
+        const tagged = text.match(/(?:tamano|tamaño|size)\s*(?:numero|n)?\s*(\d+)/);
+        if (tagged) {
+            const n = Number(tagged[1]);
+            const allowed = new Set((defect?.is_hueco ? HUECO_SIZE_OPTIONS : DEFECT_SIZE_OPTIONS).map((o) => Number(o.value)));
+            return Number.isFinite(n) && n > 0 && !allowed.has(n);
+        }
+
+        // Caso "anillado 5": hay un numero suelto no soportado para tamanos de voz.
+        const anyNum = text.match(/\b(\d+)\b/);
+        if (!anyNum) return false;
+        const n = Number(anyNum[1]);
+        return Number.isFinite(n) && n >= 5;
     }
 
     // ---------- Resumen / Undo ----------
@@ -730,6 +1238,7 @@ export class QualityDefectScreen extends Component {
     }
 
     prepareNextRoll() {
+        this._stopVoiceRecognition();
         const selectedPartidaId = this.state.selectedPartidaId;
         const selectedPartidaData = this.state.selectedPartidaData;
         const partidaQuery = selectedPartidaData?.batch ? String(selectedPartidaData.batch) : this.state.partidaQuery;
@@ -764,6 +1273,7 @@ export class QualityDefectScreen extends Component {
     }
 
     resetScreen() {
+        this._stopVoiceRecognition();
         this.state.aparienciaQuery = "";
         this.state.selectedAparienciaId = "";
         this.state.selectedAparienciaData = null;
@@ -792,6 +1302,7 @@ export class QualityDefectScreen extends Component {
 
     // ---------- UI ----------
     async close() {
+        this._stopVoiceRecognition();
         this._saveDraft();
         if (window.history.length > 1) {
             window.history.back();
@@ -811,6 +1322,7 @@ export class QualityDefectScreen extends Component {
     }
 
     onBackToBasics() {
+        this._stopVoiceRecognition();
         // vuelve al paso 1 sin borrar partida/rollo
         this.state.sessionActive = false;
         this.state.defects = [];

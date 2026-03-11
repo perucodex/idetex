@@ -56,19 +56,20 @@ class ControlAparienciaLine(models.Model):
             if rec.evaluacion_id.apariencia_id != rec.apariencia_id:
                 raise ValidationError("La evaluacion seleccionada no corresponde al control de apariencia indicado.")
 
-    @api.constrains("evaluacion_id", "rollo_num")
-    def _check_rollo_unique_per_evaluacion(self):
+    @api.constrains("pedido_line_id", "apariencia_id", "rollo_num")
+    def _check_rollo_unique_per_partida_and_apariencia(self):
         for rec in self:
-            if not rec.evaluacion_id or rec.rollo_num <= 0:
+            if not rec.pedido_line_id or not rec.apariencia_id or rec.rollo_num <= 0:
                 continue
             duplicate = self.search_count([
-                ("evaluacion_id", "=", rec.evaluacion_id.id),
+                ("pedido_line_id", "=", rec.pedido_line_id.id),
+                ("apariencia_id", "=", rec.apariencia_id.id),
                 ("rollo_num", "=", rec.rollo_num),
                 ("id", "!=", rec.id),
             ])
             if duplicate:
                 raise ValidationError(
-                    f"El rollo {rec.rollo_num} ya fue registrado en la evaluacion {rec.evaluacion_id.display_name}."
+                    f"El rollo {rec.rollo_num} ya fue registrado en {rec.apariencia_id.display_name} para esta partida."
                 )
 
     @api.model_create_multi
@@ -94,56 +95,47 @@ class ControlAparienciaLine(models.Model):
         return super().create(vals_list)
 
     def _get_rollo_unique_domain(self, rec):
-        if rec.evaluacion_id:
-            return [
-                ("evaluacion_id", "=", rec.evaluacion_id.id),
-                ("rollo_num", "=", rec.rollo_num),
-                ("id", "!=", rec.id),
-            ]
         return [
             ("pedido_line_id", "=", rec.pedido_line_id.id),
+            ("apariencia_id", "=", rec.apariencia_id.id),
             ("rollo_num", "=", rec.rollo_num),
             ("id", "!=", rec.id),
         ]
 
-    def _get_rollo_unique_create_domain(self, pedido_line_id, rollo_num, evaluacion_id=False):
-        if evaluacion_id:
-            return [
-                ("evaluacion_id", "=", evaluacion_id),
-                ("rollo_num", "=", rollo_num),
-            ]
+    def _get_rollo_unique_create_domain(self, pedido_line_id, apariencia_id, rollo_num):
         return [
             ("pedido_line_id", "=", pedido_line_id),
+            ("apariencia_id", "=", apariencia_id),
             ("rollo_num", "=", rollo_num),
         ]
 
     @api.model
-    def action_tablet_check_rollo_available(self, pedido_line_id, rollo_num, evaluacion_id=False):
+    def action_tablet_check_rollo_available(self, pedido_line_id, rollo_num, apariencia_id=False, evaluacion_id=False):
         pedido_line_id = int(pedido_line_id or 0)
         rollo_num = int(rollo_num or 0)
+        apariencia_id = int(apariencia_id or 0)
         evaluacion_id = int(evaluacion_id or 0)
 
         if not pedido_line_id:
             return {"ok": False, "message": "Seleccione una partida."}
         if rollo_num <= 0:
             return {"ok": False, "message": "El N° Rollo debe ser mayor a 0."}
+        if not apariencia_id:
+            return {"ok": False, "message": "Seleccione un control de apariencia."}
 
         if evaluacion_id:
             evaluacion = self.env["control.apariencia.eval"].browse(evaluacion_id)
-            if not evaluacion.exists():
-                return {"ok": False, "message": "La evaluacion seleccionada no existe."}
-            if evaluacion.pedido_line_id.id != pedido_line_id:
-                return {"ok": False, "message": "La evaluacion no pertenece a la partida seleccionada."}
+            # Si la evaluacion previa no coincide con la seleccion actual,
+            # la ignoramos para validar solo por partida + apariencia + rollo.
+            if not evaluacion.exists() or evaluacion.pedido_line_id.id != pedido_line_id or evaluacion.apariencia_id.id != apariencia_id:
+                evaluacion_id = 0
 
-            exists = self.search_count([
-                ("evaluacion_id", "=", evaluacion_id),
-                ("rollo_num", "=", rollo_num),
-            ])
-            if exists:
-                return {
-                    "ok": False,
-                    "message": f"El rollo {rollo_num} ya fue registrado en esta evaluacion.",
-                }
+        exists = self.search_count(self._get_rollo_unique_create_domain(pedido_line_id, apariencia_id, rollo_num))
+        if exists:
+            return {
+                "ok": False,
+                "message": f"El rollo {rollo_num} ya fue evaluado para este control de apariencia.",
+            }
 
         return {"ok": True}
 
@@ -265,12 +257,9 @@ class ControlAparienciaLine(models.Model):
         if rollo_num <= 0:
             raise UserError("El N° Rollo debe ser mayor a 0.")
 
-        exists = self.search_count([
-            ("evaluacion_id", "=", evaluacion.id),
-            ("rollo_num", "=", rollo_num),
-        ])
+        exists = self.search_count(self._get_rollo_unique_create_domain(pedido_line.id, apariencia.id, rollo_num))
         if exists:
-            raise UserError(f"El rollo {rollo_num} ya fue registrado en esta evaluacion.")
+            raise UserError(f"El rollo {rollo_num} ya fue evaluado para el control de apariencia {apariencia.display_name}.")
 
         width = float(width or 0.0)
         if width <= 0:

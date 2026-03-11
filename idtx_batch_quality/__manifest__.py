@@ -21,7 +21,7 @@
         'security/ir.model.access.csv',
         'data/ir_sequence.xml',
         'data/control_apariencia.xml',
-        'data/defectos.xml',
+        'data/defectos_acabado.xml',
 
         'views/control_pedido_line_views.xml',
         'views/control_tono_eval_log_views.xml',

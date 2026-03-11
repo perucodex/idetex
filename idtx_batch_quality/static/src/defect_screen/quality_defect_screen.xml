@@ -78,7 +78,7 @@
 
                                             <div class="o_qds_field">
                                                 <label class="form-label fw-bold mb-1">Control de Apariencia</label>
-                                                <select class="form-select form-select-lg o_qds_input"
+                                                <select class="form-select form-select-lg o_qds_input o_qds_apariencia_select"
                                                         t-model="state.selectedAparienciaId"
                                                         t-on-change="onAparienciaSelectChange">
                                                     <option value="">Seleccione control de apariencia...</option>
@@ -171,7 +171,7 @@
 
                                                 <button class="btn btn-primary btn-lg o_qds_primary"
                                                         t-on-click="onNext"
-                                                        t-att-disabled="canProceedBasics ? undefined : true">
+                                                        t-att-disabled="(state.submitting || state.isCheckingRollo) ? true : undefined">
                                                     Siguiente
                                                 </button>
                                             </t>
@@ -224,10 +224,34 @@
                             <div class="col-12 col-lg-7">
                                 <div class="o_qds_card o_qds_card_defects">
                                     <div class="o_qds_card_head">
-                                        <div class="o_qds_card_title">Defectos</div>
-                                        <div class="o_qds_card_hint text-muted">Toca un defecto y selecciona tamaño</div>
+                                        <div>
+                                            <div class="o_qds_card_title">Defectos</div>
+                                            <div class="o_qds_card_hint text-muted">Toca un defecto y selecciona tamaño</div>
+                                        </div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <button class="btn o_qds_small_btn"
+                                                    t-att-class="state.voiceSupported
+                                                        ? (state.voiceActive ? 'btn-danger o_qds_small_btn' : 'btn-dark o_qds_small_btn')
+                                                        : 'btn-outline-secondary o_qds_small_btn'"
+                                                    t-att-disabled="state.submitting ? true : undefined"
+                                                    t-on-click="toggleVoiceInput"
+                                                    title="Entrada por voz">
+                                                <i class="fa fa-microphone me-1"/>
+                                                <t t-esc="state.voiceSupported ? (state.voiceActive ? 'Escuchando' : 'Voz') : 'Voz no disponible'"/>
+                                            </button>
+                                        </div>
                                     </div>
                                     <div class="o_qds_card_body o_qds_scroll">
+                                        <t t-if="state.voiceSupported">
+                                            <div class="o_qds_hint mb-3">
+                                                <div><b>Comando de voz:</b> diga el defecto y luego tamaño.</div>
+                                                <div class="small text-muted">Diga "finalizar" para abrir cierre.</div>
+                                                <div class="small text-muted">Ejemplo: "manchas de aceite tamaño 2".</div>
+                                                <t t-if="state.voiceTranscript">
+                                                    <div class="small mt-2"><b>Último comando:</b> <span t-esc="state.voiceTranscript"/></div>
+                                                </t>
+                                            </div>
+                                        </t>
                                         <div class="o_qds_btn_stack">
                                             <t t-foreach="state.defects" t-as="defect" t-key="defect.defecto_id">
                                                 <button class="btn o_qds_defect_btn"

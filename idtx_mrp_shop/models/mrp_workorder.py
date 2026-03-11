@@ -65,7 +65,7 @@ class MrpWorkorder(models.Model):
             employee_id = int(employee_id) if employee_id else False
             equipment_id = int(equipment_id) if equipment_id else False
             option_id = int(option_id) if option_id else False
-            scale = self.env['scale.registry'].browse(int(1))
+            scale = self.env['scale.registry'].browse(int(id)) if id else False
 
             if not employee_id or not equipment_id:
                 return {'status': 'danger', 'message': _('Employee and equipment are required')}
