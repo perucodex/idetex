@@ -3,6 +3,9 @@
     # Nombre comercial del módulo
     'name': 'Ventas POS Tienda Idetex',
     
+    'author': "Codex Development",
+    'website': "https://www.perucodex.com",
+
     # Versión del módulo (Sigue el estándar de Odoo)
     'version': '1.0',
     

@@ -10,14 +10,20 @@
                 <button name="action_evaluar_tono"
                         type="object"
                         string="Evaluar Tono Tacho"
-                        class="btn-primary"
-                        invisible="not can_eval_tono"/>
+                    class="btn-primary"
+                    invisible="not can_eval_tono"/>
+
+                <button name="action_evaluar_tono_secado"
+                    type="object"
+                    string="Evaluar Tono Secado"
+                    class="btn-primary"
+                    invisible="not can_eval_tono_secado"/>
 
                 <button name="action_evaluar_tono_acabado"
                         type="object"
                         string="Evaluar Tono Acabado"
-                        class="btn-primary"
-                        invisible="not can_eval_tono_acabado"/>
+                    class="btn-primary"
+                    invisible="not can_eval_tono_acabado"/>
             </xpath>
 
             <xpath expr="//notebook/page[field[@name='proceso_ids']]" position="after">
@@ -53,6 +59,56 @@
                             <field name="quality_point" string="Quality Point"/>
                         </list>
                     </field>
+                </page>
+
+                <page string="Laboratorio" invisible="not has_est_revirado_eval">
+                    <field name="has_est_revirado_eval" invisible="1"/>
+                    <field name="est_revirado_eval_id" invisible="1"/>
+
+                    <group string="Estabilidad Dimensional">
+                        <group string="% Ancho">
+                            <field name="est_ancho_avg_l1_dimrev" readonly="1" string="1er Lavado"/>
+                            <field name="est_ancho_avg_l3_dimrev" readonly="1" string="3er Lavado"/>
+                            <field name="est_ancho_avg_l5_dimrev" readonly="1" string="5to Lavado"/>
+                        </group>
+                        <group string="% Largo">
+                            <field name="est_largo_avg_l1_dimrev" readonly="1" string="1er Lavado"/>
+                            <field name="est_largo_avg_l3_dimrev" readonly="1" string="3er Lavado"/>
+                            <field name="est_largo_avg_l5_dimrev" readonly="1" string="5to Lavado"/>
+                        </group>
+                    </group>
+
+                    <group string="Revirado">
+                        <group string="1er Lavado">
+                            <field name="revirado_m1_result_dimrev" readonly="1" string="M1 %"/>
+                            <field name="revirado_m2_result_dimrev" readonly="1" string="M2 %"/>
+                            <field name="revirado_promedio_dimrev" readonly="1" string="Promedio %"/>
+                        </group>
+                        <group string="Lavado N">
+                            <field name="revirado_n_lavado_dimrev" readonly="1" string="N° Lavado"/>
+                            <field name="revirado_n_m1_result_dimrev" readonly="1" string="M1 %"/>
+                            <field name="revirado_n_m2_result_dimrev" readonly="1" string="M2 %"/>
+                            <field name="revirado_n_promedio_dimrev" readonly="1" string="Promedio %"/>
+                        </group>
+                    </group>
+
+                    <group string="Densidad STD (g/m2)">
+                        <group>
+                            <field name="densidad_1_dimrev" readonly="1" string="M1"/>
+                            <field name="densidad_2_dimrev" readonly="1" string="M2"/>
+                            <field name="densidad_3_dimrev" readonly="1" string="M3"/>
+                            <field name="densidad_promedio_dimrev" readonly="1" string="Promedio"/>
+                        </group>
+                    </group>
+
+                    <group string="Ancho STD (m)">
+                        <group>
+                            <field name="ancho_1_dimrev" readonly="1" string="M1"/>
+                            <field name="ancho_2_dimrev" readonly="1" string="M2"/>
+                            <field name="ancho_3_dimrev" readonly="1" string="M3"/>
+                            <field name="ancho_promedio_dimrev" readonly="1" string="Promedio"/>
+                        </group>
+                    </group>
                 </page>
 
             </xpath>
@@ -150,6 +206,7 @@
             <list>
                 <field name="defecto_id"/>
                 <field name="cantidad"/>
+                <field name="total_puntos"/>
             </list>
         </field>
     </record>
@@ -164,6 +221,7 @@
                         <group>
                             <field name="defecto_id" domain="[('apariencia_id', '=', parent.apariencia_id)]"/>
                             <field name="cantidad"/>
+                            <field name="total_puntos"/>
                             <field name="is_hueco" invisible="1"/>
                         </group>
                         <notebook>
@@ -172,6 +230,7 @@
                                     <list editable="bottom">
                                         <field name="tamano" column_invisible="parent.is_hueco"/>
                                         <field name="tamano_hueco" column_invisible="not parent.is_hueco"/>
+                                        <field name="puntos"/>
                                     </list>
                                 </field>
                             </page>

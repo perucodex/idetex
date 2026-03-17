@@ -202,8 +202,8 @@ class ControlPedido(models.Model):
         nums = []
         nums_to_settle = []
         for rec in _iter_dbf("/mnt/fox/sit06/dbf/vta_cab_pedido.dbf"):
-            fecoc = rec["FECOC"]
-            if not fecoc or fecoc < datetime.date(2025, 6, 30):
+            fecha = rec["FECHA"]
+            if not fecha or fecha < datetime.date(2025, 6, 30):
                 continue
             if not _safe_bool(rec["ACTIVO"]):
                 num = _safe_str(rec["NUMORDPED"])
@@ -224,8 +224,12 @@ class ControlPedido(models.Model):
                 "total_weight": _safe_float(rec["TOTKIL"]),
                 "is_active": _safe_bool(rec["ACTIVO"]),
             }
+            # if num.strip() == '00434-26':
+            # import logging
+            # logging.getLogger(__name__).info(f"Debug sync: {num}")
         if not nums:
             return {"created": 0, "updated": 0}
+        
         self.search([("numordped", "in", nums_to_settle)]).is_active = False
         nums_set = set(nums)
         produced_by_num = _sum_kneto_by_pedido("/mnt/fox/sit06/dbf/tej_produccion.dbf", nums_set)
@@ -260,15 +264,15 @@ class ControlPedido(models.Model):
             placeholders = ",".join(["?"] * len(nums))
             query = f"""
             WITH PedidoHDR AS (
-                SELECT bc.BarCod, bc.BarSerDsc, bc.BarCodReo, bc.BarCodPar, bc.BarItem2 AS Pedido, bc.BarItem4 AS Partida, bc.BarColNom as ColorCode, bc.BarNomCli as ColorName
+                SELECT bc.BarCod, bc.BarSer, bc.BarSerDsc, bc.BarCodReo, bc.BarCodPar, bc.BarItem2 AS Pedido, bc.BarItem4 AS Partida, bc.BarColNom as ColorCode, bc.BarNomCli as ColorName
                 FROM BARCAD bc WHERE bc.BarItem2 IN ({placeholders})
             ),
             Kilos AS (
-                SELECT bp.BarCod, bp.BarCodReo, SUM(bp.BarPieKil) AS Kilos
+                SELECT bp.BarCod, bp.BarCodReo, SUM(bp.BarPieKil) AS Kilos, COUNT(bp.BarCod) AS Rollos
                 FROM BARPIE bp WHERE bp.BarCod IN (SELECT BarCod FROM PedidoHDR) GROUP BY bp.BarCod, bp.BarCodReo
             )
-            SELECT h.Pedido, h.Partida, h.BarCod AS HojaDeRuta, h.BarCodReo, h.BarCodPar, h.BarSerDsc, h.ColorCode, h.ColorName, ISNULL(k.Kilos, 0) AS PesoTotal, fp.FasDsc AS Proceso_Ultimo, sp.area AS Area, bf_last.BarFasDTI AS FechaInicio, bf_last.BarFasDTF AS FechaFinal
-            FROM PedidoHDR h JOIN Kilos k ON k.BarCod = h.BarCod AND k.BarCodReo = h.BarCodReo AND k.Kilos > 0
+            SELECT h.Pedido, h.Partida, h.BarCod AS HojaDeRuta, h.BarCodReo, h.BarCodPar, h.BarSer, h.BarSerDsc, h.ColorCode, h.ColorName, ISNULL(k.Kilos, 0) AS PesoTotal, ISNULL(k.Rollos, 0) AS Rollos, fp.FasDsc AS Proceso_Ultimo, sp.area AS Area, bf_last.BarFasDTI AS FechaInicio, bf_last.BarFasDTF AS FechaFinal
+            FROM PedidoHDR h JOIN Kilos k ON k.BarCod = h.BarCod AND k.BarCodReo = h.BarCodReo AND k.Kilos > 0 AND k.Rollos > 0
             OUTER APPLY (
                 SELECT TOP (1) bf.FasCod, bf.BarFasDTI, bf.BarFasDTF, bf.BarOrdLin FROM BARFAS bf
                 WHERE bf.BarCod = h.BarCod AND bf.BarCodReo = h.BarCodReo AND ISNULL(bf.BarCodPar,'') = ISNULL(h.BarCodPar,'') AND bf.BarFasDTI > '1753-01-01'
@@ -333,7 +337,7 @@ class ControlPedido(models.Model):
             line_key = (vals_line.get("route"), vals_line.get("barcodreo"), vals_line.get("batch"))
             existing_line = existing_lines_by_pedido.get(pedido.id, {}).get(line_key)
             if existing_line:
-                existing_line.write({'kilograms': vals_line.get('kilograms'), 'process': vals_line.get('process'), 'area': vals_line.get('area'), 'start_date': vals_line.get('start_date'), 'end_date': vals_line.get('end_date')})
+                existing_line.write({'codpro': vals_line.get('codpro'), 'rollos': vals_line.get('rollos'), 'kilograms': vals_line.get('kilograms'), 'process': vals_line.get('process'), 'area': vals_line.get('area'), 'start_date': vals_line.get('start_date'), 'end_date': vals_line.get('end_date')})
                 if "proceso_ids" in vals_line and vals_line["proceso_ids"]:
                     existing_procs = {proc.barOrdLin: proc for proc in existing_line.proceso_ids}
                     for cmd in vals_line["proceso_ids"]:

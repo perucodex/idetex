@@ -1,5 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_control_tono_eval_log_user,access_control_tono_eval_log_user,model_control_tono_eval_log,base.group_user,1,1,1,1
+access_control_tono_eval_group_user,access.control.tono.eval.group.user,model_control_tono_eval_group,base.group_user,1,1,1,1
+access_control_tono_eval_group_line_user,access.control.tono.eval.group.line.user,model_control_tono_eval_group_line,base.group_user,1,1,1,1
 access_control_tono_wizard_user,access.control.tono.wizard.user,model_control_tono_wizard,base.group_user,1,1,1,1
 access_control_apariencia_line_user,control.apariencia.line.user,model_control_apariencia_line,base.group_user,1,1,1,1
 access_control_apariencia_eval_user,control.apariencia.eval.user,model_control_apariencia_eval,base.group_user,1,1,1,1
@@ -7,3 +9,5 @@ access_control_apariencia_user,control.apariencia.user,model_control_apariencia,
 access_control_apariencia_defecto_user,control.apariencia.defecto.user,model_control_apariencia_defecto,base.group_user,1,1,1,1
 access_control_apariencia_defecto_line_user,control.apariencia.defecto.line.user,model_control_apariencia_defecto_line,base.group_user,1,1,1,1
 access_control_apariencia_tamano_defecto_user,control.apariencia.tamano.defecto.user,model_control_apariencia_tamano_defecto,base.group_user,1,1,1,1
+access_control_estabilidad_revirado_eval_user,control.estabilidad.revirado.eval.user,model_control_estabilidad_revirado_eval,base.group_user,1,1,1,1
+access_control_estabilidad_revirado_eval_detail_user,control.estabilidad.revirado.eval.detail.user,model_control_estabilidad_revirado_eval_detail,base.group_user,1,1,1,1

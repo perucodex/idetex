@@ -9,9 +9,11 @@
             <field name="pedido_id"/>
             <field name="route"/>
             <field name="batch"/>
+            <field name="codpro"/>
             <field name="description"/>
             <field name="process"/>
             <field name="area"/>
+            <field name="rollos"/>
             <field name="kilograms" sum="Total"/>
             <field name="start_date"/>
             <field name="end_date"/>
@@ -25,6 +27,7 @@
                 <field name="barcodreo"/>
                 <field name="process"/>
                 <field name="area"/>
+                <field name="rollos"/>
                 <field name="kilograms" sum="Total"/>
             </list> -->
         </field>
@@ -68,11 +71,13 @@
                             <field name="pedido_id" readonly="1"/>
                             <field name="route" readonly="1"/>
                             <field name="barcodreo" readonly="1"/>
+                            <field name="codpro" readonly="1"/>
                             <field name="description" readonly="1"/>
                             <field name="process" readonly="1"/>
                             <field name="area" readonly="1"/>
                         </group>
                         <group>
+                            <field name="rollos" readonly="1"/>
                             <field name="kilograms" readonly="1"/>
                             <field name="start_date" readonly="1"/>
                             <field name="end_date" readonly="1"/>
@@ -122,12 +127,14 @@
                 <field name="batch"/>
                 <field name="pedido_id"/>
                 <field name="route"/>
+                <field name="codpro"/>
                 <field name="description"/>
                 <field name="colorcode"/>
                 <field name="colorname"/>
                 <group>
                     <filter string="Pedido" name="group_by_pedido_id" domain="[]" context="{'group_by': 'pedido_id'}"/>
-                    <filter string="Producto" name="group_by_description" domain="[]" context="{'group_by': 'description'}"/>
+                    <filter string="Producto" name="group_by_codpro" domain="[]" context="{'group_by': 'codpro'}"/>
+                    <filter string="Descripción" name="group_by_description" domain="[]" context="{'group_by': 'description'}"/>
                     <filter string="Batch" name="group_by_batch" domain="[]" context="{'group_by': 'batch'}"/>
                 </group>
             </search>

@@ -16,6 +16,13 @@ class ControlTonoWizard(models.TransientModel):
     color_code = fields.Char(string="Cod Color", readonly=True)
     color_name = fields.Char(string="Color", readonly=True)
     kilos = fields.Float(string="Kilos", readonly=True)
+    eval_mode = fields.Selection(
+        [("tacho", "Tacho"), ("secado", "Secado"), ("acabado", "Acabado")],
+        string="Tipo de Tono",
+        required=True,
+        default=lambda self: self._default_eval_mode(),
+        readonly=True,
+    )
 
     receta = fields.Char(string="Receta")
     receta_tono = fields.Char(string="Receta Tono")
@@ -36,19 +43,57 @@ class ControlTonoWizard(models.TransientModel):
     @api.depends("has_motivos_selected")
     def _compute_is_concesionado(self):
         for w in self:
-            es_acabado = bool(w.env.context.get("tono_acabado", False))
+            es_acabado = w.eval_mode == "acabado"
             w.is_concesionado = bool(es_acabado and w.has_motivos_selected)
 
-    @api.depends_context("tono_acabado")
+    @api.depends("eval_mode")
     def _compute_show_motivos(self):
         for w in self:
-            es_acabado = bool(w.env.context.get("tono_acabado", False))
-            w.show_motivos = es_acabado
+            w.show_motivos = w.eval_mode == "acabado"
 
-    @api.depends_context("tono_acabado")
+    @api.depends("eval_mode")
     def _compute_can_show_decision_buttons(self):
         for w in self:
             w.can_show_decision_buttons = True
+
+    @api.model
+    def _default_eval_mode(self):
+        mode = (self.env.context.get("tone_mode") or "").strip().lower()
+        if mode in ("tacho", "secado", "acabado"):
+            return mode
+        if self.env.context.get("tono_acabado"):
+            return "acabado"
+        return "tacho"
+
+    def _ensure_mode_allowed(self):
+        self.ensure_one()
+        line = self.pedido_line_id
+        logs = line.tono_eval_log_ids
+        tacho_ok = any(l.tono == "tacho" and l.resultado in ("aprobado", "concesionado") for l in logs)
+        secado_final = any(l.tono == "secado" and l.resultado in ("aprobado", "concesionado") for l in logs)
+        acabado_final = any(l.tono == "acabado" and l.resultado in ("aprobado", "concesionado") for l in logs)
+
+        if self.eval_mode == "tacho":
+            if not line.can_eval_tono:
+                raise UserError(
+                    "La evaluación de Tono Tacho no está disponible para esta partida."
+                )
+            return
+
+        if self.eval_mode == "secado":
+            if not tacho_ok:
+                raise UserError("Debes tener una evaluación Tacho aprobada o concesionada antes de Secado.")
+            if secado_final:
+                raise UserError("La evaluación de Tono Secado ya fue cerrada para esta partida.")
+            if acabado_final:
+                raise UserError("La partida ya fue cerrada en Acabado y no admite Secado.")
+            return
+
+        if self.eval_mode == "acabado":
+            if not tacho_ok:
+                raise UserError("Debes tener una evaluación Tacho aprobada o concesionada antes de Acabado.")
+            if acabado_final:
+                raise UserError("La evaluación de Tono Acabado ya fue cerrada para esta partida.")
 
     @api.model
     def default_get(self, fields_list):
@@ -63,7 +108,7 @@ class ControlTonoWizard(models.TransientModel):
             return res
 
         pedido_rec = line.pedido_id
-        es_acabado = bool(self.env.context.get("tono_acabado", False))
+        mode = res.get("eval_mode") or self._default_eval_mode()
 
         ultimo_tacho = self.env["control.tono.eval.log"].search(
             [("pedido_line_id", "=", line.id), ("tono", "=", "tacho")],
@@ -81,8 +126,9 @@ class ControlTonoWizard(models.TransientModel):
             "color_code": line.colorcode or "",
             "color_name": line.colorname or "",
             "kilos": line.kilograms or 0.0,
+            "eval_mode": mode,
             "receta": "",
-            "receta_tono": (ultimo_tacho.receta_tono or "") if es_acabado and ultimo_tacho else "",
+            "receta_tono": (ultimo_tacho.receta_tono or "") if mode in ("secado", "acabado") and ultimo_tacho else "",
             "motivo_tono": False,
             "motivo_tacto": False,
             "motivo_apariencia": False,
@@ -91,11 +137,11 @@ class ControlTonoWizard(models.TransientModel):
 
     def _create_log(self, line, resultado):
         self.ensure_one()
-        es_acabado = bool(self.env.context.get("tono_acabado", False))
+        self._ensure_mode_allowed()
 
         self.env["control.tono.eval.log"].sudo().create({
             "pedido_line_id": line.id,
-            "tono": "acabado" if es_acabado else "tacho",
+            "tono": self.eval_mode,
             "motivo_tono": self.motivo_tono,
             "motivo_tacto": self.motivo_tacto,
             "motivo_apariencia": self.motivo_apariencia,
@@ -114,7 +160,7 @@ class ControlTonoWizard(models.TransientModel):
         if not r_tono or not r_actual:
             raise UserError("Debes completar las recetas.")
 
-        es_acabado = bool(self.env.context.get("tono_acabado", False))
+        es_acabado = self.eval_mode == "acabado"
         if es_acabado and self.has_motivos_selected:
             raise UserError("Si seleccionas motivos, debes usar Concesionar.")
 
@@ -130,7 +176,7 @@ class ControlTonoWizard(models.TransientModel):
         if not r_tono or not r_actual:
             raise UserError("Debes completar las recetas.")
 
-        es_acabado = bool(self.env.context.get("tono_acabado", False))
+        es_acabado = self.eval_mode == "acabado"
         if es_acabado and not self.has_motivos_selected:
             raise UserError("Debes seleccionar al menos un motivo para concesionar.")
 

@@ -49,6 +49,7 @@ class BatchAddWizard(models.TransientModel):
                 'net_length': line.net_length,
             })
             lot_id.roll_id = roll
+            prd._sync_qty_producing_from_production_rolls()
             if self.env.company.is_printer:
                 roll._print_zpl_to_network(roll.create_zpl(), self.env.company.zpl_printer_ip)
         # NO cerramos el wizard

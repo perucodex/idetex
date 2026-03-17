@@ -406,7 +406,7 @@ class SaleOrderLine(models.Model):
     
     def write(self, vals):
         for rec in self:
-            if 'product_uom_qty' in vals:
+            if 'product_uom_qty' in vals and rec.production_id and rec.production_id.state == 'draft':
                 rec.production_id.product_qty = vals.get('product_uom_qty')
         return super().write(vals)
     

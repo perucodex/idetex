@@ -32,7 +32,31 @@ class MrpProductionRoll(models.Model):
     def create(self, vals_list):
         for vals in vals_list:
             vals['name'] = self.env['ir.sequence'].with_company(vals.get('company_id')).next_by_code('mrp.production.roll')
-        return super().create(vals_list)
+        records = super().create(vals_list)
+        records.mapped('production_id')._sync_qty_producing_from_production_rolls()
+        return records
+
+    def write(self, vals):
+        productions = self.mapped('production_id')
+        res = super().write(vals)
+        (productions | self.mapped('production_id'))._sync_qty_producing_from_production_rolls()
+        return res
+
+    def unlink(self):
+        productions = self.mapped('production_id')
+        lots_to_cleanup = self.mapped('lot_id')
+        res = super().unlink()
+
+        # Cleanup orphan lots created for rolls when they are not used anywhere else.
+        for lot in lots_to_cleanup.exists():
+            has_quants = bool(lot.quant_ids) if 'quant_ids' in lot._fields else False
+            has_moves = bool(lot.move_line_ids) if 'move_line_ids' in lot._fields else False
+            if has_quants or has_moves:
+                continue
+            lot.unlink()
+
+        productions._sync_qty_producing_from_production_rolls()
+        return res
     
     def create_zpl(self, weight=0):
         self.ensure_one()

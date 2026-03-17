@@ -8,10 +8,10 @@ class StockLot(models.Model):
         ('sfe', 'Suitable for Everything'),
         ('dir', 'Directed'),
         ('ysg', 'Yarn Sale Gamarra'),
-    ], string='State')
+    ], string='State', tracking=True)
     defects = fields.Text('Defects')
-    product_family_ids = fields.Many2many('product.family', string='Product Families')
-    color_intensity_ids = fields.Many2many('color.intensity', string='Color Intensities')
+    product_family_ids = fields.Many2many('product.family', string='Product Families', tracking=True)
+    color_intensity_ids = fields.Many2many('color.intensity', string='Color Intensities', tracking=True)
     lot_detail_ids = fields.One2many('stock.lot.detail', 'lot_id', string='Lot Detail')
 
 class StockLotDetail(models.Model):

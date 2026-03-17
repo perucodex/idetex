@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="idtx_batch_quality.QualityDimrevScreen">
+        <div class="o_qdr_root container-fluid">
+            <header class="o_qdr_header">
+                <div>
+                    <h3 class="o_qdr_title">Evaluar Estabilidad y Revirado</h3>
+                    <div class="o_qdr_subtitle text-muted" t-if="state.selectedPartidaData and !state.inEvaluation">
+                        Partida: <b t-esc="state.selectedPartidaData.batch || '-'"/> ·
+                        Cliente: <b t-esc="state.selectedPartidaData.customer || '-'"/>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa fa-bars"/>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <t t-if="state.inEvaluation or state.selectedPartidaId">
+                            <li>
+                                <button class="dropdown-item" t-on-click="onBackToSearch">
+                                    <i class="fa fa-arrow-left me-2"/>Volver a buscar partida
+                                </button>
+                            </li>
+                            <li><hr class="dropdown-divider"/></li>
+                        </t>
+                        <li>
+                            <button class="dropdown-item" t-on-click="close">
+                                <i class="fa fa-sign-out me-2"/>Cerrar
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </header>
+
+            <t t-if="state.error">
+                <div class="alert alert-danger" t-esc="state.error"/>
+            </t>
+
+            <div class="row g-3">
+                <div t-if="!state.inEvaluation" class="col-12 col-lg-4">
+                    <div class="card o_qdr_card">
+                        <div class="card-body">
+                            <label class="form-label fw-bold">Partida</label>
+                            <div class="o_qdr_autocomplete">
+                                <input class="form-control form-control-lg o_qdr_input"
+                                       type="text"
+                                       placeholder="Buscar partida..."
+                                       t-att-value="state.partidaQuery"
+                                       t-on-input="onPartidaQueryInput"
+                                       t-on-focus="onPartidaInputFocus"/>
+                                <button t-if="state.selectedPartidaId"
+                                        type="button"
+                                        class="btn btn-sm btn-outline-secondary o_qdr_clear_btn"
+                                        t-on-click="clearPartida">
+                                    <i class="fa fa-times"/>
+                                </button>
+                                <t t-if="state.showPartidaDropdown and !state.selectedPartidaId">
+                                    <div class="o_qdr_dropdown">
+                                        <div class="o_qdr_dropdown_body">
+                                            <t t-if="state.isSearchingPartida">
+                                                <div class="o_qdr_dropdown_item text-muted">Buscando...</div>
+                                            </t>
+                                            <t t-elif="!filteredPartidas.length">
+                                                <div class="o_qdr_dropdown_item text-muted">Sin resultados</div>
+                                            </t>
+                                            <t t-else="">
+                                                <t t-foreach="filteredPartidas" t-as="partida" t-key="partida.id">
+                                                    <button type="button"
+                                                            class="o_qdr_dropdown_item o_qdr_dropdown_btn"
+                                                            t-on-click="() => this.selectPartida(partida.id)">
+                                                        <div class="o_qdr_dropdown_main" t-esc="partida.batch || '-'"/>
+                                                        <div class="o_qdr_dropdown_sub">
+                                                            <span t-esc="partida.customer || '-'"/> ·
+                                                            <span t-esc="(partida.kilograms || 0) + ' kg'"/>
+                                                        </div>
+                                                    </button>
+                                                </t>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+
+                            <div t-if="state.selectedPartidaData" class="mt-3">
+                                <div><b>Cliente:</b> <span t-esc="state.selectedPartidaData.customer || '-'"/></div>
+                                <div><b>Articulo:</b> <span t-esc="state.selectedPartidaData.article || '-'"/></div>
+                                <div><b>Color:</b> <span t-esc="state.selectedPartidaData.color_name || '-'"/></div>
+                                <div class="mt-3 d-grid">
+                                    <button class="btn btn-primary" t-on-click="startEvaluation">Comenzar evaluacion</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div t-att-class="state.inEvaluation ? 'col-12' : 'col-12 col-lg-8'">
+                    <div t-if="!state.inEvaluation" class="card o_qdr_card">
+                        <div class="card-body">
+                            <h5 class="mb-2">Flujo de evaluacion</h5>
+                            <div class="text-muted">1. Busca y selecciona la partida.</div>
+                            <div class="text-muted">2. Pulsa <b>Comenzar evaluacion</b>.</div>
+                            <div class="text-muted">3. Registra datos y avanza con <b>Anterior / Siguiente</b>.</div>
+                        </div>
+                    </div>
+
+                    <div t-if="state.inEvaluation" class="card o_qdr_card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">Captura manual / revision</h5>
+                                <div class="btn-group">
+                                    <button class="btn btn-dark btn-sm"
+                                            t-att-class="state.voiceActive ? 'btn-danger btn-sm' : 'btn-dark btn-sm'"
+                                            t-on-click="toggleVoiceInput">
+                                        <i class="fa fa-microphone me-1"/>
+                                        <t t-esc="state.voiceActive ? 'Escuchando' : 'Dictado'"/>
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm" t-on-click="previousStep">Anterior</button>
+                                    <button class="btn btn-outline-secondary btn-sm" t-on-click="nextStep">Siguiente</button>
+                                </div>
+                            </div>
+
+                            <div class="row g-2">
+                                <t t-foreach="activeStep.fields" t-as="fieldName" t-key="fieldName">
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label small" t-esc="getStepFieldLabel(fieldName)"/>
+                                        <input class="form-control"
+                                               type="text"
+                                               inputmode="decimal"
+                                               pattern="-?[0-9]+([\\.,][0-9]+)?"
+                                               t-att-value="state.values[fieldName]"
+                                               t-on-input="(ev) => this.onFieldChange(fieldName, ev)"/>
+                                    </div>
+                                </t>
+                            </div>
+
+                            <div class="o_qdr_voice_box mt-3">
+                                <div class="small"><b>Paso actual:</b> <span t-esc="activeStep.label"/></div>
+                                <div class="small text-danger" t-if="state.voiceError" t-esc="state.voiceError"/>
+                                <div class="small text-muted">
+                                    1er Lavado: Ancho <b t-esc="state.stabilityDone.l1_ancho_done ? 'OK' : 'Pendiente'"/> |
+                                    Largo <b t-esc="state.stabilityDone.l1_largo_done ? 'OK' : 'Pendiente'"/> |
+                                    Cierre <b t-esc="state.stabilityDone.l1_done ? 'OK' : 'Pendiente'"/> |
+                                    3er: Ancho <b t-esc="state.stabilityDone.l3_ancho_done ? 'OK' : 'Pendiente'"/> |
+                                    Largo <b t-esc="state.stabilityDone.l3_largo_done ? 'OK' : 'Pendiente'"/> |
+                                    Cierre <b t-esc="state.stabilityDone.l3_done ? 'OK' : 'Pendiente'"/> |
+                                    5to: Ancho <b t-esc="state.stabilityDone.l5_ancho_done ? 'OK' : 'Pendiente'"/> |
+                                    Largo <b t-esc="state.stabilityDone.l5_largo_done ? 'OK' : 'Pendiente'"/> |
+                                    Cierre <b t-esc="state.stabilityDone.l5_done ? 'OK' : 'Pendiente'"/>
+                                </div>
+                                <div class="small text-muted">Comandos: "limpiar", "limpiar todo", "siguiente".</div>
+                                <div class="small text-muted" t-if="state.voiceTranscript">
+                                    Ultimo dictado: <span t-esc="state.voiceTranscript"/>
+                                </div>
+                            </div>
+
+                            <div class="o_qdr_steps mt-3">
+                                <t t-foreach="this.STEPS" t-as="step" t-key="step.key">
+                                    <button class="btn btn-sm"
+                                            t-att-class="state.currentStep === step_index ? 'btn-primary' : 'btn-outline-primary'"
+                                            t-on-click="() => this.goToStep(step_index)">
+                                        <t t-esc="(step_index + 1) + '. ' + step.label"/>
+                                    </button>
+                                </t>
+                            </div>
+
+                            <hr/>
+
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <div class="o_qdr_summary_block">
+                                        <h6>Promedio Estabilidad % Ancho</h6>
+                                        <div>1er: <b t-esc="estAnchoAvgL1.toFixed(2)"/></div>
+                                        <div>3er: <b t-esc="estAnchoAvgL3.toFixed(2)"/></div>
+                                        <div>5to: <b t-esc="estAnchoAvgL5.toFixed(2)"/></div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="o_qdr_summary_block">
+                                        <h6>Promedio Estabilidad % Largo</h6>
+                                        <div>1er: <b t-esc="estLargoAvgL1.toFixed(2)"/></div>
+                                        <div>3er: <b t-esc="estLargoAvgL3.toFixed(2)"/></div>
+                                        <div>5to: <b t-esc="estLargoAvgL5.toFixed(2)"/></div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="o_qdr_summary_block">
+                                        <h6>Revirado</h6>
+                                        <div>1er Lavado M1: <b t-esc="reviradoM1.toFixed(2)"/></div>
+                                        <div>1er Lavado M2: <b t-esc="reviradoM2.toFixed(2)"/></div>
+                                        <div>1er Lavado Promedio: <b t-esc="reviradoPromedio.toFixed(2)"/></div>
+                                        <hr/>
+                                        <div>Lavado N: <b t-esc="reviradoNLavado || 0"/></div>
+                                        <div>Lavado N M1: <b t-esc="reviradoNM1.toFixed(2)"/></div>
+                                        <div>Lavado N M2: <b t-esc="reviradoNM2.toFixed(2)"/></div>
+                                        <div>Lavado N Promedio: <b t-esc="reviradoNPromedio.toFixed(2)"/></div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="o_qdr_summary_block">
+                                        <h6>Densidad y Ancho</h6>
+                                        <div>Densidad promedio: <b t-esc="densidadPromedio.toFixed(2)"/></div>
+                                        <div>Ancho promedio: <b t-esc="anchoPromedio.toFixed(2)"/></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

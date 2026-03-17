@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_thread_lot_control_user,thread.lot.control user,model_thread_lot_control,stock.group_stock_user,1,1,1,1
+access_thread_lot_control_line_user,thread.lot.control.line user,model_thread_lot_control_line,stock.group_stock_user,1,1,1,1
+access_thread_second_quality_wizard_user,thread.second.quality.wizard user,model_thread_second_quality_wizard,stock.group_stock_user,1,1,1,1
+access_thread_second_quality_wizard_line_user,thread.second.quality.wizard.line user,model_thread_second_quality_wizard_line,stock.group_stock_user,1,1,1,1

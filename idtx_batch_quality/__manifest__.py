@@ -21,13 +21,17 @@
         'security/ir.model.access.csv',
         'data/ir_sequence.xml',
         'data/control_apariencia.xml',
-        'data/defectos_acabado.xml',
+        'data/defectos_acabados.xml',
+        'data/defectos_tejeduria.xml',
 
         'views/control_pedido_line_views.xml',
         'views/control_tono_eval_log_views.xml',
+        'views/control_tono_eval_group_views.xml',
         'views/control_apariencia_defecto_views.xml',
+        'views/control_estabilidad_revirado_eval_views.xml',
         'views/quality_tone_screen.xml',
         'views/quality_defect_screen.xml',
+        'views/quality_dimrev_screen.xml',
 
         'wizards/control_tono_wizard.xml',
 
@@ -35,12 +39,16 @@
 
     'assets': {
         'web.assets_backend': [
+            'idtx_batch_quality/static/src/list_renderer_escape_guard.js',
             'idtx_batch_quality/static/src/tone_screen/quality_tone_screen.js',
             'idtx_batch_quality/static/src/tone_screen/quality_tone_screen.xml',
             'idtx_batch_quality/static/src/tone_screen/quality_tone_screen.scss',
             'idtx_batch_quality/static/src/defect_screen/quality_defect_screen.js',
             'idtx_batch_quality/static/src/defect_screen/quality_defect_screen.xml',
             'idtx_batch_quality/static/src/defect_screen/quality_defect_screen.scss',
+            'idtx_batch_quality/static/src/dimrev_screen/quality_dimrev_screen.js',
+            'idtx_batch_quality/static/src/dimrev_screen/quality_dimrev_screen.xml',
+            'idtx_batch_quality/static/src/dimrev_screen/quality_dimrev_screen.scss',
         ],
     },
 } 

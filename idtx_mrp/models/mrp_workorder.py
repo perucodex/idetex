@@ -30,7 +30,6 @@ class MrpWorkorder(models.Model):
             'state': 'progress',
             'date_finished': False,
         })
-        self.write({'qty_produced': 0})
         return True
     
     def button_start(self, raise_on_invalid_state=False):
@@ -49,6 +48,7 @@ class MrpWorkorderOption(models.Model):
 
     name = fields.Char('Name')
     workorder_id = fields.Many2one('mrp.workorder', string='Workorder')
+    workcenter_id = fields.Many2one(related='workorder_id.workcenter_id', string='Workcenter')
     notes = fields.Text('Notes')
     employee_ids = fields.Many2many('hr.employee', string='Employees')
     equipment_ids = fields.Many2many('maintenance.equipment', string='Equipments')

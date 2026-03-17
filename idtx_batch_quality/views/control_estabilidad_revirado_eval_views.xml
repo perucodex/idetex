@@ -1,0 +1,102 @@
+<odoo>
+    <record id="view_control_estabilidad_revirado_eval_list" model="ir.ui.view">
+        <field name="name">control.estabilidad.revirado.eval.list</field>
+        <field name="model">control.estabilidad.revirado.eval</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="fecha_eval"/>
+                <field name="user_id"/>
+                <field name="pedido_line_id"/>
+                <field name="est_ancho_avg_l1"/>
+                <field name="est_largo_avg_l1"/>
+                <field name="revirado_promedio"/>
+                <field name="revirado_n_promedio"/>
+                <field name="densidad_promedio"/>
+                <field name="ancho_promedio"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_control_estabilidad_revirado_eval_form" model="ir.ui.view">
+        <field name="name">control.estabilidad.revirado.eval.form</field>
+        <field name="model">control.estabilidad.revirado.eval</field>
+        <field name="arch" type="xml">
+            <form string="Evaluacion Estabilidad y Revirado">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" readonly="1"/>
+                            <field name="fecha_eval"/>
+                        </group>
+                        <group>
+                            <field name="user_id"/>
+                            <field name="pedido_line_id"/>
+                        </group>
+                    </group>
+                    <group string="Resultados Resumen">
+                        <group>
+                            <field name="est_ancho_avg_l1" readonly="1"/>
+                            <field name="est_ancho_avg_l3" readonly="1"/>
+                            <field name="est_ancho_avg_l5" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="est_largo_avg_l1" readonly="1"/>
+                            <field name="est_largo_avg_l3" readonly="1"/>
+                            <field name="est_largo_avg_l5" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="revirado_promedio" readonly="1"/>
+                            <field name="revirado_n_lavado" readonly="1"/>
+                            <field name="revirado_n_promedio" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="densidad_promedio" readonly="1"/>
+                            <field name="ancho_promedio" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Tabla General de Datos">
+                            <field name="detail_line_ids" nolabel="1" readonly="1">
+                                <list default_order="sequence asc">
+                                    <field name="sequence"/>
+                                    <field name="prueba"/>
+                                    <field name="muestra"/>
+                                    <field name="evaluacion"/>
+                                    <field name="dato"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Control de Flujo">
+                            <group>
+                                <field name="est_l1_ancho_done"/>
+                                <field name="est_l1_largo_done"/>
+                                <field name="est_l1_done"/>
+                                <field name="est_l3_ancho_done"/>
+                                <field name="est_l3_largo_done"/>
+                                <field name="est_l3_done"/>
+                                <field name="est_l5_ancho_done"/>
+                                <field name="est_l5_largo_done"/>
+                                <field name="est_l5_done"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_control_estabilidad_revirado_eval" model="ir.actions.act_window">
+        <field name="name">Evaluaciones Estabilidad/Revirado</field>
+        <field name="res_model">control.estabilidad.revirado.eval</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_control_estabilidad_revirado_eval"
+              name="Evaluaciones Estabilidad/Revirado"
+              parent="quality_control.menu_quality_control"
+              action="action_control_estabilidad_revirado_eval"
+              sequence="930"/>
+</odoo>

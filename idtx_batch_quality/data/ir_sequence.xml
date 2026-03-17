@@ -9,4 +9,20 @@
         <field name="company_id" eval="False"/>
     </record>
 
+    <record id="seq_control_tono_eval_group" model="ir.sequence">
+        <field name="name">Evaluacion Grupal Tono</field>
+        <field name="code">control.tono.eval.group</field>
+        <field name="prefix">TGRP</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_control_estabilidad_revirado_eval" model="ir.sequence">
+        <field name="name">Evaluacion Estabilidad/Revirado</field>
+        <field name="code">control.estabilidad.revirado.eval</field>
+        <field name="prefix">DREV</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
 </odoo>

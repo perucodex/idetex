@@ -147,7 +147,7 @@ class StockQuantImport(models.Model):
                     'partner_id': self.env.company.partner_id.id, 
                     'lab_dev_line_ids': [
                         Command.create({
-                            'product_id':product.id,
+                            # 'product_id':product.id,
                             'color_name': row.color_name,
                             'color_process_type_id': cpt.id,
                             'color_range_id': cr.id,

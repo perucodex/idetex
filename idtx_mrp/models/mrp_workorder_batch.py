@@ -46,22 +46,22 @@ class MrpWorkorderBatch(models.Model):
         self.wo_roll_ids = [Command.clear()]
     
     def create_batch(self):
-        if any(roll.in_batch for roll in self.wo_roll_ids):
-            raise UserError(_('Some rolls are in other batch, please select rolls again.'))
-        for roll in self.wo_roll_ids:
-            roll.in_batch = True
-        self.state = 'batch'
+        for rec in self:
+            if any(roll.in_batch for roll in rec.wo_roll_ids):
+                raise UserError(_('Some rolls are in other batch, please select rolls again.'))
+            rec.wo_roll_ids.write({'in_batch': True})
+            rec.state = 'batch'
 
     def unbuild_batch(self):
         # if self.workorder_id:
         #     raise UserError(_('Can\'t unbild a batch already in use, production %s.') %self.workorder_id.production_id.name)
-        for roll in self.wo_roll_ids:
-            roll.in_batch = False
-        self.state = 'unbuild'
+        for rec in self:
+            rec.wo_roll_ids.write({'in_batch': False})
+            rec.state = 'unbuild'
 
     def rebuild_batch(self):
-        if any(roll.in_batch for roll in self.wo_roll_ids):
-            raise UserError(_('Some rolls are in other batch, can\'t rebuild batch.'))
-        for roll in self.wo_roll_ids:
-            roll.in_batch = True
-        self.state = 'batch'
+        for rec in self:
+            if any(roll.in_batch for roll in rec.wo_roll_ids):
+                raise UserError(_('Some rolls are in other batch, can\'t rebuild batch.'))
+            rec.wo_roll_ids.write({'in_batch': True})
+            rec.state = 'batch'

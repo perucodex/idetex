@@ -33,6 +33,9 @@
             <xpath expr="//field[@name='qty_remaining']" position="after">
                 <field name="operation_type"/>
             </xpath>
+            <xpath expr="//field[@name='qty_produced']" position="attributes">
+                <attribute name="readonly">1</attribute>
+            </xpath>
             <xpath expr="//notebook" position="inside">
                 <page string="Options" name="options" invisible="operation_type != 'weaving'">
                     <field name="option_ids" readonly="state not in ('ready','progress')" context="{'default_workorder_id': id}">

@@ -351,12 +351,18 @@ class ControlAparienciaDefectoLine(models.Model):
     )
     is_hueco = fields.Boolean(related='defecto_id.is_hueco')
     cantidad = fields.Integer(string="Cantidad", compute="_compute_cantidad")
+    total_puntos = fields.Integer(string="Total Puntos", compute="_compute_total_puntos", store=True, readonly=True)
     tamano_defecto_ids = fields.One2many('control.apariencia.tamano.defecto', 'defecto_line_id', string='Tamaños Defecto')
 
     @api.depends("tamano_defecto_ids")
     def _compute_cantidad(self):
         for rec in self:
             rec.cantidad = rec.tamano_defecto_ids and len(rec.tamano_defecto_ids) or 0
+
+    @api.depends("tamano_defecto_ids.puntos")
+    def _compute_total_puntos(self):
+        for rec in self:
+            rec.total_puntos = sum(rec.tamano_defecto_ids.mapped("puntos"))
 
     @api.constrains("defecto_id", "apariencia_id")
     def _check_defecto_matches_apariencia(self):
@@ -387,3 +393,10 @@ class ControlAparienciaTamanoDefecto(models.Model):
         ('2', '<= 3 cm'),
         ('4', '> 3 cm'),
     ], string='Tamaño del Hueco')
+    puntos = fields.Integer(string="Puntos", compute="_compute_puntos", store=True, readonly=True)
+
+    @api.depends("tamano", "tamano_hueco")
+    def _compute_puntos(self):
+        for rec in self:
+            value = rec.tamano_hueco or rec.tamano
+            rec.puntos = int(value) if value else 0

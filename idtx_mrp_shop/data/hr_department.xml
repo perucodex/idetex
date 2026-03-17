@@ -2,9 +2,20 @@
 <odoo>
     <data noupdate="1">
     
+        <record id="tejeduria" model="hr.department">
+            <field name="name">Tejeduría</field>
+        </record>
+    
         <record id="tintoreria" model="hr.department">
             <field name="name">Tintorería</field>
-            <field name="color" eval="2" />
+        </record>
+    
+        <record id="acabados" model="hr.department">
+            <field name="name">Acabados</field>
+        </record>
+    
+        <record id="calidad" model="hr.department">
+            <field name="name">Control de Calidad</field>
         </record>
 
     </data>

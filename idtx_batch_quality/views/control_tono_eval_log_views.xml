@@ -24,6 +24,11 @@
                             <field name="receta_tono" string="Receta Tacho" readonly="1"/>
                             <field name="resultado" readonly="1"/>
                         </group>
+                        <group invisible="tono != 'secado'">
+                            <field name="receta" string="Receta Secado" readonly="1"/>
+                            <field name="receta_tono" string="Receta Tacho" readonly="1"/>
+                            <field name="resultado" readonly="1"/>
+                        </group>
                     </group>
                 </sheet>
             </form>

@@ -1,9 +1,218 @@
 from odoo import _, models, fields
-from odoo.exceptions import RedirectWarning
+from odoo.exceptions import RedirectWarning, UserError
 import requests
 
 class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'
+
+    def _sync_thread_consumption_from_rolls(self):
+        """Rebuild thread component consumption from current workorder rolls.
+
+        This avoids drift from incremental updates and ensures only lots coming
+        from the options used in existing rolls are reflected in MO components.
+        """
+        for workorder in self:
+            if workorder.operation_type != 'weaving' or not workorder.production_id:
+                continue
+
+            production = workorder.production_id
+            raw_moves = production.move_raw_ids.filtered(
+                lambda mv: mv.product_id and mv.product_id.is_thread and mv.state not in ('done', 'cancel')
+            )
+            if not raw_moves:
+                continue
+
+            option_lines_by_option = {
+                option.id: {
+                    line.product_id.id: line.lot_id.id
+                    for line in option.option_line_ids
+                    if line.product_id and line.lot_id
+                }
+                for option in workorder.option_ids
+            }
+
+            qty_by_move_lot = {}
+            rolls = workorder.roll_ids.filtered(lambda r: r.option_id and float(r.gross_weight or 0.0) > 0)
+            for roll in rolls:
+                product_lot_map = option_lines_by_option.get(roll.option_id.id, {})
+                for move in raw_moves:
+                    lot_id = product_lot_map.get(move.product_id.id)
+                    if not lot_id:
+                        raise UserError(_(
+                            'Option %(option)s is missing product/lot for %(product)s.',
+                            option=roll.option_id.display_name,
+                            product=move.product_id.display_name,
+                        ))
+                    factor = workorder._get_thread_component_factor(move, production)
+                    consume_qty = float(roll.gross_weight or 0.0) * factor
+                    if consume_qty <= 0:
+                        continue
+                    key = (move.id, lot_id)
+                    qty_by_move_lot[key] = qty_by_move_lot.get(key, 0.0) + consume_qty
+
+            for move in raw_moves:
+                relevant_lot_ids = set(
+                    workorder.option_ids.mapped('option_line_ids')
+                    .filtered(lambda l: l.product_id == move.product_id and l.lot_id)
+                    .mapped('lot_id').ids
+                )
+
+                stale_lines = move.move_line_ids.filtered(
+                    lambda ml: ml.state not in ('done', 'cancel')
+                    and ml.lot_id
+                    and ml.lot_id.id in relevant_lot_ids
+                )
+                if stale_lines:
+                    stale_lines.unlink()
+
+                has_qty = False
+                for (move_id, lot_id), qty in qty_by_move_lot.items():
+                    if move_id != move.id or qty <= 0:
+                        continue
+                    line_vals = move._prepare_move_line_vals(quantity=0)
+                    line_vals.update({
+                        'lot_id': lot_id,
+                        'quantity': qty,
+                    })
+                    self.env['stock.move.line'].create(line_vals)
+                    has_qty = True
+
+                move.picked = has_qty
+
+    def _get_thread_component_factor(self, move, production):
+        factor = float(getattr(move, 'unit_factor', 0.0) or 0.0)
+        if factor <= 0 and production.product_qty:
+            factor = float(move.product_uom_qty or 0.0) / float(production.product_qty or 1.0)
+        return factor
+
+    def _accumulate_thread_consumption_from_roll(self, roll=None, option=None, produced_qty=None):
+        """Accumulate raw thread consumption for a newly created roll.
+
+        Uses MO raw move factors (BOM proportions) and the selected option
+        product/lot mapping to increment detailed operation quantities.
+        """
+        self.ensure_one()
+        if not option or not self.production_id:
+            return
+
+        production = self.production_id
+        if produced_qty is None:
+            produced_qty = float(roll.gross_weight or 0.0) if roll else 0.0
+        if produced_qty <= 0:
+            return
+
+        option_line_by_product = {
+            line.product_id.id: line
+            for line in option.option_line_ids
+            if line.product_id and line.lot_id
+        }
+
+        raw_moves = production.move_raw_ids.filtered(
+            lambda mv: mv.product_id
+            and mv.product_id.is_thread
+            and mv.state not in ('done', 'cancel')
+        )
+        if not raw_moves:
+            return
+
+        missing_product_ids = [
+            move.product_id.id
+            for move in raw_moves
+            if move.product_id.id not in option_line_by_product
+        ]
+        if missing_product_ids:
+            missing_names = self.env['product.product'].browse(missing_product_ids).mapped('display_name')
+            raise UserError(_(
+                'The selected option is incomplete for thread consumption. Missing product/lot for: %s'
+            ) % ', '.join(missing_names))
+
+        for move in raw_moves:
+            option_line = option_line_by_product.get(move.product_id.id)
+
+            # Prefer unit_factor (component qty per 1 unit of MO product).
+            factor = self._get_thread_component_factor(move, production)
+
+            consume_qty = produced_qty * factor
+            if consume_qty <= 0:
+                continue
+
+            same_lot_line = move.move_line_ids.filtered(
+                lambda ml: ml.product_id == move.product_id
+                and ml.lot_id == option_line.lot_id
+                and ml.state not in ('done', 'cancel')
+            )[:1]
+            if same_lot_line:
+                same_lot_line.quantity = float(same_lot_line.quantity or 0.0) + consume_qty
+                continue
+
+            line_vals = move._prepare_move_line_vals(quantity=0)
+            line_vals.update({
+                'lot_id': option_line.lot_id.id,
+                'quantity': consume_qty,
+            })
+            self.env['stock.move.line'].create(line_vals)
+
+    def _decrease_thread_consumption_from_roll(self, roll=None, option=None, produced_qty=None):
+        """Reverse thread accumulation when deleting a roll.
+
+        Decreases move line quantities proportionally using the roll weight and
+        the selected option product/lot mapping.
+        """
+        self.ensure_one()
+        if not option or not self.production_id:
+            return
+
+        production = self.production_id
+        if produced_qty is None:
+            produced_qty = float(roll.gross_weight or 0.0) if roll else 0.0
+        if produced_qty <= 0:
+            return
+
+        option_line_by_product = {
+            line.product_id.id: line
+            for line in option.option_line_ids
+            if line.product_id and line.lot_id
+        }
+        if not option_line_by_product:
+            return
+
+        raw_moves = production.move_raw_ids.filtered(
+            lambda mv: mv.product_id
+            and mv.product_id.is_thread
+            and mv.state not in ('done', 'cancel')
+        )
+        for move in raw_moves:
+            option_line = option_line_by_product.get(move.product_id.id)
+            if not option_line:
+                continue
+
+            factor = self._get_thread_component_factor(move, production)
+            decrease_qty = produced_qty * factor
+            if decrease_qty <= 0:
+                continue
+
+            candidate_lines = move.move_line_ids.filtered(
+                lambda ml: ml.product_id == move.product_id
+                and ml.lot_id == option_line.lot_id
+                and ml.state not in ('done', 'cancel')
+            ).sorted(lambda ml: ml.id, reverse=True)
+
+            remaining = float(decrease_qty)
+            for line in candidate_lines:
+                if remaining <= 0:
+                    break
+                current_qty = float(line.quantity or 0.0)
+                if current_qty <= 0:
+                    continue
+
+                deduct = min(current_qty, remaining)
+                new_qty = current_qty - deduct
+                remaining -= deduct
+
+                if new_qty > 0:
+                    line.quantity = new_qty
+                else:
+                    line.unlink()
 
     def _compute_registry_recipe_components(self):
         self.ensure_one()
@@ -106,7 +315,6 @@ class MrpWorkorder(models.Model):
                     return {'status': 'danger', 'message': _('No communication with the scale')}
 
             if peso is None or peso <= 0:
-                self.qty_producing = sum(self.roll_ids.mapped('gross_weight'))
                 return {'status': 'danger', 'message': _('No valid weight was provided')}
 
             # Rolls del mismo equipment para calcular start
@@ -143,8 +351,6 @@ class MrpWorkorder(models.Model):
 
             if scale.printer_ip:
                 roll._print_zpl_to_network(roll.create_zpl(), scale.printer_ip)
-
-            self.qty_producing = sum(self.roll_ids.mapped('gross_weight'))
 
             source_label = 'manual' if weight_source == 'manual' else 'scale'
             return {

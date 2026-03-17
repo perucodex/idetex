@@ -6,6 +6,7 @@
             <form string="Evaluar Tono">
                 <sheet>
                     <field name="pedido_line_id" invisible="1"/>
+                    <field name="eval_mode" invisible="1"/>
                     <field name="is_concesionado" invisible="1"/>
                     <field name="has_motivos_selected" invisible="1"/>
                     <field name="can_show_decision_buttons" invisible="1"/>
@@ -13,6 +14,7 @@
 
                     <group>
                         <group>
+                            <field name="eval_mode" readonly="1"/>
                             <field name="cliente" readonly="1"/>
                             <field name="articulo" readonly="1"/>
                             <field name="pedido" readonly="1"/>
@@ -26,7 +28,7 @@
                         </group>
                     </group>
 
-                    <group invisible="context.get('tono_acabado', False)">
+                    <group invisible="eval_mode != 'tacho'">
                         <group>
                             <field name="receta" string="Receta Laboratorio"/>
                         </group>
@@ -35,9 +37,9 @@
                         </group>
                     </group>
 
-                    <group invisible="not context.get('tono_acabado', False)">
+                    <group invisible="eval_mode == 'tacho'">
                         <group>
-                            <field name="receta" string="Receta Acabado"/>
+                            <field name="receta" string="Receta Proceso"/>
                         </group>
                         <group>
                             <field name="receta_tono" string="Receta Tacho" readonly="1"/>
@@ -58,13 +60,13 @@
                             name="action_aprobar"
                             type="object"
                             class="btn-primary"
-                            invisible="not can_show_decision_buttons or (context.get('tono_acabado', False) and has_motivos_selected)"/>
+                            invisible="not can_show_decision_buttons or (eval_mode == 'acabado' and has_motivos_selected)"/>
 
                     <button string="Concesionado"
                             name="action_concesionar"
                             type="object"
                             class="btn-primary"
-                            invisible="not can_show_decision_buttons or (context.get('tono_acabado', False) and not has_motivos_selected)"/>
+                            invisible="not can_show_decision_buttons or (eval_mode == 'acabado' and not has_motivos_selected)"/>
 
                     <button string="Rechazar"
                             name="action_rechazar"

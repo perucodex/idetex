@@ -19,7 +19,7 @@ class MrpProduction(models.Model):
             )._action_assign()
         return super().action_assign()
     
-    @api.depends('move_raw_ids')
+    @api.depends('move_raw_ids','move_raw_ids.move_line_ids','move_raw_ids.move_line_ids.lot_id','move_raw_ids.move_line_ids.lot_id.color_intensity_ids','move_raw_ids.move_line_ids.lot_id.product_family_ids')
     def _compute_lot_warning(self):
         warning = ''
         if self.is_company_produce:

@@ -10,11 +10,13 @@ class ControlPedidoLine(models.Model):
 
     pedido_id = fields.Many2one("control.pedido", required=True, ondelete="cascade")
     route = fields.Char(string="Route")
+    codpro = fields.Char('Codigo Producto')
     description = fields.Char('Articulo')
     barcodreo = fields.Char('Reprocess')
     batch = fields.Char('Batch')
     process = fields.Char(string="Next Process")
     area = fields.Char('Area')
+    rollos = fields.Integer('Rolls')
     kilograms = fields.Float('Kilograms')
     start_date = fields.Datetime('Start Date')
     end_date = fields.Datetime('End Date')
@@ -42,8 +44,10 @@ class ControlPedidoLine(models.Model):
             "route": _safe_str(dr["HojaDeRuta"]),
             "barcodreo": _safe_str(dr["BarCodReo"]) or '',
             "description": _safe_str(dr["BarSerDsc"]),
+            "codpro": _safe_str(dr["BarSer"]) or '',
             "batch": _safe_str(dr["Partida"]) or '',
             "kilograms": _safe_float(dr["PesoTotal"]),
+            "rollos": _safe_float(dr["Rollos"]),
             "process": _safe_str(dr["Proceso_Ultimo"]) or 'SIN AVANCE',
             "area": _safe_str(dr["Area"]) or 'VOUCHER',
             "start_date": start,
