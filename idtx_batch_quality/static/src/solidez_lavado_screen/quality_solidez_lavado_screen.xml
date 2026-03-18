@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="idtx_batch_quality.QualitySolidezLavadoScreen">
+        <div class="o_qsl_root container-fluid">
+            <header class="o_qsl_header">
+                <div>
+                    <h3 class="o_qsl_title">Solidez del Color al Lavado</h3>
+                    <div class="o_qsl_subtitle text-muted" t-if="state.selectedPartidaData and !state.inEvaluation">
+                        Partida: <b t-esc="state.selectedPartidaData.batch || '-'"/> ·
+                        Cliente: <b t-esc="state.selectedPartidaData.customer || '-'"/>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa fa-bars"/>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <t t-if="state.inEvaluation or state.selectedPartidaId">
+                            <li>
+                                <button class="dropdown-item" t-on-click="onBackToSearch">
+                                    <i class="fa fa-arrow-left me-2"/>Volver a buscar partida
+                                </button>
+                            </li>
+                            <li><hr class="dropdown-divider"/></li>
+                        </t>
+                        <li>
+                            <button class="dropdown-item" t-on-click="close">
+                                <i class="fa fa-sign-out me-2"/>Cerrar
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </header>
+
+            <t t-if="state.error">
+                <div class="alert alert-danger" t-esc="state.error"/>
+            </t>
+
+            <div class="row g-3">
+                <div t-if="!state.inEvaluation" class="col-12 col-lg-4">
+                    <div class="card o_qsl_card">
+                        <div class="card-body">
+                            <label class="form-label fw-bold">Partida</label>
+                            <div class="o_qsl_autocomplete">
+                                <input class="form-control form-control-lg o_qsl_input"
+                                       type="text"
+                                       placeholder="Buscar partida..."
+                                       t-att-value="state.partidaQuery"
+                                       t-on-input="onPartidaQueryInput"
+                                       t-on-focus="onPartidaInputFocus"/>
+                                <button t-if="state.selectedPartidaId"
+                                        type="button"
+                                        class="btn btn-sm btn-outline-secondary o_qsl_clear_btn"
+                                        t-on-click="clearPartida">
+                                    <i class="fa fa-times"/>
+                                </button>
+                                <t t-if="state.showPartidaDropdown and !state.selectedPartidaId">
+                                    <div class="o_qsl_dropdown">
+                                        <div class="o_qsl_dropdown_body">
+                                            <t t-if="state.isSearchingPartida">
+                                                <div class="o_qsl_dropdown_item text-muted">Buscando...</div>
+                                            </t>
+                                            <t t-elif="!filteredPartidas.length">
+                                                <div class="o_qsl_dropdown_item text-muted">Sin resultados</div>
+                                            </t>
+                                            <t t-else="">
+                                                <t t-foreach="filteredPartidas" t-as="partida" t-key="partida.id">
+                                                    <button type="button"
+                                                            class="o_qsl_dropdown_item o_qsl_dropdown_btn"
+                                                            t-on-click="() => this.selectPartida(partida.id)">
+                                                        <div class="o_qsl_dropdown_main" t-esc="partida.batch || '-'"/>
+                                                        <div class="o_qsl_dropdown_sub">
+                                                            <span t-esc="partida.customer || '-'"/> ·
+                                                            <span t-esc="(partida.kilograms || 0) + ' kg'"/>
+                                                        </div>
+                                                    </button>
+                                                </t>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+
+                            <div t-if="state.selectedPartidaData" class="mt-3">
+                                <div><b>Cliente:</b> <span t-esc="state.selectedPartidaData.customer || '-'"/></div>
+                                <div><b>Articulo:</b> <span t-esc="state.selectedPartidaData.article || '-'"/></div>
+                                <div><b>Color:</b> <span t-esc="state.selectedPartidaData.color_name || '-'"/></div>
+                                <div class="mt-3 d-grid">
+                                    <button class="btn btn-primary" t-on-click="startEvaluation">Comenzar evaluacion</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div t-att-class="state.inEvaluation ? 'col-12' : 'col-12 col-lg-8'">
+                    <div t-if="!state.inEvaluation" class="card o_qsl_card">
+                        <div class="card-body">
+                            <h5 class="mb-2">Flujo de evaluacion</h5>
+                            <div class="text-muted">1. Busca y selecciona la partida.</div>
+                            <div class="text-muted">2. Pulsa <b>Comenzar evaluacion</b>.</div>
+                            <div class="text-muted">3. Avanza con <b>Siguiente</b> y regresa con <b>Anterior</b>.</div>
+                            <div class="text-muted">4. En el ultimo paso pulsa <b>Finalizar</b> para registrar.</div>
+                        </div>
+                    </div>
+
+                    <div t-if="state.inEvaluation" class="card o_qsl_card o_qsl_eval_card">
+                        <div class="card-body o_qsl_eval_body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0" t-esc="activeStep.label"/>
+                                <div class="btn-group">
+                                    <button class="btn btn-dark btn-sm"
+                                            t-att-class="state.voiceActive ? 'btn-danger btn-sm' : 'btn-dark btn-sm'"
+                                            t-on-click="toggleVoiceInput">
+                                        <i class="fa fa-microphone me-1"/>
+                                        <t t-esc="state.voiceActive ? 'Escuchando' : 'Dictado'"/>
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm" t-on-click="previousStep">Anterior</button>
+                                    <button class="btn btn-outline-secondary btn-sm"
+                                            t-if="!isLastStep"
+                                            t-on-click="nextStep">Siguiente</button>
+                                    <button class="btn btn-success btn-sm"
+                                            t-if="isLastStep"
+                                            t-att-disabled="!canFinalizeEvaluation"
+                                            t-on-click="finalizeEvaluation">Finalizar</button>
+                                </div>
+                            </div>
+
+                            <div class="row g-2">
+                                <t t-foreach="activeStep.fields" t-as="fieldName" t-key="fieldName">
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label small" t-esc="getStepFieldLabel(fieldName)"/>
+                                        <input class="form-control"
+                                               type="text"
+                                               inputmode="decimal"
+                                               pattern="-?[0-9]+([\\.,][0-9]+)?"
+                                               t-att-value="state.values[fieldName]"
+                                               t-on-input="(ev) => this.onFieldChange(fieldName, ev)"/>
+                                    </div>
+                                </t>
+                            </div>
+
+                            <div class="o_qsl_voice_box mt-3">
+                                <div class="small"><b>Comandos:</b> limpiar, limpiar todo, siguiente, anterior</div>
+                                <div class="small text-danger" t-if="state.voiceError" t-esc="state.voiceError"/>
+                                <div class="small text-muted" t-if="state.voiceTranscript">
+                                    Ultimo dictado: <span t-esc="state.voiceTranscript"/>
+                                </div>
+                            </div>
+
+                            <hr/>
+
+                            <div class="row g-3">
+                                <div class="col-12 col-md-4">
+                                    <div class="o_qsl_summary_block">
+                                        <h6>Solidez del Color al Lavado</h6>
+                                        <div>Cambio de color grado: <b t-esc="state.values.cambio_color_grado || '0'"/></div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <div class="o_qsl_summary_block">
+                                        <h6>Migracion</h6>
+                                        <div>Acetato: <b t-esc="state.values.mig_acetato || '0'"/></div>
+                                        <div>Algodon: <b t-esc="state.values.mig_algodon || '0'"/></div>
+                                        <div>Nylon: <b t-esc="state.values.mig_nylon || '0'"/></div>
+                                        <div>Poliester: <b t-esc="state.values.mig_poliester || '0'"/></div>
+                                        <div>Acrilico: <b t-esc="state.values.mig_acrilico || '0'"/></div>
+                                        <div>Lana: <b t-esc="state.values.mig_lana || '0'"/></div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <div class="o_qsl_summary_block">
+                                        <h6>Solidez del color al frote</h6>
+                                        <div>Seco: <b t-esc="state.values.frote_seco || '0'"/></div>
+                                        <div>Humedo: <b t-esc="state.values.frote_humedo || '0'"/></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

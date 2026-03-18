@@ -1,21 +1,14 @@
-.o_qdr_root {
-    --qdr-bottom-reserve: 68px;
+.o_qsl_root {
+    --qsl-bottom-reserve: 68px;
     padding: 16px;
-    padding-bottom: calc(16px + var(--qdr-bottom-reserve) + env(safe-area-inset-bottom));
+    padding-bottom: calc(16px + var(--qsl-bottom-reserve) + env(safe-area-inset-bottom));
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
 }
 
-/* Samsung Galaxy Tab portrait range: keep extra room above the fixed bottom overlay */
-@media (min-width: 760px) and (max-width: 900px) {
-    .o_qdr_root {
-        --qdr-bottom-reserve: 96px;
-    }
-}
-
-.o_qdr_header {
+.o_qsl_header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -23,50 +16,44 @@
     margin-bottom: 12px;
 }
 
-.o_qdr_root > .row {
+.o_qsl_root > .row {
     flex: 1 1 auto;
     min-height: 0;
 }
 
-.o_qdr_eval_card {
+.o_qsl_eval_card {
     height: 100%;
 }
 
-.o_qdr_eval_body {
-    max-height: calc(100dvh - 140px - var(--qdr-bottom-reserve) - env(safe-area-inset-bottom));
+.o_qsl_eval_body {
+    max-height: calc(100dvh - 140px - var(--qsl-bottom-reserve) - env(safe-area-inset-bottom));
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding-bottom: 0.5rem;
 }
 
-.o_qdr_title {
+.o_qsl_title {
     margin: 0;
     font-weight: 700;
 }
 
-.o_qdr_card {
+.o_qsl_card {
     border-radius: 12px;
 }
 
-.o_qdr_autocomplete {
+.o_qsl_autocomplete {
     position: relative;
     z-index: 40;
 }
 
-.o_qdr_input {
+.o_qsl_input {
     border-radius: 1rem;
     font-weight: 700;
     font-size: clamp(1rem, 2.6vw, 1.15rem);
     padding: 0.9rem 1rem;
 }
 
-.o_qdr_input:focus {
-    outline: none;
-    border-color: var(--o-brand-primary, #7c3aed);
-    box-shadow: 0 0 0 0.25rem rgba(124, 58, 237, 0.25);
-}
-
-.o_qdr_clear_btn {
+.o_qsl_clear_btn {
     position: absolute;
     top: 50%;
     right: 0.5rem;
@@ -75,7 +62,7 @@
     padding: 0.55rem 0.7rem;
 }
 
-.o_qdr_dropdown {
+.o_qsl_dropdown {
     position: absolute;
     left: 0;
     right: 0;
@@ -89,12 +76,12 @@
     max-height: 45dvh;
 }
 
-.o_qdr_dropdown_body {
+.o_qsl_dropdown_body {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 }
 
-.o_qdr_dropdown_item {
+.o_qsl_dropdown_item {
     padding: 0.85rem 1rem;
     font-size: 1rem;
     line-height: 1.2;
@@ -102,80 +89,36 @@
     color: var(--o-main-text-color, #1f2937);
 }
 
-.o_qdr_dropdown_btn {
+.o_qsl_dropdown_btn {
     width: 100%;
     text-align: left;
     border: none;
     background: transparent;
 }
 
-.o_qdr_dropdown_btn:hover {
-    background: rgba(124, 58, 237, 0.12);
+.o_qsl_dropdown_btn:hover {
+    background: rgba(37, 99, 235, 0.12);
 }
 
-.o_qdr_dropdown_main {
+.o_qsl_dropdown_main {
     font-weight: 900;
     font-size: 1.05rem;
 }
 
-.o_qdr_dropdown_sub {
+.o_qsl_dropdown_sub {
     margin-top: 0.2rem;
     font-size: 0.9rem;
     color: var(--o-muted-color, #6b7280);
 }
 
-.o_qdr_voice_box {
+.o_qsl_voice_box {
     border: 1px dashed #adb5bd;
     border-radius: 10px;
     padding: 10px;
     background: #fcfcfc;
 }
 
-.o_qdr_steps {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
-}
-
-.o_qdr_step_group {
-    display: flex;
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 10px;
-    padding: 8px 10px;
-    border: 1px solid #e7e7e7;
-    border-radius: 10px;
-    background: #fbfbfb;
-}
-
-.o_qdr_step_group_title {
-    min-width: 110px;
-    font-weight: 700;
-    color: #334155;
-}
-
-.o_qdr_step_group_options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-@media (max-width: 700px) {
-    .o_qdr_steps {
-        grid-template-columns: 1fr;
-    }
-
-    .o_qdr_step_group {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .o_qdr_step_group_title {
-        min-width: 0;
-    }
-}
-
-.o_qdr_summary_block {
+.o_qsl_summary_block {
     border: 1px solid #e8e8e8;
     border-radius: 10px;
     padding: 10px;

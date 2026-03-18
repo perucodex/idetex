@@ -5,3 +5,5 @@ from . import control_apariencia_eval
 from . import control_apariencia_line
 from . import control_apariencia_defecto
 from . import control_estabilidad_revirado_eval
+from . import control_solidez_lavado_eval
+from . import control_laboratorio_record

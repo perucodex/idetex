@@ -11,3 +11,6 @@ access_control_apariencia_defecto_line_user,control.apariencia.defecto.line.user
 access_control_apariencia_tamano_defecto_user,control.apariencia.tamano.defecto.user,model_control_apariencia_tamano_defecto,base.group_user,1,1,1,1
 access_control_estabilidad_revirado_eval_user,control.estabilidad.revirado.eval.user,model_control_estabilidad_revirado_eval,base.group_user,1,1,1,1
 access_control_estabilidad_revirado_eval_detail_user,control.estabilidad.revirado.eval.detail.user,model_control_estabilidad_revirado_eval_detail,base.group_user,1,1,1,1
+access_control_solidez_lavado_eval_user,control.solidez.lavado.eval.user,model_control_solidez_lavado_eval,base.group_user,1,1,1,1
+access_control_laboratorio_record_user,control.laboratorio.record.user,model_control_laboratorio_record,base.group_user,1,1,1,1
+access_control_laboratorio_record_result_user,control.laboratorio.record.result.user,model_control_laboratorio_record_result,base.group_user,1,1,1,1

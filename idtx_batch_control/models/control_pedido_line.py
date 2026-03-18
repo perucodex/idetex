@@ -44,7 +44,7 @@ class ControlPedidoLine(models.Model):
             "route": _safe_str(dr["HojaDeRuta"]),
             "barcodreo": _safe_str(dr["BarCodReo"]) or '',
             "description": _safe_str(dr["BarSerDsc"]),
-            "codpro": _safe_str(dr["BarSer"]) or '',
+            "codpro": _safe_str(dr["BarSer"])[1:] or '',
             "batch": _safe_str(dr["Partida"]) or '',
             "kilograms": _safe_float(dr["PesoTotal"]),
             "rollos": _safe_float(dr["Rollos"]),

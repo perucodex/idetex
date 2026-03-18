@@ -200,6 +200,7 @@ class ControlPedido(models.Model):
     def sync_from_dbf(self):
         cab_by_num = {}
         nums = []
+        nums_seen = set()
         nums_to_settle = []
         for rec in _iter_dbf("/mnt/fox/sit06/dbf/vta_cab_pedido.dbf"):
             fecha = rec["FECHA"]
@@ -207,14 +208,17 @@ class ControlPedido(models.Model):
                 continue
             if not _safe_bool(rec["ACTIVO"]):
                 num = _safe_str(rec["NUMORDPED"])
-                nums_to_settle.append(num)    
+                if num:
+                    nums_to_settle.append(num)
                 continue
-            if _safe_str(rec["TIPOVENTA"][:10]) != "VENTA DE T":
-                continue
+            # if _safe_str(rec["TIPOVENTA"][:10]) != "VENTA DE T":
+            #     continue
             num = _safe_str(rec["NUMORDPED"])
             if not num:
                 continue
-            nums.append(num)
+            if num not in nums_seen:
+                nums_seen.add(num)
+                nums.append(num)
             cab_by_num[num] = {
                 "fecha": _safe_date(rec["FECHA"]),
                 "fecoc": _safe_date(rec["FECOC"]),
@@ -230,10 +234,16 @@ class ControlPedido(models.Model):
         if not nums:
             return {"created": 0, "updated": 0}
         
-        self.search([("numordped", "in", nums_to_settle)]).is_active = False
+        settle_chunk = 2000
+        for i in range(0, len(nums_to_settle), settle_chunk):
+            settle_batch = nums_to_settle[i:i + settle_chunk]
+            self.search([("numordped", "in", settle_batch)]).write({"is_active": False})
         nums_set = set(nums)
         produced_by_num = _sum_kneto_by_pedido("/mnt/fox/sit06/dbf/tej_produccion.dbf", nums_set)
-        existing = self.search([("numordped", "in", nums)])
+        existing = self.browse()
+        search_chunk = 2000
+        for i in range(0, len(nums), search_chunk):
+            existing |= self.search([("numordped", "in", nums[i:i + search_chunk])])
         existing_map = {p.numordped: p for p in existing}
         created = 0
         updated = 0
@@ -261,30 +271,34 @@ class ControlPedido(models.Model):
         conn = self._get_sql_connection()
         try:
             cursor = conn.cursor()
-            placeholders = ",".join(["?"] * len(nums))
-            query = f"""
-            WITH PedidoHDR AS (
-                SELECT bc.BarCod, bc.BarSer, bc.BarSerDsc, bc.BarCodReo, bc.BarCodPar, bc.BarItem2 AS Pedido, bc.BarItem4 AS Partida, bc.BarColNom as ColorCode, bc.BarNomCli as ColorName
-                FROM BARCAD bc WHERE bc.BarItem2 IN ({placeholders})
-            ),
-            Kilos AS (
-                SELECT bp.BarCod, bp.BarCodReo, SUM(bp.BarPieKil) AS Kilos, COUNT(bp.BarCod) AS Rollos
-                FROM BARPIE bp WHERE bp.BarCod IN (SELECT BarCod FROM PedidoHDR) GROUP BY bp.BarCod, bp.BarCodReo
-            )
-            SELECT h.Pedido, h.Partida, h.BarCod AS HojaDeRuta, h.BarCodReo, h.BarCodPar, h.BarSer, h.BarSerDsc, h.ColorCode, h.ColorName, ISNULL(k.Kilos, 0) AS PesoTotal, ISNULL(k.Rollos, 0) AS Rollos, fp.FasDsc AS Proceso_Ultimo, sp.area AS Area, bf_last.BarFasDTI AS FechaInicio, bf_last.BarFasDTF AS FechaFinal
-            FROM PedidoHDR h JOIN Kilos k ON k.BarCod = h.BarCod AND k.BarCodReo = h.BarCodReo AND k.Kilos > 0 AND k.Rollos > 0
-            OUTER APPLY (
-                SELECT TOP (1) bf.FasCod, bf.BarFasDTI, bf.BarFasDTF, bf.BarOrdLin FROM BARFAS bf
-                WHERE bf.BarCod = h.BarCod AND bf.BarCodReo = h.BarCodReo AND ISNULL(bf.BarCodPar,'') = ISNULL(h.BarCodPar,'') AND bf.BarFasDTI > '1753-01-01'
-                ORDER BY bf.BarOrdLin DESC, bf.BarFasDTI DESC
-            ) bf_last
-            LEFT JOIN FASPRO fp ON fp.FasCod = bf_last.FasCod
-            LEFT JOIN estatus_reproceso sp ON sp.fase = bf_last.FasCod
-            ORDER BY h.Pedido, h.BarCod, h.BarCodReo, h.BarCodPar;
-            """
-            cursor.execute(query, *nums)
-            cols = [c[0] for c in cursor.description]
-            rows = [dict(zip(cols, row)) for row in cursor.fetchall()]
+            rows = []
+            sql_chunk = 900
+            for i in range(0, len(nums), sql_chunk):
+                nums_batch = nums[i:i + sql_chunk]
+                placeholders = ",".join(["?"] * len(nums_batch))
+                query = f"""
+                WITH PedidoHDR AS (
+                    SELECT bc.BarCod, bc.BarSer, bc.BarSerDsc, bc.BarCodReo, bc.BarCodPar, bc.BarItem2 AS Pedido, bc.BarItem4 AS Partida, bc.BarColNom as ColorCode, bc.BarNomCli as ColorName
+                    FROM BARCAD bc WHERE bc.BarItem2 IN ({placeholders})
+                ),
+                Kilos AS (
+                    SELECT bp.BarCod, bp.BarCodReo, SUM(bp.BarPieKil) AS Kilos, COUNT(bp.BarCod) AS Rollos
+                    FROM BARPIE bp WHERE bp.BarCod IN (SELECT BarCod FROM PedidoHDR) GROUP BY bp.BarCod, bp.BarCodReo
+                )
+                SELECT h.Pedido, h.Partida, h.BarCod AS HojaDeRuta, h.BarCodReo, h.BarCodPar, h.BarSer, h.BarSerDsc, h.ColorCode, h.ColorName, ISNULL(k.Kilos, 0) AS PesoTotal, ISNULL(k.Rollos, 0) AS Rollos, fp.FasDsc AS Proceso_Ultimo, sp.area AS Area, bf_last.BarFasDTI AS FechaInicio, bf_last.BarFasDTF AS FechaFinal
+                FROM PedidoHDR h JOIN Kilos k ON k.BarCod = h.BarCod AND k.BarCodReo = h.BarCodReo AND k.Kilos > 0 AND k.Rollos > 0
+                OUTER APPLY (
+                    SELECT TOP (1) bf.FasCod, bf.BarFasDTI, bf.BarFasDTF, bf.BarOrdLin FROM BARFAS bf
+                    WHERE bf.BarCod = h.BarCod AND bf.BarCodReo = h.BarCodReo AND ISNULL(bf.BarCodPar,'') = ISNULL(h.BarCodPar,'') AND bf.BarFasDTI > '1753-01-01'
+                    ORDER BY bf.BarOrdLin DESC, bf.BarFasDTI DESC
+                ) bf_last
+                LEFT JOIN FASPRO fp ON fp.FasCod = bf_last.FasCod
+                LEFT JOIN estatus_reproceso sp ON sp.fase = bf_last.FasCod
+                ORDER BY h.Pedido, h.BarCod, h.BarCodReo, h.BarCodPar;
+                """
+                cursor.execute(query, *nums_batch)
+                cols = [c[0] for c in cursor.description]
+                rows.extend([dict(zip(cols, row)) for row in cursor.fetchall()])
             barcods = set()
             for r in rows:
                 bc = _safe_str(r.get("HojaDeRuta"))
@@ -324,6 +338,7 @@ class ControlPedido(models.Model):
             conn.close()
         line_cmds_by_pedido = {}
         procesos_a_crear = []
+        process_vals_to_create = []
         for dr in rows:
             num = _safe_str(dr.get("Pedido"))
             pedido = existing_map.get(num)
@@ -345,19 +360,25 @@ class ControlPedido(models.Model):
                         vals_proc['pedido_line_id'] = existing_line.id
                         proc_key = vals_proc.get('barOrdLin')
                         if proc_key in existing_procs: existing_procs[proc_key].write(vals_proc)
-                        else: self.env['control.proceso.lines'].create(vals_proc)
+                        else: process_vals_to_create.append(vals_proc)
             else:
                 procesos_temp = vals_line.pop("proceso_ids", None)
                 line_cmds_by_pedido.setdefault(pedido.id, []).append((0, 0, vals_line))
                 if procesos_temp: procesos_a_crear.append((pedido.id, line_key, procesos_temp))
         for pid, cmds in line_cmds_by_pedido.items(): self.browse(pid).write({"line_ids": cmds})
-        for pedido_id, line_key, procesos_list in procesos_a_crear:
-            new_line = self.env["control.pedido.line"].search([("pedido_id", "=", pedido_id), ("route", "=", line_key[0]), ("barcodreo", "=", line_key[1]), ("batch", "=", line_key[2])], limit=1)
-            if new_line:
+        if procesos_a_crear:
+            created_lines = self.env["control.pedido.line"].search([("pedido_id", "in", list(line_cmds_by_pedido.keys()))])
+            created_lines_map = {(l.pedido_id.id, l.route, l.barcodreo, l.batch): l for l in created_lines}
+            for pedido_id, line_key, procesos_list in procesos_a_crear:
+                new_line = created_lines_map.get((pedido_id, line_key[0], line_key[1], line_key[2]))
+                if not new_line:
+                    continue
                 for cmd in procesos_list:
                     vals_proc = cmd[2].copy()
                     vals_proc['pedido_line_id'] = new_line.id
-                    self.env['control.proceso.lines'].create(vals_proc)
+                    process_vals_to_create.append(vals_proc)
+        if process_vals_to_create:
+            self.env['control.proceso.lines'].create(process_vals_to_create)
         return {"created": created, "updated": updated}
 
     def action_sync_from_dbf(self):

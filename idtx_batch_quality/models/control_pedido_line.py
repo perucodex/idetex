@@ -5,6 +5,13 @@ from odoo.exceptions import UserError
 class ControlPedidoLine(models.Model):
     _inherit = "control.pedido.line"
 
+    laboratorio_record_ids = fields.One2many(
+        "control.laboratorio.record",
+        "pedido_line_id",
+        string="Registros de Laboratorio",
+    )
+    has_laboratorio_records = fields.Boolean(compute="_compute_has_laboratorio_records", store=False)
+
     est_revirado_eval_id = fields.Many2one(
         "control.estabilidad.revirado.eval",
         string="Evaluacion Estabilidad/Revirado",
@@ -69,6 +76,11 @@ class ControlPedidoLine(models.Model):
             eval_rec = eval_model.search([("pedido_line_id", "=", rec.id)], limit=1)
             rec.est_revirado_eval_id = eval_rec
             rec.has_est_revirado_eval = bool(eval_rec)
+
+    @api.depends("laboratorio_record_ids")
+    def _compute_has_laboratorio_records(self):
+        for rec in self:
+            rec.has_laboratorio_records = bool(rec.laboratorio_record_ids)
 
     def _search_est_revirado_eval_id(self, operator, value):
         eval_model = self.env["control.estabilidad.revirado.eval"]

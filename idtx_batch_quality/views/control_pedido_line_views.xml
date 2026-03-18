@@ -61,54 +61,61 @@
                     </field>
                 </page>
 
-                <page string="Laboratorio" invisible="not has_est_revirado_eval">
-                    <field name="has_est_revirado_eval" invisible="1"/>
-                    <field name="est_revirado_eval_id" invisible="1"/>
-
-                    <group string="Estabilidad Dimensional">
-                        <group string="% Ancho">
-                            <field name="est_ancho_avg_l1_dimrev" readonly="1" string="1er Lavado"/>
-                            <field name="est_ancho_avg_l3_dimrev" readonly="1" string="3er Lavado"/>
-                            <field name="est_ancho_avg_l5_dimrev" readonly="1" string="5to Lavado"/>
-                        </group>
-                        <group string="% Largo">
-                            <field name="est_largo_avg_l1_dimrev" readonly="1" string="1er Lavado"/>
-                            <field name="est_largo_avg_l3_dimrev" readonly="1" string="3er Lavado"/>
-                            <field name="est_largo_avg_l5_dimrev" readonly="1" string="5to Lavado"/>
-                        </group>
-                    </group>
-
-                    <group string="Revirado">
-                        <group string="1er Lavado">
-                            <field name="revirado_m1_result_dimrev" readonly="1" string="M1 %"/>
-                            <field name="revirado_m2_result_dimrev" readonly="1" string="M2 %"/>
-                            <field name="revirado_promedio_dimrev" readonly="1" string="Promedio %"/>
-                        </group>
-                        <group string="Lavado N">
-                            <field name="revirado_n_lavado_dimrev" readonly="1" string="N° Lavado"/>
-                            <field name="revirado_n_m1_result_dimrev" readonly="1" string="M1 %"/>
-                            <field name="revirado_n_m2_result_dimrev" readonly="1" string="M2 %"/>
-                            <field name="revirado_n_promedio_dimrev" readonly="1" string="Promedio %"/>
-                        </group>
-                    </group>
-
-                    <group string="Densidad STD (g/m2)">
-                        <group>
-                            <field name="densidad_1_dimrev" readonly="1" string="M1"/>
-                            <field name="densidad_2_dimrev" readonly="1" string="M2"/>
-                            <field name="densidad_3_dimrev" readonly="1" string="M3"/>
-                            <field name="densidad_promedio_dimrev" readonly="1" string="Promedio"/>
-                        </group>
-                    </group>
-
-                    <group string="Ancho STD (m)">
-                        <group>
-                            <field name="ancho_1_dimrev" readonly="1" string="M1"/>
-                            <field name="ancho_2_dimrev" readonly="1" string="M2"/>
-                            <field name="ancho_3_dimrev" readonly="1" string="M3"/>
-                            <field name="ancho_promedio_dimrev" readonly="1" string="Promedio"/>
-                        </group>
-                    </group>
+                <page string="Laboratorio">
+                    <field name="laboratorio_record_ids" nolabel="1" context="{'default_pedido_line_id': id}" mode="list,form">
+                        <list>
+                            <field name="eval_number" string="Nro Evaluacion"/>
+                            <field name="fecha_eval"/>
+                            <field name="user_id"/>
+                            <field name="numero_lavado"/>
+                            <field name="test_type" string="Tipo de Prueba"/>
+                            <field name="result_state" string="Estado" widget="badge"
+                                   decoration-success="result_state == 'pasa'"
+                                   decoration-danger="result_state == 'falla'"/>
+                        </list>
+                        <form string="Registro de Laboratorio">
+                            <header>
+                                <button name="action_print_report"
+                                        type="object"
+                                    string="Imprimir"
+                                        class="btn-secondary"
+                                    invisible="test_type not in ('solidez_lavado', 'dimrev')"/>
+                                <field name="result_state" widget="statusbar" decoration-success="result_state == 'pasa'" decoration-danger="result_state == 'falla'"/>
+                            </header>
+                            <sheet>
+                                <group>
+                                    <group>
+                                        <field name="eval_number" readonly="1"/>
+                                        <field name="fecha_eval" readonly="1"/>
+                                        <field name="user_id" readonly="1"/>
+                                    </group>
+                                    <group>
+                                        <field name="pedido_line_id" readonly="1"/>
+                                        <field name="test_type" readonly="1"/>
+                                        <field name="numero_lavado" readonly="1"/>
+                                    </group>
+                                </group>
+                                <group string="Detalle Dimensional/Revirado" invisible="test_type != 'dimrev'">
+                                    <field name="est_revirado_eval_id" readonly="1"/>
+                                </group>
+                                <group string="Detalle Solidez del Color al Lavado" invisible="test_type != 'solidez_lavado'">
+                                    <field name="solidez_lavado_eval_id" readonly="1"/>
+                                </group>
+                                <notebook>
+                                    <page string="Resultados">
+                                        <field name="result_line_ids" nolabel="1" readonly="1">
+                                            <list default_order="sequence asc" create="0" edit="0" delete="0">
+                                                <field name="tipo"/>
+                                                <field name="resultado"/>
+                                            </list>
+                                        </field>
+                                    </page>
+                                </notebook>
+                                <group >
+                                </group>
+                            </sheet>
+                        </form>
+                    </field>
                 </page>
 
             </xpath>

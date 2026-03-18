@@ -9,6 +9,12 @@ class ControlEstabilidadReviradoEval(models.Model):
     _order = "fecha_eval desc, id desc"
 
     _WASHES = ["l1", "l3", "l5"]
+    _MODE_STEP_KEYS = {
+        "l1": ("est_l1_m1", "est_l1_m2", "densidad", "ancho"),
+        "l3": ("est_l3_m1", "est_l3_m2"),
+        "l5": ("est_l5_m1", "est_l5_m2"),
+        "ln": ("est_ln_m1", "est_ln_m2"),
+    }
 
     name = fields.Char(string="Referencia", required=True, copy=False, default="New", index=True)
     fecha_eval = fields.Datetime(string="Fecha", required=True, default=fields.Datetime.now, index=True)
@@ -44,10 +50,6 @@ class ControlEstabilidadReviradoEval(models.Model):
     densidad_promedio = fields.Float(string="Densidad Promedio", compute="_compute_densidad_ancho", store=True)
     ancho_promedio = fields.Float(string="Ancho Promedio", compute="_compute_densidad_ancho", store=True)
 
-    _sql_constraints = [
-        ("uniq_pedido_line_eval", "unique(pedido_line_id)", "Ya existe una evaluacion para esta partida."),
-    ]
-
     @api.model
     def _st_key(self, wash, axis, sample, datum):
         return f"st_{wash}_{axis}_m{sample}_d{datum}"
@@ -79,6 +81,14 @@ class ControlEstabilidadReviradoEval(models.Model):
             ("rv1_m1_bd", "revirado_l1", "m1", "1er Lavado M1 BD"),
             ("rv1_m2_ac", "revirado_l1", "m2", "1er Lavado M2 AC"),
             ("rv1_m2_bd", "revirado_l1", "m2", "1er Lavado M2 BD"),
+            ("rv3_m1_ac", "revirado_ln", "m1", "3er Lavado M1 AC"),
+            ("rv3_m1_bd", "revirado_ln", "m1", "3er Lavado M1 BD"),
+            ("rv3_m2_ac", "revirado_ln", "m2", "3er Lavado M2 AC"),
+            ("rv3_m2_bd", "revirado_ln", "m2", "3er Lavado M2 BD"),
+            ("rv5_m1_ac", "revirado_ln", "m1", "5to Lavado M1 AC"),
+            ("rv5_m1_bd", "revirado_ln", "m1", "5to Lavado M1 BD"),
+            ("rv5_m2_ac", "revirado_ln", "m2", "5to Lavado M2 AC"),
+            ("rv5_m2_bd", "revirado_ln", "m2", "5to Lavado M2 BD"),
             ("rvn_n", "revirado_ln", "na", "Lavado N"),
             ("rvn_m1_ac", "revirado_ln", "m1", "Lavado N M1 AC"),
             ("rvn_m1_bd", "revirado_ln", "m1", "Lavado N M1 BD"),
@@ -98,6 +108,21 @@ class ControlEstabilidadReviradoEval(models.Model):
                 "evaluacion": evaluacion,
             }
             seq += 10
+
+        for axis, axis_label, prueba in (
+            ("a", "% Ancho", "est_ln_ancho"),
+            ("l", "% Largo", "est_ln_largo"),
+        ):
+            for sample in (1, 2):
+                for datum in (1, 2, 3):
+                    key = self._st_key("ln", axis, sample, datum)
+                    result[key] = {
+                        "sequence": seq,
+                        "prueba": prueba,
+                        "muestra": f"m{sample}",
+                        "evaluacion": f"Lavado N {axis_label} D{datum}",
+                    }
+                    seq += 10
 
         return result
 
@@ -189,19 +214,69 @@ class ControlEstabilidadReviradoEval(models.Model):
         for vals in vals_list:
             if vals.get("name", "New") == "New":
                 vals["name"] = seq.next_by_code("control.estabilidad.revirado.eval") or "New"
-        return super().create(vals_list)
+        records = super().create(vals_list)
+
+        laboratorio_model = self.env["control.laboratorio.record"]
+        for rec in records:
+            if not rec.pedido_line_id:
+                continue
+            exists = laboratorio_model.search([("est_revirado_eval_id", "=", rec.id)], limit=1)
+            if exists:
+                continue
+            laboratorio_model.create({
+                "pedido_line_id": rec.pedido_line_id.id,
+                "fecha_eval": rec.fecha_eval,
+                "user_id": rec.user_id.id,
+                "test_type": "dimrev",
+                "result_state": "pasa",
+                "est_revirado_eval_id": rec.id,
+            })
+        return records
 
     @staticmethod
     def _step_fields(step_key):
         map_steps = {
-            "est_l1_ancho": [f"st_l1_a_m{s}_d{d}" for s in (1, 2) for d in (1, 2, 3)],
-            "est_l1_largo": [f"st_l1_l_m{s}_d{d}" for s in (1, 2) for d in (1, 2, 3)],
-            "est_l3_ancho": [f"st_l3_a_m{s}_d{d}" for s in (1, 2) for d in (1, 2, 3)],
-            "est_l3_largo": [f"st_l3_l_m{s}_d{d}" for s in (1, 2) for d in (1, 2, 3)],
-            "est_l5_ancho": [f"st_l5_a_m{s}_d{d}" for s in (1, 2) for d in (1, 2, 3)],
-            "est_l5_largo": [f"st_l5_l_m{s}_d{d}" for s in (1, 2) for d in (1, 2, 3)],
-            "revirado_l1": ["rv1_m1_ac", "rv1_m1_bd", "rv1_m2_ac", "rv1_m2_bd"],
-            "revirado_ln": ["rvn_n", "rvn_m1_ac", "rvn_m1_bd", "rvn_m2_ac", "rvn_m2_bd"],
+            "est_l1_m1": [
+                "st_l1_a_m1_d1", "st_l1_a_m1_d2", "st_l1_a_m1_d3",
+                "st_l1_l_m1_d1", "st_l1_l_m1_d2", "st_l1_l_m1_d3",
+                "rv1_m1_ac", "rv1_m1_bd",
+            ],
+            "est_l1_m2": [
+                "st_l1_a_m2_d1", "st_l1_a_m2_d2", "st_l1_a_m2_d3",
+                "st_l1_l_m2_d1", "st_l1_l_m2_d2", "st_l1_l_m2_d3",
+                "rv1_m2_ac", "rv1_m2_bd",
+            ],
+            "est_l3_m1": [
+                "st_l3_a_m1_d1", "st_l3_a_m1_d2", "st_l3_a_m1_d3",
+                "st_l3_l_m1_d1", "st_l3_l_m1_d2", "st_l3_l_m1_d3",
+                "rv3_m1_ac", "rv3_m1_bd",
+            ],
+            "est_l3_m2": [
+                "st_l3_a_m2_d1", "st_l3_a_m2_d2", "st_l3_a_m2_d3",
+                "st_l3_l_m2_d1", "st_l3_l_m2_d2", "st_l3_l_m2_d3",
+                "rv3_m2_ac", "rv3_m2_bd",
+            ],
+            "est_l5_m1": [
+                "st_l5_a_m1_d1", "st_l5_a_m1_d2", "st_l5_a_m1_d3",
+                "st_l5_l_m1_d1", "st_l5_l_m1_d2", "st_l5_l_m1_d3",
+                "rv5_m1_ac", "rv5_m1_bd",
+            ],
+            "est_l5_m2": [
+                "st_l5_a_m2_d1", "st_l5_a_m2_d2", "st_l5_a_m2_d3",
+                "st_l5_l_m2_d1", "st_l5_l_m2_d2", "st_l5_l_m2_d3",
+                "rv5_m2_ac", "rv5_m2_bd",
+            ],
+            "est_ln_m1": [
+                "rvn_n",
+                "st_ln_a_m1_d1", "st_ln_a_m1_d2", "st_ln_a_m1_d3",
+                "st_ln_l_m1_d1", "st_ln_l_m1_d2", "st_ln_l_m1_d3",
+                "rvn_m1_ac", "rvn_m1_bd",
+            ],
+            "est_ln_m2": [
+                "st_ln_a_m2_d1", "st_ln_a_m2_d2", "st_ln_a_m2_d3",
+                "st_ln_l_m2_d1", "st_ln_l_m2_d2", "st_ln_l_m2_d3",
+                "rvn_m2_ac", "rvn_m2_bd",
+            ],
             "densidad": ["den_1", "den_2", "den_3"],
             "ancho": ["anc_1", "anc_2", "anc_3"],
         }
@@ -209,18 +284,20 @@ class ControlEstabilidadReviradoEval(models.Model):
 
     def _check_stability_sequence(self, step_key):
         self.ensure_one()
-        if step_key == "est_l1_ancho":
+        if step_key == "est_l1_m1":
             return
-        if step_key == "est_l1_largo" and not self.est_l1_ancho_done:
-            raise UserError(_("Primero debe registrar el % Ancho del 1er lavado para esta partida."))
-        if step_key == "est_l3_ancho" and not self.est_l1_done:
+        if step_key == "est_l1_m2" and not self.est_l1_ancho_done:
+            raise UserError(_("Primero debe registrar la Muestra 1 del 1er lavado para esta partida."))
+        if step_key == "est_l3_m1" and not self.est_l1_done:
             raise UserError(_("Primero debe completar el 1er lavado para esta partida."))
-        if step_key == "est_l3_largo" and not self.est_l3_ancho_done:
-            raise UserError(_("Primero debe registrar el % Ancho del 3er lavado para esta partida."))
-        if step_key == "est_l5_ancho" and not self.est_l3_done:
+        if step_key == "est_l3_m2" and not self.est_l3_ancho_done:
+            raise UserError(_("Primero debe registrar la Muestra 1 del 3er lavado para esta partida."))
+        if step_key == "est_l5_m1" and not self.est_l3_done:
             raise UserError(_("Primero debe completar el 3er lavado para esta partida."))
-        if step_key == "est_l5_largo" and not self.est_l5_ancho_done:
-            raise UserError(_("Primero debe registrar el % Ancho del 5to lavado para esta partida."))
+        if step_key == "est_l5_m2" and not self.est_l5_ancho_done:
+            raise UserError(_("Primero debe registrar la Muestra 1 del 5to lavado para esta partida."))
+        if step_key == "est_ln_m2" and not self._get_measure_value("rvn_n"):
+            raise UserError(_("Primero debe registrar la Muestra 1 del revirado N (incluye Lavado N)."))
 
     def _to_tablet_payload(self):
         self.ensure_one()
@@ -241,6 +318,83 @@ class ControlEstabilidadReviradoEval(models.Model):
                 "l5_done": bool(self.est_l5_done),
             },
         }
+
+    @api.model
+    def _fields_for_mode(self, eval_mode):
+        step_keys = self._MODE_STEP_KEYS.get(eval_mode, ())
+        fields = []
+        for key in step_keys:
+            fields.extend(self._step_fields(key))
+        # Preserve order and uniqueness.
+        return list(dict.fromkeys(fields))
+
+    @api.model
+    def action_tablet_get_eval_context(self, pedido_line_id):
+        pedido_line = self.env["control.pedido.line"].browse(int(pedido_line_id or 0))
+        if not pedido_line.exists():
+            raise UserError(_("Seleccione una partida valida."))
+
+        dimrev_records = self.env["control.laboratorio.record"].search_count([
+            ("pedido_line_id", "=", pedido_line.id),
+            ("test_type", "=", "dimrev"),
+        ])
+        has_first_record = bool(dimrev_records)
+        return {
+            "has_first_record": has_first_record,
+            "required_mode": False if has_first_record else "l1",
+            "available_modes": ["l3", "l5", "ln"] if has_first_record else ["l1"],
+        }
+
+    @api.model
+    def action_tablet_finalize(self, pedido_line_id, eval_mode, values):
+        pedido_line = self.env["control.pedido.line"].browse(int(pedido_line_id or 0))
+        if not pedido_line.exists():
+            raise UserError(_("Seleccione una partida valida."))
+
+        eval_mode = (eval_mode or "").strip()
+        if eval_mode not in self._MODE_STEP_KEYS:
+            raise UserError(_("Modo de evaluacion invalido."))
+
+        has_first_record = bool(self.env["control.laboratorio.record"].search_count([
+            ("pedido_line_id", "=", pedido_line.id),
+            ("test_type", "=", "dimrev"),
+        ]))
+        if not has_first_record and eval_mode != "l1":
+            raise UserError(_("La primera evaluacion de la partida debe ser 1er lavado con ancho y densidad."))
+        if has_first_record and eval_mode == "l1":
+            raise UserError(_("La partida ya tiene primer lavado registrado. Seleccione 3er, 5to o N."))
+
+        fields_for_mode = self._fields_for_mode(eval_mode)
+        if not fields_for_mode:
+            raise UserError(_("No hay campos configurados para el modo seleccionado."))
+
+        rec = self.create({"pedido_line_id": pedido_line.id, "user_id": self.env.user.id})
+        for fname in fields_for_mode:
+            raw = (values or {}).get(fname, 0.0)
+            try:
+                value = int(float(raw or 0.0)) if fname == "rvn_n" else float(raw or 0.0)
+            except (TypeError, ValueError):
+                raise UserError(_("El valor de %s no es numerico.") % fname)
+            rec._upsert_measure_value(fname, value)
+
+        if eval_mode == "ln" and int(rec._get_measure_value("rvn_n") or 0) < 2:
+            raise UserError(_("El lavado N debe ser mayor a 1."))
+
+        mode_done_vals = {
+            "l1": {"est_l1_ancho_done": True, "est_l1_largo_done": True, "est_l1_done": True},
+            "l3": {"est_l3_ancho_done": True, "est_l3_largo_done": True, "est_l3_done": True},
+            "l5": {"est_l5_ancho_done": True, "est_l5_largo_done": True, "est_l5_done": True},
+            "ln": {},
+        }
+        write_vals = mode_done_vals.get(eval_mode, {})
+        if write_vals:
+            rec.write(write_vals)
+
+        laboratorio_records = self.env["control.laboratorio.record"].search([("est_revirado_eval_id", "=", rec.id)])
+        if laboratorio_records:
+            laboratorio_records._sync_result_lines()
+
+        return {"ok": True, "id": rec.id, "name": rec.name}
 
     @api.model
     def action_tablet_get_or_create(self, pedido_line_id):
@@ -306,25 +460,29 @@ class ControlEstabilidadReviradoEval(models.Model):
                 raise UserError(_("El valor de %s no es numerico.") % fname)
             rec._upsert_measure_value(fname, value)
 
-        if step_key == "revirado_ln" and int(rec._get_measure_value("rvn_n") or 0) < 2:
+        if step_key in ("est_ln_m1", "est_ln_m2") and int(rec._get_measure_value("rvn_n") or 0) < 2:
             raise UserError(_("El lavado N debe ser mayor o igual a 2."))
 
         write_vals = {}
-        if step_key == "est_l1_ancho":
+        if step_key == "est_l1_m1":
             write_vals["est_l1_ancho_done"] = True
-        elif step_key == "est_l1_largo":
+        elif step_key == "est_l1_m2":
             write_vals.update({"est_l1_largo_done": True, "est_l1_done": True})
-        elif step_key == "est_l3_ancho":
+        elif step_key == "est_l3_m1":
             write_vals["est_l3_ancho_done"] = True
-        elif step_key == "est_l3_largo":
+        elif step_key == "est_l3_m2":
             write_vals.update({"est_l3_largo_done": True, "est_l3_done": True})
-        elif step_key == "est_l5_ancho":
+        elif step_key == "est_l5_m1":
             write_vals["est_l5_ancho_done"] = True
-        elif step_key == "est_l5_largo":
+        elif step_key == "est_l5_m2":
             write_vals.update({"est_l5_largo_done": True, "est_l5_done": True})
 
         if write_vals:
             rec.write(write_vals)
+
+        laboratorio_records = self.env["control.laboratorio.record"].search([("est_revirado_eval_id", "=", rec.id)])
+        if laboratorio_records:
+            laboratorio_records._sync_result_lines()
 
         return {
             "ok": True,
@@ -359,6 +517,8 @@ class ControlEstabilidadReviradoEvalDetail(models.Model):
         ("est_l3_largo", "Estabilidad 3er Lavado % Largo"),
         ("est_l5_ancho", "Estabilidad 5to Lavado % Ancho"),
         ("est_l5_largo", "Estabilidad 5to Lavado % Largo"),
+        ("est_ln_ancho", "Estabilidad Lavado N % Ancho"),
+        ("est_ln_largo", "Estabilidad Lavado N % Largo"),
         ("revirado_l1", "Revirado 1er Lavado"),
         ("revirado_ln", "Revirado Lavado N"),
         ("densidad", "Densidad"),

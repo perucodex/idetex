@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_solidez_lavado" model="ir.actions.report">
+        <field name="name">Informe Solidez del Color al Lavado</field>
+        <field name="model">control.laboratorio.record</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">idtx_batch_quality.report_solidez_lavado_document</field>
+        <field name="report_file">idtx_batch_quality.report_solidez_lavado_document</field>
+        <field name="binding_model_id" ref="model_control_laboratorio_record"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Solidez_Lavado_%s' % (object.pedido_line_id.batch or 'Partida')</field>
+    </record>
+
+    <template id="report_solidez_lavado_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-set="eval_rec" t-value="doc.solidez_lavado_eval_id"/>
+                <t t-set="line" t-value="doc.pedido_line_id"/>
+                <t t-set="company" t-value="doc.env.company"/>
+                <t t-if="eval_rec">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <style>
+                                .page {
+                                    padding: 8mm 10mm 8mm 10mm;
+                                }
+                                .slv-wrap {
+                                    font-family: 'DejaVu Sans', sans-serif;
+                                    color: #1f2937;
+                                    padding: 2mm;
+                                }
+                                .slv-title {
+                                    margin: 0;
+                                    font-size: 20px;
+                                    font-weight: 800;
+                                    text-transform: uppercase;
+                                    letter-spacing: 0.5px;
+                                }
+                                .slv-subtitle {
+                                    margin: 2px 0 0;
+                                    font-size: 11px;
+                                    color: #4b5563;
+                                }
+                                .slv-header {
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                    margin-bottom: 14px;
+                                }
+                                .slv-header td {
+                                    border: 1px solid #111827;
+                                    vertical-align: middle;
+                                    padding: 6px 8px;
+                                }
+                                .slv-logo-cell {
+                                    width: 160px;
+                                    text-align: center;
+                                }
+                                .slv-logo {
+                                    max-height: 56px;
+                                    max-width: 140px;
+                                }
+                                .slv-main-cell {
+                                    text-align: center;
+                                }
+                                .slv-code-cell {
+                                    width: 180px;
+                                    font-size: 11px;
+                                }
+                                .slv-grid {
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                    margin-top: 6px;
+                                }
+                                .slv-grid th,
+                                .slv-grid td {
+                                    border: 1px solid #111827;
+                                    padding: 6px 8px;
+                                    font-size: 11px;
+                                }
+                                .slv-grid th {
+                                    background: #f3f4f6;
+                                    text-transform: uppercase;
+                                    font-size: 10px;
+                                    letter-spacing: 0.4px;
+                                }
+                                .slv-section {
+                                    margin-top: 14px;
+                                    border: 1px solid #111827;
+                                }
+                                .slv-section-head {
+                                    background: #e5e7eb;
+                                    font-size: 11px;
+                                    font-weight: 700;
+                                    text-transform: uppercase;
+                                    padding: 6px 10px;
+                                    border-bottom: 1px solid #111827;
+                                }
+                                .slv-section-body {
+                                    padding: 10px;
+                                }
+                                .slv-subsection-title {
+                                    margin: 0 0 6px;
+                                    font-size: 11px;
+                                    font-weight: 700;
+                                    text-transform: uppercase;
+                                    color: #111827;
+                                }
+                                .slv-block {
+                                    margin-top: 8px;
+                                }
+                                .slv-list {
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                }
+                                .slv-list td {
+                                    border-bottom: 1px solid #d1d5db;
+                                    padding: 5px 2px;
+                                    font-size: 11px;
+                                }
+                                .slv-list td:last-child {
+                                    text-align: right;
+                                    font-weight: 700;
+                                    width: 70px;
+                                }
+                                .slv-frote-wrap {
+                                    margin-top: 12px;
+                                }
+                                .slv-samples {
+                                    margin-top: 14px;
+                                }
+                                .slv-sample-row {
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                }
+                                .slv-sample-row td {
+                                    width: 50%;
+                                    vertical-align: top;
+                                    padding-right: 8px;
+                                }
+                                .slv-sample-row td:last-child {
+                                    padding-right: 0;
+                                    padding-left: 8px;
+                                }
+                                .slv-box-title {
+                                    font-size: 11px;
+                                    font-weight: 700;
+                                    margin-bottom: 4px;
+                                    text-transform: uppercase;
+                                }
+                                .slv-box {
+                                    border: 1px solid #111827;
+                                    height: 125px;
+                                }
+                                .slv-box-wide {
+                                    border: 1px solid #111827;
+                                    height: 125px;
+                                    margin-top: 10px;
+                                }
+                                .slv-foot {
+                                    margin-top: 18px;
+                                    font-size: 10px;
+                                    color: #6b7280;
+                                    text-align: right;
+                                }
+                            </style>
+
+                            <div class="slv-wrap">
+                                <table class="slv-header">
+                                    <tr>
+                                        <td class="slv-logo-cell">
+                                            <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" class="slv-logo" alt="Logo"/>
+                                            <span t-if="not company.logo" style="font-size:12px;font-weight:700;">IDETEX</span>
+                                        </td>
+                                        <td class="slv-main-cell">
+                                            <h2 class="slv-title">Solidez del Color al Lavado</h2>
+                                            <p class="slv-subtitle">Registro de Laboratorio</p>
+                                        </td>
+                                        <td class="slv-code-cell">
+                                            <div><b>Reporte:</b> <span t-esc="eval_rec.name or '-'"/></div>
+                                            <div><b>Fecha:</b> <span t-field="eval_rec.fecha_eval"/></div>
+                                            <div><b>Usuario:</b> <span t-esc="eval_rec.user_id.name or '-'"/></div>
+                                        </td>
+                                    </tr>
+                                </table>
+
+                                <table class="slv-grid">
+                                    <tr>
+                                        <th>Partida</th>
+                                        <th>Cliente</th>
+                                        <th>Color</th>
+                                        <th>Kilogramos</th>
+                                    </tr>
+                                    <tr>
+                                        <td t-esc="line.batch or '-'"/>
+                                        <td t-esc="line.pedido_id.customer or '-'"/>
+                                        <td t-esc="line.colorname or '-'"/>
+                                        <td t-esc="'%.2f' % (line.kilograms or 0.0)"/>
+                                    </tr>
+                                </table>
+
+                                <div class="slv-section">
+                                    <div class="slv-section-head">Resultados de Ensayo</div>
+                                    <div class="slv-section-body">
+                                        <div class="slv-block">
+                                            <div class="slv-subsection-title">Solidez del Color al Lavado</div>
+                                            <table class="slv-list">
+                                                <tr>
+                                                    <td>Cambio de color grado</td>
+                                                    <td t-esc="'%.2f' % (eval_rec.cambio_color_grado or 0.0)"/>
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                        <div class="slv-block">
+                                            <div class="slv-subsection-title">Migracion</div>
+                                            <table class="slv-list">
+                                                <tr>
+                                                    <td>Migracion Acetato</td>
+                                                    <td t-esc="'%.2f' % (eval_rec.mig_acetato or 0.0)"/>
+                                                </tr>
+                                                <tr>
+                                                    <td>Migracion Algodon</td>
+                                                    <td t-esc="'%.2f' % (eval_rec.mig_algodon or 0.0)"/>
+                                                </tr>
+                                                <tr>
+                                                    <td>Migracion Nylon</td>
+                                                    <td t-esc="'%.2f' % (eval_rec.mig_nylon or 0.0)"/>
+                                                </tr>
+                                                <tr>
+                                                    <td>Migracion Poliester</td>
+                                                    <td t-esc="'%.2f' % (eval_rec.mig_poliester or 0.0)"/>
+                                                </tr>
+                                                <tr>
+                                                    <td>Migracion Acrilico</td>
+                                                    <td t-esc="'%.2f' % (eval_rec.mig_acrilico or 0.0)"/>
+                                                </tr>
+                                                <tr>
+                                                    <td>Migracion Lana</td>
+                                                    <td t-esc="'%.2f' % (eval_rec.mig_lana or 0.0)"/>
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                        <div class="slv-frote-wrap">
+                                            <div class="slv-subsection-title">Solidez del Color al Frote</div>
+                                            <table class="slv-list">
+                                                <tr>
+                                                    <td>Frote Seco</td>
+                                                    <td t-esc="'%.2f' % (eval_rec.frote_seco or 0.0)"/>
+                                                </tr>
+                                                <tr>
+                                                    <td>Frote Humedo</td>
+                                                    <td t-esc="'%.2f' % (eval_rec.frote_humedo or 0.0)"/>
+                                                </tr>
+                                            </table>
+                                        </div>
+
+                                        <div class="slv-samples">
+                                            <table class="slv-sample-row">
+                                                <tr>
+                                                    <td>
+                                                        <div class="slv-box-title">Muestra Lavada</div>
+                                                        <div class="slv-box"/>
+                                                    </td>
+                                                    <td>
+                                                        <div class="slv-box-title">Multifibra</div>
+                                                        <div class="slv-box"/>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            <div class="slv-box-title" style="margin-top:10px;">Muestra Original</div>
+                                            <div class="slv-box-wide"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="slv-foot">
+                                    <span t-esc="company.name"/> - Informe generado desde Odoo
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

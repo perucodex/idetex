@@ -8,70 +8,85 @@ const DRAFT_STORAGE_KEY = "idtx_batch_quality.dimrev_screen.draft.v2";
 
 const STEPS = [
     {
-        key: "est_l1_ancho",
-        label: "Estabilidad % Ancho - 1er Lavado",
-        speak: "Estabilidad primer lavado, porcentaje ancho. Dicte tres datos de muestra 1 y tres datos de muestra 2.",
+        key: "est_l1_m1",
+        label: "1er Lavado - Muestra 1",
+        speak: "Primer lavado muestra 1. Dicte porcentaje ancho, porcentaje largo, AC y BD.",
         fields: [
             "st_l1_a_m1_d1", "st_l1_a_m1_d2", "st_l1_a_m1_d3",
-            "st_l1_a_m2_d1", "st_l1_a_m2_d2", "st_l1_a_m2_d3",
-        ],
-    },
-    {
-        key: "est_l1_largo",
-        label: "Estabilidad % Largo - 1er Lavado",
-        speak: "Estabilidad primer lavado, porcentaje largo. Dicte tres datos de muestra 1 y tres datos de muestra 2.",
-        fields: [
             "st_l1_l_m1_d1", "st_l1_l_m1_d2", "st_l1_l_m1_d3",
-            "st_l1_l_m2_d1", "st_l1_l_m2_d2", "st_l1_l_m2_d3",
+            "rv1_m1_ac", "rv1_m1_bd",
         ],
     },
     {
-        key: "est_l3_ancho",
-        label: "Estabilidad % Ancho - 3er Lavado",
-        speak: "Estabilidad tercer lavado, porcentaje ancho. Dicte tres datos de muestra 1 y tres datos de muestra 2.",
+        key: "est_l1_m2",
+        label: "1er Lavado - Muestra 2",
+        speak: "Primer lavado muestra 2. Dicte porcentaje ancho, porcentaje largo, AC y BD.",
+        fields: [
+            "st_l1_a_m2_d1", "st_l1_a_m2_d2", "st_l1_a_m2_d3",
+            "st_l1_l_m2_d1", "st_l1_l_m2_d2", "st_l1_l_m2_d3",
+            "rv1_m2_ac", "rv1_m2_bd",
+        ],
+    },
+    {
+        key: "est_l3_m1",
+        label: "3er Lavado - Muestra 1",
+        speak: "Tercer lavado muestra 1. Dicte porcentaje ancho, porcentaje largo, AC y BD.",
         fields: [
             "st_l3_a_m1_d1", "st_l3_a_m1_d2", "st_l3_a_m1_d3",
-            "st_l3_a_m2_d1", "st_l3_a_m2_d2", "st_l3_a_m2_d3",
-        ],
-    },
-    {
-        key: "est_l3_largo",
-        label: "Estabilidad % Largo - 3er Lavado",
-        speak: "Estabilidad tercer lavado, porcentaje largo. Dicte tres datos de muestra 1 y tres datos de muestra 2.",
-        fields: [
             "st_l3_l_m1_d1", "st_l3_l_m1_d2", "st_l3_l_m1_d3",
-            "st_l3_l_m2_d1", "st_l3_l_m2_d2", "st_l3_l_m2_d3",
+            "rv3_m1_ac", "rv3_m1_bd",
         ],
     },
     {
-        key: "est_l5_ancho",
-        label: "Estabilidad % Ancho - 5to Lavado",
-        speak: "Estabilidad quinto lavado, porcentaje ancho. Dicte tres datos de muestra 1 y tres datos de muestra 2.",
+        key: "est_l3_m2",
+        label: "3er Lavado - Muestra 2",
+        speak: "Tercer lavado muestra 2. Dicte porcentaje ancho, porcentaje largo, AC y BD.",
+        fields: [
+            "st_l3_a_m2_d1", "st_l3_a_m2_d2", "st_l3_a_m2_d3",
+            "st_l3_l_m2_d1", "st_l3_l_m2_d2", "st_l3_l_m2_d3",
+            "rv3_m2_ac", "rv3_m2_bd",
+        ],
+    },
+    {
+        key: "est_l5_m1",
+        label: "5to Lavado - Muestra 1",
+        speak: "Quinto lavado muestra 1. Dicte porcentaje ancho, porcentaje largo, AC y BD.",
         fields: [
             "st_l5_a_m1_d1", "st_l5_a_m1_d2", "st_l5_a_m1_d3",
-            "st_l5_a_m2_d1", "st_l5_a_m2_d2", "st_l5_a_m2_d3",
-        ],
-    },
-    {
-        key: "est_l5_largo",
-        label: "Estabilidad % Largo - 5to Lavado",
-        speak: "Estabilidad quinto lavado, porcentaje largo. Dicte tres datos de muestra 1 y tres datos de muestra 2.",
-        fields: [
             "st_l5_l_m1_d1", "st_l5_l_m1_d2", "st_l5_l_m1_d3",
-            "st_l5_l_m2_d1", "st_l5_l_m2_d2", "st_l5_l_m2_d3",
+            "rv5_m1_ac", "rv5_m1_bd",
         ],
     },
     {
-        key: "revirado_l1",
-        label: "Revirado - 1er Lavado (M1/M2)",
-        speak: "Revirado primer lavado. Dicte AC y BD de muestra 1, luego AC y BD de muestra 2.",
-        fields: ["rv1_m1_ac", "rv1_m1_bd", "rv1_m2_ac", "rv1_m2_bd"],
+        key: "est_l5_m2",
+        label: "5to Lavado - Muestra 2",
+        speak: "Quinto lavado muestra 2. Dicte porcentaje ancho, porcentaje largo, AC y BD.",
+        fields: [
+            "st_l5_a_m2_d1", "st_l5_a_m2_d2", "st_l5_a_m2_d3",
+            "st_l5_l_m2_d1", "st_l5_l_m2_d2", "st_l5_l_m2_d3",
+            "rv5_m2_ac", "rv5_m2_bd",
+        ],
     },
     {
-        key: "revirado_ln",
-        label: "Revirado - Lavado N (M1/M2)",
-        speak: "Revirado lavado N. Primero diga el numero de lavado, luego AC y BD de muestra 1 y AC y BD de muestra 2.",
-        fields: ["rvn_n", "rvn_m1_ac", "rvn_m1_bd", "rvn_m2_ac", "rvn_m2_bd"],
+        key: "est_ln_m1",
+        label: "Lavado N - Muestra 1",
+        speak: "Lavado N muestra 1. Dicte porcentaje ancho, porcentaje largo, AC y BD.",
+        fields: [
+            "rvn_n",
+            "st_ln_a_m1_d1", "st_ln_a_m1_d2", "st_ln_a_m1_d3",
+            "st_ln_l_m1_d1", "st_ln_l_m1_d2", "st_ln_l_m1_d3",
+            "rvn_m1_ac", "rvn_m1_bd",
+        ],
+    },
+    {
+        key: "est_ln_m2",
+        label: "Lavado N - Muestra 2",
+        speak: "Lavado N muestra 2. Dicte porcentaje ancho, porcentaje largo, AC y BD.",
+        fields: [
+            "st_ln_a_m2_d1", "st_ln_a_m2_d2", "st_ln_a_m2_d3",
+            "st_ln_l_m2_d1", "st_ln_l_m2_d2", "st_ln_l_m2_d3",
+            "rvn_m2_ac", "rvn_m2_bd",
+        ],
     },
     {
         key: "densidad",
@@ -84,6 +99,53 @@ const STEPS = [
         label: "Ancho",
         speak: "Ancho. Dicte tres mediciones.",
         fields: ["anc_1", "anc_2", "anc_3"],
+    },
+];
+
+const MODE_STEP_KEYS = {
+    l1: ["est_l1_m1", "est_l1_m2", "densidad", "ancho"],
+    l3: ["est_l3_m1", "est_l3_m2"],
+    l5: ["est_l5_m1", "est_l5_m2"],
+    ln: ["est_ln_m1", "est_ln_m2"],
+};
+
+const STEP_INDEX_BY_KEY = Object.fromEntries(STEPS.map((step, idx) => [step.key, idx]));
+
+const STEP_GROUPS = [
+    {
+        title: "1er Lavado",
+        options: [
+            { key: "est_l1_m1", label: "Muestra 1" },
+            { key: "est_l1_m2", label: "Muestra 2" },
+        ],
+    },
+    {
+        title: "3er Lavado",
+        options: [
+            { key: "est_l3_m1", label: "Muestra 1" },
+            { key: "est_l3_m2", label: "Muestra 2" },
+        ],
+    },
+    {
+        title: "5to Lavado",
+        options: [
+            { key: "est_l5_m1", label: "Muestra 1" },
+            { key: "est_l5_m2", label: "Muestra 2" },
+        ],
+    },
+    {
+        title: "Revirado",
+        options: [
+            { key: "revirado_ln_m1", label: "Muestra 1" },
+            { key: "revirado_ln_m2", label: "Muestra 2" },
+        ],
+    },
+    {
+        title: "Densidad y Ancho",
+        options: [
+            { key: "densidad", label: "Densidad" },
+            { key: "ancho", label: "Ancho" },
+        ],
     },
 ];
 
@@ -127,10 +189,31 @@ const FIELD_LABEL = {
     st_l5_l_m2_d2: "% Largo M2 - 5to Lavado D2",
     st_l5_l_m2_d3: "% Largo M2 - 5to Lavado D3",
 
+    st_ln_a_m1_d1: "% Ancho M1 - Lavado N D1",
+    st_ln_a_m1_d2: "% Ancho M1 - Lavado N D2",
+    st_ln_a_m1_d3: "% Ancho M1 - Lavado N D3",
+    st_ln_a_m2_d1: "% Ancho M2 - Lavado N D1",
+    st_ln_a_m2_d2: "% Ancho M2 - Lavado N D2",
+    st_ln_a_m2_d3: "% Ancho M2 - Lavado N D3",
+    st_ln_l_m1_d1: "% Largo M1 - Lavado N D1",
+    st_ln_l_m1_d2: "% Largo M1 - Lavado N D2",
+    st_ln_l_m1_d3: "% Largo M1 - Lavado N D3",
+    st_ln_l_m2_d1: "% Largo M2 - Lavado N D1",
+    st_ln_l_m2_d2: "% Largo M2 - Lavado N D2",
+    st_ln_l_m2_d3: "% Largo M2 - Lavado N D3",
+
     rv1_m1_ac: "Revirado M1 AC",
     rv1_m1_bd: "Revirado M1 BD",
     rv1_m2_ac: "Revirado M2 AC",
     rv1_m2_bd: "Revirado M2 BD",
+    rv3_m1_ac: "Revirado 3er M1 AC",
+    rv3_m1_bd: "Revirado 3er M1 BD",
+    rv3_m2_ac: "Revirado 3er M2 AC",
+    rv3_m2_bd: "Revirado 3er M2 BD",
+    rv5_m1_ac: "Revirado 5to M1 AC",
+    rv5_m1_bd: "Revirado 5to M1 BD",
+    rv5_m2_ac: "Revirado 5to M2 AC",
+    rv5_m2_bd: "Revirado 5to M2 BD",
     rvn_n: "Lavado N",
     rvn_m1_ac: "Revirado N M1 AC",
     rvn_m1_bd: "Revirado N M1 BD",
@@ -159,6 +242,23 @@ function normalizeSpeechText(v) {
 function asFloat(v) {
     const n = Number((v || "").toString().replace(",", "."));
     return Number.isFinite(n) ? n : 0;
+}
+
+function extractRpcMessage(error, fallback) {
+    const candidates = [
+        error?.data?.message,
+        error?.data?.arguments?.[0],
+        error?.message,
+    ].filter((v) => typeof v === "string" && v.trim());
+
+    for (const raw of candidates) {
+        const msg = raw
+            .replace(/^Odoo Server Error\s*:?\s*/i, "")
+            .replace(/^RPC_ERROR\s*:?\s*/i, "")
+            .trim();
+        if (msg) return msg;
+    }
+    return fallback;
 }
 
 function extractSpeechFloats(rawText) {
@@ -273,6 +373,7 @@ export class QualityDimrevScreen extends Component {
 
     setup() {
         this.STEPS = STEPS;
+        this.STEP_GROUPS = STEP_GROUPS;
         this.orm = useService("orm");
         this.notification = useService("notification");
         this.homeMenu = useService("home_menu");
@@ -304,6 +405,12 @@ export class QualityDimrevScreen extends Component {
             awaitingOk: false,
             evalId: 0,
             inEvaluation: false,
+            evalMode: "",
+            needsModeSelection: false,
+            availableModes: [],
+            modeSelectionTarget: "",
+            selectedLavadoN: "",
+            isFirstRecord: false,
             stabilityDone: {
                 l1_ancho_done: false,
                 l1_largo_done: false,
@@ -354,17 +461,33 @@ export class QualityDimrevScreen extends Component {
     }
 
     get activeStep() {
-        return STEPS[this.state.currentStep] || STEPS[0];
+        return this.activeSteps[this.state.currentStep] || this.activeSteps[0] || STEPS[0];
+    }
+
+    get activeSteps() {
+        const keys = MODE_STEP_KEYS[this.state.evalMode] || [];
+        return keys.map((k) => STEPS[STEP_INDEX_BY_KEY[k]]).filter(Boolean);
     }
 
     get canSaveCurrentStep() {
-        if (!this.state.selectedPartidaId || this.state.submitting) return false;
-        const k = this.activeStep.key;
-        if (k === "est_l1_largo" && !this.state.stabilityDone.l1_ancho_done) return false;
-        if (k === "est_l3_ancho" && !this.state.stabilityDone.l1_done) return false;
-        if (k === "est_l3_largo" && !this.state.stabilityDone.l3_ancho_done) return false;
-        if (k === "est_l5_ancho" && !this.state.stabilityDone.l3_done) return false;
-        if (k === "est_l5_largo" && !this.state.stabilityDone.l5_ancho_done) return false;
+        return Boolean(this.state.selectedPartidaId && !this.state.submitting && this.state.evalMode && !this.state.needsModeSelection);
+    }
+
+    get isLastStep() {
+        return this.state.currentStep >= (this.activeSteps.length - 1);
+    }
+
+    get canFinalizeEvaluation() {
+        if (!this.canSaveCurrentStep) return false;
+        const fields = this.activeSteps.flatMap((s) => s.fields || []);
+        for (const fieldName of fields) {
+            if (`${this.state.values[fieldName] || ""}`.trim() === "") {
+                return false;
+            }
+        }
+        if (this.state.evalMode === "ln" && asFloat(this.state.values.rvn_n) <= 1) {
+            return false;
+        }
         return true;
     }
 
@@ -390,6 +513,14 @@ export class QualityDimrevScreen extends Component {
 
     get estLargoAvgL5() {
         return washAvg(this.state.values, "l5", "largo");
+    }
+
+    get estAnchoAvgLN() {
+        return washAvg(this.state.values, "ln", "ancho");
+    }
+
+    get estLargoAvgLN() {
+        return washAvg(this.state.values, "ln", "largo");
     }
 
     get reviradoM1() {
@@ -428,6 +559,38 @@ export class QualityDimrevScreen extends Component {
         return (this.reviradoNM1 + this.reviradoNM2) / 2;
     }
 
+    get revirado3M1() {
+        const ac = asFloat(this.state.values.rv3_m1_ac);
+        const bd = asFloat(this.state.values.rv3_m1_bd);
+        return ac + bd ? ((ac - bd) / (ac + bd)) * 200 : 0;
+    }
+
+    get revirado3M2() {
+        const ac = asFloat(this.state.values.rv3_m2_ac);
+        const bd = asFloat(this.state.values.rv3_m2_bd);
+        return ac + bd ? ((ac - bd) / (ac + bd)) * 200 : 0;
+    }
+
+    get revirado3Promedio() {
+        return (this.revirado3M1 + this.revirado3M2) / 2;
+    }
+
+    get revirado5M1() {
+        const ac = asFloat(this.state.values.rv5_m1_ac);
+        const bd = asFloat(this.state.values.rv5_m1_bd);
+        return ac + bd ? ((ac - bd) / (ac + bd)) * 200 : 0;
+    }
+
+    get revirado5M2() {
+        const ac = asFloat(this.state.values.rv5_m2_ac);
+        const bd = asFloat(this.state.values.rv5_m2_bd);
+        return ac + bd ? ((ac - bd) / (ac + bd)) * 200 : 0;
+    }
+
+    get revirado5Promedio() {
+        return (this.revirado5M1 + this.revirado5M2) / 2;
+    }
+
     get densidadPromedio() {
         return (asFloat(this.state.values.den_1) + asFloat(this.state.values.den_2) + asFloat(this.state.values.den_3)) / 3;
     }
@@ -463,6 +626,8 @@ export class QualityDimrevScreen extends Component {
         const draft = {
             partidaQuery: this.state.partidaQuery,
             selectedPartidaId: this.state.selectedPartidaId,
+            evalMode: this.state.evalMode,
+            needsModeSelection: this.state.needsModeSelection,
             values: this.state.values,
             currentStep: this.state.currentStep,
             awaitingOk: this.state.awaitingOk,
@@ -484,6 +649,8 @@ export class QualityDimrevScreen extends Component {
             if (!draft || typeof draft !== "object") return;
             this.state.partidaQuery = draft.partidaQuery || "";
             this.state.selectedPartidaId = draft.selectedPartidaId || "";
+            this.state.evalMode = draft.evalMode || "";
+            this.state.needsModeSelection = Boolean(draft.needsModeSelection);
             this.state.values = { ...getInitialValues(), ...(draft.values || {}) };
             this.state.currentStep = Number.isInteger(draft.currentStep)
                 ? Math.max(0, Math.min(draft.currentStep, STEPS.length - 1))
@@ -503,7 +670,7 @@ export class QualityDimrevScreen extends Component {
             this.state.partidas = await this.orm.call("control.estabilidad.revirado.eval", "action_tablet_get_partidas", [query, 100]);
             this._syncSelectedPartidaData();
         } catch (error) {
-            this.state.error = error.message || "No se pudieron cargar las partidas.";
+            this.state.error = extractRpcMessage(error, "No se pudieron cargar las partidas.");
         } finally {
             this.state.loading = false;
         }
@@ -573,6 +740,12 @@ export class QualityDimrevScreen extends Component {
         this.state.values = getInitialValues();
         this.state.evalId = 0;
         this.state.inEvaluation = false;
+        this.state.evalMode = "";
+        this.state.needsModeSelection = false;
+        this.state.availableModes = [];
+        this.state.modeSelectionTarget = "";
+        this.state.selectedLavadoN = "";
+        this.state.isFirstRecord = false;
         this.state.stabilityDone = this._defaultStabilityState();
         this._saveDraft();
     }
@@ -580,58 +753,71 @@ export class QualityDimrevScreen extends Component {
     async _loadPartidaEvaluation() {
         if (!this.state.selectedPartidaId) return;
         try {
-            const payload = await this.orm.call("control.estabilidad.revirado.eval", "action_tablet_get_or_create", [
+            const payload = await this.orm.call("control.estabilidad.revirado.eval", "action_tablet_get_eval_context", [
                 Number(this.state.selectedPartidaId),
             ]);
-            this.state.evalId = Number(payload?.id || 0);
-            this.state.values = { ...getInitialValues(), ...(payload?.values || {}) };
-            this.state.stabilityDone = payload?.stability || this._defaultStabilityState();
-            this._setStepFromProgress();
+            this.state.values = getInitialValues();
+            this.state.stabilityDone = this._defaultStabilityState();
+            this.state.availableModes = payload?.available_modes || [];
+            this.state.isFirstRecord = !Boolean(payload?.has_first_record);
+            const requiredMode = payload?.required_mode || "";
+            this.state.evalMode = requiredMode;
+            this.state.needsModeSelection = !requiredMode;
+            this.state.modeSelectionTarget = "";
+            this.state.selectedLavadoN = "";
+            this.state.currentStep = 0;
         } catch (error) {
-            this.state.error = error.message || "No se pudo cargar la evaluación de la partida.";
+            this.state.error = extractRpcMessage(error, "No se pudo cargar la evaluación de la partida.");
         }
+    }
+
+    selectEvaluationMode(mode) {
+        if (!MODE_STEP_KEYS[mode]) return;
+        if (mode === "ln") {
+            this.state.modeSelectionTarget = "ln";
+            this.state.selectedLavadoN = "";
+            return;
+        }
+        this.state.modeSelectionTarget = "";
+        this.state.evalMode = mode;
+        this.state.needsModeSelection = false;
+        this.state.currentStep = 0;
+        this.state.error = "";
+        this._saveDraft();
+    }
+
+    onSelectedLavadoNInput(ev) {
+        this.state.selectedLavadoN = (ev.target.value || "").replace(/[^0-9]/g, "");
+        this._saveDraft();
+    }
+
+    confirmLavadoNMode() {
+        const n = Math.trunc(asFloat(this.state.selectedLavadoN));
+        if (n <= 1) {
+            this.notification.add("El lavado N debe ser mayor a 1.", { type: "warning" });
+            return;
+        }
+        this.state.values.rvn_n = `${n}`;
+        this.state.evalMode = "ln";
+        this.state.needsModeSelection = false;
+        this.state.modeSelectionTarget = "";
+        this.state.currentStep = 0;
+        this.state.error = "";
+        this._saveDraft();
     }
 
     _setStepFromProgress() {
-        if (!this.state.stabilityDone.l1_ancho_done) {
-            this.state.currentStep = 0;
-            return;
-        }
-        if (!this.state.stabilityDone.l1_largo_done) {
-            this.state.currentStep = 1;
-            return;
-        }
-        if (!this.state.stabilityDone.l3_ancho_done) {
-            this.state.currentStep = 2;
-            return;
-        }
-        if (!this.state.stabilityDone.l3_largo_done) {
-            this.state.currentStep = 3;
-            return;
-        }
-        if (!this.state.stabilityDone.l5_ancho_done) {
-            this.state.currentStep = 4;
-            return;
-        }
-        if (!this.state.stabilityDone.l5_largo_done) {
-            this.state.currentStep = 5;
-            return;
-        }
+        this.state.currentStep = 0;
     }
 
     _canGoToStepByKey(key) {
-        if (key === "est_l1_ancho") return true;
-        if (key === "est_l1_largo") return this.state.stabilityDone.l1_ancho_done;
-        if (key === "est_l3_ancho") return this.state.stabilityDone.l1_done;
-        if (key === "est_l3_largo") return this.state.stabilityDone.l3_ancho_done;
-        if (key === "est_l5_ancho") return this.state.stabilityDone.l3_done;
-        if (key === "est_l5_largo") return this.state.stabilityDone.l5_ancho_done;
-        return true;
+        const idx = this.activeSteps.findIndex((s) => s.key === key);
+        return idx >= 0;
     }
 
     goToStep(index) {
-        const target = Math.max(0, Math.min(index, STEPS.length - 1));
-        const key = STEPS[target]?.key;
+        const target = Math.max(0, Math.min(index, this.activeSteps.length - 1));
+        const key = this.activeSteps[target]?.key;
         if (!this._canGoToStepByKey(key)) {
             this.notification.add("Este paso aun no esta habilitado para la partida.", { type: "warning" });
             return;
@@ -643,16 +829,44 @@ export class QualityDimrevScreen extends Component {
         this._saveDraft();
     }
 
+    goToStepByKey(stepKey) {
+        const idx = STEP_INDEX_BY_KEY[stepKey];
+        if (!Number.isInteger(idx)) return;
+        this.goToStep(idx);
+    }
+
+    isStepActive(stepKey) {
+        return this.activeStep?.key === stepKey;
+    }
+
+    isStepEnabled(stepKey) {
+        return this._canGoToStepByKey(stepKey);
+    }
+
     async nextStep() {
-        const saved = await this._autoSaveCurrentStepIfNeeded();
-        if (!saved) return;
-        if (this.state.currentStep < STEPS.length - 1) this.goToStep(this.state.currentStep + 1);
+        if (this.state.currentStep < this.activeSteps.length - 1) this.goToStep(this.state.currentStep + 1);
     }
 
     async previousStep() {
-        const saved = await this._autoSaveCurrentStepIfNeeded();
-        if (!saved) return;
-        if (this.state.currentStep > 0) this.goToStep(this.state.currentStep - 1);
+        if (this.state.currentStep > 0) {
+            this.goToStep(this.state.currentStep - 1);
+            return;
+        }
+        if (this.state.evalMode === "l1") {
+            await this.onBackToSearch();
+            return;
+        }
+        if (this.state.evalMode === "ln" || this.state.evalMode === "l3" || this.state.evalMode === "l5") {
+            this.state.needsModeSelection = true;
+            this.state.evalMode = "";
+            this.state.modeSelectionTarget = "";
+            this.state.currentStep = 0;
+            this._saveDraft();
+            return;
+        }
+        if (this.state.isFirstRecord) {
+            await this.onBackToSearch();
+        }
     }
 
     _initVoiceRecognition() {
@@ -821,6 +1035,11 @@ export class QualityDimrevScreen extends Component {
     async _processVoiceCommand(rawText) {
         const text = normalizeSpeechText(rawText);
 
+        if (this.state.needsModeSelection) {
+            this.state.voiceError = "Seleccione primero el lavado a evaluar.";
+            return;
+        }
+
         if (/\b(detener|parar|silencio)\b/.test(text)) {
             this._stopVoiceRecognition();
             return;
@@ -922,20 +1141,21 @@ export class QualityDimrevScreen extends Component {
 
     _processJumpCommand(text) {
         const jumpMap = [
-            { re: /estabilidad.*ancho.*(1er|primer).*(lavado)/, idx: 0 },
-            { re: /estabilidad.*largo.*(1er|primer).*(lavado)/, idx: 1 },
-            { re: /estabilidad.*ancho.*(3er|tercer).*(lavado)/, idx: 2 },
-            { re: /estabilidad.*largo.*(3er|tercer).*(lavado)/, idx: 3 },
-            { re: /estabilidad.*ancho.*(5to|quinto).*(lavado)/, idx: 4 },
-            { re: /estabilidad.*largo.*(5to|quinto).*(lavado)/, idx: 5 },
-            { re: /revirado.*(1er|primer).*(lavado)/, idx: 6 },
-            { re: /revirado.*lavado\s*n|revirado.*(3er|4to|5to|tercer|cuarto|quinto).*(lavado)/, idx: 7 },
-            { re: /densidad/, idx: 8 },
-            { re: /\bancho\b/, idx: 9 },
+            { re: /(1er|primer).*(lavado).*muestra\s*1/, key: "est_l1_m1" },
+            { re: /(1er|primer).*(lavado).*muestra\s*2/, key: "est_l1_m2" },
+            { re: /(3er|tercer).*(lavado).*muestra\s*1/, key: "est_l3_m1" },
+            { re: /(3er|tercer).*(lavado).*muestra\s*2/, key: "est_l3_m2" },
+            { re: /(5to|quinto).*(lavado).*muestra\s*1/, key: "est_l5_m1" },
+            { re: /(5to|quinto).*(lavado).*muestra\s*2/, key: "est_l5_m2" },
+            { re: /(lavado\s*n).*muestra\s*1/, key: "est_ln_m1" },
+            { re: /(lavado\s*n).*muestra\s*2/, key: "est_ln_m2" },
+            { re: /densidad/, key: "densidad" },
+            { re: /\bancho\b/, key: "ancho" },
         ];
         for (const item of jumpMap) {
             if (item.re.test(text)) {
-                this.goToStep(item.idx);
+                const idx = this.activeSteps.findIndex((s) => s.key === item.key);
+                if (idx >= 0) this.goToStep(idx);
                 return true;
             }
         }
@@ -1025,89 +1245,40 @@ export class QualityDimrevScreen extends Component {
         tone(190, now + 0.19, 0.2, 0.05, "square");
     }
 
-    async onSave() {
-        if (!this.state.selectedPartidaId) {
-            this.notification.add("Seleccione una partida.", { type: "warning" });
+    async finalizeEvaluation() {
+        if (!this.canFinalizeEvaluation) {
+            this.notification.add("Complete todos los campos antes de finalizar.", { type: "warning" });
             return;
         }
-        if (!this.canSaveCurrentStep) {
-            this.notification.add("Este paso aun no esta habilitado para la partida.", { type: "warning" });
+        if (!window.confirm("Desea finalizar y registrar esta evaluación?")) {
             return;
+        }
+
+        const payload = {};
+        const fields = this.activeSteps.flatMap((s) => s.fields || []);
+        for (const fname of fields) {
+            payload[fname] = asFloat(this.state.values[fname]);
         }
 
         this.state.submitting = true;
         this.state.error = "";
         try {
-            const step = this.activeStep;
-            const payload = {};
-            for (const fname of step.fields) payload[fname] = asFloat(this.state.values[fname]);
-
-            const result = await this.orm.call("control.estabilidad.revirado.eval", "action_tablet_submit_step", [
+            const result = await this.orm.call("control.estabilidad.revirado.eval", "action_tablet_finalize", [
                 Number(this.state.selectedPartidaId),
-                step.key,
+                this.state.evalMode,
                 payload,
             ]);
-            this.state.stabilityDone = result?.stability || this.state.stabilityDone;
-            this.notification.add(`Paso guardado en ${result?.name || "evaluacion"}.`, { type: "success" });
-
-            this.state.awaitingOk = false;
-            this.state.bufferedNumbers = [];
-            this.state.pendingNumbers = [];
-            if (this.state.currentStep < STEPS.length - 1) await this.nextStep();
-            this._saveDraft();
+            this.notification.add(`Evaluacion registrada en ${result?.name || "evaluacion"}.`, { type: "success" });
+            await this.onBackToSearch();
         } catch (error) {
-            this.state.error = error.message || "No se pudo guardar la evaluación.";
-        } finally {
-            this.state.submitting = false;
-        }
-    }
-
-    async _autoSaveCurrentStepIfNeeded() {
-        if (!this.state.selectedPartidaId || this.state.submitting) {
-            return false;
-        }
-        if (!this.canSaveCurrentStep) {
-            return true;
-        }
-        if (!this._countFilledActiveFields()) {
-            return true;
-        }
-
-        this.state.submitting = true;
-        this.state.error = "";
-        try {
-            const step = this.activeStep;
-            const payload = {};
-            for (const fname of step.fields) {
-                payload[fname] = asFloat(this.state.values[fname]);
-            }
-
-            const result = await this.orm.call("control.estabilidad.revirado.eval", "action_tablet_submit_step", [
-                Number(this.state.selectedPartidaId),
-                step.key,
-                payload,
-            ]);
-
-            this.state.stabilityDone = result?.stability || this.state.stabilityDone;
-            this.state.awaitingOk = false;
-            this.state.bufferedNumbers = [];
-            this.state.pendingNumbers = [];
-            return true;
-        } catch (error) {
-            this.state.error = error.message || "No se pudo guardar automaticamente el paso.";
-            this.notification.add(this.state.error, { type: "danger" });
-            return false;
+            this.state.error = extractRpcMessage(error, "No se pudo finalizar la evaluación.");
+            this.notification.add(this.state.error, { type: "warning" });
         } finally {
             this.state.submitting = false;
         }
     }
 
     async onBackToSearch() {
-        if (this.state.inEvaluation) {
-            const saved = await this._autoSaveCurrentStepIfNeeded();
-            if (!saved) return;
-        }
-
         this._stopVoiceRecognition();
         this.clearPartida();
         this.state.error = "";
@@ -1117,10 +1288,6 @@ export class QualityDimrevScreen extends Component {
     }
 
     async close() {
-        if (this.state.inEvaluation) {
-            const saved = await this._autoSaveCurrentStepIfNeeded();
-            if (!saved) return;
-        }
         this._stopVoiceRecognition();
         this._saveDraft();
         if (window.history.length > 1) {

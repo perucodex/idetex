@@ -25,4 +25,20 @@
         <field name="company_id" eval="False"/>
     </record>
 
+    <record id="seq_control_laboratorio_record_eval_number" model="ir.sequence">
+        <field name="name">Numero Evaluacion Laboratorio</field>
+        <field name="code">control.laboratorio.record.eval_number</field>
+        <field name="prefix">LABE</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_control_solidez_lavado_eval" model="ir.sequence">
+        <field name="name">Evaluacion Solidez del Color al Lavado</field>
+        <field name="code">control.solidez.lavado.eval</field>
+        <field name="prefix">SLAV</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
 </odoo>
