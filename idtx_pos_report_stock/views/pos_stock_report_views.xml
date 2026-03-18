@@ -8,6 +8,7 @@
             <list string="Existencias PdV" create="false" edit="false" delete="false">
                 <header>
                     <button name="reprint" string="Print Bar Code" type="object" class="btn-primary"/>
+                    <button name="action_screen_barcode" string="Screen Bar Code" type="object" class="btn-secondary"/>
                     <button name="action_reubicar" string="Reubicar" type="object" class="btn-secondary"/>
                 </header>
                 <field name="product_code"/>
@@ -72,4 +73,21 @@
               action="action_idtx_pos_stock_report"
               parent="point_of_sale.menu_point_rep"
               sequence="10"/>
+
+    <!-- Form Wizard Screen Bar Code -->
+    <record id="view_pos_stock_barcode_wizard_form" model="ir.ui.view">
+        <field name="name">pos.stock.barcode.wizard.form</field>
+        <field name="model">pos.stock.barcode.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Screen Bar Code">
+                <sheet>
+                    <field name="label_html" widget="html" readonly="1" options="{'cssReadonly': false}" nolabel="1"/>
+                </sheet>
+                <footer>
+                    <button name="action_print" string="Print" type="object" class="btn-primary"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
 </odoo>

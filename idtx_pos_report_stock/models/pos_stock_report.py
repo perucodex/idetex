@@ -81,6 +81,19 @@ class IdtxPosStockReport(models.Model):
         res['context'].update({'from_pos_stock_report': True})
         return res
 
+    def action_screen_barcode(self):
+        wizard = self.env['pos.stock.barcode.wizard'].create({
+            'report_ids': [(6, 0, self.ids)]
+        })
+        return {
+            'name': 'Screen Bar Code',
+            'type': 'ir.actions.act_window',
+            'res_model': 'pos.stock.barcode.wizard',
+            'res_id': wizard.id,
+            'view_mode': 'form',
+            'target': 'new',
+        }
+
     def init(self):
         tools.drop_view_if_exists(self.env.cr, self._table)
         self.env.cr.execute("""
@@ -137,3 +150,71 @@ class StockQuantRelocate(models.TransientModel):
         if self.env.context.get('from_pos_stock_report'):
             return self.env.ref('idtx_pos_report_stock.action_idtx_pos_stock_report').read()[0]
         return res
+
+class PosStockBarcodeWizard(models.TransientModel):
+    _name = 'pos.stock.barcode.wizard'
+    _description = 'Screen Barcode Wizard'
+
+    report_ids = fields.Many2many('idtx.pos.stock.report', string='Reports')
+    label_html = fields.Html('Etiquetas', compute='_compute_label_html')
+
+    @api.depends('report_ids')
+    def _compute_label_html(self):
+        import qrcode
+        import base64
+        from io import BytesIO
+        
+        for wizard in self:
+            html = "<div style='display: flex; flex-direction: column; gap: 20px; align-items: center;'>"
+            for rep in wizard.report_ids:
+                weight = rep.quantity or 0.0
+                barcode = rep.product_id.barcode or ''
+                barcode_data = f"01{barcode}3102{str(int(round(weight * 100))).zfill(6)}10{rep.lot_name or ''}"
+                
+                # Generar QR localmente
+                qr = qrcode.QRCode(version=1, box_size=4, border=0)
+                qr.add_data(barcode_data)
+                qr.make(fit=True)
+                img = qr.make_image(fill_color="black", back_color="white")
+                buffer = BytesIO()
+                img.save(buffer, format="PNG")
+                qr_base64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
+                qr_url = f"data:image/png;base64,{qr_base64}"
+                
+                html += f'''
+                <div style="width: 480px; border: 1px solid #000; padding: 15px; border-radius: 4px; font-family: 'Arial', sans-serif; background: #fff; margin-bottom: 20px; color: #000;">
+                    <div style="font-size: 22px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase;">
+                        {rep.product_name or ''}
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <!-- Columna Izquierda: QR y Número de Rollo -->
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; width: 40%;">
+                            <img src="{qr_url}" style="width: 160px; height: 160px; margin-bottom: 5px;"/>
+                            <div style="font-size: 14px; font-weight: bold;">
+                                {rep.roll_name or ''}
+                            </div>
+                        </div>
+
+                        <!-- Columna Derecha: Detalles -->
+                        <div style="display: flex; flex-direction: column; width: 55%; font-size: 14px; line-height: 1.2;">
+                            <div style="margin-bottom: 2px;"><strong>Código:</strong> {rep.product_code or ''}</div>
+                            <div style="margin-bottom: 2px;"><strong>Color:</strong> [{rep.color_code or ''}]</div>
+                            <div style="font-size: 18px; font-weight: bold; margin-bottom: 4px;">{rep.color_name or ''}</div>
+                            <div style="font-size: 16px; margin-bottom: 12px;"><strong>Lote:</strong> {rep.lot_name or ''}</div>
+                            
+                            <div style="text-align: center;">
+                                <div style="font-size: 16px;">Peso</div>
+                                <div style="font-size: 38px; font-weight: bold; margin-top: -2px;">{weight:.2f}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                '''
+            html += "</div>"
+            wizard.label_html = html
+
+    def action_print(self):
+        self.ensure_one()
+        self.report_ids.reprint()
+        return {'type': 'ir.actions.act_window_close'}
+
