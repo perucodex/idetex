@@ -35,6 +35,7 @@
         'views/quality_defect_screen.xml',
         'views/quality_dimrev_screen.xml',
         'views/quality_solidez_lavado_screen.xml',
+        'views/quality_menu.xml',
 
         'wizards/control_tono_wizard.xml',
 

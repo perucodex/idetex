@@ -13,6 +13,24 @@ class ControlTonoEvalLog(models.Model):
         ondelete="cascade",
         index=True,
     )
+    partida = fields.Char(
+        string="Partida",
+        related="pedido_line_id.batch",
+        readonly=True,
+        store=False,
+    )
+    cliente = fields.Char(
+        string="Cliente",
+        related="pedido_line_id.pedido_id.customer",
+        readonly=True,
+        store=False,
+    )
+    color = fields.Char(
+        string="Color",
+        related="pedido_line_id.colorname",
+        readonly=True,
+        store=False,
+    )
     eval_group_id = fields.Many2one(
         "control.tono.eval.group",
         string="Evaluacion Grupal",

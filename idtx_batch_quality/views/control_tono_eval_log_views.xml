@@ -1,4 +1,27 @@
 <odoo>
+    <record id="view_control_tono_log_list_tacho_acabado" model="ir.ui.view">
+        <field name="name">control.tono.eval.log.list.tacho.acabado</field>
+        <field name="model">control.tono.eval.log</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="fecha_eval"/>
+                <field name="user_id"/>
+                <field name="partida" string="Partida"/>
+                <field name="cliente" string="Cliente"/>
+                <field name="color" string="Color"/>
+                <field name="tono" string="Tipo de Tono"/>
+                <field name="motivo_tono" string="Motivo Tono"/>
+                <field name="motivo_tacto" string="Motivo Tacto"/>
+                <field name="motivo_apariencia" string="Motivo Apariencia"/>
+                <field name="resultado" widget="badge"
+                       decoration-success="resultado == 'aprobado'"
+                       decoration-warning="resultado == 'concesionado'"
+                       decoration-danger="resultado == 'rechazado'"/>
+                <field name="receta_tono" string="Receta"/>
+            </list>
+        </field>
+    </record>
+
     <record id="view_control_tono_log_form" model="ir.ui.view">
         <field name="name">control.tono.eval.log.form</field>
         <field name="model">control.tono.eval.log</field>
@@ -34,4 +57,30 @@
             </form>
         </field>
     </record>
+
+    <record id="view_control_tono_log_search_tacho_acabado" model="ir.ui.view">
+        <field name="name">control.tono.eval.log.search.tacho.acabado</field>
+        <field name="model">control.tono.eval.log</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="partida" string="Partida" filter_domain="[('pedido_line_id.batch', 'ilike', self)]"/>
+                <field name="cliente" string="Cliente" filter_domain="[('pedido_line_id.pedido_id.customer', 'ilike', self)]"/>
+                <field name="color" string="Color" filter_domain="[('pedido_line_id.colorname', 'ilike', self)]"/>
+                <separator/>
+                <filter name="group_by_fecha_dia" string="Fecha" context="{'group_by': 'fecha_eval:day'}"/>
+                <filter name="group_by_tipo" string="Tipo" context="{'group_by': 'tono'}"/>
+                <filter name="group_by_estado" string="Estado" context="{'group_by': 'resultado'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_control_tono_eval_log_tacho_acabado" model="ir.actions.act_window">
+        <field name="name">Evaluaciones Tono Tacho/Acabado</field>
+        <field name="res_model">control.tono.eval.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[("tono", "in", ["tacho", "acabado"])]</field>
+        <field name="search_view_id" ref="view_control_tono_log_search_tacho_acabado"/>
+        <field name="context">{'search_default_group_by_fecha_dia': 1}</field>
+    </record>
+    
 </odoo>

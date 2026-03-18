@@ -93,10 +93,4 @@
         <field name="res_model">control.estabilidad.revirado.eval</field>
         <field name="view_mode">list,form</field>
     </record>
-
-    <menuitem id="menu_control_estabilidad_revirado_eval"
-              name="Evaluaciones Estabilidad/Revirado"
-              parent="quality_control.menu_quality_control"
-              action="action_control_estabilidad_revirado_eval"
-              sequence="930"/>
 </odoo>

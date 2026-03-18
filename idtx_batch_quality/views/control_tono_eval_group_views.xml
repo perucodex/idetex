@@ -52,10 +52,4 @@
         <field name="res_model">control.tono.eval.group</field>
         <field name="view_mode">list,form</field>
     </record>
-
-    <menuitem id="menu_control_tono_eval_group"
-              name="Agrupaciones Tono"
-              parent="quality_control.menu_quality_control"
-              action="action_control_tono_eval_group"
-              sequence="910"/>
 </odoo>

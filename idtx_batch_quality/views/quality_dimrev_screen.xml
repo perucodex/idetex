@@ -4,10 +4,4 @@
         <field name="tag">idtx_quality.dimrev_screen</field>
         <field name="target">fullscreen</field>
     </record>
-
-    <menuitem id="menu_quality_dimrev_screen"
-              name="Pantalla Estabilidad/Revirado"
-              parent="quality_control.menu_quality_control"
-              action="action_quality_dimrev_screen"
-              sequence="925"/>
 </odoo>

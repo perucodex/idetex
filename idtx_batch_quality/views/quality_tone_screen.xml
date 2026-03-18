@@ -4,10 +4,4 @@
         <field name="tag">idtx_quality.tone_screen</field>
         <field name="target">fullscreen</field>
     </record>
-
-    <menuitem id="menu_quality_tone_screen"
-              name="Evaluar Tono"
-              parent="quality_control.menu_quality_control"
-              action="action_quality_tone_screen"
-              sequence="905"/>
 </odoo>

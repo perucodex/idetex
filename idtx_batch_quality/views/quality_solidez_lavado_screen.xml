@@ -4,10 +4,4 @@
         <field name="tag">idtx_quality.solidez_lavado_screen</field>
         <field name="target">fullscreen</field>
     </record>
-
-    <menuitem id="menu_quality_solidez_lavado_screen"
-              name="Pantalla Solidez al Lavado"
-              parent="quality_control.menu_quality_control"
-              action="action_quality_solidez_lavado_screen"
-              sequence="930"/>
 </odoo>
