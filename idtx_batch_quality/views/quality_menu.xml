@@ -1,0 +1,21 @@
+<odoo>
+
+    <menuitem id="menu_texplus" name="TEXPLUS" sequence="900" parent="quality_control.menu_quality_control">
+        <menuitem id="menu_evaluations" name="Evaluaciones" sequence="10">
+            <menuitem id="menu_quality_tone_screen" name="Evaluar Tono" action="action_quality_tone_screen" sequence="10"/>
+            <menuitem id="menu_quality_defect_screen" name="Auditoría de Apariencia" action="action_quality_defect_screen" sequence="20"/>
+            <menuitem id="menu_quality_dimrev_screen" name="Estabilidad/Revirado" action="action_quality_dimrev_screen" sequence="30"/>
+            <menuitem id="menu_quality_solidez_lavado_screen" name="Solidez al Lavado" action="action_quality_solidez_lavado_screen" sequence="40"/>
+        </menuitem>
+
+        <menuitem id="menu_records" name="Registros" sequence="20">
+            <menuitem id="menu_quality_partida" name="Partidas" action="action_quality_partida" sequence="10"/>
+            <menuitem id="menu_control_tono_eval_log_tacho_acabado" name="Tono Tacho/Acabado" action="action_control_tono_eval_log_tacho_acabado" sequence="20"/>
+            <menuitem id="menu_control_tono_eval_group" name="Agrupaciones Tono" action="action_control_tono_eval_group" sequence="30"/>
+            <menuitem id="menu_control_estabilidad_revirado_eval" name="Evaluaciones Estabilidad/Revirado" action="action_control_estabilidad_revirado_eval" sequence="40"/>
+        </menuitem>
+    </menuitem>
+
+    <menuitem id="menu_control_apariencia_defecto" name="Defectos Apariencia" parent="quality_control.menu_quality_configuration" action="action_control_apariencia" sequence="90"/>
+
+</odoo>
