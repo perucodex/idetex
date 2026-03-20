@@ -11,8 +11,6 @@ patch(PosOrderline.prototype, {
             l.name === lotName
         );
         if (!lot) return "";
-        return (lot?.color_code && lot?.color_name)
-            ? `[${lot.color_code}] ${lot.color_name}`
-            : "";
+        return lot?.color_name || "";
     },
 });

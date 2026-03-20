@@ -18,7 +18,14 @@ class StockQuantImport(models.Model):
     state = fields.Selection([('draft', 'Draft'), ('process','Process'), ('done', 'Done')],
                              default='draft', string='Status', copy=False)
     line_ids = fields.One2many('stock.quant.import.line','import_id', string='Lines', readonly=True)
+    item_count = fields.Integer(string='Items', compute='_compute_totals', store=True)
+    total_weight = fields.Float(string='Total Kilos', compute='_compute_totals', store=True)
 
+    @api.depends('line_ids', 'line_ids.quantity')
+    def _compute_totals(self):
+        for rec in self:
+            rec.item_count = len(rec.line_ids)
+            rec.total_weight = sum(rec.line_ids.mapped('quantity'))
     # ------------------------------------------------------------------
     # Botón principal
     # ------------------------------------------------------------------
@@ -204,6 +211,79 @@ class StockQuantImport(models.Model):
     def action_clean(self):
         self.line_ids.unlink()
         self.state = 'draft'
+
+    def action_delete_import(self):
+        StockQuant = self.env['stock.quant']
+        Product = self.env['product.product']
+        Lote = self.env['stock.lot']
+        Batch = self.env['mrp.workorder.batch']
+        Roll = self.env['mrp.production.roll']
+
+        for rec in self:
+            if rec.state != 'done':
+                raise UserError(_('You can only delete an import in Done state.'))
+
+            for row in rec.line_ids:
+                if not (row.product_code and row.quantity):
+                    continue
+
+                product = Product.search([('default_code', '=', row.product_code)], limit=1)
+                lot = Lote.search([('name', '=', row.lot_name), ('product_id', '=', product.id)], limit=1) if product else False
+
+                # 1. Reverse Stock
+                if product and lot:
+                    quant = StockQuant.search([
+                        ('product_id', '=', product.id),
+                        ('location_id', '=', rec.location_id.id),
+                        ('lot_id', '=', lot.id)
+                    ], limit=1)
+                    if quant:
+                        quant.inventory_quantity = quant.quantity - float(row.quantity)
+                        quant.action_apply_inventory()
+
+                # 2. Delete Roll
+                if product:
+                    roll = Roll.search([('name', '=', row.ref), ('product_id', '=', product.id)], limit=1)
+                    if roll:
+                        try:
+                            with self.env.cr.savepoint():
+                                roll.unlink()
+                        except Exception:
+                            pass
+
+                # 3. Delete Lot
+                if lot:
+                    try:
+                        with self.env.cr.savepoint():
+                            lot.unlink()
+                    except Exception:
+                        pass
+
+                # 4. Delete Batch
+                if row.ident_lot:
+                    batch = Batch.search([('name', '=', row.ident_lot)], limit=1)
+                    if batch:
+                        other_rolls = Roll.search([('batch_id', '=', batch.id)], limit=1)
+                        if not other_rolls:
+                            try:
+                                with self.env.cr.savepoint():
+                                    batch.unlink()
+                            except Exception:
+                                pass
+
+            rec.state = 'draft'
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Proceso Terminado'),
+                'message': _('La importación ha sido revertida completamente.'),
+                'type': 'success',
+                'sticky': False,
+                'next': {'type': 'ir.actions.act_window_close'},
+            }
+        }
 
     # ------------------------------------------------------------------
     # Secuencia

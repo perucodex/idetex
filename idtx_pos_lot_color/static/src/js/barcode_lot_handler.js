@@ -4,11 +4,37 @@ import { patch } from "@web/core/utils/patch";
 patch(ProductScreen.prototype, {
     async _barcodeProductAction(code) {
         let product = await this._getProductByBarcode(code);
+        const barcodeString = typeof code === 'string' ? code : (code.base_code || code.code);
         let barcodeOption = code;
         let productQty = 1; // Default quantity
 
+        // 0. Búsqueda por GS1 (QR Especial)
+        if (!product && barcodeString && barcodeString.startsWith('01')) {
+            console.log("[IDTX] Detectado posible código GS1:", barcodeString);
+            const gs1Data = this._parseGS1(barcodeString);
+            if (gs1Data) {
+                console.log("[IDTX] GS1 Parsed:", gs1Data);
+                // Buscar por GTIN (barcode en Odoo)
+                product = this.pos.models["product.product"].getAll().find(p => p.barcode === gs1Data.gtin);
+                
+                if (!product) {
+                    console.log("[IDTX] GTIN no encontrado en memoria. Buscando en servidor:", gs1Data.gtin);
+                    const records = await this.pos.loadNewProducts([["barcode", "=", gs1Data.gtin]]);
+                    if (records && records["product.product"]?.length > 0) {
+                        this.pos.data.models.loadConnectedData(records);
+                        product = this.pos.models["product.product"].get(records["product.product"][0].id);
+                    }
+                }
+
+                if (product) {
+                    productQty = gs1Data.weight;
+                    barcodeOption = { type: 'lot', code: gs1Data.lot };
+                }
+            }
+        }
+
         if (!product) {
-            const searchTerm = code.code;
+            const searchTerm = typeof code === 'string' ? code : code.code;
             console.log("[IDTX] Producto no encontrado por código de barras. Buscando por referencia/lote:", searchTerm);
 
             // 1. Búsqueda por default_code (Referencia Interna)
@@ -100,5 +126,48 @@ patch(ProductScreen.prototype, {
 
         // Fallback al comportamiento original
         return super._barcodeProductAction(...arguments);
+    },
+
+    /**
+     * Parsea un string en formato GS1 (01 GTIN 3102 WEIGHT 10 LOT)
+     * @param {string} code 
+     * @returns {object|null}
+     */
+    _parseGS1(code) {
+        try {
+            // Ejemplo: 0177512340041039310200247210C370225-692
+            // 01 -> GTIN (14 dígitos)
+            // 3102 -> Peso (6 dígitos, 2 decimales)
+            // 10 -> Lote (Variable hasta el final)
+            
+            const gtin = code.substring(2, 16);
+            let weight = 1;
+            let lot = "";
+
+            // El peso (3102) usualmente sigue al GTIN (índice 16)
+            const weightIndex = code.indexOf('3102', 16);
+            let nextIndex = 16;
+
+            if (weightIndex !== -1) {
+                weight = parseFloat(code.substring(weightIndex + 4, weightIndex + 10)) / 100;
+                nextIndex = weightIndex + 10;
+            }
+
+            // El lote (10) sigue después del peso o directamente después del GTIN
+            const lotIndex = code.indexOf('10', nextIndex);
+
+            if (lotIndex !== -1) {
+                lot = code.substring(lotIndex + 2);
+            }
+
+            return {
+                gtin: gtin,
+                weight: weight,
+                lot: lot
+            };
+        } catch (e) {
+            console.error("[IDTX] Error parsing GS1 barcode:", e);
+            return null;
+        }
     }
 });

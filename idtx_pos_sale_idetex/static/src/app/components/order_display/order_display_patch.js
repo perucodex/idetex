@@ -19,7 +19,7 @@ class IDTXGroupLines {
         const first = this.children[0];
         if (!first) return this.key;
         const name = first.product_id.display_name || first.product_id.name || "Producto Desconocido";
-        const color = first.color_name || "Sin Color";
+        const color = first.lotColorName || first.color_name || "Sin Color";
         return `${name} - ${color}`;
     }
 
@@ -93,7 +93,7 @@ patch(OrderDisplay.prototype, {
             // Clave de agrupación: Código + Color
             // Si no tiene color, usamos solo el código (o ID de producto).
             const code = line.product_id.default_code || "N/A";
-            const color = line.color_name ? line.color_name.trim().toUpperCase() : "__NO_COLOR__";
+            const color = (line.lotColorName || line.color_name || "__NO_COLOR__").trim().toUpperCase();
 
             // Solo agrupamos si hay color (regla de negocio implícita? o siempre?)
             // El usuario pidió "Codigo + Nombre del color".
