@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from . import configurate_svg_example
+from . import density_stability_twisting
 from . import mrp_base_process
 from . import mrp_bom
 from . import mrp_production_roll

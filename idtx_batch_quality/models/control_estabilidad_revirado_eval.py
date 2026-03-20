@@ -50,6 +50,23 @@ class ControlEstabilidadReviradoEval(models.Model):
     densidad_promedio = fields.Float(string="Densidad Promedio", compute="_compute_densidad_ancho", store=True)
     ancho_promedio = fields.Float(string="Ancho Promedio", compute="_compute_densidad_ancho", store=True)
 
+    bool_est_ancho_avg_l1 = fields.Boolean()
+    bool_est_ancho_avg_l3 = fields.Boolean()
+    bool_est_ancho_avg_l5 = fields.Boolean()
+    bool_est_largo_avg_l1 = fields.Boolean()
+    bool_est_largo_avg_l3 = fields.Boolean()
+    bool_est_largo_avg_l5 = fields.Boolean()
+    bool_revirado_promedio = fields.Boolean()
+    bool_revirado_n_promedio = fields.Boolean()
+    bool_densidad_promedio = fields.Boolean()
+    bool_ancho_promedio = fields.Boolean()
+
+    state = fields.Selection([
+        ('pass', 'Pass'),
+        ('fail', 'Fail'),
+        ('nodata', 'No Data'),
+    ], string='Resultado', compute='_compute_result_state', store=True)
+
     @api.model
     def _st_key(self, wash, axis, sample, datum):
         return f"st_{wash}_{axis}_m{sample}_d{datum}"
@@ -436,6 +453,26 @@ class ControlEstabilidadReviradoEval(models.Model):
             "kilograms": float(line.kilograms or 0.0),
         } for line in lines]
 
+    def action_print_report(self):
+        self.ensure_one()
+
+        laboratorio_model = self.env["control.laboratorio.record"]
+        record = laboratorio_model.search([
+            ("est_revirado_eval_id", "=", self.id),
+        ], limit=1)
+
+        if not record:
+            record = laboratorio_model.create({
+                "pedido_line_id": self.pedido_line_id.id,
+                "fecha_eval": self.fecha_eval,
+                "user_id": self.user_id.id,
+                "test_type": "dimrev",
+                "result_state": "pasa",
+                "est_revirado_eval_id": self.id,
+            })
+
+        return record.action_print_report()
+
     @api.model
     def action_tablet_submit_step(self, pedido_line_id, step_key, values):
         pedido_line = self.env["control.pedido.line"].browse(int(pedido_line_id or 0))
@@ -501,6 +538,85 @@ class ControlEstabilidadReviradoEval(models.Model):
             },
         }
 
+    @api.depends(
+        "est_ancho_avg_l1",
+        "est_ancho_avg_l3",
+        "est_ancho_avg_l5",
+        "est_largo_avg_l1",
+        "est_largo_avg_l3",
+        "est_largo_avg_l5",
+        "revirado_promedio",
+        "revirado_n_promedio",
+        "densidad_promedio",
+        "ancho_promedio",
+    )
+    def _compute_result_state(self):
+        for rec in self:
+            result = "pass"
+            bool_fields = (
+                "bool_est_ancho_avg_l1",
+                "bool_est_ancho_avg_l3",
+                "bool_est_ancho_avg_l5",
+                "bool_est_largo_avg_l1",
+                "bool_est_largo_avg_l3",
+                "bool_est_largo_avg_l5",
+                "bool_revirado_promedio",
+                "bool_revirado_n_promedio",
+                "bool_densidad_promedio",
+                "bool_ancho_promedio",
+            )
+            for field_name in bool_fields:
+                rec[field_name] = True
+
+            thresholds = rec.pedido_line_id.product_id.analysis_id.density_stability_twisting_id
+
+            if not thresholds:
+                result = "nodata"
+            else:
+                width_from = thresholds.width_shrinkage_from
+                width_to = thresholds.width_shrinkage_to
+                length_from = thresholds.length_shrinkage_from
+                length_to = thresholds.length_shrinkage_to
+
+                if thresholds.density and rec.densidad_promedio < thresholds.density:
+                    rec.bool_densidad_promedio = False
+                if thresholds.width and rec.ancho_promedio < thresholds.width:
+                    rec.bool_ancho_promedio = False
+
+                if width_from and rec.est_ancho_avg_l1 < width_from:
+                    rec.bool_est_ancho_avg_l1 = False
+                if width_to and rec.est_ancho_avg_l1 > width_to:
+                    rec.bool_est_ancho_avg_l1 = False
+                if width_from and rec.est_ancho_avg_l3 < width_from:
+                    rec.bool_est_ancho_avg_l3 = False
+                if width_to and rec.est_ancho_avg_l3 > width_to:
+                    rec.bool_est_ancho_avg_l3 = False
+                if width_from and rec.est_ancho_avg_l5 < width_from:
+                    rec.bool_est_ancho_avg_l5 = False
+                if width_to and rec.est_ancho_avg_l5 > width_to:
+                    rec.bool_est_ancho_avg_l5 = False
+
+                if length_from and rec.est_largo_avg_l1 < length_from:
+                    rec.bool_est_largo_avg_l1 = False
+                if length_to and rec.est_largo_avg_l1 > length_to:
+                    rec.bool_est_largo_avg_l1 = False
+                if length_from and rec.est_largo_avg_l3 < length_from:
+                    rec.bool_est_largo_avg_l3 = False
+                if length_to and rec.est_largo_avg_l3 > length_to:
+                    rec.bool_est_largo_avg_l3 = False
+                if length_from and rec.est_largo_avg_l5 < length_from:
+                    rec.bool_est_largo_avg_l5 = False
+                if length_to and rec.est_largo_avg_l5 > length_to:
+                    rec.bool_est_largo_avg_l5 = False
+
+                if thresholds.twist and abs(rec.revirado_promedio) > thresholds.twist:
+                    rec.bool_revirado_promedio = False
+                if thresholds.twist and abs(rec.revirado_n_promedio) > thresholds.twist:
+                    rec.bool_revirado_n_promedio = False
+
+            if any(not rec[field_name] for field_name in bool_fields):
+                result = "fail"
+            rec.state = result
 
 class ControlEstabilidadReviradoEvalDetail(models.Model):
     _name = "control.estabilidad.revirado.eval.detail"
@@ -525,9 +641,10 @@ class ControlEstabilidadReviradoEvalDetail(models.Model):
         ("ancho", "Ancho"),
     ], string="Prueba", required=True, index=True)
     muestra = fields.Selection([("m1", "M1"), ("m2", "M2"), ("na", "N/A")], string="Muestra", default="na", required=True, index=True)
-    evaluacion = fields.Char(string="Evaluacion", required=True)
+    evaluacion = fields.Char(string="Item Evaluacion", required=True)
     dato = fields.Float(string="Dato", digits=(16, 4), required=True)
 
-    _sql_constraints = [
-        ("uniq_eval_measure_key", "unique(eval_id, measure_key)", "La clave de medicion ya existe en esta evaluacion."),
-    ]
+    _uniq_eval_measure_key = models.Constraint(
+        "UNIQUE(eval_id, measure_key)",
+        "La clave de medicion ya existe en esta evaluacion.",
+    )

@@ -59,6 +59,23 @@ class TechnicalSheet(models.Model):
     bom_id = fields.Many2one('mrp.bom', string='LdM')
     mrp_base_process_id = fields.Many2one(related='analysis_id.mrp_base_process_id')
 
+    @staticmethod
+    def _extract_tolerance_ids_from_commands(commands):
+        tolerance_ids = set()
+        for cmd in commands or []:
+            if not isinstance(cmd, (list, tuple)) or len(cmd) < 1:
+                continue
+            operation = cmd[0]
+            if operation == Command.CREATE and len(cmd) > 2 and isinstance(cmd[2], dict):
+                tol_id = cmd[2].get('tolerance_id')
+                if tol_id:
+                    tolerance_ids.add(tol_id)
+            elif operation == Command.LINK and len(cmd) > 1 and cmd[1]:
+                tolerance_ids.add(cmd[1])
+            elif operation == Command.SET and len(cmd) > 2 and isinstance(cmd[2], (list, tuple)):
+                tolerance_ids.update([tol_id for tol_id in cmd[2] if tol_id])
+        return tolerance_ids
+
     def _compute_prod_scrap(self):
         for rec in self:
             rec.prod_scrap = 0.09
@@ -79,7 +96,6 @@ class TechnicalSheet(models.Model):
                 ) if 'technical_date' in vals else None
                 vals['name'] = self.env['ir.sequence'].with_company(vals.get('company_id')).next_by_code(
                     'technical.sheet', sequence_date=seq_date) or _("New")
-
         return super().create(vals_list)
     
     def action_done(self):

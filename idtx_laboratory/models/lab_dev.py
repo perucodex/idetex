@@ -81,6 +81,7 @@ class LabDevLine(models.Model):
     sale_order_line_id = fields.Many2one('sale.order.line', string='Sale Order Line')
     state = fields.Selection([
         ('test', 'Test'),
+        ('color', 'Colorfastness'),
         ('approved', 'Approved'),
     ], string='State', default='test', tracking=True)
     available_product_ids = fields.Many2many(
@@ -93,6 +94,7 @@ class LabDevLine(models.Model):
             compute='_compute_display_name',
             store=True,
         )
+    colorfastness_washing_id = fields.Many2one('colorfastness.washing', string='Colorfastness to Washing', ondelete='cascade')
 
     @api.depends('color_code', 'color_name')
     def _compute_display_name(self):
@@ -148,7 +150,29 @@ class LabDevLine(models.Model):
                 #         (rec.color_range_id.code or '') + \
                 #         (rec.color_intensity_id.code or '')
                 
+    @api.model_create_multi
+    def create(self, vals_list):
+        for rec in self:
+            rec.colorfastness_washing_id = self.env['colorfastness.washing'].create({})
+        return super().create(vals_list)
+
     def unlink(self):
         if any(r.state == 'approved' for r in self.color_recipe_ids):
             raise UserError(_('Can\'t delete a lab dev with recipes in approved state.'))
         return super().unlink()
+    
+    # Funcion escondida para actualizar los registros de laboratorio con un registro de solidez al lavado, para pruebas y desarrollo solamente
+    def action_update(self):
+        labs = self.env['lab.dev.line'].search([])
+        for rec in labs:
+            rec.colorfastness_washing_id = self.env['colorfastness.washing'].create({
+                'color_change_degree': 2,
+                'migration_acetate': 2,
+                'migration_cotton': 2,
+                'migration_nylon': 2,
+                'migration_polyester': 2,
+                'migration_acrylic': 2,
+                'migration_wool': 2,
+                'colorfastness_to_dry_rubbing': 2,
+                'colorfastness_to_wet_rubbing': 2,
+            })

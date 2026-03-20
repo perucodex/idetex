@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="colorfastness_washing_form_view" model="ir.ui.view">
+        <field name="name">colorfastness.washing.form</field>
+        <field name="model">colorfastness.washing</field>
+        <field name="arch" type="xml">
+            <form string="Colorfastness Washing">
+                <header>
+                    <button name="mark_done" type="object" string="Done" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="mark_draft" type="object" string="Draft" class="oe_highlight" invisible="state != 'done'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group string="Colorfastness Washing" col="2">
+                        <group colspan="2">
+                            <field name="color_change_degree"/>
+                        </group>
+                        <group>
+                            <field name="migration_acetate"/>
+                            <field name="migration_cotton"/>
+                            <field name="migration_nylon"/>
+                        </group>
+                        <group>
+                            <field name="migration_polyester"/>
+                            <field name="migration_acrylic"/>
+                            <field name="migration_wool"/>
+                        </group>
+                    </group>
+                    <group string="Rubbing Fastness" col="2">
+                        <group>
+                            <field name="colorfastness_to_dry_rubbing"/>
+                            <field name="colorfastness_to_wet_rubbing"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+</odoo>

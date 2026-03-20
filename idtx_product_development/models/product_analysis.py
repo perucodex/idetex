@@ -62,6 +62,14 @@ class ProductAnalysis(models.Model):
     weaving_price = fields.Monetary('Weaving Price')
     # Manejo de producto por estado
     production_state = fields.Char(string='Production State')
+    # Tolerancia de tela
+    width_tolerance = fields.Float('Width Tolerance')
+    density_tolerance = fields.Float('Density Tolerance')
+    width_wash_shrinkage_tolerance_from = fields.Float('Width Wash Shrinkage Tolerance From')
+    width_wash_shrinkage_tolerance_to = fields.Float('Width Wash Shrinkage Tolerance To')
+    lenght_wash_shrinkage_tolerance_from = fields.Float('Length Wash Shrinkage Tolerance From')
+    lenght_wash_shrinkage_tolerance_to = fields.Float('Length Wash Shrinkage Tolerance To')
+    density_stability_twisting_id = fields.Many2one('density.stability.twisting', string='Density Stability Twisting Data')
 
     _check_standard_width = models.Constraint(
         'CHECK(standard_width > 0)',
@@ -138,11 +146,9 @@ class ProductAnalysis(models.Model):
                 ) if 'analysis_date' in vals else None
                 vals['name'] = self.env['ir.sequence'].with_company(vals.get('company_id')).next_by_code(
                     'product.analysis', sequence_date=seq_date) or _('New')
+            vals['density_stability_twisting_id'] = self.env['density.stability.twisting'].create({}).id
         return super().create(vals_list)
-    
-    def write(self, vals):
-        return super().write(vals)
-    
+        
     def action_product(self):
         # Modificamos la línea porque los rectilíneos tambien se venden por kilo
         uom = self.env.ref('uom.product_uom_kgm') #if self.weave_type != 'rect' else self.env.ref('uom.product_uom_unit')
@@ -177,7 +183,7 @@ class ProductAnalysis(models.Model):
                 'route_line_ids': [Command.create({
                     'operation_id': route.operation_id.id,
                     'line_parameter_ids': [Command.create({'name': param.name}) for param in route.operation_id.parameter_ids],
-                }) for route in self.routing_ids.sorted(key=lambda r: r.sequence)]
+                }) for route in self.routing_ids.sorted(key=lambda r: r.sequence)],
             })
             self.technical_sheet_ids += rec.technical_sheet_id
             # bom_id = self.env['mrp.bom'].create({
@@ -260,7 +266,21 @@ class ProductAnalysis(models.Model):
             if row:
                 grid.append(row)
         return grid
-    
+        
+    # Funcion escondida para actualizar los registros de densidad y estabilidad de torsión, para pruebas y desarrollo solamente
+    def action_update(self):
+        analysis = self.env['product.analysis'].search([])
+        for rec in analysis:
+            rec.density_stability_twisting_id = self.env['density.stability.twisting'].create({
+                'density': 0.2,
+                'width': 0.2,
+                'width_shrinkage_from': 0.2,
+                'width_shrinkage_to': 0.2,
+                'length_shrinkage_from': 0.2,
+                'length_shrinkage_to': 0.2,
+                'twist': 0.2,
+            })
+
 class AnalysisWeavingData(models.Model):
     _name = 'analysis.weaving.data'
     _description = 'Analysis Weaving Data'

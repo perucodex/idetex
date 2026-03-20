@@ -43,6 +43,7 @@ y ficha técnica
         'report/report_technical_sheet.xml',
         'report/ir_actions_report.xml',
         'views/configurate_svg_example.xml',
+        'views/density_stability_twisting_views.xml',
         'views/mrp_base_process_views.xml',
         'views/mrp_bom_views.xml',
         'views/mrp_production_views.xml',

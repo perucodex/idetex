@@ -1,8 +1,9 @@
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class ControlTonoEvalLog(models.Model):
     _name = "control.tono.eval.log"
+    _inherit = ["mail.thread", "mail.activity.mixin"]
     _description = "Historial Evaluación Tono"
     _order = "fecha_eval asc, id asc"
 
@@ -14,7 +15,7 @@ class ControlTonoEvalLog(models.Model):
         index=True,
     )
     partida = fields.Char(
-        string="Partida",
+        string="Partida Ref",
         related="pedido_line_id.batch",
         readonly=True,
         store=False,
@@ -62,9 +63,17 @@ class ControlTonoEvalLog(models.Model):
         string="Resultado",
         required=True,
         index=True,
+        tracking=True,
     )
     receta = fields.Char(string="Receta")
     receta_tono = fields.Char(string="Receta Tono", readonly=True)
+    user_has_group_quality_manager = fields.Boolean(compute="_compute_user_has_group_quality_manager")
+
+    @api.depends_context("uid")
+    def _compute_user_has_group_quality_manager(self):
+        has_group = self.env.user.has_group("quality.group_quality_manager")
+        for rec in self:
+            rec.user_has_group_quality_manager = has_group
 
     def unlink(self):
         if self.env.context.get("allow_group_eval_log_unlink"):
@@ -101,3 +110,18 @@ class ControlTonoEvalLog(models.Model):
                     group.unlink()
 
         return result
+    
+    def action_approve(self):
+        motivo_tono = False
+        motivo_tacto = False
+        motivo_apariencia = False
+        self.resultado = "aprobado"
+
+    def action_conciliate(self):
+        self.resultado = "concesionado"
+
+    def action_reject(self):
+        motivo_tono = False
+        motivo_tacto = False
+        motivo_apariencia = False
+        self.resultado = "rechazado"

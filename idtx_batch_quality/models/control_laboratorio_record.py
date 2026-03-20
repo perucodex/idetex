@@ -42,23 +42,18 @@ class ControlLaboratorioRecord(models.Model):
         copy=False,
     )
 
-    _sql_constraints = [
-        (
-            "uniq_laboratorio_eval_number",
-            "unique(pedido_line_id, eval_number)",
-            "El numero de evaluacion ya existe para esta partida.",
-        ),
-        (
-            "uniq_dimrev_eval_link",
-            "unique(est_revirado_eval_id)",
-            "La evaluacion de estabilidad/revirado ya tiene un registro de laboratorio.",
-        ),
-        (
-            "uniq_solidez_lavado_eval_link",
-            "unique(solidez_lavado_eval_id)",
-            "La evaluacion de solidez del color al lavado ya tiene un registro de laboratorio.",
-        ),
-    ]
+    _uniq_laboratorio_eval_number = models.Constraint(
+        "UNIQUE(pedido_line_id, eval_number)",
+        "El numero de evaluacion ya existe para esta partida.",
+    )
+    _uniq_dimrev_eval_link = models.Constraint(
+        "UNIQUE(est_revirado_eval_id)",
+        "La evaluacion de estabilidad/revirado ya tiene un registro de laboratorio.",
+    )
+    _uniq_solidez_lavado_eval_link = models.Constraint(
+        "UNIQUE(solidez_lavado_eval_id)",
+        "La evaluacion de solidez del color al lavado ya tiene un registro de laboratorio.",
+    )
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -297,9 +292,9 @@ class ControlLaboratorioRecord(models.Model):
             if rec.test_type == "dimrev" and rec.est_revirado_eval_id:
                 eval_rec = rec.est_revirado_eval_id
                 if self._has_measure_prefix(eval_rec, "st_l1_"):
-                    value = "1ero Lavado"
+                    value = "1er Lavado"
                 elif self._has_measure_prefix(eval_rec, "st_l3_"):
-                    value = "3ero Lavado"
+                    value = "3er Lavado"
                 elif self._has_measure_prefix(eval_rec, "st_l5_"):
                     value = "5to Lavado"
                 elif self._has_measure_prefix(eval_rec, "st_ln_"):
@@ -317,18 +312,12 @@ class ControlLaboratorioRecord(models.Model):
         report_xmlid = report_map.get(self.test_type)
         if not report_xmlid:
             raise UserError(_("No hay reporte configurado para el tipo de prueba: %s") % (self.test_type or "-"))
-
         if self.test_type == "solidez_lavado" and not self.solidez_lavado_eval_id:
             raise UserError(_("Este registro no tiene evaluación de Solidez del Color al Lavado."))
         if self.test_type == "dimrev" and not self.est_revirado_eval_id:
             raise UserError(_("Este registro no tiene evaluación de Densidad + Estabilidad + Revirado."))
 
         return self.env.ref(report_xmlid).report_action(self)
-
-    # Backward-compatible alias while view/action references are migrated.
-    def action_print_solidez_lavado_report(self):
-        return self.action_print_report()
-
 
 class ControlLaboratorioRecordResult(models.Model):
     _name = "control.laboratorio.record.result"

@@ -15,7 +15,7 @@
     'version': '0.1',
     'license': 'LGPL-3',
 
-    'depends': ['base', "web", "mrp", "idtx_batch_control", 'quality_control'],
+    'depends': ['base', "web", "mrp", "idtx_batch_control", 'quality', 'quality_control', 'idtx_product_development'],
 
     'data': [
         'security/ir.model.access.csv',
@@ -31,10 +31,10 @@
         'views/control_estabilidad_revirado_eval_views.xml',
         'report/dimrev_report.xml',
         'report/solidez_lavado_report.xml',
-        'views/quality_tone_screen.xml',
-        'views/quality_defect_screen.xml',
-        'views/quality_dimrev_screen.xml',
-        'views/quality_solidez_lavado_screen.xml',
+        'views/quality_tone_views.xml',
+        'views/quality_defect_views.xml',
+        'views/quality_dimrev_views.xml',
+        'views/quality_solidez_lavado_views.xml',
         'views/quality_menu.xml',
 
         'wizards/control_tono_wizard.xml',

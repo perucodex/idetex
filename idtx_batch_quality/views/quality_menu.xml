@@ -9,10 +9,11 @@
         </menuitem>
 
         <menuitem id="menu_records" name="Registros" sequence="20">
-            <menuitem id="menu_quality_partida" name="Partidas" action="action_quality_partida" sequence="10"/>
+            <menuitem id="menu_quality_partida" name="Partidas" action="idtx_batch_control.action_control_partida" sequence="10"/>
             <menuitem id="menu_control_tono_eval_log_tacho_acabado" name="Tono Tacho/Acabado" action="action_control_tono_eval_log_tacho_acabado" sequence="20"/>
             <menuitem id="menu_control_tono_eval_group" name="Agrupaciones Tono" action="action_control_tono_eval_group" sequence="30"/>
             <menuitem id="menu_control_estabilidad_revirado_eval" name="Evaluaciones Estabilidad/Revirado" action="action_control_estabilidad_revirado_eval" sequence="40"/>
+            <menuitem id="menu_control_solidez_lavado_eval" name="Evaluaciones Solidez al Lavado" action="action_control_solidez_lavado_eval" sequence="50"/>
         </menuitem>
     </menuitem>
 

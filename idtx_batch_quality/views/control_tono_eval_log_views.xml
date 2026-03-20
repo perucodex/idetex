@@ -27,33 +27,41 @@
         <field name="model">control.tono.eval.log</field>
         <field name="arch" type="xml">
             <form string="Detalle Evaluación Tono">
+                <header>
+                    <button name="action_approve" type="object" string="Aprobar" class="btn-success" invisible="resultado == 'aprobado'" groups="sales_team.group_sale_salesman_all_leads,quality.group_quality_manager"/>
+                   <button name="action_conciliate" type="object" string="Concesionar" class="btn-warning" invisible="resultado == 'concesionado'" groups="sales_team.group_sale_salesman_all_leads,quality.group_quality_manager"/>
+                    <button name="action_reject" type="object" string="Rechazar" class="btn-danger" invisible="resultado == 'rechazado'" groups="sales_team.group_sale_salesman_all_leads,quality.group_quality_manager"/>
+                    <field name="resultado" widget="statusbar"/>
+                </header>
                 <sheet>
                     <group>
                         <group>
                             <field name="fecha_eval" readonly="1"/>
                             <field name="user_id" readonly="1"/>
                             <field name="tono" readonly="1"/>
+                            <field name="user_has_group_quality_manager" invisible="1"/>
                         </group>
                         <group invisible="tono != 'tacho'">
                             <field name="receta" string="Receta Laboratorio" readonly="1"/>
-                            <field name="receta_tono" string="Receta Tacho" readonly="1"/>
+                            <field name="receta_tono" string="Receta Tacho" readonly="not user_has_group_quality_manager"/>
                             <field name="resultado" readonly="1"/>
                         </group>
                         <group invisible="tono != 'acabado'">
-                            <field name="motivo_tono" string="Tono" readonly="1"/>
-                            <field name="motivo_tacto" string="Tacto" readonly="1"/>
-                            <field name="motivo_apariencia" string="Apariencia" readonly="1"/>
+                            <field name="motivo_tono" string="Tono" readonly="not user_has_group_quality_manager or resultado != 'concesionado'"/>
+                            <field name="motivo_tacto" string="Tacto" readonly="not user_has_group_quality_manager or resultado != 'concesionado'"/>
+                            <field name="motivo_apariencia" string="Apariencia" readonly="not user_has_group_quality_manager or resultado != 'concesionado'"/>
                             <field name="receta" string="Receta Acabado" readonly="1"/>
-                            <field name="receta_tono" string="Receta Tacho" readonly="1"/>
+                            <field name="receta_tono" string="Receta Tacho" readonly="not user_has_group_quality_manager"/>
                             <field name="resultado" readonly="1"/>
                         </group>
                         <group invisible="tono != 'secado'">
                             <field name="receta" string="Receta Secado" readonly="1"/>
-                            <field name="receta_tono" string="Receta Tacho" readonly="1"/>
+                            <field name="receta_tono" string="Receta Tacho" readonly="not user_has_group_quality_manager"/>
                             <field name="resultado" readonly="1"/>
                         </group>
                     </group>
                 </sheet>
+                <chatter/>
             </form>
         </field>
     </record>

@@ -118,6 +118,7 @@
             <field name="arch" type="xml">
                 <form>
                     <header>
+                        <!-- <button name="action_update" type="object" string="Update" class="oe_highlight"/> -->
                         <field name="state" widget="statusbar"/>
                     </header>
                     <sheet>
@@ -133,6 +134,7 @@
                                 <field name="color" widget="color" readonly="color_recipe_ids" force_save="1"/>
                                 <field name="color" string="Hex" readonly="color_recipe_ids" force_save="1"/>
                                 <!-- <field name="bath_ratio" readonly="color_recipe_ids" force_save="1"/> -->
+                                <field name="colorfastness_washing_id" readonly="1" force_save="1"/>
                             </group>   
                             <group colspan="2" string="Color Code Composition">
                                 <group>

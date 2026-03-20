@@ -83,6 +83,11 @@ def _settle_order_dbf(filename, order, is_active):
     finally:
         table.close()
 
+
+def _barcodreo_rank(value):
+    """Return a numeric rank for BarCodReo values so we can keep the latest one."""
+    return _safe_float(value) or 0.0
+
 FIRST_AREA = {'PRE TINTORERIA', 'TEJEDURIA'}
 SECOND_AREA = {'TINTORERIA', 'PRE ESTAMPADO'}
 THIRD_AREA = {'ESTAMPADO', 'PRE ACABADO'}
@@ -266,8 +271,10 @@ class ControlPedido(models.Model):
                 pedido_id = line.pedido_id.id
                 if pedido_id not in existing_lines_by_pedido:
                     existing_lines_by_pedido[pedido_id] = {}
-                key = (line.route, line.barcodreo, line.batch)
-                existing_lines_by_pedido[pedido_id][key] = line
+                key = (line.route, line.batch, line.codpro)
+                current = existing_lines_by_pedido[pedido_id].get(key)
+                if not current or _barcodreo_rank(line.barcodreo) >= _barcodreo_rank(current.barcodreo):
+                    existing_lines_by_pedido[pedido_id][key] = line
         conn = self._get_sql_connection()
         try:
             cursor = conn.cursor()
@@ -299,6 +306,20 @@ class ControlPedido(models.Model):
                 cursor.execute(query, *nums_batch)
                 cols = [c[0] for c in cursor.description]
                 rows.extend([dict(zip(cols, row)) for row in cursor.fetchall()])
+            # Keep only the latest reprocess number for each logical partida line.
+            latest_rows = {}
+            for row in rows:
+                dedup_key = (
+                    _safe_str(row.get("Pedido")),
+                    _safe_str(row.get("Partida")),
+                    _safe_str(row.get("HojaDeRuta")),
+                    _safe_str(row.get("BarSer")),
+                )
+                current = latest_rows.get(dedup_key)
+                if not current or _barcodreo_rank(row.get("BarCodReo")) >= _barcodreo_rank(current.get("BarCodReo")):
+                    latest_rows[dedup_key] = row
+            rows = list(latest_rows.values())
+
             barcods = set()
             for r in rows:
                 bc = _safe_str(r.get("HojaDeRuta"))
@@ -349,10 +370,12 @@ class ControlPedido(models.Model):
             bcpar = _safe_str(dr.get("BarCodPar")) or ''
             key = (bc, bcreo, bcpar)
             if key in processes_by_valid_key: vals_line["proceso_ids"] = processes_by_valid_key[key]
-            line_key = (vals_line.get("route"), vals_line.get("barcodreo"), vals_line.get("batch"))
+            line_key = (vals_line.get("route"), vals_line.get("batch"), vals_line.get("codpro"))
             existing_line = existing_lines_by_pedido.get(pedido.id, {}).get(line_key)
             if existing_line:
-                existing_line.write({'codpro': vals_line.get('codpro'), 'rollos': vals_line.get('rollos'), 'kilograms': vals_line.get('kilograms'), 'process': vals_line.get('process'), 'area': vals_line.get('area'), 'start_date': vals_line.get('start_date'), 'end_date': vals_line.get('end_date')})
+                existing_line.write({'product_id': vals_line.get('product_id'),'labe_dev_line_id': vals_line.get('labe_dev_line_id'),'codpro': vals_line.get('codpro'), 'rollos': vals_line.get('rollos'), 'kilograms': vals_line.get('kilograms'), 'process': vals_line.get('process'), 'area': vals_line.get('area'), 'start_date': vals_line.get('start_date'), 'end_date': vals_line.get('end_date')})
+                if vals_line.get('barcodreo') != existing_line.barcodreo:
+                    existing_line.barcodreo = vals_line.get('barcodreo')
                 if "proceso_ids" in vals_line and vals_line["proceso_ids"]:
                     existing_procs = {proc.barOrdLin: proc for proc in existing_line.proceso_ids}
                     for cmd in vals_line["proceso_ids"]:

@@ -49,6 +49,7 @@
                                 <field name="weave_type" required="1" readonly="state != 'test'"/>
                                 <field name="currency_id" invisible="1"/>
                                 <field name="weaving_price" groups="idtx_product_development.group_module_product_development_price_editor"/>
+                                <field name="density_stability_twisting_id" readonly="1"/>
                             </group>
                             <group>
                                 <field name="gauge_id" required="1" options="{'no_open': True}" readonly="state != 'test'"/>

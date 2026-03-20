@@ -19,3 +19,4 @@ access_configurate_svg_example,access_configurate_svg_example,model_configurate_
 access_mrp_base_process,access_mrp_base_process,model_mrp_base_process,base.group_user,1,1,1,1
 access_mrp_base_process_line,access_mrp_base_process_line,model_mrp_base_process_line,base.group_user,1,1,1,1
 access_split_roll,split_roll,model_split_roll,base.group_user,1,1,1,1
+access_density_stability_twisting,density_stability_twisting,model_density_stability_twisting,base.group_user,1,1,1,1

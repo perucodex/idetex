@@ -17,4 +17,12 @@
         <field name="company_id" eval="False"/>
     </record>
 
+    <record id="seq_density_stability_twisting" model="ir.sequence">
+        <field name="name">Density Stability Twisting</field>
+        <field name="code">density.stability.twisting</field>
+        <field name="prefix">DST</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+    
 </odoo>

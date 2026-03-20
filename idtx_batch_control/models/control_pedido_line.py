@@ -11,6 +11,7 @@ class ControlPedidoLine(models.Model):
     pedido_id = fields.Many2one("control.pedido", required=True, ondelete="cascade")
     route = fields.Char(string="Route")
     codpro = fields.Char('Codigo Producto')
+    product_id = fields.Many2one('product.template', string='Product')
     description = fields.Char('Articulo')
     barcodreo = fields.Char('Reprocess')
     batch = fields.Char('Batch')
@@ -22,6 +23,7 @@ class ControlPedidoLine(models.Model):
     end_date = fields.Datetime('End Date')
     colorcode = fields.Char('Color Code')
     colorname = fields.Char('Color Name')
+    labe_dev_line_id = fields.Many2one('lab.dev.line', string='Lab Dev')
 
     proceso_ids = fields.One2many(
         "control.proceso.lines",
@@ -40,6 +42,9 @@ class ControlPedidoLine(models.Model):
         if end and end.year <= 1753:
             end = False
 
+        product = self.env['product.template'].search([('default_code', '=', _safe_str(dr["BarSer"])[1:])], limit=1)
+        lav_dev_line = self.env['lab.dev.line'].search([('color_code', '=', _safe_str(dr["ColorCode"]))], limit=1)  
+
         return {
             "route": _safe_str(dr["HojaDeRuta"]),
             "barcodreo": _safe_str(dr["BarCodReo"]) or '',
@@ -54,6 +59,8 @@ class ControlPedidoLine(models.Model):
             "end_date": end,
             "colorcode": _safe_str(dr["ColorCode"]),
             "colorname": _safe_str(dr["ColorName"]),
+            "product_id": product.id if product else False,
+            "labe_dev_line_id": lav_dev_line.id if lav_dev_line else False,
         }
 
     def action_open_start_wizard(self):

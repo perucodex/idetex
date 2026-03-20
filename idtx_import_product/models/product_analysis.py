@@ -271,7 +271,7 @@ class ProductAnalysis(models.Model):
                         articulo
                 ) TP 
                     ON tcr.ficha = tp.ficha
-                WHERE tcr.fecha >= '2020-01-01'
+                WHERE tcr.fecha >= '2000-01-01'
                 -- and tcr.ficha = '19497-26'
                 and len(tcr.cdgart) = 16
                 ORDER BY

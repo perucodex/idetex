@@ -23,6 +23,9 @@
         <field name="model">control.estabilidad.revirado.eval</field>
         <field name="arch" type="xml">
             <form string="Evaluacion Estabilidad y Revirado">
+                <header>
+                    <button name="action_print_report" type="object" string="Imprimir" class="btn-primary" invisible="not id"/>
+                </header>
                 <sheet>
                     <group>
                         <group>
