@@ -112,16 +112,16 @@ class ControlTonoEvalLog(models.Model):
         return result
     
     def action_approve(self):
-        motivo_tono = False
-        motivo_tacto = False
-        motivo_apariencia = False
+        self.motivo_tono = False
+        self.motivo_tacto = False
+        self.motivo_apariencia = False
         self.resultado = "aprobado"
 
     def action_conciliate(self):
         self.resultado = "concesionado"
 
     def action_reject(self):
-        motivo_tono = False
-        motivo_tacto = False
-        motivo_apariencia = False
+        self.motivo_tono = False
+        self.motivo_tacto = False
+        self.motivo_apariencia = False
         self.resultado = "rechazado"

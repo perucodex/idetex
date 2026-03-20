@@ -6,15 +6,15 @@ class ColorfastnessWashing(models.Model):
     _description = 'Colorfastness to Washing'
 
     name = fields.Char('Name', required=True, default=lambda self: _('New'), copy=False)
-    color_change_degree = fields.Float('Color Change Degree')
-    migration_acetate = fields.Float('Acetate')
-    migration_cotton = fields.Float('Cotton')
-    migration_nylon = fields.Float('Nylon')
-    migration_polyester = fields.Float('Polyester')
-    migration_acrylic = fields.Float('Acrylic')
-    migration_wool = fields.Float('Wool')
-    colorfastness_to_dry_rubbing = fields.Float('Dry')
-    colorfastness_to_wet_rubbing = fields.Float('Wet')
+    color_change_degree = fields.Float('Color Change Degree', default=0.04)
+    migration_acetate = fields.Float('Acetate', default=0.03)
+    migration_cotton = fields.Float('Cotton', default=0.03)
+    migration_nylon = fields.Float('Nylon', default=0.03)
+    migration_polyester = fields.Float('Polyester', default=0.03)
+    migration_acrylic = fields.Float('Acrylic', default=0.03)
+    migration_wool = fields.Float('Wool', default=0.03)
+    colorfastness_to_dry_rubbing = fields.Float('Dry', default=0.04)
+    colorfastness_to_wet_rubbing = fields.Float('Wet', default=0.03)
     state = fields.Selection([
         ('draft', 'Draft'),
         ('done', 'Done'),

@@ -166,13 +166,13 @@ class LabDevLine(models.Model):
         labs = self.env['lab.dev.line'].search([])
         for rec in labs:
             rec.colorfastness_washing_id = self.env['colorfastness.washing'].create({
-                'color_change_degree': 2,
-                'migration_acetate': 2,
-                'migration_cotton': 2,
-                'migration_nylon': 2,
-                'migration_polyester': 2,
-                'migration_acrylic': 2,
-                'migration_wool': 2,
-                'colorfastness_to_dry_rubbing': 2,
-                'colorfastness_to_wet_rubbing': 2,
+                'color_change_degree': 4,
+                'migration_acetate': 3,
+                'migration_cotton': 3,
+                'migration_nylon': 3,
+                'migration_polyester': 3,
+                'migration_acrylic': 3,
+                'migration_wool': 3,
+                'colorfastness_to_dry_rubbing': 4,
+                'colorfastness_to_wet_rubbing': 3,
             })
