@@ -128,7 +128,7 @@ class StockQuantImport(models.Model):
             product = Product.search([('default_code', '=', row.product_code)], limit=1)
             if not product:
                 uom = self.env.ref('uom.product_uom_kgm')
-                product = self.env['product.template'].create({
+                product_template = self.env['product.template'].create({
                     'name': row.product_name,
                     'type': 'consu',
                     'is_storable': True,
@@ -140,6 +140,11 @@ class StockQuantImport(models.Model):
                     'route_ids': [Command.link(self.env.ref('mrp.route_warehouse0_manufacture').id)],
                     'available_in_pos': True
                 })
+                product = product_template.product_variant_id
+            else:
+                # Asegurar que esté disponible en PdV aunque ya exista
+                product.product_tmpl_id.available_in_pos = True
+
             if row.color_code:
                 color = Color.search([('color_code','=', row.color_code)], limit=1)
             else:
@@ -174,15 +179,25 @@ class StockQuantImport(models.Model):
                     'state': 'batch',
                 })
 
-            # Crear rollo
-            roll = self.env['mrp.production.roll'].create({
-                'batch_id': batch.id,
-                'product_id': product.id,
-                'quantity': 1,
-                'gross_weight': row.quantity,
-                'net_weight': row.quantity,
-            })
-            roll.name = row.ref
+            # Buscar rollo existente para evitar duplicados
+            roll = self.env['mrp.production.roll'].search([('name', '=', row.ref), ('product_id', '=', product.id)], limit=1)
+            if not roll:
+                # Crear rollo
+                roll = self.env['mrp.production.roll'].create({
+                    'batch_id': batch.id,
+                    'product_id': product.id,
+                    'quantity': 1,
+                    'gross_weight': row.quantity,
+                    'net_weight': row.quantity,
+                })
+                roll.name = row.ref
+            else:
+                # Actualizar pesos si ya existe
+                roll.write({
+                    'batch_id': batch.id,
+                    'gross_weight': row.quantity,
+                    'net_weight': row.quantity,
+                })
             
             lot = Lote.search([('name','=', row.lot_name),('product_id','=', product.id)])
             if not lot:
@@ -228,36 +243,38 @@ class StockQuantImport(models.Model):
                     continue
 
                 product = Product.search([('default_code', '=', row.product_code)], limit=1)
-                lot = Lote.search([('name', '=', row.lot_name), ('product_id', '=', product.id)], limit=1) if product else False
+                lots = Lote.search([('name', '=', row.lot_name), ('product_id', '=', product.id)]) if product else False
 
                 # 1. Reverse Stock
-                if product and lot:
-                    quant = StockQuant.search([
-                        ('product_id', '=', product.id),
-                        ('location_id', '=', rec.location_id.id),
-                        ('lot_id', '=', lot.id)
-                    ], limit=1)
-                    if quant:
-                        quant.inventory_quantity = quant.quantity - float(row.quantity)
-                        quant.action_apply_inventory()
+                if product and lots:
+                    for lot in lots:
+                        quant = StockQuant.search([
+                            ('product_id', '=', product.id),
+                            ('location_id', '=', rec.location_id.id),
+                            ('lot_id', '=', lot.id)
+                        ], limit=1)
+                        if quant:
+                            quant.inventory_quantity = quant.quantity - float(row.quantity)
+                            quant.action_apply_inventory()
 
-                # 2. Delete Roll
+                # 2. Delete Rolls
                 if product:
-                    roll = Roll.search([('name', '=', row.ref), ('product_id', '=', product.id)], limit=1)
-                    if roll:
+                    rolls = Roll.search([('name', '=', row.ref), ('product_id', '=', product.id)])
+                    for roll in rolls:
                         try:
                             with self.env.cr.savepoint():
                                 roll.unlink()
                         except Exception:
                             pass
 
-                # 3. Delete Lot
-                if lot:
-                    try:
-                        with self.env.cr.savepoint():
-                            lot.unlink()
-                    except Exception:
-                        pass
+                # 3. Delete Lots
+                if lots:
+                    for lot in lots:
+                        try:
+                            with self.env.cr.savepoint():
+                                lot.unlink()
+                        except Exception:
+                            pass
 
                 # 4. Delete Batch
                 if row.ident_lot:
