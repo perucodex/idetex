@@ -72,8 +72,8 @@
                             <field name="route" readonly="1"/>
                             <field name="barcodreo" readonly="1"/>
                             <field name="codpro" readonly="1" invisible="product_id"/>
+                            <field name="description" readonly="1" invisible="product_id"/>
                             <field name="product_id" readonly="1" invisible="not product_id"/>
-                            <field name="description" readonly="1"/>
                             <field name="process" readonly="1"/>
                             <field name="area" readonly="1"/>
                         </group>
@@ -83,8 +83,8 @@
                             <field name="start_date" readonly="1"/>
                             <field name="end_date" readonly="1"/>
                             <field name="colorcode" readonly="1" invisible="labe_dev_line_id"/>
+                            <field name="colorname" readonly="1" invisible="labe_dev_line_id"/>
                             <field name="labe_dev_line_id" readonly="1" invisible="not labe_dev_line_id"/>
-                            <field name="colorname" readonly="1"/>
                         </group>
                     </group>
                     <notebook>
