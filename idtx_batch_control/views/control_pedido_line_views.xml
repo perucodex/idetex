@@ -105,13 +105,13 @@
                                     <field name="previous_finished" column_invisible="1"/>
                                     
                                     <button name="action_edit_process" type="object" icon="fa-edit" class="btn-secondary" 
-                                            invisible="state != 'ready'" title="edit"/>
+                                            invisible="state != 'ready'" title="edit" groups="mrp.group_mrp_manager"/>
                                     
                                     <button name="action_start_with_wizard" type="object" icon="fa-play" class="btn-primary" 
-                                            invisible="state != 'ready'" title="play"/>
+                                            invisible="state != 'ready'" title="play" groups="mrp.group_mrp_manager"/>
                                             
                                     <button name="action_finish" type="object" confirm="¿Estás seguro de finalizar el proceso?" icon="fa-check" class="btn-success" 
-                                            invisible="state != 'in_progress'" title="finalizar"/>
+                                            invisible="state != 'in_progress'" title="finalizar" groups="mrp.group_mrp_manager"/>
                                 </list>
                             </field>
                         </page>
