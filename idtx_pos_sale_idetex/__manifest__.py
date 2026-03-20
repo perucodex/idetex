@@ -9,6 +9,8 @@
     # Categoría dentro de las aplicaciones de Odoo
     'category': 'Point of Sale',
     
+    'author': "Ricardo Marcelo",
+    
     # Resumen rápido de la funcionalidad
     'summary': 'Sustituye botones de productos por lista detallada de existencias.',
     
