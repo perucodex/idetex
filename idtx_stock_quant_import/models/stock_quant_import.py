@@ -145,9 +145,11 @@ class StockQuantImport(models.Model):
                 # Asegurar que esté disponible en PdV aunque ya exista
                 product.product_tmpl_id.available_in_pos = True
 
-            if row.color_code:
+            if row.color_name:
+                color = Color.search([('color_name','ilike', '%' + row.color_name + '%')], limit=1)
+            elif row.color_code:
                 color = Color.search([('color_code','=', row.color_code)], limit=1)
-            else:
+            elif row.color_name:
                 color = Color.search([('color_code','=', row.color_code),('color_name','=', row.color_name)], limit=1)
                 row.color_code = '00000000'
             if not color:
