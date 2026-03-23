@@ -28,9 +28,10 @@
         <field name="arch" type="xml">
             <form string="Detalle Evaluación Tono">
                 <header>
-                    <button name="action_approve" type="object" string="Aprobar" class="btn-success" invisible="resultado == 'aprobado'" groups="sales_team.group_sale_salesman_all_leads,quality.group_quality_manager"/>
-                   <button name="action_conciliate" type="object" string="Concesionar" class="btn-warning" invisible="resultado == 'concesionado'" groups="sales_team.group_sale_salesman_all_leads,quality.group_quality_manager"/>
-                    <button name="action_reject" type="object" string="Rechazar" class="btn-danger" invisible="resultado == 'rechazado'" groups="sales_team.group_sale_salesman_all_leads,quality.group_quality_manager"/>
+                    <button name="action_approve" type="object" string="Aprobar" class="btn-success" invisible="resultado == 'aprobado'" groups="quality.group_quality_manager"/>
+                   <button name="action_conciliate" type="object" string="Concesionar" class="btn-warning" invisible="resultado == 'concesionado'" groups="quality.group_quality_manager"/>
+                   <button name="action_conciliate" type="object" string="Concesionar" class="btn-warning" invisible="resultado != 'rechazado'" groups="sales_team.group_sale_salesman_all_leads"/>
+                    <button name="action_reject" type="object" string="Rechazar" class="btn-danger" invisible="resultado == 'rechazado'" groups="quality.group_quality_manager"/>
                     <field name="resultado" widget="statusbar"/>
                 </header>
                 <sheet>

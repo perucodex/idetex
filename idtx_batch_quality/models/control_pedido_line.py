@@ -246,9 +246,38 @@ class ControlPedidoLine(models.Model):
         self.ensure_one()
         return True
 
+    @staticmethod
+    def _tono_barcodreo_rank(value):
+        try:
+            return float((value or "").strip())
+        except (TypeError, ValueError, AttributeError):
+            return 0.0
+
     def _get_tono_tablet_state(self):
         self.ensure_one()
-        logs = self.tono_eval_log_ids
+        all_logs = self.tono_eval_log_ids
+        current_rank = self._tono_barcodreo_rank(self.barcodreo)
+
+        same_cycle_logs = all_logs.filtered(
+            lambda l: self._tono_barcodreo_rank(l.barcodreo) == current_rank
+        )
+
+        tacho_final_logs = all_logs.filtered(
+            lambda l: l.tono == "tacho" and l.resultado in ("aprobado", "concesionado")
+        )
+        max_tacho_rank = max(
+            (self._tono_barcodreo_rank(log.barcodreo) for log in tacho_final_logs),
+            default=0.0,
+        )
+
+        if same_cycle_logs:
+            logs = same_cycle_logs
+        elif current_rank > max_tacho_rank:
+            # New reprocess cycle: allow starting again from Tacho.
+            logs = self.env["control.tono.eval.log"]
+        else:
+            logs = all_logs
+
         tacho_ok = any(l.tono == "tacho" and l.resultado in ("aprobado", "concesionado") for l in logs)
         secado_final = any(l.tono == "secado" and l.resultado in ("aprobado", "concesionado") for l in logs)
         acabado_final = any(l.tono == "acabado" and l.resultado in ("aprobado", "concesionado") for l in logs)
@@ -386,10 +415,20 @@ class ControlPedidoLine(models.Model):
         safe_limit = min(max(int(limit or 20), 1), 500)
         lines = self.search(domain, order="batch desc, id desc", limit=safe_limit)
 
+        tacho_done_line_ids = set(
+            self.env["control.tono.eval.log"].search([
+                ("pedido_line_id", "in", lines.ids),
+                ("tono", "=", "tacho"),
+                ("resultado", "in", ["aprobado", "concesionado"]),
+            ]).mapped("pedido_line_id").ids
+        )
+
         grouped = {}
         for line in lines:
             batch_key = (line.batch or "").strip()
-            group_key = batch_key or f"line_{line.id}"
+            is_rect = line.product_id.analysis_id.weave_type == "rect"
+            has_tacho_done = line.id in tacho_done_line_ids
+            group_key = f"line_{line.id}" if (is_rect or has_tacho_done) else (batch_key or f"line_{line.id}")
             if group_key not in grouped:
                 grouped[group_key] = self.browse()
             grouped[group_key] |= line
@@ -401,6 +440,20 @@ class ControlPedidoLine(models.Model):
             state = first._get_tono_state_for_lines(group_lines)
             available_modes = state.get("available_modes") or ([] if not state.get("mode") else [state.get("mode")])
             mode_label = " / ".join(mode_labels.get(m, m) for m in available_modes) if available_modes else "No disponible"
+
+            if len(group_lines) > 1:
+                product_names = [
+                    (line.product_id.display_name or line.description or "")
+                    for line in group_lines
+                    if (line.product_id.display_name or line.description)
+                ]
+                unique_names = list(dict.fromkeys(product_names))
+                article_value = "Agrupado: %s" % ", ".join(unique_names) if unique_names else "Agrupado"
+            elif first.product_id.analysis_id.weave_type == "rect":
+                article_value = first.product_id.display_name or first.description or ""
+            else:
+                article_value = first.description or ""
+
             payloads.append({
                 "id": group_key,
                 "line_ids": group_lines.ids,
@@ -408,7 +461,7 @@ class ControlPedidoLine(models.Model):
                 "label": f"{first.batch or '-'} | {first.pedido_id.customer or '-'}",
                 "batch": first.batch or "",
                 "customer": first.pedido_id.customer or "",
-                "article": first.description or "",
+                "article": article_value,
                 "color_name": first.colorname or "",
                 "color_code": first.colorcode or "",
                 "kilograms": float(sum(group_lines.mapped("kilograms")) or 0.0),
@@ -547,10 +600,20 @@ class ControlPedidoLine(models.Model):
             line_receta_tono = receta_tono
             if selected_mode in ("secado", "acabado"):
                 ultimo_tacho = self.env["control.tono.eval.log"].search(
-                    [("pedido_line_id", "=", line.id), ("tono", "=", "tacho")],
+                    [
+                        ("pedido_line_id", "=", line.id),
+                        ("tono", "=", "tacho"),
+                        ("barcodreo", "=", line.barcodreo or ""),
+                    ],
                     order="fecha_eval desc, id desc",
                     limit=1,
                 )
+                if not ultimo_tacho:
+                    ultimo_tacho = self.env["control.tono.eval.log"].search(
+                        [("pedido_line_id", "=", line.id), ("tono", "=", "tacho")],
+                        order="fecha_eval desc, id desc",
+                        limit=1,
+                    )
                 line_receta_tono = (ultimo_tacho.receta_tono or receta_tono).strip() if selected_mode == "acabado" else ""
 
             self.env["control.tono.eval.log"].sudo().create({
@@ -563,6 +626,7 @@ class ControlPedidoLine(models.Model):
                 "resultado": decision,
                 "receta_tono": line_receta_tono,
                 "receta": receta,
+                "barcodreo": line.barcodreo or "",
                 "user_id": self.env.user.id,
             })
 

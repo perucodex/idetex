@@ -272,9 +272,9 @@ class ControlPedido(models.Model):
                 if pedido_id not in existing_lines_by_pedido:
                     existing_lines_by_pedido[pedido_id] = {}
                 key = (line.route, line.batch, line.codpro)
-                current = existing_lines_by_pedido[pedido_id].get(key)
-                if not current or _barcodreo_rank(line.barcodreo) >= _barcodreo_rank(current.barcodreo):
-                    existing_lines_by_pedido[pedido_id][key] = line
+                if key not in existing_lines_by_pedido[pedido_id]:
+                    existing_lines_by_pedido[pedido_id][key] = self.env["control.pedido.line"]
+                existing_lines_by_pedido[pedido_id][key] |= line
         conn = self._get_sql_connection()
         try:
             cursor = conn.cursor()
@@ -371,16 +371,32 @@ class ControlPedido(models.Model):
             key = (bc, bcreo, bcpar)
             if key in processes_by_valid_key: vals_line["proceso_ids"] = processes_by_valid_key[key]
             line_key = (vals_line.get("route"), vals_line.get("batch"), vals_line.get("codpro"))
-            existing_line = existing_lines_by_pedido.get(pedido.id, {}).get(line_key)
-            if existing_line:
-                existing_line.write({'product_id': vals_line.get('product_id'),'labe_dev_line_id': vals_line.get('labe_dev_line_id'),'codpro': vals_line.get('codpro'), 'rollos': vals_line.get('rollos'), 'kilograms': vals_line.get('kilograms'), 'process': vals_line.get('process'), 'area': vals_line.get('area'), 'start_date': vals_line.get('start_date'), 'end_date': vals_line.get('end_date')})
-                if vals_line.get('barcodreo') != existing_line.barcodreo:
-                    existing_line.barcodreo = vals_line.get('barcodreo')
+            existing_lines = existing_lines_by_pedido.get(pedido.id, {}).get(line_key)
+            if existing_lines:
+                target_line = existing_lines.sorted(
+                    key=lambda l: (_barcodreo_rank(l.barcodreo), l.id),
+                    reverse=True,
+                )[:1]
+                write_vals = {
+                    'product_id': vals_line.get('product_id'),
+                    'labe_dev_line_id': vals_line.get('labe_dev_line_id'),
+                    'codpro': vals_line.get('codpro'),
+                    'rollos': vals_line.get('rollos'),
+                    'kilograms': vals_line.get('kilograms'),
+                    'process': vals_line.get('process'),
+                    'area': vals_line.get('area'),
+                    'start_date': vals_line.get('start_date'),
+                    'end_date': vals_line.get('end_date'),
+                    'barcodreo': vals_line.get('barcodreo'),
+                }
+                # Keep existing rows but normalize all of them to newest data/barcodreo.
+                existing_lines.write(write_vals)
+
                 if "proceso_ids" in vals_line and vals_line["proceso_ids"]:
-                    existing_procs = {proc.barOrdLin: proc for proc in existing_line.proceso_ids}
+                    existing_procs = {proc.barOrdLin: proc for proc in target_line.proceso_ids}
                     for cmd in vals_line["proceso_ids"]:
                         vals_proc = cmd[2].copy()
-                        vals_proc['pedido_line_id'] = existing_line.id
+                        vals_proc['pedido_line_id'] = target_line.id
                         proc_key = vals_proc.get('barOrdLin')
                         if proc_key in existing_procs: existing_procs[proc_key].write(vals_proc)
                         else: process_vals_to_create.append(vals_proc)

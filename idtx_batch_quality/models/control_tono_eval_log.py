@@ -67,6 +67,7 @@ class ControlTonoEvalLog(models.Model):
     )
     receta = fields.Char(string="Receta")
     receta_tono = fields.Char(string="Receta Tono", readonly=True)
+    barcodreo = fields.Char(string="Reprocess", readonly=True)
     user_has_group_quality_manager = fields.Boolean(compute="_compute_user_has_group_quality_manager")
 
     @api.depends_context("uid")

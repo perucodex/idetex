@@ -48,13 +48,13 @@
                             <field name="area"/>
                             <div class="oe_button_box" name="button_box">
 
-                            <button type="object" class="oe_stat_button" icon="fa-balance-scale">
+                            <!-- <button type="object" class="oe_stat_button" icon="fa-balance-scale">
                                 <field name="total_weight" widget="statinfo" string="Kilos Totales"/>
                             </button>
 
                             <button type="object" class="oe_stat_button" icon="fa-industry">
                                 <field name="produced_weight" widget="statinfo" string="Kilos Producidos"/>
-                            </button>
+                            </button> -->
 
                         </div>
                            <!-- <field name="total_weight" readonly="1"/>

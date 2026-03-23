@@ -94,6 +94,7 @@
                                                                             <div class="o_qts_dropdown_main" t-esc="partida.batch || '-'"/>
                                                                             <div class="o_qts_dropdown_sub">
                                                                                 <span t-esc="partida.customer || '-'"/> ·
+                                                                                <span t-esc="partida.article || '-'"/> ·
                                                                                 <span t-esc="(partida.kilograms || 0) + ' kg'"/> ·
                                                                                 <span t-esc="partida.mode_label || 'No disponible'"/>
                                                                             </div>
