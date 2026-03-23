@@ -27,16 +27,19 @@
                     </group>
                     <notebook>
                         <page string="Imported Quants">
-                            <field name="line_ids" readonly="1">
-                                <list decoration-danger="red_flag">
-                                    <field name="product_code"/>
-                                    <field name="product_name"/>
-                                    <field name="color_code"/>
-                                    <field name="color_name"/>
-                                    <field name="ref"/>
-                                    <field name="lot_name"/>
-                                    <field name="location_id"/>
-                                    <field name="quantity" sum="Total"/>
+                            <field name="line_ids">
+                                <list decoration-danger="red_flag" editable="top">
+                                    <field name="product_code" readonly="1"/>
+                                    <field name="product_name" readonly="1"/>
+                                    <field name="color_id"/>
+                                    <field name="recipe_color_code" readonly="1" force_save="1" decoration-success="recipe_color_code == color_code" decoration-danger="recipe_color_code != color_code"/>
+                                    <field name="recipe_color_name" readonly="1" force_save="1" decoration-success="recipe_color_name == color_name" decoration-danger="recipe_color_name != color_name"/>
+                                    <field name="color_code" readonly="1"/>
+                                    <field name="color_name" readonly="1"/>
+                                    <field name="ref" readonly="1"/>
+                                    <field name="lot_name" readonly="1"/>
+                                    <field name="location_id" readonly="1"/>
+                                    <field name="quantity" sum="Total" readonly="1"/>
                                 </list>
                             </field>
                         </page>

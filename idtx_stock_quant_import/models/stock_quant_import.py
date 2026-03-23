@@ -17,7 +17,7 @@ class StockQuantImport(models.Model):
     filename = fields.Char()
     state = fields.Selection([('draft', 'Draft'), ('process','Process'), ('done', 'Done')],
                              default='draft', string='Status', copy=False)
-    line_ids = fields.One2many('stock.quant.import.line','import_id', string='Lines', readonly=True)
+    line_ids = fields.One2many('stock.quant.import.line','import_id', string='Lines')
     item_count = fields.Integer(string='Items', compute='_compute_totals', store=True)
     total_weight = fields.Float(string='Total Kilos', compute='_compute_totals', store=True)
 
@@ -89,12 +89,15 @@ class StockQuantImport(models.Model):
 
                 if not (product_code and qty):
                     continue
+                
+                color = self.env['color.recipe'].search([('color_code','=', row[header['color'] - 1].strip())], limit=1)
 
                 # Línea de auditoría
                 vals_list.append({
                     'import_id': rec.id,
                     'product_code': product_code,
                     'product_name': product_name,
+                    'color_id': color.id if color else False,
                     'color_code': color_code,
                     'color_name': color_name,
                     'ref': refe_interna,
@@ -322,6 +325,9 @@ class StockQuantImportLine(models.Model):
     import_id = fields.Many2one('stock.quant.import', ondelete='cascade')
     product_code = fields.Char('Product Code')
     product_name = fields.Char('Product Name')
+    color_id = fields.Many2one('color.recipe', string='Color')
+    recipe_color_code = fields.Char(related='color_id.color_code', string='Color Code')
+    recipe_color_name = fields.Char(related='color_id.color_name', string='Color Name')
     color_code = fields.Char('Color Code')
     color_name = fields.Char('Color Name')
     ref = fields.Char('Reference')
