@@ -98,7 +98,7 @@ class PosClosingControlReport(models.AbstractModel):
                 
                 # Truncamos strings solo para el reporte (visualización)
                 p_name = (line.product_id.name or '')[:25]
-                c_name = (lot.color_name if lot else '')[:20]
+                c_name = (lot.color_name or '')[:20] if lot else ''
                 d_num = (doc_number or '')[:15]
 
                 entries.append({
@@ -106,7 +106,7 @@ class PosClosingControlReport(models.AbstractModel):
                     'kilos': kilos,
                     'product_code': line.product_id.default_code or '',
                     'product_name': p_name,
-                    'color_code': lot.color_code if lot else '',
+                    'color_code': lot.color_code or '' if lot else '',
                     'color_name': c_name,
                     'batch': lot.roll_id.batch_id.name if lot and lot.roll_id and lot.roll_id.batch_id else '',
                     'ref': lot.roll_id.name if lot and lot.roll_id else '',
