@@ -15,7 +15,7 @@
     'version': '0.1',
     'license': 'LGPL-3',
 
-    'depends': ['base', "web", "mrp", "idtx_batch_control", 'quality', 'quality_control', 'idtx_product_development'],
+    'depends': ['base', "web", "mrp", "mail", "idtx_batch_control", 'quality', 'quality_control', 'idtx_product_development'],
 
     'data': [
         'security/ir.model.access.csv',
@@ -23,6 +23,7 @@
         'data/control_apariencia.xml',
         'data/defectos_acabados.xml',
         'data/defectos_tejeduria.xml',
+        'data/mail_template_data.xml',
 
         'views/control_pedido_line_views.xml',
         'views/control_tono_eval_log_views.xml',
@@ -31,6 +32,7 @@
         'views/control_estabilidad_revirado_eval_views.xml',
         'report/dimrev_report.xml',
         'report/solidez_lavado_report.xml',
+        'report/pedido_line_laboratorio_summary_report.xml',
         'views/quality_tone_views.xml',
         'views/quality_defect_views.xml',
         'views/quality_dimrev_views.xml',

@@ -379,7 +379,7 @@ class ControlPedido(models.Model):
                 )[:1]
                 write_vals = {
                     'product_id': vals_line.get('product_id'),
-                    'labe_dev_line_id': vals_line.get('labe_dev_line_id'),
+                    'lab_dev_line_id': vals_line.get('lab_dev_line_id'),
                     'codpro': vals_line.get('codpro'),
                     'rollos': vals_line.get('rollos'),
                     'kilograms': vals_line.get('kilograms'),

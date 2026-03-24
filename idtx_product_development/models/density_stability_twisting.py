@@ -12,7 +12,8 @@ class DensityStabilityTwisting(models.Model):
     width_shrinkage_to = fields.Float('Width Shrinkage To')
     length_shrinkage_from = fields.Float('Length Shrinkage From')
     length_shrinkage_to = fields.Float('Length Shrinkage To')
-    twist = fields.Float('Twist')    
+    tilt_wash = fields.Float('Tilt Wash')
+    twist = fields.Float('Twist')
     state = fields.Selection([
         ('draft', 'Draft'),
         ('done', 'Done'),

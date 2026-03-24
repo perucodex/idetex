@@ -1,17 +1,19 @@
-from odoo import models, fields, api
+from markupsafe import Markup
+
+from odoo import models, fields, api, _
 from odoo.fields import Domain
 from odoo.exceptions import UserError
 
 class ControlPedidoLine(models.Model):
     _inherit = "control.pedido.line"
 
+    report_name = fields.Char(string="Report Name", default=lambda self: _("New"), copy=False, index=True)
     laboratorio_record_ids = fields.One2many(
         "control.laboratorio.record",
         "pedido_line_id",
         string="Registros de Laboratorio",
     )
     has_laboratorio_records = fields.Boolean(compute="_compute_has_laboratorio_records", store=False)
-
     est_revirado_eval_id = fields.Many2one(
         "control.estabilidad.revirado.eval",
         string="Evaluacion Estabilidad/Revirado",
@@ -20,22 +22,12 @@ class ControlPedidoLine(models.Model):
         store=False,
     )
     has_est_revirado_eval = fields.Boolean(compute="_compute_est_revirado_eval", store=False)
-
-    est_ancho_avg_l1_dimrev = fields.Float(related="est_revirado_eval_id.est_ancho_avg_l1", readonly=True)
-    est_ancho_avg_l3_dimrev = fields.Float(related="est_revirado_eval_id.est_ancho_avg_l3", readonly=True)
-    est_ancho_avg_l5_dimrev = fields.Float(related="est_revirado_eval_id.est_ancho_avg_l5", readonly=True)
-    est_largo_avg_l1_dimrev = fields.Float(related="est_revirado_eval_id.est_largo_avg_l1", readonly=True)
-    est_largo_avg_l3_dimrev = fields.Float(related="est_revirado_eval_id.est_largo_avg_l3", readonly=True)
-    est_largo_avg_l5_dimrev = fields.Float(related="est_revirado_eval_id.est_largo_avg_l5", readonly=True)
-
+    est_ancho_avg_dimrev = fields.Float(related="est_revirado_eval_id.est_ancho_avg", readonly=True)
+    est_largo_avg_dimrev = fields.Float(related="est_revirado_eval_id.est_largo_avg", readonly=True)
     revirado_m1_result_dimrev = fields.Float(related="est_revirado_eval_id.revirado_m1_result", readonly=True)
     revirado_m2_result_dimrev = fields.Float(related="est_revirado_eval_id.revirado_m2_result", readonly=True)
     revirado_promedio_dimrev = fields.Float(related="est_revirado_eval_id.revirado_promedio", readonly=True)
-    revirado_n_lavado_dimrev = fields.Integer(related="est_revirado_eval_id.revirado_n_lavado", readonly=True)
-    revirado_n_m1_result_dimrev = fields.Float(related="est_revirado_eval_id.revirado_n_m1_result", readonly=True)
-    revirado_n_m2_result_dimrev = fields.Float(related="est_revirado_eval_id.revirado_n_m2_result", readonly=True)
-    revirado_n_promedio_dimrev = fields.Float(related="est_revirado_eval_id.revirado_n_promedio", readonly=True)
-
+    wash_number_dimrev = fields.Integer(related="est_revirado_eval_id.wash_number", readonly=True)
     densidad_promedio_dimrev = fields.Float(related="est_revirado_eval_id.densidad_promedio", readonly=True)
     ancho_promedio_dimrev = fields.Float(related="est_revirado_eval_id.ancho_promedio", readonly=True)
     densidad_1_dimrev = fields.Float(compute="_compute_dimrev_samples", store=False)
@@ -44,19 +36,16 @@ class ControlPedidoLine(models.Model):
     ancho_1_dimrev = fields.Float(compute="_compute_dimrev_samples", store=False)
     ancho_2_dimrev = fields.Float(compute="_compute_dimrev_samples", store=False)
     ancho_3_dimrev = fields.Float(compute="_compute_dimrev_samples", store=False)
-
     tono_eval_log_ids = fields.One2many(
         "control.tono.eval.log",
         "pedido_line_id",
         string="Evaluaciones",
     )
-
     can_eval_tono = fields.Boolean(compute="_compute_can_eval_tono", store=False)
     can_eval_tono_secado = fields.Boolean(compute="_compute_can_eval_tono_secado", store=False)
     can_eval_tono_acabado = fields.Boolean(compute="_compute_can_eval_tono_acabado", store=False)
     end_tono = fields.Boolean(compute="_compute_end_tono", store=False)
     has_tono_eval_logs = fields.Boolean(compute="_compute_has_tono_eval_logs", store=False)
-
     apariencia_line_ids = fields.One2many(
         "control.apariencia.line",
         "pedido_line_id",
@@ -69,6 +58,36 @@ class ControlPedidoLine(models.Model):
     )
     has_apariencia_lines = fields.Boolean(compute="_compute_has_apariencia_lines", store=False)
     can_apariencia = fields.Boolean(compute="_compute_can_apariencia", store=False)
+    user_id = fields.Many2one(
+        comodel_name='res.users',
+        string="Qualityperson",
+        compute='_compute_user_id',
+        store=True, readonly=False, precompute=True, index=True,
+        tracking=2,
+        domain=lambda self: "[('all_group_ids', 'in', {}), ('share', '=', False), ('company_ids', '=', company_id)]".format(
+            self.env.ref("quality.group_quality_manager").ids
+        ))
+    company_id = fields.Many2one(
+        comodel_name='res.company',
+        required=True, index=True,
+        default=lambda self: self.env.company)
+    
+    @api.depends('pedido_id.customer')
+    def _compute_user_id(self):
+        for rec in self:
+            partner_id = self.env['res.partner'].search([('name','ilike', rec.pedido_id.customer)], limit=1)
+            if partner_id and not (rec._origin.id and rec.user_id):
+                rec.user_id = (
+                    (self.env.user.has_group('quality.group_quality_manager') and self.env.user)
+                )
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        seq_model = self.env["ir.sequence"]
+        for vals in vals_list:
+            if vals.get("report_name", _("New")) == _("New"):
+                vals["report_name"] = seq_model.next_by_code("control.pedido.line.report_name") or _("New")
+        return super().create(vals_list)
 
     def _compute_est_revirado_eval(self):
         eval_model = self.env["control.estabilidad.revirado.eval"]
@@ -227,6 +246,370 @@ class ControlPedidoLine(models.Model):
             "target": "new",
             "context": {"default_pedido_line_id": self.id, "tone_mode": "secado"},
         }
+
+    @staticmethod
+    def _state_to_summary_status(state_value):
+        return "Pasa" if state_value == "pass" else "Falla"
+
+    def _get_dimrev_highest_wash_eval(self):
+        self.ensure_one()
+        return self.env["control.estabilidad.revirado.eval"].search([
+            ("pedido_line_id", "=", self.id),
+        ], order="wash_number desc, fecha_eval desc, id desc", limit=1)
+
+    def _get_dimrev_first_wash_eval(self):
+        self.ensure_one()
+        wash1_evals = self.env["control.estabilidad.revirado.eval"].search([
+            ("pedido_line_id", "=", self.id),
+            ("wash_number", "=", 1),
+        ], order="fecha_eval desc, id desc")
+        # Prefer the latest 1st-wash evaluation with captured detail lines.
+        detailed_eval = wash1_evals.filtered(lambda rec: bool(rec.detail_line_ids))[:1]
+        return detailed_eval or wash1_evals[:1]
+
+    def _get_solidez_latest_eval(self):
+        self.ensure_one()
+        return self.env["control.solidez.lavado.eval"].search([
+            ("pedido_line_id", "=", self.id),
+        ], order="fecha_eval desc, id desc", limit=1)
+
+    def _laboratorio_summary_report_payload(self):
+        self.ensure_one()
+
+        dimrev_highest = self._get_dimrev_highest_wash_eval()
+        dimrev_l1 = self._get_dimrev_first_wash_eval()
+        solidez = self._get_solidez_latest_eval()
+
+        analysis = self.product_id.analysis_id
+        dim_thresholds = analysis.density_stability_twisting_id if analysis else False
+
+        std_density = float(analysis.density or 0.0) if analysis else 0.0
+        std_width = float(analysis.standard_width or 0.0) if analysis else 0.0
+
+        width_from = float(dim_thresholds.width_shrinkage_from or 0.0) * 100 if dim_thresholds else 0.0
+        width_to = float(dim_thresholds.width_shrinkage_to or 0.0) * 100 if dim_thresholds else 0.0
+        length_from = float(dim_thresholds.length_shrinkage_from or 0.0) * 100 if dim_thresholds else 0.0
+        length_to = float(dim_thresholds.length_shrinkage_to or 0.0) * 100 if dim_thresholds else 0.0
+        twist_std = float(dim_thresholds.twist or 0.0) if dim_thresholds else 0.0
+        tilt_std = float(dim_thresholds.tilt_wash or 0.0) if dim_thresholds else 0.0
+
+        # Always resolve washing standards from Lab Dev, even when there is no solidez eval yet.
+        labdev = self.lab_dev_line_id
+        if not labdev and solidez:
+            labdev = solidez.pedido_line_id.lab_dev_line_id
+        if not labdev:
+            labdev = self.env["lab.dev.line"].search([
+                ("color_code", "=", self.colorcode),
+            ], order="id desc", limit=1)
+        washing = labdev.colorfastness_washing_id if labdev else False
+
+        def _fmt_req_range(from_value, to_value, unit=""):
+            if from_value and to_value:
+                return f"{from_value:.2f} a {to_value:.2f}{unit}"
+            if from_value:
+                return f"&#8805; {from_value:.2f}{unit}"
+            if to_value:
+                return f"<= {to_value:.2f}{unit}"
+            return "-"
+
+        def _fmt_req_max(value, unit=""):
+            return f"<= {value:.2f}{unit}" if value else "-"
+
+        def _fmt_req_min(value, unit=""):
+            return f"&#8805; {value:.2f}{unit}" if value else "-"
+
+        def _fmt_tolerance_percent(value):
+            if not value:
+                return 0.0
+            raw = float(value)
+            return raw * 100.0 if abs(raw) <= 1.0 else raw
+
+        density_tol_pct = _fmt_tolerance_percent(float(dim_thresholds.density or 0.0) if dim_thresholds else 0.0)
+        width_tol_pct = _fmt_tolerance_percent(float(dim_thresholds.width or 0.0) if dim_thresholds else 0.0)
+
+        dimrev_highest_state = dimrev_highest.state if dimrev_highest else "nodata"
+        dimrev_l1_state = dimrev_l1.state if dimrev_l1 else "nodata"
+        solidez_state = solidez.state if solidez else "nodata"
+
+        test_rows = [
+            {
+                "test": "Densidad",
+                "method": "ASTM D3776 - Opcion C",
+                "notes": [],
+                "requirement": _fmt_req_min(std_density, " g/m2"),
+                "requirement_lines": [
+                    f"g/m2 {std_density:.2f}" if std_density else "g/m2 -",
+                    f"&#177; {density_tol_pct:.2f}%" if density_tol_pct else "&#177; -",
+                ],
+                "result": float(dimrev_l1.densidad_promedio or 0.0) if dimrev_l1 else 0.0,
+                "status": "Pasa" if (dimrev_l1 and dimrev_l1.bool_densidad_promedio) else "Falla",
+            },
+            {
+                "test": "Ancho",
+                "method": "Medicion de ancho estandar",
+                "notes": [],
+                "requirement": _fmt_req_min(std_width, " m"),
+                "requirement_lines": [
+                    f"cm {std_width:.2f}" if std_width else "cm -",
+                    f"&#177; {width_tol_pct:.2f}%" if width_tol_pct else "&#177; -",
+                ],
+                "result": float(dimrev_l1.ancho_promedio or 0.0) if dimrev_l1 else 0.0,
+                "status": "Pasa" if (dimrev_l1 and dimrev_l1.bool_ancho_promedio) else "Falla",
+            },
+            {
+                "test": "Estabilidad Dimensional %Ancho",
+                "method": "AATCC TM 135-2018t   (1) (III) B",
+                "notes": [
+                    {"label": "Temperatura de lavado", "value": "41&#176;C &#177;3&#176;C"},
+                    {"label": "Ciclo", "value": "Normal"},
+                    {"label": "Secado", "value": "En linea"},
+                    {"label": "Lastre", "value": "Tipo 1 - 100% Algodon"},
+                ],
+                "requirement": _fmt_req_range(width_from, width_to, "%"),
+                "result": float(dimrev_highest.est_ancho_avg or 0.0) if dimrev_highest else 0.0,
+                "status": "Pasa" if (dimrev_highest and dimrev_highest.bool_est_ancho_avg) else "Falla",
+            },
+            {
+                "test": "Estabilidad Dimensional %Largo",
+                "method": "AATCC TM 135-2018t",
+                "notes": [],
+                "requirement": _fmt_req_range(length_from, length_to, "%"),
+                "result": float(dimrev_highest.est_largo_avg or 0.0) if dimrev_highest else 0.0,
+                "status": "Pasa" if (dimrev_highest and dimrev_highest.bool_est_largo_avg) else "Falla",
+            },
+            {
+                "test": "Revirado",
+                "method": "AATCC TM179-2019, Metodo 1, opcion 1",
+                "notes": [],
+                "requirement": _fmt_req_max(twist_std, "%"),
+                "result": float(dimrev_highest.revirado_promedio or 0.0) if dimrev_highest else 0.0,
+                "status": "Pasa" if (dimrev_highest and dimrev_highest.bool_revirado_promedio) else "Falla",
+            },
+            {
+                "test": "Inclinacion Antes de Lavar",
+                "method": "Control interno de inclinacion",
+                "notes": [],
+                "requirement": _fmt_req_max(tilt_std, "°"),
+                "requirement_lines": [
+                    f"{tilt_std:.2f}&#176;" if tilt_std else "&#176; -",
+                    "&#177; 1&#176;" if tilt_std else "&#177; -",
+                ],
+                "result": float(dimrev_l1.tilt_before or 0.0) if dimrev_l1 else 0.0,
+                "status": "Pasa" if (dimrev_l1 and dimrev_l1.bool_tilt_before) else "Falla",
+            },
+            {
+                "test": "Solidez al lavado Acelerado",
+                "method": "AATCC TM 61-2013e - Test N 2A",
+                "notes": [
+                    {"label": "Temperatura", "value": "49&#176;C &#177;3&#176;C"},
+                    {"label": "Tiempo", "value": "45 min"},
+                    {"label": "N bolas", "value": "50"},
+                    {"label": "Multifibra", "value": "N 10"},
+                    {"label": "Detergente", "value": "WOB"},
+                ],
+                "requirement": _fmt_req_min(float(washing.color_change_degree or 0.0) if washing else 0.0),
+                "requirement_pairs": [
+                    {
+                        "label": "Cambio de color",
+                        "value": f"&#8805; {float(washing.color_change_degree or 0.0):.2f}" if washing else "-",
+                    },
+                    {
+                        "label": "Migracion Acetato",
+                        "value": f"&#8805; {float(washing.migration_acetate or 0.0):.2f}" if washing else "-",
+                    },
+                    {
+                        "label": "Migracion Algodon",
+                        "value": f"&#8805; {float(washing.migration_cotton or 0.0):.2f}" if washing else "-",
+                    },
+                    {
+                        "label": "Migracion Nylon",
+                        "value": f"&#8805; {float(washing.migration_nylon or 0.0):.2f}" if washing else "-",
+                    },
+                    {
+                        "label": "Migracion Poliester",
+                        "value": f"&#8805; {float(washing.migration_polyester or 0.0):.2f}" if washing else "-",
+                    },
+                    {
+                        "label": "Migracion Acrilico",
+                        "value": f"&#8805; {float(washing.migration_acrylic or 0.0):.2f}" if washing else "-",
+                    },
+                    {
+                        "label": "Migracion Lana",
+                        "value": f"&#8805; {float(washing.migration_wool or 0.0):.2f}" if washing else "-",
+                    },
+                ],
+                "requirement_lines": [
+                    f"Cambio de color: &#8805; {float(washing.color_change_degree or 0.0):.2f}" if washing else "Cambio de color: -",
+                    f"Migracion Acetato: &#8805; {float(washing.migration_acetate or 0.0):.2f}" if washing else "Migracion Acetato: -",
+                    f"Migracion Algodon: &#8805; {float(washing.migration_cotton or 0.0):.2f}" if washing else "Migracion Algodon: -",
+                    f"Migracion Nylon: &#8805; {float(washing.migration_nylon or 0.0):.2f}" if washing else "Migracion Nylon: -",
+                    f"Migracion Poliester: &#8805; {float(washing.migration_polyester or 0.0):.2f}" if washing else "Migracion Poliester: -",
+                    f"Migracion Acrilico: &#8805; {float(washing.migration_acrylic or 0.0):.2f}" if washing else "Migracion Acrilico: -",
+                    f"Migracion Lana: &#8805; {float(washing.migration_wool or 0.0):.2f}" if washing else "Migracion Lana: -",
+                ],
+                "result": float(solidez.cambio_color_grado or 0.0) if solidez else 0.0,
+                "result_lines": [
+                    f"{float(solidez.cambio_color_grado or 0.0):.2f}" if solidez else "-",
+                    f"{float(solidez.mig_acetato or 0.0):.2f}" if solidez else "-",
+                    f"{float(solidez.mig_algodon or 0.0):.2f}" if solidez else "-",
+                    f"{float(solidez.mig_nylon or 0.0):.2f}" if solidez else "-",
+                    f"{float(solidez.mig_poliester or 0.0):.2f}" if solidez else "-",
+                    f"{float(solidez.mig_acrilico or 0.0):.2f}" if solidez else "-",
+                    f"{float(solidez.mig_lana or 0.0):.2f}" if solidez else "-",
+                ],
+                "status": "Pasa" if (
+                    solidez
+                    and solidez.bool_cambio_color_grado
+                    and solidez.bool_mig_acetato
+                    and solidez.bool_mig_algodon
+                    and solidez.bool_mig_nylon
+                    and solidez.bool_mig_poliester
+                    and solidez.bool_mig_acrilico
+                    and solidez.bool_mig_lana
+                ) else "Falla",
+            },
+            {
+                "test": "Solidez al frote",
+                "method": "AATCC TM8-2016e",
+                "notes": [],
+                "requirement": _fmt_req_min(float(washing.colorfastness_to_dry_rubbing or 0.0) if washing else 0.0),
+                "requirement_pairs": [
+                    {
+                        "label": "Seco",
+                        "value": f"&#8805; {float(washing.colorfastness_to_dry_rubbing or 0.0):.2f}" if washing else "-",
+                    },
+                    {
+                        "label": "Humedo",
+                        "value": f"&#8805; {float(washing.colorfastness_to_wet_rubbing or 0.0):.2f}" if washing else "-",
+                    },
+                ],
+                "result": float(solidez.frote_seco or 0.0) if solidez else 0.0,
+                "result_lines": [
+                    f"{float(solidez.frote_seco or 0.0):.2f}" if solidez else "-",
+                    f"{float(solidez.frote_humedo or 0.0):.2f}" if solidez else "-",
+                ],
+                "status": "Pasa" if (solidez and solidez.bool_frote_seco and solidez.bool_frote_humedo) else "Falla",
+            },
+        ]
+
+        # Show each evaluation independently in the status summary.
+        summary_rows = [
+            {
+                "item": row.get("test") or "-",
+                "status": row.get("status") or "Falla",
+            }
+            for row in test_rows
+        ]
+
+        any_fail = any(row["status"] == "Falla" for row in summary_rows)
+        overall_status = "Falla" if any_fail else "Pasa"
+
+        # Keep symbol entities readable in QWeb with t-out, without deprecated t-raw.
+        for row in test_rows:
+            row["requirement"] = Markup(row.get("requirement") or "-")
+            row["requirement_lines"] = [Markup(line) for line in (row.get("requirement_lines") or [])]
+            row["requirement_pairs"] = [
+                {
+                    "label": pair.get("label") or "-",
+                    "value": Markup(pair.get("value") or "-"),
+                }
+                for pair in (row.get("requirement_pairs") or [])
+            ]
+            for note in row.get("notes") or []:
+                note["value"] = Markup(note.get("value") or "-")
+
+        return {
+            "dimrev_highest": {
+                "exists": bool(dimrev_highest),
+                "name": dimrev_highest.name if dimrev_highest else "-",
+                "fecha_eval": dimrev_highest.fecha_eval if dimrev_highest else False,
+                "wash_number": int(dimrev_highest.wash_number or 0) if dimrev_highest else 0,
+                "wash_label": dimrev_highest._wash_label_from_number(dimrev_highest.wash_number) if dimrev_highest else "-",
+                "state": self._state_to_summary_status(dimrev_highest_state),
+                "est_ancho_avg": float(dimrev_highest.est_ancho_avg or 0.0) if dimrev_highest else 0.0,
+                "est_largo_avg": float(dimrev_highest.est_largo_avg or 0.0) if dimrev_highest else 0.0,
+                "revirado_promedio": float(dimrev_highest.revirado_promedio or 0.0) if dimrev_highest else 0.0,
+            },
+            "dimrev_l1": {
+                "exists": bool(dimrev_l1),
+                "name": dimrev_l1.name if dimrev_l1 else "-",
+                "fecha_eval": dimrev_l1.fecha_eval if dimrev_l1 else False,
+                "state": self._state_to_summary_status(dimrev_l1_state),
+                "densidad_promedio": float(dimrev_l1.densidad_promedio or 0.0) if dimrev_l1 else 0.0,
+                "ancho_promedio": float(dimrev_l1.ancho_promedio or 0.0) if dimrev_l1 else 0.0,
+                "tilt_before": float(dimrev_l1.tilt_before or 0.0) if dimrev_l1 else 0.0,
+                "tilt_after": float(dimrev_l1.tilt_after or 0.0) if dimrev_l1 else 0.0,
+            },
+            "solidez": {
+                "exists": bool(solidez),
+                "name": solidez.name if solidez else "-",
+                "fecha_eval": solidez.fecha_eval if solidez else False,
+                "state": self._state_to_summary_status(solidez_state),
+                "cambio_color_grado": float(solidez.cambio_color_grado or 0.0) if solidez else 0.0,
+                "frote_seco": float(solidez.frote_seco or 0.0) if solidez else 0.0,
+                "frote_humedo": float(solidez.frote_humedo or 0.0) if solidez else 0.0,
+            },
+            "test_rows": test_rows,
+            "summary_rows": summary_rows,
+            "overall_status": overall_status,
+        }
+
+    def action_print_laboratorio_summary_report(self):
+        self.ensure_one()
+        template = self.env.ref("idtx_batch_quality.mail_template_laboratorio_summary_front", raise_if_not_found=False)
+        recipient = self._get_mail_recipient_partner()
+        base_url = self.env["ir.config_parameter"].sudo().get_param("web.base.url")
+
+        ctx = {
+            "default_model": "control.pedido.line",
+            "default_res_ids": self.ids,
+            "default_composition_mode": "comment",
+            "default_email_layout_xmlid": "mail.mail_notification_layout_with_responsible_signature",
+            "email_notification_allow_footer": True,
+            "hide_mail_template_management_options": True,
+            "force_email": True,
+            # Always provide a fallback button URL.
+            "action_button_url": f"{base_url}/web#id={self.id}&model=control.pedido.line&view_type=form",
+        }
+        if template:
+            ctx["default_template_id"] = template.id
+        if recipient:
+            ctx["default_partner_ids"] = [recipient.id]
+            if recipient.lang:
+                ctx["lab_lang"] = recipient.lang
+            if not recipient.user_ids:
+                frontend_url = f"{base_url}/kiosk/control_pedido"
+                ctx["frontend_button_url"] = frontend_url
+                ctx["action_button_url"] = frontend_url
+
+        return {
+            "name": _("Enviar Resumen de Laboratorio"),
+            "type": "ir.actions.act_window",
+            "view_mode": "form",
+            "res_model": "mail.compose.message",
+            "views": [(False, "form")],
+            "target": "new",
+            "context": ctx,
+        }
+
+    def _get_mail_recipient_partner(self):
+        self.ensure_one()
+        customer_name = (self.pedido_id.customer or "").strip()
+        if not customer_name:
+            return False
+
+        partner_model = self.env["res.partner"]
+        exact = partner_model.search([
+            ("name", "=", customer_name),
+            ("email", "!=", False),
+        ], limit=1)
+        if exact:
+            return exact
+
+        return partner_model.search([
+            ("name", "ilike", customer_name),
+            ("email", "!=", False),
+        ], order="id desc", limit=1)
 
     def action_apariencia(self):
         self.ensure_one()

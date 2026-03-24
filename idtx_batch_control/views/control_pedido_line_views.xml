@@ -82,9 +82,9 @@
                             <field name="kilograms" readonly="1"/>
                             <field name="start_date" readonly="1"/>
                             <field name="end_date" readonly="1"/>
-                            <field name="colorcode" readonly="1" invisible="labe_dev_line_id"/>
-                            <field name="colorname" readonly="1" invisible="labe_dev_line_id"/>
-                            <field name="labe_dev_line_id" readonly="1" invisible="not labe_dev_line_id"/>
+                            <field name="colorcode" readonly="1" invisible="lab_dev_line_id"/>
+                            <field name="colorname" readonly="1" invisible="lab_dev_line_id"/>
+                            <field name="lab_dev_line_id" readonly="1" invisible="not lab_dev_line_id"/>
                         </group>
                     </group>
                     <notebook>
@@ -117,6 +117,7 @@
                         </page>
                     </notebook>
                 </sheet>
+                <chatter/>
             </form>
         </field>
     </record>

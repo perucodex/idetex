@@ -164,7 +164,7 @@ class ControlSolidezLavadoEval(models.Model):
             result = 'pass'
             for bool_field, _rec_field, _lab_field in self._RESULT_RULES:
                 rec[bool_field] = True
-            labdev = rec.labe_dev_line_id
+            labdev = rec.pedido_line_id.lab_dev_line_id
             if not labdev:
                 labdev = self.env['lab.dev.line'].search([
                     ('color_code', '=', rec.pedido_line_id.colorcode),

@@ -100,10 +100,16 @@ const STEPS = [
         speak: "Ancho. Dicte tres mediciones.",
         fields: ["anc_1", "anc_2", "anc_3"],
     },
+    {
+        key: "inclinacion",
+        label: "Inclinacion",
+        speak: "Inclinacion. Dicte antes de lavar y despues de lavar.",
+        fields: ["tilt_before", "tilt_after"],
+    },
 ];
 
 const MODE_STEP_KEYS = {
-    l1: ["est_l1_m1", "est_l1_m2", "densidad", "ancho"],
+    l1: ["est_l1_m1", "est_l1_m2", "densidad", "inclinacion", "ancho"],
     l3: ["est_l3_m1", "est_l3_m2"],
     l5: ["est_l5_m1", "est_l5_m2"],
     ln: ["est_ln_m1", "est_ln_m2"],
@@ -225,6 +231,8 @@ const FIELD_LABEL = {
     anc_1: "Ancho 1",
     anc_2: "Ancho 2",
     anc_3: "Ancho 3",
+    tilt_before: "Inclinacion Antes de Lavar",
+    tilt_after: "Inclinacion Despues de Lavar",
 };
 
 function normalizeText(v) {
@@ -411,6 +419,8 @@ export class QualityDimrevScreen extends Component {
             modeSelectionTarget: "",
             selectedLavadoN: "",
             isFirstRecord: false,
+            tiltRequired: false,
+            tiltStandard: 0,
             stabilityDone: {
                 l1_ancho_done: false,
                 l1_largo_done: false,
@@ -466,7 +476,9 @@ export class QualityDimrevScreen extends Component {
 
     get activeSteps() {
         const keys = MODE_STEP_KEYS[this.state.evalMode] || [];
-        return keys.map((k) => STEPS[STEP_INDEX_BY_KEY[k]]).filter(Boolean);
+        return keys
+            .map((k) => STEPS[STEP_INDEX_BY_KEY[k]])
+            .filter((step) => step && (step.key !== "inclinacion" || this.state.tiltRequired));
     }
 
     get canSaveCurrentStep() {
@@ -481,6 +493,9 @@ export class QualityDimrevScreen extends Component {
         if (!this.canSaveCurrentStep) return false;
         const fields = this.activeSteps.flatMap((s) => s.fields || []);
         for (const fieldName of fields) {
+            if (!this.state.tiltRequired && (fieldName === "tilt_before" || fieldName === "tilt_after")) {
+                continue;
+            }
             if (`${this.state.values[fieldName] || ""}`.trim() === "") {
                 return false;
             }
@@ -597,6 +612,14 @@ export class QualityDimrevScreen extends Component {
 
     get anchoPromedio() {
         return (asFloat(this.state.values.anc_1) + asFloat(this.state.values.anc_2) + asFloat(this.state.values.anc_3)) / 3;
+    }
+
+    get tiltBefore() {
+        return asFloat(this.state.values.tilt_before);
+    }
+
+    get tiltAfter() {
+        return asFloat(this.state.values.tilt_after);
     }
 
     getStepFieldLabel(fieldName) {
@@ -746,6 +769,8 @@ export class QualityDimrevScreen extends Component {
         this.state.modeSelectionTarget = "";
         this.state.selectedLavadoN = "";
         this.state.isFirstRecord = false;
+        this.state.tiltRequired = false;
+        this.state.tiltStandard = 0;
         this.state.stabilityDone = this._defaultStabilityState();
         this._saveDraft();
     }
@@ -760,6 +785,8 @@ export class QualityDimrevScreen extends Component {
             this.state.stabilityDone = this._defaultStabilityState();
             this.state.availableModes = payload?.available_modes || [];
             this.state.isFirstRecord = !Boolean(payload?.has_first_record);
+            this.state.tiltRequired = Boolean(payload?.tilt_required);
+            this.state.tiltStandard = asFloat(payload?.tilt_standard || 0);
             const requiredMode = payload?.required_mode || "";
             this.state.evalMode = requiredMode;
             this.state.needsModeSelection = !requiredMode;

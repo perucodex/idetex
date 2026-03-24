@@ -6,6 +6,7 @@ from .utils import _safe_date, _safe_str, _safe_float
 class ControlPedidoLine(models.Model):
     _name = "control.pedido.line"
     _description = "Control Pedido (Detalle)"
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _rec_name = 'batch'
 
     pedido_id = fields.Many2one("control.pedido", required=True, ondelete="cascade")
@@ -23,7 +24,7 @@ class ControlPedidoLine(models.Model):
     end_date = fields.Datetime('End Date')
     colorcode = fields.Char('Color Code')
     colorname = fields.Char('Color Name')
-    labe_dev_line_id = fields.Many2one('lab.dev.line', string='Lab Dev')
+    lab_dev_line_id = fields.Many2one('lab.dev.line', string='Lab Dev')
 
     proceso_ids = fields.One2many(
         "control.proceso.lines",
@@ -60,7 +61,7 @@ class ControlPedidoLine(models.Model):
             "colorcode": _safe_str(dr["ColorCode"]),
             "colorname": _safe_str(dr["ColorName"]),
             "product_id": product.id if product else False,
-            "labe_dev_line_id": lav_dev_line.id if lav_dev_line else False,
+            "lab_dev_line_id": lav_dev_line.id if lav_dev_line else False,
         }
 
     def action_open_start_wizard(self):

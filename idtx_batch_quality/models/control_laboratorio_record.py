@@ -77,9 +77,9 @@ class ControlLaboratorioRecord(models.Model):
         return any((line.measure_key or "").startswith(prefix) for line in eval_rec.detail_line_ids)
 
     @staticmethod
-    def _wash_avg_from_details(eval_rec, wash_code, axis):
-        m1 = sum(eval_rec._get_measure_value(f"st_{wash_code}_{axis}_m1_d{d}") for d in (1, 2, 3)) / 3.0
-        m2 = sum(eval_rec._get_measure_value(f"st_{wash_code}_{axis}_m2_d{d}") for d in (1, 2, 3)) / 3.0
+    def _wash_avg_from_details(eval_rec, axis):
+        m1 = sum(eval_rec._get_measure_value(f"st_{axis}_m1_d{d}") for d in (1, 2, 3)) / 3.0
+        m2 = sum(eval_rec._get_measure_value(f"st_{axis}_m2_d{d}") for d in (1, 2, 3)) / 3.0
         return (m1 + m2) / 2.0
 
     @staticmethod
@@ -96,38 +96,10 @@ class ControlLaboratorioRecord(models.Model):
         if not eval_rec:
             return []
 
-        is_l1 = False
-        if self._has_measure_prefix(eval_rec, "st_l5_"):
-            ancho_pct = float(eval_rec.est_ancho_avg_l5 or 0.0)
-            largo_pct = float(eval_rec.est_largo_avg_l5 or 0.0)
-            revirado = self._revirado_promedio_from_values(
-                eval_rec._get_measure_value("rv5_m1_ac"),
-                eval_rec._get_measure_value("rv5_m1_bd"),
-                eval_rec._get_measure_value("rv5_m2_ac"),
-                eval_rec._get_measure_value("rv5_m2_bd"),
-            )
-        elif self._has_measure_prefix(eval_rec, "st_l3_"):
-            ancho_pct = float(eval_rec.est_ancho_avg_l3 or 0.0)
-            largo_pct = float(eval_rec.est_largo_avg_l3 or 0.0)
-            revirado = self._revirado_promedio_from_values(
-                eval_rec._get_measure_value("rv3_m1_ac"),
-                eval_rec._get_measure_value("rv3_m1_bd"),
-                eval_rec._get_measure_value("rv3_m2_ac"),
-                eval_rec._get_measure_value("rv3_m2_bd"),
-            )
-        elif self._has_measure_prefix(eval_rec, "st_l1_"):
-            is_l1 = True
-            ancho_pct = float(eval_rec.est_ancho_avg_l1 or 0.0)
-            largo_pct = float(eval_rec.est_largo_avg_l1 or 0.0)
-            revirado = float(eval_rec.revirado_promedio or 0.0)
-        elif self._has_measure_prefix(eval_rec, "st_ln_"):
-            ancho_pct = self._wash_avg_from_details(eval_rec, "ln", "a")
-            largo_pct = self._wash_avg_from_details(eval_rec, "ln", "l")
-            revirado = float(eval_rec.revirado_n_promedio or 0.0)
-        else:
-            ancho_pct = 0.0
-            largo_pct = 0.0
-            revirado = 0.0
+        is_l1 = int(eval_rec.wash_number or 0) == 1
+        ancho_pct = float(eval_rec.est_ancho_avg or 0.0)
+        largo_pct = float(eval_rec.est_largo_avg or 0.0)
+        revirado = float(eval_rec.revirado_promedio or 0.0)
 
         lines = [
             {"sequence": 10, "tipo": "%Ancho", "resultado": ancho_pct},
@@ -173,16 +145,15 @@ class ControlLaboratorioRecord(models.Model):
         return any((line.measure_key or "") == key for line in eval_rec.detail_line_ids)
 
     def _dimrev_detect_wash(self, eval_rec):
-        if self._has_measure_prefix(eval_rec, "st_l1_"):
+        wash_number = int(eval_rec.wash_number or 0)
+        if wash_number == 1:
             return ("l1", "1er Lavado")
-        if self._has_measure_prefix(eval_rec, "st_l3_"):
+        if wash_number == 3:
             return ("l3", "3er Lavado")
-        if self._has_measure_prefix(eval_rec, "st_l5_"):
+        if wash_number == 5:
             return ("l5", "5to Lavado")
-        if self._has_measure_prefix(eval_rec, "st_ln_"):
-            n_value = int(eval_rec._get_measure_value("rvn_n") or 0)
-            label = f"Lavado N° {n_value}" if n_value > 0 else "Lavado N"
-            return ("ln", label)
+        if wash_number > 0:
+            return ("ln", f"Lavado N° {wash_number}")
         return ("l1", "1er Lavado")
 
     def _dimrev_first_eval_for_std(self):
@@ -206,25 +177,18 @@ class ControlLaboratorioRecord(models.Model):
         for sample in (1, 2):
             stability_rows.append({
                 "sample": f"M{sample}",
-                "a_d1": eval_rec._get_measure_value(f"st_{wash_code}_a_m{sample}_d1"),
-                "a_d2": eval_rec._get_measure_value(f"st_{wash_code}_a_m{sample}_d2"),
-                "a_d3": eval_rec._get_measure_value(f"st_{wash_code}_a_m{sample}_d3"),
-                "l_d1": eval_rec._get_measure_value(f"st_{wash_code}_l_m{sample}_d1"),
-                "l_d2": eval_rec._get_measure_value(f"st_{wash_code}_l_m{sample}_d2"),
-                "l_d3": eval_rec._get_measure_value(f"st_{wash_code}_l_m{sample}_d3"),
+                "a_d1": eval_rec._get_measure_value(f"st_a_m{sample}_d1"),
+                "a_d2": eval_rec._get_measure_value(f"st_a_m{sample}_d2"),
+                "a_d3": eval_rec._get_measure_value(f"st_a_m{sample}_d3"),
+                "l_d1": eval_rec._get_measure_value(f"st_l_m{sample}_d1"),
+                "l_d2": eval_rec._get_measure_value(f"st_l_m{sample}_d2"),
+                "l_d3": eval_rec._get_measure_value(f"st_l_m{sample}_d3"),
             })
 
-        revirado_key_by_wash = {
-            "l1": ("rv1_m1_ac", "rv1_m1_bd", "rv1_m2_ac", "rv1_m2_bd"),
-            "l3": ("rv3_m1_ac", "rv3_m1_bd", "rv3_m2_ac", "rv3_m2_bd"),
-            "l5": ("rv5_m1_ac", "rv5_m1_bd", "rv5_m2_ac", "rv5_m2_bd"),
-            "ln": ("rvn_m1_ac", "rvn_m1_bd", "rvn_m2_ac", "rvn_m2_bd"),
-        }
-        m1_ac_key, m1_bd_key, m2_ac_key, m2_bd_key = revirado_key_by_wash.get(wash_code, revirado_key_by_wash["l1"])
-        m1_ac = eval_rec._get_measure_value(m1_ac_key)
-        m1_bd = eval_rec._get_measure_value(m1_bd_key)
-        m2_ac = eval_rec._get_measure_value(m2_ac_key)
-        m2_bd = eval_rec._get_measure_value(m2_bd_key)
+        m1_ac = eval_rec._get_measure_value("rv_m1_ac")
+        m1_bd = eval_rec._get_measure_value("rv_m1_bd")
+        m2_ac = eval_rec._get_measure_value("rv_m2_ac")
+        m2_bd = eval_rec._get_measure_value("rv_m2_bd")
 
         revirado_rows = [
             {
@@ -260,9 +224,21 @@ class ControlLaboratorioRecord(models.Model):
         density_avg = (sum(density_vals) / 3.0) if density_vals else 0.0
         width_avg = (sum(width_vals) / 3.0) if width_vals else 0.0
 
-        est_ancho = self._wash_avg_from_details(eval_rec, wash_code, "a")
-        est_largo = self._wash_avg_from_details(eval_rec, wash_code, "l")
+        est_ancho = self._wash_avg_from_details(eval_rec, "a")
+        est_largo = self._wash_avg_from_details(eval_rec, "l")
         revirado_avg = self._revirado_promedio_from_values(m1_ac, m1_bd, m2_ac, m2_bd)
+
+        thresholds = eval_rec.pedido_line_id.product_id.analysis_id.density_stability_twisting_id
+        tilt_standard = float(thresholds.tilt_wash or 0.0) if thresholds else 0.0
+        tilt_before = float(eval_rec._get_measure_value("tilt_before") or 0.0)
+        tilt_after = float(eval_rec._get_measure_value("tilt_after") or 0.0)
+        tilt_limit = tilt_standard + 1.0 if tilt_standard > 0.0 else 0.0
+
+        tilt_before_status = "Sin estandar"
+        if int(eval_rec.wash_number or 0) != 1:
+            tilt_before_status = "No aplica"
+        elif tilt_standard > 0.0:
+            tilt_before_status = "Pasa" if tilt_before <= tilt_limit else "Falla"
 
         results = [
             {"tipo": "%Ancho", "resultado": est_ancho},
@@ -271,6 +247,8 @@ class ControlLaboratorioRecord(models.Model):
             {"tipo": "Densidad", "resultado": density_avg},
             {"tipo": "Ancho", "resultado": width_avg},
         ]
+        if int(eval_rec.wash_number or 0) == 1:
+            results.append({"tipo": "Inclinacion Antes de Lavar", "resultado": tilt_before})
 
         return {
             "wash_code": wash_code,
@@ -281,25 +259,29 @@ class ControlLaboratorioRecord(models.Model):
             "density_avg": density_avg,
             "width_vals": width_vals,
             "width_avg": width_avg,
+            "tilt_before": tilt_before,
+            "tilt_after": tilt_after,
+            "tilt_standard": tilt_standard,
+            "tilt_limit": tilt_limit,
+            "tilt_before_status": tilt_before_status,
             "results": results,
             "std_source_label": "Ensayo actual" if source_eval == eval_rec else "Primer ensayo",
         }
 
-    @api.depends("test_type", "est_revirado_eval_id", "est_revirado_eval_id.detail_line_ids.measure_key")
+    @api.depends("test_type", "est_revirado_eval_id", "est_revirado_eval_id.wash_number", "est_revirado_eval_id.detail_line_ids.measure_key")
     def _compute_numero_lavado(self):
         for rec in self:
             value = ""
             if rec.test_type == "dimrev" and rec.est_revirado_eval_id:
-                eval_rec = rec.est_revirado_eval_id
-                if self._has_measure_prefix(eval_rec, "st_l1_"):
+                wash_number = int(rec.est_revirado_eval_id.wash_number or 0)
+                if wash_number == 1:
                     value = "1er Lavado"
-                elif self._has_measure_prefix(eval_rec, "st_l3_"):
+                elif wash_number == 3:
                     value = "3er Lavado"
-                elif self._has_measure_prefix(eval_rec, "st_l5_"):
+                elif wash_number == 5:
                     value = "5to Lavado"
-                elif self._has_measure_prefix(eval_rec, "st_ln_"):
-                    n_value = int(eval_rec._get_measure_value("rvn_n") or 0)
-                    value = f"Lavado N° {n_value}" if n_value > 0 else "Lavado N°"
+                elif wash_number > 0:
+                    value = f"Lavado N° {wash_number}"
             rec.numero_lavado = value
 
     def action_print_report(self):

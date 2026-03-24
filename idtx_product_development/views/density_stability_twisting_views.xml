@@ -26,6 +26,8 @@
                                 <span class="o_form_label mx-3 oe_edit_only text-center" style="width: 6ch;">to</span>
                                 <field name="width_shrinkage_to" widget="percentage"/>
                             </div>
+                        </group>
+                        <group>
                             <div class="o_td_label">
                                 <label for="length_shrinkage_from"/>
                             </div>
@@ -34,16 +36,25 @@
                                 <span class="o_form_label mx-3 oe_edit_only text-center" style="width: 6ch;">to</span>
                                 <field name="length_shrinkage_to" widget="percentage"/>
                             </div>
-                            <!-- <field name="width_shrinkage_from" widget="percentage"/>
-                            <field name="width_shrinkage_to" widget="percentage"/> -->
-                            <!-- <field name="length_shrinkage_from" widget="percentage"/>
-                            <field name="length_shrinkage_to" widget="percentage"/> -->
+                        </group>
+                        <group>
+                            <div class="o_td_label">
+                                <label for="tilt_wash"/>
+                            </div>
+                            <div class="d-flex">
+                                <field name="tilt_wash"/>
+                                <span class="o_form_label mx-3 oe_edit_only text-center" style="width: 6ch;">°</span>
+                            </div>
+                        </group>
+                        <group>
                             <field name="twist" widget="percentage"/>
                         </group>
                     </group>
-                    <group string="Density and Width" col="2">
+                    <group string="Density and Width">
                         <group>
                             <field name="density" widget="percentage"/>
+                        </group>
+                        <group>
                             <field name="width" widget="percentage"/>
                         </group>
                     </group>

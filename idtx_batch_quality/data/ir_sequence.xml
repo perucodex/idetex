@@ -41,4 +41,12 @@
         <field name="company_id" eval="False"/>
     </record>
 
+    <record id="seq_control_pedido_line_report_name" model="ir.sequence">
+        <field name="name">Control Pedido Line Report</field>
+        <field name="code">control.pedido.line.report_name</field>
+        <field name="prefix">RPL-</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
 </odoo>
