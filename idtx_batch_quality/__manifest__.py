@@ -23,8 +23,6 @@
         'data/control_apariencia.xml',
         'data/defectos_acabados.xml',
         'data/defectos_tejeduria.xml',
-        'data/mail_template_data.xml',
-
         'views/control_pedido_line_views.xml',
         'views/control_tono_eval_log_views.xml',
         'views/control_tono_eval_group_views.xml',
@@ -33,6 +31,7 @@
         'report/dimrev_report.xml',
         'report/solidez_lavado_report.xml',
         'report/pedido_line_laboratorio_summary_report.xml',
+        'data/mail_template_data.xml',
         'views/quality_tone_views.xml',
         'views/quality_defect_views.xml',
         'views/quality_dimrev_views.xml',
