@@ -128,6 +128,8 @@ class IdtxPosStockReport(models.Model):
                     product_product pp ON pp.id = q.product_id
                 JOIN
                     product_template pt ON pt.id = pp.product_tmpl_id
+                JOIN
+                    stock_location sl ON sl.id = q.location_id
                 LEFT JOIN
                     stock_lot l ON l.id = q.lot_id
                 LEFT JOIN
@@ -135,10 +137,11 @@ class IdtxPosStockReport(models.Model):
                 LEFT JOIN
                     lab_dev_line ldl ON ldl.id = cr.lab_dev_line_id
                 LEFT JOIN
-                    mrp_production_roll r ON r.lot_id = l.id
+                    mrp_production_roll r ON r.id = l.roll_id
                 WHERE
                     q.quantity > 0
                     AND pt.available_in_pos = True
+                    AND sl.usage = 'internal'
             )
         """ % self._table)
 

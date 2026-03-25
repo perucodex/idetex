@@ -85,7 +85,8 @@ class StockQuantImport(models.Model):
                 color_code = row[header['color'] - 1]
                 color_name = row[header['color_name'] - 1]
 
-                exists = bool(len(self.env['stock.quant.import.line'].search([('ref','=',refe_interna),('product_code','=',product_code),('ident_lot','=',ident_lote)])))
+                # Buscar si el lote ya existe en el sistema (maestro de lotes)
+                exists = bool(self.env['stock.lot'].search_count([('name', '=', lot_name), ('product_id', '=', product_code)]))
 
                 if not (product_code and qty):
                     continue
@@ -125,7 +126,7 @@ class StockQuantImport(models.Model):
 
         for row in self.line_ids:
 
-            if not (row.product_code and row.quantity):
+            if not (row.product_code and row.quantity) or row.red_flag:
                 continue
 
             product = Product.search([('default_code', '=', row.product_code)], limit=1)
@@ -185,12 +186,12 @@ class StockQuantImport(models.Model):
                 })
 
             # Buscar rollo existente para evitar duplicados
-            roll = self.env['mrp.production.roll'].search([('name', '=', row.ref), ('product_id', '=', product.id)], limit=1)
+            roll = self.env['mrp.production.roll'].search([('name', '=', row.ref), ('product_id', '=', product.product_tmpl_id.id)], limit=1)
             if not roll:
                 # Crear rollo
                 roll = self.env['mrp.production.roll'].create({
                     'batch_id': batch.id,
-                    'product_id': product.id,
+                    'product_id': product.product_tmpl_id.id,
                     'quantity': 1,
                     'gross_weight': row.quantity,
                     'net_weight': row.quantity,
@@ -204,7 +205,7 @@ class StockQuantImport(models.Model):
                     'net_weight': row.quantity,
                 })
             
-            lot = Lote.search([('name','=', row.lot_name),('product_id','=', product.id)])
+            lot = Lote.search([('name','=', row.lot_name),('product_id','=', product.id)], limit=1)
             if not lot:
                 # Crear lote
                 lot = self.env['stock.lot'].create({
@@ -218,14 +219,19 @@ class StockQuantImport(models.Model):
 
             roll.lot_id = lot
 
-            # Crear quant
-            quant = StockQuant.create({
-                'product_id': product.id,
-                'location_id': self.location_id.id,
-                'inventory_quantity': float(row.quantity),
-                'lot_id': lot.id
-            })
-            quant.action_apply_inventory()
+            # Crear quant solo si el lote no tiene existencias previas (evita re-stocuear vendidos)
+            existing_stock = StockQuant.search([('lot_id', '=', lot.id), ('quantity', '>', 0)], limit=1)
+            if not existing_stock:
+                quant = StockQuant.create({
+                    'product_id': product.id,
+                    'location_id': self.location_id.id,
+                    'inventory_quantity': float(row.quantity),
+                    'lot_id': lot.id
+                })
+                quant.action_apply_inventory()
+            else:
+                # Si ya tiene stock, solo aseguramos que el lote esté bien vinculado
+                pass
         self.state = 'done'
 
     def action_clean(self):
@@ -336,3 +342,45 @@ class StockQuantImportLine(models.Model):
     location_id = fields.Many2one('stock.location', readonly=True)
     quantity = fields.Float(digits='Product Unit of Measure', readonly=True)
     red_flag = fields.Boolean('red_flag')
+
+    @api.onchange('color_id')
+    def _onchange_color_id(self):
+        """ Actualiza el color para toda la partida (mismo prefijo de lote) """
+        if not self.color_id or not self.lot_name:
+            return
+        
+        # El usuario indica que la partida son los 7 primeros caracteres o hasta el guion
+        partida = self.lot_name.split('-')[0] if '-' in self.lot_name else self.lot_name[:7]
+        
+        if self.import_id:
+            # Recorrer todas las líneas de la importación actual en memoria
+            changed = False
+            for line in self.import_id.line_ids:
+                if line.lot_name and line.lot_name.startswith(partida):
+                    if line.color_id != self.color_id:
+                        line.color_id = self.color_id
+                        changed = True
+            
+            # Reasignar la colección a sí misma para forzar al web client a refrescar
+            if changed:
+                self.import_id.line_ids = self.import_id.line_ids
+
+    def action_sync_color(self):
+        """ Sincroniza el color actual con todas las líneas de la misma partida (vía Server Action) """
+        self.ensure_one()
+        if not self.color_id or not self.lot_name:
+            return
+        
+        partida = self.lot_name.split('-')[0] if '-' in self.lot_name else self.lot_name[:7]
+        
+        # Actualización masiva en la importación
+        other_lines = self.import_id.line_ids.filtered(
+            lambda l: l.lot_name and l.lot_name.startswith(partida)
+        )
+        other_lines.write({'color_id': self.color_id.id})
+        
+        # Retornar una acción para refrescar la vista actual
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
