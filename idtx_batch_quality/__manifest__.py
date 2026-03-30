@@ -1,16 +1,16 @@
 {
-    'name': "Control de Calidad Tonos",
+    'name': "Control de Calidad Partidas",
 
-    'summary': "Short (1 phrase/line) summary of the module's purpose",
+    'summary': "Control de Calidad y Evaluaciones de Partidas",
 
     'description': 
     """
-        Modulo de Calidad para el control de tonos en los pedidos de tintas.
-        Permite evaluar los tonos de cada linea del pedido y registrar las evaluaciones realizadas.
+        Modulo de Calidad para el control de partidas.
+        Permite evaluar las partidas de cada linea del pedido y registrar las evaluaciones realizadas.
     """,
 
-    'author': "Joe Miranda",
-    'website': "https://gestionidtx.com",
+    'author': "Jean Paul Casis",
+    'website': "https://www.perucodex.com",
     'category': 'Uncategorized',
     'version': '0.1',
     'license': 'LGPL-3',
@@ -32,6 +32,7 @@
         'report/solidez_lavado_report.xml',
         'report/pedido_line_laboratorio_summary_report.xml',
         'data/mail_template_data.xml',
+        'views/laboratorio_public_templates.xml',
         'views/quality_tone_views.xml',
         'views/quality_defect_views.xml',
         'views/quality_dimrev_views.xml',

@@ -58,6 +58,30 @@
                             <field name="width" widget="percentage"/>
                         </group>
                     </group>
+
+                    <group string="Washing Parameters (AATCC TM 135)">
+                        <group>
+                            <field name="wash_cycle_type"/>
+                            <field name="wash_temperature_level" invisible="wash_cycle_type in ('hand', 'not_allowed')"/>
+                            <field name="do_not_wring" widget="boolean_toggle" invisible="wash_cycle_type == 'not_allowed'"/>
+                            <field name="bleaching"/>
+                            <field name="drying_condition"/>
+                            <field name="drying_heat" invisible="drying_condition in ('line_hang_dry', 'drip_dry', 'dry_flat','not_allowed')"/>
+                            <field name="in_the_shade" widget="boolean_toggle" invisible="drying_condition not in ('line_hang_dry', 'drip_dry', 'dry_flat')"/>
+                        </group>
+                        <group>
+                            <field name="ironing"/>
+                            <field name="iron_steam" widget="boolean_toggle"/>
+                            <field name="profesional_textile_care_dry"/>
+                            <field name="profesional_textile_care_wet"/>
+                            <field name="laundering_ballast_type"/>
+                            <field name="separately" widget="boolean_toggle"/>
+                            <field name="with_like_colors" widget="boolean_toggle"/>
+                            <field name="wash_inside_out" widget="boolean_toggle"/>
+                        </group>
+                        <label for="care_icon_preview_html"/>
+                        <field name="care_icon_preview_html" widget="html" nolabel="1" readonly="1"/>
+                    </group>
                 </sheet>
                 <chatter/>
             </form>

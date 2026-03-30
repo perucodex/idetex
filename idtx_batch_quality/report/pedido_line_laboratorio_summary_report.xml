@@ -15,367 +15,58 @@
     </record>
 
     <record id="action_report_laboratorio_summary_pedido_line" model="ir.actions.report">
-        <field name="name">Resumen de Laboratorio por Partida</field>
+        <field name="name">Laboratory Summary by Batch</field>
         <field name="model">control.pedido.line</field>
         <field name="report_type">qweb-pdf</field>
-        <field name="report_name">idtx_batch_quality.report_laboratorio_summary_pedido_line_document</field>
-        <field name="report_file">idtx_batch_quality.report_laboratorio_summary_pedido_line_document</field>
+        <field name="report_name">idtx_batch_quality.report_laboratorio_summary_pedido_line</field>
+        <field name="report_file">idtx_batch_quality.report_laboratorio_summary_pedido_line</field>
         <field name="binding_model_id" ref="idtx_batch_control.model_control_pedido_line"/>
         <field name="binding_type">report</field>
         <field name="paperformat_id" ref="idtx_batch_quality.paperformat_laboratorio_summary_compact"/>
-        <field name="print_report_name">'Resumen_Laboratorio_%s' % (object.batch or 'Partida')</field>
+        <field name="print_report_name">'Laboratory_Summary_%s' % (object.batch or 'Batch')</field>
     </record>
 
-    <template id="report_laboratorio_summary_pedido_line_document">
+    <template id="report_laboratorio_summary_pedido_line">
+        <t t-call="idtx_batch_quality.report_laboratorio_summary_pedido_line_raw"/>
+    </template>
+
+    <template id="report_laboratorio_summary_pedido_line_raw">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="line">
-                <t t-set="company" t-value="line.env.company"/>
-                <t t-set="base_url" t-value="line.env['ir.config_parameter'].sudo().get_param('web.base.url')"/>
-                <t t-set="payload" t-value="line._laboratorio_summary_report_payload()"/>
-                <t t-set="dim_h" t-value="payload.get('dimrev_highest', {})"/>
-                <t t-set="dim_l1" t-value="payload.get('dimrev_l1', {})"/>
-                <t t-set="sol" t-value="payload.get('solidez', {})"/>
-                <div class="page">
-                        <meta charset="utf-8"/>
-                        <style>
-                            @charset "UTF-8";
-                            .lab-wrap {
-                                font-family: 'DejaVu Sans', sans-serif;
-                                color: #1f2937;
-                                margin-top: 0 !important;
-                                padding-top: 0 !important;
-                            }
-                            .lab-head {
-                                width: 100%;
-                                border-collapse: collapse;
-                                margin-bottom: 6px;
-                            }
-                            .lab-head td {
-                                border: 1px solid #111827;
-                                padding: 4px 6px;
-                                font-size: 10px;
-                                vertical-align: middle;
-                            }
-                            .lab-title {
-                                text-align: center;
-                                font-size: 15px;
-                                font-weight: 800;
-                                text-transform: uppercase;
-                            }
-                            .lab-top {
-                                width: 100%;
-                                border-collapse: collapse;
-                                margin-bottom: 4px;
-                            }
-                            .lab-top td {
-                                border: 1px solid #111827;
-                                padding: 4px 6px;
-                                vertical-align: middle;
-                            }
-                            .lab-top-logo-cell {
-                                height: 76px;
-                                min-height: 76px;
-                                vertical-align: middle;
-                            }
-                            .lab-brand-wrap {
-                                display: table;
-                                width: 100%;
-                                table-layout: fixed;
-                                white-space: nowrap;
-                                overflow: hidden;
-                            }
-                            .lab-brand-main {
-                                display: table-cell;
-                                width: 220px;
-                                vertical-align: middle;
-                                overflow: hidden;
-                            }
-                            .lab-brand-certs {
-                                display: table-cell;
-                                vertical-align: middle;
-                                text-align: center;
-                                white-space: nowrap;
-                                overflow: hidden;
-                            }
-                            .lab-brand-logo {
-                                display: block;
-                                margin-right: 8px;
-                                max-height: 72px;
-                                max-width: 220px;
-                            }
-                            .lab-cert {
-                                display: inline-block;
-                                vertical-align: middle;
-                                padding: 2px 6px;
-                                margin-right: 4px;
-                                border: 1px solid #6b7280;
-                                border-radius: 10px;
-                                font-size: 8px;
-                                font-weight: 700;
-                                color: #374151;
-                                background: #f9fafb;
-                            }
-                            .lab-cert-link {
-                                display: inline-block;
-                                vertical-align: middle;
-                                width: 80px;
-                                margin: 0 2px;
-                                text-decoration: none;
-                                text-align: center;
-                            }
-                            .lab-cert-block {
-                                display: inline-block;
-                                vertical-align: middle;
-                                width: 120px;
-                                margin: 0 2px;
-                                text-align: center;
-                            }
-                            .lab-cert-logo {
-                                display: block;
-                                height: 34px;
-                                max-width: 74px;
-                                border: 0;
-                                border-radius: 0;
-                                background: transparent;
-                                padding: 0;
-                                margin: 0 auto;
-                            }
-                            .lab-cert-caption {
-                                display: block;
-                                margin-top: 2px;
-                                font-size: 8px;
-                                font-weight: 600;
-                                color: #4b5563;
-                                line-height: 1.1;
-                            }
-                            .lab-cert-snas-box {
-                                display: inline-block;
-                                vertical-align: middle;
-                                width: 106px;
-                                height: 41px;
-                                margin: 0 2px;
-                                padding: 2px;
-                                border: 1px solid #000000;
-                                text-align: center;
-                                box-sizing: border-box;
-                                overflow: hidden;
-                            }
-                            .lab-cert-logo-snas {
-                                display: block;
-                                width: 70px;
-                                max-width: 70px;
-                                max-height: 17px;
-                                margin: 0 auto;
-                                border: 0;
-                                background: transparent;
-                                padding: 0;
-                            }
-                            .lab-cert-caption-snas {
-                                display: block;
-                                margin-top: 2px;
-                                font-size: 8px;
-                                font-weight: 700;
-                                letter-spacing: 0;
-                                color: #111827;
-                                line-height: 1;
-                                text-align: center;
-                                white-space: nowrap;
-                            }
-                            .lab-contact {
-                                text-align: right;
-                                font-size: 8px;
-                                color: #374151;
-                                line-height: 1.2;
-                            }
-                            .lab-main-title {
-                                width: 100%;
-                                border-collapse: collapse;
-                                margin-bottom: 2px;
-                            }
-                            .lab-main-title td {
-                                border: 1px solid #111827;
-                                padding: 6px;
-                                text-align: center;
-                            }
-                            .lab-main-title .title {
-                                font-size: 16px;
-                                font-weight: 800;
-                                text-transform: uppercase;
-                                letter-spacing: 0.2px;
-                            }
-                            .lab-main-title .subtitle {
-                                font-size: 9px;
-                                color: #4b5563;
-                            }
-                            .lab-sample {
-                                width: 100%;
-                                border-collapse: collapse;
-                                margin-bottom: 6px;
-                            }
-                            .lab-sample th,
-                            .lab-sample td {
-                                border: 1px solid #111827;
-                                padding: 3px 5px;
-                                font-size: 9px;
-                            }
-                            .lab-sample th {
-                                background: #e5e7eb;
-                                text-transform: uppercase;
-                                font-size: 9px;
-                                text-align: left;
-                            }
-                            .lab-sample .lab-status-ok {
-                                color: #166534;
-                                font-weight: 700;
-                            }
-                            .lab-sample .lab-status-fail {
-                                color: #991b1b;
-                                font-weight: 700;
-                            }
-                            .lab-sample .lab-status-final {
-                                font-size: 18px;
-                                font-weight: 700;
-                                text-transform: uppercase;
-                                text-align: center;
-                                letter-spacing: 0.4px;
-                            }
-                            .lab-grid {
-                                width: 100%;
-                                border-collapse: collapse;
-                                margin-top: 4px;
-                            }
-                            .lab-grid th,
-                            .lab-grid td {
-                                border: 1px solid #111827;
-                                padding: 3px 4px;
-                                font-size: 9px;
-                            }
-                            .lab-grid th {
-                                background: #f3f4f6;
-                                text-transform: uppercase;
-                                font-size: 9px;
-                            }
-                            .lab-sec {
-                                margin-top: 6px;
-                                border: 1px solid #111827;
-                            }
-                            .lab-sec-head {
-                                background: #e5e7eb;
-                                font-size: 10px;
-                                font-weight: 700;
-                                text-transform: uppercase;
-                                padding: 4px 6px;
-                                border-bottom: 1px solid #111827;
-                            }
-                            .lab-sec-body {
-                                padding: 5px;
-                            }
-                            .lab-num {
-                                text-align: right;
-                            }
-                            .lab-center {
-                                text-align: center;
-                            }
-                            .lab-method {
-                                display: block;
-                                margin-top: 2px;
-                                font-size: 8px;
-                                color: #6b7280;
-                                text-transform: none;
-                            }
-                            .lab-note {
-                                font-size: 8px;
-                                color: #6b7280;
-                                text-transform: none;
-                            }
-                            .lab-note-wrap {
-                                margin-top: 2px;
-                                width: 100%;
-                            }
-                            .lab-note-row {
-                                display: block;
-                                width: 100%;
-                                white-space: nowrap;
-                            }
-                            .lab-note-key {
-                                display: inline-block;
-                                width: 120px;
-                                white-space: nowrap;
-                            }
-                            .lab-note-sep {
-                                display: inline-block;
-                                width: 10px;
-                                text-align: center;
-                            }
-                            .lab-note-value {
-                                display: inline-block;
-                                white-space: normal;
-                                width: calc(100% - 130px);
-                                vertical-align: top;
-                            }
-                            .lab-req-line {
-                                display: block;
-                                text-align: center;
-                            }
-                            .lab-res-line {
-                                display: block;
-                                text-align: right;
-                                line-height: 11px;
-                                margin: 0;
-                            }
-                            .lab-req-wrap {
-                                width: 100%;
-                                display: flex;
-                                justify-content: center;
-                            }
-                            .lab-req-inner {
-                                border-collapse: collapse;
-                                margin: 0 auto;
-                            }
-                            .lab-req-inner td {
-                                border: 0;
-                                padding: 0 2px;
-                                font-size: 9px;
-                                line-height: 11px;
-                            }
-                            .lab-req-label {
-                                text-align: right;
-                                white-space: nowrap;
-                                padding-right: 6px;
-                            }
-                            .lab-req-value {
-                                text-align: left;
-                                white-space: nowrap;
-                            }
-                            .lab-vtop {
-                                vertical-align: top;
-                            }
-                            .lab-ok {
-                                color: #166534;
-                                font-weight: 700;
-                            }
-                            .lab-fail {
-                                color: #991b1b;
-                                font-weight: 700;
-                            }
-                        </style>
+                <t t-set="report_lang" t-value="line.env.context.get('lab_lang') or line._get_mail_recipient_partner().lang or line.env.context.get('lang') or 'en_US'"/>
+                <t t-call="idtx_batch_quality.report_laboratorio_summary_pedido_line_document" t-lang="report_lang">
+                    <t t-set="line" t-value="line.with_context(lang=report_lang)"/>
+                </t>
+            </t>
+        </t>
+    </template>
 
-                        <div class="lab-wrap">
+    <template id="report_laboratorio_summary_pedido_line_document">
+        <t t-set="company" t-value="line.env.company"/>
+        <t t-set="base_url" t-value="line.env['ir.config_parameter'].sudo().get_param('web.base.url')"/>
+        <t t-set="payload" t-value="line._laboratorio_summary_report_payload()"/>
+        <t t-set="dim_h" t-value="payload.get('dimrev_highest', {})"/>
+        <t t-set="dim_l1" t-value="payload.get('dimrev_l1', {})"/>
+        <t t-set="sol" t-value="payload.get('solidez', {})"/>
+        <div class="page">
+            <link rel="stylesheet" t-att-href="'%s/idtx_batch_quality/static/src/css/laboratorio_summary_report.css' % (base_url or '')"/>
+                <meta charset="utf-8"/>
+                <div class="lab-wrap">
                             <table class="lab-top">
                                 <tr>
-                                    <td class="lab-top-logo-cell" style="width: 70%;">
+                                    <td class="lab-top-logo-cell lab-top-col-main">
                                         <div class="lab-brand-wrap">
                                             <div class="lab-brand-main">
-                                                <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" class="lab-brand-logo" alt="Logo"/>
-                                                <span t-if="not company.logo" style="font-weight:700; margin-right:8px;">IDETEX</span>
+                                                <img t-if="company.logo" t-att-src="'%s/web/image/res.company/%s/logo' % (base_url or '', company.id)" class="lab-brand-logo" alt="Logo"/>
+                                                <span t-if="not company.logo" class="lab-brand-fallback">IDETEX</span>
                                             </div>
                                             <div class="lab-brand-certs">
-                                                <a class="lab-cert-link" href="https://www.iso.org/standard/62085.html" target="_blank">
+                                                <span class="lab-cert-link">
                                                     <img class="lab-cert-logo" t-att-src="'%s/idtx_batch_quality/static/src/img/certs/iso_logo.png' % (base_url or '')" alt="ISO"/>
-                                                </a>
-                                                <a class="lab-cert-link" href="https://iaf.nu/" target="_blank">
+                                                </span>
+                                                <span class="lab-cert-link">
                                                     <img class="lab-cert-logo" t-att-src="'%s/idtx_batch_quality/static/src/img/certs/iaf_logo.svg' % (base_url or '')" alt="IAF"/>
-                                                </a>
+                                                </span>
                                                 <span class="lab-cert-snas-box">
                                                     <img class="lab-cert-logo-snas" t-att-src="'%s/idtx_batch_quality/static/src/img/certs/snas_inacal.jpg' % (base_url or '')" alt="SNAS"/>
                                                     <span class="lab-cert-caption-snas">Reg. No. 391/Q-058</span>
@@ -383,7 +74,7 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="lab-top-logo-cell lab-contact" style="width: 30%;">
+                                    <td class="lab-top-logo-cell lab-contact lab-top-col-contact">
                                         <div t-esc="company.street or ''"/>
                                         <div>
                                             <span t-esc="company.city or ''"/>
@@ -398,73 +89,110 @@
                             <table class="lab-main-title">
                                 <tr>
                                     <td>
-                                        <div class="title">Resumen de Laboratorio por Partida</div>
-                                        <div class="subtitle">Registro consolidado de evaluaciones de calidad</div>
+                                        <div class="title" t-esc="payload.get('report_title') or '-'"/>
+                                        <div class="subtitle">Consolidated quality evaluation record</div>
                                     </td>
                                 </tr>
                             </table>
 
                             <table class="lab-sample">
                                 <tr>
-                                    <th colspan="4">Informacion de la Muestra</th>
+                                    <th colspan="4">Sample Information</th>
                                 </tr>
                                 <tr>
-                                    <td style="width:16%;"><b>Cliente</b></td>
-                                    <td style="width:34%;" t-esc="line.pedido_id.customer or '-'"/>
-                                    <td style="width:16%;"><b>Resultado Final</b></td>
-                                    <td style="width:34%;" t-attf-class="lab-status-final {{ 'lab-status-ok' if payload.get('overall_status') == 'Pasa' else 'lab-status-fail' }}" t-esc="'APROBADO' if payload.get('overall_status') == 'Pasa' else 'DESAPROBADO'"/>
+                                    <td class="lab-col-16"><b>Client</b></td>
+                                    <td class="lab-col-34" t-esc="line.pedido_id.customer or '-'"/>
+                                    <td class="lab-col-16"><b>Final Result</b></td>
+                                    <td class="lab-col-34" t-attf-class="lab-status-final {{ 'lab-status-ok' if payload.get('overall_status') == 'Pass' else 'lab-status-fail' }}" t-esc="payload.get('overall_result_label') or '-'"/>
                                 </tr>
                                 <tr>
-                                    <td><b>Descripcion</b></td>
+                                    <td><b>Description</b></td>
                                     <td t-esc="line.description or '-'"/>
-                                    <td><b>Fecha Impresion</b></td>
+                                    <td><b>Print Date</b></td>
                                     <td t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y')"/>
                                 </tr>
                                 <tr>
-                                    <td><b>Partida</b></td>
+                                    <td><b>Batch</b></td>
                                     <td t-esc="line.batch or '-'"/>
-                                    <td><b>Pedido</b></td>
+                                    <td><b>Order</b></td>
                                     <td t-esc="line.pedido_id.numordped or '-'"/>
                                 </tr>
                                 <tr>
-                                    <td><b>Codigo Color</b></td>
+                                    <td><b>Color Code</b></td>
                                     <td t-esc="line.colorcode or '-'"/>
-                                    <td><b>Nro Rollos</b></td>
+                                    <td><b>Roll Count</b></td>
                                     <td class="lab-num" t-esc="'%s' % (line.rollos or 0)"/>
                                 </tr>
                                 <tr>
                                     <td><b>Color</b></td>
                                     <td t-esc="line.colorname or '-'"/>
-                                    <td><b>Kilogramos</b></td>
+                                    <td><b>Kilograms</b></td>
                                     <td class="lab-num" t-esc="'%.2f' % (line.kilograms or 0.0)"/>
                                 </tr>
                             </table>
 
                             <div class="lab-sec">
-                                <div class="lab-sec-head">Resumen de Estado</div>
+                                <div class="lab-sec-head">Care Instructions</div>
                                 <div class="lab-sec-body">
-                                    <table class="lab-grid" style="margin-top:0;">
+                                    <div class="lab-care-icons-cell">
+                                        <table class="lab-care-icons-table">
+                                            <tr>
+                                                <td class="lab-care-icon-cell" t-if="payload.get('care_wash_icon_url')">
+                                                    <img class="lab-care-icon" t-att-src="payload.get('care_wash_icon_url')" alt="Wash"/>
+                                                </td>
+                                                <td class="lab-care-icon-cell" t-if="payload.get('care_dry_icon_url')">
+                                                    <img class="lab-care-icon" t-att-src="payload.get('care_dry_icon_url')" alt="Dry"/>
+                                                </td>
+                                                <td class="lab-care-icon-cell" t-if="payload.get('care_bleaching_icon_url')">
+                                                    <img class="lab-care-icon" t-att-src="payload.get('care_bleaching_icon_url')" alt="Bleach"/>
+                                                </td>
+                                                <td class="lab-care-icon-cell" t-if="payload.get('care_ironing_icon_url')">
+                                                    <img class="lab-care-icon" t-att-src="payload.get('care_ironing_icon_url')" alt="Iron"/>
+                                                </td>
+                                                <td class="lab-care-icon-cell" t-if="payload.get('care_iron_steam_icon_url')">
+                                                    <img class="lab-care-icon" t-att-src="payload.get('care_iron_steam_icon_url')" alt="No Steam"/>
+                                                </td>
+                                                <td class="lab-care-icon-cell" t-if="payload.get('care_profesional_dry_icon_url')">
+                                                    <img class="lab-care-icon" t-att-src="payload.get('care_profesional_dry_icon_url')" alt="Professional Dry"/>
+                                                </td>
+                                                <td class="lab-care-icon-cell" t-if="payload.get('care_profesional_wet_icon_url')">
+                                                    <img class="lab-care-icon" t-att-src="payload.get('care_profesional_wet_icon_url')" alt="Professional Wet"/>
+                                                </td>
+                                                <td class="lab-care-icon-cell" t-if="payload.get('care_do_not_wring_icon_url')">
+                                                    <img class="lab-care-icon" t-att-src="payload.get('care_do_not_wring_icon_url')" alt="Do Not Wring"/>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="lab-care-text-cell" t-esc="payload.get('care_instruction') or '-'"/>
+                                </div>
+                            </div>
+
+                            <div class="lab-sec">
+                                <div class="lab-sec-head">Status Summary</div>
+                                <div class="lab-sec-body">
+                                    <table class="lab-grid lab-grid-no-margin">
                                         <tr>
-                                            <th>Evaluacion</th>
-                                            <th class="lab-center">Estado</th>
+                                            <th>Evaluation</th>
+                                            <th class="lab-center">Status</th>
                                         </tr>
                                         <tr t-foreach="payload.get('summary_rows', [])" t-as="row">
                                             <td t-esc="row.get('item')"/>
-                                            <td t-attf-class="lab-center {{ 'lab-ok' if row.get('status') == 'Pasa' else 'lab-fail' }}" t-esc="row.get('status')"/>
+                                            <td t-attf-class="lab-center {{ 'lab-ok' if row.get('status') == 'Pass' else 'lab-fail' }}" t-esc="row.get('status_label') or row.get('status')"/>
                                         </tr>
                                     </table>
                                 </div>
                             </div>
 
                             <div class="lab-sec">
-                                <div class="lab-sec-head">Resultados de las Pruebas</div>
+                                <div class="lab-sec-head">Test Results</div>
                                 <div class="lab-sec-body">
                                     <table class="lab-grid">
                                         <tr>
-                                            <th>Ensayo</th>
-                                            <th class="lab-center">Requerimiento</th>
-                                            <th>Resultado</th>
-                                            <th class="lab-center">Pasa / Falla</th>
+                                            <th>Test</th>
+                                            <th class="lab-center">Requirement</th>
+                                            <th>Result</th>
+                                            <th class="lab-center">Pass / Fail</th>
                                         </tr>
                                         <tr t-foreach="payload.get('test_rows', [])" t-as="row">
                                             <td>
@@ -510,14 +238,40 @@
                                                     <span t-esc="'%.2f' % (row.get('result') or 0.0)"/>
                                                 </t>
                                             </td>
-                                            <td t-attf-class="lab-center {{ 'lab-ok' if row.get('status') == 'Pasa' else 'lab-fail' }}" t-esc="row.get('status')"/>
+                                            <td t-attf-class="lab-center {{ 'lab-ok' if row.get('status') == 'Pass' else 'lab-fail' }}" t-esc="row.get('status_label') or row.get('status')"/>
                                         </tr>
                                     </table>
                                 </div>
                             </div>
-                        </div>
+
+                            <div class="lab-sec">
+                                <div class="lab-sec-head">Scoring</div>
+                                <div class="lab-sec-body">
+                                    <table class="lab-score-wrap">
+                                        <tr>
+                                            <td class="lab-score-col-legend">
+                                                <table class="lab-legend-grid">
+                                                    <tr>
+                                                        <td t-foreach="payload.get('score_legend') or []" t-as="legend">
+                                                            <div class="lab-legend-title" t-esc="legend.get('title') or '-'"/>
+                                                            <div t-foreach="legend.get('lines') or []" t-as="legend_line" t-esc="legend_line"/>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                            <td class="lab-sign-box lab-score-col-sign">
+                                                <img t-if="payload.get('emitter_signature_url')" t-att-src="payload.get('emitter_signature_url')" alt="Digital Signature" class="lab-sign-image"/>
+                                                <div t-if="not payload.get('emitter_signature_url')" class="lab-sign-empty">No digital signature</div>
+                                                <div class="lab-sign-line"/>
+                                                <div class="lab-sign-name" t-esc="payload.get('emitter_name') or '-'"/>
+                                                <div class="lab-sign-role" t-esc="payload.get('emitter_role') or '-'"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
                 </div>
-            </t>
-        </t>
+        </div>
+        
     </template>
 </odoo>

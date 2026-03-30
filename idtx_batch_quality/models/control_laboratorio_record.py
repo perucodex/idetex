@@ -67,10 +67,28 @@ class ControlLaboratorioRecord(models.Model):
         return records
 
     def write(self, vals):
+        if self.env.context.get("skip_laboratorio_sync"):
+            return super().write(vals)
         res = super().write(vals)
         if any(k in vals for k in ("test_type", "est_revirado_eval_id", "solidez_lavado_eval_id", "result_state")):
             self._sync_result_lines()
         return res
+
+    def _linked_eval_result_state(self):
+        self.ensure_one()
+        if self.test_type == "solidez_lavado" and self.solidez_lavado_eval_id:
+            if self.solidez_lavado_eval_id.state == "fail":
+                return "falla"
+            if self.solidez_lavado_eval_id.state == "pass":
+                return "pasa"
+            return False
+        if self.test_type == "dimrev" and self.est_revirado_eval_id:
+            if self.est_revirado_eval_id.state == "fail":
+                return "falla"
+            if self.est_revirado_eval_id.state == "pass":
+                return "pasa"
+            return False
+        return False
 
     @staticmethod
     def _has_measure_prefix(eval_rec, prefix):
@@ -115,6 +133,10 @@ class ControlLaboratorioRecord(models.Model):
 
     def _sync_result_lines(self):
         for rec in self:
+            linked_state = rec._linked_eval_result_state()
+            if linked_state and rec.result_state != linked_state:
+                rec.with_context(skip_laboratorio_sync=True).write({"result_state": linked_state})
+
             commands = [(5, 0, 0)]
             if rec.test_type == "dimrev":
                 commands += [(0, 0, vals) for vals in rec._dimrev_result_lines_vals()]

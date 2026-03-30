@@ -1,6 +1,8 @@
 from markupsafe import Markup
+import uuid
+from urllib.parse import urlencode
 
-from odoo import models, fields, api, _
+from odoo import models, fields, api, _, tools
 from odoo.fields import Domain
 from odoo.exceptions import UserError
 
@@ -8,6 +10,7 @@ class ControlPedidoLine(models.Model):
     _inherit = "control.pedido.line"
 
     report_name = fields.Char(string="Report Name", default=lambda self: _("New"), copy=False, index=True)
+    lab_public_token = fields.Char(string="Public Token", copy=False, index=True)
     laboratorio_record_ids = fields.One2many(
         "control.laboratorio.record",
         "pedido_line_id",
@@ -60,7 +63,7 @@ class ControlPedidoLine(models.Model):
     can_apariencia = fields.Boolean(compute="_compute_can_apariencia", store=False)
     user_id = fields.Many2one(
         comodel_name='res.users',
-        string="Qualityperson",
+        string="Sender",
         compute='_compute_user_id',
         store=True, readonly=False, precompute=True, index=True,
         tracking=2,
@@ -247,9 +250,9 @@ class ControlPedidoLine(models.Model):
             "context": {"default_pedido_line_id": self.id, "tone_mode": "secado"},
         }
 
-    @staticmethod
-    def _state_to_summary_status(state_value):
-        return "Pasa" if state_value == "pass" else "Falla"
+    def _state_to_summary_status(self, state_value):
+        self.ensure_one()
+        return self.env._("Pass") if state_value == "pass" else self.env._("Fail")
 
     def _get_dimrev_highest_wash_eval(self):
         self.ensure_one()
@@ -275,6 +278,7 @@ class ControlPedidoLine(models.Model):
 
     def _laboratorio_summary_report_payload(self):
         self.ensure_one()
+        _ = self.env._
 
         dimrev_highest = self._get_dimrev_highest_wash_eval()
         dimrev_l1 = self._get_dimrev_first_wash_eval()
@@ -327,14 +331,195 @@ class ControlPedidoLine(models.Model):
         density_tol_pct = _fmt_tolerance_percent(float(dim_thresholds.density or 0.0) if dim_thresholds else 0.0)
         width_tol_pct = _fmt_tolerance_percent(float(dim_thresholds.width or 0.0) if dim_thresholds else 0.0)
 
+        dim_wash_code = dim_thresholds.get_aatcc_tm135_code() if dim_thresholds else "(1) (III) B"
+        dim_wash_notes = dim_thresholds.get_report_wash_notes() if dim_thresholds else [
+            {"label": _("Washing Temperature"), "value": "41&#176;C &#177;3&#176;C"},
+            {"label": _("Cycle"), "value": _("Normal")},
+            {"label": _("Drying"), "value": _("Line/Hang Dry")},
+            {"label": _("Ballast"), "value": _("Type 1 - 100% Cotton")},
+        ]
+
+        temp_en_map = {
+            "cold": "30°C ±3°C",
+            "warm": "40°C ±3°C",
+            "hot": "50°C ±3°C",
+            "very": "60°C ±3°C",
+            "super": "70°C ±3°C",
+            "hyper": "95°C ±3°C",
+        }
+        cycle_en_map = {
+            "normal": _("Normal"),
+            "delicate": _("Delicate"),
+            "permanent_press": _("Permanent Press"),
+            "hand": _("Hand Wash"),
+            "not_allowed": _("Do Not Wash"),
+        }
+        bleaching_en_map = {
+            "any": _("Any Bleach"),
+            "only": _("Only Non-Chlorine / Oxygen Bleach"),
+            "not_allowed": _("Do Not Bleach"),
+        }
+        drying_en_map = {
+            "tumble_dry": _("Tumble Dry"),
+            "tumble_dry_normal": _("Tumble Dry Normal"),
+            "tumble_dry_delicate": _("Tumble Dry Delicate"),
+            "tumble_dry_permanent_press": _("Tumble Dry Permanent Press"),
+            "line_hang_dry": _("Line/Hang Dry"),
+            "drip_dry": _("Drip Dry"),
+            "dry_flat": _("Dry Flat"),
+            "not_allowed": _("Do Not Tumble Dry"),
+        }
+        drying_heat_en_map = {
+            "any": _("Any Heat"),
+            "high": _("High"),
+            "medium": _("Medium"),
+            "low": _("Low"),
+            "not_allowed": _("No Heat Air"),
+        }
+        ironing_en_map = {
+            "low": _("Low"),
+            "medium": _("Medium"),
+            "high": _("High"),
+            "not_allowed": _("Do Not Iron"),
+        }
+        professional_dry_en_map = {
+            "dry_clean_normal_any": _("Dry Clean Normal (A)"),
+            "dry_clean_normal_f": _("Dry Clean Mild (F)"),
+            "dry_clean_mild_any": _("Dry Clean Very Mild (A)"),
+            "dry_clean_mild_f": _("Dry Clean Very Mild (F)"),
+            "not_allowed": _("Do Not Dry Clean"),
+        }
+        professional_wet_en_map = {
+            "wet_clean_n": _("Wet Clean Normal"),
+            "wet_clean_l": _("Wet Clean Mild"),
+            "wet_clean_h": _("Wet Clean Very Mild"),
+            "not_allowed": _("Do Not Wet Clean"),
+        }
+
+        care_temp = temp_en_map.get(dim_thresholds.wash_temperature_level, "-") if dim_thresholds else "-"
+        care_cycle = cycle_en_map.get(dim_thresholds.wash_cycle_type, "-") if dim_thresholds else "-"
+        care_bleaching = bleaching_en_map.get(dim_thresholds.bleaching, "-") if dim_thresholds else "-"
+        care_drying = drying_en_map.get(dim_thresholds.drying_condition, "-") if dim_thresholds else "-"
+        care_drying_heat = drying_heat_en_map.get(dim_thresholds.drying_heat, "-") if dim_thresholds else "-"
+        care_ironing = ironing_en_map.get(dim_thresholds.ironing, "-") if dim_thresholds else "-"
+        care_professional_dry = professional_dry_en_map.get(dim_thresholds.profesional_textile_care_dry, "-") if dim_thresholds else "-"
+        care_professional_wet = professional_wet_en_map.get(dim_thresholds.profesional_textile_care_wet, "-") if dim_thresholds else "-"
+
+        dry_text = _("Drying: %s") % care_drying
+        if dim_thresholds and dim_thresholds.drying_condition not in ("line_hang_dry", "drip_dry", "dry_flat", "not_allowed") and dim_thresholds.drying_heat:
+            dry_text = _("Drying: %s / %s") % (care_drying, care_drying_heat)
+
+        care_instruction_parts = []
+        if dim_thresholds and dim_thresholds.wash_cycle_type:
+            care_instruction_parts.append(_("Washing: %s / %s") % (care_cycle, care_temp))
+        if dim_thresholds and dim_thresholds.drying_condition:
+            care_instruction_parts.append(dry_text)
+        if dim_thresholds and dim_thresholds.bleaching:
+            care_instruction_parts.append(_("Bleaching: %s") % care_bleaching)
+        if dim_thresholds and dim_thresholds.ironing:
+            care_instruction_parts.append(_("Ironing: %s") % care_ironing)
+        if dim_thresholds and dim_thresholds.iron_steam:
+            care_instruction_parts.append(_("No Steam"))
+        if dim_thresholds and dim_thresholds.profesional_textile_care_dry:
+            care_instruction_parts.append(_("Professional (dry): %s") % care_professional_dry)
+        if dim_thresholds and dim_thresholds.profesional_textile_care_wet:
+            care_instruction_parts.append(_("Professional (wet): %s") % care_professional_wet)
+        if dim_thresholds and dim_thresholds.do_not_wring:
+            care_instruction_parts.append(_("Do Not Wring"))
+        if dim_thresholds and dim_thresholds.separately:
+            care_instruction_parts.append(_("Wash Separately"))
+        if dim_thresholds and dim_thresholds.with_like_colors:
+            care_instruction_parts.append(_("Wash With Like Colors"))
+        if dim_thresholds and dim_thresholds.wash_inside_out:
+            care_instruction_parts.append(_("Wash Inside Out"))
+        care_instruction = " / ".join(care_instruction_parts) if care_instruction_parts else "-"
+        wash_cycle_key = (dim_thresholds.wash_cycle_type if dim_thresholds else "") or ""
+        wash_temp_key = (dim_thresholds.wash_temperature_level if dim_thresholds else "") or ""
+        bleaching_key = (dim_thresholds.bleaching if dim_thresholds else "") or ""
+        dry_key = (dim_thresholds.drying_condition if dim_thresholds else "") or ""
+        drying_heat_key = (dim_thresholds.drying_heat if dim_thresholds else "") or ""
+        ironing_key = (dim_thresholds.ironing if dim_thresholds else "") or ""
+        professional_dry_key = (dim_thresholds.profesional_textile_care_dry if dim_thresholds else "") or ""
+        professional_wet_key = (dim_thresholds.profesional_textile_care_wet if dim_thresholds else "") or ""
+
+        if not wash_temp_key or wash_cycle_key in ("hand", "not_allowed"):
+            wash_temp_key = ""
+        else:
+            wash_temp_key = f"_{wash_temp_key}"
+
+        dry_suffix = ""
+        if dim_thresholds and dim_thresholds.in_the_shade and dry_key in ("line_hang_dry", "drip_dry", "dry_flat"):
+            dry_suffix = "_in_the_shade"
+
+        if dry_key in ("line_hang_dry", "drip_dry", "dry_flat", "not_allowed"):
+            drying_heat_key = ""
+
+        if not drying_heat_key or drying_heat_key == "any":
+            drying_heat_suffix = ""
+        else:
+            drying_heat_suffix = f"_{drying_heat_key}"
+
+        report_base_url = self.env["ir.config_parameter"].sudo().get_param("report.url") or self.env["ir.config_parameter"].sudo().get_param("web.base.url") or ""
+        def _care_svg_url(filename):
+            try:
+                with tools.file_open(f"idtx_product_development/static/src/img/care/{filename}", mode="rb"):
+                    pass
+                return f"{report_base_url}/idtx_product_development/static/src/img/care/{filename}"
+            except OSError:
+                return False
+
+        care_wash_icon_url = _care_svg_url(f"wash/wash_{wash_cycle_key}{wash_temp_key}.svg") if wash_cycle_key else False
+        care_dry_icon_url = _care_svg_url(f"dry/dry_{dry_key}{drying_heat_suffix}{dry_suffix}.svg") if dry_key else False
+        care_bleaching_icon_url = _care_svg_url(f"bleach/bleaching_{bleaching_key}.svg") if bleaching_key else False
+        care_ironing_icon_url = _care_svg_url(f"iron/ironing_{ironing_key}.svg") if ironing_key else False
+        care_iron_steam_icon_url = _care_svg_url("iron/iron_steam.svg") if dim_thresholds and dim_thresholds.iron_steam else False
+        care_profesional_dry_icon_url = _care_svg_url(f"profesional/dry/profesional_textile_care_dry_{professional_dry_key}.svg") if professional_dry_key else False
+        care_profesional_wet_icon_url = _care_svg_url(f"profesional/wet/profesional_textile_care_wet_{professional_wet_key}.svg") if professional_wet_key else False
+        care_do_not_wring_icon_url = _care_svg_url("dry/do_not_wring.svg") if dim_thresholds and dim_thresholds.do_not_wring else False
+
+        emitter_user = self.user_id or self.env.user
+        emitter_name = emitter_user.name or "-"
+        emitter_role = "-"
+        if "employee_ids" in emitter_user._fields and emitter_user.employee_ids:
+            emitter_role = emitter_user.employee_ids[:1].job_title or "-"
+        elif emitter_user.partner_id and emitter_user.partner_id.function:
+            emitter_role = emitter_user.partner_id.function
+
+        emitter_signature_url = False
+        if "signature_image" in emitter_user._fields and emitter_user.signature_image:
+            emitter_signature_url = f"{report_base_url}/web/image/res.users/{emitter_user.id}/signature_image"
+
+        score_legend = [
+            {
+                "title": _("Color Change"),
+                "lines": [
+                    _("Grade 5.0 - Negligible or No Change"),
+                    _("Grade 4.0 - Slightly Changed"),
+                    _("Grade 3.0 - Noticeably Changed"),
+                    _("Grade 2.0 - Considerably Changed"),
+                    _("Grade 1.0 - Severely Changed"),
+                ],
+            },
+            {
+                "title": _("Migration"),
+                "lines": [
+                    _("Grade 5.0 - Negligible or No Staining"),
+                    _("Grade 4.0 - Slightly Stained"),
+                    _("Grade 3.0 - Noticeably Stained"),
+                    _("Grade 2.0 - Considerably Stained"),
+                    _("Grade 1.0 - Heavily Stained"),
+                ],
+            },
+        ]
+
         dimrev_highest_state = dimrev_highest.state if dimrev_highest else "nodata"
         dimrev_l1_state = dimrev_l1.state if dimrev_l1 else "nodata"
         solidez_state = solidez.state if solidez else "nodata"
 
         test_rows = [
             {
-                "test": "Densidad",
-                "method": "ASTM D3776 - Opcion C",
+                "test": _("Density"),
+                "method": _("ASTM D3776 - Option C"),
                 "notes": [],
                 "requirement": _fmt_req_min(std_density, " g/m2"),
                 "requirement_lines": [
@@ -342,11 +527,11 @@ class ControlPedidoLine(models.Model):
                     f"&#177; {density_tol_pct:.2f}%" if density_tol_pct else "&#177; -",
                 ],
                 "result": float(dimrev_l1.densidad_promedio or 0.0) if dimrev_l1 else 0.0,
-                "status": "Pasa" if (dimrev_l1 and dimrev_l1.bool_densidad_promedio) else "Falla",
+                "status": "Pass" if (dimrev_l1 and dimrev_l1.bool_densidad_promedio) else "Fail",
             },
             {
-                "test": "Ancho",
-                "method": "Medicion de ancho estandar",
+                "test": _("Width"),
+                "method": _("Standard width measurement"),
                 "notes": [],
                 "requirement": _fmt_req_min(std_width, " m"),
                 "requirement_lines": [
@@ -354,40 +539,35 @@ class ControlPedidoLine(models.Model):
                     f"&#177; {width_tol_pct:.2f}%" if width_tol_pct else "&#177; -",
                 ],
                 "result": float(dimrev_l1.ancho_promedio or 0.0) if dimrev_l1 else 0.0,
-                "status": "Pasa" if (dimrev_l1 and dimrev_l1.bool_ancho_promedio) else "Falla",
+                "status": "Pass" if (dimrev_l1 and dimrev_l1.bool_ancho_promedio) else "Fail",
             },
             {
-                "test": "Estabilidad Dimensional %Ancho",
-                "method": "AATCC TM 135-2018t   (1) (III) B",
-                "notes": [
-                    {"label": "Temperatura de lavado", "value": "41&#176;C &#177;3&#176;C"},
-                    {"label": "Ciclo", "value": "Normal"},
-                    {"label": "Secado", "value": "En linea"},
-                    {"label": "Lastre", "value": "Tipo 1 - 100% Algodon"},
-                ],
+                "test": _("Dimensional Stability %Width"),
+                "method": f"AATCC TM 135-2018t   {dim_wash_code}",
+                "notes": dim_wash_notes,
                 "requirement": _fmt_req_range(width_from, width_to, "%"),
                 "result": float(dimrev_highest.est_ancho_avg or 0.0) if dimrev_highest else 0.0,
-                "status": "Pasa" if (dimrev_highest and dimrev_highest.bool_est_ancho_avg) else "Falla",
+                "status": "Pass" if (dimrev_highest and dimrev_highest.bool_est_ancho_avg) else "Fail",
             },
             {
-                "test": "Estabilidad Dimensional %Largo",
-                "method": "AATCC TM 135-2018t",
+                "test": _("Dimensional Stability %Length"),
+                "method": f"AATCC TM 135-2018t   {dim_wash_code}",
                 "notes": [],
                 "requirement": _fmt_req_range(length_from, length_to, "%"),
                 "result": float(dimrev_highest.est_largo_avg or 0.0) if dimrev_highest else 0.0,
-                "status": "Pasa" if (dimrev_highest and dimrev_highest.bool_est_largo_avg) else "Falla",
+                "status": "Pass" if (dimrev_highest and dimrev_highest.bool_est_largo_avg) else "Fail",
             },
             {
-                "test": "Revirado",
-                "method": "AATCC TM179-2019, Metodo 1, opcion 1",
+                "test": _("Skewness"),
+                "method": _("AATCC TM179-2019, Method 1, Option 1"),
                 "notes": [],
                 "requirement": _fmt_req_max(twist_std, "%"),
                 "result": float(dimrev_highest.revirado_promedio or 0.0) if dimrev_highest else 0.0,
-                "status": "Pasa" if (dimrev_highest and dimrev_highest.bool_revirado_promedio) else "Falla",
+                "status": "Pass" if (dimrev_highest and dimrev_highest.bool_revirado_promedio) else "Fail",
             },
             {
-                "test": "Inclinacion Antes de Lavar",
-                "method": "Control interno de inclinacion",
+                "test": _("Tilt Before Washing"),
+                "method": _("Internal tilt control"),
                 "notes": [],
                 "requirement": _fmt_req_max(tilt_std, "°"),
                 "requirement_lines": [
@@ -395,57 +575,57 @@ class ControlPedidoLine(models.Model):
                     "&#177; 1&#176;" if tilt_std else "&#177; -",
                 ],
                 "result": float(dimrev_l1.tilt_before or 0.0) if dimrev_l1 else 0.0,
-                "status": "Pasa" if (dimrev_l1 and dimrev_l1.bool_tilt_before) else "Falla",
+                "status": "Pass" if (dimrev_l1 and dimrev_l1.bool_tilt_before) else "Fail",
             },
             {
-                "test": "Solidez al lavado Acelerado",
-                "method": "AATCC TM 61-2013e - Test N 2A",
+                "test": _("Accelerated Washing Colorfastness"),
+                "method": _("AATCC TM 61-2013e - Test N 2A"),
                 "notes": [
-                    {"label": "Temperatura", "value": "49&#176;C &#177;3&#176;C"},
-                    {"label": "Tiempo", "value": "45 min"},
-                    {"label": "N bolas", "value": "50"},
-                    {"label": "Multifibra", "value": "N 10"},
-                    {"label": "Detergente", "value": "WOB"},
+                    {"label": _("Temperature"), "value": "49&#176;C &#177;3&#176;C"},
+                    {"label": _("Time"), "value": "45 min"},
+                    {"label": _("Balls"), "value": "50"},
+                    {"label": _("Multifiber"), "value": "N 10"},
+                    {"label": _("Detergent"), "value": "WOB"},
                 ],
                 "requirement": _fmt_req_min(float(washing.color_change_degree or 0.0) if washing else 0.0),
                 "requirement_pairs": [
                     {
-                        "label": "Cambio de color",
+                        "label": _("Color Change"),
                         "value": f"&#8805; {float(washing.color_change_degree or 0.0):.2f}" if washing else "-",
                     },
                     {
-                        "label": "Migracion Acetato",
+                        "label": _("Acetate Migration"),
                         "value": f"&#8805; {float(washing.migration_acetate or 0.0):.2f}" if washing else "-",
                     },
                     {
-                        "label": "Migracion Algodon",
+                        "label": _("Cotton Migration"),
                         "value": f"&#8805; {float(washing.migration_cotton or 0.0):.2f}" if washing else "-",
                     },
                     {
-                        "label": "Migracion Nylon",
+                        "label": _("Nylon Migration"),
                         "value": f"&#8805; {float(washing.migration_nylon or 0.0):.2f}" if washing else "-",
                     },
                     {
-                        "label": "Migracion Poliester",
+                        "label": _("Polyester Migration"),
                         "value": f"&#8805; {float(washing.migration_polyester or 0.0):.2f}" if washing else "-",
                     },
                     {
-                        "label": "Migracion Acrilico",
+                        "label": _("Acrylic Migration"),
                         "value": f"&#8805; {float(washing.migration_acrylic or 0.0):.2f}" if washing else "-",
                     },
                     {
-                        "label": "Migracion Lana",
+                        "label": _("Wool Migration"),
                         "value": f"&#8805; {float(washing.migration_wool or 0.0):.2f}" if washing else "-",
                     },
                 ],
                 "requirement_lines": [
-                    f"Cambio de color: &#8805; {float(washing.color_change_degree or 0.0):.2f}" if washing else "Cambio de color: -",
-                    f"Migracion Acetato: &#8805; {float(washing.migration_acetate or 0.0):.2f}" if washing else "Migracion Acetato: -",
-                    f"Migracion Algodon: &#8805; {float(washing.migration_cotton or 0.0):.2f}" if washing else "Migracion Algodon: -",
-                    f"Migracion Nylon: &#8805; {float(washing.migration_nylon or 0.0):.2f}" if washing else "Migracion Nylon: -",
-                    f"Migracion Poliester: &#8805; {float(washing.migration_polyester or 0.0):.2f}" if washing else "Migracion Poliester: -",
-                    f"Migracion Acrilico: &#8805; {float(washing.migration_acrylic or 0.0):.2f}" if washing else "Migracion Acrilico: -",
-                    f"Migracion Lana: &#8805; {float(washing.migration_wool or 0.0):.2f}" if washing else "Migracion Lana: -",
+                    (_("Color Change") + f": &#8805; {float(washing.color_change_degree or 0.0):.2f}") if washing else (_("Color Change") + ": -"),
+                    (_("Acetate Migration") + f": &#8805; {float(washing.migration_acetate or 0.0):.2f}") if washing else (_("Acetate Migration") + ": -"),
+                    (_("Cotton Migration") + f": &#8805; {float(washing.migration_cotton or 0.0):.2f}") if washing else (_("Cotton Migration") + ": -"),
+                    (_("Nylon Migration") + f": &#8805; {float(washing.migration_nylon or 0.0):.2f}") if washing else (_("Nylon Migration") + ": -"),
+                    (_("Polyester Migration") + f": &#8805; {float(washing.migration_polyester or 0.0):.2f}") if washing else (_("Polyester Migration") + ": -"),
+                    (_("Acrylic Migration") + f": &#8805; {float(washing.migration_acrylic or 0.0):.2f}") if washing else (_("Acrylic Migration") + ": -"),
+                    (_("Wool Migration") + f": &#8805; {float(washing.migration_wool or 0.0):.2f}") if washing else (_("Wool Migration") + ": -"),
                 ],
                 "result": float(solidez.cambio_color_grado or 0.0) if solidez else 0.0,
                 "result_lines": [
@@ -457,7 +637,7 @@ class ControlPedidoLine(models.Model):
                     f"{float(solidez.mig_acrilico or 0.0):.2f}" if solidez else "-",
                     f"{float(solidez.mig_lana or 0.0):.2f}" if solidez else "-",
                 ],
-                "status": "Pasa" if (
+                "status": "Pass" if (
                     solidez
                     and solidez.bool_cambio_color_grado
                     and solidez.bool_mig_acetato
@@ -466,20 +646,20 @@ class ControlPedidoLine(models.Model):
                     and solidez.bool_mig_poliester
                     and solidez.bool_mig_acrilico
                     and solidez.bool_mig_lana
-                ) else "Falla",
+                ) else "Fail",
             },
             {
-                "test": "Solidez al frote",
-                "method": "AATCC TM8-2016e",
+                "test": _("Rubbing Colorfastness"),
+                "method": _("AATCC TM8-2016e"),
                 "notes": [],
                 "requirement": _fmt_req_min(float(washing.colorfastness_to_dry_rubbing or 0.0) if washing else 0.0),
                 "requirement_pairs": [
                     {
-                        "label": "Seco",
+                        "label": _("Dry"),
                         "value": f"&#8805; {float(washing.colorfastness_to_dry_rubbing or 0.0):.2f}" if washing else "-",
                     },
                     {
-                        "label": "Humedo",
+                        "label": _("Wet"),
                         "value": f"&#8805; {float(washing.colorfastness_to_wet_rubbing or 0.0):.2f}" if washing else "-",
                     },
                 ],
@@ -488,21 +668,27 @@ class ControlPedidoLine(models.Model):
                     f"{float(solidez.frote_seco or 0.0):.2f}" if solidez else "-",
                     f"{float(solidez.frote_humedo or 0.0):.2f}" if solidez else "-",
                 ],
-                "status": "Pasa" if (solidez and solidez.bool_frote_seco and solidez.bool_frote_humedo) else "Falla",
+                "status": "Pass" if (solidez and solidez.bool_frote_seco and solidez.bool_frote_humedo) else "Fail",
             },
         ]
+
+        for row in test_rows:
+            row["status_label"] = _("Pass") if row.get("status") == "Pass" else _("Fail")
 
         # Show each evaluation independently in the status summary.
         summary_rows = [
             {
                 "item": row.get("test") or "-",
-                "status": row.get("status") or "Falla",
+                "status": row.get("status") or "Fail",
+                "status_label": row.get("status_label") or _("Fail"),
             }
             for row in test_rows
         ]
 
-        any_fail = any(row["status"] == "Falla" for row in summary_rows)
-        overall_status = "Falla" if any_fail else "Pasa"
+        any_fail = any(row["status"] == "Fail" for row in summary_rows)
+        overall_status = "Fail" if any_fail else "Pass"
+        overall_result_label = _("APPROVED") if overall_status == "Pass" else _("REJECTED")
+        report_title = _("Laboratory Report No. %s") % (self.report_name or "-")
 
         # Keep symbol entities readable in QWeb with t-out, without deprecated t-raw.
         for row in test_rows:
@@ -552,10 +738,26 @@ class ControlPedidoLine(models.Model):
             "test_rows": test_rows,
             "summary_rows": summary_rows,
             "overall_status": overall_status,
+            "overall_result_label": overall_result_label,
+            "report_title": report_title,
+            "care_instruction": care_instruction,
+            "care_wash_icon_url": care_wash_icon_url,
+            "care_dry_icon_url": care_dry_icon_url,
+            "care_bleaching_icon_url": care_bleaching_icon_url,
+            "care_ironing_icon_url": care_ironing_icon_url,
+            "care_iron_steam_icon_url": care_iron_steam_icon_url,
+            "care_profesional_dry_icon_url": care_profesional_dry_icon_url,
+            "care_profesional_wet_icon_url": care_profesional_wet_icon_url,
+            "care_do_not_wring_icon_url": care_do_not_wring_icon_url,
+            "score_legend": score_legend,
+            "emitter_name": emitter_name,
+            "emitter_role": emitter_role,
+            "emitter_signature_url": emitter_signature_url,
         }
 
     def action_print_laboratorio_summary_report(self):
         self.ensure_one()
+        self._ensure_laboratorio_public_token()
         template = self.env.ref("idtx_batch_quality.mail_template_laboratorio_summary_front", raise_if_not_found=False)
         recipient = self._get_mail_recipient_partner()
         base_url = self.env["ir.config_parameter"].sudo().get_param("web.base.url")
@@ -577,6 +779,7 @@ class ControlPedidoLine(models.Model):
             ctx["default_partner_ids"] = [recipient.id]
             if recipient.lang:
                 ctx["lab_lang"] = recipient.lang
+                ctx["lang"] = recipient.lang
             if not recipient.user_ids:
                 frontend_url = f"{base_url}/kiosk/control_pedido"
                 ctx["frontend_button_url"] = frontend_url
@@ -590,6 +793,31 @@ class ControlPedidoLine(models.Model):
             "views": [(False, "form")],
             "target": "new",
             "context": ctx,
+        }
+
+    def _ensure_laboratorio_public_token(self):
+        for rec in self:
+            if not rec.lab_public_token:
+                rec.lab_public_token = uuid.uuid4().hex
+
+    def get_laboratorio_public_url(self):
+        self.ensure_one()
+        self._ensure_laboratorio_public_token()
+        base_url = self.env["ir.config_parameter"].sudo().get_param("web.base.url")
+        recipient = self._get_mail_recipient_partner()
+        lang = self.env.context.get("lab_lang") or self.env.context.get("lang") or (recipient.lang if recipient else False) or "en_US"
+        query = urlencode({
+            "access_token": self.lab_public_token,
+            "lang": lang,
+        })
+        return f"{base_url}/lab/resultado/{self.id}?{query}"
+
+    def action_view_laboratorio_public(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_url",
+            "url": self.get_laboratorio_public_url(),
+            "target": "new",
         }
 
     def _get_mail_recipient_partner(self):

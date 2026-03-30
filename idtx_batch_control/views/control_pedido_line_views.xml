@@ -85,6 +85,7 @@
                             <field name="colorcode" readonly="1" invisible="lab_dev_line_id"/>
                             <field name="colorname" readonly="1" invisible="lab_dev_line_id"/>
                             <field name="lab_dev_line_id" readonly="1" invisible="not lab_dev_line_id"/>
+                            <field name="density_stability_twisting_id" readonly="1" invisible="not density_stability_twisting_id"/>
                         </group>
                     </group>
                     <notebook>

@@ -3,9 +3,10 @@
 	<data noupdate="0">
 
         <record id="mail_template_laboratorio_summary_front" model="mail.template">
-            <field name="name">Laboratorio: Enviar Resumen por Partida</field>
+            <field name="name">Laboratory: Send Batch Summary</field>
             <field name="model_id" ref="idtx_batch_control.model_control_pedido_line"/>
-			<field name="subject">IDETEX S.A.C. - Resumen de Laboratorio {{ object.batch or '' }}</field>
+			<field name="subject">IDETEX S.A.C. - Laboratory Summary {{ object.batch or '' }}</field>
+            <field name="lang">{{ object._get_mail_recipient_partner().lang or 'en_US' }}</field>
             <field name="email_from">{{ (object.user_id.email_formatted or object.company_id.email_formatted or user.email_formatted) }}</field>
             <field name="partner_to" eval="False"/>
             <field name="use_default_to" eval="True"/>
@@ -15,9 +16,24 @@
     <p style="margin: 0px; padding: 0px; font-size: 13px;">
         Hello,
         <br/><br/>
-        Your laboratory summary for batch <span style="font-weight: bold;"  t-out="object.batch or ''">C377961</span>
+        Please find attached the laboratory summary report for batch
+        <span style="font-weight: bold;" t-out="object.batch or ''">C377961</span>.
         <br/><br/>
-        Do not hesitate to contact us if you have any questions.
+        <table role="presentation" border="0" cellspacing="0" cellpadding="0" style="border-collapse:separate;">
+            <tr>
+                <td bgcolor="#1f6f78" style="border-radius:4px; background-color:#1f6f78; border:1px solid #1f6f78;">
+                    <a t-att-href="object.get_laboratorio_public_url()"
+                       style="display:inline-block; padding:10px 14px; font-weight:700; font-size:13px; text-decoration:none; color:#ffffff; background-color:#1f6f78; border-radius:4px;">
+                        View Summary
+                    </a>
+                </td>
+            </tr>
+        </table>
+        <br/><br/>
+        If the button is not visible, use this link:
+        <a t-att-href="object.get_laboratorio_public_url()">Open summary</a>
+        <br/><br/>
+        Regards.
         <t t-if="not is_html_empty(object.user_id.signature)">
             <div>--<br/><t t-out="object.user_id.signature or ''">Mercedes Carrion</t></div>
         </t>

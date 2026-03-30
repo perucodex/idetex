@@ -18,7 +18,6 @@ class KioskControlPedido(http.Controller):
         domain = [('state', 'in', ('on', 'de'))]
         order = 'num_days desc, state desc, fecoc desc, numordped desc'
 
-        # ✅ Agregamos 'area'
         fields = ['fecoc', 'numordped', 'num_days', 'state', 'area']
 
         records = request.env['control.pedido'].sudo().search_read(
