@@ -797,6 +797,11 @@ class ControlEstabilidadReviradoEval(models.Model):
             std_density = rec.pedido_line_id.product_id.analysis_id.density or 0.0
             std_width = rec.pedido_line_id.product_id.analysis_id.standard_width or 0.0
 
+            def _tol_ratio(raw_value):
+                value = abs(float(raw_value or 0.0))
+                # Accept both styles: 0.02 (2%) or 2 (2%).
+                return value / 100.0 if value > 1.0 else value
+
             if not thresholds:
                 result = "nodata"
             else:
@@ -804,17 +809,22 @@ class ControlEstabilidadReviradoEval(models.Model):
                 width_to = thresholds.width_shrinkage_to * 100
                 length_from = thresholds.length_shrinkage_from * 100
                 length_to = thresholds.length_shrinkage_to * 100
-                density = thresholds.density
-                width = thresholds.width
+                density_tol = _tol_ratio(thresholds.density)
+                width_tol = _tol_ratio(thresholds.width)
 
                 # Densidad y ancho solo se validan en 1er lavado.
                 if int(rec.wash_number or 0) == 1:
-                    density_diff = round(abs((rec.densidad_promedio / std_density if std_density else 1) - 1), 2)
-                    width_diff = round(abs((rec.ancho_promedio / std_width if std_width else 1) - 1), 2)
-                    if density and density_diff > density:
-                        rec.bool_densidad_promedio = False
-                    if width and width_diff > width:
-                        rec.bool_ancho_promedio = False
+                    if std_density > 0:
+                        density_min = std_density * (1.0 - density_tol)
+                        density_max = std_density * (1.0 + density_tol)
+                        if not (density_min <= rec.densidad_promedio <= density_max):
+                            rec.bool_densidad_promedio = False
+
+                    if std_width > 0:
+                        width_min = std_width * (1.0 - width_tol)
+                        width_max = std_width * (1.0 + width_tol)
+                        if not (width_min <= rec.ancho_promedio <= width_max):
+                            rec.bool_ancho_promedio = False
 
                 if width_from and rec.est_ancho_avg < width_from:
                     rec.bool_est_ancho_avg = False
