@@ -29,8 +29,8 @@
             <xpath expr="//field[@name='barcode']" position="attributes">
                 <attribute name="readonly">is_weaving</attribute>
             </xpath>
-            <field name="qty_available" position="after">
-                <field name="analysis_id"/>
+            <field name="is_storable" position="before">
+                <field name="analysis_id" readonly="1"/>
             </field>
         </field>
     </record>
