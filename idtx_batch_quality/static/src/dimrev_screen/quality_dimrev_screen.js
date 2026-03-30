@@ -109,7 +109,7 @@ const STEPS = [
 ];
 
 const MODE_STEP_KEYS = {
-    l1: ["est_l1_m1", "est_l1_m2", "densidad", "inclinacion", "ancho"],
+    l1: ["ancho", "densidad", "est_l1_m1", "est_l1_m2", "inclinacion"],
     l3: ["est_l3_m1", "est_l3_m2"],
     l5: ["est_l5_m1", "est_l5_m2"],
     ln: ["est_ln_m1", "est_ln_m2"],
@@ -149,8 +149,8 @@ const STEP_GROUPS = [
     {
         title: "Densidad y Ancho",
         options: [
-            { key: "densidad", label: "Densidad" },
             { key: "ancho", label: "Ancho" },
+            { key: "densidad", label: "Densidad" },
         ],
     },
 ];
@@ -399,6 +399,7 @@ export class QualityDimrevScreen extends Component {
             partidaQuery: "",
             selectedPartidaId: "",
             selectedPartidaData: null,
+            recentDensityWidth: [],
             showPartidaDropdown: false,
             isSearchingPartida: false,
             values: getInitialValues(),
@@ -771,6 +772,7 @@ export class QualityDimrevScreen extends Component {
         this.state.isFirstRecord = false;
         this.state.tiltRequired = false;
         this.state.tiltStandard = 0;
+        this.state.recentDensityWidth = [];
         this.state.stabilityDone = this._defaultStabilityState();
         this._saveDraft();
     }
@@ -787,6 +789,9 @@ export class QualityDimrevScreen extends Component {
             this.state.isFirstRecord = !Boolean(payload?.has_first_record);
             this.state.tiltRequired = Boolean(payload?.tilt_required);
             this.state.tiltStandard = asFloat(payload?.tilt_standard || 0);
+            this.state.recentDensityWidth = Array.isArray(payload?.recent_density_width)
+                ? payload.recent_density_width
+                : [];
             const requiredMode = payload?.required_mode || "";
             this.state.evalMode = requiredMode;
             this.state.needsModeSelection = !requiredMode;

@@ -3923,6 +3923,18 @@ msgstr "Resumen de Estado"
 
 #. module: idtx_batch_quality
 #: model_terms:ir.ui.view,arch_db:idtx_batch_quality.laboratorio_resultado_publico_page
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_laboratorio_summary_pedido_line_document
+msgid "Evaluated Wash: "
+msgstr "Lavado evaluado: "
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.laboratorio_resultado_publico_page
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_laboratorio_summary_pedido_line_document
+msgid "Evaluated Wash:"
+msgstr "Lavado evaluado:"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.laboratorio_resultado_publico_page
 msgid "Evaluation"
 msgstr "Evaluacion"
 

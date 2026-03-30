@@ -167,7 +167,7 @@
                                                 <th>%Largo D2</th>
                                                 <th>%Largo D3</th>
                                             </tr>
-                                            <tr t-foreach="payload.get('stability_rows', [])" t-as="row" t-key="row['sample']">
+                                            <tr t-foreach="payload.get('stability_rows', [])" t-as="row">
                                                 <td t-esc="row['sample']"/>
                                                 <td class="drv-num" t-esc="'%.2f' % (row['a_d1'] or 0.0)"/>
                                                 <td class="drv-num" t-esc="'%.2f' % (row['a_d2'] or 0.0)"/>
@@ -191,7 +191,7 @@
                                                 <th>BD</th>
                                                 <th>%</th>
                                             </tr>
-                                            <tr t-foreach="payload.get('revirado_rows', [])" t-as="row" t-key="row['sample']">
+                                            <tr t-foreach="payload.get('revirado_rows', [])" t-as="row">
                                                 <td t-esc="row['sample']"/>
                                                 <td class="drv-num" t-esc="'%.2f' % (row['ac'] or 0.0)"/>
                                                 <td class="drv-num" t-esc="'%.2f' % (row['bd'] or 0.0)"/>
@@ -260,7 +260,7 @@
                                                 <th>Tipo</th>
                                                 <th>Resultado</th>
                                             </tr>
-                                            <tr t-foreach="payload.get('results', [])" t-as="res" t-key="res['tipo']">
+                                            <tr t-foreach="payload.get('results', [])" t-as="res">
                                                 <td t-esc="res['tipo']"/>
                                                 <td class="drv-num" t-esc="'%.2f' % (res['resultado'] or 0.0)"/>
                                             </tr>

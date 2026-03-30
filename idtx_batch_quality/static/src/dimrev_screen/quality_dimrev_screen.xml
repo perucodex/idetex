@@ -164,6 +164,39 @@
                                 </t>
                             </div>
 
+                            <div class="o_qdr_history_block mt-3"
+                                 t-if="!state.needsModeSelection and state.evalMode === 'l1' and activeStep and activeStep.key === 'ancho'">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="mb-0">Ultimas 10 mediciones (mismo articulo y color)</h6>
+                                    <span class="small text-muted" t-esc="state.recentDensityWidth.length + ' registros'"/>
+                                </div>
+                                <div t-if="!state.recentDensityWidth.length" class="small text-muted">
+                                    No hay registros previos para este articulo y color.
+                                </div>
+                                <div t-else="" class="o_qdr_history_table_wrap">
+                                    <table class="table table-sm o_qdr_history_table mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Fecha</th>
+                                                <th>Partida</th>
+                                                <th>Dens. Prom</th>
+                                                <th>Ancho Prom</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="state.recentDensityWidth" t-as="row" t-key="row.eval_id">
+                                                <tr>
+                                                    <td t-esc="row.fecha_eval || '-'"/>
+                                                    <td t-esc="row.batch || '-'"/>
+                                                    <td t-esc="row.densidad_promedio != null ? row.densidad_promedio.toFixed(2) : '-'"/>
+                                                    <td t-esc="row.ancho_promedio != null ? row.ancho_promedio.toFixed(2) : '-'"/>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
                             <div class="o_qdr_voice_box mt-3" t-if="!state.needsModeSelection">
                                 <div class="small"><b>Paso actual:</b> <span t-esc="activeStep.label"/></div>
                                 <div class="small text-danger" t-if="state.voiceError" t-esc="state.voiceError"/>

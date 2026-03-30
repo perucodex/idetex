@@ -260,15 +260,26 @@ class ControlPedidoLine(models.Model):
             ("pedido_line_id", "=", self.id),
         ], order="wash_number desc, fecha_eval desc, id desc", limit=1)
 
-    def _get_dimrev_first_wash_eval(self):
+    def _get_dimrev_first_eval_for_density_width(self):
         self.ensure_one()
-        wash1_evals = self.env["control.estabilidad.revirado.eval"].search([
+        evals = self.env["control.estabilidad.revirado.eval"].search([
             ("pedido_line_id", "=", self.id),
-            ("wash_number", "=", 1),
-        ], order="fecha_eval desc, id desc")
-        # Prefer the latest 1st-wash evaluation with captured detail lines.
-        detailed_eval = wash1_evals.filtered(lambda rec: bool(rec.detail_line_ids))[:1]
-        return detailed_eval or wash1_evals[:1]
+        ], order="fecha_eval asc, id asc")
+        if not evals:
+            return evals
+
+        # Density/width in the report must come from the first chronological evaluation.
+        # If the first one has no den/anc lines, fallback to the earliest one that has them.
+        def _has_den_anc(rec):
+            keys = set(rec.detail_line_ids.mapped("measure_key"))
+            return bool(keys.intersection({"den_1", "den_2", "den_3", "anc_1", "anc_2", "anc_3"}))
+
+        first_eval = evals[:1]
+        if _has_den_anc(first_eval):
+            return first_eval
+
+        first_with_den_anc = evals.filtered(_has_den_anc)[:1]
+        return first_with_den_anc or first_eval
 
     def _get_solidez_latest_eval(self):
         self.ensure_one()
@@ -281,7 +292,7 @@ class ControlPedidoLine(models.Model):
         _ = self.env._
 
         dimrev_highest = self._get_dimrev_highest_wash_eval()
-        dimrev_l1 = self._get_dimrev_first_wash_eval()
+        dimrev_first_eval = self._get_dimrev_first_eval_for_density_width()
         solidez = self._get_solidez_latest_eval()
 
         analysis = self.product_id.analysis_id
@@ -513,7 +524,7 @@ class ControlPedidoLine(models.Model):
         ]
 
         dimrev_highest_state = dimrev_highest.state if dimrev_highest else "nodata"
-        dimrev_l1_state = dimrev_l1.state if dimrev_l1 else "nodata"
+        dimrev_first_eval_state = dimrev_first_eval.state if dimrev_first_eval else "nodata"
         solidez_state = solidez.state if solidez else "nodata"
 
         test_rows = [
@@ -526,8 +537,8 @@ class ControlPedidoLine(models.Model):
                     f"g/m2 {std_density:.2f}" if std_density else "g/m2 -",
                     f"&#177; {density_tol_pct:.2f}%" if density_tol_pct else "&#177; -",
                 ],
-                "result": float(dimrev_l1.densidad_promedio or 0.0) if dimrev_l1 else 0.0,
-                "status": "Pass" if (dimrev_l1 and dimrev_l1.bool_densidad_promedio) else "Fail",
+                "result": float(dimrev_first_eval.densidad_promedio or 0.0) if dimrev_first_eval else 0.0,
+                "status": "Pass" if (dimrev_first_eval and dimrev_first_eval.bool_densidad_promedio) else "Fail",
             },
             {
                 "test": _("Width"),
@@ -538,8 +549,8 @@ class ControlPedidoLine(models.Model):
                     f"cm {std_width:.2f}" if std_width else "cm -",
                     f"&#177; {width_tol_pct:.2f}%" if width_tol_pct else "&#177; -",
                 ],
-                "result": float(dimrev_l1.ancho_promedio or 0.0) if dimrev_l1 else 0.0,
-                "status": "Pass" if (dimrev_l1 and dimrev_l1.bool_ancho_promedio) else "Fail",
+                "result": float(dimrev_first_eval.ancho_promedio or 0.0) if dimrev_first_eval else 0.0,
+                "status": "Pass" if (dimrev_first_eval and dimrev_first_eval.bool_ancho_promedio) else "Fail",
             },
             {
                 "test": _("Dimensional Stability %Width"),
@@ -574,8 +585,8 @@ class ControlPedidoLine(models.Model):
                     f"{tilt_std:.2f}&#176;" if tilt_std else "&#176; -",
                     "&#177; 1&#176;" if tilt_std else "&#177; -",
                 ],
-                "result": float(dimrev_l1.tilt_before or 0.0) if dimrev_l1 else 0.0,
-                "status": "Pass" if (dimrev_l1 and dimrev_l1.bool_tilt_before) else "Fail",
+                "result": float(dimrev_highest.tilt_before or 0.0) if dimrev_highest else 0.0,
+                "status": "Pass" if (dimrev_highest and dimrev_highest.bool_tilt_before) else "Fail",
             },
             {
                 "test": _("Accelerated Washing Colorfastness"),
@@ -716,15 +727,26 @@ class ControlPedidoLine(models.Model):
                 "est_largo_avg": float(dimrev_highest.est_largo_avg or 0.0) if dimrev_highest else 0.0,
                 "revirado_promedio": float(dimrev_highest.revirado_promedio or 0.0) if dimrev_highest else 0.0,
             },
+            "dimrev_first_eval": {
+                "exists": bool(dimrev_first_eval),
+                "name": dimrev_first_eval.name if dimrev_first_eval else "-",
+                "fecha_eval": dimrev_first_eval.fecha_eval if dimrev_first_eval else False,
+                "state": self._state_to_summary_status(dimrev_first_eval_state),
+                "densidad_promedio": float(dimrev_first_eval.densidad_promedio or 0.0) if dimrev_first_eval else 0.0,
+                "ancho_promedio": float(dimrev_first_eval.ancho_promedio or 0.0) if dimrev_first_eval else 0.0,
+                "tilt_before": float(dimrev_first_eval.tilt_before or 0.0) if dimrev_first_eval else 0.0,
+                "tilt_after": float(dimrev_first_eval.tilt_after or 0.0) if dimrev_first_eval else 0.0,
+            },
+            # Backward compatibility for templates that still read dimrev_l1.
             "dimrev_l1": {
-                "exists": bool(dimrev_l1),
-                "name": dimrev_l1.name if dimrev_l1 else "-",
-                "fecha_eval": dimrev_l1.fecha_eval if dimrev_l1 else False,
-                "state": self._state_to_summary_status(dimrev_l1_state),
-                "densidad_promedio": float(dimrev_l1.densidad_promedio or 0.0) if dimrev_l1 else 0.0,
-                "ancho_promedio": float(dimrev_l1.ancho_promedio or 0.0) if dimrev_l1 else 0.0,
-                "tilt_before": float(dimrev_l1.tilt_before or 0.0) if dimrev_l1 else 0.0,
-                "tilt_after": float(dimrev_l1.tilt_after or 0.0) if dimrev_l1 else 0.0,
+                "exists": bool(dimrev_first_eval),
+                "name": dimrev_first_eval.name if dimrev_first_eval else "-",
+                "fecha_eval": dimrev_first_eval.fecha_eval if dimrev_first_eval else False,
+                "state": self._state_to_summary_status(dimrev_first_eval_state),
+                "densidad_promedio": float(dimrev_first_eval.densidad_promedio or 0.0) if dimrev_first_eval else 0.0,
+                "ancho_promedio": float(dimrev_first_eval.ancho_promedio or 0.0) if dimrev_first_eval else 0.0,
+                "tilt_before": float(dimrev_first_eval.tilt_before or 0.0) if dimrev_first_eval else 0.0,
+                "tilt_after": float(dimrev_first_eval.tilt_after or 0.0) if dimrev_first_eval else 0.0,
             },
             "solidez": {
                 "exists": bool(solidez),

@@ -191,7 +191,12 @@
                                         <tr>
                                             <th>Test</th>
                                             <th class="lab-center">Requirement</th>
-                                            <th>Result</th>
+                                            <th>Result
+                                                <div class="lab-method">
+                                                    <span>Evaluated Wash:</span>
+                                                    <span t-esc="' ' + ((dim_h.get('wash_label') if dim_h else '-') or '-')"/>
+                                                </div>
+                                            </th>
                                             <th class="lab-center">Pass / Fail</th>
                                         </tr>
                                         <tr t-foreach="payload.get('test_rows', [])" t-as="row">

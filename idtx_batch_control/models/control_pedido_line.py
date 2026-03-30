@@ -25,6 +25,7 @@ class ControlPedidoLine(models.Model):
     colorcode = fields.Char('Color Code')
     colorname = fields.Char('Color Name')
     lab_dev_line_id = fields.Many2one('lab.dev.line', string='Lab Dev')
+    colorfastness_id = fields.Many2one(related='lab_dev_line_id.colorfastness_washing_id')
     density_stability_twisting_id = fields.Many2one(related='product_id.analysis_id.density_stability_twisting_id')
     proceso_ids = fields.One2many(
         "control.proceso.lines",

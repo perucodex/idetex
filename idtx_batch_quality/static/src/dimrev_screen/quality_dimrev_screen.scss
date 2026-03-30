@@ -1,5 +1,9 @@
 .o_qdr_root {
     --qdr-bottom-reserve: 68px;
+    --qdr-surface: var(--o-control-panel-background-color, var(--o-view-background-color, #ffffff));
+    --qdr-text: var(--o-main-text-color, #1f2937);
+    --qdr-muted: var(--o-muted-color, #6b7280);
+    --qdr-border: var(--o-border-color, rgba(15, 23, 42, 0.14));
     padding: 16px;
     padding-bottom: calc(16px + var(--qdr-bottom-reserve) + env(safe-area-inset-bottom));
     min-height: 100dvh;
@@ -125,10 +129,11 @@
 }
 
 .o_qdr_voice_box {
-    border: 1px dashed #adb5bd;
+    border: 1px dashed var(--qdr-border);
     border-radius: 10px;
     padding: 10px;
-    background: #fcfcfc;
+    background: var(--qdr-surface);
+    color: var(--qdr-text);
 }
 
 .o_qdr_steps {
@@ -143,15 +148,16 @@
     flex-direction: column;
     gap: 10px;
     padding: 8px 10px;
-    border: 1px solid #e7e7e7;
+    border: 1px solid var(--qdr-border);
     border-radius: 10px;
-    background: #fbfbfb;
+    background: var(--qdr-surface);
+    color: var(--qdr-text);
 }
 
 .o_qdr_step_group_title {
     min-width: 110px;
     font-weight: 700;
-    color: #334155;
+    color: var(--qdr-text);
 }
 
 .o_qdr_step_group_options {
@@ -176,8 +182,61 @@
 }
 
 .o_qdr_summary_block {
-    border: 1px solid #e8e8e8;
+    border: 1px solid var(--qdr-border);
     border-radius: 10px;
     padding: 10px;
-    background: #fafafa;
+    background: var(--qdr-surface);
+    color: var(--qdr-text);
+}
+
+.o_qdr_history_block {
+    border: 1px solid var(--qdr-border);
+    border-radius: 10px;
+    padding: 10px;
+    background: var(--qdr-surface);
+    color: var(--qdr-text);
+}
+
+.o_qdr_history_table_wrap {
+    max-height: 240px;
+    overflow: auto;
+    border: 1px solid var(--qdr-border);
+    border-radius: 8px;
+}
+
+.o_qdr_history_table {
+    margin: 0;
+    color: var(--qdr-text);
+    --bs-table-bg: var(--qdr-surface);
+    --bs-table-color: var(--qdr-text);
+    --bs-table-border-color: var(--qdr-border);
+    --bs-table-hover-bg: var(--qdr-surface);
+    --bs-table-hover-color: var(--qdr-text);
+}
+
+.o_qdr_history_table th,
+.o_qdr_history_table td {
+    white-space: nowrap;
+    font-size: 0.85rem;
+    border-color: var(--qdr-border);
+}
+
+.o_qdr_history_table tbody tr,
+.o_qdr_history_table tbody td {
+    background: var(--qdr-surface);
+    color: var(--qdr-text) !important;
+}
+
+.o_qdr_history_table thead th {
+    position: sticky;
+    top: 0;
+    background: var(--qdr-surface);
+    color: var(--qdr-text);
+    z-index: 1;
+}
+
+.o_qdr_voice_box .text-muted,
+.o_qdr_summary_block .text-muted,
+.o_qdr_history_block .text-muted {
+    color: var(--qdr-muted) !important;
 }

@@ -461,6 +461,86 @@ class ControlEstabilidadReviradoEval(models.Model):
         return list(dict.fromkeys(fields))
 
     @api.model
+    def _tablet_recent_density_width(self, pedido_line, limit=10):
+        pedido_line = pedido_line.sudo()
+        if not pedido_line:
+            return []
+
+        line_domain = []
+        if pedido_line.product_id:
+            line_domain.append(("product_id", "=", pedido_line.product_id.id))
+        elif pedido_line.codpro:
+            line_domain.append(("codpro", "=", pedido_line.codpro))
+        elif pedido_line.description:
+            line_domain.append(("description", "=", pedido_line.description))
+        else:
+            return []
+
+        if pedido_line.lab_dev_line_id:
+            line_domain.append(("lab_dev_line_id", "=", pedido_line.lab_dev_line_id.id))
+
+        if pedido_line.colorcode:
+            line_domain.append(("colorcode", "=", pedido_line.colorcode))
+        elif pedido_line.colorname:
+            line_domain.append(("colorname", "=", pedido_line.colorname))
+
+        same_lines = self.env["control.pedido.line"].sudo().search(line_domain)
+        if not same_lines:
+            return []
+
+        candidate_line_ids = set(same_lines.ids)
+        same_batches = {batch for batch in same_lines.mapped("batch") if batch}
+        if same_batches:
+            sibling_lines = self.env["control.pedido.line"].sudo().search([
+                ("batch", "in", list(same_batches)),
+            ])
+            candidate_line_ids.update(sibling_lines.ids)
+
+        evals = self.sudo().search([
+            ("pedido_line_id", "in", list(candidate_line_ids)),
+        ], order="fecha_eval desc, id desc", limit=max(int(limit or 10), 1))
+
+        rows = []
+        for rec in evals:
+            densidad_1 = float(rec._get_measure_value("den_1") or 0.0)
+            densidad_2 = float(rec._get_measure_value("den_2") or 0.0)
+            densidad_3 = float(rec._get_measure_value("den_3") or 0.0)
+            ancho_1 = float(rec._get_measure_value("anc_1") or 0.0)
+            ancho_2 = float(rec._get_measure_value("anc_2") or 0.0)
+            ancho_3 = float(rec._get_measure_value("anc_3") or 0.0)
+            densidad_promedio = float(rec.densidad_promedio or 0.0)
+            ancho_promedio = float(rec.ancho_promedio or 0.0)
+
+            # Keep only rows that have at least one positive measurement.
+            if max(
+                densidad_1,
+                densidad_2,
+                densidad_3,
+                ancho_1,
+                ancho_2,
+                ancho_3,
+                densidad_promedio,
+                ancho_promedio,
+            ) <= 0.0:
+                continue
+
+            rows.append({
+                "eval_id": rec.id,
+                "fecha_eval": fields.Datetime.to_string(rec.fecha_eval) if rec.fecha_eval else "",
+                "batch": rec.pedido_line_id.batch or "",
+                "wash_number": int(rec.wash_number or 0),
+                "densidad_1": densidad_1,
+                "densidad_2": densidad_2,
+                "densidad_3": densidad_3,
+                "ancho_1": ancho_1,
+                "ancho_2": ancho_2,
+                "ancho_3": ancho_3,
+                "densidad_promedio": densidad_promedio,
+                "ancho_promedio": ancho_promedio,
+            })
+        return rows
+
+    @api.model
     def action_tablet_get_eval_context(self, pedido_line_id):
         pedido_line = self.env["control.pedido.line"].browse(int(pedido_line_id or 0))
         if not pedido_line.exists():
@@ -479,6 +559,7 @@ class ControlEstabilidadReviradoEval(models.Model):
             "available_modes": ["l3", "l5", "ln"] if has_first_record else ["l1"],
             "tilt_required": bool(not has_first_record and tilt_standard > 0.0),
             "tilt_standard": tilt_standard,
+            "recent_density_width": self._tablet_recent_density_width(pedido_line, limit=10),
         }
 
     @api.model

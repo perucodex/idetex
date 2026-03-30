@@ -1868,7 +1868,7 @@ msgstr "Movimiento de stock"
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__stylo
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__stylo
 msgid "Stylo"
-msgstr ""
+msgstr "Stylo"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__system_type
@@ -2015,7 +2015,7 @@ msgstr "Título"
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__product_analysis__weave_type__tubu
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
 msgid "Tubular"
-msgstr ""
+msgstr "Tubular"
 
 #. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__density_stability_twisting__drying_condition__tumble_dry_delicate

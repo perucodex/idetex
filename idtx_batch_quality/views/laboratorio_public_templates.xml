@@ -141,7 +141,13 @@
                             <tr>
                                 <th style="border:1px solid #111827; background:#f3f4f6; text-align:left; padding:5px;">Test</th>
                                 <th style="border:1px solid #111827; background:#f3f4f6; text-align:center; padding:5px;">Requirement</th>
-                                <th style="border:1px solid #111827; background:#f3f4f6; text-align:right; padding:5px;">Result</th>
+                                <th style="border:1px solid #111827; background:#f3f4f6; text-align:right; padding:5px;">
+                                    <div>Result</div>
+                                    <div style="font-size:10px; font-weight:500; color:#4b5563;">
+                                        <span>Evaluated Wash:</span>
+                                        <span t-esc="' ' + (((payload.get('dimrev_highest', {}) or {}).get('wash_label')) or '-')"/>
+                                    </div>
+                                </th>
                                 <th style="border:1px solid #111827; background:#f3f4f6; text-align:center; padding:5px;">Pass / Fail</th>
                             </tr>
                             <tr t-foreach="payload.get('test_rows', [])" t-as="row">
