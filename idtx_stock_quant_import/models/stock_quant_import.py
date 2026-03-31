@@ -85,8 +85,13 @@ class StockQuantImport(models.Model):
                 color_code = row[header['color'] - 1]
                 color_name = row[header['color_name'] - 1]
 
-                # Buscar si el lote ya existe en el sistema (maestro de lotes)
-                exists = bool(self.env['stock.lot'].search_count([('name', '=', lot_name), ('product_id', '=', product_code)]))
+                # Buscar si el lote ya existe en el sistema y tiene stock
+                lot_record = self.env['stock.lot'].search([('name', '=', lot_name), ('product_id.default_code', '=', product_code)], limit=1)
+                exists = False
+                if lot_record:
+                    stock_qty = sum(self.env['stock.quant'].search([('lot_id', '=', lot_record.id), ('location_id.usage', '=', 'internal')]).mapped('quantity'))
+                    if stock_qty > 0:
+                        exists = True
 
                 if not (product_code and qty):
                     continue
@@ -218,6 +223,8 @@ class StockQuantImport(models.Model):
                 })
             else:
                 lot.roll_id = roll
+                if color:
+                    lot.color_recipe_id = color.id
 
             roll.lot_id = lot
 
