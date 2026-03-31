@@ -40,16 +40,10 @@
             <attribute name="t-if">not doc.is_quote</attribute>
         </xpath>
         <xpath expr="//td[@name='td_product_taxes']" position="attributes">
-            <attribute name="t-if">display_taxes or not doc.is_quote</attribute>
-        </xpath>
-        <xpath expr="//td[@name='td_product_subtotal']" position="attributes">
-            <attribute name="t-if">not doc.is_quote</attribute>
+            <attribute name="t-if">display_taxes and not doc.is_quote</attribute>
         </xpath>
         <xpath expr="//th[@name='th_taxes']" position="attributes">
-            <attribute name="t-if">display_taxes or not doc.is_quote</attribute>
-        </xpath>
-        <xpath expr="//th[@name='th_subtotal']" position="attributes">
-            <attribute name="t-if">not doc.is_quote</attribute>
+            <attribute name="t-if">display_taxes and not doc.is_quote</attribute>
         </xpath>
         <!-- Tabla de detalle de servicio de estampado digital -->
         <xpath expr="//div[hasclass('oe_structure')][last()]" position="after">

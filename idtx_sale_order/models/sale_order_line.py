@@ -111,7 +111,22 @@ class SaleOrderLine(models.Model):
             rec.production_id.bom_id = rec.bom_id
 
     def js_compute_price_unit(self):
-        self._compute_price_unit()
+        for line in self:
+            try:
+                price_dict = json.loads(line.price_items or '{}')
+            except (json.JSONDecodeError, TypeError):
+                price_dict = {}
+
+            total = float_round(
+                sum(
+                    float(item.get('price', 0.0))
+                    for key, item in (price_dict or {}).items()
+                    if not str(key).startswith('__') and isinstance(item, dict)
+                ),
+                2,
+            )
+            line.price_unit = total
+            line.technical_price_unit = total
 
     @api.onchange('product_id','product_color_id','operation_ids','printing_design_id')
     def _onchange_product_or_color(self):
@@ -172,6 +187,24 @@ class SaleOrderLine(models.Model):
         #Solo calcula el precio si la compañía produce
         for line in self.filtered(lambda l: l.is_weaving):
             if line.company_id.is_company_produce and line.product_id.is_weaving:
+                try:
+                    manual_dict = json.loads(line.price_items or '{}')
+                except (json.JSONDecodeError, TypeError):
+                    manual_dict = {}
+
+                if manual_dict.get('__manual_override__'):
+                    total_manual = float_round(
+                        sum(
+                            float(item.get('price', 0.0))
+                            for key, item in manual_dict.items()
+                            if not str(key).startswith('__') and isinstance(item, dict)
+                        ),
+                        2,
+                    )
+                    line.price_unit = total_manual
+                    line.technical_price_unit = total_manual
+                    continue
+
                 # Diferenciar si es un producto tejido para calcular su precio
                 # for line in self.filtered(lambda l: l.is_weaving):
                 if line.product_template_id.bom_ids:
@@ -192,6 +225,8 @@ class SaleOrderLine(models.Model):
             except (json.JSONDecodeError, TypeError):
                 price_dict = {}
 
+            META_KEY = "__price_meta__"
+
             # 1) CLAVES FIJAS (sin _() → nunca se traducen)
             WEAV_LOSS_KEY = "Weaving Loss"
             PROD_LOSS_KEY = "Production Loss"
@@ -209,6 +244,59 @@ class SaleOrderLine(models.Model):
             bom_id = self.bom_id or self.product_template_id.bom_ids[0]
             weaving = self.has_weaving_operation #any(operation.operation_id.operation_type == 'weaving' for operation in self.operation_ids)
             thread_total = 0
+
+            def _compute_thread_signature():
+                signature = []
+                if not (weaving and self.order_id.sale_type == 'sale'):
+                    return signature
+
+                for bom_line in bom_id.bom_line_ids.filtered(lambda l: l.product_tmpl_id.categ_id in self.env.company.thread_category_ids):
+                    pricelist_item_id = self.order_id.pricelist_id._get_product_rule(
+                        bom_line.product_id,
+                        quantity=bom_line.product_qty or 1.0,
+                        uom=bom_line.product_uom_id,
+                        date=self._get_order_date(),
+                    )
+                    if pricelist_item_id:
+                        bom_line_price = self.env['product.pricelist.item'].browse(pricelist_item_id)._compute_price(
+                            product=bom_line.product_id,
+                            quantity=bom_line.product_qty or 1.0,
+                            uom=bom_line.product_uom_id,
+                            date=self._get_order_date(),
+                            currency=self.currency_id,
+                        )
+                    else:
+                        bom_line_price = self.env.company.currency_id._convert(
+                            bom_line.product_id.list_price,
+                            currency,
+                            self.env.company,
+                            fields.Date.context_today(self),
+                            round=False
+                        )
+
+                    qty = bom_line.product_qty
+                    subtotal = float_round(bom_line_price * qty, 2)
+                    signature.append((
+                        bom_line.product_id.id,
+                        float_round(qty, 4),
+                        subtotal,
+                    ))
+
+                return sorted(signature)
+
+            current_meta = {
+                'pricelist_id': self.order_id.pricelist_id.id,
+                'currency_id': currency.id,
+                'bom_id': bom_id.id,
+                'product_color_id': self.product_color_id.id,
+                'sale_type': self.order_id.sale_type,
+                'thread_signature': _compute_thread_signature(),
+            }
+
+            saved_meta = price_dict.pop(META_KEY, None)
+            # Invalidate cache only when pricing context truly changed.
+            if saved_meta != current_meta:
+                price_dict = {}
 
             if not price_dict:
                 if weaving and self.order_id.sale_type == 'sale':
@@ -321,10 +409,10 @@ class SaleOrderLine(models.Model):
 
             # 4) Totales y derivados con clave FIJA + label traducible
             # ------------------------------------------------------------------
-            total = float_round(sum([v["price"] for v in price_dict.values()]), 2) if price_dict else 0
+            total = float_round(sum(v.get("price", 0.0) for v in price_dict.values() if isinstance(v, dict)), 2) if price_dict else 0
 
             if weaving:
-                thread_total = float_round(sum([v['price'] for v in price_dict.values() if v.get('is_thread')]), 2) if price_dict else 0
+                thread_total = float_round(sum(v.get('price', 0.0) for v in price_dict.values() if isinstance(v, dict) and v.get('is_thread')), 2) if price_dict else 0
                 scrap = self.weaving_loss or bom_id.technical_sheet_id.scrap
                 if scrap:
                     loss = float_round(thread_total * scrap, 2)
@@ -359,7 +447,8 @@ class SaleOrderLine(models.Model):
                 }
 
             # 5) Guarda JSON con estructura {key: {"price": float, "label": str}}
-            total = float_round(sum([v["price"] for v in price_dict.values()]), 2) if price_dict else 0
+            total = float_round(sum(v.get("price", 0.0) for v in price_dict.values() if isinstance(v, dict)), 2) if price_dict else 0
+            price_dict[META_KEY] = current_meta
             self.price_items = json.dumps(price_dict)
 
         # Si NO es cotización → tu lógica anterior (sin cambios)

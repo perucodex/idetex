@@ -19,10 +19,16 @@ class PriceItemsPopover extends Component {
     setup() {
         // 1) Deserializa: {key: {"price": float, "label": str}}
         const raw = this.props.record.data.price_items || "{}";
+        this.hiddenItems = {};
         try {
             const dict = JSON.parse(raw);
+            this.hiddenItems = Object.fromEntries(
+                Object.entries(dict).filter(([k]) => k.startsWith("__"))
+            );
             this.items = useState(
-                Object.entries(dict).map(([k, v]) => ({
+                Object.entries(dict)
+                .filter(([k]) => !k.startsWith("__"))
+                .map(([k, v]) => ({
                     key: k,               // fijo, inglés
                     price: Number(v.price),
                     label: v.label,        // traducible
@@ -99,6 +105,7 @@ class PriceItemsPopover extends Component {
                 "production_loss",
                 "order_id",
                 "is_weaving",
+                "has_weaving_operation",
                 "printing_design_id",
                 "product_uom_qty",
                 "min_qty",
@@ -106,7 +113,7 @@ class PriceItemsPopover extends Component {
         );
         const scrap = Number(line?.weaving_loss) || 0;
         const prod_scrap = Number(line?.production_loss) || 0;
-        const isWeavingLine = !!line?.has_weaving_operation;
+        const isWeavingLine = !!(line?.has_weaving_operation || line?.is_weaving);
         let saleType = "";
         let financialPercentage = 0;
         let incotermPrice = 0;
@@ -198,6 +205,8 @@ class PriceItemsPopover extends Component {
             acc[it.key] = { ...(it.meta || {}), price: parseFloat(it.price) || 0, label: it.label };
             return acc;
         }, {});
+        Object.assign(dict, this.hiddenItems || {});
+        dict.__manual_override__ = true;
         this.props.onSave(dict);
         this.props.close();
     }
@@ -234,7 +243,7 @@ class PriceItemsWidget extends Component {
         await this.orm.call(
             "sale.order.line",
             "js_compute_price_unit",
-            [record.resId],
+            [[record.resId]],
             { context: record.context }
         );
         await record.load();

@@ -1,4 +1,5 @@
 from odoo import fields, models, api, _
+from odoo.exceptions import UserError
 
 class ProductTemplate(models.Model):
     _inherit = 'product.template'
@@ -7,6 +8,12 @@ class ProductTemplate(models.Model):
     is_thread = fields.Boolean('is_thread', compute='_compute_product_category', store=True)
     analysis_id = fields.Many2one('product.analysis', string='Analysis')
     technical_sheet_count = fields.Integer(string="Technical Sheet Count", compute='_get_technical_sheets')
+
+    @api.onchange('categ_id')
+    def _onchange_categ_id(self):
+        for rec in self:
+            if rec.categ_id and rec.categ_id in self.env.company.weaving_category_ids and not rec.analysis_id:
+                raise UserError(_("Products in the weaving category must have an analysis. Please set one before changing the category."))
     
     @api.depends('analysis_id')
     def _get_technical_sheets(self):

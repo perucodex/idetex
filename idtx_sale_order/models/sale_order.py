@@ -207,7 +207,8 @@ class SaleOrder(models.Model):
     
     def refresh_warnings(self):
         for rec in self:
-            rec.order_line._compute_price_unit()
+            for line in rec.order_line:
+                line._compute_price_unit()
     
     @api.depends('order_line','partner_id','pricelist_id')
     def _compute_weaving_warning(self):
@@ -230,7 +231,9 @@ class SaleOrder(models.Model):
                                 uom=bom_line.product_uom_id,
                                 date=line._get_order_date(),
                             )
-                            if not pricelist_item_id and order.partner_id:
+                            item = self.env['product.pricelist.item'].browse(pricelist_item_id)
+                            price = item.fixed_price if pricelist_item_id else 0
+                            if not pricelist_item_id and order.partner_id or not price:
                                 order.weaving_warning += _(('Product %s has product %s on its bom and does not have a price in %s price list. The price is obtained from its own sale price.') %( line.product_id.product_tmpl_id.display_name, bom_line.product_id.product_tmpl_id.display_name, order.pricelist_id.name)) + '\n'
                         for operation in bom_id.operation_ids:
                             if operation.operation_id.type_prices == 'col' and line.product_color_id.is_lab_color:
