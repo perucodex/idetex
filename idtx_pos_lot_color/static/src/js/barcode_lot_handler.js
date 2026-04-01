@@ -109,6 +109,25 @@ patch(ProductScreen.prototype, {
         }
 
         if (product) {
+            // VERIFICAR SI EL ROLLO/LOTE YA ESTÁ EN EL PEDIDO
+            const order = this.pos.getOrder();
+            const lotName = barcodeOption?.code || barcodeOption;
+            if (order && lotName && typeof lotName === 'string') {
+                const alreadyInOrder = order.lines.some(line => 
+                    line.pack_lot_ids.some(lot => lot.lot_name === lotName)
+                );
+                if (alreadyInOrder) {
+                    if (this.env.services.notification) {
+                        this.env.services.notification.add(
+                            `El rollo/lote ${lotName} ya está en el pedido.`,
+                            { type: "warning", sticky: false }
+                        );
+                    }
+                    this.numberBuffer.reset();
+                    return;
+                }
+            }
+
             console.log("[IDTX] Agregando al pedido:", product.display_name, "Cant:", productQty, "Opciones:", barcodeOption);
             await this.pos.addLineToCurrentOrder(
                 {
