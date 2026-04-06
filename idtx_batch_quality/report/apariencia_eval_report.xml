@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_apariencia_eval" model="ir.actions.report">
+        <field name="name">Appearance Evaluation Report</field>
+        <field name="model">control.apariencia.eval</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">idtx_batch_quality.report_apariencia_eval_document</field>
+        <field name="report_file">idtx_batch_quality.report_apariencia_eval_document</field>
+        <field name="binding_model_id" ref="model_control_apariencia_eval"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="idtx_batch_quality.paperformat_laboratorio_summary_compact"/>
+        <field name="print_report_name">'Appearance_%s' % (object.name or 'Evaluation')</field>
+    </record>
+
+    <template id="report_apariencia_eval_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-set="line" t-value="doc.pedido_line_id"/>
+                <t t-set="company" t-value="doc.env.company"/>
+                <t t-set="base_url" t-value="doc.env['ir.config_parameter'].sudo().get_param('web.base.url')"/>
+                <div class="page">
+                    <meta charset="utf-8"/>
+                    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+                    <link rel="stylesheet" t-att-href="'%s/idtx_batch_quality/static/src/css/laboratorio_summary_report.css' % (base_url or '')"/>
+                        <style>
+                            .ap-wrap {
+                                font-family: 'DejaVu Sans', sans-serif;
+                                color: #111827;
+                            }
+                            .ap-title {
+                                text-align: center;
+                                font-size: 18px;
+                                font-weight: 700;
+                                margin: 0 0 10px;
+                                text-transform: uppercase;
+                            }
+                            .ap-grid {
+                                width: 100%;
+                                border-collapse: collapse;
+                                margin-bottom: 10px;
+                            }
+                            .ap-grid th,
+                            .ap-grid td {
+                                border: 1px solid #111827;
+                                padding: 5px 6px;
+                                font-size: 10px;
+                            }
+                            .ap-grid th {
+                                background: #f3f4f6;
+                                text-transform: uppercase;
+                                font-size: 9px;
+                            }
+                            .ap-subtitle {
+                                margin: 10px 0 6px;
+                                font-size: 12px;
+                                font-weight: 700;
+                                text-transform: uppercase;
+                            }
+                            .ap-num {
+                                text-align: right;
+                            }
+                            .ap-roll-block {
+                                margin-bottom: 10px;
+                            }
+                            .ap-roll-head {
+                                margin-bottom: 0;
+                            }
+                            .ap-roll-head th {
+                                background: #d1d5db;
+                                font-size: 10px;
+                            }
+                            .ap-roll-head td {
+                                font-weight: 700;
+                            }
+                            .ap-defect-detail {
+                                margin-top: 0;
+                                margin-bottom: 0;
+                                width: 100%;
+                                margin-left: 0;
+                            }
+                            .ap-defect-detail th {
+                                background: #f3f4f6;
+                                font-size: 8px;
+                            }
+                            .ap-defect-detail td {
+                                font-size: 9px;
+                            }
+                        </style>
+
+                        <div class="ap-wrap">
+                            <table class="lab-top">
+                                <tr>
+                                    <td class="lab-top-logo-cell lab-top-col-main">
+                                        <div class="lab-brand-wrap">
+                                            <div class="lab-brand-main">
+                                                <img t-if="company.logo" t-att-src="'%s/web/image/res.company/%s/logo' % (base_url or '', company.id)" class="lab-brand-logo" alt="Logo"/>
+                                                <span t-if="not company.logo" class="lab-brand-fallback">IDETEX</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="lab-top-logo-cell lab-contact lab-top-col-contact">
+                                        <div t-esc="company.street or ''"/>
+                                        <div>
+                                            <span t-esc="company.city or ''"/>
+                                            <span t-if="company.city and company.country_id">, </span>
+                                            <span t-esc="company.country_id.name or ''"/>
+                                        </div>
+                                        <div t-esc="company.website or ''"/>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <table class="lab-main-title" style="margin-bottom: 8px;">
+                                <tr>
+                                    <td>
+                                        <div class="title">Appearance Evaluation No. <span t-esc="doc.name or '-'"/></div>
+                                        <div class="subtitle">Laboratory Record</div>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <table class="ap-grid">
+                                <tr>
+                                    <th>Batch</th>
+                                    <th>Customer</th>
+                                    <th>Product</th>
+                                    <th>Appearance</th>
+                                </tr>
+                                <tr>
+                                    <td t-esc="line.batch or '-'"/>
+                                    <td t-esc="line.pedido_id.customer or '-'"/>
+                                    <td t-esc="line.product_id.display_name or line.description or '-'"/>
+                                    <td t-esc="doc.apariencia_id.name or '-'"/>
+                                </tr>
+                                <tr>
+                                    <th>Color</th>
+                                    <th>Number of Rolls</th>
+                                    <th>Quality Point</th>
+                                    <th>Date</th>
+                                </tr>
+                                <tr>
+                                    <td t-esc="line.colorname or line.colorcode or '-'"/>
+                                    <td class="ap-num" t-esc="doc.line_count or 0"/>
+                                    <td class="ap-num" t-esc="'%.2f' % (doc.quality_point or 0.0)"/>
+                                    <td t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y')"/>
+                                </tr>
+                            </table>
+
+                            <div class="ap-subtitle" t-if="doc.line_ids">Roll Summary</div>
+                            <table class="ap-grid" t-if="doc.line_ids">
+                                <thead>
+                                    <tr>
+                                        <th>Roll No.</th>
+                                        <th>Width</th>
+                                        <th>Meters</th>
+                                        <th>Defect Quantity</th>
+                                        <th>Total Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="doc.line_ids" t-as="roll">
+                                        <t t-set="summary_groups" t-value="roll.get_report_defects_grouped_by_size()"/>
+                                        <t t-set="summary_fail_count" t-value="sum([(grp.get('cantidad_fallas') or 0) for grp in summary_groups])"/>
+                                        <t t-set="summary_score" t-value="sum([(grp.get('puntaje_total') or 0.0) for grp in summary_groups])"/>
+                                        <td class="ap-num" t-esc="roll.rollo_num or 0"/>
+                                        <td class="ap-num" t-esc="'%.2f' % (roll.width or 0.0)"/>
+                                        <td class="ap-num" t-esc="'%.2f' % (roll.meters or 0.0)"/>
+                                        <td class="ap-num" t-esc="summary_fail_count"/>
+                                        <td class="ap-num" t-esc="'%.2f' % (summary_score or 0.0)"/>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <div class="ap-subtitle">Roll Detail</div>
+                            <t t-foreach="doc.line_ids" t-as="roll">
+                                <div class="ap-roll-block">
+                                    <table class="ap-grid ap-roll-head">
+                                        <thead>
+                                            <tr>
+                                                <th>Roll</th>
+                                                <th>Width</th>
+                                                <th>Meters</th>
+                                                <th>Defect Count</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Roll <span t-esc="roll.rollo_num or '-'"/></td>
+                                                <td class="ap-num" t-esc="'%.2f' % (roll.width or 0.0)"/>
+                                                <td class="ap-num" t-esc="'%.2f' % (roll.meters or 0.0)"/>
+                                                <td class="ap-num" t-esc="roll.defect_count or 0"/>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <table class="ap-grid ap-defect-detail">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:32%;">Defect</th>
+                                                <th style="width:18%;">Defect Quantity</th>
+                                                <th style="width:30%;">Size</th>
+                                                <th style="width:20%;">Total Score</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-set="size_groups" t-value="roll.get_report_defects_grouped_by_size()"/>
+                                            <t t-set="roll_total" t-value="sum([(grp.get('puntaje_total') or 0.0) for grp in size_groups])"/>
+                                            <tr t-foreach="size_groups" t-as="grp">
+                                                <td t-raw="grp.get('defecto_html') or '-'"/>
+                                                <td class="ap-num" t-esc="grp.get('cantidad_fallas') or 0"/>
+                                                <td t-raw="grp.get('size_html') or '-'"/>
+                                                <td class="ap-num" t-esc="'%.2f' % (grp.get('puntaje_total') or 0.0)"/>
+                                            </tr>
+                                            <tr t-if="size_groups">
+                                                <td colspan="3" style="text-align:right;font-weight:700;">Total Roll Score</td>
+                                                <td class="ap-num" style="font-weight:700;" t-esc="'%.2f' % (roll_total or 0.0)"/>
+                                            </tr>
+                                            <tr t-if="not size_groups">
+                                                <td colspan="4" style="text-align:center;">No defects recorded</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </t>
+
+                            <table class="ap-grid" t-if="not doc.line_ids">
+                                <tbody>
+                                    <tr>
+                                        <td style="text-align:center;">No rolls evaluated</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>
