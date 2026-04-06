@@ -2301,6 +2301,146 @@ msgid "No digital signature"
 msgstr "Sin firma digital"
 
 #. module: idtx_batch_quality
+#: model:ir.actions.report,name:idtx_batch_quality.action_report_apariencia_eval
+msgid "Appearance Evaluation Report"
+msgstr "Informe Evaluacion de Apariencia"
+
+#. module: idtx_batch_quality
+#: model:ir.actions.report,print_report_name:idtx_batch_quality.action_report_apariencia_eval
+msgid "'Appearance_%s' % (object.name or 'Evaluation')"
+msgstr "'Apariencia_%s' % (object.name or 'Evaluacion')"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Appearance Evaluation No. "
+msgstr "Evaluacion de Apariencia N° "
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Appearance Evaluation No."
+msgstr "Evaluacion de Apariencia N°"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Laboratory Record"
+msgstr "Registro de Laboratorio"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Batch"
+msgstr "Partida"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Customer"
+msgstr "Cliente"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Product"
+msgstr "Producto"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Appearance"
+msgstr "Apariencia"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Number of Rolls"
+msgstr "Cantidad de Rollos"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Date"
+msgstr "Fecha"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Color"
+msgstr "Color"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Quality Point"
+msgstr "Punto de calidad"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Roll Detail"
+msgstr "Detalle por Rollo"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Roll Summary"
+msgstr "Resumen por Rollo"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Roll No."
+msgstr "Nro. Rollo"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Roll"
+msgstr "Rollo"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Width"
+msgstr "Ancho"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Meters"
+msgstr "Metraje"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Defect Count"
+msgstr "Cantidad Defectos"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Defect"
+msgstr "Defecto"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Defect Quantity"
+msgstr "Cantidad Fallas"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Size"
+msgstr "Tamano"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Total Score"
+msgstr "Puntaje Total"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Total Roll Score"
+msgstr "Total Puntaje Rollo"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "No defects recorded"
+msgstr "Sin defectos registrados"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "No rolls evaluated"
+msgstr "Sin rollos evaluados"
+
+#. module: idtx_batch_quality
+#: model_terms:ir.ui.view,arch_db:idtx_batch_quality.report_apariencia_eval_document
+msgid "Roll %s"
+msgstr "Rollo %s"
+
+#. module: idtx_batch_quality
 #. odoo-python
 #: code:addons/idtx_batch_quality/models/control_estabilidad_revirado_eval.py:0
 msgid "No hay campos configurados para el modo seleccionado."

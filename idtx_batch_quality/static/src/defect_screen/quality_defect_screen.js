@@ -946,12 +946,31 @@ export class QualityDefectScreen extends Component {
             return;
         }
 
-        for (const sizeCode of sizeCodes) {
+        // Pattern support: "2 ancho variado 4" => register size 4 twice.
+        let quantity = this._extractQuantityFromVoice(text, defect);
+        let finalSizeCodes = [...sizeCodes];
+
+        // Shorthand support: "4 variado 4" (qty + defect token + size)
+        if (this._looksLikeQtyDefectSizePattern(text) && finalSizeCodes.length) {
+            const leadQty = this._extractLeadingQuantity(text);
+            if (leadQty > 1) {
+                quantity = leadQty;
+                finalSizeCodes = [finalSizeCodes[finalSizeCodes.length - 1]];
+            }
+        }
+
+        if (quantity > 1 && finalSizeCodes.length === 1) {
+            while (finalSizeCodes.length < quantity) {
+                finalSizeCodes.push(finalSizeCodes[0]);
+            }
+        }
+
+        for (const sizeCode of finalSizeCodes) {
             this.onSelectDefect(defect.defecto_id);
             this.onSelectSize(sizeCode);
         }
         this._playVoiceCue("ok");
-        this.notification.add(`Registrado por voz: ${defect.name} (${sizeCodes.join(", ")}).`, { type: "success" });
+        this.notification.add(`Registrado por voz: ${defect.name} (${finalSizeCodes.join(", ")}).`, { type: "success" });
     }
 
     _ensureVoiceAudioContext() {
@@ -1099,6 +1118,23 @@ export class QualityDefectScreen extends Component {
             }
         };
 
+        // Prefer sizes spoken after the recognized defect name.
+        const defectName = normalizeSpeechText(defect?.name || "");
+        if (defectName && text.includes(defectName)) {
+            const afterDefect = text.split(defectName).slice(1).join(" ").trim();
+            if (afterDefect) {
+                const afterMatches = afterDefect.match(/\b(1|2|3|4|uno|una|dos|tres|cuatro)\b/g) || [];
+                const afterOut = [];
+                for (const m of afterMatches) {
+                    const code = numberWords[m] || m;
+                    if (allowed.includes(code)) {
+                        afterOut.push(code);
+                    }
+                }
+                if (afterOut.length) return afterOut;
+            }
+        }
+
         // Captura listas: "tamano 1, 2 y 3", "size 2 y 4", etc.
         const listAfterSize = text.match(/(?:tamano|tamaño|size)\s*(?:numero|n)?\s*([\w\s,\.y]+)/);
         if (listAfterSize && listAfterSize[1]) {
@@ -1114,6 +1150,12 @@ export class QualityDefectScreen extends Component {
         }
 
         const directNumMatches = text.match(/\b(1|2|3|4|uno|una|dos|tres|cuatro)\b/g) || [];
+        const shorthandQtySize = this._looksLikeQtyDefectSizePattern(text);
+        if (shorthandQtySize && directNumMatches.length >= 2) {
+            // Example: "4 variado 4" => first is quantity, last is size.
+            addIfAllowed(directNumMatches[directNumMatches.length - 1]);
+            if (out.length) return out;
+        }
         for (const m of directNumMatches) {
             addIfAllowed(m);
         }
@@ -1130,6 +1172,66 @@ export class QualityDefectScreen extends Component {
         }
 
         return [];
+    }
+
+    _extractQuantityFromVoice(text, defect) {
+        if (!text || !defect?.name) return 1;
+
+        const numberWords = {
+            uno: 1,
+            una: 1,
+            dos: 2,
+            tres: 3,
+            cuatro: 4,
+            cinco: 5,
+            seis: 6,
+            siete: 7,
+            ocho: 8,
+            nueve: 9,
+            diez: 10,
+        };
+
+        const defectName = normalizeSpeechText(defect.name);
+        const idx = text.indexOf(defectName);
+        if (idx <= 0) return 1;
+
+        const beforeDefect = text.slice(0, idx).trim();
+        const m = beforeDefect.match(/\b(\d+|uno|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez)\b\s*$/);
+        if (!m) return 1;
+
+        const raw = m[1];
+        const value = Number.isFinite(Number(raw)) ? Number(raw) : (numberWords[raw] || 1);
+        return Math.max(1, Math.min(20, value));
+    }
+
+    _extractLeadingQuantity(text) {
+        if (!text) return 1;
+        const numberWords = {
+            uno: 1,
+            una: 1,
+            dos: 2,
+            tres: 3,
+            cuatro: 4,
+            cinco: 5,
+            seis: 6,
+            siete: 7,
+            ocho: 8,
+            nueve: 9,
+            diez: 10,
+        };
+        const m = text.match(/^\s*(\d+|uno|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez)\b/);
+        if (!m) return 1;
+        const raw = m[1];
+        const value = Number.isFinite(Number(raw)) ? Number(raw) : (numberWords[raw] || 1);
+        return Math.max(1, Math.min(20, value));
+    }
+
+    _looksLikeQtyDefectSizePattern(text) {
+        if (!text) return false;
+        if (/(tamano|tamaño|size)\b/.test(text)) return false;
+        const nums = text.match(/\b(\d+|uno|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez)\b/g) || [];
+        // Short commands typically come as qty + defect words + size.
+        return nums.length >= 2;
     }
 
     _hasInvalidSizeMention(text, defect) {

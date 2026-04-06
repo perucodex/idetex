@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-09 17:50+0000\n"
-"PO-Revision-Date: 2026-01-09 17:50+0000\n"
+"POT-Creation-Date: 2026-04-06 19:18+0000\n"
+"PO-Revision-Date: 2026-04-06 19:18+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -23,49 +23,60 @@ msgid ""
 msgstr ""
 
 #. module: idtx_batch_control
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_control_proceso_line_wizard
+msgid "Aceptar"
+msgstr ""
+
+#. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__message_needaction
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__message_needaction
 msgid "Action Needed"
 msgstr ""
 
 #. module: idtx_batch_control
-#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_view_search
-msgid "Active"
-msgstr "Activo"
-
-#. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__activity_ids
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__activity_ids
 msgid "Activities"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__activity_exception_decoration
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__activity_exception_decoration
 msgid "Activity Exception Decoration"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__activity_state
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__activity_state
 msgid "Activity State"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__activity_type_icon
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__activity_type_icon
 msgid "Activity Type Icon"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__area
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__area
-#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_view_search
 msgid "Area"
 msgstr ""
 
 #. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__description
+msgid "Articulo"
+msgstr ""
+
+#. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__message_attachment_count
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__message_attachment_count
 msgid "Attachment Count"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__batch
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_line_view_search
 msgid "Batch"
 msgstr "Partida"
 
@@ -75,16 +86,35 @@ msgid "CONTROL PEDIDO"
 msgstr ""
 
 #. module: idtx_batch_control
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_btn_inicio_fase_wizard_form
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_control_proceso_line_wizard
+msgid "Cancelar"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__codpro
+msgid "Codigo Producto"
+msgstr ""
+
+#. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__colorcode
-#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_view_search
 msgid "Color Code"
 msgstr "Cod. Color"
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__colorname
-#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_view_search
 msgid "Color Name"
 msgstr "Color"
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__colorfastness_id
+msgid "Colorfastness to Washing"
+msgstr "Solidez al Lavado"
+
+#. module: idtx_batch_control
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_btn_inicio_fase_wizard_form
+msgid "Confirmar Inicio"
+msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model,name:idtx_batch_control.model_control_pedido_line
@@ -97,25 +127,29 @@ msgid "Control de Pedido"
 msgstr ""
 
 #. module: idtx_batch_control
-#: model:ir.ui.menu,name:idtx_batch_control.menu_control_pedidos
-msgid "Control de Pedidos"
-msgstr ""
-
-#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_btn_inicio_fase_wizard__create_uid
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_faspro_definition__create_uid
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_operator__create_uid
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__create_uid
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__create_uid
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_line_wizard__create_uid
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_lines__create_uid
 msgid "Created by"
 msgstr ""
 
 #. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_btn_inicio_fase_wizard__create_date
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_faspro_definition__create_date
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_operator__create_date
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__create_date
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__create_date
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_line_wizard__create_date
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_lines__create_date
 msgid "Created on"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__customer
-#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_view_search
 msgid "Customer"
 msgstr "Cliente"
 
@@ -125,8 +159,45 @@ msgid "Customer Order Date"
 msgstr "Fecha de OC"
 
 #. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_faspro_definition__code
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_operator__code
+msgid "Código"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_lines__fas_code
+msgid "Código Proceso"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_btn_inicio_fase_wizard__operator_code
+msgid "Código de Operario"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model,name:idtx_batch_control.model_control_faspro_definition
+msgid "Definicion de Procesos FASPRO"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.actions.act_window,name:idtx_batch_control.action_control_faspro_definition
+#: model:ir.ui.menu,name:idtx_batch_control.menu_control_faspro_definition
+msgid "Definición de Procesos"
+msgstr ""
+
+#. module: idtx_batch_control
 #: model:ir.model.fields.selection,name:idtx_batch_control.selection__control_pedido__state__de
 msgid "Delayed"
+msgstr "Demorado"
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__density_stability_twisting_id
+msgid "Density Stability Twisting Data"
+msgstr "Datos de Densidad Estabilidad Revirado"
+
+#. module: idtx_batch_control
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_line_view_search
+msgid "Descripción"
 msgstr ""
 
 #. module: idtx_batch_control
@@ -140,16 +211,35 @@ msgid "Detalle"
 msgstr ""
 
 #. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_btn_inicio_fase_wizard__display_name
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_faspro_definition__display_name
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_operator__display_name
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__display_name
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__display_name
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_line_wizard__display_name
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_lines__display_name
 msgid "Display Name"
-msgstr ""
+msgstr "Nombre para mostrar"
 
 #. module: idtx_batch_control
 #: model:ir.model.fields.selection,name:idtx_batch_control.selection__control_pedido__state__do
-#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_view_search
 msgid "Done"
 msgstr "Hecho"
+
+#. module: idtx_batch_control
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_control_proceso_line_wizard
+msgid "Editar/Iniciar Proceso"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields.selection,name:idtx_batch_control.selection__control_proceso_lines__state__in_progress
+msgid "En Proceso"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_view_search
+msgid "En proceso"
+msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__end_date
@@ -157,54 +247,115 @@ msgid "End Date"
 msgstr "Fecha Final"
 
 #. module: idtx_batch_control
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_btn_inicio_fase_wizard_form
+msgid "Escriba código de operario..."
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_lines__state
+msgid "Estado"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_lines__barFasDTF
+msgid "Fecha Fin"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_lines__barFasDTI
+msgid "Fecha Inicio"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_btn_inicio_fase_wizard__fecha_inicio
+msgid "Fecha y Hora de Inicio"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_control_pedido_form
+msgid "Finalizar"
+msgstr ""
+
+#. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__message_follower_ids
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__message_follower_ids
 msgid "Followers"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__message_partner_ids
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__message_partner_ids
 msgid "Followers (Partners)"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,help:idtx_batch_control.field_control_pedido__activity_type_icon
+#: model:ir.model.fields,help:idtx_batch_control.field_control_pedido_line__activity_type_icon
 msgid "Font awesome icon e.g. fa-tasks"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__has_message
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__has_message
 msgid "Has Message"
 msgstr ""
 
 #. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_btn_inicio_fase_wizard__id
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_faspro_definition__id
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_operator__id
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__id
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__id
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_line_wizard__id
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_lines__id
 msgid "ID"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__activity_exception_icon
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__activity_exception_icon
 msgid "Icon"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,help:idtx_batch_control.field_control_pedido__activity_exception_icon
+#: model:ir.model.fields,help:idtx_batch_control.field_control_pedido_line__activity_exception_icon
 msgid "Icon to indicate an exception activity."
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,help:idtx_batch_control.field_control_pedido__message_needaction
+#: model:ir.model.fields,help:idtx_batch_control.field_control_pedido_line__message_needaction
 msgid "If checked, new messages require your attention."
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,help:idtx_batch_control.field_control_pedido__message_has_error
 #: model:ir.model.fields,help:idtx_batch_control.field_control_pedido__message_has_sms_error
+#: model:ir.model.fields,help:idtx_batch_control.field_control_pedido_line__message_has_error
+#: model:ir.model.fields,help:idtx_batch_control.field_control_pedido_line__message_has_sms_error
 msgid "If checked, some messages have a delivery error."
 msgstr ""
 
 #. module: idtx_batch_control
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_control_pedido_form
+msgid "Iniciar"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_control_pedido_line_form
+msgid "Iniciar Partida"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.actions.act_window,name:idtx_batch_control.action_btn_inicio_fase_wizard
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_btn_inicio_fase_wizard_form
+msgid "Iniciar Proceso"
+msgstr ""
+
+#. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__message_is_follower
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__message_is_follower
 msgid "Is Follower"
 msgstr ""
 
@@ -214,14 +365,29 @@ msgid "Kilograms"
 msgstr "Kilos"
 
 #. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__lab_dev_line_id
+msgid "Lab Dev"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_btn_inicio_fase_wizard__write_uid
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_faspro_definition__write_uid
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_operator__write_uid
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__write_uid
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__write_uid
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_line_wizard__write_uid
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_lines__write_uid
 msgid "Last Updated by"
 msgstr ""
 
 #. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_btn_inicio_fase_wizard__write_date
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_faspro_definition__write_date
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_operator__write_date
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__write_date
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__write_date
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_line_wizard__write_date
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_lines__write_date
 msgid "Last Updated on"
 msgstr ""
 
@@ -231,37 +397,70 @@ msgid "Liquidar Orden"
 msgstr ""
 
 #. module: idtx_batch_control
+#: model:ir.model.fields.selection,name:idtx_batch_control.selection__control_proceso_lines__state__ready
+msgid "Listo"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_btn_inicio_fase_wizard__line_id
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_line_wizard__line_id
+msgid "Línea de Proceso"
+msgstr ""
+
+#. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__message_has_error
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__message_has_error
 msgid "Message Delivery error"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__message_ids
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__message_ids
 msgid "Messages"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__my_activity_date_deadline
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__my_activity_date_deadline
 msgid "My Activity Deadline"
 msgstr ""
 
 #. module: idtx_batch_control
-#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__activity_calendar_event_id
-msgid "Next Activity Calendar Event"
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_lines__maqCodBis
+msgid "Máquina"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_line_wizard__maq_old_str
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_control_proceso_line_wizard
+msgid "Máquina Anterior"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_control_proceso_line_wizard
+msgid "Máquina Nueva"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_faspro_definition__default_maq_code
+msgid "Máquina por Defecto"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__activity_date_deadline
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__activity_date_deadline
 msgid "Next Activity Deadline"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__activity_summary
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__activity_summary
 msgid "Next Activity Summary"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__activity_type_id
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__activity_type_id
 msgid "Next Activity Type"
 msgstr ""
 
@@ -271,7 +470,34 @@ msgid "Next Process"
 msgstr "Ultimo Proceso"
 
 #. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_faspro_definition__name
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_operator__name
+msgid "Nombre"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_btn_inicio_fase_wizard__operator_name
+msgid "Nombre de Operario"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_line_wizard__maq_id_new
+msgid "Nueva Máquina"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_line_wizard__new_op_id
+msgid "Nuevo Proceso"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_control_proceso_line_wizard
+msgid "Nuevos Valores (Lista de Selección)"
+msgstr ""
+
+#. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__message_needaction_counter
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__message_needaction_counter
 msgid "Number of Actions"
 msgstr ""
 
@@ -282,22 +508,40 @@ msgstr "Días"
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__message_has_error_counter
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__message_has_error_counter
 msgid "Number of errors"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,help:idtx_batch_control.field_control_pedido__message_needaction_counter
+#: model:ir.model.fields,help:idtx_batch_control.field_control_pedido_line__message_needaction_counter
 msgid "Number of messages requiring action"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,help:idtx_batch_control.field_control_pedido__message_has_error_counter
+#: model:ir.model.fields,help:idtx_batch_control.field_control_pedido_line__message_has_error_counter
 msgid "Number of messages with delivery error"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields.selection,name:idtx_batch_control.selection__control_pedido__state__on
 msgid "On Time"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_lines__operator_name
+msgid "Operario"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model,name:idtx_batch_control.model_control_operator
+msgid "Operarios de Planta"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_lines__barOrdLin
+msgid "Orden"
 msgstr ""
 
 #. module: idtx_batch_control
@@ -311,8 +555,20 @@ msgid "Order Number"
 msgstr "Número de Orden"
 
 #. module: idtx_batch_control
+#: model:ir.actions.act_window,name:idtx_batch_control.action_control_partida
+#: model:ir.ui.menu,name:idtx_batch_control.menu_control_partida
+msgid "Partidas"
+msgstr ""
+
+#. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__pedido_id
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_line_view_search
 msgid "Pedido"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_lines__pedido_line_id
+msgid "Pedido Line"
 msgstr ""
 
 #. module: idtx_batch_control
@@ -321,13 +577,54 @@ msgid "Pedido control"
 msgstr ""
 
 #. module: idtx_batch_control
+#: model:ir.ui.menu,name:idtx_batch_control.menu_control_pedido
+msgid "Pedidos"
+msgstr ""
+
+#. module: idtx_batch_control
 #: model:ir.actions.act_window,name:idtx_batch_control.action_control_pedido
 msgid "Pedidos control"
 msgstr ""
 
 #. module: idtx_batch_control
+#: model:ir.model.fields.selection,name:idtx_batch_control.selection__control_proceso_lines__state__pending
+msgid "Pendiente"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_lines__fasCod
+msgid "Proceso (Descr)"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_line_wizard__fas_old_str
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_control_proceso_line_wizard
+msgid "Proceso Anterior"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_proceso_lines__previous_finished
+msgid "Proceso Anterior Finalizado"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_control_proceso_line_wizard
+msgid "Proceso Nuevo"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__proceso_ids
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_control_pedido_line_form
+msgid "Procesos"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model,name:idtx_batch_control.model_control_proceso_lines
+msgid "Procesos BARFAS"
+msgstr ""
+
+#. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__process
-#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_view_search
 msgid "Process"
 msgstr "Proceso"
 
@@ -337,7 +634,18 @@ msgid "Produced Weight"
 msgstr "Peso Tejido"
 
 #. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__product_id
+msgid "Product"
+msgstr "Producto"
+
+#. module: idtx_batch_control
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_line_view_search
+msgid "Producto"
+msgstr ""
+
+#. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__rating_ids
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__rating_ids
 msgid "Ratings"
 msgstr ""
 
@@ -348,6 +656,7 @@ msgstr "Reprocesos"
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__activity_user_id
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__activity_user_id
 msgid "Responsible User"
 msgstr ""
 
@@ -357,35 +666,50 @@ msgid "Revertir Liquidación"
 msgstr ""
 
 #. module: idtx_batch_control
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__rollos
+msgid "Rolls"
+msgstr "Rollos"
+
+#. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__route
 msgid "Route"
 msgstr "Ruta"
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__message_has_sms_error
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__message_has_sms_error
 msgid "SMS Delivery error"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__salesman
-#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_view_search
 msgid "Salesman"
 msgstr "Comercial"
 
 #. module: idtx_batch_control
-#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_view_search
-msgid "Search"
-msgstr "Buscar"
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_line_view_search
+msgid "Search Control Pedido Line"
+msgstr ""
 
 #. module: idtx_batch_control
-#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_view_search
-msgid "Settle"
-msgstr "Liquidar"
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_btn_inicio_fase_wizard_form
+msgid "Seleccione la fecha y hora de inicio para esta partida."
+msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields.selection,name:idtx_batch_control.selection__control_pedido__state__se
 msgid "Settled"
 msgstr "Liquidado"
+
+#. module: idtx_batch_control
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_control_pedido_form
+msgid "Sincronizar desde DBF"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.ui.menu,name:idtx_batch_control.menu_sitpro_texplus
+msgid "Sitpro & Texplus"
+msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__start_date
@@ -394,12 +718,12 @@ msgstr "Fecha Inicio"
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__state
-#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_view_search
 msgid "State"
 msgstr "Estado"
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,help:idtx_batch_control.field_control_pedido__activity_state
+#: model:ir.model.fields,help:idtx_batch_control.field_control_pedido_line__activity_state
 msgid ""
 "Status based on activities\n"
 "Overdue: Due date is already passed\n"
@@ -408,7 +732,14 @@ msgid ""
 msgstr ""
 
 #. module: idtx_batch_control
+#: model:ir.model.fields.selection,name:idtx_batch_control.selection__control_proceso_lines__state__done
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.control_pedido_view_search
+msgid "Terminado"
+msgstr ""
+
+#. module: idtx_batch_control
 #: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_control_pedido_form
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_control_pedido_line_tree
 msgid "Total"
 msgstr ""
 
@@ -424,7 +755,13 @@ msgstr "Tipo de Venta"
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,help:idtx_batch_control.field_control_pedido__activity_exception_decoration
+#: model:ir.model.fields,help:idtx_batch_control.field_control_pedido_line__activity_exception_decoration
 msgid "Type of the exception activity on record."
+msgstr ""
+
+#. module: idtx_batch_control
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_control_proceso_line_wizard
+msgid "Valores Actuales (Anterior)"
 msgstr ""
 
 #. module: idtx_batch_control
@@ -434,15 +771,52 @@ msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__website_message_ids
+#: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__website_message_ids
 msgid "Website Messages"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,help:idtx_batch_control.field_control_pedido__website_message_ids
+#: model:ir.model.fields,help:idtx_batch_control.field_control_pedido_line__website_message_ids
 msgid "Website communication history"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model,name:idtx_batch_control.model_btn_inicio_fase_wizard
+msgid "Wizard Inicio Proceso Manufactura"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model,name:idtx_batch_control.model_control_proceso_line_wizard
+msgid "Wizard para editar un proceso individual"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model:ir.model.constraint,message:idtx_batch_control.constraint_control_pedido_product_code_unique
+msgid "Ya existe un pedido con ese Número de Orden!"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_control_pedido_line_form
+msgid "edit"
+msgstr "editar"
+
+#. module: idtx_batch_control
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_control_pedido_line_form
+msgid "finalizar"
 msgstr ""
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido__is_active
 msgid "is_active?"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_control_pedido_line_form
+msgid "play"
+msgstr ""
+
+#. module: idtx_batch_control
+#: model_terms:ir.ui.view,arch_db:idtx_batch_control.view_control_pedido_line_form
+msgid "¿Estás seguro de finalizar el proceso?"
 msgstr ""

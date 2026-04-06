@@ -106,9 +106,9 @@ class SaleOrder(models.Model):
     def _export_to_foxpro(self):
         self.ensure_one()
         
-        file_cab = '/mnt/fox/sit06/DBF/vta_cab_pedido.dbf'
-        file_det = '/mnt/fox/sit06/DBF/vta_det_pedido.dbf'
-        clientes_dbf = '/mnt/fox/sit06/DBF/clientes.dbf'
+        file_cab = '/mnt/fox/sit06/JP_DBF/vta_cab_pedido.dbf'
+        file_det = '/mnt/fox/sit06/JP_DBF/vta_det_pedido.dbf'
+        clientes_dbf = '/mnt/fox/sit06/JP_DBF/clientes.dbf'
 
         # --------------------
         # Cabecera

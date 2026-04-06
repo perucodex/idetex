@@ -25,6 +25,7 @@ e insertar el registro en tabla fox (dbf)
     # always loaded
     'data': [
         'security/ir.model.access.csv',
+        'data/sitpro.sale.type.csv',
         'views/account_payment_term_views.xml',
         'views/res_users_views.xml',
         'views/sale_order_views.xml',

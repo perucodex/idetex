@@ -269,17 +269,24 @@ class ProductAnalysis(models.Model):
         
     # Funcion escondida para actualizar los registros de densidad y estabilidad de torsión, para pruebas y desarrollo solamente
     def action_update(self):
-        analysis = self.env['product.analysis'].search([])
-        for rec in analysis:
-            rec.density_stability_twisting_id = self.env['density.stability.twisting'].create({
-                'density': 0.2,
-                'width': 0.2,
-                'width_shrinkage_from': 0.2,
-                'width_shrinkage_to': 0.2,
-                'length_shrinkage_from': 0.2,
-                'length_shrinkage_to': 0.2,
-                'twist': 0.2,
-            })
+        products = self.env['product.template'].search([('is_weaving', '=', True)])
+        for rec in products:
+            if not rec.analysis_id:
+                rec.analysis_id = self.env['product.analysis'].create({
+                    # 'name': rec.name,
+                    'product_description': rec.name,
+                    'product_code': rec.default_code,
+                    'state': 'prod',
+                    'density_stability_twisting_id': [Command.create({
+                        'density': 0.2,
+                        'width': 0.2,
+                        'width_shrinkage_from': 0.2,
+                        'width_shrinkage_to': 0.2,
+                        'length_shrinkage_from': 0.2,
+                        'length_shrinkage_to': 0.2,
+                        'twist': 0.2,
+                    })]
+                })
 
 class AnalysisWeavingData(models.Model):
     _name = 'analysis.weaving.data'

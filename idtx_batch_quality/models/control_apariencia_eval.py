@@ -79,6 +79,10 @@ class ControlAparienciaEval(models.Model):
             "apariencia_id": self.apariencia_id.id,
         }
 
+    def action_print_report(self):
+        self.ensure_one()
+        return self.env.ref("idtx_batch_quality.action_report_apariencia_eval").report_action(self)
+
     @api.model
     def action_tablet_get_or_create_evaluacion(self, pedido_line_id, apariencia_id, evaluacion_id=False):
         pedido_line_id = int(pedido_line_id or 0)

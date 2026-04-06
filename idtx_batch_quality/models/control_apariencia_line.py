@@ -1,3 +1,5 @@
+import html
+
 from odoo import api, fields, models
 from odoo.fields import Domain
 from odoo.exceptions import UserError, ValidationError
@@ -329,6 +331,78 @@ class ControlAparienciaLine(models.Model):
             "width": width,
             "meters": meters,
         }
+
+    @api.model
+    def _normalize_mojibake_text(self, value):
+        text = value or ""
+        if not isinstance(text, str):
+            text = str(text)
+
+        if not text:
+            return text
+
+        suspicious_tokens = ("Ã", "Â", "�")
+        if not any(token in text for token in suspicious_tokens):
+            return text
+
+        def score(candidate):
+            return sum(candidate.count(token) for token in suspicious_tokens)
+
+        best = text
+        best_score = score(text)
+        for source_encoding in ("latin1", "cp1252"):
+            try:
+                candidate = text.encode(source_encoding).decode("utf-8")
+            except (UnicodeEncodeError, UnicodeDecodeError):
+                continue
+
+            candidate_score = score(candidate)
+            if candidate_score < best_score:
+                best = candidate
+                best_score = candidate_score
+
+        return best
+
+    @api.model
+    def _to_html_entities(self, value):
+        text = self._normalize_mojibake_text(value)
+        escaped = html.escape(text, quote=False)
+        return escaped.encode("ascii", "xmlcharrefreplace").decode("ascii")
+
+    def get_report_defects_grouped_by_size(self):
+        self.ensure_one()
+        grouped = {}
+        for def_line in self.defecto_line_ids:
+            defect_name = self._normalize_mojibake_text(def_line.defecto_id.name or "-")
+            defect_name_html = self._to_html_entities(defect_name)
+            for size_line in def_line.tamano_defecto_ids:
+                size_code = size_line.tamano_hueco if def_line.is_hueco else size_line.tamano
+                if not size_code:
+                    continue
+
+                if def_line.is_hueco:
+                    size_label = dict(size_line._fields["tamano_hueco"].selection).get(size_code, size_code)
+                else:
+                    size_label = dict(size_line._fields["tamano"].selection).get(size_code, size_code)
+                size_label = self._normalize_mojibake_text(size_label)
+                size_label_html = self._to_html_entities(size_label)
+
+                key = (defect_name, size_label)
+                row = grouped.setdefault(key, {
+                    "defecto": defect_name,
+                    "defecto_html": defect_name_html,
+                    "size": size_label,
+                    "size_html": size_label_html,
+                    "cantidad_fallas": 0,
+                    "puntaje_total": 0,
+                })
+                row["cantidad_fallas"] += 1
+                row["puntaje_total"] += int(size_line.puntos or 0)
+
+        return sorted(
+            grouped.values(),
+            key=lambda x: (x["defecto"], x["size"]),
+        )
 
 
 class ControlAparienciaDefectoLine(models.Model):

@@ -31,6 +31,7 @@
         'report/dimrev_report.xml',
         'report/solidez_lavado_report.xml',
         'report/pedido_line_laboratorio_summary_report.xml',
+        'report/apariencia_eval_report.xml',
         'data/mail_template_data.xml',
         'views/laboratorio_public_templates.xml',
         'views/quality_tone_views.xml',
