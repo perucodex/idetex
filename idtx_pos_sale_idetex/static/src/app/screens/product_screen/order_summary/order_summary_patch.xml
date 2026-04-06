@@ -21,5 +21,8 @@
                 </Orderline>
             </t>
         </xpath>
+        <xpath expr="//OrderDisplay" position="attributes">
+            <attribute name="groupLines">true</attribute>
+        </xpath>
     </t>
 </templates>

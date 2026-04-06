@@ -65,6 +65,7 @@ patch(OrderDisplay, {
     props: {
         ...OrderDisplay.props,
         detailed: { type: Boolean, optional: true },
+        groupLines: { type: Boolean, optional: true },
     }
 });
 
@@ -80,9 +81,9 @@ patch(OrderDisplay.prototype, {
         if (flatLines.length === 0) return [];
 
         // LÓGICA CONDICIONAL:
-        // Si estamos en modo recibo Y se pidió detallado -> Devolvemos plano.
-        // En modo display (carrito) siempre agrupamos.
-        if (this.props.mode === 'receipt' && this.props.detailed) {
+        // Solo agrupamos si se solicitó explícitamente vía prop 'groupLines' (inyectado desde OrderSummary).
+        // En TicketScreen o recibos completos, devolvemos plano para evitar crashes del componente Orderline nativo.
+        if (!this.props.groupLines) {
             return flatLines;
         }
 
