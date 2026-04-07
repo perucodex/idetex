@@ -55,7 +55,11 @@
                         </group>
                     </group>
                     <group string="Firma">
-                        <field name="signature" widget="image" class="oe_avatar" options="{'preview_image': 'signature'}"/>
+                        <field name="signature"
+                               widget="image"
+                               readonly="1"
+                               nolabel="1"
+                               options="{'size': [420, 140]}"/>
                     </group>
                 </sheet>
             </form>
