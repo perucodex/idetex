@@ -609,8 +609,8 @@ class ControlPedidoLine(models.Model):
                     f"{tilt_std:.2f}&#176;" if tilt_std else "&#176; -",
                     f"&#177; {tilt_tol:.2f}&#176;" if tilt_std else "&#177; -",
                 ],
-                "result": float(dimrev_highest.tilt_before or 0.0) if dimrev_highest else 0.0,
-                "status": "Pass" if (dimrev_highest and dimrev_highest.bool_tilt_before) else "Fail",
+                "result": float(dimrev_first_eval.tilt_before or 0.0) if dimrev_first_eval else 0.0,
+                "status": "Pass" if (dimrev_first_eval and dimrev_first_eval.bool_tilt_before) else "Fail",
             },
             {
                 "test": _("Accelerated Washing Colorfastness"),

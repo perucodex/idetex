@@ -33,7 +33,7 @@ class ProductAnalysis(models.Model):
     product_fiber_id = fields.Many2one('product.fiber', string='Fiber', ondelete='restrict')
     product_title_id = fields.Many2one('product.title', string='Title', ondelete='restrict')
     product_code = fields.Char('Product Code', readonly=True, copy=False)
-    product_id = fields.Many2one('product.template', string='Product')
+    product_id = fields.Many2one('product.template', string='Product', copy=False)
     company_id = fields.Many2one(
         'res.company',
         string='Company',
@@ -49,7 +49,7 @@ class ProductAnalysis(models.Model):
     state = fields.Selection([
         ('test', 'Test'),
         ('prod', 'Product'),
-    ], string='State', default='test')
+    ], string='State', default='test', copy=False, tracking=True)
     ligament_row = fields.Integer('Rows',default=0)
     ligament_column = fields.Integer('Columns',default=0)
     ligament_join_row_column = fields.Char('Union')
@@ -64,7 +64,7 @@ class ProductAnalysis(models.Model):
     # Manejo de producto por estado
     production_state = fields.Char(string='Production State')
     # Tolerancia de tela
-    density_stability_twisting_id = fields.Many2one('density.stability.twisting', string='Density Stability Twisting Data')
+    density_stability_twisting_id = fields.Many2one('density.stability.twisting', string='Density Stability Twisting Data', copy=False)
 
     _check_standard_width = models.Constraint(
         'CHECK(standard_width > 0)',
@@ -145,6 +145,8 @@ class ProductAnalysis(models.Model):
         return super().create(vals_list)
         
     def action_product(self):
+        if not self.routing_ids:
+            raise UserError(_('Please select a base process and the route to generate the product!'))
         # Modificamos la línea porque los rectilíneos tambien se venden por kilo
         uom = self.env.ref('uom.product_uom_kgm') #if self.weave_type != 'rect' else self.env.ref('uom.product_uom_unit')
         self.product_id = self.env['product.template'].create({

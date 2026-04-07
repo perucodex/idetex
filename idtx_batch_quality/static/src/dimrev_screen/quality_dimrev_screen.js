@@ -103,16 +103,22 @@ const STEPS = [
     {
         key: "inclinacion",
         label: "Inclinacion",
-        speak: "Inclinacion. Dicte antes de lavar y despues de lavar.",
-        fields: ["tilt_before", "tilt_after"],
+        speak: "Inclinacion. Dicte antes de lavar.",
+        fields: ["tilt_before"],
+    },
+    {
+        key: "inclinacion_after",
+        label: "Inclinacion Despues de Lavar",
+        speak: "Inclinacion despues de lavar. Dicte el valor.",
+        fields: ["tilt_after"],
     },
 ];
 
 const MODE_STEP_KEYS = {
-    l1: ["ancho", "densidad", "est_l1_m1", "est_l1_m2", "inclinacion"],
-    l3: ["est_l3_m1", "est_l3_m2"],
-    l5: ["est_l5_m1", "est_l5_m2"],
-    ln: ["est_ln_m1", "est_ln_m2"],
+    l1: ["ancho", "densidad", "inclinacion", "est_l1_m1", "est_l1_m2", "inclinacion_after"],
+    l3: ["est_l3_m1", "est_l3_m2", "inclinacion_after"],
+    l5: ["est_l5_m1", "est_l5_m2", "inclinacion_after"],
+    ln: ["est_ln_m1", "est_ln_m2", "inclinacion_after"],
 };
 
 const SAMPLE_TYPE_OPTIONS = [
@@ -507,7 +513,7 @@ export class QualityDimrevScreen extends Component {
             return false;
         }
         const stepKey = this.activeStep?.key;
-        return stepKey === "ancho" || stepKey === "densidad";
+        return stepKey === "inclinacion";
     }
 
     get canFinalizeEvaluation() {
@@ -528,7 +534,9 @@ export class QualityDimrevScreen extends Component {
         if (this.state.evalMode === "l1") {
             const hasDensityAndWidth = ["den_1", "den_2", "den_3", "anc_1", "anc_2", "anc_3"]
                 .every((fieldName) => `${this.state.values[fieldName] || ""}`.trim() !== "");
-            return hasAllFields || hasDensityAndWidth;
+            const hasTiltBefore = `${this.state.values.tilt_before || ""}`.trim() !== "";
+            const hasProgressMinimum = hasDensityAndWidth && (!this.state.tiltRequired || hasTiltBefore);
+            return hasAllFields || hasProgressMinimum;
         }
 
         for (const fieldName of fields) {
@@ -965,10 +973,15 @@ export class QualityDimrevScreen extends Component {
         };
 
         let targetKey = "est_l1_m1";
+        if (this.state.tiltRequired && !stepComplete("inclinacion")) {
+            targetKey = "inclinacion";
+        } else if (!this.state.tiltRequired) {
+            targetKey = "est_l1_m1";
+        }
         if (stepComplete("est_l1_m1") && !stepComplete("est_l1_m2")) {
             targetKey = "est_l1_m2";
-        } else if (stepComplete("est_l1_m1") && stepComplete("est_l1_m2") && this.state.tiltRequired) {
-            targetKey = "inclinacion";
+        } else if (stepComplete("est_l1_m1") && stepComplete("est_l1_m2") && !stepComplete("inclinacion_after")) {
+            targetKey = "inclinacion_after";
         }
 
         const targetIdx = this.activeSteps.findIndex((step) => step.key === targetKey);
@@ -1429,6 +1442,11 @@ export class QualityDimrevScreen extends Component {
             payload[fname] = asFloat(rawValue);
         }
 
+        if (!Object.prototype.hasOwnProperty.call(payload, "tilt_after")) {
+            this.notification.add("Ingrese la inclinacion despues de lavar antes de finalizar.", { type: "warning" });
+            return;
+        }
+
         this.state.submitting = true;
         this.state.error = "";
         try {
@@ -1438,6 +1456,7 @@ export class QualityDimrevScreen extends Component {
                 payload,
                 this.state.sampleType,
                 this.state.criteriaOverride,
+                false,
             ]);
             if (result?.completed) {
                 this.notification.add(`Evaluacion finalizada en ${result?.name || "evaluacion"}.`, { type: "success" });
@@ -1478,6 +1497,7 @@ export class QualityDimrevScreen extends Component {
                 payload,
                 this.state.sampleType,
                 this.state.criteriaOverride,
+                true,
             ]);
             this.notification.add(`Avance guardado en ${result?.name || "evaluacion"}.`, { type: "success" });
             await this.onBackToSearch();

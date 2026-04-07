@@ -271,8 +271,8 @@ class ControlEstabilidadReviradoEval(models.Model):
         # Densidad y ancho solo se almacenan en el primer lavado.
         if canonical_key.startswith(("den_", "anc_")) and int(self.wash_number or 0) != 1:
             return
-        # Inclinacion solo se almacena en el primer lavado.
-        if canonical_key.startswith(("tilt_",)) and int(self.wash_number or 0) != 1:
+        # Inclinacion antes de lavar solo se almacena en 1er lavado.
+        if canonical_key == "tilt_before" and int(self.wash_number or 0) != 1:
             return
 
         meta = self._detail_measure_map().get(canonical_key)
@@ -432,7 +432,7 @@ class ControlEstabilidadReviradoEval(models.Model):
             ],
             "densidad": ["den_1", "den_2", "den_3"],
             "ancho": ["anc_1", "anc_2", "anc_3"],
-            "inclinacion": ["tilt_before", "tilt_after"],
+            "inclinacion": ["tilt_before"],
         }
         return map_steps.get(step_key, [])
 
@@ -455,8 +455,6 @@ class ControlEstabilidadReviradoEval(models.Model):
             return
         if not self._raw_has_value((values or {}).get("tilt_before")):
             raise UserError(_("Debe registrar la inclinacion antes de lavar."))
-        if not self._raw_has_value((values or {}).get("tilt_after")):
-            raise UserError(_("Debe registrar la inclinacion despues de lavar."))
 
     def _check_stability_sequence(self, step_key):
         self.ensure_one()
@@ -525,7 +523,7 @@ class ControlEstabilidadReviradoEval(models.Model):
                 if int(self.wash_number or 0) < 2:
                     return False
                 continue
-            if field_name in ("tilt_before", "tilt_after") and not self._is_tilt_required():
+            if field_name == "tilt_before" and not self._is_tilt_required():
                 continue
             if not self._has_measure_value(field_name):
                 return False
@@ -538,7 +536,7 @@ class ControlEstabilidadReviradoEval(models.Model):
                 if int(self.wash_number or 0) < 2:
                     return False
                 continue
-            if field_name in ("tilt_before", "tilt_after") and not self._is_tilt_required():
+            if field_name == "tilt_before" and not self._is_tilt_required():
                 continue
             if not self._has_measure_value(field_name):
                 return False
@@ -701,7 +699,7 @@ class ControlEstabilidadReviradoEval(models.Model):
         }
 
     @api.model
-    def action_tablet_finalize(self, pedido_line_id, eval_mode, values, sample_type=False, criteria_override=False):
+    def action_tablet_finalize(self, pedido_line_id, eval_mode, values, sample_type=False, criteria_override=False, is_progress=False):
         pedido_line = self.env["control.pedido.line"].browse(int(pedido_line_id or 0))
         if not pedido_line.exists():
             raise UserError(_("Seleccione una partida valida."))
@@ -780,10 +778,17 @@ class ControlEstabilidadReviradoEval(models.Model):
             ancho_complete = all(self._raw_has_value((values or {}).get(k)) for k in ("anc_1", "anc_2", "anc_3"))
             if not (densidad_complete and ancho_complete):
                 raise UserError(_("Para guardar el avance del 1er lavado debe registrar primero ancho y densidad completos."))
+            if is_progress and rec._is_tilt_required():
+                has_tilt_before = self._raw_has_value((values or {}).get("tilt_before")) or rec._has_measure_value("tilt_before")
+                if not has_tilt_before:
+                    raise UserError(_("Para guardar avance del 1er lavado debe registrar la inclinacion inicial."))
 
         incoming_values = values or {}
         if rec._raw_has_value(incoming_values.get("tilt_before")) or rec._raw_has_value(incoming_values.get("tilt_after")):
             rec._validate_tilt_required_values(incoming_values)
+
+        if not is_progress and not rec._raw_has_value(incoming_values.get("tilt_after")):
+            raise UserError(_("Debe registrar la inclinacion despues de lavar para finalizar."))
 
         for fname in fields_for_mode:
             if fname == "rvn_n":
@@ -798,6 +803,13 @@ class ControlEstabilidadReviradoEval(models.Model):
             except (TypeError, ValueError):
                 raise UserError(_("El valor de %s no es numerico.") % fname)
             rec._upsert_measure_value(fname, value)
+
+        if rec._raw_has_value(incoming_values.get("tilt_after")):
+            try:
+                tilt_after_value = float(incoming_values.get("tilt_after") or 0.0)
+            except (TypeError, ValueError):
+                raise UserError(_("El valor de tilt_after no es numerico."))
+            rec._upsert_measure_value("tilt_after", tilt_after_value)
 
         if eval_mode == "ln" and int(rec.wash_number or 0) < 2:
             raise UserError(_("El lavado N debe ser mayor a 1."))
