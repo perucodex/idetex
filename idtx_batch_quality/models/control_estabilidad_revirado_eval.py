@@ -33,7 +33,8 @@ class ControlEstabilidadReviradoEval(models.Model):
         "st_l_m1_d1", "st_l_m1_d2", "st_l_m1_d3",
         "st_l_m2_d1", "st_l_m2_d2", "st_l_m2_d3",
         "rv_m1_ac", "rv_m1_bd", "rv_m2_ac", "rv_m2_bd",
-        "tilt_before", "tilt_after",
+        "tilt_before_m1", "tilt_before_m2", "tilt_after_m1", "tilt_after_m2",
+        "tilt_before_dir_m1", "tilt_before_dir_m2", "tilt_after_dir_m1", "tilt_after_dir_m2",
         "den_1", "den_2", "den_3",
         "anc_1", "anc_2", "anc_3",
     }
@@ -71,6 +72,14 @@ class ControlEstabilidadReviradoEval(models.Model):
     revirado_promedio = fields.Float(string="Revirado Promedio", compute="_compute_revirado", store=True)
     tilt_before = fields.Float(string="Inclinacion Antes de Lavar", compute="_compute_tilt", store=True)
     tilt_after = fields.Float(string="Inclinacion Despues de Lavar", compute="_compute_tilt", store=True)
+    tilt_before_m1 = fields.Float(string="Inclinacion Antes de Lavar M1", compute="_compute_tilt", store=True)
+    tilt_before_m2 = fields.Float(string="Inclinacion Antes de Lavar M2", compute="_compute_tilt", store=True)
+    tilt_after_m1 = fields.Float(string="Inclinacion Despues de Lavar M1", compute="_compute_tilt", store=True)
+    tilt_after_m2 = fields.Float(string="Inclinacion Despues de Lavar M2", compute="_compute_tilt", store=True)
+    tilt_before_dir_m1 = fields.Selection([("z", "Z"), ("s", "S")], string="Sentido Antes M1", compute="_compute_tilt", store=True)
+    tilt_before_dir_m2 = fields.Selection([("z", "Z"), ("s", "S")], string="Sentido Antes M2", compute="_compute_tilt", store=True)
+    tilt_after_dir_m1 = fields.Selection([("z", "Z"), ("s", "S")], string="Sentido Despues M1", compute="_compute_tilt", store=True)
+    tilt_after_dir_m2 = fields.Selection([("z", "Z"), ("s", "S")], string="Sentido Despues M2", compute="_compute_tilt", store=True)
 
     densidad_promedio = fields.Float(string="Densidad Promedio", compute="_compute_densidad_ancho", store=True)
     ancho_promedio = fields.Float(string="Ancho Promedio", compute="_compute_densidad_ancho", store=True)
@@ -204,8 +213,14 @@ class ControlEstabilidadReviradoEval(models.Model):
             ("rv_m1_bd", "m1", f"Revirado {wash_label} M1 BD"),
             ("rv_m2_ac", "m2", f"Revirado {wash_label} M2 AC"),
             ("rv_m2_bd", "m2", f"Revirado {wash_label} M2 BD"),
-            ("tilt_before", "na", "Inclinacion Antes de Lavar"),
-            ("tilt_after", "na", "Inclinacion Despues de Lavar"),
+            ("tilt_before_m1", "m1", "Inclinacion Antes de Lavar M1"),
+            ("tilt_before_m2", "m2", "Inclinacion Antes de Lavar M2"),
+            ("tilt_after_m1", "m1", "Inclinacion Despues de Lavar M1"),
+            ("tilt_after_m2", "m2", "Inclinacion Despues de Lavar M2"),
+            ("tilt_before_dir_m1", "m1", "Sentido Inclinacion Antes M1"),
+            ("tilt_before_dir_m2", "m2", "Sentido Inclinacion Antes M2"),
+            ("tilt_after_dir_m1", "m1", "Sentido Inclinacion Despues M1"),
+            ("tilt_after_dir_m2", "m2", "Sentido Inclinacion Despues M2"),
             ("den_1", "na", "Densidad Dato 1"),
             ("den_2", "na", "Densidad Dato 2"),
             ("den_3", "na", "Densidad Dato 3"),
@@ -235,7 +250,8 @@ class ControlEstabilidadReviradoEval(models.Model):
             "rv3_m1_ac", "rv3_m1_bd", "rv3_m2_ac", "rv3_m2_bd",
             "rv5_m1_ac", "rv5_m1_bd", "rv5_m2_ac", "rv5_m2_bd",
             "rvn_n", "rvn_m1_ac", "rvn_m1_bd", "rvn_m2_ac", "rvn_m2_bd",
-            "tilt_before", "tilt_after",
+            "tilt_before_m1", "tilt_before_m2", "tilt_after_m1", "tilt_after_m2",
+            "tilt_before_dir_m1", "tilt_before_dir_m2", "tilt_after_dir_m1", "tilt_after_dir_m2",
             "den_1", "den_2", "den_3", "anc_1", "anc_2", "anc_3",
         ])
         return fields
@@ -272,7 +288,7 @@ class ControlEstabilidadReviradoEval(models.Model):
         if canonical_key.startswith(("den_", "anc_")) and int(self.wash_number or 0) != 1:
             return
         # Inclinacion antes de lavar solo se almacena en 1er lavado.
-        if canonical_key == "tilt_before" and int(self.wash_number or 0) != 1:
+        if canonical_key.startswith("tilt_before") and int(self.wash_number or 0) != 1:
             return
 
         meta = self._detail_measure_map().get(canonical_key)
@@ -347,8 +363,23 @@ class ControlEstabilidadReviradoEval(models.Model):
     @api.depends("detail_line_ids.dato", "detail_line_ids.measure_key")
     def _compute_tilt(self):
         for rec in self:
-            rec.tilt_before = rec._get_measure_value("tilt_before")
-            rec.tilt_after = rec._get_measure_value("tilt_after")
+            before_m1 = float(rec._get_measure_value("tilt_before_m1") or 0.0)
+            before_m2 = float(rec._get_measure_value("tilt_before_m2") or 0.0)
+            after_m1 = float(rec._get_measure_value("tilt_after_m1") or 0.0)
+            after_m2 = float(rec._get_measure_value("tilt_after_m2") or 0.0)
+
+            rec.tilt_before_m1 = before_m1
+            rec.tilt_before_m2 = before_m2
+            rec.tilt_after_m1 = after_m1
+            rec.tilt_after_m2 = after_m2
+
+            rec.tilt_before = (before_m1 + before_m2) / 2.0 if (rec._has_measure_value("tilt_before_m1") and rec._has_measure_value("tilt_before_m2")) else 0.0
+            rec.tilt_after = (after_m1 + after_m2) / 2.0 if (rec._has_measure_value("tilt_after_m1") and rec._has_measure_value("tilt_after_m2")) else 0.0
+
+            rec.tilt_before_dir_m1 = "s" if float(rec._get_measure_value("tilt_before_dir_m1") or 1.0) < 0 else "z"
+            rec.tilt_before_dir_m2 = "s" if float(rec._get_measure_value("tilt_before_dir_m2") or 1.0) < 0 else "z"
+            rec.tilt_after_dir_m1 = "s" if float(rec._get_measure_value("tilt_after_dir_m1") or 1.0) < 0 else "z"
+            rec.tilt_after_dir_m2 = "s" if float(rec._get_measure_value("tilt_after_dir_m2") or 1.0) < 0 else "z"
 
     @api.depends("detail_line_ids.dato", "detail_line_ids.measure_key")
     def _compute_densidad_ancho(self):
@@ -432,7 +463,8 @@ class ControlEstabilidadReviradoEval(models.Model):
             ],
             "densidad": ["den_1", "den_2", "den_3"],
             "ancho": ["anc_1", "anc_2", "anc_3"],
-            "inclinacion": ["tilt_before"],
+            "inclinacion": ["tilt_before_m1", "tilt_before_m2", "tilt_before_dir_m1", "tilt_before_dir_m2"],
+            "inclinacion_after": ["tilt_after_m1", "tilt_after_m2", "tilt_after_dir_m1", "tilt_after_dir_m2"],
         }
         return map_steps.get(step_key, [])
 
@@ -453,8 +485,10 @@ class ControlEstabilidadReviradoEval(models.Model):
         self.ensure_one()
         if not self._is_tilt_required():
             return
-        if not self._raw_has_value((values or {}).get("tilt_before")):
-            raise UserError(_("Debe registrar la inclinacion antes de lavar."))
+        if not self._raw_has_value((values or {}).get("tilt_before_m1")):
+            raise UserError(_("Debe registrar la inclinacion antes de lavar de la muestra 1."))
+        if not self._raw_has_value((values or {}).get("tilt_before_m2")):
+            raise UserError(_("Debe registrar la inclinacion antes de lavar de la muestra 2."))
 
     def _check_stability_sequence(self, step_key):
         self.ensure_one()
@@ -523,7 +557,7 @@ class ControlEstabilidadReviradoEval(models.Model):
                 if int(self.wash_number or 0) < 2:
                     return False
                 continue
-            if field_name == "tilt_before" and not self._is_tilt_required():
+            if field_name.startswith("tilt_before") and not self._is_tilt_required():
                 continue
             if not self._has_measure_value(field_name):
                 return False
@@ -536,7 +570,7 @@ class ControlEstabilidadReviradoEval(models.Model):
                 if int(self.wash_number or 0) < 2:
                     return False
                 continue
-            if field_name == "tilt_before" and not self._is_tilt_required():
+            if field_name.startswith("tilt_before") and not self._is_tilt_required():
                 continue
             if not self._has_measure_value(field_name):
                 return False
@@ -560,7 +594,9 @@ class ControlEstabilidadReviradoEval(models.Model):
     def _fields_for_mode(self, eval_mode):
         step_keys = self._MODE_STEP_KEYS.get(eval_mode, ())
         if eval_mode == "l1":
-            step_keys = tuple(step_keys) + ("inclinacion",)
+            step_keys = tuple(step_keys) + ("inclinacion", "inclinacion_after")
+        else:
+            step_keys = tuple(step_keys) + ("inclinacion_after",)
         fields = []
         for key in step_keys:
             fields.extend(self._step_fields(key))
@@ -779,15 +815,34 @@ class ControlEstabilidadReviradoEval(models.Model):
             if not (densidad_complete and ancho_complete):
                 raise UserError(_("Para guardar el avance del 1er lavado debe registrar primero ancho y densidad completos."))
             if is_progress and rec._is_tilt_required():
-                has_tilt_before = self._raw_has_value((values or {}).get("tilt_before")) or rec._has_measure_value("tilt_before")
+                has_tilt_before = (
+                    self._raw_has_value((values or {}).get("tilt_before_m1"))
+                    and self._raw_has_value((values or {}).get("tilt_before_m2"))
+                ) or (
+                    rec._has_measure_value("tilt_before_m1") and rec._has_measure_value("tilt_before_m2")
+                )
                 if not has_tilt_before:
                     raise UserError(_("Para guardar avance del 1er lavado debe registrar la inclinacion inicial."))
 
         incoming_values = values or {}
-        if rec._raw_has_value(incoming_values.get("tilt_before")) or rec._raw_has_value(incoming_values.get("tilt_after")):
+        for value_key, dir_key in (
+            ("tilt_before_m1", "tilt_before_dir_m1"),
+            ("tilt_before_m2", "tilt_before_dir_m2"),
+            ("tilt_after_m1", "tilt_after_dir_m1"),
+            ("tilt_after_m2", "tilt_after_dir_m2"),
+        ):
+            if self._raw_has_value(incoming_values.get(value_key)) and not self._raw_has_value(incoming_values.get(dir_key)):
+                incoming_values[dir_key] = "z"
+        if (
+            rec._raw_has_value(incoming_values.get("tilt_before_m1"))
+            or rec._raw_has_value(incoming_values.get("tilt_before_m2"))
+        ):
             rec._validate_tilt_required_values(incoming_values)
 
-        if not is_progress and not rec._raw_has_value(incoming_values.get("tilt_after")):
+        if not is_progress and (
+            not rec._raw_has_value(incoming_values.get("tilt_after_m1"))
+            or not rec._raw_has_value(incoming_values.get("tilt_after_m2"))
+        ):
             raise UserError(_("Debe registrar la inclinacion despues de lavar para finalizar."))
 
         for fname in fields_for_mode:
@@ -799,17 +854,21 @@ class ControlEstabilidadReviradoEval(models.Model):
             if not self._raw_has_value(raw):
                 continue
             try:
-                value = int(float(raw or 0.0)) if fname == "rvn_n" else float(raw or 0.0)
+                if fname == "rvn_n":
+                    value = int(float(raw or 0.0))
+                elif fname.startswith("tilt_") and "_dir_" in fname:
+                    raw_dir = str(raw or "").strip().lower()
+                    if raw_dir in ("s", "-1"):
+                        value = -1.0
+                    elif raw_dir in ("z", "1", ""):
+                        value = 1.0
+                    else:
+                        raise UserError(_("El valor de %s no es valido. Use Z o S.") % fname)
+                else:
+                    value = float(raw or 0.0)
             except (TypeError, ValueError):
                 raise UserError(_("El valor de %s no es numerico.") % fname)
             rec._upsert_measure_value(fname, value)
-
-        if rec._raw_has_value(incoming_values.get("tilt_after")):
-            try:
-                tilt_after_value = float(incoming_values.get("tilt_after") or 0.0)
-            except (TypeError, ValueError):
-                raise UserError(_("El valor de tilt_after no es numerico."))
-            rec._upsert_measure_value("tilt_after", tilt_after_value)
 
         if eval_mode == "ln" and int(rec.wash_number or 0) < 2:
             raise UserError(_("El lavado N debe ser mayor a 1."))
@@ -941,7 +1000,7 @@ class ControlEstabilidadReviradoEval(models.Model):
                 raise UserError(_("El valor de rvn_n no es numerico."))
 
         rec._check_stability_sequence(step_key)
-        if "tilt_before" in fields_for_step or "tilt_after" in fields_for_step:
+        if any(name.startswith("tilt_before") or name.startswith("tilt_after") for name in fields_for_step):
             rec._validate_tilt_required_values(values)
 
         for fname in fields_for_step:
@@ -1041,7 +1100,7 @@ class ControlEstabilidadReviradoEval(models.Model):
             has_complete_revirado = all(rec._has_measure_value(key) for key in (
                 "rv_m1_ac", "rv_m1_bd", "rv_m2_ac", "rv_m2_bd",
             ))
-            has_tilt_before = rec._has_measure_value("tilt_before")
+            has_complete_tilt_before = rec._has_measure_value("tilt_before_m1") and rec._has_measure_value("tilt_before_m2")
             has_complete_densidad = all(rec._has_measure_value(key) for key in ("den_1", "den_2", "den_3"))
             has_complete_ancho = all(rec._has_measure_value(key) for key in ("anc_1", "anc_2", "anc_3"))
 
@@ -1095,7 +1154,7 @@ class ControlEstabilidadReviradoEval(models.Model):
                 # Criterio: estandar +/- tolerancia.
                 if (
                     int(rec.wash_number or 0) == 1
-                    and has_tilt_before
+                    and has_complete_tilt_before
                     and tilt_standard > 0.0
                     and abs(float(rec.tilt_before or 0.0) - tilt_standard) > tilt_tolerance
                 ):

@@ -321,8 +321,18 @@ class ControlLaboratorioRecord(models.Model):
         thresholds = analysis.density_stability_twisting_id if analysis else False
         tilt_standard = float(analysis.tilt or 0.0) if analysis else 0.0
         tilt_tolerance = abs(float(thresholds.tilt_wash or 0.0)) if thresholds else 0.0
-        tilt_before = float(eval_rec._get_measure_value("tilt_before") or 0.0)
-        tilt_after = float(eval_rec._get_measure_value("tilt_after") or 0.0)
+        tilt_before_m1 = float(eval_rec._get_measure_value("tilt_before_m1") or 0.0)
+        tilt_before_m2 = float(eval_rec._get_measure_value("tilt_before_m2") or 0.0)
+        tilt_after_m1 = float(eval_rec._get_measure_value("tilt_after_m1") or 0.0)
+        tilt_after_m2 = float(eval_rec._get_measure_value("tilt_after_m2") or 0.0)
+
+        tilt_before_dir_m1 = "S" if float(eval_rec._get_measure_value("tilt_before_dir_m1") or 1.0) < 0 else "Z"
+        tilt_before_dir_m2 = "S" if float(eval_rec._get_measure_value("tilt_before_dir_m2") or 1.0) < 0 else "Z"
+        tilt_after_dir_m1 = "S" if float(eval_rec._get_measure_value("tilt_after_dir_m1") or 1.0) < 0 else "Z"
+        tilt_after_dir_m2 = "S" if float(eval_rec._get_measure_value("tilt_after_dir_m2") or 1.0) < 0 else "Z"
+
+        tilt_before = (tilt_before_m1 + tilt_before_m2) / 2.0
+        tilt_after = (tilt_after_m1 + tilt_after_m2) / 2.0
         tilt_limit = tilt_standard + tilt_tolerance if tilt_standard > 0.0 else 0.0
 
         tilt_before_status = "Sin estandar"
@@ -352,6 +362,14 @@ class ControlLaboratorioRecord(models.Model):
             "width_avg": width_avg,
             "tilt_before": tilt_before,
             "tilt_after": tilt_after,
+            "tilt_before_m1": tilt_before_m1,
+            "tilt_before_m2": tilt_before_m2,
+            "tilt_after_m1": tilt_after_m1,
+            "tilt_after_m2": tilt_after_m2,
+            "tilt_before_dir_m1": tilt_before_dir_m1,
+            "tilt_before_dir_m2": tilt_before_dir_m2,
+            "tilt_after_dir_m1": tilt_after_dir_m1,
+            "tilt_after_dir_m2": tilt_after_dir_m2,
             "tilt_standard": tilt_standard,
             "tilt_tolerance": tilt_tolerance,
             "tilt_limit": tilt_limit,

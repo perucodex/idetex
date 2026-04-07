@@ -104,13 +104,13 @@ const STEPS = [
         key: "inclinacion",
         label: "Inclinacion",
         speak: "Inclinacion. Dicte antes de lavar.",
-        fields: ["tilt_before"],
+        fields: ["tilt_before_m1", "tilt_before_m2"],
     },
     {
         key: "inclinacion_after",
         label: "Inclinacion Despues de Lavar",
         speak: "Inclinacion despues de lavar. Dicte el valor.",
-        fields: ["tilt_after"],
+        fields: ["tilt_after_m1", "tilt_after_m2"],
     },
 ];
 
@@ -244,8 +244,17 @@ const FIELD_LABEL = {
     anc_1: "Ancho 1",
     anc_2: "Ancho 2",
     anc_3: "Ancho 3",
-    tilt_before: "Inclinacion Antes de Lavar",
-    tilt_after: "Inclinacion Despues de Lavar",
+    tilt_before_m1: "Inclinacion Antes de Lavar M1",
+    tilt_before_m2: "Inclinacion Antes de Lavar M2",
+    tilt_after_m1: "Inclinacion Despues de Lavar M1",
+    tilt_after_m2: "Inclinacion Despues de Lavar M2",
+};
+
+const TILT_DIRECTION_FIELD_BY_VALUE_FIELD = {
+    tilt_before_m1: "tilt_before_dir_m1",
+    tilt_before_m2: "tilt_before_dir_m2",
+    tilt_after_m1: "tilt_after_dir_m1",
+    tilt_after_m2: "tilt_after_dir_m2",
 };
 
 function normalizeText(v) {
@@ -286,6 +295,21 @@ function extractSpeechFloats(rawText) {
     const text = _normalizeSpokenNumberText(rawText);
     const matches = text.match(/-?\d+(?:[\.,]\d+)?/g) || [];
     return matches.map((m) => Number(m.replace(",", "."))).filter((n) => Number.isFinite(n));
+}
+
+function extractTiltEntries(rawText) {
+    const text = normalizeSpeechText(rawText);
+    const entries = [];
+    const regex = /(-?\d+(?:[\.,]\d+)?)(?:\s*(z|s))?/gi;
+    let match;
+    while ((match = regex.exec(text))) {
+        const value = Number((match[1] || "").replace(",", "."));
+        if (!Number.isFinite(value)) continue;
+        const spokenDir = (match[2] || "").toLowerCase();
+        const dir = spokenDir === "s" || value < 0 ? "s" : "z";
+        entries.push({ value: Math.abs(value), dir });
+    }
+    return entries;
 }
 
 function _normalizeSpokenNumberText(rawText) {
@@ -361,6 +385,10 @@ function getInitialValues() {
             vals[fieldName] = "";
         }
     }
+    vals.tilt_before_dir_m1 = "z";
+    vals.tilt_before_dir_m2 = "z";
+    vals.tilt_after_dir_m1 = "z";
+    vals.tilt_after_dir_m2 = "z";
     return vals;
 }
 
@@ -521,7 +549,7 @@ export class QualityDimrevScreen extends Component {
         const fields = this.activeSteps.flatMap((s) => s.fields || []);
         const hasAllFields = (() => {
             for (const fieldName of fields) {
-                if (!this.state.tiltRequired && (fieldName === "tilt_before" || fieldName === "tilt_after")) {
+                if (!this.state.tiltRequired && (fieldName === "tilt_before_m1" || fieldName === "tilt_before_m2")) {
                     continue;
                 }
                 if (`${this.state.values[fieldName] || ""}`.trim() === "") {
@@ -534,13 +562,14 @@ export class QualityDimrevScreen extends Component {
         if (this.state.evalMode === "l1") {
             const hasDensityAndWidth = ["den_1", "den_2", "den_3", "anc_1", "anc_2", "anc_3"]
                 .every((fieldName) => `${this.state.values[fieldName] || ""}`.trim() !== "");
-            const hasTiltBefore = `${this.state.values.tilt_before || ""}`.trim() !== "";
+            const hasTiltBefore = `${this.state.values.tilt_before_m1 || ""}`.trim() !== ""
+                && `${this.state.values.tilt_before_m2 || ""}`.trim() !== "";
             const hasProgressMinimum = hasDensityAndWidth && (!this.state.tiltRequired || hasTiltBefore);
             return hasAllFields || hasProgressMinimum;
         }
 
         for (const fieldName of fields) {
-            if (!this.state.tiltRequired && (fieldName === "tilt_before" || fieldName === "tilt_after")) {
+            if (!this.state.tiltRequired && (fieldName === "tilt_before_m1" || fieldName === "tilt_before_m2")) {
                 continue;
             }
             if (`${this.state.values[fieldName] || ""}`.trim() === "") {
@@ -662,11 +691,33 @@ export class QualityDimrevScreen extends Component {
     }
 
     get tiltBefore() {
-        return asFloat(this.state.values.tilt_before);
+        return (asFloat(this.state.values.tilt_before_m1) + asFloat(this.state.values.tilt_before_m2)) / 2;
     }
 
     get tiltAfter() {
-        return asFloat(this.state.values.tilt_after);
+        return (asFloat(this.state.values.tilt_after_m1) + asFloat(this.state.values.tilt_after_m2)) / 2;
+    }
+
+    getTiltDirection(valueFieldName) {
+        const dirField = TILT_DIRECTION_FIELD_BY_VALUE_FIELD[valueFieldName];
+        const raw = this.state.values[dirField];
+        const dir = `${raw || "z"}`.toLowerCase();
+        if (dir === "s" || Number(raw) < 0) {
+            return "s";
+        }
+        return "z";
+    }
+
+    setTiltDirection(valueFieldName, direction) {
+        const dirField = TILT_DIRECTION_FIELD_BY_VALUE_FIELD[valueFieldName];
+        if (!dirField) return;
+        this.state.values[dirField] = direction === "s" ? "s" : "z";
+        this._saveDraft();
+    }
+
+    toggleTiltDirection(valueFieldName) {
+        const current = this.getTiltDirection(valueFieldName);
+        this.setTiltDirection(valueFieldName, current === "z" ? "s" : "z");
     }
 
     getStepFieldLabel(fieldName) {
@@ -1250,6 +1301,26 @@ export class QualityDimrevScreen extends Component {
         if (this._processJumpCommand(text)) return;
 
         const numbers = extractSpeechFloats(rawText);
+        if (this.activeStep?.key === "inclinacion" || this.activeStep?.key === "inclinacion_after") {
+            const tiltEntries = extractTiltEntries(rawText);
+            if (!tiltEntries.length) {
+                this.state.voiceError = "No se detectaron datos de inclinacion en el dictado.";
+                return;
+            }
+            const assigned = this._assignTiltEntriesToNextFields(tiltEntries);
+            if (!assigned) {
+                this.state.voiceError = "Este paso ya esta completo. Diga limpiar para corregir o siguiente para avanzar.";
+                return;
+            }
+
+            this.state.voiceError = "";
+            const needed = this.activeStep.fields.length;
+            const filled = this._countFilledActiveFields();
+            this.state.voiceTranscript = `${rawText} [+${assigned}] [${filled}/${needed}]`;
+            this._playCue("ok");
+            this._saveDraft();
+            return;
+        }
         if (!numbers.length) {
             this.state.voiceError = "No se detectaron numeros en el dictado.";
             return;
@@ -1278,6 +1349,20 @@ export class QualityDimrevScreen extends Component {
                 break;
             }
             this.state.values[fields[idx]] = `${value}`;
+            assigned += 1;
+        }
+        return assigned;
+    }
+
+    _assignTiltEntriesToNextFields(entries) {
+        const fields = this.activeStep.fields || [];
+        let assigned = 0;
+        for (const entry of entries) {
+            const idx = fields.findIndex((fieldName) => `${this.state.values[fieldName] || ""}`.trim() === "");
+            if (idx === -1) break;
+            const valueField = fields[idx];
+            this.state.values[valueField] = `${entry.value}`;
+            this.setTiltDirection(valueField, entry.dir);
             assigned += 1;
         }
         return assigned;
@@ -1327,6 +1412,8 @@ export class QualityDimrevScreen extends Component {
             { re: /(5to|quinto).*(lavado).*muestra\s*2/, key: "est_l5_m2" },
             { re: /(lavado\s*n).*muestra\s*1/, key: "est_ln_m1" },
             { re: /(lavado\s*n).*muestra\s*2/, key: "est_ln_m2" },
+            { re: /inclinacion\s+despues/, key: "inclinacion_after" },
+            { re: /inclinacion\s+antes/, key: "inclinacion" },
             { re: /densidad/, key: "densidad" },
             { re: /\bancho\b/, key: "ancho" },
         ];
@@ -1440,9 +1527,12 @@ export class QualityDimrevScreen extends Component {
                 continue;
             }
             payload[fname] = asFloat(rawValue);
+            if (Object.prototype.hasOwnProperty.call(TILT_DIRECTION_FIELD_BY_VALUE_FIELD, fname)) {
+                payload[TILT_DIRECTION_FIELD_BY_VALUE_FIELD[fname]] = this.getTiltDirection(fname);
+            }
         }
 
-        if (!Object.prototype.hasOwnProperty.call(payload, "tilt_after")) {
+        if (!Object.prototype.hasOwnProperty.call(payload, "tilt_after_m1") || !Object.prototype.hasOwnProperty.call(payload, "tilt_after_m2")) {
             this.notification.add("Ingrese la inclinacion despues de lavar antes de finalizar.", { type: "warning" });
             return;
         }
@@ -1486,6 +1576,9 @@ export class QualityDimrevScreen extends Component {
                 continue;
             }
             payload[fname] = asFloat(rawValue);
+            if (Object.prototype.hasOwnProperty.call(TILT_DIRECTION_FIELD_BY_VALUE_FIELD, fname)) {
+                payload[TILT_DIRECTION_FIELD_BY_VALUE_FIELD[fname]] = this.getTiltDirection(fname);
+            }
         }
 
         this.state.submitting = true;

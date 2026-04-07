@@ -178,7 +178,7 @@
                                 </div>
                             </div>
 
-                            <div class="row g-2" t-if="!state.needsModeSelection">
+                            <div class="row g-2" t-if="!state.needsModeSelection and !(activeStep and (activeStep.key === 'inclinacion' or activeStep.key === 'inclinacion_after'))">
                                 <t t-foreach="activeStep.fields" t-as="fieldName" t-key="fieldName">
                                     <div class="col-12 col-md-4" t-if="!(state.evalMode === 'ln' and fieldName === 'rvn_n')">
                                         <label class="form-label small" t-esc="getStepFieldLabel(fieldName)"/>
@@ -188,6 +188,30 @@
                                                pattern="-?[0-9]+([\\.,][0-9]+)?"
                                                t-att-value="state.values[fieldName]"
                                                t-on-input="(ev) => this.onFieldChange(fieldName, ev)"/>
+                                    </div>
+                                </t>
+                            </div>
+
+                            <div class="row g-2" t-if="!state.needsModeSelection and activeStep and (activeStep.key === 'inclinacion' or activeStep.key === 'inclinacion_after')">
+                                <t t-foreach="activeStep.fields" t-as="fieldName" t-key="fieldName">
+                                    <div class="col-12 col-md-6">
+                                        <label class="form-label small" t-esc="getStepFieldLabel(fieldName)"/>
+                                        <div class="d-flex gap-2 align-items-center">
+                                            <input class="form-control"
+                                                   type="text"
+                                                   inputmode="decimal"
+                                                   pattern="-?[0-9]+([\\.,][0-9]+)?"
+                                                   t-att-value="state.values[fieldName]"
+                                                   t-on-input="(ev) => this.onFieldChange(fieldName, ev)"/>
+                                            <button type="button"
+                                                    class="btn"
+                                                    t-att-class="this.getTiltDirection(fieldName) === 'z' ? 'btn-primary' : 'btn-outline-primary'"
+                                                    t-on-click="() => this.setTiltDirection(fieldName, 'z')">Z</button>
+                                            <button type="button"
+                                                    class="btn"
+                                                    t-att-class="this.getTiltDirection(fieldName) === 's' ? 'btn-primary' : 'btn-outline-primary'"
+                                                    t-on-click="() => this.setTiltDirection(fieldName, 's')">S</button>
+                                        </div>
                                     </div>
                                 </t>
                             </div>

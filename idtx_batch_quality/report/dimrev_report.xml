@@ -241,12 +241,19 @@
                                         </p>
                                         <table class="drv-grid tight" style="margin-top:0;">
                                             <tr>
-                                                <th>Inclinacion Antes de Lavar</th>
-                                                <th>Inclinacion Despues de Lavar</th>
+                                                <th>Muestra</th>
+                                                <th>Antes de Lavar</th>
+                                                <th>Despues de Lavar</th>
                                             </tr>
                                             <tr>
-                                                <td class="drv-num" t-esc="'%.2f' % (payload.get('tilt_before') or 0.0)"/>
-                                                <td class="drv-num" t-esc="'%.2f' % (payload.get('tilt_after') or 0.0)"/>
+                                                <td>M1</td>
+                                                <td class="drv-num" t-esc="'%.2f %s' % ((payload.get('tilt_before_m1') or 0.0), (payload.get('tilt_before_dir_m1') or 'Z'))"/>
+                                                <td class="drv-num" t-esc="'%.2f %s' % ((payload.get('tilt_after_m1') or 0.0), (payload.get('tilt_after_dir_m1') or 'Z'))"/>
+                                            </tr>
+                                            <tr>
+                                                <td>M2</td>
+                                                <td class="drv-num" t-esc="'%.2f %s' % ((payload.get('tilt_before_m2') or 0.0), (payload.get('tilt_before_dir_m2') or 'Z'))"/>
+                                                <td class="drv-num" t-esc="'%.2f %s' % ((payload.get('tilt_after_m2') or 0.0), (payload.get('tilt_after_dir_m2') or 'Z'))"/>
                                             </tr>
                                         </table>
                                     </div>
