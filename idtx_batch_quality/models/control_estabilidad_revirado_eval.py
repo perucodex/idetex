@@ -8,6 +8,7 @@ from odoo.fields import Domain
 class ControlEstabilidadReviradoEval(models.Model):
     _name = "control.estabilidad.revirado.eval"
     _description = "Evaluacion Estabilidad Dimensional y Revirado"
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = "fecha_eval desc, id desc"
 
     _MODE_STEP_KEYS = {
@@ -80,12 +81,13 @@ class ControlEstabilidadReviradoEval(models.Model):
     bool_tilt_before = fields.Boolean()
     bool_densidad_promedio = fields.Boolean()
     bool_ancho_promedio = fields.Boolean()
+    criteria_force_pass = fields.Boolean(string="Forzar Pass por Criterio", default=False)
 
     state = fields.Selection([
         ('pass', 'Pass'),
         ('fail', 'Fail'),
         ('nodata', 'No Data'),
-    ], string='Resultado', compute='_compute_result_state', store=True)
+    ], string='Resultado', compute='_compute_result_state', store=True, tracking=True)
 
     @staticmethod
     def _wash_code_from_number(wash_number):
@@ -333,7 +335,14 @@ class ControlEstabilidadReviradoEval(models.Model):
             den_m2 = m2_ac + m2_bd
             rec.revirado_m1_result = (((m1_ac - m1_bd) / den_m1) * 200.0) if den_m1 else 0.0
             rec.revirado_m2_result = (((m2_ac - m2_bd) / den_m2) * 200.0) if den_m2 else 0.0
-            rec.revirado_promedio = (rec.revirado_m1_result + rec.revirado_m2_result) / 2.0 if den_m2 > 0 else 1
+            if den_m1 > 0 and den_m2 > 0:
+                rec.revirado_promedio = (rec.revirado_m1_result + rec.revirado_m2_result) / 2.0
+            elif den_m1 > 0:
+                rec.revirado_promedio = rec.revirado_m1_result
+            elif den_m2 > 0:
+                rec.revirado_promedio = rec.revirado_m2_result
+            else:
+                rec.revirado_promedio = 0.0
 
     @api.depends("detail_line_ids.dato", "detail_line_ids.measure_key")
     def _compute_tilt(self):
@@ -372,7 +381,7 @@ class ControlEstabilidadReviradoEval(models.Model):
                 "fecha_eval": rec.fecha_eval,
                 "user_id": first_user.id,
                 "test_type": "dimrev",
-                "result_state": "pasa",
+                "result_state": "uncomplete",
                 "est_revirado_eval_id": rec.id,
             })
         return records
@@ -429,11 +438,11 @@ class ControlEstabilidadReviradoEval(models.Model):
 
     def _is_tilt_required(self):
         self.ensure_one()
-        thresholds = self.pedido_line_id.product_id.analysis_id.density_stability_twisting_id
+        analysis = self.pedido_line_id.product_id.analysis_id
+        tilt_standard = float(analysis.tilt or 0.0) if analysis else 0.0
         return bool(
             int(self.wash_number or 0) == 1
-            and thresholds
-            and float(thresholds.tilt_wash or 0.0) > 0.0
+            and tilt_standard > 0.0
         )
 
     @staticmethod
@@ -651,27 +660,48 @@ class ControlEstabilidadReviradoEval(models.Model):
         if sample_type not in valid_sample_types:
             raise UserError(_("Tipo de muestra invalido."))
 
-        first_eval = self.search([
+        first_eval_incomplete = self.search([
             ("pedido_line_id", "=", pedido_line.id),
             ("wash_number", "=", 1),
             ("sample_type", "=", sample_type),
+            ("est_l1_done", "=", False),
         ], order="fecha_eval desc, id desc", limit=1)
-        has_first_record = bool(first_eval and first_eval.est_l1_done)
-        thresholds = pedido_line.product_id.analysis_id.density_stability_twisting_id
-        tilt_standard = float(thresholds.tilt_wash or 0.0) if thresholds else 0.0
+        first_eval_done_latest = self.search([
+            ("pedido_line_id", "=", pedido_line.id),
+            ("wash_number", "=", 1),
+            ("sample_type", "=", sample_type),
+            ("est_l1_done", "=", True),
+        ], order="fecha_eval desc, id desc", limit=1)
+        first_eval_pass_latest = self.search([
+            ("pedido_line_id", "=", pedido_line.id),
+            ("wash_number", "=", 1),
+            ("sample_type", "=", sample_type),
+            ("est_l1_done", "=", True),
+            ("state", "=", "pass"),
+        ], order="fecha_eval desc, id desc", limit=1)
+
+        has_first_record = bool(first_eval_pass_latest)
+        requires_first_wash_decision = bool(first_eval_done_latest and not first_eval_pass_latest and not first_eval_incomplete)
+        required_mode = "l1" if first_eval_incomplete else (False if has_first_record else (False if requires_first_wash_decision else "l1"))
+        available_modes = ["l3", "l5", "ln"] if (has_first_record or requires_first_wash_decision) else ["l1"]
+
+        analysis = pedido_line.product_id.analysis_id
+        tilt_standard = float(analysis.tilt or 0.0) if analysis else 0.0
         return {
             "sample_type": sample_type,
             "has_first_record": has_first_record,
-            "required_mode": False if has_first_record else "l1",
-            "available_modes": ["l3", "l5", "ln"] if has_first_record else ["l1"],
-            "tilt_required": bool(not has_first_record and tilt_standard > 0.0),
+            "required_mode": required_mode,
+            "available_modes": available_modes,
+            "requires_first_wash_decision": requires_first_wash_decision,
+            "first_wash_status": (first_eval_done_latest.state if first_eval_done_latest else "nodata"),
+            "tilt_required": bool((required_mode == "l1") and tilt_standard > 0.0),
             "tilt_standard": tilt_standard,
             "recent_density_width": self._tablet_recent_density_width(pedido_line, limit=10),
-            "existing_eval": first_eval._to_tablet_payload() if first_eval and not has_first_record else False,
+            "existing_eval": first_eval_incomplete._to_tablet_payload() if first_eval_incomplete else False,
         }
 
     @api.model
-    def action_tablet_finalize(self, pedido_line_id, eval_mode, values, sample_type=False):
+    def action_tablet_finalize(self, pedido_line_id, eval_mode, values, sample_type=False, criteria_override=False):
         pedido_line = self.env["control.pedido.line"].browse(int(pedido_line_id or 0))
         if not pedido_line.exists():
             raise UserError(_("Seleccione una partida valida."))
@@ -685,16 +715,26 @@ class ControlEstabilidadReviradoEval(models.Model):
         if eval_mode not in self._MODE_STEP_KEYS:
             raise UserError(_("Modo de evaluacion invalido."))
 
-        first_eval = self.search([
+        first_eval_pass_latest = self.search([
             ("pedido_line_id", "=", pedido_line.id),
             ("wash_number", "=", 1),
             ("sample_type", "=", sample_type),
+            ("est_l1_done", "=", True),
+            ("state", "=", "pass"),
         ], order="fecha_eval desc, id desc", limit=1)
-        has_first_record = bool(first_eval and first_eval.est_l1_done)
-        if not has_first_record and eval_mode != "l1":
-            raise UserError(_("La primera evaluacion de la partida debe ser 1er lavado con ancho y densidad."))
-        if has_first_record and eval_mode == "l1":
-            raise UserError(_("La partida ya tiene primer lavado registrado. Seleccione 3er, 5to o N."))
+        first_eval_done_latest = self.search([
+            ("pedido_line_id", "=", pedido_line.id),
+            ("wash_number", "=", 1),
+            ("sample_type", "=", sample_type),
+            ("est_l1_done", "=", True),
+        ], order="fecha_eval desc, id desc", limit=1)
+
+        if eval_mode != "l1" and not first_eval_pass_latest:
+            if not criteria_override:
+                raise UserError(_("El primer lavado esta en fail. Debe repetir 1er lavado o continuar bajo criterio."))
+            if not first_eval_done_latest:
+                raise UserError(_("La primera evaluacion de la partida debe ser 1er lavado con ancho y densidad."))
+            first_eval_done_latest.write({"criteria_force_pass": True})
 
         fields_for_mode = self._fields_for_mode(eval_mode)
         if not fields_for_mode:
@@ -710,11 +750,23 @@ class ControlEstabilidadReviradoEval(models.Model):
         if int(wash_number or 0) < 1:
             raise UserError(_("Debe indicar un numero de lavado valido."))
 
-        rec = self.search([
-            ("pedido_line_id", "=", pedido_line.id),
-            ("wash_number", "=", int(wash_number)),
-            ("sample_type", "=", sample_type),
-        ], order="fecha_eval desc, id desc", limit=1)
+        if eval_mode == "l1":
+            rec = self.search([
+                ("pedido_line_id", "=", pedido_line.id),
+                ("wash_number", "=", 1),
+                ("sample_type", "=", sample_type),
+                ("est_l1_done", "=", False),
+            ], order="fecha_eval desc, id desc", limit=1)
+        else:
+            # For post-first washes, allow true repetitions.
+            # Reuse only an in-progress eval; if latest is complete, create a new one.
+            rec = self.search([
+                ("pedido_line_id", "=", pedido_line.id),
+                ("wash_number", "=", int(wash_number)),
+                ("sample_type", "=", sample_type),
+            ], order="fecha_eval desc, id desc", limit=1)
+            if rec and rec._mode_is_complete(eval_mode):
+                rec = self.browse()
         if not rec:
             rec = self.create({
                 "pedido_line_id": pedido_line.id,
@@ -832,7 +884,7 @@ class ControlEstabilidadReviradoEval(models.Model):
                 "fecha_eval": self.fecha_eval,
                 "user_id": first_user.id,
                 "test_type": "dimrev",
-                "result_state": "pasa",
+                "result_state": "uncomplete",
                 "est_revirado_eval_id": self.id,
             })
 
@@ -940,6 +992,7 @@ class ControlEstabilidadReviradoEval(models.Model):
         "tilt_before",
         "densidad_promedio",
         "ancho_promedio",
+        "criteria_force_pass",
     )
     def _compute_result_state(self):
         for rec in self:
@@ -955,14 +1008,38 @@ class ControlEstabilidadReviradoEval(models.Model):
             for field_name in bool_fields:
                 rec[field_name] = True
 
-            thresholds = rec.pedido_line_id.product_id.analysis_id.density_stability_twisting_id
-            std_density = rec.pedido_line_id.product_id.analysis_id.density or 0.0
-            std_width = rec.pedido_line_id.product_id.analysis_id.standard_width or 0.0
+            if rec.criteria_force_pass:
+                rec.state = "pass"
+                continue
+
+            analysis = rec.pedido_line_id.product_id.analysis_id
+            thresholds = analysis.density_stability_twisting_id if analysis else False
+            std_density = float(analysis.density or 0.0) if analysis else 0.0
+            std_width = float(analysis.standard_width or 0.0) if analysis else 0.0
+            tilt_standard = float(analysis.tilt or 0.0) if analysis else 0.0
+
+            has_complete_est_ancho = all(rec._has_measure_value(key) for key in (
+                "st_a_m1_d1", "st_a_m1_d2", "st_a_m1_d3",
+                "st_a_m2_d1", "st_a_m2_d2", "st_a_m2_d3",
+            ))
+            has_complete_est_largo = all(rec._has_measure_value(key) for key in (
+                "st_l_m1_d1", "st_l_m1_d2", "st_l_m1_d3",
+                "st_l_m2_d1", "st_l_m2_d2", "st_l_m2_d3",
+            ))
+            has_complete_revirado = all(rec._has_measure_value(key) for key in (
+                "rv_m1_ac", "rv_m1_bd", "rv_m2_ac", "rv_m2_bd",
+            ))
+            has_tilt_before = rec._has_measure_value("tilt_before")
+            has_complete_densidad = all(rec._has_measure_value(key) for key in ("den_1", "den_2", "den_3"))
+            has_complete_ancho = all(rec._has_measure_value(key) for key in ("anc_1", "anc_2", "anc_3"))
 
             def _tol_ratio(raw_value):
                 value = abs(float(raw_value or 0.0))
                 # Accept both styles: 0.02 (2%) or 2 (2%).
                 return value / 100.0 if value > 1.0 else value
+
+            def _tol_abs(raw_value):
+                return abs(float(raw_value or 0.0))
 
             if not thresholds:
                 result = "nodata"
@@ -972,38 +1049,44 @@ class ControlEstabilidadReviradoEval(models.Model):
                 length_from = thresholds.length_shrinkage_from * 100
                 length_to = thresholds.length_shrinkage_to * 100
                 density_tol = _tol_ratio(thresholds.density)
-                width_tol = _tol_ratio(thresholds.width)
+                width_tol_cm = _tol_abs(thresholds.width)
 
                 # Densidad y ancho solo se validan en 1er lavado.
                 if int(rec.wash_number or 0) == 1:
-                    if std_density > 0:
+                    if std_density > 0 and has_complete_densidad:
                         density_min = std_density * (1.0 - density_tol)
                         density_max = std_density * (1.0 + density_tol)
                         if not (density_min <= rec.densidad_promedio <= density_max):
                             rec.bool_densidad_promedio = False
 
-                    if std_width > 0:
-                        width_min = std_width * (1.0 - width_tol)
-                        width_max = std_width * (1.0 + width_tol)
+                    if std_width > 0 and has_complete_ancho:
+                        width_min = std_width - width_tol_cm
+                        width_max = std_width + width_tol_cm
                         if not (width_min <= rec.ancho_promedio <= width_max):
                             rec.bool_ancho_promedio = False
 
-                if width_from and rec.est_ancho_avg < width_from:
+                if has_complete_est_ancho and width_from and rec.est_ancho_avg < width_from:
                     rec.bool_est_ancho_avg = False
-                if width_to and rec.est_ancho_avg > width_to:
+                if has_complete_est_ancho and width_to and rec.est_ancho_avg > width_to:
                     rec.bool_est_ancho_avg = False
 
-                if length_from and rec.est_largo_avg < length_from:
+                if has_complete_est_largo and length_from and rec.est_largo_avg < length_from:
                     rec.bool_est_largo_avg = False
-                if length_to and rec.est_largo_avg > length_to:
+                if has_complete_est_largo and length_to and rec.est_largo_avg > length_to:
                     rec.bool_est_largo_avg = False
 
-                if thresholds.twist and rec.revirado_promedio > thresholds.twist:
+                if has_complete_revirado and thresholds.twist and rec.revirado_promedio > thresholds.twist:
                     rec.bool_revirado_promedio = False
 
-                tilt_wash = float(thresholds.tilt_wash or 0.0)
-                # Inclinacion solo se valida en 1er lavado; pasa si dato <= estandar + 1.
-                if int(rec.wash_number or 0) == 1 and tilt_wash > 0.0 and rec.tilt_before > (tilt_wash + 1.0):
+                tilt_tolerance = abs(float(thresholds.tilt_wash or 0.0))
+                # Inclinacion solo se valida en 1er lavado cuando existe estandar en analysis.
+                # Criterio: estandar +/- tolerancia.
+                if (
+                    int(rec.wash_number or 0) == 1
+                    and has_tilt_before
+                    and tilt_standard > 0.0
+                    and abs(float(rec.tilt_before or 0.0) - tilt_standard) > tilt_tolerance
+                ):
                     rec.bool_tilt_before = False
 
             if any(not rec[field_name] for field_name in bool_fields):

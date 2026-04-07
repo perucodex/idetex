@@ -7,6 +7,7 @@ class ControlSampleReception(models.Model):
     _name = "control.sample.reception"
     _description = "Recepcion de Muestras"
     _order = "reception_datetime desc, id desc"
+    
     _SAMPLE_TYPE_SELECTION = [
         ("acabado", "Acabado"),
         ("sanforizado_compactado", "Sanforizado y Compactado"),

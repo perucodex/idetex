@@ -72,6 +72,11 @@
                                     <field name="standard_width" required="1" readonly="state != 'test'"/>
                                     <span class="ms-1 oe_inline">cm</span>
                                 </div>
+                                <label for="tilt"/>
+                                <div name="tilt" class="o_row">
+                                    <field name="tilt" required="1" readonly="state != 'test'"/>
+                                    <span class="ms-1 oe_inline">°</span>
+                                </div>
                                 <field name="product_code" readonly="1" force_save="1"/>
                                 <field name="company_id" readonly="1" groups="base.group_multi_company"/>
                             </group>

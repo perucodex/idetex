@@ -1041,12 +1041,12 @@ msgstr "Longitud"
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__length_shrinkage_from
 msgid "Length Shrinkage From"
-msgstr "Contraccion de largo desde"
+msgstr "Porcentaje de largo desde"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__length_shrinkage_to
 msgid "Length Shrinkage To"
-msgstr "Contraccion de largo hasta"
+msgstr "Porcentaje de largo hasta"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__ligament_id
@@ -2000,6 +2000,7 @@ msgid "Thread Title"
 msgstr "Título de Hilado"
 
 #. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__tilt
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__tilt_wash
 msgid "Tilt Wash"
 msgstr "Inclinación"
@@ -2233,12 +2234,12 @@ msgstr "Ancho"
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__width_shrinkage_from
 msgid "Width Shrinkage From"
-msgstr "Contraccion de ancho desde"
+msgstr "Procentaje de ancho desde"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__width_shrinkage_to
 msgid "Width Shrinkage To"
-msgstr "Contraccion de ancho hasta"
+msgstr "Procentaje de ancho hasta"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_routing_line__workcenter_id

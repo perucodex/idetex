@@ -87,6 +87,7 @@
                             <field name="test_type" string="Tipo de Prueba"/>
                             <field name="result_state" string="Estado" widget="badge"
                                    decoration-success="result_state == 'pasa'"
+                                decoration-warning="result_state == 'uncomplete'"
                                    decoration-danger="result_state == 'falla'"/>
                         </list>
                         <form string="Registro de Laboratorio">
@@ -96,7 +97,7 @@
                                     string="Imprimir"
                                         class="btn-secondary"
                                     invisible="test_type not in ('solidez_lavado', 'dimrev')"/>
-                                <field name="result_state" widget="statusbar" decoration-success="result_state == 'pasa'" decoration-danger="result_state == 'falla'"/>
+                                <field name="result_state" widget="statusbar" decoration-success="result_state == 'pasa'" decoration-warning="result_state == 'uncomplete'" decoration-danger="result_state == 'falla'"/>
                             </header>
                             <sheet>
                                 <group>
@@ -154,24 +155,28 @@
                                 <group>
                                     <group>
                                         <field name="name" readonly="1"/>
-                                        <field name="reception_datetime"/>
+                                        <field name="reception_datetime" readonly="1"/>
                                         <field name="pedido_line_id" readonly="1"/>
-                                        <field name="customer" readonly="1"/>
-                                        <field name="product_id" readonly="1"/>
+                                        <field name="sample_type" readonly="1"/>
+                                        <field name="dni" readonly="1"/>
+                                        <field name="delivery_name" readonly="1"/>
+                                        <field name="user_id" readonly="1"/>    
                                     </group>
                                     <group>
+                                        <field name="customer" readonly="1"/>
+                                        <field name="product_id" readonly="1"/>
                                         <field name="article" readonly="1"/>
                                         <field name="color_name" readonly="1"/>
                                         <field name="color_code" readonly="1"/>
                                         <field name="kilograms" readonly="1"/>
-                                        <field name="sample_type"/>
-                                        <field name="dni"/>
-                                        <field name="delivery_name"/>
-                                        <field name="user_id" readonly="1"/>
                                     </group>
                                 </group>
                                 <group string="Firma">
-                                    <field name="signature" widget="image" options="{'preview_image': 'signature'}"/>
+                                    <field name="signature"
+                                        widget="image"
+                                        readonly="1"
+                                        nolabel="1"
+                                        options="{'size': [420, 140]}"/>
                                 </group>
                             </sheet>
                         </form>

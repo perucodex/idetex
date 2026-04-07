@@ -428,6 +428,9 @@ export class QualityDimrevScreen extends Component {
             availableModes: [],
             modeSelectionTarget: "",
             selectedLavadoN: "",
+            requiresFirstWashDecision: false,
+            firstWashStatus: "nodata",
+            criteriaOverride: false,
             isFirstRecord: false,
             tiltRequired: false,
             tiltStandard: 0,
@@ -688,6 +691,8 @@ export class QualityDimrevScreen extends Component {
             sampleType: this.state.sampleType,
             evalMode: this.state.evalMode,
             needsModeSelection: this.state.needsModeSelection,
+            requiresFirstWashDecision: this.state.requiresFirstWashDecision,
+            criteriaOverride: this.state.criteriaOverride,
             values: this.state.values,
             currentStep: this.state.currentStep,
             awaitingOk: this.state.awaitingOk,
@@ -712,6 +717,8 @@ export class QualityDimrevScreen extends Component {
             this.state.sampleType = typeof draft.sampleType === "string" ? draft.sampleType : "";
             this.state.evalMode = draft.evalMode || "";
             this.state.needsModeSelection = Boolean(draft.needsModeSelection);
+            this.state.requiresFirstWashDecision = Boolean(draft.requiresFirstWashDecision);
+            this.state.criteriaOverride = Boolean(draft.criteriaOverride);
             this.state.values = { ...getInitialValues(), ...(draft.values || {}) };
             this.state.currentStep = Number.isInteger(draft.currentStep)
                 ? Math.max(0, Math.min(draft.currentStep, STEPS.length - 1))
@@ -821,6 +828,9 @@ export class QualityDimrevScreen extends Component {
         this.state.availableModes = [];
         this.state.modeSelectionTarget = "";
         this.state.selectedLavadoN = "";
+        this.state.requiresFirstWashDecision = false;
+        this.state.firstWashStatus = "nodata";
+        this.state.criteriaOverride = false;
         this.state.isFirstRecord = false;
         this.state.tiltRequired = false;
         this.state.tiltStandard = 0;
@@ -839,6 +849,8 @@ export class QualityDimrevScreen extends Component {
             this.state.values = getInitialValues();
             this.state.stabilityDone = this._defaultStabilityState();
             this.state.availableModes = payload?.available_modes || [];
+            this.state.firstWashStatus = payload?.first_wash_status || "nodata";
+            this.state.requiresFirstWashDecision = Boolean(payload?.requires_first_wash_decision);
             this.state.isFirstRecord = !Boolean(payload?.has_first_record);
             this.state.tiltRequired = Boolean(payload?.tilt_required);
             this.state.tiltStandard = asFloat(payload?.tilt_standard || 0);
@@ -857,6 +869,7 @@ export class QualityDimrevScreen extends Component {
             const requiredMode = payload?.required_mode || "";
             this.state.evalMode = requiredMode;
             this.state.needsModeSelection = !requiredMode;
+            this.state.criteriaOverride = false;
             this.state.modeSelectionTarget = "";
             this.state.selectedLavadoN = "";
             this._setStepFromProgress();
@@ -866,6 +879,7 @@ export class QualityDimrevScreen extends Component {
     }
 
     selectEvaluationMode(mode) {
+        if (this.state.requiresFirstWashDecision) return;
         if (!MODE_STEP_KEYS[mode]) return;
         if (mode === "ln") {
             this.state.modeSelectionTarget = "ln";
@@ -875,6 +889,31 @@ export class QualityDimrevScreen extends Component {
         this.state.modeSelectionTarget = "";
         this.state.evalMode = mode;
         this.state.needsModeSelection = false;
+        this.state.currentStep = 0;
+        this.state.error = "";
+        this._saveDraft();
+    }
+
+    chooseRepeatFirstWash() {
+        this.state.requiresFirstWashDecision = false;
+        this.state.criteriaOverride = false;
+        this.state.evalMode = "l1";
+        this.state.needsModeSelection = false;
+        this.state.modeSelectionTarget = "";
+        this.state.selectedLavadoN = "";
+        this.state.values = getInitialValues();
+        this.state.currentStep = 0;
+        this.state.error = "";
+        this._saveDraft();
+    }
+
+    chooseContinueByCriteria() {
+        this.state.requiresFirstWashDecision = false;
+        this.state.criteriaOverride = true;
+        this.state.evalMode = "";
+        this.state.needsModeSelection = true;
+        this.state.modeSelectionTarget = "";
+        this.state.selectedLavadoN = "";
         this.state.currentStep = 0;
         this.state.error = "";
         this._saveDraft();
@@ -1398,6 +1437,7 @@ export class QualityDimrevScreen extends Component {
                 this.state.evalMode,
                 payload,
                 this.state.sampleType,
+                this.state.criteriaOverride,
             ]);
             if (result?.completed) {
                 this.notification.add(`Evaluacion finalizada en ${result?.name || "evaluacion"}.`, { type: "success" });
@@ -1437,6 +1477,7 @@ export class QualityDimrevScreen extends Component {
                 this.state.evalMode,
                 payload,
                 this.state.sampleType,
+                this.state.criteriaOverride,
             ]);
             this.notification.add(`Avance guardado en ${result?.name || "evaluacion"}.`, { type: "success" });
             await this.onBackToSearch();

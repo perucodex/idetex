@@ -27,6 +27,7 @@ class ProductAnalysis(models.Model):
     width = fields.Float('Analysis Width', compute='_compute_width')
     standard_width = fields.Float('Standard Width')
     density = fields.Integer('Analysis Density')
+    tilt = fields.Integer('Tilt')
     product_appearance_id = fields.Many2one('product.appearance', string='Appearance', ondelete='restrict')
     product_family_id = fields.Many2one('product.family', string='Family', ondelete='restrict')
     product_fiber_id = fields.Many2one('product.fiber', string='Fiber', ondelete='restrict')
@@ -63,12 +64,6 @@ class ProductAnalysis(models.Model):
     # Manejo de producto por estado
     production_state = fields.Char(string='Production State')
     # Tolerancia de tela
-    # width_tolerance = fields.Float('Width Tolerance')
-    # density_tolerance = fields.Float('Density Tolerance')
-    # width_wash_shrinkage_tolerance_from = fields.Float('Width Wash Shrinkage Tolerance From')
-    # width_wash_shrinkage_tolerance_to = fields.Float('Width Wash Shrinkage Tolerance To')
-    # lenght_wash_shrinkage_tolerance_from = fields.Float('Length Wash Shrinkage Tolerance From')
-    # lenght_wash_shrinkage_tolerance_to = fields.Float('Length Wash Shrinkage Tolerance To')
     density_stability_twisting_id = fields.Many2one('density.stability.twisting', string='Density Stability Twisting Data')
 
     _check_standard_width = models.Constraint(

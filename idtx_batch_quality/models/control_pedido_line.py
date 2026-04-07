@@ -272,12 +272,22 @@ class ControlPedidoLine(models.Model):
         self.ensure_one()
         domain = [
             ("pedido_line_id", "=", self.id),
+            ("wash_number", "=", 1),
         ]
         if sample_type:
             domain.append(("sample_type", "=", sample_type))
         evals = self.env["control.estabilidad.revirado.eval"].search(domain, order="fecha_eval asc, id asc")
         if not evals:
             return evals
+
+        # Prefer the latest first-wash that ended in pass (including criteria-forced pass).
+        latest_pass = self.env["control.estabilidad.revirado.eval"].search(
+            domain + [("state", "=", "pass")],
+            order="fecha_eval desc, id desc",
+            limit=1,
+        )
+        if latest_pass:
+            return latest_pass
 
         # Density/width in the report must come from the first chronological evaluation.
         # If the first one has no den/anc lines, fallback to the earliest one that has them.
@@ -316,8 +326,11 @@ class ControlPedidoLine(models.Model):
         width_to = float(dim_thresholds.width_shrinkage_to or 0.0) * 100 if dim_thresholds else 0.0
         length_from = float(dim_thresholds.length_shrinkage_from or 0.0) * 100 if dim_thresholds else 0.0
         length_to = float(dim_thresholds.length_shrinkage_to or 0.0) * 100 if dim_thresholds else 0.0
-        twist_std = float(dim_thresholds.twist or 0.0) if dim_thresholds else 0.0
-        tilt_std = float(dim_thresholds.tilt_wash or 0.0) if dim_thresholds else 0.0
+        twist_std = float(dim_thresholds.twist or 0.0) * 100 if dim_thresholds else 0.0
+        tilt_std = float(analysis.tilt or 0.0) if analysis else 0.0
+        tilt_tol = abs(float(dim_thresholds.tilt_wash or 0.0)) if dim_thresholds else 0.0
+        tilt_from = tilt_std - tilt_tol if tilt_std > 0.0 else 0.0
+        tilt_to = tilt_std + tilt_tol if tilt_std > 0.0 else 0.0
 
         # Always resolve washing standards from Lab Dev, even when there is no solidez eval yet.
         labdev = self.lab_dev_line_id
@@ -351,7 +364,7 @@ class ControlPedidoLine(models.Model):
             return raw * 100.0 if abs(raw) <= 1.0 else raw
 
         density_tol_pct = _fmt_tolerance_percent(float(dim_thresholds.density or 0.0) if dim_thresholds else 0.0)
-        width_tol_pct = _fmt_tolerance_percent(float(dim_thresholds.width or 0.0) if dim_thresholds else 0.0)
+        width_tol_cm = abs(float(dim_thresholds.width or 0.0)) if dim_thresholds else 0.0
 
         dim_wash_code = dim_thresholds.get_aatcc_tm135_code() if dim_thresholds else "(1) (III) B"
         dim_wash_notes = dim_thresholds.get_report_wash_notes() if dim_thresholds else [
@@ -557,8 +570,8 @@ class ControlPedidoLine(models.Model):
                 "notes": [],
                 "requirement": _fmt_req_min(std_width, " m"),
                 "requirement_lines": [
-                    f"cm {std_width:.2f}" if std_width else "cm -",
-                    f"&#177; {width_tol_pct:.2f}%" if width_tol_pct else "&#177; -",
+                    f"{std_width:.2f} cm." if std_width else "- cm.",
+                    f"&#177; {width_tol_cm:.2f} cm." if width_tol_cm else "&#177; -",
                 ],
                 "result": float(dimrev_first_eval.ancho_promedio or 0.0) if dimrev_first_eval else 0.0,
                 "status": "Pass" if (dimrev_first_eval and dimrev_first_eval.bool_ancho_promedio) else "Fail",
@@ -591,10 +604,10 @@ class ControlPedidoLine(models.Model):
                 "test": _("Tilt Before Washing"),
                 "method": _("Internal tilt control"),
                 "notes": [],
-                "requirement": _fmt_req_max(tilt_std, "°"),
+                "requirement": _fmt_req_range(tilt_from, tilt_to, "°") if tilt_std else "-",
                 "requirement_lines": [
                     f"{tilt_std:.2f}&#176;" if tilt_std else "&#176; -",
-                    "&#177; 1&#176;" if tilt_std else "&#177; -",
+                    f"&#177; {tilt_tol:.2f}&#176;" if tilt_std else "&#177; -",
                 ],
                 "result": float(dimrev_highest.tilt_before or 0.0) if dimrev_highest else 0.0,
                 "status": "Pass" if (dimrev_highest and dimrev_highest.bool_tilt_before) else "Fail",

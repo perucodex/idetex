@@ -33,6 +33,7 @@ class ControlLaboratorioRecord(models.Model):
         index=True,
     )
     result_state = fields.Selection([
+        ("uncomplete", "Uncomplete"),
         ("pasa", "Pasa"),
         ("falla", "Falla"),
     ], string="Estado", required=True, default="pasa", index=True)
@@ -130,12 +131,31 @@ class ControlLaboratorioRecord(models.Model):
                 return "pasa"
             return False
         if self.test_type == "dimrev" and self.est_revirado_eval_id:
+            if self._is_dimrev_uncomplete(self.est_revirado_eval_id):
+                return "uncomplete"
             if self.est_revirado_eval_id.state == "fail":
                 return "falla"
             if self.est_revirado_eval_id.state == "pass":
                 return "pasa"
             return False
         return False
+
+    def _is_dimrev_uncomplete(self, eval_rec):
+        self.ensure_one()
+        if not eval_rec:
+            return False
+        if int(eval_rec.wash_number or 0) != 1:
+            return False
+        if bool(eval_rec.est_l1_done):
+            return False
+
+        required_keys = ("den_1", "den_2", "den_3", "anc_1", "anc_2", "anc_3")
+        has_density_width = all(self._has_measure_key(eval_rec, key) for key in required_keys)
+        if not has_density_width:
+            return False
+
+        # Consider unfinished when first wash has density/width but stability still not completed.
+        return not (bool(eval_rec.est_l1_ancho_done) and bool(eval_rec.est_l1_largo_done))
 
     @staticmethod
     def _has_measure_prefix(eval_rec, prefix):
@@ -297,17 +317,19 @@ class ControlLaboratorioRecord(models.Model):
         est_largo = self._wash_avg_from_details(eval_rec, "l")
         revirado_avg = self._revirado_promedio_from_values(m1_ac, m1_bd, m2_ac, m2_bd)
 
-        thresholds = eval_rec.pedido_line_id.product_id.analysis_id.density_stability_twisting_id
-        tilt_standard = float(thresholds.tilt_wash or 0.0) if thresholds else 0.0
+        analysis = eval_rec.pedido_line_id.product_id.analysis_id
+        thresholds = analysis.density_stability_twisting_id if analysis else False
+        tilt_standard = float(analysis.tilt or 0.0) if analysis else 0.0
+        tilt_tolerance = abs(float(thresholds.tilt_wash or 0.0)) if thresholds else 0.0
         tilt_before = float(eval_rec._get_measure_value("tilt_before") or 0.0)
         tilt_after = float(eval_rec._get_measure_value("tilt_after") or 0.0)
-        tilt_limit = tilt_standard + 1.0 if tilt_standard > 0.0 else 0.0
+        tilt_limit = tilt_standard + tilt_tolerance if tilt_standard > 0.0 else 0.0
 
         tilt_before_status = "Sin estandar"
         if int(eval_rec.wash_number or 0) != 1:
             tilt_before_status = "No aplica"
         elif tilt_standard > 0.0:
-            tilt_before_status = "Pasa" if tilt_before <= tilt_limit else "Falla"
+            tilt_before_status = "Pasa" if abs(tilt_before - tilt_standard) <= tilt_tolerance else "Falla"
 
         results = [
             {"tipo": "%Ancho", "resultado": est_ancho},
@@ -331,6 +353,7 @@ class ControlLaboratorioRecord(models.Model):
             "tilt_before": tilt_before,
             "tilt_after": tilt_after,
             "tilt_standard": tilt_standard,
+            "tilt_tolerance": tilt_tolerance,
             "tilt_limit": tilt_limit,
             "tilt_before_status": tilt_before_status,
             "results": results,

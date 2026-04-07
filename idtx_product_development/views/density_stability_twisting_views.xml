@@ -54,8 +54,17 @@
                         <group>
                             <field name="density" widget="percentage"/>
                         </group>
-                        <group>
+                        <!-- <group>
                             <field name="width" widget="percentage"/>
+                        </group> -->
+                        <group>
+                            <div class="o_td_label">
+                                <label for="width"/>
+                            </div>
+                            <div class="d-flex">
+                                <field name="width"/>
+                                <span class="o_form_label mx-3 oe_edit_only text-center" style="width: 6ch;">cm</span>
+                            </div>
                         </group>
                     </group>
 
