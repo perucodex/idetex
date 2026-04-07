@@ -133,7 +133,7 @@
                                         <td class="drv-meta-cell">
                                             <div><b>Reporte:</b> <span t-esc="eval_rec.name or '-'"/></div>
                                             <div><b>Fecha:</b> <span t-field="eval_rec.fecha_eval"/></div>
-                                            <div><b>Usuario:</b> <span t-esc="eval_rec.user_id.name or '-'"/></div>
+                                            <div><b>Usuarios:</b> <span t-esc="', '.join(doc.user_ids.mapped('name')) or '-'"/></div>
                                             <div><b>Lavado:</b> <span t-esc="payload.get('wash_label') or '-'"/></div>
                                         </td>
                                     </tr>

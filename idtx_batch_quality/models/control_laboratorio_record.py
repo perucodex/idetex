@@ -10,6 +10,14 @@ class ControlLaboratorioRecord(models.Model):
     pedido_line_id = fields.Many2one("control.pedido.line", string="Partida", required=True, ondelete="cascade", index=True)
     eval_number = fields.Char(string="Nro Evaluacion", required=True, readonly=True, copy=False, index=True)
     fecha_eval = fields.Datetime(string="Fecha", required=True, default=fields.Datetime.now, index=True)
+    user_ids = fields.Many2many(
+        "res.users",
+        "control_laboratorio_record_res_users_rel",
+        "record_id",
+        "user_id",
+        string="Usuarios",
+        default=lambda self: [(6, 0, [self.env.user.id])],
+    )
     user_id = fields.Many2one("res.users", string="Usuario", required=True, default=lambda self: self.env.user)
     test_type = fields.Selection([
         ("dimrev", "Densidad + Estabilidad + Revirado"),
@@ -17,6 +25,13 @@ class ControlLaboratorioRecord(models.Model):
         ("solidez_frote", "Solidez al Frote"),
         ("resistencia_estallido", "Resistencia al Estallido"),
     ], string="Tipo de Prueba", required=True, default="dimrev", index=True)
+    sample_type = fields.Selection(
+        related="est_revirado_eval_id.sample_type",
+        string="Tipo de Muestra",
+        store=True,
+        readonly=True,
+        index=True,
+    )
     result_state = fields.Selection([
         ("pasa", "Pasa"),
         ("falla", "Falla"),
@@ -63,16 +78,48 @@ class ControlLaboratorioRecord(models.Model):
                 continue
             vals["eval_number"] = seq_model.next_by_code("control.laboratorio.record.eval_number") or "LABE00001"
         records = super().create(vals_list)
+        records._sync_involved_users()
         records._sync_result_lines()
         return records
 
     def write(self, vals):
-        if self.env.context.get("skip_laboratorio_sync"):
+        if self.env.context.get("skip_laboratorio_sync") or self.env.context.get("skip_laboratorio_user_sync"):
             return super().write(vals)
         res = super().write(vals)
+        if any(k in vals for k in ("user_id", "user_ids", "est_revirado_eval_id", "solidez_lavado_eval_id")):
+            self._sync_involved_users()
         if any(k in vals for k in ("test_type", "est_revirado_eval_id", "solidez_lavado_eval_id", "result_state")):
             self._sync_result_lines()
         return res
+
+    def _sync_involved_users(self):
+        for rec in self:
+            ordered_user_ids = []
+
+            def _append_user(user_id):
+                if user_id and user_id not in ordered_user_ids:
+                    ordered_user_ids.append(user_id)
+
+            for uid in rec.user_ids.ids:
+                _append_user(uid)
+            _append_user(rec.user_id.id)
+
+            if rec.est_revirado_eval_id:
+                for uid in rec.est_revirado_eval_id.user_ids.ids:
+                    _append_user(uid)
+
+            if rec.solidez_lavado_eval_id and rec.solidez_lavado_eval_id.user_id:
+                _append_user(rec.solidez_lavado_eval_id.user_id.id)
+
+            if not ordered_user_ids:
+                _append_user(self.env.user.id)
+
+            main_user_id = ordered_user_ids[0]
+            if rec.user_id.id != main_user_id or rec.user_ids.ids != ordered_user_ids:
+                rec.with_context(skip_laboratorio_user_sync=True).write({
+                    "user_id": main_user_id,
+                    "user_ids": [(6, 0, ordered_user_ids)],
+                })
 
     def _linked_eval_result_state(self):
         self.ensure_one()

@@ -76,8 +76,9 @@
                         <list>
                             <field name="eval_number" string="Nro Evaluacion"/>
                             <field name="fecha_eval"/>
-                            <field name="user_id"/>
+                            <field name="user_ids" widget="many2many_tags"/>
                             <field name="numero_lavado"/>
+                            <field name="sample_type" string="Tipo de Muestra"/>
                             <field name="test_type" string="Tipo de Prueba"/>
                             <field name="result_state" string="Estado" widget="badge"
                                    decoration-success="result_state == 'pasa'"
@@ -97,11 +98,12 @@
                                     <group>
                                         <field name="eval_number" readonly="1"/>
                                         <field name="fecha_eval" readonly="1"/>
-                                        <field name="user_id" readonly="1"/>
+                                        <field name="user_ids" widget="many2many_tags" readonly="1"/>
                                     </group>
                                     <group>
                                         <field name="pedido_line_id" readonly="1"/>
                                         <field name="test_type" readonly="1"/>
+                                        <field name="sample_type" readonly="1"/>
                                         <field name="numero_lavado" readonly="1"/>
                                     </group>
                                 </group>

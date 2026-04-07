@@ -115,6 +115,12 @@ const MODE_STEP_KEYS = {
     ln: ["est_ln_m1", "est_ln_m2"],
 };
 
+const SAMPLE_TYPE_OPTIONS = [
+    { value: "acabado", label: "Acabado" },
+    { value: "sanforizado_compactado", label: "Sanforizado y Compactado" },
+    { value: "estampado", label: "Estampado" },
+];
+
 const STEP_INDEX_BY_KEY = Object.fromEntries(STEPS.map((step, idx) => [step.key, idx]));
 
 const STEP_GROUPS = [
@@ -382,6 +388,7 @@ export class QualityDimrevScreen extends Component {
     setup() {
         this.STEPS = STEPS;
         this.STEP_GROUPS = STEP_GROUPS;
+        this.SAMPLE_TYPE_OPTIONS = SAMPLE_TYPE_OPTIONS;
         this.orm = useService("orm");
         this.notification = useService("notification");
         this.homeMenu = useService("home_menu");
@@ -399,6 +406,7 @@ export class QualityDimrevScreen extends Component {
             partidaQuery: "",
             selectedPartidaId: "",
             selectedPartidaData: null,
+            sampleType: "acabado",
             recentDensityWidth: [],
             showPartidaDropdown: false,
             isSearchingPartida: false,
@@ -490,9 +498,35 @@ export class QualityDimrevScreen extends Component {
         return this.state.currentStep >= (this.activeSteps.length - 1);
     }
 
+    get canShowSaveProgress() {
+        if (this.state.needsModeSelection || this.state.evalMode !== "l1") {
+            return false;
+        }
+        const stepKey = this.activeStep?.key;
+        return stepKey === "ancho" || stepKey === "densidad";
+    }
+
     get canFinalizeEvaluation() {
         if (!this.canSaveCurrentStep) return false;
         const fields = this.activeSteps.flatMap((s) => s.fields || []);
+        const hasAllFields = (() => {
+            for (const fieldName of fields) {
+                if (!this.state.tiltRequired && (fieldName === "tilt_before" || fieldName === "tilt_after")) {
+                    continue;
+                }
+                if (`${this.state.values[fieldName] || ""}`.trim() === "") {
+                    return false;
+                }
+            }
+            return true;
+        })();
+
+        if (this.state.evalMode === "l1") {
+            const hasDensityAndWidth = ["den_1", "den_2", "den_3", "anc_1", "anc_2", "anc_3"]
+                .every((fieldName) => `${this.state.values[fieldName] || ""}`.trim() !== "");
+            return hasAllFields || hasDensityAndWidth;
+        }
+
         for (const fieldName of fields) {
             if (!this.state.tiltRequired && (fieldName === "tilt_before" || fieldName === "tilt_after")) {
                 continue;
@@ -650,6 +684,7 @@ export class QualityDimrevScreen extends Component {
         const draft = {
             partidaQuery: this.state.partidaQuery,
             selectedPartidaId: this.state.selectedPartidaId,
+            sampleType: this.state.sampleType,
             evalMode: this.state.evalMode,
             needsModeSelection: this.state.needsModeSelection,
             values: this.state.values,
@@ -673,6 +708,7 @@ export class QualityDimrevScreen extends Component {
             if (!draft || typeof draft !== "object") return;
             this.state.partidaQuery = draft.partidaQuery || "";
             this.state.selectedPartidaId = draft.selectedPartidaId || "";
+            this.state.sampleType = draft.sampleType || "acabado";
             this.state.evalMode = draft.evalMode || "";
             this.state.needsModeSelection = Boolean(draft.needsModeSelection);
             this.state.values = { ...getInitialValues(), ...(draft.values || {}) };
@@ -753,14 +789,24 @@ export class QualityDimrevScreen extends Component {
         if (!this.state.selectedPartidaId || this.state.submitting) {
             return;
         }
+        if (!this.state.sampleType) {
+            this.notification.add("Seleccione el tipo de muestra antes de comenzar.", { type: "warning" });
+            return;
+        }
         this.state.inEvaluation = true;
         await this._loadPartidaEvaluation();
+    }
+
+    onSampleTypeChange(ev) {
+        this.state.sampleType = ev.target.value || "";
+        this._saveDraft();
     }
 
     clearPartida() {
         this.state.selectedPartidaId = "";
         this.state.selectedPartidaData = null;
         this.state.partidaQuery = "";
+        this.state.sampleType = "acabado";
         this.state.values = getInitialValues();
         this.state.evalId = 0;
         this.state.inEvaluation = false;
@@ -782,6 +828,7 @@ export class QualityDimrevScreen extends Component {
         try {
             const payload = await this.orm.call("control.estabilidad.revirado.eval", "action_tablet_get_eval_context", [
                 Number(this.state.selectedPartidaId),
+                this.state.sampleType,
             ]);
             this.state.values = getInitialValues();
             this.state.stabilityDone = this._defaultStabilityState();
@@ -792,12 +839,21 @@ export class QualityDimrevScreen extends Component {
             this.state.recentDensityWidth = Array.isArray(payload?.recent_density_width)
                 ? payload.recent_density_width
                 : [];
+            const existingEval = payload?.existing_eval || null;
+            if (existingEval) {
+                this.state.values = { ...getInitialValues(), ...(existingEval.values || {}) };
+                this.state.stabilityDone = {
+                    ...this._defaultStabilityState(),
+                    ...(existingEval.stability || {}),
+                };
+                this.state.evalId = Number(existingEval.id || 0);
+            }
             const requiredMode = payload?.required_mode || "";
             this.state.evalMode = requiredMode;
             this.state.needsModeSelection = !requiredMode;
             this.state.modeSelectionTarget = "";
             this.state.selectedLavadoN = "";
-            this.state.currentStep = 0;
+            this._setStepFromProgress();
         } catch (error) {
             this.state.error = extractRpcMessage(error, "No se pudo cargar la evaluación de la partida.");
         }
@@ -839,7 +895,39 @@ export class QualityDimrevScreen extends Component {
     }
 
     _setStepFromProgress() {
-        this.state.currentStep = 0;
+        if (this.state.needsModeSelection || !this.state.evalMode) {
+            this.state.currentStep = 0;
+            return;
+        }
+
+        if (this.state.evalMode !== "l1") {
+            this.state.currentStep = 0;
+            return;
+        }
+
+        const hasDensityAndWidth = ["den_1", "den_2", "den_3", "anc_1", "anc_2", "anc_3"]
+            .every((fieldName) => `${this.state.values[fieldName] || ""}`.trim() !== "");
+
+        if (!hasDensityAndWidth) {
+            this.state.currentStep = 0;
+            return;
+        }
+
+        const stepComplete = (stepKey) => {
+            const step = STEPS[STEP_INDEX_BY_KEY[stepKey]];
+            const fields = step?.fields || [];
+            return fields.every((fieldName) => `${this.state.values[fieldName] || ""}`.trim() !== "");
+        };
+
+        let targetKey = "est_l1_m1";
+        if (stepComplete("est_l1_m1") && !stepComplete("est_l1_m2")) {
+            targetKey = "est_l1_m2";
+        } else if (stepComplete("est_l1_m1") && stepComplete("est_l1_m2") && this.state.tiltRequired) {
+            targetKey = "inclinacion";
+        }
+
+        const targetIdx = this.activeSteps.findIndex((step) => step.key === targetKey);
+        this.state.currentStep = targetIdx >= 0 ? targetIdx : 0;
     }
 
     _canGoToStepByKey(key) {
@@ -1289,7 +1377,11 @@ export class QualityDimrevScreen extends Component {
         const payload = {};
         const fields = this.activeSteps.flatMap((s) => s.fields || []);
         for (const fname of fields) {
-            payload[fname] = asFloat(this.state.values[fname]);
+            const rawValue = `${this.state.values[fname] || ""}`.trim();
+            if (rawValue === "") {
+                continue;
+            }
+            payload[fname] = asFloat(rawValue);
         }
 
         this.state.submitting = true;
@@ -1299,11 +1391,51 @@ export class QualityDimrevScreen extends Component {
                 Number(this.state.selectedPartidaId),
                 this.state.evalMode,
                 payload,
+                this.state.sampleType,
             ]);
-            this.notification.add(`Evaluacion registrada en ${result?.name || "evaluacion"}.`, { type: "success" });
+            if (result?.completed) {
+                this.notification.add(`Evaluacion finalizada en ${result?.name || "evaluacion"}.`, { type: "success" });
+            } else {
+                this.notification.add(`Avance guardado en ${result?.name || "evaluacion"}.`, { type: "success" });
+            }
             await this.onBackToSearch();
         } catch (error) {
             this.state.error = extractRpcMessage(error, "No se pudo finalizar la evaluación.");
+            this.notification.add(this.state.error, { type: "warning" });
+        } finally {
+            this.state.submitting = false;
+        }
+    }
+
+    async saveProgressEvaluation() {
+        if (!this.canFinalizeEvaluation) {
+            this.notification.add("Para guardar avance en 1er lavado, complete ancho y densidad.", { type: "warning" });
+            return;
+        }
+
+        const payload = {};
+        const fields = this.activeSteps.flatMap((s) => s.fields || []);
+        for (const fname of fields) {
+            const rawValue = `${this.state.values[fname] || ""}`.trim();
+            if (rawValue === "") {
+                continue;
+            }
+            payload[fname] = asFloat(rawValue);
+        }
+
+        this.state.submitting = true;
+        this.state.error = "";
+        try {
+            const result = await this.orm.call("control.estabilidad.revirado.eval", "action_tablet_finalize", [
+                Number(this.state.selectedPartidaId),
+                this.state.evalMode,
+                payload,
+                this.state.sampleType,
+            ]);
+            this.notification.add(`Avance guardado en ${result?.name || "evaluacion"}.`, { type: "success" });
+            await this.onBackToSearch();
+        } catch (error) {
+            this.state.error = extractRpcMessage(error, "No se pudo guardar el avance.");
             this.notification.add(this.state.error, { type: "warning" });
         } finally {
             this.state.submitting = false;

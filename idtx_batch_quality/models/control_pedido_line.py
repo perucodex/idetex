@@ -254,17 +254,23 @@ class ControlPedidoLine(models.Model):
         self.ensure_one()
         return self.env._("Pass") if state_value == "pass" else self.env._("Fail")
 
-    def _get_dimrev_highest_wash_eval(self):
+    def _get_dimrev_highest_wash_eval(self, sample_type=False):
         self.ensure_one()
-        return self.env["control.estabilidad.revirado.eval"].search([
+        domain = [
             ("pedido_line_id", "=", self.id),
-        ], order="wash_number desc, fecha_eval desc, id desc", limit=1)
+        ]
+        if sample_type:
+            domain.append(("sample_type", "=", sample_type))
+        return self.env["control.estabilidad.revirado.eval"].search(domain, order="wash_number desc, fecha_eval desc, id desc", limit=1)
 
-    def _get_dimrev_first_eval_for_density_width(self):
+    def _get_dimrev_first_eval_for_density_width(self, sample_type=False):
         self.ensure_one()
-        evals = self.env["control.estabilidad.revirado.eval"].search([
+        domain = [
             ("pedido_line_id", "=", self.id),
-        ], order="fecha_eval asc, id asc")
+        ]
+        if sample_type:
+            domain.append(("sample_type", "=", sample_type))
+        evals = self.env["control.estabilidad.revirado.eval"].search(domain, order="fecha_eval asc, id asc")
         if not evals:
             return evals
 
@@ -291,8 +297,8 @@ class ControlPedidoLine(models.Model):
         self.ensure_one()
         _ = self.env._
 
-        dimrev_highest = self._get_dimrev_highest_wash_eval()
-        dimrev_first_eval = self._get_dimrev_first_eval_for_density_width()
+        dimrev_highest = self._get_dimrev_highest_wash_eval(sample_type="acabado")
+        dimrev_first_eval = self._get_dimrev_first_eval_for_density_width(sample_type="acabado")
         solidez = self._get_solidez_latest_eval()
 
         analysis = self.product_id.analysis_id
@@ -488,7 +494,7 @@ class ControlPedidoLine(models.Model):
         care_profesional_wet_icon_url = _care_svg_url(f"profesional/wet/profesional_textile_care_wet_{professional_wet_key}.svg") if professional_wet_key else False
         care_do_not_wring_icon_url = _care_svg_url("dry/do_not_wring.svg") if dim_thresholds and dim_thresholds.do_not_wring else False
 
-        emitter_user = self.user_id or self.env.user
+        emitter_user = self.env.user or self.user_id
         emitter_name = emitter_user.name or "-"
         emitter_role = "-"
         if "employee_ids" in emitter_user._fields and emitter_user.employee_ids:

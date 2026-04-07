@@ -21,6 +21,11 @@ class ControlEstabilidadReviradoEval(models.Model):
         "l3": 3,
         "l5": 5,
     }
+    _SAMPLE_TYPE_SELECTION = [
+        ("acabado", "Acabado"),
+        ("sanforizado_compactado", "Sanforizado y Compactado"),
+        ("estampado", "Estampado"),
+    ]
     _CANONICAL_KEYS = {
         "st_a_m1_d1", "st_a_m1_d2", "st_a_m1_d3",
         "st_a_m2_d1", "st_a_m2_d2", "st_a_m2_d3",
@@ -34,8 +39,16 @@ class ControlEstabilidadReviradoEval(models.Model):
 
     name = fields.Char(string="Referencia", required=True, copy=False, default="New", index=True)
     fecha_eval = fields.Datetime(string="Fecha", required=True, default=fields.Datetime.now, index=True)
+    sample_type = fields.Selection(_SAMPLE_TYPE_SELECTION, string="Tipo de Muestra", required=True, default="acabado", index=True)
     wash_number = fields.Integer(string="Numero de Lavado", required=True, default=1, index=True)
-    user_id = fields.Many2one("res.users", string="Usuario", required=True, default=lambda self: self.env.user)
+    user_ids = fields.Many2many(
+        "res.users",
+        "control_estab_revirado_eval_res_users_rel",
+        "eval_id",
+        "user_id",
+        string="Usuarios",
+        default=lambda self: [(6, 0, [self.env.user.id])],
+    )
     pedido_line_id = fields.Many2one("control.pedido.line", string="Partida", required=True, ondelete="cascade", index=True)
     detail_line_ids = fields.One2many("control.estabilidad.revirado.eval.detail", "eval_id", string="Tabla de Datos", copy=False)
 
@@ -264,17 +277,38 @@ class ControlEstabilidadReviradoEval(models.Model):
         if not meta:
             return
         line = self.detail_line_ids.filtered(lambda l: l.measure_key == canonical_key)[:1]
+        numeric_value = float(value or 0.0)
         vals = {
             "sequence": meta["sequence"],
             "measure_key": canonical_key,
             "muestra": meta["muestra"],
             "evaluacion": meta["evaluacion"],
-            "dato": float(value or 0.0),
+            "dato": numeric_value,
         }
         if line:
-            line.write(vals)
+            write_vals = {}
+
+            # Keep metadata aligned, but do not change audit fields unless value changed.
+            for field_name in ("sequence", "measure_key", "muestra", "evaluacion"):
+                if line[field_name] != vals[field_name]:
+                    write_vals[field_name] = vals[field_name]
+
+            if abs(float(line.dato or 0.0) - numeric_value) > 1e-9:
+                write_vals.update({
+                    "dato": numeric_value,
+                    "user_id": self.env.user.id,
+                    "fecha_registro": fields.Datetime.now(),
+                })
+
+            if write_vals:
+                line.write(write_vals)
         else:
-            self.env["control.estabilidad.revirado.eval.detail"].create(dict(vals, eval_id=self.id))
+            self.env["control.estabilidad.revirado.eval.detail"].create(dict(
+                vals,
+                eval_id=self.id,
+                user_id=self.env.user.id,
+                fecha_registro=fields.Datetime.now(),
+            ))
 
     def _wash_avg(self, axis):
         self.ensure_one()
@@ -320,6 +354,9 @@ class ControlEstabilidadReviradoEval(models.Model):
             if vals.get("name", "New") == "New":
                 vals["name"] = seq.next_by_code("control.estabilidad.revirado.eval") or "New"
             vals.setdefault("wash_number", 1)
+            vals.setdefault("sample_type", "acabado")
+            if not vals.get("user_ids"):
+                vals["user_ids"] = [(6, 0, [self.env.user.id])]
         records = super().create(vals_list)
 
         laboratorio_model = self.env["control.laboratorio.record"]
@@ -329,10 +366,11 @@ class ControlEstabilidadReviradoEval(models.Model):
             exists = laboratorio_model.search([("est_revirado_eval_id", "=", rec.id)], limit=1)
             if exists:
                 continue
+            first_user = rec.user_ids[:1] or self.env.user
             laboratorio_model.create({
                 "pedido_line_id": rec.pedido_line_id.id,
                 "fecha_eval": rec.fecha_eval,
-                "user_id": rec.user_id.id,
+                "user_id": first_user.id,
                 "test_type": "dimrev",
                 "result_state": "pasa",
                 "est_revirado_eval_id": rec.id,
@@ -449,6 +487,68 @@ class ControlEstabilidadReviradoEval(models.Model):
             },
         }
 
+    def _append_stage_user(self, user=None):
+        self.ensure_one()
+        user = user or self.env.user
+        if not user:
+            return
+        existing_ids = list(self.user_ids.ids)
+        if user.id in existing_ids:
+            return
+        self.write({"user_ids": [(6, 0, existing_ids + [user.id])]})
+        laboratorio_records = self.env["control.laboratorio.record"].search([
+            ("est_revirado_eval_id", "=", self.id),
+        ])
+        if laboratorio_records:
+            laboratorio_records._sync_involved_users()
+
+    def _has_measure_value(self, key):
+        self.ensure_one()
+        for lookup_key in self._lookup_keys_for_query(key, self.wash_number):
+            if self.detail_line_ids.filtered(lambda l: l.measure_key == lookup_key)[:1]:
+                return True
+        return False
+
+    def _step_is_complete(self, step_key):
+        self.ensure_one()
+        for field_name in self._step_fields(step_key):
+            if field_name == "rvn_n":
+                if int(self.wash_number or 0) < 2:
+                    return False
+                continue
+            if field_name in ("tilt_before", "tilt_after") and not self._is_tilt_required():
+                continue
+            if not self._has_measure_value(field_name):
+                return False
+        return True
+
+    def _mode_is_complete(self, eval_mode):
+        self.ensure_one()
+        for field_name in self._fields_for_mode(eval_mode):
+            if field_name == "rvn_n":
+                if int(self.wash_number or 0) < 2:
+                    return False
+                continue
+            if field_name in ("tilt_before", "tilt_after") and not self._is_tilt_required():
+                continue
+            if not self._has_measure_value(field_name):
+                return False
+        return True
+
+    def _refresh_mode_done_flags(self):
+        self.ensure_one()
+        self.write({
+            "est_l1_ancho_done": self._step_is_complete("est_l1_m1"),
+            "est_l1_largo_done": self._step_is_complete("est_l1_m2"),
+            "est_l1_done": self._mode_is_complete("l1"),
+            "est_l3_ancho_done": self._step_is_complete("est_l3_m1"),
+            "est_l3_largo_done": self._step_is_complete("est_l3_m2"),
+            "est_l3_done": self._mode_is_complete("l3"),
+            "est_l5_ancho_done": self._step_is_complete("est_l5_m1"),
+            "est_l5_largo_done": self._step_is_complete("est_l5_m2"),
+            "est_l5_done": self._mode_is_complete("l5"),
+        })
+
     @api.model
     def _fields_for_mode(self, eval_mode):
         step_keys = self._MODE_STEP_KEYS.get(eval_mode, ())
@@ -541,41 +641,56 @@ class ControlEstabilidadReviradoEval(models.Model):
         return rows
 
     @api.model
-    def action_tablet_get_eval_context(self, pedido_line_id):
+    def action_tablet_get_eval_context(self, pedido_line_id, sample_type=False):
         pedido_line = self.env["control.pedido.line"].browse(int(pedido_line_id or 0))
         if not pedido_line.exists():
             raise UserError(_("Seleccione una partida valida."))
 
-        dimrev_records = self.env["control.laboratorio.record"].search_count([
+        sample_type = sample_type or "acabado"
+        valid_sample_types = {key for key, _label in self._SAMPLE_TYPE_SELECTION}
+        if sample_type not in valid_sample_types:
+            raise UserError(_("Tipo de muestra invalido."))
+
+        first_eval = self.search([
             ("pedido_line_id", "=", pedido_line.id),
-            ("test_type", "=", "dimrev"),
-        ])
-        has_first_record = bool(dimrev_records)
+            ("wash_number", "=", 1),
+            ("sample_type", "=", sample_type),
+        ], order="fecha_eval desc, id desc", limit=1)
+        has_first_record = bool(first_eval and first_eval.est_l1_done)
         thresholds = pedido_line.product_id.analysis_id.density_stability_twisting_id
         tilt_standard = float(thresholds.tilt_wash or 0.0) if thresholds else 0.0
         return {
+            "sample_type": sample_type,
             "has_first_record": has_first_record,
             "required_mode": False if has_first_record else "l1",
             "available_modes": ["l3", "l5", "ln"] if has_first_record else ["l1"],
             "tilt_required": bool(not has_first_record and tilt_standard > 0.0),
             "tilt_standard": tilt_standard,
             "recent_density_width": self._tablet_recent_density_width(pedido_line, limit=10),
+            "existing_eval": first_eval._to_tablet_payload() if first_eval and not has_first_record else False,
         }
 
     @api.model
-    def action_tablet_finalize(self, pedido_line_id, eval_mode, values):
+    def action_tablet_finalize(self, pedido_line_id, eval_mode, values, sample_type=False):
         pedido_line = self.env["control.pedido.line"].browse(int(pedido_line_id or 0))
         if not pedido_line.exists():
             raise UserError(_("Seleccione una partida valida."))
+
+        sample_type = sample_type or "acabado"
+        valid_sample_types = {key for key, _label in self._SAMPLE_TYPE_SELECTION}
+        if sample_type not in valid_sample_types:
+            raise UserError(_("Tipo de muestra invalido."))
 
         eval_mode = (eval_mode or "").strip()
         if eval_mode not in self._MODE_STEP_KEYS:
             raise UserError(_("Modo de evaluacion invalido."))
 
-        has_first_record = bool(self.env["control.laboratorio.record"].search_count([
+        first_eval = self.search([
             ("pedido_line_id", "=", pedido_line.id),
-            ("test_type", "=", "dimrev"),
-        ]))
+            ("wash_number", "=", 1),
+            ("sample_type", "=", sample_type),
+        ], order="fecha_eval desc, id desc", limit=1)
+        has_first_record = bool(first_eval and first_eval.est_l1_done)
         if not has_first_record and eval_mode != "l1":
             raise UserError(_("La primera evaluacion de la partida debe ser 1er lavado con ancho y densidad."))
         if has_first_record and eval_mode == "l1":
@@ -595,16 +710,37 @@ class ControlEstabilidadReviradoEval(models.Model):
         if int(wash_number or 0) < 1:
             raise UserError(_("Debe indicar un numero de lavado valido."))
 
-        rec = self.create({
-            "pedido_line_id": pedido_line.id,
-            "user_id": self.env.user.id,
-            "wash_number": int(wash_number),
-        })
-        rec._validate_tilt_required_values(values)
+        rec = self.search([
+            ("pedido_line_id", "=", pedido_line.id),
+            ("wash_number", "=", int(wash_number)),
+            ("sample_type", "=", sample_type),
+        ], order="fecha_eval desc, id desc", limit=1)
+        if not rec:
+            rec = self.create({
+                "pedido_line_id": pedido_line.id,
+                "wash_number": int(wash_number),
+                "sample_type": sample_type,
+            })
+        rec._append_stage_user(self.env.user)
+
+        if eval_mode == "l1":
+            densidad_complete = all(self._raw_has_value((values or {}).get(k)) for k in ("den_1", "den_2", "den_3"))
+            ancho_complete = all(self._raw_has_value((values or {}).get(k)) for k in ("anc_1", "anc_2", "anc_3"))
+            if not (densidad_complete and ancho_complete):
+                raise UserError(_("Para guardar el avance del 1er lavado debe registrar primero ancho y densidad completos."))
+
+        incoming_values = values or {}
+        if rec._raw_has_value(incoming_values.get("tilt_before")) or rec._raw_has_value(incoming_values.get("tilt_after")):
+            rec._validate_tilt_required_values(incoming_values)
+
         for fname in fields_for_mode:
             if fname == "rvn_n":
                 continue
-            raw = (values or {}).get(fname, 0.0)
+            if fname not in incoming_values:
+                continue
+            raw = incoming_values.get(fname)
+            if not self._raw_has_value(raw):
+                continue
             try:
                 value = int(float(raw or 0.0)) if fname == "rvn_n" else float(raw or 0.0)
             except (TypeError, ValueError):
@@ -614,30 +750,41 @@ class ControlEstabilidadReviradoEval(models.Model):
         if eval_mode == "ln" and int(rec.wash_number or 0) < 2:
             raise UserError(_("El lavado N debe ser mayor a 1."))
 
-        mode_done_vals = {
-            "l1": {"est_l1_ancho_done": True, "est_l1_largo_done": True, "est_l1_done": True},
-            "l3": {"est_l3_ancho_done": True, "est_l3_largo_done": True, "est_l3_done": True},
-            "l5": {"est_l5_ancho_done": True, "est_l5_largo_done": True, "est_l5_done": True},
-            "ln": {},
-        }
-        write_vals = mode_done_vals.get(eval_mode, {})
-        if write_vals:
-            rec.write(write_vals)
+        rec._refresh_mode_done_flags()
+        is_complete = rec._mode_is_complete(eval_mode)
+        if eval_mode == "l1" and not is_complete:
+            l1_stability_keys = self._step_fields("est_l1_m1") + self._step_fields("est_l1_m2")
+            has_started_l1_stability = any(rec._has_measure_value(key) for key in l1_stability_keys)
+            if has_started_l1_stability:
+                raise UserError(_("Para terminar la evaluacion del 1er lavado falta completar datos de estabilidad/revirado."))
 
         laboratorio_records = self.env["control.laboratorio.record"].search([("est_revirado_eval_id", "=", rec.id)])
         if laboratorio_records:
             laboratorio_records._sync_result_lines()
 
-        return {"ok": True, "id": rec.id, "name": rec.name}
+        return {"ok": True, "id": rec.id, "name": rec.name, "completed": bool(is_complete)}
 
     @api.model
-    def action_tablet_get_or_create(self, pedido_line_id):
+    def action_tablet_get_or_create(self, pedido_line_id, sample_type=False):
         pedido_line = self.env["control.pedido.line"].browse(int(pedido_line_id or 0))
         if not pedido_line.exists():
             raise UserError(_("Seleccione una partida valida."))
-        rec = self.search([("pedido_line_id", "=", pedido_line.id)], limit=1)
+
+        sample_type = sample_type or "acabado"
+        valid_sample_types = {key for key, _label in self._SAMPLE_TYPE_SELECTION}
+        if sample_type not in valid_sample_types:
+            raise UserError(_("Tipo de muestra invalido."))
+
+        rec = self.search([
+            ("pedido_line_id", "=", pedido_line.id),
+            ("sample_type", "=", sample_type),
+        ], limit=1)
         if not rec:
-            rec = self.create({"pedido_line_id": pedido_line.id, "user_id": self.env.user.id})
+            rec = self.create({
+                "pedido_line_id": pedido_line.id,
+                "sample_type": sample_type,
+            })
+        rec._append_stage_user(self.env.user)
         return rec._to_tablet_payload()
 
     @api.model
@@ -679,10 +826,11 @@ class ControlEstabilidadReviradoEval(models.Model):
         ], limit=1)
 
         if not record:
+            first_user = self.user_ids[:1] or self.env.user
             record = laboratorio_model.create({
                 "pedido_line_id": self.pedido_line_id.id,
                 "fecha_eval": self.fecha_eval,
-                "user_id": self.user_id.id,
+                "user_id": first_user.id,
                 "test_type": "dimrev",
                 "result_state": "pasa",
                 "est_revirado_eval_id": self.id,
@@ -691,18 +839,30 @@ class ControlEstabilidadReviradoEval(models.Model):
         return record.action_print_report()
 
     @api.model
-    def action_tablet_submit_step(self, pedido_line_id, step_key, values):
+    def action_tablet_submit_step(self, pedido_line_id, step_key, values, sample_type=False):
         pedido_line = self.env["control.pedido.line"].browse(int(pedido_line_id or 0))
         if not pedido_line.exists():
             raise UserError(_("Seleccione una partida valida."))
+
+        sample_type = sample_type or "acabado"
+        valid_sample_types = {key for key, _label in self._SAMPLE_TYPE_SELECTION}
+        if sample_type not in valid_sample_types:
+            raise UserError(_("Tipo de muestra invalido."))
 
         fields_for_step = self._step_fields((step_key or "").strip())
         if not fields_for_step:
             raise UserError(_("Paso de evaluacion invalido."))
 
-        rec = self.search([("pedido_line_id", "=", pedido_line.id)], limit=1)
+        rec = self.search([
+            ("pedido_line_id", "=", pedido_line.id),
+            ("sample_type", "=", sample_type),
+        ], limit=1)
         if not rec:
-            rec = self.create({"pedido_line_id": pedido_line.id, "user_id": self.env.user.id})
+            rec = self.create({
+                "pedido_line_id": pedido_line.id,
+                "sample_type": sample_type,
+            })
+        rec._append_stage_user(self.env.user)
 
         wash_mode = ""
         step_parts = (step_key or "").split("_")
@@ -749,6 +909,8 @@ class ControlEstabilidadReviradoEval(models.Model):
 
         if write_vals:
             rec.write(write_vals)
+
+        rec._refresh_mode_done_flags()
 
         laboratorio_records = self.env["control.laboratorio.record"].search([("est_revirado_eval_id", "=", rec.id)])
         if laboratorio_records:
@@ -859,6 +1021,8 @@ class ControlEstabilidadReviradoEvalDetail(models.Model):
     muestra = fields.Selection([("m1", "M1"), ("m2", "M2"), ("na", "N/A")], string="Muestra", default="na", required=True, index=True)
     evaluacion = fields.Char(string="Item Evaluacion", required=True)
     dato = fields.Float(string="Dato", digits=(16, 4), required=True)
+    user_id = fields.Many2one("res.users", string="Usuario", default=lambda self: self.env.user, index=True)
+    fecha_registro = fields.Datetime(string="Fecha Registro", default=fields.Datetime.now, index=True)
 
     _uniq_eval_measure_key = models.Constraint(
         "UNIQUE(eval_id, measure_key)",
