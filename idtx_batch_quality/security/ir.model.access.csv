@@ -14,3 +14,4 @@ access_control_estabilidad_revirado_eval_detail_user,control.estabilidad.revirad
 access_control_solidez_lavado_eval_user,control.solidez.lavado.eval.user,model_control_solidez_lavado_eval,base.group_user,1,1,1,1
 access_control_laboratorio_record_user,control.laboratorio.record.user,model_control_laboratorio_record,base.group_user,1,1,1,1
 access_control_laboratorio_record_result_user,control.laboratorio.record.result.user,model_control_laboratorio_record_result,base.group_user,1,1,1,1
+access_control_sample_reception_user,control.sample.reception.user,model_control_sample_reception,base.group_user,1,1,1,1

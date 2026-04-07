@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="idtx_batch_quality.QualitySampleReceptionScreen">
+        <div class="o_qsl_root container-fluid">
+            <header class="o_qsl_header">
+                <div>
+                    <h3 class="o_qsl_title">Recepcion de Muestras</h3>
+                    <div class="o_qsl_subtitle text-muted" t-if="state.selectedPartidaData">
+                        Partida: <b t-esc="state.selectedPartidaData.batch || '-'"/> ·
+                        Cliente: <b t-esc="state.selectedPartidaData.customer || '-'"/>
+                    </div>
+                </div>
+                <button class="btn btn-outline-secondary" type="button" t-on-click="close">
+                    <i class="fa fa-sign-out me-1"/>Cerrar
+                </button>
+            </header>
+
+            <t t-if="state.error">
+                <div class="alert alert-danger" t-esc="state.error"/>
+            </t>
+
+            <div class="row g-3" t-if="!state.loading">
+                <div class="col-12 col-lg-7">
+                    <div class="card o_qsl_card">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Partida</label>
+                                    <div class="o_qsl_autocomplete">
+                                        <input class="form-control form-control-lg o_qsl_input"
+                                               type="text"
+                                               placeholder="Buscar partida..."
+                                               t-att-value="state.partidaQuery"
+                                               t-on-input="onPartidaQueryInput"
+                                               t-on-focus="onPartidaInputFocus"/>
+                                        <button t-if="state.selectedPartidaId"
+                                                type="button"
+                                                class="btn btn-sm btn-outline-secondary o_qsl_clear_btn"
+                                                t-on-click="clearPartida">
+                                            <i class="fa fa-times"/>
+                                        </button>
+                                        <t t-if="state.showPartidaDropdown and !state.selectedPartidaId">
+                                            <div class="o_qsl_dropdown">
+                                                <div class="o_qsl_dropdown_body">
+                                                    <t t-if="!filteredPartidas.length">
+                                                        <div class="o_qsl_dropdown_item text-muted">Sin resultados</div>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <t t-foreach="filteredPartidas" t-as="partida" t-key="partida.id">
+                                                            <button type="button"
+                                                                    class="o_qsl_dropdown_item o_qsl_dropdown_btn"
+                                                                    t-on-click="() => this.selectPartida(partida.id)">
+                                                                <div class="o_qsl_dropdown_main" t-esc="partida.batch || '-'"/>
+                                                                <div class="o_qsl_dropdown_sub">
+                                                                    <span t-esc="partida.customer || '-'"/> ·
+                                                                    <span t-esc="(partida.kilograms || 0) + ' kg'"/>
+                                                                </div>
+                                                            </button>
+                                                        </t>
+                                                    </t>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+
+                                <div class="col-12" t-if="state.selectedPartidaData">
+                                    <div><b>Cliente:</b> <span t-esc="state.selectedPartidaData.customer || '-'"/></div>
+                                    <div><b>Articulo:</b> <span t-esc="state.selectedPartidaData.article || '-'"/></div>
+                                    <div><b>Color:</b> <span t-esc="state.selectedPartidaData.color_name || '-'"/></div>
+                                    <div><b>Kilos:</b> <span t-esc="(state.selectedPartidaData.kilograms || 0) + ' kg'"/></div>
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-bold">Tipo de Muestra</label>
+                                    <select class="form-select"
+                                            t-att-value="state.sampleType"
+                                            t-on-change="onSampleTypeChange">
+                                        <t t-foreach="SAMPLE_TYPE_OPTIONS" t-as="opt" t-key="opt.value">
+                                            <option t-att-value="opt.value" t-esc="opt.label"/>
+                                        </t>
+                                    </select>
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-bold">Fecha y Hora</label>
+                                    <input class="form-control"
+                                           type="datetime-local"
+                                           t-model="state.receptionDatetime"/>
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label fw-bold">DNI</label>
+                                    <div class="input-group">
+                                        <input class="form-control"
+                                               type="text"
+                                               maxlength="8"
+                                               inputmode="numeric"
+                                               t-att-value="state.dni"
+                                               t-on-input="onDniInput"
+                                               placeholder="Ingrese DNI"/>
+                                        <button class="btn btn-outline-primary"
+                                                type="button"
+                                                t-att-disabled="state.searchingDni"
+                                                t-on-click="onLookupDni">
+                                            <t t-esc="state.searchingDni ? 'Buscando...' : 'Buscar DNI'"/>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label fw-bold">Nombre</label>
+                                    <input class="form-control"
+                                           type="text"
+                                           t-model="state.deliveryName"
+                                           placeholder="Nombre de quien entrega"/>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <label class="form-label fw-bold mb-0">Firma</label>
+                                        <button class="btn btn-sm btn-outline-secondary" type="button" t-on-click="clearSignature">
+                                            Limpiar Firma
+                                        </button>
+                                    </div>
+                                    <canvas t-ref="signatureCanvas" class="o_qsl_signature_canvas"/>
+                                </div>
+
+                                <div class="col-12 d-grid">
+                                    <button class="btn btn-primary btn-lg"
+                                            type="button"
+                                            t-att-disabled="!canSave"
+                                            t-on-click="saveReception">
+                                        <t t-esc="state.saving ? 'Guardando...' : 'Guardar Recepcion'"/>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-5">
+                    <div class="card o_qsl_card h-100">
+                        <div class="card-body">
+                            <h5 class="mb-3">Ultimas Recepciones</h5>
+                            <t t-if="!state.historyRows.length">
+                                <div class="text-muted">No hay registros para la partida seleccionada.</div>
+                            </t>
+                            <t t-else="">
+                                <div class="table-responsive">
+                                    <table class="table table-sm align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Fecha</th>
+                                                <th>Tipo</th>
+                                                <th>DNI</th>
+                                                <th>Nombre</th>
+                                                <th>Usuario</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr t-foreach="state.historyRows" t-as="row" t-key="row.id">
+                                                <td t-esc="row.reception_datetime || '-'"/>
+                                                <td t-esc="row.sample_type_label || row.sample_type || '-'"/>
+                                                <td t-esc="row.dni || '-'"/>
+                                                <td t-esc="row.delivery_name || '-'"/>
+                                                <td t-esc="(row.user_id &amp;&amp; row.user_id[1]) || '-'"/>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

@@ -16,6 +16,11 @@ class ControlPedidoLine(models.Model):
         "pedido_line_id",
         string="Registros de Laboratorio",
     )
+    sample_reception_ids = fields.One2many(
+        "control.sample.reception",
+        "pedido_line_id",
+        string="Recepciones de Muestra",
+    )
     has_laboratorio_records = fields.Boolean(compute="_compute_has_laboratorio_records", store=False)
     est_revirado_eval_id = fields.Many2one(
         "control.estabilidad.revirado.eval",
@@ -878,6 +883,17 @@ class ControlPedidoLine(models.Model):
             "type": "ir.actions.client",
             "name": "Evaluar Apariencia",
             "tag": "idtx_quality.defect_screen",
+        }
+
+    def action_sample_reception_screen(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.client",
+            "name": "Recepcion de Muestras",
+            "tag": "idtx_quality.sample_reception_screen",
+            "params": {
+                "pedido_line_id": self.id,
+            },
         }
 
     # ---------- Tablet Tono Screen ----------

@@ -7,4 +7,5 @@ from . import control_apariencia_defecto
 from . import control_estabilidad_revirado_eval
 from . import control_solidez_lavado_eval
 from . import control_laboratorio_record
+from . import control_sample_reception
 from . import mail_compose_message

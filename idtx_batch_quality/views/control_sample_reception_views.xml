@@ -1,0 +1,88 @@
+<odoo>
+    <record id="action_quality_sample_reception_screen" model="ir.actions.client">
+        <field name="name">Recepcion de Muestras</field>
+        <field name="tag">idtx_quality.sample_reception_screen</field>
+        <field name="target">fullscreen</field>
+    </record>
+
+    <record id="view_control_sample_reception_list" model="ir.ui.view">
+        <field name="name">control.sample.reception.list</field>
+        <field name="model">control.sample.reception</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="name"/>
+                <field name="reception_datetime"/>
+                <field name="pedido_line_id"/>
+                <field name="customer"/>
+                <field name="product_id"/>
+                <field name="color_name"/>
+                <field name="kilograms"/>
+                <field name="sample_type"/>
+                <field name="dni"/>
+                <field name="delivery_name"/>
+                <field name="user_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_control_sample_reception_form" model="ir.ui.view">
+        <field name="name">control.sample.reception.form</field>
+        <field name="model">control.sample.reception</field>
+        <field name="arch" type="xml">
+            <form string="Recepcion de Muestras" create="0" delete="0">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="reception_datetime"/>
+                            <field name="pedido_line_id"/>
+                            <field name="sample_type"/>
+                            <field name="dni"/>
+                            <field name="delivery_name"/>
+                            <field name="user_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="customer" readonly="1"/>
+                            <field name="product_id" readonly="1" invisible="not product_id"/>
+                            <field name="article" readonly="1" invisible="product_id"/>
+                            <field name="color_name" readonly="1"/>
+                            <field name="color_code" readonly="1"/>
+                            <field name="kilograms" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Firma">
+                        <field name="signature" widget="image" class="oe_avatar" options="{'preview_image': 'signature'}"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_control_sample_reception_search" model="ir.ui.view">
+        <field name="name">control.sample.reception.search</field>
+        <field name="model">control.sample.reception</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="pedido_line_id"/>
+                <field name="dni"/>
+                <field name="delivery_name"/>
+                <field name="user_id"/>
+                <filter name="group_by_partida" string="Partida" context="{'group_by': 'pedido_line_id'}"/>
+                <filter name="group_by_fecha" string="Fecha" context="{'group_by': 'reception_datetime:day'}"/>
+                <filter name="group_by_usuario" string="Usuario" context="{'group_by': 'user_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_control_sample_reception" model="ir.actions.act_window">
+        <field name="name">Recepcion de Muestras</field>
+        <field name="res_model">control.sample.reception</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_control_sample_reception_search"/>
+    </record>
+</odoo>

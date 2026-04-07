@@ -28,6 +28,7 @@
         'views/control_tono_eval_group_views.xml',
         'views/control_apariencia_defecto_views.xml',
         'views/control_estabilidad_revirado_eval_views.xml',
+        'views/control_sample_reception_views.xml',
         'report/dimrev_report.xml',
         'report/solidez_lavado_report.xml',
         'report/pedido_line_laboratorio_summary_report.xml',
@@ -59,6 +60,9 @@
             'idtx_batch_quality/static/src/solidez_lavado_screen/quality_solidez_lavado_screen.js',
             'idtx_batch_quality/static/src/solidez_lavado_screen/quality_solidez_lavado_screen.xml',
             'idtx_batch_quality/static/src/solidez_lavado_screen/quality_solidez_lavado_screen.scss',
+            'idtx_batch_quality/static/src/sample_reception_screen/quality_sample_reception_screen.js',
+            'idtx_batch_quality/static/src/sample_reception_screen/quality_sample_reception_screen.xml',
+            'idtx_batch_quality/static/src/sample_reception_screen/quality_sample_reception_screen.scss',
         ],
     },
 } 

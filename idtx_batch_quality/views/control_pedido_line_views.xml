@@ -17,6 +17,11 @@
                     string="Ver"
                     class="btn-secondary"/>
 
+                <button name="action_sample_reception_screen"
+                        type="object"
+                    string="Recepcion de Muestras"
+                    class="btn-secondary"/>
+
                 <button name="action_evaluar_tono"
                         type="object"
                         string="Evaluar Tono Tacho"
@@ -124,6 +129,49 @@
                                     </page>
                                 </notebook>
                                 <group >
+                                </group>
+                            </sheet>
+                        </form>
+                    </field>
+                </page>
+
+                <page string="Recepcion de Muestras">
+                    <field name="sample_reception_ids" nolabel="1" context="{'default_pedido_line_id': id}" mode="list,form">
+                        <list>
+                            <field name="name"/>
+                            <field name="reception_datetime"/>
+                            <field name="customer"/>
+                            <field name="product_id"/>
+                            <field name="color_name"/>
+                            <field name="kilograms"/>
+                            <field name="sample_type"/>
+                            <field name="dni"/>
+                            <field name="delivery_name"/>
+                            <field name="user_id"/>
+                        </list>
+                        <form string="Recepcion de Muestras">
+                            <sheet>
+                                <group>
+                                    <group>
+                                        <field name="name" readonly="1"/>
+                                        <field name="reception_datetime"/>
+                                        <field name="pedido_line_id" readonly="1"/>
+                                        <field name="customer" readonly="1"/>
+                                        <field name="product_id" readonly="1"/>
+                                    </group>
+                                    <group>
+                                        <field name="article" readonly="1"/>
+                                        <field name="color_name" readonly="1"/>
+                                        <field name="color_code" readonly="1"/>
+                                        <field name="kilograms" readonly="1"/>
+                                        <field name="sample_type"/>
+                                        <field name="dni"/>
+                                        <field name="delivery_name"/>
+                                        <field name="user_id" readonly="1"/>
+                                    </group>
+                                </group>
+                                <group string="Firma">
+                                    <field name="signature" widget="image" options="{'preview_image': 'signature'}"/>
                                 </group>
                             </sheet>
                         </form>

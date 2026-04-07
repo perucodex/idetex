@@ -49,4 +49,12 @@
         <field name="company_id" eval="False"/>
     </record>
 
+    <record id="seq_control_sample_reception" model="ir.sequence">
+        <field name="name">Recepcion de Muestras</field>
+        <field name="code">control.sample.reception</field>
+        <field name="prefix">RSM-</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
 </odoo>

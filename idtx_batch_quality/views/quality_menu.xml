@@ -6,6 +6,7 @@
             <menuitem id="menu_quality_defect_screen" name="Auditoría de Apariencia" action="action_quality_defect_screen" sequence="20"/>
             <menuitem id="menu_quality_dimrev_screen" name="Estabilidad/Revirado" action="action_quality_dimrev_screen" sequence="30"/>
             <menuitem id="menu_quality_solidez_lavado_screen" name="Solidez al Lavado" action="action_quality_solidez_lavado_screen" sequence="40"/>
+            <menuitem id="menu_quality_sample_reception_screen" name="Recepcion de Muestras" action="action_quality_sample_reception_screen" sequence="50"/>
         </menuitem>
 
         <menuitem id="menu_records" name="Registros" sequence="20" groups="quality.group_quality_manager">
@@ -15,6 +16,7 @@
             <menuitem id="menu_control_apariencia_eval" name="Evaluaciones Apariencia" action="action_control_apariencia_eval" sequence="40"/>
             <menuitem id="menu_control_estabilidad_revirado_eval" name="Evaluaciones Estabilidad/Revirado" action="action_control_estabilidad_revirado_eval" sequence="50"/>
             <menuitem id="menu_control_solidez_lavado_eval" name="Evaluaciones Solidez al Lavado" action="action_control_solidez_lavado_eval" sequence="60"/>
+            <menuitem id="menu_control_sample_reception" name="Recepcion de Muestras" action="action_control_sample_reception" sequence="70"/>
         </menuitem>
     </menuitem>
 
