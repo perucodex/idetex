@@ -5,6 +5,7 @@ import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 
 const SAMPLE_TYPE_OPTIONS = [
+    { value: "", label: "Seleccione..." },
     { value: "acabado", label: "Acabado" },
     { value: "sanforizado_compactado", label: "Sanforizado y Compactado" },
     { value: "estampado", label: "Estampado" },
@@ -73,7 +74,7 @@ export class QualitySampleReceptionScreen extends Component {
             selectedPartidaData: null,
             partidas: [],
             receptionDatetime: getNowLocalInputValue(),
-            sampleType: "acabado",
+            sampleType: "",
             dni: "",
             deliveryName: "",
             historyRows: [],
@@ -114,6 +115,7 @@ export class QualitySampleReceptionScreen extends Component {
         return Boolean(
             this.state.selectedPartidaId
             && this.state.receptionDatetime
+            && this.state.sampleType
             && `${this.state.dni || ""}`.trim().length === 8
             && `${this.state.deliveryName || ""}`.trim()
             && !this.state.saving
@@ -160,6 +162,7 @@ export class QualitySampleReceptionScreen extends Component {
             if (value !== batch) {
                 this.state.selectedPartidaId = "";
                 this.state.selectedPartidaData = null;
+                this.state.sampleType = "";
                 this.state.historyRows = [];
             }
         }
@@ -186,13 +189,18 @@ export class QualitySampleReceptionScreen extends Component {
         this.state.selectedPartidaId = "";
         this.state.selectedPartidaData = null;
         this.state.partidaQuery = "";
+        this.state.sampleType = "";
         this.state.historyRows = [];
     }
 
     selectPartida(partidaId) {
         const id = Number(partidaId || 0);
+        const previousId = this.state.selectedPartidaId;
         this.state.selectedPartidaId = `${id}`;
         this._syncSelectedPartidaData();
+        if (String(previousId || "") !== String(partidaId || "")) {
+            this.state.sampleType = "";
+        }
         this.state.showPartidaDropdown = false;
         this._loadHistory();
     }
@@ -202,7 +210,7 @@ export class QualitySampleReceptionScreen extends Component {
     }
 
     onSampleTypeChange(ev) {
-        this.state.sampleType = (ev.target.value || "acabado").trim() || "acabado";
+        this.state.sampleType = (ev.target.value || "").trim();
     }
 
     async onLookupDni() {

@@ -77,7 +77,9 @@
                                             t-att-value="state.sampleType"
                                             t-on-change="onSampleTypeChange">
                                         <t t-foreach="SAMPLE_TYPE_OPTIONS" t-as="opt" t-key="opt.value">
-                                            <option t-att-value="opt.value" t-esc="opt.label"/>
+                                            <option t-att-value="opt.value"
+                                                    t-att-disabled="opt.value === '' and !!state.sampleType"
+                                                    t-esc="opt.label"/>
                                         </t>
                                     </select>
                                 </div>

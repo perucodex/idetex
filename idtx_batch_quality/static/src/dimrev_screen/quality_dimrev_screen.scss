@@ -94,8 +94,10 @@
 }
 
 .o_qdr_dropdown_body {
+    max-height: inherit;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    scrollbar-gutter: stable;
 }
 
 .o_qdr_dropdown_item {

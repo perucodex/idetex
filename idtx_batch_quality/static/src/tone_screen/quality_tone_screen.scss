@@ -173,8 +173,10 @@
     }
 
     .o_qts_dropdown_body {
+        max-height: inherit;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+        scrollbar-gutter: stable;
     }
 
     .o_qts_dropdown_item {

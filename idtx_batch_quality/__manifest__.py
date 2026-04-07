@@ -9,7 +9,7 @@
         Permite evaluar las partidas de cada linea del pedido y registrar las evaluaciones realizadas.
     """,
 
-    'author': "Jean Paul Casis",
+    'author': "Codex Development",
     'website': "https://www.perucodex.com",
     'category': 'Uncategorized',
     'version': '0.1',

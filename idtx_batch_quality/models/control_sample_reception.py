@@ -1,5 +1,6 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
+from odoo.fields import Domain
 
 
 class ControlSampleReception(models.Model):
@@ -44,15 +45,19 @@ class ControlSampleReception(models.Model):
     @api.model
     def action_tablet_get_partidas(self, query=False, limit=40):
         query = (query or "").strip()
-        domain = []
+        domain = Domain([])
         if query:
-            domain = [
-                "|",
-                "|",
-                ("batch", "ilike", query),
-                ("pedido_id.customer", "ilike", query),
-                ("description", "ilike", query),
-            ]
+            terms = [term.strip() for term in query.split(",") if term.strip()] or [query]
+            domain = Domain.AND([
+                Domain.OR([
+                    Domain("batch", "ilike", term),
+                    Domain("pedido_id.customer", "ilike", term),
+                    Domain("description", "ilike", term),
+                    Domain("colorname", "ilike", term),
+                    Domain("colorcode", "ilike", term),
+                ])
+                for term in terms
+            ])
         lines = self.env["control.pedido.line"].search(domain, order="id desc", limit=limit)
         return [
             {

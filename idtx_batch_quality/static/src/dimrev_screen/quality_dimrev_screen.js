@@ -116,6 +116,7 @@ const MODE_STEP_KEYS = {
 };
 
 const SAMPLE_TYPE_OPTIONS = [
+    { value: "", label: "Seleccione..." },
     { value: "acabado", label: "Acabado" },
     { value: "sanforizado_compactado", label: "Sanforizado y Compactado" },
     { value: "estampado", label: "Estampado" },
@@ -406,7 +407,7 @@ export class QualityDimrevScreen extends Component {
             partidaQuery: "",
             selectedPartidaId: "",
             selectedPartidaData: null,
-            sampleType: "acabado",
+            sampleType: "",
             recentDensityWidth: [],
             showPartidaDropdown: false,
             isSearchingPartida: false,
@@ -708,7 +709,7 @@ export class QualityDimrevScreen extends Component {
             if (!draft || typeof draft !== "object") return;
             this.state.partidaQuery = draft.partidaQuery || "";
             this.state.selectedPartidaId = draft.selectedPartidaId || "";
-            this.state.sampleType = draft.sampleType || "acabado";
+            this.state.sampleType = typeof draft.sampleType === "string" ? draft.sampleType : "";
             this.state.evalMode = draft.evalMode || "";
             this.state.needsModeSelection = Boolean(draft.needsModeSelection);
             this.state.values = { ...getInitialValues(), ...(draft.values || {}) };
@@ -754,6 +755,7 @@ export class QualityDimrevScreen extends Component {
             if (value !== batch) {
                 this.state.selectedPartidaId = "";
                 this.state.selectedPartidaData = null;
+                this.state.sampleType = "";
             }
         }
         this.state.showPartidaDropdown = Boolean(value) && !this.state.selectedPartidaId;
@@ -778,8 +780,12 @@ export class QualityDimrevScreen extends Component {
     }
 
     selectPartida(partidaId) {
+        const previousId = this.state.selectedPartidaId;
         this.state.selectedPartidaId = String(partidaId);
         this._syncSelectedPartidaData();
+        if (String(previousId || "") !== String(partidaId || "")) {
+            this.state.sampleType = "";
+        }
         this.state.showPartidaDropdown = false;
         this.state.inEvaluation = false;
         this._saveDraft();
@@ -806,7 +812,7 @@ export class QualityDimrevScreen extends Component {
         this.state.selectedPartidaId = "";
         this.state.selectedPartidaData = null;
         this.state.partidaQuery = "";
-        this.state.sampleType = "acabado";
+        this.state.sampleType = "";
         this.state.values = getInitialValues();
         this.state.evalId = 0;
         this.state.inEvaluation = false;
