@@ -6,12 +6,12 @@
 
         <!-- 1. Quitar bloque QR cuando NO se facture -->
         <xpath expr="//div[hasclass('gap-2','d-flex','flex-row','pt-3') and contains(@style,'font-size: 75%') and .//img[@id='posqrcode']]" position="attributes">
-            <attribute name="t-if">order.to_invoice</attribute>
+            <attribute name="t-att-class">{'d-none': !order.to_invoice}</attribute>
         </xpath>
 
         <!-- 2. Quitar bloque de dirección / contacto de empresa cuando NO se facture -->
         <xpath expr="//div[hasclass('d-flex','gap-2','pt-3') and .//div[hasclass('pos-config-name')]]" position="attributes">
-            <attribute name="t-if">order.to_invoice</attribute>
+            <attribute name="t-att-class">{'d-none': !order.to_invoice}</attribute>
         </xpath>
 
     </t>
