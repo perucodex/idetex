@@ -7,6 +7,26 @@
             <attribute name="detailed">props.detailed</attribute>
         </xpath>
 
+        <!-- [FORCE SIMPLIFICATION] 1. Quitar bloque QR y datos de factura completamente -->
+        <xpath expr="//div[hasclass('gap-2','d-flex','flex-row','pt-3') and .//img[@id='posqrcode']]" position="replace">
+            <div class="d-none" />
+        </xpath>
+
+        <!-- [FORCE SIMPLIFICATION] 2. Quitar el pie de página "Con la tecnología de Odoo" -->
+        <xpath expr="//div[hasclass('pos-receipt-order-data')]//div[hasclass('text-center') and contains(@style, '75%')]" position="replace">
+            <div class="d-none" />
+        </xpath>
+
+        <!-- [FORCE SIMPLIFICATION] 3. Quitar el bloque "Atendido por" (Cashier) -->
+        <xpath expr="//div[hasclass('cashier')]" position="replace">
+            <div class="d-none" />
+        </xpath>
+
+        <!-- [FORCE SIMPLIFICATION] 4. Cambiar el texto "Ticket" por "PROFORMA" -->
+        <xpath expr="//*[@t-esc='props.data.name']" position="replace">
+            <div t-if="props.data.name" t-esc="props.data.name.replace('Ticket', 'PROFORMA')" />
+        </xpath>
+
         <!-- Renderizado de GRUPOS en el Recibo -->
         <xpath expr="//Orderline" position="replace">
             <t t-if="line.isGroup">
@@ -32,7 +52,6 @@
             </t>
             <t t-else="">
                 <!-- Logica Original de Linea (para modo detallado o items sin grupo) -->
-                <!-- Copiamos atributos y contenido interno del original -->
                 <Orderline line="line" showTaxGroup="showTaxGroupLabels" mode="'receipt'" basic_receipt="props.basic_receipt">
                     <li t-if="line.customerNote" class="customer-note w-100 p-2 my-1 rounded text-break">
                         <i class="fa fa-sticky-note me-1" role="img" aria-label="Customer Note" title="Customer Note"/>
