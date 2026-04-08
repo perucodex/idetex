@@ -19,6 +19,16 @@
             <div class="d-none" />
         </xpath>
 
+        <!-- 4. Quitar el bloque "Atendido por" (Cashier) -->
+        <xpath expr="//div[hasclass('cashier')]" position="replace">
+            <div class="d-none" />
+        </xpath>
+
+        <!-- 5. Cambiar el texto "Ticket" por "PROFORMA" en el nombre del recibo -->
+        <xpath expr="//*[@t-esc='props.data.name']" position="replace">
+            <div t-if="props.data.name" t-esc="props.data.name.replace('Ticket', 'PROFORMA')" />
+        </xpath>
+
     </t>
 
 </templates>
