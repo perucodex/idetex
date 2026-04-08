@@ -8,7 +8,7 @@
         
         <!-- 1. Insertamos el precio unitario con etiqueta P.U. -->
         <xpath expr="//div[hasclass('product-price')]" position="before">
-            <div t-if="vals.displayPriceUnit" 
+            <div t-if="vals.displayPriceUnit and !vals.isReceipt" 
                  class="idtx-unit-price text-muted me-2 align-self-center" 
                  style="font-size: 0.85rem;">
                  <!-- Usamos line.currencyDisplayPriceUnit para evitar el sufijo / kg -->

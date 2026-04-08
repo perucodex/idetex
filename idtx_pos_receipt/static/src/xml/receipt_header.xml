@@ -1,18 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
-
-    <t t-inherit="point_of_sale.ReceiptHeader" t-inherit-mode="extension">
-    
-        <!-- 1. Ocultar logo permanentemente -->
-        <xpath expr="//img[@class='pos-receipt-logo']" position="replace">
-            <div class="d-none" />
-        </xpath>
-        
-        <!-- 2. Quitar los datos de la empresa en la cabecera del ticket permanentemente (Simplificación solicitada) -->
-        <xpath expr="//div[hasclass('d-flex','flex-column','align-items-center')]" position="replace">
-            <div class="d-none" />
-        </xpath>
-
-    </t>
-
+    <!-- Migrated to idtx_pos_sale_idetex to avoid conflicts and crashes -->
 </templates>

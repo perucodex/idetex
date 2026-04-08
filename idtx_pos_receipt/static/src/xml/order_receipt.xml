@@ -1,34 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
-
-    <!-- Heredamos el OrderReceipt -->
-    <t t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
-
-        <!-- 1. Quitar bloque QR y datos de factura completamente -->
-        <xpath expr="//div[hasclass('gap-2','d-flex','flex-row','pt-3') and contains(@style,'font-size: 75%') and .//img[@id='posqrcode']]" position="replace">
-            <div class="d-none" />
-        </xpath>
-
-        <!-- 2. Quitar bloque de dirección / contacto de empresa al final -->
-        <xpath expr="//div[hasclass('d-flex','gap-2','pt-3') and .//div[hasclass('pos-config-name')]]" position="replace">
-            <div class="d-none" />
-        </xpath>
-
-        <!-- 3. Quitar el pie de página "Con la tecnología de Odoo" -->
-        <xpath expr="//div[hasclass('pos-receipt-order-data')]//div[hasclass('text-center') and contains(@style, '75%')]" position="replace">
-            <div class="d-none" />
-        </xpath>
-
-        <!-- 4. Quitar el bloque "Atendido por" (Cashier) -->
-        <xpath expr="//div[hasclass('cashier')]" position="replace">
-            <div class="d-none" />
-        </xpath>
-
-        <!-- 5. Cambiar el texto "Ticket" por "PROFORMA" en el nombre del recibo -->
-        <xpath expr="//*[@t-esc='props.data.name']" position="replace">
-            <div t-if="props.data.name" t-esc="props.data.name.replace('Ticket', 'PROFORMA')" />
-        </xpath>
-
-    </t>
-
+    <!-- Migrated to idtx_pos_sale_idetex to avoid conflicts and crashes -->
 </templates>
