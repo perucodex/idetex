@@ -16,7 +16,7 @@
                             <field name="name" readonly="1"/>
                         </h1>
                     </div>
-                    <group string="Stability &amp; Twisting" col="2">
+                    <group string="Stability &amp; Twisting" col="2" readonly="state != 'draft'">
                         <group>
                             <div class="o_td_label">
                                 <label for="width_shrinkage_from"/>
