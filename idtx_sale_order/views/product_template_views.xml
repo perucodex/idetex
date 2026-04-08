@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_product_template_search_inherit_idtx_sale_order" model="ir.ui.view">
+        <field name="name">product.template.search.inherit.idtx.sale.order</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search/group/filter[@name='group_by_categ_id']" position="after">
+                <filter string="Family" name="group_by_analysis_family" context="{'group_by': 'analysis_product_family_id'}"/>
+                <filter string="Title" name="group_by_product_title" context="{'group_by': 'product_title_id'}"/>
+                <filter string="Density" name="group_by_density" context="{'group_by': 'density'}"/>
+                <filter string="Standard Width" name="group_by_standard_width" context="{'group_by': 'standard_width'}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
