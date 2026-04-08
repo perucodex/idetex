@@ -4,14 +4,19 @@
     <!-- Heredamos el OrderReceipt -->
     <t t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
 
-        <!-- 1. Quitar bloque QR cuando NO se facture -->
-        <xpath expr="//div[hasclass('gap-2','d-flex','flex-row','pt-3') and contains(@style,'font-size: 75%') and .//img[@id='posqrcode']]" position="attributes">
-            <attribute name="t-att-class">{'d-none': !order.to_invoice}</attribute>
+        <!-- 1. Quitar bloque QR y datos de factura completamente -->
+        <xpath expr="//div[hasclass('gap-2','d-flex','flex-row','pt-3') and contains(@style,'font-size: 75%') and .//img[@id='posqrcode']]" position="replace">
+            <div class="d-none" />
         </xpath>
 
-        <!-- 2. Quitar bloque de dirección / contacto de empresa cuando NO se facture -->
-        <xpath expr="//div[hasclass('d-flex','gap-2','pt-3') and .//div[hasclass('pos-config-name')]]" position="attributes">
-            <attribute name="t-att-class">{'d-none': !order.to_invoice}</attribute>
+        <!-- 2. Quitar bloque de dirección / contacto de empresa al final -->
+        <xpath expr="//div[hasclass('d-flex','gap-2','pt-3') and .//div[hasclass('pos-config-name')]]" position="replace">
+            <div class="d-none" />
+        </xpath>
+
+        <!-- 3. Quitar el pie de página "Con la tecnología de Odoo" -->
+        <xpath expr="//div[hasclass('pos-receipt-order-data')]//div[hasclass('text-center') and contains(@style, '75%')]" position="replace">
+            <div class="d-none" />
         </xpath>
 
     </t>
