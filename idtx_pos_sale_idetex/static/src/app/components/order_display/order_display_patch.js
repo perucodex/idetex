@@ -83,7 +83,8 @@ patch(OrderDisplay.prototype, {
         // LÓGICA CONDICIONAL:
         // Solo agrupamos si se solicitó explícitamente vía prop 'groupLines' (inyectado desde OrderSummary).
         // En TicketScreen o recibos completos, devolvemos plano para evitar crashes del componente Orderline nativo.
-        if (!this.props.groupLines) {
+        const shouldGroup = this.props.groupLines || (this.props.detailed === false);
+        if (!shouldGroup) {
             return flatLines;
         }
 
