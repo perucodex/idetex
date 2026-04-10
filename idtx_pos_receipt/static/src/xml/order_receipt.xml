@@ -1,4 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
-    <!-- Migrated to idtx_pos_sale_idetex to avoid conflicts and crashes -->
+
+    <!-- Heredamos el OrderReceipt -->
+    <t t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+
+        <!-- 1. Quitar bloque QR cuando NO se facture -->
+        <xpath expr="//div[hasclass('gap-2','d-flex','flex-row','pt-3') and contains(@style,'font-size: 75%') and .//img[@id='posqrcode']]" position="attributes">
+            <attribute name="t-att-class">{'d-none': !order.to_invoice}</attribute>
+        </xpath>
+
+        <!-- 2. Quitar bloque de dirección / contacto de empresa cuando NO se facture -->
+        <xpath expr="//div[hasclass('d-flex','gap-2','pt-3') and .//div[hasclass('pos-config-name')]]" position="attributes">
+            <attribute name="t-att-class">{'d-none': !order.to_invoice}</attribute>
+        </xpath>
+
+    </t>
+
 </templates>
