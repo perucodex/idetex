@@ -7,9 +7,9 @@
             <attribute name="detailed">props.detailed</attribute>
         </xpath>
 
-        <!-- [FIX Odoo 19] 1. Quitar bloque QR y datos de factura completamente -->
-        <xpath expr="//div[hasclass('gap-2','d-flex','flex-row','pt-3') and .//img[@id='posqrcode']]" position="replace">
-            <div class="d-none" />
+        <!-- [FIX Odoo 19] 1. Ocultar bloque QR y datos de factura sin eliminar el nodo ancla -->
+        <xpath expr="//div[@t-if='order.company.point_of_sale_use_ticket_qr_code and order.finalized']" position="attributes">
+            <attribute name="style">font-size: 75%; display: none;</attribute>
         </xpath>
 
         <!-- [FIX Odoo 19] 2. Quitar el pie de página "Powered by Odoo" - Ajustado XPath -->
