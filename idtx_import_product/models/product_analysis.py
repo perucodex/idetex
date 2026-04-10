@@ -297,6 +297,8 @@ class ProductAnalysis(models.Model):
                 code = row.cdgart.strip()
                 product_analysis = self.search([('product_code','=', code[1:])])
                 partner = self.env['res.partner'].search([('vat','=', row.ruc.strip()),('is_company','=', True)])
+                if len(partner) > 1:
+                    partner = partner[0]
                 if not partner:
                     if len(row.ruc.strip()) == 11 and validar_ruc_peru(row.ruc.strip()):
                         partner = self.env['res.partner'].create({
