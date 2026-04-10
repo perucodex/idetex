@@ -1,24 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
-    <t t-name="idtx_pos_sale_idetex.ReceiptHeader" t-inherit="point_of_sale.ReceiptHeader" t-inherit-mode="extension">
-        
-        <!-- [FORCE SIMPLIFICATION Odoo 19] 1. Ocultar logo permanentemente -->
-        <xpath expr="//img[hasclass('pos-receipt-logo')]" position="replace">
-            <div class="d-none" />
-        </xpath>
-        
-        <!-- [FORCE SIMPLIFICATION Odoo 19] 2. Quitar el bloque "Atendido por" (Cashier) y cabecera extra -->
-        <xpath expr="//div[hasclass('pos-receipt-contact')]" position="replace">
-            <div class="d-none" />
-        </xpath>
 
-        <!-- [FORCE SIMPLIFICATION Odoo 19] 3. Cambiar el texto "Ticket" por "PROFORMA" -->
-        <xpath expr="//span[hasclass('ticket-name-prefix')]" position="replace">
-             <span class="ticket-name-prefix">
-                <t t-if="order.config._IS_VAT"> VAT </t>
-                PROFORMA
-            </span>
-        </xpath>
-
-    </t>
 </templates>
