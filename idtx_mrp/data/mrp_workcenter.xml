@@ -19,7 +19,7 @@
             <field name="operation_type">finishing</field>
         </record>
         <record id="mrp_wc_5" model="mrp.workcenter">
-            <field name="name">CALIDAD</field>
+            <field name="name">CONTROL DE CALIDAD</field>
             <field name="operation_type">quality</field>
         </record>
     </data>
