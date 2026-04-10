@@ -1,3 +1,137 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
+    <t t-name="idtx_pos_sale_idetex.OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+        
+        <!-- Pasar prop 'detailed' a OrderDisplay -->
+        <xpath expr="//OrderDisplay" position="attributes">
+            <attribute name="detailed">props.detailed</attribute>
+        </xpath>
+
+        <!-- [FIX Odoo 19] 1. Quitar bloque QR y datos de factura completamente -->
+        <xpath expr="//div[hasclass('gap-2','d-flex','flex-row','pt-3') and .//img[@id='posqrcode']]" position="replace">
+            <div class="d-none" />
+        </xpath>
+
+        <!-- [FIX Odoo 19] 2. Quitar el pie de página "Powered by Odoo" - Ajustado XPath -->
+        <xpath expr="//div[hasclass('pos-receipt-order-data','text-center','pt-3')]" position="replace">
+            <div class="d-none" />
+        </xpath>
+
+        <!-- [FIX Odoo 19] 3. Quitar bloque de dirección / contacto de empresa al final -->
+        <xpath expr="//div[div[hasclass('w-50')]/div[hasclass('pos-config-name')]]" position="replace">
+            <div class="d-none" />
+        </xpath>
+
+        <!-- Renderizado de GRUPOS en el Recibo -->
+        <xpath expr="//Orderline" position="replace">
+            <t t-if="line.isGroup">
+                <!-- CABECERA DEL GRUPO (Estilo Recibo Compacto) -->
+                <div class="group-line border-bottom pb-1 mb-1 mt-1" style="font-size: 0.75rem; line-height: 1.1;">
+                    <div class="d-flex justify-content-between fw-bold align-items-start">
+                         <div class="d-flex flex-grow-1 text-break pe-2">
+                             <span t-esc="line.getQuantityStr()" class="font-monospace pe-2 text-nowrap"/>
+                             <span t-esc="line.children[0].product_id.display_name"/>
+                         </div>
+                         <div class="text-end font-monospace ms-2 text-nowrap">
+                             <t t-esc="formatCurrency(line.displayPrice)"/>
+                         </div>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted">
+                        <!-- Mostramos cantidad de rollos y color -->
+                         <span>
+                            <t t-esc="line.children.length"/> rollos
+                            <t t-if="line.children[0].color_name"> - <t t-esc="line.children[0].color_name"/></t>
+                         </span>
+                         <span>P.U. <t t-esc="formatCurrency(line.displayPriceUnit)"/></span>
+                    </div>
+                </div>
+            </t>
+            <t t-else="">
+                <!-- Logica Original de Linea (para modo detallado o items sin grupo) -->
+                <div style="font-size: 0.75rem; line-height: 1.1;">
+                    <Orderline line="line" showTaxGroup="showTaxGroupLabels" mode="'receipt'" basic_receipt="props.basic_receipt">
+                        <li t-if="line.customerNote" class="customer-note w-100 p-1 my-1 rounded text-break">
+                            <i class="fa fa-sticky-note me-1" role="img" aria-label="Customer Note" title="Customer Note"/>
+                            <t t-esc="line.customerNote" />
+                        </li>
+                    </Orderline>
+                </div>
+            </t>
+        </xpath>
+
+        <!-- Reducir tamaño de letra del bloque de impuestos (Subtotal e IGV) -->
+        <xpath expr="//div[hasclass('pos-receipt-taxes')]" position="attributes">
+            <attribute name="style">font-size: 0.75rem; line-height: 1.1;</attribute>
+        </xpath>
+
+        <!-- Reducir tamaño de letra del Total -->
+        <xpath expr="//div[hasclass('receipt-total')]" position="attributes">
+            <attribute name="style">font-size: 0.85rem;</attribute>
+        </xpath>
+
+        <!-- Eliminar línea de pago (Efectivo) -->
+        <xpath expr="//div[hasclass('paymentlines')]" position="replace">
+            <div class="d-none" />
+        </xpath>
+    </t>
+
+    <!-- Optimizar el layout de Orderline en los tickets para ahorrar espacio en la vista detallada -->
+    <t t-name="idtx_pos_sale_idetex.Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
+        
+        <!-- Ocultamos la info-list original solo en recibos para evitar los conflictos de diseño y saltos de línea y reconstruimos con layout perfecto a medida -->
+        <xpath expr="//ul[hasclass('info-list')]" position="attributes">
+            <attribute name="class" remove="flex-column" separator=" " />
+            <attribute name="t-attf-class">{{ vals.isReceipt ? 'd-none' : 'flex-column' }}</attribute>
+        </xpath>
+
+        <!-- Bloque inyectado para reemplazar lógicamente a info-list en modo recibo -->
+        <xpath expr="//ul[hasclass('info-list')]" position="after">
+            <div t-if="vals.isReceipt" class="receipt-info-list d-flex flex-wrap justify-content-between pt-1 w-100 text-muted" style="line-height: 1;">
+                <!-- Zona Izquierda: Lotes limpios -->
+                <div class="lot-block flex-grow-1 text-break">
+                    <t t-if="vals.lotLines and vals.lotLines.length > 0">
+                        <t t-foreach="vals.lotLines" t-as="lot" t-key="lot_index">
+                            <!-- Limpiar string de Lote -->
+                            <t t-set="clean_lot" t-value="(typeof lot === 'string') ? lot.replace('Lot number', '').replace('Lot Number', '').replace(':', '').trim() : lot" />
+                            <!-- Remover color duplicado si existiera dentro de la misma cadena de lote -->
+                            <t t-if="line.lotColorName and typeof clean_lot === 'string'">
+                                <t t-set="clean_lot" t-value="clean_lot.replace(line.lotColorName, '').trim()" />
+                            </t>
+                            <span class="lot-number">
+                                <t t-esc="clean_lot" />
+                            </span>
+                            <t t-if="!lot_last">, </t>
+                        </t>
+                    </t>
+                </div>
+                <!-- Zona Derecha: Precio unitario alineado y al mismo nivel horizontal -->
+                <div t-if="vals.displayPriceUnit" class="price-unit-block ms-auto ps-2 text-nowrap fw-bold text-end">
+                    <t t-esc="vals.displayPriceUnit" />
+                </div>
+                <!-- Opcional Desc descuento si lo hay -->
+                <div t-if="vals.discount" class="w-100 text-end small fst-italic">
+                    Desc: <t t-esc="vals.discount" />%
+                </div>
+            </div>
+        </xpath>
+
+        <!-- Juntar el artículo y su color para optimizar espacio (y remover saltos de línea) -->
+        <xpath expr="//span[hasclass('text-wrap')]" position="replace">
+            <span class="text-wrap d-inline">
+                <t t-esc="vals.name" />
+                <t t-if="vals.isReceipt and line.lotColorName">
+                    <span class="fst-italic ms-1 fw-bold">- <t t-esc="line.lotColorName"/></span>
+                </t>
+                <t t-elif="vals.attributeString">
+                    <t t-if="vals.isReceipt"><span t-out="vals.attributeString" class="fst-italic ms-1" /></t>
+                    <t t-else=""><br/><small t-out="vals.attributeString" class="attribute-line fst-italic" /></t>
+                </t>
+            </span>
+        </xpath>
+        
+        <!-- Minimizar altura de cada linea -->
+        <xpath expr="//li[hasclass('orderline')]" position="attributes">
+            <attribute name="t-attf-style">{{ vals.isReceipt ? 'margin-bottom: 2px;' : '' }}</attribute>
+        </xpath>
+    </t>
 </templates>
