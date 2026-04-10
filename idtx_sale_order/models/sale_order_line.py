@@ -96,7 +96,7 @@ class SaleOrderLine(models.Model):
         for record in self:
             operations = self.env['mrp.routing.workcenter']
             if record.bom_id:
-                operations = record.bom_id.operation_ids.filtered(lambda o: o.operation_id.unit_price > 0 or o.operation_id.type_prices == 'col' and sum(o.operation_id.product_color_price_ids.mapped('unit_price')) > 0 or o.operation_id.operation_type == 'weaving').ids
+                operations = record.bom_id.operation_ids.filtered(lambda o: o.operation_id.unit_price > 0 or o.operation_id.type_prices == 'col' and sum(o.operation_id.product_color_price_ids.mapped('unit_price')) > 0 or o.operation_id.type_prices == 'col' and o.per_title and sum(o.operation_id.product_color_price_ids.color_title_price_ids.mapped('unit_price')) > 0 or o.operation_id.operation_type == 'weaving').ids
             record.available_operation_ids = operations
     
     @api.depends('bom_id')
@@ -108,7 +108,7 @@ class SaleOrderLine(models.Model):
     def _onchange_bom_id(self):
         for rec in self:
             rec.operation_ids = [Command.clear()]
-            rec.operation_ids = rec.bom_id.operation_ids.filtered(lambda o: o.operation_id.unit_price > 0 or o.operation_id.type_prices == 'col' and sum(o.operation_id.product_color_price_ids.mapped('unit_price')) > 0 or o.operation_id.operation_type == 'weaving').sorted(key=lambda r: r.sequence)
+            rec.operation_ids = rec.bom_id.operation_ids.filtered(lambda o: o.operation_id.unit_price > 0 or o.operation_id.type_prices == 'col' and sum(o.operation_id.product_color_price_ids.mapped('unit_price')) > 0 or o.operation_id.type_prices == 'col' and o.per_title and sum(o.operation_id.product_color_price_ids.color_title_price_ids.mapped('unit_price')) > 0 or o.operation_id.operation_type == 'weaving').sorted(key=lambda r: r.sequence)
             rec.weaving_loss = rec.bom_id.technical_sheet_id.scrap or 0.01
             rec.production_loss = rec.bom_id.technical_sheet_id.prod_scrap or 0.09
             rec.production_id.bom_id = rec.bom_id
