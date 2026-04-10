@@ -364,7 +364,7 @@ class ProductAnalysis(models.Model):
                     # Actualizamos el detalle de las rutas desde la base
                     product_analysis._onchange_mrp_base_process_id()
                 if not product_analysis.product_id:
-                    product_analysis.action_product()
+                    product_analysis.with_context(by_pass_error=True).action_product()
                 ligament = self.env['ligament.type'].search([('name','=',row.ligamento.strip())])
                 codhil = row.codigo.strip() if row.codigo.strip() != '0' or row.codigo.strip() != '' else ''
                 if last_weaving_data_id and last_weaving_data_id.sitpro_sheet != row.ficha.strip():

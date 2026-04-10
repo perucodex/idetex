@@ -222,12 +222,23 @@ class SaleOrder(models.Model):
                 order.weaving_warning += _(('This sale order has no price list or the option is not activated.')) + '\n'
             else:
                 for line in order.order_line.filtered(lambda l: l.product_template_id.is_weaving):
-                    if line.product_template_id.bom_ids:    
-                        bom_id = line.product_template_id.bom_ids[0]
-                        for bom_line in bom_id.bom_line_ids:
+                    if line.product_template_id.bom_ids:
+                        if line.bom_id:
+                            bom_id = line.bom_id
+                            bom_lines = bom_id.bom_line_ids
+                        else:
+                            bom_id = line.analysis_id.weaving_data_ids[0] if line.analysis_id.weaving_data_ids else self.env['analysis.weaving.data']
+                            bom_lines = bom_id.mapped('fiber_ids')
+                        for bom_line in bom_lines:
+                            if line.bom_id:
+                                product = bom_line.product_id
+                                quantity = bom_line.product_qty or 0
+                            else:
+                                product = bom_line.product_template_id
+                                quantity = bom_line.percentage or 0
                             pricelist_item_id = line.order_id.pricelist_id._get_product_rule(
-                                bom_line.product_id.product_tmpl_id,
-                                quantity=bom_line.product_qty or 1.0,
+                                product,
+                                quantity=quantity or 1.0,
                                 uom=bom_line.product_uom_id,
                                 date=line._get_order_date(),
                             )

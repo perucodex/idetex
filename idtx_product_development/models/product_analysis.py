@@ -153,9 +153,9 @@ class ProductAnalysis(models.Model):
         return super().create(vals_list)
         
     def action_product(self):
-        if not self.weaving_data_ids:
+        if not self.weaving_data_ids and not self.env.context.get('by_pass_error'):
             raise UserError(_('Please add at least one weaving data to generate the product!'))
-        if not self.weaving_data_ids.mapped('fiber_ids'):
+        if not self.weaving_data_ids.mapped('fiber_ids') and not self.env.context.get('by_pass_error'):
             raise UserError(_('Please add at least one fiber to the weaving data to generate the product!'))
         if not self.routing_ids:
             raise UserError(_('Please select a base process and the route to generate the product!'))
