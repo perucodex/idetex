@@ -250,8 +250,8 @@ class SaleOrder(models.Model):
                             line.color_name = line.lab_dev_line_id.color_name
                     if line.diff_days:                        
                         order.weaving_warning += _(('Product %s has an old price. Quotation is %s days old') %( line.product_id.product_tmpl_id.display_name, line.diff_days)) + '\n'
-                    if not line.product_template_id.bom_ids:
-                        order.weaving_warning += _(('Product %s does not have any bom. Please check with product development.')  % line.product_id.product_tmpl_id.display_name) + '\n'
+                    # if not line.product_template_id.bom_ids:
+                    #     order.weaving_warning += _(('Product %s does not have any bom. Please check with product development.')  % line.product_id.product_tmpl_id.display_name) + '\n'
                     if not line.product_id.analysis_id.weaving_price:
                         order.weaving_warning += _(('Product %s has no weaving price. Please check with product development') % line.product_id.product_tmpl_id.display_name) + '\n'
             # Si se limpian los warnings, calculamos los precios nuevamente

@@ -81,3 +81,43 @@
 .o_ps_prices_range{ width: 70%; }
 .o_ps_prices_price{ width: 30%; }
 .o_ps_prices_table tr:nth-child(even) td{ background: #fafafa; }
+
+/* Watermark for quotations with technical warnings */
+.idtx_quote_warning_watermark {
+  position: fixed !important;
+  top: 0 !important;
+  left: 20mm !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 210mm !important;
+  height: 297mm !important;
+  min-height: 297mm !important;
+  z-index: 9999 !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+.idtx_quote_warning_watermark_text {
+  position: absolute !important;
+  left: 50mm !important;
+  bottom: 50mm !important;
+  display: inline-block !important;
+  width: 276mm !important;
+  max-width: 276mm !important;
+  white-space: normal !important;
+  word-break: normal !important;
+  text-align: center !important;
+  font-size: 72px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.05 !important;
+  text-transform: uppercase !important;
+  color: rgba(189, 129, 129, 0.32) !important;
+  /* text-shadow: 0 0 1px rgba(165, 0, 0, 0.24) !important; */
+  padding: 2mm 3mm !important;
+  transform-origin: left bottom !important;
+  -webkit-transform-origin: left bottom !important;
+  transform: rotate(-53deg) !important;
+  -webkit-transform: rotate(-53deg) !important;
+}

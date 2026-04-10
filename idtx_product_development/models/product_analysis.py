@@ -65,6 +65,9 @@ class ProductAnalysis(models.Model):
     production_state = fields.Char(string='Production State')
     # Tolerancia de tela
     density_stability_twisting_id = fields.Many2one('density.stability.twisting', string='Density Stability Twisting Data', copy=False)
+    # Rendimiento adicional a la ficha tecnica
+    # TODO en realidad deberia estar solamente en este modelo
+    yield_meter = fields.Float('Yield', compute='_compute_yield_meter')
 
     _check_standard_width = models.Constraint(
         'CHECK(standard_width > 0)',
@@ -83,6 +86,11 @@ class ProductAnalysis(models.Model):
         'unique(product_code)',
         'Product code must be unique!',
     )
+
+    @api.depends('density','standard_width')
+    def _compute_yield_meter(self):
+        for rec in self:
+            rec.yield_meter = 1000 / (rec.density * (rec.standard_width / 100)) if (rec.density and rec.standard_width) else 1
 
     @api.onchange('mrp_base_process_id')
     def _onchange_mrp_base_process_id(self):
@@ -145,6 +153,10 @@ class ProductAnalysis(models.Model):
         return super().create(vals_list)
         
     def action_product(self):
+        if not self.weaving_data_ids:
+            raise UserError(_('Please add at least one weaving data to generate the product!'))
+        if not self.weaving_data_ids.mapped('fiber_ids'):
+            raise UserError(_('Please add at least one fiber to the weaving data to generate the product!'))
         if not self.routing_ids:
             raise UserError(_('Please select a base process and the route to generate the product!'))
         # Modificamos la línea porque los rectilíneos tambien se venden por kilo

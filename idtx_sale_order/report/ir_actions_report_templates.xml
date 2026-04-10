@@ -2,6 +2,16 @@
 <odoo>
 
     <template id="report_saleorder_add_color" inherit_id="sale.report_saleorder_document">
+        <xpath expr="//div[hasclass('page')]" position="inside">
+            <t t-if="doc.weaving_warning">
+                 <div class="idtx_quote_warning_watermark">
+                    <span class="idtx_quote_warning_watermark_text">
+                        COTIZACION REFERENCIAL SUJETA A VALIDACION TECNICA Y COMERCIAL
+                    </span>
+                </div>
+            </t>
+        </xpath>
+
         <!-- Inserta color -->
         <xpath expr="//th[@name='th_description']" position="after">
             <th name="th_color" class="text-start">Color</th>
@@ -299,6 +309,63 @@
                         </tbody>
                     </t>
                 </table>
+            </t>
+        </xpath>
+
+        <!-- Tabla adicional para cotizaciones: resumen tecnico por analysis_id sin duplicados -->
+        <xpath expr="//div[hasclass('oe_structure')][last()]" position="after">
+            <t t-if="doc.is_quote">
+                <t t-set="quote_weaving_lines" t-value="doc.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.analysis_id)"/>
+                <t t-set="quote_analyses" t-value="quote_weaving_lines.mapped('analysis_id')"/>
+                <t t-if="quote_analyses">
+                    <!-- <h3 class="o_ps_title">Resumen Tecnico de Productos Tejido (Cotizacion)</h3> -->
+                    <table class="table table-sm o_main_table">
+                        <thead>
+                            <tr>
+                                <th class="text-start">Descripcion</th>
+                                <th class="text-end">Ancho</th>
+                                <th class="text-end">Densidad</th>
+                                <th class="text-end">Rendimiento</th>
+                                <th class="text-end">Encogimiento Max.</th>
+                                <th class="text-end">Revirado Max.</th>
+                                <th class="text-start">Composicion</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="quote_analyses" t-as="analysis">
+                                <t t-set="line" t-value="quote_weaving_lines.filtered(lambda l: l.analysis_id == analysis)[:1]"/>
+                                <t t-set="dst" t-value="analysis.density_stability_twisting_id"/>
+                                <t t-set="shrink_max" t-value="max(abs(dst.width_shrinkage_from or 0.0), abs(dst.width_shrinkage_to or 0.0), abs(dst.length_shrinkage_from or 0.0), abs(dst.length_shrinkage_to or 0.0)) if dst else 0.0"/>
+                                <t t-set="target_partner" t-value="line.bom_id.technical_sheet_id.partner_id or doc.partner_id"/>
+                                <t t-set="weaving_data" t-value="analysis.weaving_data_ids.filtered(lambda w: w.partner_id == target_partner)[:1] or analysis.weaving_data_ids[:1]"/>
+                                <t t-set="fabric_composition" t-value="'\n'.join(['{}% {}'.format(round((f.percentage or 0.0) * 100), f.product_template_id.name) for f in weaving_data.fiber_ids if f.product_template_id]).strip()"/>
+                                <tr>
+                                    <td class="text-start">
+                                        <span t-esc="analysis.product_description or line.product_template_id.name"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="'{:.2f}'.format(analysis.standard_width or 0.0)"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="'{:.2f}'.format(analysis.density or 0.0)"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="'{:.2f}'.format(analysis.yield_meter or 0.0)"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="'{:.2f}'.format(abs(shrink_max * 100 or 0.0) if shrink_max else 0.0) + '%'"/>
+                                    </td>
+                                    <td class="text-end">
+                                        <span t-esc="'{:.2f}'.format(abs(dst.twist * 100 or 0.0) if dst else 0.0) + '%'"/>
+                                    </td>
+                                    <td class="text-start">
+                                        <span t-esc="fabric_composition" style="white-space: pre-line;"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </t>
             </t>
         </xpath>
     </template>

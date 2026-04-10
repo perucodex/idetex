@@ -85,7 +85,7 @@
                         <field name="notes"/>
                         <notebook>
                             <page name="weaving_data_page" string="Weaving Data">
-                                <field name="weaving_data_ids" readonly="state not in ('prod','impo')"/>
+                                <field name="weaving_data_ids"/>
                             </page>
                             <page name="routing_page" string="Routing" readonly="state != 'test'">
                                 <group string="Routing Template">

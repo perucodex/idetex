@@ -51,7 +51,10 @@ class SaleOrderLine(models.Model):
     @api.depends('operation_ids')
     def _compute_has_weaving_operation(self):
         for line in self:
-            line.has_weaving_operation = any(op.operation_id.operation_type == "weaving" for op in line.operation_ids)
+            if not line.bom_id:
+                line.has_weaving_operation = any(op.operation_type == "weaving" for op in line.product_template_id.analysis_id.routing_ids.mapped('operation_id')) if line.product_template_id else False
+            else:
+                line.has_weaving_operation = any(op.operation_id.operation_type == "weaving" for op in line.operation_ids)
     
     @api.onchange('printing_design_id')
     def _onchange_printing_design_id(self):
@@ -106,8 +109,8 @@ class SaleOrderLine(models.Model):
         for rec in self:
             rec.operation_ids = [Command.clear()]
             rec.operation_ids = rec.bom_id.operation_ids.filtered(lambda o: o.operation_id.unit_price > 0 or o.operation_id.type_prices == 'col' and sum(o.operation_id.product_color_price_ids.mapped('unit_price')) > 0 or o.operation_id.operation_type == 'weaving').sorted(key=lambda r: r.sequence)
-            rec.weaving_loss = rec.bom_id.technical_sheet_id.scrap
-            rec.production_loss = rec.bom_id.technical_sheet_id.prod_scrap
+            rec.weaving_loss = rec.bom_id.technical_sheet_id.scrap or 0.01
+            rec.production_loss = rec.bom_id.technical_sheet_id.prod_scrap or 0.09
             rec.production_id.bom_id = rec.bom_id
 
     def js_compute_price_unit(self):
@@ -207,10 +210,10 @@ class SaleOrderLine(models.Model):
 
                 # Diferenciar si es un producto tejido para calcular su precio
                 # for line in self.filtered(lambda l: l.is_weaving):
-                if line.product_template_id.bom_ids:
+                # if line.product_template_id.bom_ids:
                     # line.bom_id = line.product_template_id.bom_ids[0]
-                    line.price_unit = line.get_weaving_price_unit()
-                    line.technical_price_unit = line.price_unit
+                line.price_unit = line.get_weaving_price_unit()
+                line.technical_price_unit = line.price_unit
         return res
     
     # ---------- MÉTODO CORREGIDO (CLAVES FIJAS + LABEL TRADUCIBLE) ----------
@@ -241,7 +244,7 @@ class SaleOrderLine(models.Model):
             # 3) Calcula insumos y operaciones (tu lógica sin cambios)
             # ------------------------------------------------------------------
             currency = self.order_id.pricelist_id.currency_id
-            bom_id = self.bom_id or self.product_template_id.bom_ids[0]
+            bom_id = self.bom_id or self.env['mrp.bom']
             weaving = self.has_weaving_operation #any(operation.operation_id.operation_type == 'weaving' for operation in self.operation_ids)
             thread_total = 0
 
@@ -250,34 +253,49 @@ class SaleOrderLine(models.Model):
                 if not (weaving and self.order_id.sale_type == 'sale'):
                     return signature
 
-                for bom_line in bom_id.bom_line_ids.filtered(lambda l: l.product_tmpl_id.categ_id in self.env.company.thread_category_ids):
+                # Si es que el producto tiene LdM entonces se obtienen las fibras
+                # de lo contrario pasamos a las fibras del análisis del producto
+                if bom_id:
+                    bom_lines = bom_id.bom_line_ids.filtered(lambda l: l.product_tmpl_id.categ_id in self.env.company.thread_category_ids)
+                else:
+                    bom_lines = self.product_template_id.analysis_id.weaving_data_ids.mapped('fiber_ids')
+                for bom_line in bom_lines:
+                    # Si el producto tiene LdM obtenemos la cantidad de lo contrario
+                    # obtenemos la cantidad de las fibras del análisis del producto
+                    # Aqui solo cambiamos el campo por ser otro modelo
+                    if bom_id:
+                        product = bom_line.product_id
+                        quantity = bom_line.product_qty or 0
+                    else:
+                        product = bom_line.product_template_id
+                        quantity = bom_line.percentage or 0
                     pricelist_item_id = self.order_id.pricelist_id._get_product_rule(
-                        bom_line.product_id,
-                        quantity=bom_line.product_qty or 1.0,
-                        uom=bom_line.product_uom_id,
+                        product,
+                        quantity=quantity or 1.0,
+                        uom=product.uom_id,
                         date=self._get_order_date(),
                     )
                     if pricelist_item_id:
                         bom_line_price = self.env['product.pricelist.item'].browse(pricelist_item_id)._compute_price(
-                            product=bom_line.product_id,
-                            quantity=bom_line.product_qty or 1.0,
-                            uom=bom_line.product_uom_id,
+                            product=product,
+                            quantity=quantity or 1.0,
+                            uom=product.uom_id,
                             date=self._get_order_date(),
                             currency=self.currency_id,
                         )
                     else:
                         bom_line_price = self.env.company.currency_id._convert(
-                            bom_line.product_id.list_price,
+                            product.list_price,
                             currency,
                             self.env.company,
                             fields.Date.context_today(self),
                             round=False
                         )
 
-                    qty = bom_line.product_qty
+                    qty = quantity
                     subtotal = float_round(bom_line_price * qty, 2)
                     signature.append((
-                        bom_line.product_id.id,
+                        product.id,
                         float_round(qty, 4),
                         subtotal,
                     ))
@@ -300,35 +318,50 @@ class SaleOrderLine(models.Model):
 
             if not price_dict:
                 if weaving and self.order_id.sale_type == 'sale':
-                    for bom_line in bom_id.bom_line_ids.filtered(lambda l: l.product_tmpl_id.categ_id in self.env.company.thread_category_ids):
+                    # Si es que el producto tiene LdM entonces se obtienen las fibras
+                    # de lo contrario pasamos a las fibras del análisis del producto
+                    if bom_id:
+                        bom_lines = bom_id.bom_line_ids.filtered(lambda l: l.product_tmpl_id.categ_id in self.env.company.thread_category_ids)
+                    else:
+                        bom_lines = self.product_template_id.analysis_id.weaving_data_ids.mapped('fiber_ids')
+                    for bom_line in bom_lines:
+                        # Si el producto tiene LdM obtenemos la cantidad de lo contrario
+                        # obtenemos la cantidad de las fibras del análisis del producto
+                        # Aqui solo cambiamos el campo por ser otro modelo
+                        if bom_id:
+                            product = bom_line.product_id
+                            quantity = bom_line.product_qty or 0
+                        else:
+                            product = bom_line.product_template_id
+                            quantity = bom_line.percentage or 0
                         pricelist_item_id = self.order_id.pricelist_id._get_product_rule(
-                            bom_line.product_id,
-                            quantity=bom_line.product_qty or 1.0,
-                            uom=bom_line.product_uom_id,
+                            product,
+                            quantity=quantity,
+                            uom=product.uom_id,
                             date=self._get_order_date(),
                         )
                         if pricelist_item_id:
                             bom_line_price = self.env['product.pricelist.item'].browse(pricelist_item_id)._compute_price(
-                                product=bom_line.product_id,
-                                quantity=bom_line.product_qty or 1.0,
-                                uom=bom_line.product_uom_id,
+                                product=product,
+                                quantity=quantity,
+                                uom=product.uom_id,
                                 date=self._get_order_date(),
                                 currency=self.currency_id,
                             )
                         else:
                             bom_line_price = self.env.company.currency_id._convert(
-                                bom_line.product_id.list_price,
+                                product.list_price,
                                 currency,
                                 self.env.company,
                                 fields.Date.context_today(self),
                                 round=False
                             )
-                        # if 'DUPONT' in bom_line.product_id.name.upper():
+                        # if 'DUPONT' in product.name.upper():
                         #     qty = 1
                         # else:
-                        qty = bom_line.product_qty 
+                        qty = quantity
                         price = float_round(bom_line_price * qty, 2)
-                        product_name = bom_line.product_id.name
+                        product_name = product.name
                         price_dict.setdefault(product_name, {'label': product_name, 'price': 0.0})
                         price_dict[product_name]['price'] += float_round(bom_line_price * qty, 2)
 
@@ -337,8 +370,13 @@ class SaleOrderLine(models.Model):
 
                 # elif not price_dict:
                 #     thread_total = float_round(sum([v['price'] for v in price_dict.values() if v.get('is_thread')]), 2) if price_dict else 0
+                
+                if not bom_id:
+                    operations = self.product_template_id.analysis_id.routing_ids.sorted(key=lambda r: r.sequence).filtered(lambda l: l.operation_id.unit_price > 0 or l.operation_id.type_prices == 'col' and sum(l.operation_id.product_color_price_ids.mapped('unit_price')) > 0 or l.operation_id.operation_type == 'weaving')
+                else:
+                    operations = self.operation_ids.sorted(key=lambda r: r.sequence)
 
-                for operation in self.operation_ids.sorted(key=lambda r: r.sequence):
+                for operation in operations:
                     if operation.operation_id.operation_type == 'weaving':
                         price = float_round(self.product_template_id.analysis_id.weaving_price,2)
                     else:
@@ -382,7 +420,12 @@ class SaleOrderLine(models.Model):
                 printing = price_dict.get('PRINTING')
                 if not printing or printing.get('design_id') != self.printing_design_id.id or printing.get('qty') != self.product_uom_qty or printing.get('min_qty') != self.min_qty:
                     price_dict.pop('PRINTING', None)
-                    yield_meter = float_round(self.bom_id.technical_sheet_id.yield_meter if self.bom_id.technical_sheet_id else self.printing_design_id.yield_meter, 2)
+                    # Si es que el producto tiene LdM entonces se calcula el precio con el rendimiento
+                    # de la ficha técnica, sino con el rendimiento del analisis producto
+                    if bom_id:
+                        yield_meter = float_round(self.bom_id.technical_sheet_id.yield_meter if self.bom_id.technical_sheet_id else self.printing_design_id.yield_meter, 2)
+                    else:
+                        yield_meter = float_round(self.self.product_template_id.analysis_id.yield_meter if self.product_template_id.analysis_id else self.printing_design_id.yield_meter, 2)
                     if self.order_id.is_quote:
                         total_qty = round(self.min_qty * yield_meter)
                     else:
@@ -512,6 +555,18 @@ class SaleOrderLine(models.Model):
                 "active_id": self.id,
             },
         }
+
+    def _get_sale_order_line_multiline_description_sale(self):
+        self.ensure_one()
+        if self.product_id and self.product_id.is_weaving and self.company_id.is_company_produce:
+            description = (self.product_id.name or '') + self._get_sale_order_line_multiline_description_variants()
+            if self.linked_line_id and not self.combo_item_id:
+                description += "\n" + _(
+                    "Option for: %s",
+                    self.linked_line_id.product_id.with_context(display_default_code=False).display_name,
+                )
+            return description
+        return super()._get_sale_order_line_multiline_description_sale()
     
 class SaleOrderLineSize(models.Model):
     _name = 'sale.order.line.size'
