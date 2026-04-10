@@ -2,6 +2,7 @@ from odoo import models, fields, Command, api, _
 from odoo.exceptions import UserError
 from odoo.tools import html_escape
 from markupsafe import Markup
+import json
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
@@ -222,36 +223,41 @@ class SaleOrder(models.Model):
                 order.weaving_warning += _(('This sale order has no price list or the option is not activated.')) + '\n'
             else:
                 for line in order.order_line.filtered(lambda l: l.product_template_id.is_weaving):
-                    if line.product_template_id.bom_ids:
+                    # if line.product_template_id.bom_ids:
+                    if line.bom_id:
+                        bom_id = line.bom_id
+                        bom_lines = bom_id.bom_line_ids
+                    else:
+                        bom_id = line.analysis_id.weaving_data_ids[0] if line.analysis_id.weaving_data_ids else self.env['analysis.weaving.data']
+                        bom_lines = bom_id.mapped('fiber_ids')
+                    for bom_line in bom_lines:
                         if line.bom_id:
-                            bom_id = line.bom_id
-                            bom_lines = bom_id.bom_line_ids
+                            product = bom_line.product_id
+                            quantity = bom_line.product_qty or 0
                         else:
-                            bom_id = line.analysis_id.weaving_data_ids[0] if line.analysis_id.weaving_data_ids else self.env['analysis.weaving.data']
-                            bom_lines = bom_id.mapped('fiber_ids')
-                        for bom_line in bom_lines:
-                            if line.bom_id:
-                                product = bom_line.product_id
-                                quantity = bom_line.product_qty or 0
-                            else:
-                                product = bom_line.product_template_id
-                                quantity = bom_line.percentage or 0
-                            pricelist_item_id = line.order_id.pricelist_id._get_product_rule(
-                                product,
-                                quantity=quantity or 1.0,
-                                uom=bom_line.product_uom_id,
-                                date=line._get_order_date(),
-                            )
-                            item = self.env['product.pricelist.item'].browse(pricelist_item_id)
-                            price = item.fixed_price if pricelist_item_id else 0
-                            if not pricelist_item_id and order.partner_id or not price:
-                                order.weaving_warning += _(('Product %s has product %s on its bom and does not have a price in %s price list. The price is obtained from its own sale price.') %( line.product_id.product_tmpl_id.display_name, bom_line.product_id.product_tmpl_id.display_name, order.pricelist_id.name)) + '\n'
-                        for operation in bom_id.operation_ids:
-                            if operation.operation_id.type_prices == 'col' and line.product_color_id.is_lab_color:
-                                operation_color_line = operation.operation_id.product_color_price_ids.search([('product_color_id','=',line.product_color_id.id),('mrwo_id','=', operation.operation_id.id)])
-                                if not operation_color_line:
-                                    order.weaving_warning += (_('The type prices of %s operation is by color. The color %s does not exists in the operation color list, product %s.') %(operation.operation_id.name, line.product_color_id.name, line.product_id.product_tmpl_id.display_name)) + '\n'
-                for line in order.order_line.filtered(lambda l: l.product_template_id.is_weaving):
+                            product = bom_line.product_template_id
+                            quantity = bom_line.percentage or 0
+                        pricelist_item_id = line.order_id.pricelist_id._get_product_rule(
+                            product,
+                            quantity=quantity or 1.0,
+                            uom=product.uom_id,
+                            date=line._get_order_date(),
+                        )
+                        item = self.env['product.pricelist.item'].browse(pricelist_item_id)
+                        price = item.fixed_price if pricelist_item_id else 0
+                        if not pricelist_item_id and order.partner_id or not price:
+                            order.weaving_warning += _(('Product %s has product %s on its bom and does not have a price in %s price list. The price is obtained from its own sale price.') %( line.product_id.product_tmpl_id.display_name, bom_line.product_id.product_tmpl_id.display_name, order.pricelist_id.name)) + '\n'
+                    if not bom_id:
+                        operations = line.product_template_id.analysis_id.routing_ids.sorted(key=lambda r: r.sequence).filtered(lambda l: l.operation_id.unit_price > 0 or l.operation_id.type_prices == 'col' and sum(l.operation_id.product_color_price_ids.mapped('unit_price')) > 0 or l.operation_id.operation_type == 'weaving')
+                    else:
+                        operations = line.operation_ids.sorted(key=lambda r: r.sequence)
+                    for operation in operations:
+                    # for operation in bom_id.operation_ids:
+                        if operation.operation_id.type_prices == 'col' and line.product_color_id.is_lab_color:
+                            operation_color_line = operation.operation_id.product_color_price_ids.search([('product_color_id','=',line.product_color_id.id),('mrwo_id','=', operation.operation_id.id)])
+                            if not operation_color_line:
+                                order.weaving_warning += (_('The type prices of %s operation is by color. The color %s does not exists in the operation color list, product %s.') %(operation.operation_id.name, line.product_color_id.name, line.product_id.product_tmpl_id.display_name)) + '\n'
+                # for line in order.order_line.filtered(lambda l: l.product_template_id.is_weaving):
                     if line.lab_dev_line_id and line.color_name:
                         if line.color_name.upper() != line.lab_dev_line_id.color_name.upper():
                             order.weaving_warning += (_('Product %s color %s does not match lab color name %s.') %(line.product_id.product_tmpl_id.display_name, line.color_name, line.lab_dev_line_id.color_name)) + '\n'
@@ -265,6 +271,27 @@ class SaleOrder(models.Model):
                     #     order.weaving_warning += _(('Product %s does not have any bom. Please check with product development.')  % line.product_id.product_tmpl_id.display_name) + '\n'
                     if not line.product_id.analysis_id.weaving_price:
                         order.weaving_warning += _(('Product %s has no weaving price. Please check with product development') % line.product_id.product_tmpl_id.display_name) + '\n'
+
+                    has_weaving_operation = any(
+                        operation.operation_id and operation.operation_id.operation_type == 'weaving'
+                        for operation in operations
+                    )
+                    if has_weaving_operation and line.order_id.sale_type == 'sale':
+                        try:
+                            price_dict = json.loads(line.price_items or '{}')
+                        except (json.JSONDecodeError, TypeError):
+                            price_dict = {}
+
+                        has_thread_items = any(
+                            isinstance(item, dict) and item.get('is_thread')
+                            for key, item in (price_dict or {}).items()
+                            if not str(key).startswith('__')
+                        )
+                        if not has_thread_items:
+                            order.weaving_warning += _(
+                                'Product %s has weaving operation but no thread items were found in price details.'
+                            ) % (line.product_id.product_tmpl_id.display_name,) + '\n'
+
             # Si se limpian los warnings, calculamos los precios nuevamente
             if has_warning and not order.weaving_warning:
                 for l in order.order_line:
@@ -322,6 +349,8 @@ class SaleOrder(models.Model):
     
     def action_create_sale_order(self):
         self.ensure_one()
+        if any(not line.bom_id for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving)):
+            raise UserError(_('All weaving lines must have a bill of materials to create a sale order.'))
         if self.is_quote and self.weaving_warning:
             raise UserError(_('Please solve all the warnings first.'))
         sale_order = self.copy({
