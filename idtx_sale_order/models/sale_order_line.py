@@ -504,7 +504,7 @@ class SaleOrderLine(models.Model):
     def get_product_from_quote(self, product, color, bom, printing_design_id):
         if product and color:
             quote = self.order_id.quotation_id
-            line = quote.order_line.filtered(lambda l: l.product_id == product and l.product_color_id == color and l.bom_id == bom and l.printing_design_id == printing_design_id)
+            line = quote.order_line.filtered(lambda l: l.product_id == product and l.product_color_id == color)
             if not line:
                 today = fields.Date.context_today(self)
                 line = self._get_last_quotation_price(today)

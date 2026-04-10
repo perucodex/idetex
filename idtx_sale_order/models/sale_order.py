@@ -276,7 +276,7 @@ class SaleOrder(models.Model):
                         operation.operation_id and operation.operation_id.operation_type == 'weaving'
                         for operation in operations
                     )
-                    if has_weaving_operation and line.order_id.sale_type == 'sale':
+                    if has_weaving_operation and line.order_id.sale_type == 'sale' and self.is_quote:
                         try:
                             price_dict = json.loads(line.price_items or '{}')
                         except (json.JSONDecodeError, TypeError):
