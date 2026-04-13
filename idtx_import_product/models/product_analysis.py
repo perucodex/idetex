@@ -355,8 +355,8 @@ class ProductAnalysis(models.Model):
                         'needles': a_int(row.agujas),
                         'diameter': a_int(row.diametro),
                         'feeders': a_int(row.alimenta),
-                        'density': a_int(code[13:16]) if a_int(code[13:16]) else 1,
-                        'standard_width': a_float(code[10:13]) if a_float(code[10:13]) else 1,
+                        'standard_width': a_int(code[13:16]) if a_int(code[13:16]) else 1,
+                        'density': a_float(code[10:13]) if a_float(code[10:13]) else 1,
                         'product_code': code[1:],
                         'is_problem': is_problem,
                         'mrp_base_process_id': base_process_id.id,
@@ -365,6 +365,11 @@ class ProductAnalysis(models.Model):
                     product_analysis = self.create(vals)
                     # Actualizamos el detalle de las rutas desde la base
                     product_analysis._onchange_mrp_base_process_id()
+                else:
+                    product_analysis.write({
+                        'standard_width': a_int(code[13:16]) if a_int(code[13:16]) else 1,
+                        'density': a_float(code[10:13]) if a_float(code[10:13]) else 1,
+                    })
                 if not product_analysis.product_id:
                     product_analysis.with_context(by_pass_error=True).action_product()
                 ligament = self.env['ligament.type'].search([('name','=',row.ligamento.strip())])

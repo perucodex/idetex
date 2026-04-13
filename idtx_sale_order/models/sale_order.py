@@ -186,9 +186,9 @@ class SaleOrder(models.Model):
             'partner_id': self.partner_id.id,
             'lab_dev_line_ids': [Command.create({
                 #  'product_id': line.product_template_id.id,
-                 'color_name': line.color_name or line.product_color_id.name,
-                 'sale_order_line_id': line.id,
-            }) for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.product_color_id.is_lab_color and not l.lab_dev_line_id)]
+                 'color_name': color,
+                #  'sale_order_line_id': line.id,
+            }) for color in self.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.product_color_id.is_lab_color and not l.lab_dev_line_id).mapped('color_name')]
         }
         lab_dev = self.env['lab.dev'].create(data)
         self.lab_dev_ids = self.lab_dev_ids | lab_dev
