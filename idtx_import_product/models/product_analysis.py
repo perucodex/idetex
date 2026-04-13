@@ -618,39 +618,32 @@ class ProductAnalysis(models.Model):
         if line_parameter_ids:
             x = 1
         # Ficha Tecnica
-        ts = self.env['technical.sheet'].search([('sitpro_sheet','=',row.ficha.strip())])
-        if ts:
-            ts.write({  
-                'density': pa.density,
-                'width': pa.standard_width,
-            })
-        else:
-            lw.technical_sheet_id = self.env['technical.sheet'].create({
-                'sitpro_sheet': row.ficha.strip(),
-                'analysis_id': pa.id,
-                'product_code': pa.product_code,
-                'product_id': pa.product_id.id,
-                'partner_id': lw.partner_id.id,
-                'notes': row.obs,
-                'fabric_composition': '\n'.join([
-                    f'{round(f.percentage * 100)}% {f.product_template_id.name}'
-                    for f in lw.fiber_ids if f.product_template_id
-                ]).strip(),
-                'density': pa.density,
-                'width': pa.standard_width,
-                'gauge_id': pa.gauge_id.id,
-                'stylo': lw.stylo,
-                'route_line_ids': route_line_ids,
-                # Datos de crudo
-                'raw_width': a_float(row.ancho),
-                'raw_density': a_float(row.densidad),
-                'raw_widening': a_float(row.ensanch),
-                # Datos de acabado
-                'finish_width': a_float(row.trollo),
-                'finish_density': a_float(row.vrollo),
-                'finish_yield': a_float(row.rrollo),
-            })
-            lw.technical_sheet_id.action_done()
+        lw.technical_sheet_id = self.env['technical.sheet'].create({
+            'sitpro_sheet': row.ficha.strip(),
+            'analysis_id': pa.id,
+            'product_code': pa.product_code,
+            'product_id': pa.product_id.id,
+            'partner_id': lw.partner_id.id,
+            'notes': row.obs,
+            'fabric_composition': '\n'.join([
+                f'{round(f.percentage * 100)}% {f.product_template_id.name}'
+                for f in lw.fiber_ids if f.product_template_id
+            ]).strip(),
+            'density': pa.density,
+            'width': pa.standard_width,
+            'gauge_id': pa.gauge_id.id,
+            'stylo': lw.stylo,
+            'route_line_ids': route_line_ids,
+            # Datos de crudo
+            'raw_width': a_float(row.ancho),
+            'raw_density': a_float(row.densidad),
+            'raw_widening': a_float(row.ensanch),
+            # Datos de acabado
+            'finish_width': a_float(row.trollo),
+            'finish_density': a_float(row.vrollo),
+            'finish_yield': a_float(row.rrollo),
+        })
+        lw.technical_sheet_id.action_done()
     
 class AnalysisWeavingData(models.Model):
     _inherit = 'analysis.weaving.data'
