@@ -303,16 +303,18 @@ class ProductAnalysis(models.Model):
                     })]
                 })
             else:
-                density = int(rec.analysis_id.product_code[9:12])
-                width = int(rec.analysis_id.product_code[12:15])
+                width = int(rec.analysis_id.product_code[9:12])
+                density = int(rec.analysis_id.product_code[12:15])
                 rec.analysis_id.write({
                     'density': density,
                     'standard_width': width,
                 })
                 rec.analysis_id.mapped('technical_sheet_ids').write({
+                    'product_code': rec.analysis_id.product_code,
                     'density': density,
                     'width': width,
                 })
+                rec.analysis_id.product_id.default_code = rec.analysis_id.product_code
 
 class AnalysisWeavingData(models.Model):
     _name = 'analysis.weaving.data'

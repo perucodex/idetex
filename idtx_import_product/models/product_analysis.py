@@ -355,8 +355,8 @@ class ProductAnalysis(models.Model):
                         'needles': a_int(row.agujas),
                         'diameter': a_int(row.diametro),
                         'feeders': a_int(row.alimenta),
-                        'standard_width': a_int(code[13:16]) if a_int(code[13:16]) else 1,
-                        'density': a_float(code[10:13]) if a_float(code[10:13]) else 1,
+                        'density': a_int(code[13:16]) if a_int(code[13:16]) else 1,
+                        'standard_width': a_float(code[10:13]) if a_float(code[10:13]) else 1,
                         'product_code': code[1:],
                         'is_problem': is_problem,
                         'mrp_base_process_id': base_process_id.id,
@@ -367,8 +367,8 @@ class ProductAnalysis(models.Model):
                     product_analysis._onchange_mrp_base_process_id()
                 else:
                     product_analysis.write({
-                        'standard_width': a_int(code[13:16]) if a_int(code[13:16]) else 1,
-                        'density': a_float(code[10:13]) if a_float(code[10:13]) else 1,
+                        'density': a_int(code[13:16]) if a_int(code[13:16]) else 1,
+                        'standard_width': a_float(code[10:13]) if a_float(code[10:13]) else 1,
                     })
                     product_analysis.mapped('technical_sheet_ids').write({
                         'density': product_analysis.density,
