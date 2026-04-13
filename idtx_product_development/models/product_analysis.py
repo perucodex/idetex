@@ -314,7 +314,6 @@ class ProductAnalysis(models.Model):
                     'density': density,
                     'width': width,
                 })
-                # rec.analysis_id.product_id.default_code = rec.analysis_id.product_code
 
 class AnalysisWeavingData(models.Model):
     _name = 'analysis.weaving.data'

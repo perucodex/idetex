@@ -24,6 +24,7 @@ class SaleOrder(models.Model):
     is_quote = fields.Boolean('is_quote', default=True)
     # is_manual_lab_dev = fields.Boolean('is_manual_lab_dev', default=False)
     lab_dev_count = fields.Integer(string="Technical Sheet Count", compute='_compute_lab_dev_count')
+    has_order_lab_dev = fields.Boolean('Has Order LabDev', compute='_compute_has_order_lab_dev')
     is_company_produce = fields.Boolean(related='company_id.is_company_produce')
     need_labdev = fields.Boolean('Need LabDev?', compute='_compute_need_labdev', default=False)
     has_pending_labdev_lines = fields.Boolean('Has Pending LabDev Lines', compute='_compute_need_labdev', default=False)
@@ -107,7 +108,7 @@ class SaleOrder(models.Model):
                 orphan_lines.lab_dev_line_id = False
     
     def update_color_names(self):
-        for l in self.order_line:
+        for l in self.order_line.filtered(lambda l: l.lab_dev_line_id):
             prod = l.product_id.display_name
             before = l.color_name
             after = l.lab_dev_line_id.display_name
@@ -124,6 +125,11 @@ class SaleOrder(models.Model):
             )
             rec.need_labdev = bool(target_lines)
             rec.has_pending_labdev_lines = any(not line.lab_dev_line_id for line in target_lines)
+
+    @api.depends('lab_dev_ids', 'lab_dev_ids.sale_order_id')
+    def _compute_has_order_lab_dev(self):
+        for rec in self:
+            rec.has_order_lab_dev = bool(rec.id and rec.lab_dev_ids.filtered(lambda lab_dev: lab_dev.sale_order_id.id == rec.id))
 
     @api.depends('lab_dev_ids')
     def _compute_lab_dev_count(self):
@@ -186,15 +192,18 @@ class SaleOrder(models.Model):
             'partner_id': self.partner_id.id,
             'lab_dev_line_ids': [Command.create({
                 #  'product_id': line.product_template_id.id,
-                 'color_name': color,
+                 'color_name': color.upper(),
                 #  'sale_order_line_id': line.id,
-            }) for color in self.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.product_color_id.is_lab_color and not l.lab_dev_line_id).mapped('color_name')]
+            }) for color in set(self.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.product_color_id.is_lab_color and not l.lab_dev_line_id).mapped('color_name'))]
         }
         lab_dev = self.env['lab.dev'].create(data)
         self.lab_dev_ids = self.lab_dev_ids | lab_dev
-        for ld_line in lab_dev.lab_dev_line_ids:
-            if ld_line.sale_order_line_id:
-                ld_line.sale_order_line_id.lab_dev_line_id = ld_line.id
+        # for ld_line in lab_dev.lab_dev_line_ids:
+        #     if ld_line.sale_order_line_id:
+        #         ld_line.sale_order_line_id.lab_dev_line_id = ld_line.id
+        for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.product_color_id.is_lab_color and not l.lab_dev_line_id):
+            line.color_name = line.color_name.upper()
+            line.lab_dev_line_id = lab_dev.lab_dev_line_ids.filtered(lambda l: l.color_name == line.color_name)
         self.open_labdev()
     
     def open_labdev(self):
@@ -322,6 +331,9 @@ class SaleOrder(models.Model):
         for rec in self:
             if not rec.is_quote and not rec.lab_dev_ids and rec.company_id.is_company_produce and any(line.product_template_id.is_weaving and line.product_color_id.is_lab_color for line in self.order_line):
                 raise UserError(_('Cant\'t confirm sale order without LD'))
+            lines = rec.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.product_color_id.is_lab_color)
+            if any(not line.lab_dev_line_id for line in lines):
+                raise UserError(_('Cant\'t confirm sale order without colors.'))
             if rec.is_quote and rec.company_id.is_company_produce:
                 raise UserError(_('Cant\'t confirm a quotation.'))
         res = super().action_confirm()

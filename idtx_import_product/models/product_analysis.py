@@ -365,15 +365,6 @@ class ProductAnalysis(models.Model):
                     product_analysis = self.create(vals)
                     # Actualizamos el detalle de las rutas desde la base
                     product_analysis._onchange_mrp_base_process_id()
-                else:
-                    product_analysis.write({
-                        'density': a_int(code[13:16]) if a_int(code[13:16]) else 1,
-                        'standard_width': a_float(code[10:13]) if a_float(code[10:13]) else 1,
-                    })
-                    product_analysis.mapped('technical_sheet_ids').write({
-                        'density': product_analysis.density,
-                        'width': product_analysis.standard_width,
-                    })
                 if not product_analysis.product_id:
                     product_analysis.with_context(by_pass_error=True).action_product()
                 ligament = self.env['ligament.type'].search([('name','=',row.ligamento.strip())])
