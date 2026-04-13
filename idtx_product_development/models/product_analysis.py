@@ -296,6 +296,13 @@ class ProductAnalysis(models.Model):
                         'twist': 0.2,
                     })]
                 })
+            else:
+                density = rec.analysis_id.standard_width
+                width = rec.analysis_id.density
+                rec.analysis_id.write({
+                    'density': density,
+                    'standard_width': width,
+                })
 
 class AnalysisWeavingData(models.Model):
     _name = 'analysis.weaving.data'
