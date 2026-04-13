@@ -303,8 +303,8 @@ class ProductAnalysis(models.Model):
                     })]
                 })
             else:
-                density = rec.analysis_id.product_code[9:12]
-                width = rec.analysis_id.product_code[12:15]
+                density = int(rec.analysis_id.product_code[9:12])
+                width = int(rec.analysis_id.product_code[12:15])
                 rec.analysis_id.write({
                     'density': density,
                     'standard_width': width,
