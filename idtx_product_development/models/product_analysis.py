@@ -303,6 +303,10 @@ class ProductAnalysis(models.Model):
                     'density': density,
                     'standard_width': width,
                 })
+                rec.analysis_id.mapped('technical_sheet_ids').write({
+                    'density': density,
+                    'width': width,
+                })
 
 class AnalysisWeavingData(models.Model):
     _name = 'analysis.weaving.data'
