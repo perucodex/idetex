@@ -7,7 +7,7 @@ import json
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
     
-    lab_dev_ids = fields.Many2many('lab.dev', string='Lab Dev', copy=False, tracking=True)
+    lab_dev_ids = fields.Many2many('lab.dev', string='Lab Dev', tracking=True)
     weaving_warning = fields.Text('weaving_warning', compute='_compute_weaving_warning')
     dieying_info = fields.Text('dieying_info', compute='_compute_dieying_info')
     sale_order_ids = fields.One2many('sale.order', 'quotation_id', string='Sale Orders')
