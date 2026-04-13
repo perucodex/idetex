@@ -285,6 +285,7 @@ class ProductAnalysis(models.Model):
         counter = 0
         for rec in products:
             _logger.info(str(counter) + ' / ' + str(total) + '  ' + str(int((counter / total)*100)) + '%')
+            counter += 1
             if not rec.analysis_id:
                 rec.analysis_id = self.env['product.analysis'].create({
                     # 'name': rec.name,
