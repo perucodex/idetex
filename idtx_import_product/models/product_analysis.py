@@ -370,6 +370,10 @@ class ProductAnalysis(models.Model):
                         'standard_width': a_int(code[13:16]) if a_int(code[13:16]) else 1,
                         'density': a_float(code[10:13]) if a_float(code[10:13]) else 1,
                     })
+                    product_analysis.mapped('technical_sheet_ids').write({
+                        'density': product_analysis.density,
+                        'width': product_analysis.standard_width,
+                    })
                 if not product_analysis.product_id:
                     product_analysis.with_context(by_pass_error=True).action_product()
                 ligament = self.env['ligament.type'].search([('name','=',row.ligamento.strip())])
@@ -614,32 +618,39 @@ class ProductAnalysis(models.Model):
         if line_parameter_ids:
             x = 1
         # Ficha Tecnica
-        lw.technical_sheet_id = self.env['technical.sheet'].create({
-            'sitpro_sheet': row.ficha.strip(),
-            'analysis_id': pa.id,
-            'product_code': pa.product_code,
-            'product_id': pa.product_id.id,
-            'partner_id': lw.partner_id.id,
-            'notes': row.obs,
-            'fabric_composition': '\n'.join([
-                f'{round(f.percentage * 100)}% {f.product_template_id.name}'
-                for f in lw.fiber_ids if f.product_template_id
-            ]).strip(),
-            'density': pa.density,
-            'width': pa.standard_width,
-            'gauge_id': pa.gauge_id.id,
-            'stylo': lw.stylo,
-            'route_line_ids': route_line_ids,
-            # Datos de crudo
-            'raw_width': a_float(row.ancho),
-            'raw_density': a_float(row.densidad),
-            'raw_widening': a_float(row.ensanch),
-            # Datos de acabado
-            'finish_width': a_float(row.trollo),
-            'finish_density': a_float(row.vrollo),
-            'finish_yield': a_float(row.rrollo),
-        })
-        lw.technical_sheet_id.action_done()
+        ts = self.env['technical.sheet'].search([('sitpro_sheet','=',row.ficha.strip())])
+        if ts:
+            ts.write({  
+                'density': pa.density,
+                'width': pa.standard_width,
+            })
+        else:
+            lw.technical_sheet_id = self.env['technical.sheet'].create({
+                'sitpro_sheet': row.ficha.strip(),
+                'analysis_id': pa.id,
+                'product_code': pa.product_code,
+                'product_id': pa.product_id.id,
+                'partner_id': lw.partner_id.id,
+                'notes': row.obs,
+                'fabric_composition': '\n'.join([
+                    f'{round(f.percentage * 100)}% {f.product_template_id.name}'
+                    for f in lw.fiber_ids if f.product_template_id
+                ]).strip(),
+                'density': pa.density,
+                'width': pa.standard_width,
+                'gauge_id': pa.gauge_id.id,
+                'stylo': lw.stylo,
+                'route_line_ids': route_line_ids,
+                # Datos de crudo
+                'raw_width': a_float(row.ancho),
+                'raw_density': a_float(row.densidad),
+                'raw_widening': a_float(row.ensanch),
+                # Datos de acabado
+                'finish_width': a_float(row.trollo),
+                'finish_density': a_float(row.vrollo),
+                'finish_yield': a_float(row.rrollo),
+            })
+            lw.technical_sheet_id.action_done()
     
 class AnalysisWeavingData(models.Model):
     _inherit = 'analysis.weaving.data'
