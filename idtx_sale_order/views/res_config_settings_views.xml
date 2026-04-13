@@ -18,6 +18,14 @@
                                 </div>
                             </div>
                         </setting>
+                        <setting id="default_sales_pricelist" string="Sales Pricelist" company_dependent="1" help="Pricelist used as the pricing source for all sales orders.">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label string="Pricelist" for="sales_pricelist_id" class="col-lg-3 o_light_label"/>
+                                    <field name="sales_pricelist_id" options="{'no_create': True}"/>
+                                </div>
+                            </div>
+                        </setting>
                     </block>
                 </block>
             </field>

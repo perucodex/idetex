@@ -28,7 +28,7 @@ class SaleOrderLine(models.Model):
     )
     # Campo para guardar los precios
     price_items = fields.Text(string='Price Items', default='{}')
-    production_id = fields.Many2one('mrp.production', string='Production')
+    production_id = fields.Many2one('mrp.production', string='Production', copy=False)
     parent_is_quote = fields.Boolean(related='order_id.is_quote')
     has_approved_lab_line = fields.Boolean(
         string='Approved',
@@ -215,6 +215,23 @@ class SaleOrderLine(models.Model):
                 line.price_unit = line.get_weaving_price_unit()
                 line.technical_price_unit = line.price_unit
         return res
+
+    def _convert_amount(self, amount, source_currency, target_currency, conversion_date=None):
+        self.ensure_one()
+        if not amount or not source_currency or not target_currency or source_currency == target_currency:
+            return amount
+        conversion_date = conversion_date or self._get_order_date() or fields.Date.context_today(self)
+        return source_currency._convert(
+            amount,
+            target_currency,
+            self.company_id,
+            conversion_date,
+            round=False,
+        )
+
+    def _get_pricing_pricelist(self):
+        self.ensure_one()
+        return self.order_id.company_id.sales_pricelist_id or self.order_id.pricelist_id
     
     # ---------- MÉTODO CORREGIDO (CLAVES FIJAS + LABEL TRADUCIBLE) ----------
     def get_weaving_price_unit(self):
@@ -243,7 +260,13 @@ class SaleOrderLine(models.Model):
 
             # 3) Calcula insumos y operaciones (tu lógica sin cambios)
             # ------------------------------------------------------------------
-            currency = self.order_id.pricelist_id.currency_id
+            pricing_pricelist = self._get_pricing_pricelist()
+            if not pricing_pricelist:
+                raise UserError(_('Configure a sales pricelist on the company or assign a pricelist to the order.'))
+            order_pricelist = self.order_id.pricelist_id or pricing_pricelist
+            pricing_currency = pricing_pricelist.currency_id
+            currency = order_pricelist.currency_id or pricing_pricelist.currency_id
+            conversion_date = self._get_order_date() or fields.Date.context_today(self)
             bom_id = self.bom_id or self.env['mrp.bom']
             weaving = self.has_weaving_operation #any(operation.operation_id.operation_type == 'weaving' for operation in self.operation_ids)
             thread_total = 0
@@ -269,7 +292,7 @@ class SaleOrderLine(models.Model):
                     else:
                         product = bom_line.product_template_id
                         quantity = bom_line.percentage or 0
-                    pricelist_item_id = self.order_id.pricelist_id._get_product_rule(
+                    pricelist_item_id = pricing_pricelist._get_product_rule(
                         product,
                         quantity=quantity or 1.0,
                         uom=product.uom_id,
@@ -281,14 +304,20 @@ class SaleOrderLine(models.Model):
                             quantity=quantity or 1.0,
                             uom=product.uom_id,
                             date=self._get_order_date(),
-                            currency=self.currency_id,
+                            currency=pricing_currency,
+                        )
+                        bom_line_price = self._convert_amount(
+                            bom_line_price,
+                            pricing_currency,
+                            currency,
+                            conversion_date,
                         )
                     else:
                         bom_line_price = self.env.company.currency_id._convert(
                             product.list_price,
                             currency,
                             self.env.company,
-                            fields.Date.context_today(self),
+                            conversion_date,
                             round=False
                         )
 
@@ -303,8 +332,11 @@ class SaleOrderLine(models.Model):
                 return sorted(signature)
 
             current_meta = {
-                'pricelist_id': self.order_id.pricelist_id.id,
+                'pricing_version': 2,
+                'pricelist_id': pricing_pricelist.id,
+                'order_pricelist_id': order_pricelist.id,
                 'currency_id': currency.id,
+                'pricing_date': str(conversion_date),
                 'bom_id': bom_id.id,
                 'product_color_id': self.product_color_id.id,
                 'sale_type': self.order_id.sale_type,
@@ -334,7 +366,7 @@ class SaleOrderLine(models.Model):
                         else:
                             product = bom_line.product_template_id
                             quantity = bom_line.percentage or 0
-                        pricelist_item_id = self.order_id.pricelist_id._get_product_rule(
+                        pricelist_item_id = pricing_pricelist._get_product_rule(
                             product,
                             quantity=quantity,
                             uom=product.uom_id,
@@ -346,14 +378,20 @@ class SaleOrderLine(models.Model):
                                 quantity=quantity,
                                 uom=product.uom_id,
                                 date=self._get_order_date(),
-                                currency=self.currency_id,
+                                currency=pricing_currency,
+                            )
+                            bom_line_price = self._convert_amount(
+                                bom_line_price,
+                                pricing_currency,
+                                currency,
+                                conversion_date,
                             )
                         else:
                             bom_line_price = self.env.company.currency_id._convert(
                                 product.list_price,
                                 currency,
                                 self.env.company,
-                                fields.Date.context_today(self),
+                                conversion_date,
                                 round=False
                             )
                         # if 'DUPONT' in product.name.upper():
@@ -378,7 +416,13 @@ class SaleOrderLine(models.Model):
 
                 for operation in operations:
                     if operation.operation_id.operation_type == 'weaving':
-                        price = float_round(self.product_template_id.analysis_id.weaving_price,2)
+                        price = self._convert_amount(
+                            self.product_template_id.analysis_id.weaving_price,
+                            self.product_template_id.analysis_id.currency_id,
+                            currency,
+                            conversion_date,
+                        )
+                        price = float_round(price, 2)
                     else:
                         if operation.operation_id.type_prices == 'col':
                             operation_color_line = operation.operation_id.product_color_price_ids.search([
@@ -388,28 +432,19 @@ class SaleOrderLine(models.Model):
                             # Si el precio varia por titulo de hilo
                             if operation.operation_id.per_title:
                                 operation_color_title_line = operation_color_line.color_title_price_ids.filtered(lambda l: self.product_template_id.analysis_id.product_title_id in l.title_ids)
+                                source_currency = operation_color_title_line.currency_id if operation_color_title_line else operation.operation_id.currency_id
                                 price = float_round(operation_color_title_line.unit_price, 2) if operation_color_title_line else 0
                             else:
+                                source_currency = operation_color_line.currency_id if operation_color_line else operation.operation_id.currency_id
                                 price = float_round(operation_color_line.unit_price, 2) if operation_color_line else 0
                         else:
+                            source_currency = operation.operation_id.currency_id
                             price = float_round(operation.operation_id.unit_price, 2)
-                    
-                    # Si el precio varia por titulo de hilo
-                    # if operation.operation_id.per_title:
-                    #     if operation.operation_id.type_prices == 'col':
-                    #         if self.product_color_id.is_lab_color:
-                    #             price = float_round(price + self.product_template_id.analysis_id.product_title_id.unit_price, 2)
-                    #     else:
-                    #         price = float_round(price + self.product_template_id.analysis_id.product_title_id.unit_price, 2)
-
-                    src_currency = operation.operation_id.currency_id
-                    if src_currency != currency:
-                        price = src_currency._convert(
+                        price = self._convert_amount(
                             price,
+                            source_currency,
                             currency,
-                            self.env.company,
-                            fields.Date.context_today(self),
-                            round=False
+                            conversion_date,
                         )
                     if price:
                     # price_dict.update({operation.operation_id.name: price})
@@ -433,13 +468,33 @@ class SaleOrderLine(models.Model):
                     price = 0
                     if self.printing_design_id.printing_type == 'digital':
                         if total_qty > 59.99:
-                            for line in self.printing_design_id.digital_unit_price_ids:
-                                if total_qty >= line.min_qty and total_qty <= line.max_qty:
-                                    price = float_round(line.unit_price * yield_meter, 2)
+                            for price_line in self.printing_design_id.digital_unit_price_ids:
+                                if total_qty >= price_line.min_qty and total_qty <= price_line.max_qty:
+                                    price = float_round(price_line.unit_price * yield_meter, 2)
+                                    price = self._convert_amount(
+                                        price,
+                                        price_line.currency_id,
+                                        currency,
+                                        conversion_date,
+                                    )
                         else:
-                            price = self.printing_design_id.digital_unit_price_ids[0].unit_price
+                            price_line = self.printing_design_id.digital_unit_price_ids[:1]
+                            price = price_line.unit_price if price_line else 0
+                            if price_line:
+                                price = self._convert_amount(
+                                    price,
+                                    price_line.currency_id,
+                                    currency,
+                                    conversion_date,
+                                )
                     else:
                         price = float_round(self.printing_design_id.unit_price * yield_meter, 2)
+                        price = self._convert_amount(
+                            price,
+                            self.printing_design_id.currency_id,
+                            currency,
+                            conversion_date,
+                        )
                     price_dict['PRINTING'] = {
                         'label': _('PRINTING'),
                         'price': price,
@@ -485,7 +540,12 @@ class SaleOrderLine(models.Model):
 
             if self.order_id.incoterm and self.order_id.incoterm.unit_price:
                 price_dict[INCOTERM_KEY] = {
-                    "price": self.order_id.incoterm.unit_price,
+                    "price": self._convert_amount(
+                        self.order_id.incoterm.unit_price,
+                        self.order_id.incoterm.currency_id,
+                        currency,
+                        conversion_date,
+                    ),
                     "label": _("Incoterm:") + " %s" % (self.order_id.incoterm.code or '')
                 }
 
@@ -497,7 +557,14 @@ class SaleOrderLine(models.Model):
         # Si NO es cotización → tu lógica anterior (sin cambios)
         else:
             line = self.get_product_from_quote(self.product_id, self.product_color_id, self.bom_id, self.printing_design_id)
-            total = line.price_unit if line else 1
+            if line:
+                source_currency = line.order_id.pricelist_id.currency_id or line.currency_id
+                order_pricelist = self.order_id.pricelist_id or self._get_pricing_pricelist()
+                target_currency = order_pricelist.currency_id or self.currency_id
+                conversion_date = self._get_order_date() or fields.Date.context_today(self)
+                total = self._convert_amount(line.price_unit, source_currency, target_currency, conversion_date)
+            else:
+                total = 1
 
         return float_round(total, 2)
     

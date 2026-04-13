@@ -79,6 +79,10 @@ class SaleOrder(models.Model):
             ctx['technical_sheet_ids_to_attach'] = sheets.ids
             action['context'] = ctx
         return action
+
+    def _get_pricing_pricelist(self):
+        self.ensure_one()
+        return self.company_id.sales_pricelist_id or self.pricelist_id
     
     def write(self, vals):
         res = super().write(vals)
@@ -223,12 +227,13 @@ class SaleOrder(models.Model):
     @api.depends('order_line','partner_id','pricelist_id')
     def _compute_weaving_warning(self):
         for order in self:
+            pricing_pricelist = order._get_pricing_pricelist()
             if order.weaving_warning:
                 has_warning = True
             else:
                 has_warning = False
             order.weaving_warning = ''
-            if order.partner_id and not order.pricelist_id:
+            if order.partner_id and not pricing_pricelist:
                 order.weaving_warning += _(('This sale order has no price list or the option is not activated.')) + '\n'
             else:
                 for line in order.order_line.filtered(lambda l: l.product_template_id.is_weaving):
@@ -246,7 +251,7 @@ class SaleOrder(models.Model):
                         else:
                             product = bom_line.product_template_id
                             quantity = bom_line.percentage or 0
-                        pricelist_item_id = line.order_id.pricelist_id._get_product_rule(
+                        pricelist_item_id = pricing_pricelist._get_product_rule(
                             product,
                             quantity=quantity or 1.0,
                             uom=product.uom_id,
@@ -255,7 +260,7 @@ class SaleOrder(models.Model):
                         item = self.env['product.pricelist.item'].browse(pricelist_item_id)
                         price = item.fixed_price if pricelist_item_id else 0
                         if not pricelist_item_id and order.partner_id or not price:
-                            order.weaving_warning += _(('Product %s has product %s on its bom and does not have a price in %s price list. The price is obtained from its own sale price.') %( line.product_id.product_tmpl_id.display_name, bom_line.product_id.product_tmpl_id.display_name, order.pricelist_id.name)) + '\n'
+                            order.weaving_warning += _(('Product %s has product %s on its bom and does not have a price in %s price list. The price is obtained from its own sale price.') %( line.product_id.product_tmpl_id.display_name, bom_line.product_id.product_tmpl_id.display_name, pricing_pricelist.name)) + '\n'
                     if not bom_id:
                         operations = line.product_template_id.analysis_id.routing_ids.sorted(key=lambda r: r.sequence).filtered(lambda l: l.operation_id.unit_price > 0 or l.operation_id.type_prices == 'col' and sum(l.operation_id.product_color_price_ids.mapped('unit_price')) > 0 or l.operation_id.operation_type == 'weaving')
                     else:
