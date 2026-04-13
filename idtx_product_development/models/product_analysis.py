@@ -1,6 +1,8 @@
 from odoo import models, fields, api, _, Command
 from odoo.exceptions import UserError
 import json
+import logging
+_logger = logging.getLogger(__name__)
 
 class ProductAnalysis(models.Model):
     _name = 'product.analysis'
@@ -279,7 +281,10 @@ class ProductAnalysis(models.Model):
     # Funcion escondida para actualizar los registros de densidad y estabilidad de torsión, para pruebas y desarrollo solamente
     def action_update(self):
         products = self.env['product.template'].search([('is_weaving', '=', True)])
+        total = len(products)
+        counter = 0
         for rec in products:
+            _logger.info(str(counter) + ' / ' + str(total) + '  ' + str(int((counter / total)*100)) + '%')
             if not rec.analysis_id:
                 rec.analysis_id = self.env['product.analysis'].create({
                     # 'name': rec.name,
