@@ -33,8 +33,8 @@
                     <button name="action_conciliate" type="object" string="Concesionar" class="btn-warning" invisible="resultado in ('concesionado','pendiente')" groups="quality.group_quality_manager"/>
                     <button name="action_reject" type="object" string="Rechazar" class="btn-danger" invisible="resultado in ('rechazado','pendiente')" groups="quality.group_quality_manager"/>
                     <button name="action_send" type="object" string="Enviar Cliente" class="btn-primary" invisible="resultado != 'rechazado'" groups="quality.group_quality_manager"/>
-                    <button name="action_client_approve" type="object" string="Aprobado" class="btn-success" invisible="resultado != 'pendiente'" groups="sales_team.group_sale_salesman,quality.group_quality_manager"/>
-                    <button name="action_client_reject" type="object" string="Rechazado" class="btn-danger" invisible="resultado != 'pendiente'" groups="sales_team.group_sale_salesman,quality.group_quality_manager"/>
+                    <button name="action_client_approve" type="object" string="Aprobado" class="btn-success" invisible="resultado != 'pendiente'" groups="sales_team.group_sale_salesman"/>
+                    <button name="action_client_reject" type="object" string="Rechazado" class="btn-danger" invisible="resultado != 'pendiente'" groups="sales_team.group_sale_salesman"/>
                     <field name="resultado" widget="statusbar"/>
                 </header>
                 <sheet>
