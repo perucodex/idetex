@@ -285,6 +285,22 @@ export class QualityDefectScreen extends Component {
         return res.slice(0, 20);
     }
 
+    get selectedPartidaEvaluatedRollGroups() {
+        const groups = Array.isArray(this.state.selectedPartidaData?.evaluated_roll_groups)
+            ? [...this.state.selectedPartidaData.evaluated_roll_groups]
+            : [];
+        const selectedAparienciaId = Number(this.state.selectedAparienciaId || 0);
+        groups.sort((left, right) => {
+            const leftSelected = Number(left?.apariencia_id || 0) === selectedAparienciaId ? 0 : 1;
+            const rightSelected = Number(right?.apariencia_id || 0) === selectedAparienciaId ? 0 : 1;
+            if (leftSelected !== rightSelected) {
+                return leftSelected - rightSelected;
+            }
+            return String(left?.apariencia_name || "").localeCompare(String(right?.apariencia_name || ""));
+        });
+        return groups;
+    }
+
     // ---------- Draft persistence ----------
     _saveDraft() {
         const draft = {

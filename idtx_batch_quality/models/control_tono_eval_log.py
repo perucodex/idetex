@@ -59,7 +59,7 @@ class ControlTonoEvalLog(models.Model):
     motivo_tacto = fields.Boolean(string="Tacto")
     motivo_apariencia = fields.Boolean(string="Apariencia")
     resultado = fields.Selection(
-        [("aprobado", "APROBADO"), ("concesionado", "CONCESIONADO"), ("rechazado", "RECHAZADO")],
+        [("aprobado", "APROBADO"), ("concesionado", "CONCESIONADO"), ("rechazado", "RECHAZADO"),("pendiente", "PENDIENTE")],
         string="Resultado",
         required=True,
         index=True,
@@ -126,3 +126,15 @@ class ControlTonoEvalLog(models.Model):
         self.motivo_tacto = False
         self.motivo_apariencia = False
         self.resultado = "rechazado"
+
+    def action_send(self):
+        for rec in self:
+            rec.resultado = "pendiente"
+
+    def action_client_approve(self):
+        for rec in self:
+            rec.resultado = "aprobado"
+
+    def action_client_reject(self):
+        for rec in self:
+            rec.resultado = "rechazado"

@@ -20,9 +20,9 @@
             <xpath expr="//button[@id='quotation_send']" position="attributes">
                 <attribute name="invisible">state not in ('sent', 'sale') or need_approval and is_company_produce</attribute>
             </xpath>
-            <field name="state" position="attributes">
-                <attribute name="statusbar_visible">draft,sent,sale</attribute>
-            </field>
+            <!-- <field name="state" position="attributes">
+                <attribute name="statusbar_visible">draft,sent,for_app,pending_admin_approval,pending_finance_approval,sale</attribute>
+            </field> -->
             <xpath expr="//div[@name='button_box']/button[@name='action_view_invoice']" position="after">
                 <button name="open_labdev"
                         class="oe_stat_button"
@@ -59,11 +59,13 @@
                 <field name="lab_dev_ids" widget="many2many_tags" required="state == 'sale'" options="{'no_create': True, 'no_open': True}" invisible="is_quote or not is_company_produce or not need_labdev" readonly="state == 'sale'" force_save="1"/>
             </xpath>
             <xpath expr="//header/button[@name='action_confirm'][1]" position="after">
-                <button name="create_labdev" class="btn-primary" string="Create LabDev" type="object" invisible="is_quote or not is_company_produce or not has_pending_labdev_lines"/>
+                <button name="create_labdev" class="btn-primary" string="Create LabDev" type="object" invisible="is_quote or not is_company_produce or not has_pending_labdev_lines or state == 'cancel'"/>
                 <!-- <button name="manual_labdev" class="btn-secondary" string="Manual LabDev" type="object" invisible="lab_dev_ids or is_quote"/> -->
                 <button name="action_create_sale_order" type="object" string="Sale Order" class="btn-primary" groups="base.group_user" invisible="state != 'sent' or not is_quote or not is_company_produce or need_approval"/>
                 <button name="action_request_approval" type="object" string="Request Approval" class="btn-primary" invisible="not need_approval or state == 'for_app' or not is_company_produce"/>
                 <button name="action_approve" type="object" string="Approve Discount" class="btn-primary" groups="sales_team.group_sale_salesman_all_leads" invisible="state != 'for_app' or not is_company_produce"/>
+                <button name="action_admin_approve" type="object" string="Administrative Approve" class="btn-primary" groups="idtx_sale_order.group_sale_order_admin_approver" invisible="is_quote or not sale_approval_required or state != 'pending_admin_approval'"/>
+                <button name="action_finance_approve" type="object" string="Financial Approve" class="btn-primary" groups="idtx_sale_order.group_sale_order_finance_approver" invisible="is_quote or not sale_approval_required or state != 'pending_finance_approval'"/>
                 <button name="action_price_preview" type="object" string="Prices" class="btn-secondary" groups="sales_team.group_sale_salesman_all_leads" invisible="not is_quote or not is_company_produce or is_subscription"/>
             </xpath>
             <xpath expr="//header" position="after">
@@ -77,8 +79,13 @@
                 </div>
                 <field name="is_company_produce" invisible="1"/>
                 <field name="need_approval" invisible="1"/>
+                <field name="sale_approval_required" invisible="1"/>
                 <field name="has_order_lab_dev" invisible="1"/>
                 <field name="has_pending_labdev_lines" invisible="1"/>
+                <field name="admin_approval_user_id" invisible="1"/>
+                <field name="admin_approval_date" invisible="1"/>
+                <field name="finance_approval_user_id" invisible="1"/>
+                <field name="finance_approval_date" invisible="1"/>
             </xpath>
             <xpath expr="//notebook/page/field[@name='order_line']/list/field[@name='product_template_id']" position="after">
                 <field name="available_operation_ids" column_invisible="1"/>
@@ -129,7 +136,7 @@
         <field name="inherit_id" ref="sale.sale_order_tree"/>
         <field name="arch" type="xml">
             <field name="state" position="attributes">
-                <attribute name="decoration-warning">state == 'for_app'</attribute>
+                <attribute name="decoration-warning">state in ('for_app', 'pending_admin_approval', 'pending_finance_approval')</attribute>
             </field>
         </field>
     </record>

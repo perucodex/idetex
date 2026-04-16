@@ -53,6 +53,8 @@ class TechnicalSheet(models.Model):
         ('done', 'Done'),
         ('prod', 'Production'),
     ], string='State', default='draft')
+    # Manejo de producto por estado
+    production_state = fields.Char(string='Production State')
     user_id = fields.Many2one('res.users','Prepared by',default=lambda self: self.env.user)
     size_chart_ids = fields.One2many('technical.size.line', 'technical_id', string='Size Chart')
     route_line_ids = fields.One2many('technical.route.line', 'technical_id', string='Route Line')

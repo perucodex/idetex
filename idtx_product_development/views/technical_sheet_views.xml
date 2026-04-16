@@ -24,6 +24,9 @@
                                     type="object"
                                     invisible="not product_id" string="Product"/>
                         </div> -->
+                        <div class="float-end fs-6 border-0" invisible="not production_state">
+                            <field name="production_state" widget="badge" readonly="1" decoration-success="production_state == 'Production'" decoration-info="production_state == 'Pilot'" decoration-warning="production_state == 'Sample'"/>
+                        </div>
                         <div class="oe_title">
                             <h1>
                                 <field name="name" readonly="1"/>
@@ -155,18 +158,19 @@
                 <list string="Technical Sheet" create="0">
                     <field name="name"/>
                     <field name="technical_date"/>
+                    <field name="product_code"/>
                     <field name="program"/>
-                    <field name="fabric_composition"/>
                     <field name="atx"/>
-                    <field name="density"/>
+                    <!-- <field name="density"/>
                     <field name="width"/>
-                    <field name="gauge_id"/>
-                    <field name="first_wash_shrinkage"/>
-                    <field name="first_wash_twist"/>
-                    <field name="scrap" widget="percentage"/>
+                    <field name="gauge_id"/> -->
+                    <!-- <field name="first_wash_shrinkage"/>
+                    <field name="first_wash_twist"/> -->
+                    <!-- <field name="scrap" widget="percentage"/> -->
                     <field name="weave_type"/>
-                    <field name="mesh_length"/>
+                    <!-- <field name="mesh_length"/> -->
                     <field name="company_id" groups="base.group_multi_company" optional="hide" readonly="1"/>
+                    <field name="production_state" widget="badge" decoration-success="production_state == 'Production'" decoration-info="production_state == 'Pilot'" decoration-warning="production_state == 'Sample'"/>
                 </list>
             </field>
         </record>
@@ -177,6 +181,7 @@
             <field name="arch" type="xml">
                 <search string="Search Product Analysis">
                     <field name="name"/>
+                    <field name="production_state"/>
                 </search>
             </field>
         </record>

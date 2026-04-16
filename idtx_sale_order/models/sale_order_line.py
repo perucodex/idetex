@@ -3,11 +3,17 @@ from odoo.tools import float_round
 from odoo.exceptions import UserError
 import json
 
+META_KEY = "__price_meta__"
+WEAV_LOSS_KEY = "Weaving Loss"
+PROD_LOSS_KEY = "Production Loss"
+FINANCIAL_KEY = "Financial Percentage"
+INCOTERM_KEY = "Incoterm"
+
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
     product_color_id = fields.Many2one('product.color', string='Color')
-    is_lab_color = fields.Boolean(related='product_color_id.is_lab_color')
+    is_lab_color = fields.Boolean(compute='_compute_is_lab_color', store=True)
     color_name = fields.Char('Color Name')
     # weaving_warning = fields.Text('weaving_warning')
     weaving_loss = fields.Float('Weaving Loss')
@@ -48,13 +54,31 @@ class SaleOrderLine(models.Model):
     size_qty_ids = fields.One2many('sale.order.line.size', 'line_id', string='Size / Qty')
     has_weaving_operation = fields.Boolean(compute="_compute_has_weaving_operation", store=True)
 
-    @api.depends('operation_ids')
+    @api.depends(
+        'order_id.is_quote',
+        'bom_id',
+        'operation_ids',
+        'operation_ids.operation_id',
+        'operation_ids.operation_id.operation_type',
+        'product_template_id',
+        'product_template_id.analysis_id.routing_ids',
+        'product_template_id.analysis_id.routing_ids.operation_id',
+        'product_template_id.analysis_id.routing_ids.operation_id.operation_type',
+    )
     def _compute_has_weaving_operation(self):
         for line in self:
             if not line.bom_id:
-                line.has_weaving_operation = any(op.operation_type == "weaving" for op in line.product_template_id.analysis_id.routing_ids.mapped('operation_id')) if line.product_template_id else False
-            else:
+                line.has_weaving_operation = any(
+                    op.operation_type == "weaving"
+                    for op in line.product_template_id.analysis_id.routing_ids.mapped('operation_id')
+                ) if line.product_template_id else False
+            elif line.order_id.is_quote:
                 line.has_weaving_operation = any(op.operation_id.operation_type == "weaving" for op in line.operation_ids)
+            else:
+                line.has_weaving_operation = any(
+                    op.operation_id.operation_type == "weaving"
+                    for op in line.bom_id.operation_ids
+                )
     
     @api.onchange('printing_design_id')
     def _onchange_printing_design_id(self):
@@ -90,6 +114,16 @@ class SaleOrderLine(models.Model):
     def _compute_has_approved_lab_line(self):
         for line in self:
             line.has_approved_lab_line = bool(len(line.lab_dev_line_id.filtered(lambda l: l.state == 'approved')))
+
+    @api.depends(
+        'bom_id',
+        'bom_id.operation_ids',
+        'bom_id.operation_ids.operation_id',
+        'bom_id.operation_ids.operation_id.gives_color',
+    )
+    def _compute_is_lab_color(self):
+        for line in self:
+            line.is_lab_color = any(op.operation_id.gives_color for op in line.bom_id.operation_ids) if line.bom_id else False
 
     @api.depends('bom_id')
     def _compute_available_operations(self):
@@ -190,20 +224,18 @@ class SaleOrderLine(models.Model):
         #Solo calcula el precio si la compañía produce
         for line in self.filtered(lambda l: l.is_weaving):
             if line.company_id.is_company_produce and line.product_id.is_weaving:
-                try:
-                    manual_dict = json.loads(line.price_items or '{}')
-                except (json.JSONDecodeError, TypeError):
-                    manual_dict = {}
+                manual_dict = line._load_price_items_dict(line.price_items)
 
                 if manual_dict.get('__manual_override__'):
-                    total_manual = float_round(
-                        sum(
-                            float(item.get('price', 0.0))
-                            for key, item in manual_dict.items()
-                            if not str(key).startswith('__') and isinstance(item, dict)
-                        ),
-                        2,
+                    order_pricelist = line.order_id.pricelist_id or line._get_pricing_pricelist()
+                    currency = order_pricelist.currency_id or line.currency_id
+                    conversion_date = line._get_order_date() or fields.Date.context_today(line)
+                    adjusted_dict, total_manual = line._apply_order_price_adjustments(
+                        manual_dict,
+                        currency,
+                        conversion_date,
                     )
+                    line.price_items = json.dumps(adjusted_dict)
                     line.price_unit = total_manual
                     line.technical_price_unit = total_manual
                     continue
@@ -232,6 +264,93 @@ class SaleOrderLine(models.Model):
     def _get_pricing_pricelist(self):
         self.ensure_one()
         return self.order_id.company_id.sales_pricelist_id or self.order_id.pricelist_id
+
+    def _load_price_items_dict(self, raw_value):
+        self.ensure_one()
+        try:
+            price_dict = json.loads(raw_value or '{}')
+        except (json.JSONDecodeError, TypeError, ValueError):
+            price_dict = {}
+        if isinstance(price_dict, dict):
+            for key, value in price_dict.items():
+                if str(key).startswith('__') or not isinstance(value, dict) or 'price' not in value:
+                    continue
+                try:
+                    value['price'] = float_round(float(value.get('price', 0.0) or 0.0), 2)
+                except (TypeError, ValueError):
+                    value['price'] = 0.0
+        return price_dict if isinstance(price_dict, dict) else {}
+
+    def _sum_price_items(self, price_dict):
+        self.ensure_one()
+        return float_round(
+            sum(
+                float(item.get('price', 0.0))
+                for key, item in (price_dict or {}).items()
+                if not str(key).startswith('__') and isinstance(item, dict)
+            ),
+            2,
+        )
+
+    def _copy_price_items_to_currency(self, price_dict, source_currency, target_currency, conversion_date):
+        self.ensure_one()
+        converted_dict = {}
+        for key, value in (price_dict or {}).items():
+            if str(key).startswith('__'):
+                if key != META_KEY:
+                    converted_dict[key] = value
+                continue
+
+            if isinstance(value, dict):
+                new_value = dict(value)
+                amount = float(value.get('price', 0.0) or 0.0)
+            else:
+                new_value = {'label': key}
+                amount = float(value or 0.0)
+
+            new_value['price'] = float_round(
+                self._convert_amount(amount, source_currency, target_currency, conversion_date),
+                2,
+            )
+            new_value.setdefault('label', key)
+            converted_dict[key] = new_value
+        return converted_dict
+
+    def _apply_order_price_adjustments(self, price_dict, currency, conversion_date):
+        self.ensure_one()
+        adjusted_dict = {}
+        for key, value in (price_dict or {}).items():
+            if key in (FINANCIAL_KEY, INCOTERM_KEY):
+                continue
+            adjusted_dict[key] = value
+
+        total = self._sum_price_items(adjusted_dict)
+
+        if self.order_id.payment_term_id and self.order_id.payment_term_id.financial_percentage:
+            financial = float_round(total * self.order_id.payment_term_id.financial_percentage, 2)
+            adjusted_dict[FINANCIAL_KEY] = {
+                'price': financial,
+                'label': _("Financial Percentage:") + " %.2f %%" % (self.order_id.payment_term_id.financial_percentage * 100),
+            }
+            total = float_round(total + financial, 2)
+
+        if self.order_id.incoterm and self.order_id.incoterm.unit_price:
+            incoterm_price = float_round(
+                self._convert_amount(
+                    self.order_id.incoterm.unit_price,
+                    self.order_id.incoterm.currency_id,
+                    currency,
+                    conversion_date,
+                ),
+                2,
+            )
+            adjusted_dict[INCOTERM_KEY] = {
+                'price': incoterm_price,
+                'label': _("Incoterm:") + " %s" % (self.order_id.incoterm.code or ''),
+            }
+            total = float_round(total + incoterm_price, 2)
+
+        return adjusted_dict, total
     
     # ---------- MÉTODO CORREGIDO (CLAVES FIJAS + LABEL TRADUCIBLE) ----------
     def get_weaving_price_unit(self):
@@ -240,18 +359,7 @@ class SaleOrderLine(models.Model):
         """
         self.ensure_one()
         if self.order_id.is_quote:
-            try:
-                price_dict = json.loads(self.price_items or '{}')
-            except (json.JSONDecodeError, TypeError):
-                price_dict = {}
-
-            META_KEY = "__price_meta__"
-
-            # 1) CLAVES FIJAS (sin _() → nunca se traducen)
-            WEAV_LOSS_KEY = "Weaving Loss"
-            PROD_LOSS_KEY = "Production Loss"
-            FINANCIAL_KEY = "Financial Percentage"
-            INCOTERM_KEY  = "Incoterm"
+            price_dict = self._load_price_items_dict(self.price_items)
 
             # 2) Elimina previos por clave FIJA (sin traducción)
             for key in list(price_dict.keys()):
@@ -347,19 +455,13 @@ class SaleOrderLine(models.Model):
             # Invalidate cache only when pricing context truly changed.
             if saved_meta != current_meta:
                 price_dict = {}
-
             if not price_dict:
                 if weaving and self.order_id.sale_type == 'sale':
-                    # Si es que el producto tiene LdM entonces se obtienen las fibras
-                    # de lo contrario pasamos a las fibras del análisis del producto
                     if bom_id:
                         bom_lines = bom_id.bom_line_ids.filtered(lambda l: l.product_tmpl_id.categ_id in self.env.company.thread_category_ids)
                     else:
                         bom_lines = self.product_template_id.analysis_id.weaving_data_ids.mapped('fiber_ids')
                     for bom_line in bom_lines:
-                        # Si el producto tiene LdM obtenemos la cantidad de lo contrario
-                        # obtenemos la cantidad de las fibras del análisis del producto
-                        # Aqui solo cambiamos el campo por ser otro modelo
                         if bom_id:
                             product = bom_line.product_id
                             quantity = bom_line.product_qty or 0
@@ -394,21 +496,14 @@ class SaleOrderLine(models.Model):
                                 conversion_date,
                                 round=False
                             )
-                        # if 'DUPONT' in product.name.upper():
-                        #     qty = 1
-                        # else:
                         qty = quantity
-                        price = float_round(bom_line_price * qty, 2)
                         product_name = product.name
                         price_dict.setdefault(product_name, {'label': product_name, 'price': 0.0})
                         price_dict[product_name]['price'] += float_round(bom_line_price * qty, 2)
 
-                    for v in price_dict.values():
-                        v['is_thread'] = True
+                    for value in price_dict.values():
+                        value['is_thread'] = True
 
-                # elif not price_dict:
-                #     thread_total = float_round(sum([v['price'] for v in price_dict.values() if v.get('is_thread')]), 2) if price_dict else 0
-                
                 if not bom_id:
                     operations = self.product_template_id.analysis_id.routing_ids.sorted(key=lambda r: r.sequence).filtered(lambda l: l.operation_id.unit_price > 0 or l.operation_id.type_prices == 'col' and sum(l.operation_id.product_color_price_ids.mapped('unit_price')) > 0 or l.operation_id.operation_type == 'weaving')
                 else:
@@ -429,7 +524,6 @@ class SaleOrderLine(models.Model):
                                 ('product_color_id', '=', self.product_color_id.id),
                                 ('mrwo_id', '=', operation.operation_id._origin.id)
                             ])
-                            # Si el precio varia por titulo de hilo
                             if operation.operation_id.per_title:
                                 operation_color_title_line = operation_color_line.color_title_price_ids.filtered(lambda l: self.product_template_id.analysis_id.product_title_id in l.title_ids)
                                 source_currency = operation_color_title_line.currency_id if operation_color_title_line else operation.operation_id.currency_id
@@ -446,17 +540,17 @@ class SaleOrderLine(models.Model):
                             currency,
                             conversion_date,
                         )
+                        price = float_round(price, 2)
                     if price:
-                    # price_dict.update({operation.operation_id.name: price})
-                        price_dict.update({operation.operation_id.name: {'label': operation.operation_id.name, 'price': price}})
+                        price_dict[operation.operation_id.name] = {
+                            'label': operation.operation_id.name,
+                            'price': price,
+                        }
 
-            # Agregamos precio de estampado si existiera# Agregamos precio de estampado si existiera
             if self.printing_design_id:
                 printing = price_dict.get('PRINTING')
                 if not printing or printing.get('design_id') != self.printing_design_id.id or printing.get('qty') != self.product_uom_qty or printing.get('min_qty') != self.min_qty:
                     price_dict.pop('PRINTING', None)
-                    # Si es que el producto tiene LdM entonces se calcula el precio con el rendimiento
-                    # de la ficha técnica, sino con el rendimiento del analisis producto
                     if bom_id:
                         yield_meter = float_round(self.bom_id.technical_sheet_id.yield_meter if self.bom_id.technical_sheet_id else self.printing_design_id.yield_meter, 2)
                     else:
@@ -477,6 +571,7 @@ class SaleOrderLine(models.Model):
                                         currency,
                                         conversion_date,
                                     )
+                                    price = float_round(price, 2)
                         else:
                             price_line = self.printing_design_id.digital_unit_price_ids[:1]
                             price = price_line.unit_price if price_line else 0
@@ -487,6 +582,7 @@ class SaleOrderLine(models.Model):
                                     currency,
                                     conversion_date,
                                 )
+                                price = float_round(price, 2)
                     else:
                         price = float_round(self.printing_design_id.unit_price * yield_meter, 2)
                         price = self._convert_amount(
@@ -495,6 +591,7 @@ class SaleOrderLine(models.Model):
                             currency,
                             conversion_date,
                         )
+                        price = float_round(price, 2)
                     price_dict['PRINTING'] = {
                         'label': _('PRINTING'),
                         'price': price,
@@ -530,39 +627,50 @@ class SaleOrderLine(models.Model):
                     "label": _("Production Loss:") + " %.2f %%" % (prod_scrap * 100)
                 }
 
-            if self.order_id.payment_term_id and self.order_id.payment_term_id.financial_percentage:
-                financial = float_round(total * self.order_id.payment_term_id.financial_percentage, 2)
-                total += financial
-                price_dict[FINANCIAL_KEY] = {
-                    "price": financial,
-                    "label": _("Financial Percentage:") + " %.2f %%" % (self.order_id.payment_term_id.financial_percentage * 100)
-                }
-
-            if self.order_id.incoterm and self.order_id.incoterm.unit_price:
-                price_dict[INCOTERM_KEY] = {
-                    "price": self._convert_amount(
-                        self.order_id.incoterm.unit_price,
-                        self.order_id.incoterm.currency_id,
-                        currency,
-                        conversion_date,
-                    ),
-                    "label": _("Incoterm:") + " %s" % (self.order_id.incoterm.code or '')
-                }
+            price_dict, total = self._apply_order_price_adjustments(
+                price_dict,
+                currency,
+                conversion_date,
+            )
 
             # 5) Guarda JSON con estructura {key: {"price": float, "label": str}}
-            total = float_round(sum(v.get("price", 0.0) for v in price_dict.values() if isinstance(v, dict)), 2) if price_dict else 0
+            total = self._sum_price_items(price_dict)
             price_dict[META_KEY] = current_meta
             self.price_items = json.dumps(price_dict)
 
         # Si NO es cotización → tu lógica anterior (sin cambios)
         else:
             line = self.get_product_from_quote(self.product_id, self.product_color_id, self.bom_id, self.printing_design_id)
+            self.bom_id = line.bom_id
             if line:
                 source_currency = line.order_id.pricelist_id.currency_id or line.currency_id
                 order_pricelist = self.order_id.pricelist_id or self._get_pricing_pricelist()
                 target_currency = order_pricelist.currency_id or self.currency_id
                 conversion_date = self._get_order_date() or fields.Date.context_today(self)
-                total = self._convert_amount(line.price_unit, source_currency, target_currency, conversion_date)
+                source_price_dict = self._load_price_items_dict(line.price_items)
+                if source_price_dict:
+                    copied_price_dict = self._copy_price_items_to_currency(
+                        source_price_dict,
+                        source_currency,
+                        target_currency,
+                        conversion_date,
+                    )
+                    copied_price_dict, total = self._apply_order_price_adjustments(
+                        copied_price_dict,
+                        target_currency,
+                        conversion_date,
+                    )
+                    copied_price_dict[META_KEY] = {
+                        'source_order_id': line.order_id.id,
+                        'source_line_id': line.id,
+                        'currency_id': target_currency.id,
+                        'payment_term_id': self.order_id.payment_term_id.id,
+                        'incoterm_id': self.order_id.incoterm.id,
+                        'pricing_date': str(conversion_date),
+                    }
+                    self.price_items = json.dumps(copied_price_dict)
+                else:
+                    total = self._convert_amount(line.price_unit, source_currency, target_currency, conversion_date)
             else:
                 total = 1
 

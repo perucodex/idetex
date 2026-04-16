@@ -7,6 +7,8 @@ import { Component, useState } from "@odoo/owl";
 import { standardWidgetProps } from "@web/views/widgets/standard_widget_props";
 import { registry } from "@web/core/registry";
 
+const round2 = (n) => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
+
 // ---------- POPOVER ----------
 class PriceItemsPopover extends Component {
     static template = "idtx_laboratory.PriceItemsPopover";
@@ -30,7 +32,7 @@ class PriceItemsPopover extends Component {
                 .filter(([k]) => !k.startsWith("__"))
                 .map(([k, v]) => ({
                     key: k,               // fijo, inglés
-                    price: Number(v.price),
+                    price: round2(Number(v.price) || 0),
                     label: v.label,        // traducible
                     meta: v, // ← guarda todo
                 }))
@@ -82,7 +84,7 @@ class PriceItemsPopover extends Component {
         val = val.replace(/,/g, "");
         val = val.replace(/[^0-9.]/g, "");
         val = val.replace(/^([^.]*\.)|\./g, (m, g1) => g1 || "");
-        item.price = parseFloat(val) || 0;
+        item.price = round2(parseFloat(val) || 0);
         await this.recalculateDerivedItems();
     }
 
@@ -94,7 +96,6 @@ class PriceItemsPopover extends Component {
         const baseItems = this.items.filter(it =>
             ![WEAV_LOSS_KEY, PROD_LOSS_KEY, FINANCIAL_KEY, INCOTERM_KEY].includes(it.key)
         );
-        const round2 = (n) => Math.round((Number(n) + Number.EPSILON) * 100) / 100;
         const sum = (arr) => arr.reduce((a, it) => a + (Number(it.price) || 0), 0);
         const lineId = this.props.record.resId;
         const [line] = await this.orm.read(
@@ -202,7 +203,7 @@ class PriceItemsPopover extends Component {
             printing.label = printing.label || _t("PRINTING");
         }
         const dict = this.items.reduce((acc, it) => {
-            acc[it.key] = { ...(it.meta || {}), price: parseFloat(it.price) || 0, label: it.label };
+            acc[it.key] = { ...(it.meta || {}), price: round2(parseFloat(it.price) || 0), label: it.label };
             return acc;
         }, {});
         Object.assign(dict, this.hiddenItems || {});

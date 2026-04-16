@@ -63,8 +63,6 @@ class ProductAnalysis(models.Model):
     # Precio de tejido por producto
     currency_id = fields.Many2one('res.currency', string='Currency', default=lambda self: self.env.ref('base.USD'))
     weaving_price = fields.Monetary('Weaving Price')
-    # Manejo de producto por estado
-    production_state = fields.Char(string='Production State')
     # Tolerancia de tela
     density_stability_twisting_id = fields.Many2one('density.stability.twisting', string='Density Stability Twisting Data', copy=False)
     # Rendimiento adicional a la ficha tecnica
@@ -132,6 +130,7 @@ class ProductAnalysis(models.Model):
                     (str(int(rec.standard_width)) or '000').zfill(3) + \
                     (str(int(rec.density)) or '000').zfill(3)
             rec.product_id.default_code = rec.product_code
+            rec.technical_sheet_ids.write({'product_code': rec.product_code})
                 
     @api.onchange('gauge_id')
     def _onchange_gauge_id(self):
@@ -159,6 +158,10 @@ class ProductAnalysis(models.Model):
             raise UserError(_('Please add at least one weaving data to generate the product!'))
         if not self.weaving_data_ids.mapped('fiber_ids') and not self.env.context.get('by_pass_error'):
             raise UserError(_('Please add at least one fiber to the weaving data to generate the product!'))
+        if not all(fiber.weight > 0 for fiber in self.weaving_data_ids.mapped('fiber_ids')) and not self.env.context.get('by_pass_error'):
+            raise UserError(_('All fibers of the weaving data must have weight greater than 0 to generate the product!'))
+        if not sum(fiber.percentage for fiber in self.weaving_data_ids.mapped('fiber_ids')) == 1 and not self.env.context.get('by_pass_error'):
+            raise UserError(_('All fibers of the weaving data must sum 100% to generate the product!'))
         if not self.routing_ids:
             raise UserError(_('Please select a base process and the route to generate the product!'))
         # Modificamos la línea porque los rectilíneos tambien se venden por kilo
@@ -340,6 +343,16 @@ class AnalysisWeavingData(models.Model):
     def unlink(self):
         self.technical_sheet_id.unlink()
         return super().unlink()
+
+    def _recompute_fiber_percentages(self):
+        for rec in self:
+            total_weight = sum(fiber.weight for fiber in rec.fiber_ids)
+            for fiber in rec.fiber_ids:
+                fiber.percentage = (fiber.weight / total_weight) if total_weight else 0
+
+    @api.onchange('fiber_ids', 'fiber_ids.weight')
+    def _onchange_fiber_ids_recompute_percentages(self):
+        self._recompute_fiber_percentages()
     
 class AnalysisFiber(models.Model):
     _name = 'analysis.fiber'
@@ -356,7 +369,7 @@ class AnalysisFiber(models.Model):
         ('nm', 'Metric number (nm)'),
     ], string='System Type', default='ne')
     length = fields.Float('Mesh Length', compute='_compute_length_average')
-    weight = fields.Float('Weight', digits=(12,6))
+    weight = fields.Float('Weight', digits=(12,6), default=False, required=True)
     thread_qty = fields.Integer('Thread Quantity')
     thread_title = fields.Float('Thread Title', compute='_compute_thread_title')
     product_template_id = fields.Many2one('product.template', string='Thread', domain=lambda self: [('categ_id', 'in', self.env.company.thread_category_ids.ids)], ondelete='restrict')
@@ -395,12 +408,17 @@ class AnalysisFiber(models.Model):
             else:
                 rec.thread_title = 0.0
 
+    @api.depends('weight', 'weaving_data_id.fiber_ids.weight')
     def _compute_percentage(self):
         for rec in self:
-            if rec.weight:
-                rec.percentage = rec.weight / sum(rec.weaving_data_id.fiber_ids.mapped('weight'))
-            else:
-                rec.percentage = 0
+            total_weight = sum(rec.weaving_data_id.fiber_ids.mapped('weight'))
+            rec.percentage = (rec.weight / total_weight) if rec.weight and total_weight else 0
+
+    @api.constrains('weight')
+    def _check_weight_positive(self):
+        for rec in self:
+            if rec.weight <= 0:
+                raise UserError(_('Weight in fiber %s must be greater than 0.') % rec.product_template_id.display_name)
 
 class AnalysisFiberLine(models.Model):
     _name = 'analysis.fiber.line'

@@ -1,10 +1,12 @@
 # wizards/rectilineo_wizard.py
-from odoo import api, fields, models
+from odoo import api, fields, models, _
+from odoo.exceptions import UserError
 
 class SizeQtyWizard(models.TransientModel):
     _name = "size.qty.wizard"
     _description = "Wizard Size Qty Rectilinear"
 
+    locked = fields.Boolean(readonly=True)
     line_ids = fields.One2many("size.qty.wizard.line", "wizard_id", string="Sizes")
 
     @api.model
@@ -14,6 +16,7 @@ class SizeQtyWizard(models.TransientModel):
         active_id = self.env.context.get("active_id")
         if active_model == "sale.order.line" and active_id:
             sol = self.env[active_model].browse(active_id)
+            res["locked"] = bool(sol.order_id.locked)
             res["line_ids"] = [(0, 0, {
                 "sequence": l.sequence,
                 "size": l.size,
@@ -26,6 +29,8 @@ class SizeQtyWizard(models.TransientModel):
     def action_apply(self):
         self.ensure_one()
         sol = self.env["sale.order.line"].browse(self.env.context.get("active_id"))
+        if sol.order_id.locked:
+            raise UserError(_("You cannot modify sizes and quantities on a locked sales order."))
 
         # Opción simple y segura: reemplazar todo (evita duplicados)
         sol.size_qty_ids.unlink()

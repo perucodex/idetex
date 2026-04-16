@@ -5,3 +5,12 @@ access_product_color_title_price,access_product_color_title_price,model_product_
 access_sale_order_line_size,access_sale_order_line_size,model_sale_order_line_size,base.group_user,1,1,1,1
 access_size_qty_wizard,access_size_qty_wizard,model_size_qty_wizard,base.group_user,1,1,1,1
 access_size_qty_wizard_line,access_size_qty_wizard_line,model_size_qty_wizard_line,base.group_user,1,1,1,1
+access_sale_mrp_readonly_production,access.sale.mrp.readonly.production,mrp.model_mrp_production,idtx_sale_order.group_sale_mrp_readonly,1,0,0,0
+access_sale_mrp_readonly_workorder,access.sale.mrp.readonly.workorder,mrp.model_mrp_workorder,idtx_sale_order.group_sale_mrp_readonly,1,0,0,0
+access_sale_mrp_readonly_bom,access.sale.mrp.readonly.bom,mrp.model_mrp_bom,idtx_sale_order.group_sale_mrp_readonly,1,0,0,0
+access_sale_mrp_readonly_bom_line,access.sale.mrp.readonly.bom.line,mrp.model_mrp_bom_line,idtx_sale_order.group_sale_mrp_readonly,1,0,0,0
+access_sale_mrp_readonly_routing_operation,access.sale.mrp.readonly.routing.operation,mrp.model_mrp_routing_workcenter,idtx_sale_order.group_sale_mrp_readonly,1,0,0,0
+access_sale_mrp_readonly_workcenter,access.sale.mrp.readonly.workcenter,mrp.model_mrp_workcenter,idtx_sale_order.group_sale_mrp_readonly,1,0,0,0
+access_sale_mrp_readonly_workcenter_capacity,access.sale.mrp.readonly.workcenter.capacity,mrp.model_mrp_workcenter_capacity,idtx_sale_order.group_sale_mrp_readonly,1,0,0,0
+access_sale_all_leads_workcenter_capacity,access.sale.all.leads.workcenter.capacity,mrp.model_mrp_workcenter_capacity,sales_team.group_sale_salesman_all_leads,1,0,0,0
+access_sale_mrp_readonly_stock_move,access.sale.mrp.readonly.stock.move,stock.model_stock_move,idtx_sale_order.group_sale_mrp_readonly,1,0,0,0

@@ -23,6 +23,9 @@ class ControlEstabilidadReviradoEval(models.Model):
         "l5": 5,
     }
     _SAMPLE_TYPE_SELECTION = [
+        ("seco_ppe", "Seco PPE"),
+        ("empastado_digital", "Empastado Digital"),
+        ("seco_estampado_rama", "Seco Estampado Rama"),
         ("acabado", "Acabado"),
         ("sanforizado_compactado", "Sanforizado y Compactado"),
         ("estampado", "Estampado"),
@@ -684,6 +687,34 @@ class ControlEstabilidadReviradoEval(models.Model):
         return rows
 
     @api.model
+    def _tablet_evaluation_standards(self, pedido_line):
+        pedido_line = pedido_line.sudo()
+        analysis = pedido_line.product_id.analysis_id if pedido_line and pedido_line.product_id else False
+        thresholds = analysis.density_stability_twisting_id if analysis else False
+
+        def _as_float(value):
+            return float(value or 0.0)
+
+        def _as_percentage(value):
+            numeric = abs(_as_float(value))
+            return numeric * 100 if numeric <= 1.0 else numeric
+
+        return {
+            "density_standard": _as_float(analysis.density) if analysis else 0.0,
+            "width_standard": _as_float(analysis.standard_width) if analysis else 0.0,
+            "tilt_standard": _as_float(analysis.tilt) if analysis else 0.0,
+            "width_shrinkage_from": _as_float(thresholds.width_shrinkage_from) * 100 if thresholds else 0.0,
+            "width_shrinkage_to": _as_float(thresholds.width_shrinkage_to) * 100 if thresholds else 0.0,
+            "length_shrinkage_from": _as_float(thresholds.length_shrinkage_from) * 100 if thresholds else 0.0,
+            "length_shrinkage_to": _as_float(thresholds.length_shrinkage_to) * 100 if thresholds else 0.0,
+            "twist_limit": _as_percentage(thresholds.twist) if thresholds else 0.0,
+            "tilt_wash_tolerance": _as_float(thresholds.tilt_wash) if thresholds else 0.0,
+            "density_tolerance": _as_percentage(thresholds.density) if thresholds else 0.0,
+            "width_tolerance": _as_float(thresholds.width) if thresholds else 0.0,
+            "has_thresholds": bool(thresholds),
+        }
+
+    @api.model
     def action_tablet_get_eval_context(self, pedido_line_id, sample_type=False):
         pedido_line = self.env["control.pedido.line"].browse(int(pedido_line_id or 0))
         if not pedido_line.exists():
@@ -721,6 +752,7 @@ class ControlEstabilidadReviradoEval(models.Model):
 
         analysis = pedido_line.product_id.analysis_id
         tilt_standard = float(analysis.tilt or 0.0) if analysis else 0.0
+        standards = self._tablet_evaluation_standards(pedido_line)
         return {
             "sample_type": sample_type,
             "has_first_record": has_first_record,
@@ -730,6 +762,7 @@ class ControlEstabilidadReviradoEval(models.Model):
             "first_wash_status": (first_eval_done_latest.state if first_eval_done_latest else "nodata"),
             "tilt_required": bool((required_mode == "l1") and tilt_standard > 0.0),
             "tilt_standard": tilt_standard,
+            "standards": standards,
             "recent_density_width": self._tablet_recent_density_width(pedido_line, limit=10),
             "existing_eval": first_eval_incomplete._to_tablet_payload() if first_eval_incomplete else False,
         }
@@ -1112,6 +1145,10 @@ class ControlEstabilidadReviradoEval(models.Model):
             def _tol_abs(raw_value):
                 return abs(float(raw_value or 0.0))
 
+            def _tol_percent(raw_value):
+                value = abs(float(raw_value or 0.0))
+                return value * 100.0 if value <= 1.0 else value
+
             if not thresholds:
                 result = "nodata"
             else:
@@ -1146,7 +1183,8 @@ class ControlEstabilidadReviradoEval(models.Model):
                 if has_complete_est_largo and length_to and rec.est_largo_avg > length_to:
                     rec.bool_est_largo_avg = False
 
-                if has_complete_revirado and thresholds.twist and rec.revirado_promedio > thresholds.twist:
+                twist_limit = _tol_percent(thresholds.twist)
+                if has_complete_revirado and twist_limit and rec.revirado_promedio > twist_limit:
                     rec.bool_revirado_promedio = False
 
                 tilt_tolerance = abs(float(thresholds.tilt_wash or 0.0))

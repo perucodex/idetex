@@ -123,6 +123,9 @@ const MODE_STEP_KEYS = {
 
 const SAMPLE_TYPE_OPTIONS = [
     { value: "", label: "Seleccione..." },
+    { value: "seco_ppe", label: "Seco PPE" },
+    { value: "empastado_digital", label: "Empastado Digital" },
+    { value: "seco_estampado_rama", label: "Seco Estampado Rama" },
     { value: "acabado", label: "Acabado" },
     { value: "sanforizado_compactado", label: "Sanforizado y Compactado" },
     { value: "estampado", label: "Estampado" },
@@ -396,6 +399,23 @@ function avg3(v1, v2, v3) {
     return (asFloat(v1) + asFloat(v2) + asFloat(v3)) / 3;
 }
 
+function getInitialStandards() {
+    return {
+        density_standard: 0,
+        width_standard: 0,
+        tilt_standard: 0,
+        width_shrinkage_from: 0,
+        width_shrinkage_to: 0,
+        length_shrinkage_from: 0,
+        length_shrinkage_to: 0,
+        twist_limit: 0,
+        tilt_wash_tolerance: 0,
+        density_tolerance: 0,
+        width_tolerance: 0,
+        has_thresholds: false,
+    };
+}
+
 function washAvg(values, washCode, type) {
     const axis = type === "ancho" ? "a" : "l";
     const m1 = avg3(
@@ -468,6 +488,7 @@ export class QualityDimrevScreen extends Component {
             isFirstRecord: false,
             tiltRequired: false,
             tiltStandard: 0,
+            standards: getInitialStandards(),
             stabilityDone: {
                 l1_ancho_done: false,
                 l1_largo_done: false,
@@ -698,6 +719,10 @@ export class QualityDimrevScreen extends Component {
         return (asFloat(this.state.values.tilt_after_m1) + asFloat(this.state.values.tilt_after_m2)) / 2;
     }
 
+    get standards() {
+        return this.state.standards || getInitialStandards();
+    }
+
     getTiltDirection(valueFieldName) {
         const dirField = TILT_DIRECTION_FIELD_BY_VALUE_FIELD[valueFieldName];
         const raw = this.state.values[dirField];
@@ -893,6 +918,7 @@ export class QualityDimrevScreen extends Component {
         this.state.isFirstRecord = false;
         this.state.tiltRequired = false;
         this.state.tiltStandard = 0;
+        this.state.standards = getInitialStandards();
         this.state.recentDensityWidth = [];
         this.state.stabilityDone = this._defaultStabilityState();
         this._saveDraft();
@@ -913,6 +939,7 @@ export class QualityDimrevScreen extends Component {
             this.state.isFirstRecord = !Boolean(payload?.has_first_record);
             this.state.tiltRequired = Boolean(payload?.tilt_required);
             this.state.tiltStandard = asFloat(payload?.tilt_standard || 0);
+            this.state.standards = { ...getInitialStandards(), ...(payload?.standards || {}) };
             this.state.recentDensityWidth = Array.isArray(payload?.recent_density_width)
                 ? payload.recent_density_width
                 : [];

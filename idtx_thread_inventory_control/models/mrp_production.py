@@ -283,6 +283,37 @@ class MrpProduction(models.Model):
             cache[global_key] = move._get_lot_combo_availability(lot, source_location=False)
         return cache[global_key]
 
+    def _thread_reservation_error_message(self, move, qty_target):
+        product = move.product_id
+        if "is_storable" in product._fields and not product.is_storable:
+            return _(
+                "Thread product %(product)s cannot be reserved because 'Track Inventory' is disabled. "
+                "Enable inventory tracking on the product before confirming the manufacturing order.",
+                product=product.display_name,
+            )
+
+        if product.tracking == "none":
+            return _(
+                "Thread product %(product)s cannot be reserved because lot tracking is disabled. "
+                "Set Tracking to 'By Lots' before confirming the manufacturing order.",
+                product=product.display_name,
+            )
+
+        has_controls = bool(self.env["thread.lot.control"].search_count([("product_id", "=", product.id)], limit=1))
+        if not has_controls:
+            return _(
+                "Thread product %(product)s has no thread lot control records to build bag/cone availability. "
+                "Validate the incoming inventory with lots and thread control data before reserving %(qty)s kg.",
+                product=product.display_name,
+                qty=move._fmt_weight(qty_target),
+            )
+
+        return _(
+            "No thread combo availability was found to reserve %(qty)s kg for product %(product)s.",
+            qty=move._fmt_weight(qty_target),
+            product=product.display_name,
+        )
+
     def _thread_fill_reserved_move_lines(self):
         move_line_model = self.env["stock.move.line"]
         has_legacy_bags = "bags" in move_line_model._fields
@@ -339,10 +370,7 @@ class MrpProduction(models.Model):
                             break
 
                     if not chosen_lot or not chosen_combo or not chosen_availability:
-                        raise ValidationError(
-                            "No thread combo availability was found to reserve %s kg for product %s."
-                            % (move._fmt_weight(qty_target), move.product_id.display_name)
-                        )
+                        raise ValidationError(self._thread_reservation_error_message(move, qty_target))
 
                     line_vals = {
                         "lot_id": chosen_lot.id,

@@ -16,6 +16,7 @@
         <xpath expr="//th[@name='th_description']" position="after">
             <th name="th_color" class="text-start">Color</th>
             <th name="th_min_qty" class="text-start">Min. Qty.</th>
+            <th t-if="doc.is_quote" name="th_customer_lead" class="text-start">Customer Lead</th>
         </xpath>
         <xpath expr="//td[@name='td_product_name']" position="after">
             <td name="td_product_color" class="text-start">
@@ -23,6 +24,9 @@
             </td>
             <td name="td_min_qty" class="text-end">
                 <span t-field="line.min_qty"/>
+            </td>
+            <td t-if="doc.is_quote" name="td_customer_lead" class="text-end">
+                <span t-field="line.customer_lead"/>
             </td>
         </xpath>
         <!-- Inserta estampado -->
@@ -365,6 +369,29 @@
                             </t>
                         </tbody>
                     </table>
+                </t>
+                <t t-if="doc.is_quote">
+                    <t t-set="projected_lines" t-value="doc.order_line.filtered(lambda l: not l.bom_id or not l.bom_id.technical_sheet_id.production_state or l.bom_id.technical_sheet_id.production_state == 'Sample')"/>
+                    <t t-if="projected_lines">
+                        <div style="margin-top: 12px;">
+                            <table class="table table-sm" style="width: auto; display: inline-table;">
+                                <thead>
+                                    <tr>
+                                        <th class="text-start" style="white-space: nowrap;">Datos Proyectados</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="projected_lines" t-as="line">
+                                        <tr>
+                                            <td class="text-start" style="white-space: nowrap;">
+                                                <span t-esc="line.product_template_id.name"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </t>
                 </t>
             </t>
         </xpath>

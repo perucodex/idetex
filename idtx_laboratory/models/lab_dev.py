@@ -28,6 +28,7 @@ class LabDev(models.Model):
         ('draft', 'Draft'),
         ('dev', 'Development'),
         ('done', 'Done'),
+        ('cancel', 'Cancelled'),
     ], string='State', default='draft', tracking=True)
     
     def action_development(self):
@@ -37,6 +38,15 @@ class LabDev(models.Model):
         if any(line.state != 'done' for line in self.lab_dev_line_ids):
             raise UserError(_('All lab dev lines must be done before marking the lab dev as done.'))
         self.state = 'done'
+
+    def action_cancel(self):
+        if any(line.state == 'done' for line in self.lab_dev_line_ids):
+            raise UserError(_('Can\'t cancel a lab dev with lines in done state.'))
+        self.state = 'cancel'
+
+    def action_reset(self):
+        self.state = 'draft'
+        # self.lab_dev_line_ids.write({'state': 'test'})
 
     def open_recipes(self):
         return self.lab_dev_line_ids.color_recipe_ids._get_records_action(name=_('Recipes'), context={'group_by': 'color_name'})

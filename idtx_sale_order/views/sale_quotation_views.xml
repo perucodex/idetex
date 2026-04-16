@@ -23,6 +23,7 @@
         <menuitem id="idtx_quotation_menu" name="Quotations" action="sale_quotation_action" sequence="10" parent="sale.sale_order_menu"/>
         <menuitem id="idtx_sale_order_menu" name="Sales Orders" action="sale_order_action" sequence="20" parent="sale.sale_order_menu"/>
         <menuitem id="sale_product_color_menu" name="Product Color" action="product_color_action" sequence="30" parent="sale.sale_order_menu" groups="sales_team.group_sale_salesman_all_leads"/>
+        <menuitem id="sale_quality_tone_pending_menu" name="Evaluaciones Tono Pendientes" action="idtx_batch_quality.action_quality_tone_pending_list" sequence="50" parent="sale.sale_order_menu" groups="sales_team.group_sale_salesman"/>
         
         <record id="sale.menu_sale_quotations" model="ir.ui.menu">
             <field name="active" eval="False"/>

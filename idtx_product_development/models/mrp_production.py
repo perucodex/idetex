@@ -48,9 +48,9 @@ class MrpProduction(models.Model):
     @api.onchange('production_type')
     def _onchange_production_type(self):
         for rec in self:
-            if rec.product_id.product_tmpl_id.analysis_id.production_state == 'Production' and rec.production_type == 'pilot':
+            if rec.bom_id.technical_sheet_id.production_state == 'Production' and rec.production_type == 'pilot':
                 raise UserError(_('Product is in Production state!'))
-            elif rec.product_id.product_tmpl_id.analysis_id.production_state == 'Pilot' and rec.production_type == 'sample':
+            elif rec.bom_id.technical_sheet_id.production_state == 'Pilot' and rec.production_type == 'sample':
                 raise UserError(_('Product is in Pilot state'))
 
     def button_mark_done(self):
@@ -64,5 +64,5 @@ class MrpProduction(models.Model):
                 prod_state = 'Pilot'
             elif rec.production_type == 'sample':
                 prod_state = 'Sample'
-            rec.product_id.product_tmpl_id.analysis_id.production_state = prod_state
+            rec.bom_id.technical_sheet_id.production_state = prod_state
         return res

@@ -7,6 +7,9 @@
             <field name="model">product.analysis</field>
             <field name="inherit_id" ref="idtx_product_development.product_analysis_form_view"/>
             <field name="arch" type="xml">
+                <button name ="action_create_technical_sheet" position="attributes">
+                    <attribute name="invisible">state not in ('prod','impo')</attribute>
+                </button>
                 <field name="state" position="attributes">
                     <attribute name="statusbar_visible">draft,prod</attribute>
                 </field>
@@ -83,7 +86,7 @@
             <field name="model">technical.sheet</field>
             <field name="inherit_id" ref="idtx_product_development.technical_sheet_tree_view"/>
             <field name="arch" type="xml">
-                <field name="mesh_length" position="after">
+                <field name="weave_type" position="after">
                     <field name="sitpro_sheet" optional="hide"/>
                 </field>
             </field>

@@ -22,4 +22,8 @@
 
     <menuitem id="menu_control_apariencia_defecto" name="Defectos Apariencia" parent="quality_control.menu_quality_configuration" action="action_control_apariencia" sequence="90"/>
 
+    <record id="quality_control.menu_quality_root" model="ir.ui.menu">
+        <field name="action" ref="action_quality_tone_pending_list"/>
+    </record>
+
 </odoo>

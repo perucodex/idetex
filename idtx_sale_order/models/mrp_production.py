@@ -66,12 +66,12 @@ class MrpProduction(models.Model):
             rec.color_recipe_id = color_recipe_id
             rec.manual_color_recipe_id = color_recipe_id
 
-    def unlink(self):
-        if self.env.context.get('delete_from_sale_order'):
-            for production in self:
-                if production.state not in ('draft','confirmed','cancel'):
-                    raise UserError(_('Can\'t delete production in %s') %production.state)
-        return super().unlink()
+    # def unlink(self):
+    #     if self.env.context.get('delete_from_sale_order'):
+    #         for production in self:
+    #             if production.state not in ('draft','confirmed','cancel'):
+    #                 raise UserError(_('Can\'t delete production in %s') %production.state)
+    #     return super().unlink()
 
     def action_confirm(self):
         if self.need_recipe and not self.color_recipe_id:

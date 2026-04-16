@@ -178,6 +178,40 @@
                                 </div>
                             </div>
 
+                            <div class="row g-3 mb-3" t-if="!state.needsModeSelection">
+                                <div class="col-12">
+                                    <div class="o_qdr_summary_block">
+                                        <h6>Estandares de Evaluacion</h6>
+                                        <div class="row g-2">
+                                            <div class="col-12 col-md-4">
+                                                <div>Densidad estandar: <b t-esc="standards.density_standard.toFixed(2)"/></div>
+                                                <div>Tolerancia densidad: <b t-esc="standards.density_tolerance.toFixed(2)"/></div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div>Ancho estandar: <b t-esc="standards.width_standard.toFixed(2)"/></div>
+                                                <div>Tolerancia ancho: <b t-esc="standards.width_tolerance.toFixed(2)"/></div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div>Inclinacion estandar: <b t-esc="standards.tilt_standard.toFixed(2)"/></div>
+                                                <div>Tolerancia inclinacion: <b t-esc="standards.tilt_wash_tolerance.toFixed(2)"/></div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div>% Ancho permitido: <b t-esc="standards.width_shrinkage_from.toFixed(2)"/> a <b t-esc="standards.width_shrinkage_to.toFixed(2)"/></div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div>% Largo permitido: <b t-esc="standards.length_shrinkage_from.toFixed(2)"/> a <b t-esc="standards.length_shrinkage_to.toFixed(2)"/></div>
+                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div>Limite revirado: <b t-esc="standards.twist_limit.toFixed(2)"/></div>
+                                            </div>
+                                        </div>
+                                        <div class="small text-muted mt-2" t-if="!standards.has_thresholds">
+                                            El producto no tiene configurados criterios en density_stability_twisting_id.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="row g-2" t-if="!state.needsModeSelection and !(activeStep and (activeStep.key === 'inclinacion' or activeStep.key === 'inclinacion_after'))">
                                 <t t-foreach="activeStep.fields" t-as="fieldName" t-key="fieldName">
                                     <div class="col-12 col-md-4" t-if="!(state.evalMode === 'ln' and fieldName === 'rvn_n')">

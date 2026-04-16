@@ -9,7 +9,7 @@
                 <field name="fecoc"/>
                 <field name="numordped"/>
                 <field name="customer" optional="hide"/>
-                <field name="salesman" optional="hide"/>
+                <field name="user_id" optional="hide"/>
                 <field name="tipoventa" optional="hide"/>
                 <field name="num_days"/>
                 <field name="area"/>
@@ -39,7 +39,7 @@
                             <field name="fecha" readonly="1"/>
                             <field name="fecoc" readonly="1"/>
                             <field name="customer" readonly="1"/>
-                            <field name="salesman" readonly="1"/>
+                            <field name="user_id" readonly="1"/>
                             <field name="tipoventa" readonly="1"/>
                         </group>
                         <group>

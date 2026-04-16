@@ -165,6 +165,43 @@ class ControlAparienciaLine(models.Model):
         ]
 
     @api.model
+    def _tablet_roll_summary_by_partida(self, pedido_lines):
+        pedido_lines = pedido_lines.exists()
+        if not pedido_lines:
+            return {}
+
+        summary_by_line = {line.id: [] for line in pedido_lines}
+        roll_lines = self.search([
+            ("pedido_line_id", "in", pedido_lines.ids),
+        ], order="apariencia_id, rollo_num asc, id asc")
+
+        grouped = {}
+        for roll_line in roll_lines:
+            line_groups = grouped.setdefault(roll_line.pedido_line_id.id, {})
+            apariencia_group = line_groups.setdefault(roll_line.apariencia_id.id, {
+                "apariencia_id": roll_line.apariencia_id.id,
+                "apariencia_name": roll_line.apariencia_id.display_name or "",
+                "rollo_nums": [],
+            })
+            apariencia_group["rollo_nums"].append(int(roll_line.rollo_num or 0))
+
+        for pedido_line_id, apariencia_groups in grouped.items():
+            groups = []
+            for group in apariencia_groups.values():
+                rollo_nums = sorted({num for num in group["rollo_nums"] if num > 0})
+                groups.append({
+                    "apariencia_id": group["apariencia_id"],
+                    "apariencia_name": group["apariencia_name"],
+                    "rollo_nums": rollo_nums,
+                    "rollo_count": len(rollo_nums),
+                    "rollo_label": ", ".join(str(num) for num in rollo_nums) if rollo_nums else "",
+                })
+            groups.sort(key=lambda item: (item["apariencia_name"], item["apariencia_id"]))
+            summary_by_line[pedido_line_id] = groups
+
+        return summary_by_line
+
+    @api.model
     def action_tablet_get_partidas(self, query="", limit=20):
         query = (query or "").strip()
         domain = Domain([])
@@ -188,6 +225,7 @@ class ControlAparienciaLine(models.Model):
 
         safe_limit = min(max(int(limit or 20), 1), 100)
         lines = self.env["control.pedido.line"].search(domain, order="batch desc, id desc", limit=safe_limit)
+        roll_summary = self._tablet_roll_summary_by_partida(lines)
         return [
             {
                 "id": line.id,
@@ -198,6 +236,7 @@ class ControlAparienciaLine(models.Model):
                 "color_name": line.colorname or "",
                 "color_code": line.colorcode or "",
                 "kilograms": line.kilograms or 0.0,
+                "evaluated_roll_groups": roll_summary.get(line.id, []),
             }
             for line in lines
         ]

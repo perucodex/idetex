@@ -210,6 +210,25 @@
                                                         <t t-esc="state.selectedPartidaData.color_name || '-'"/>
                                                     </b>
                                                 </div>
+                                                <div class="mt-3">
+                                                    <div class="text-muted mb-1">Rollos ya evaluados</div>
+                                                    <t t-if="selectedPartidaEvaluatedRollGroups.length">
+                                                        <div class="d-flex flex-column gap-2">
+                                                            <t t-foreach="selectedPartidaEvaluatedRollGroups" t-as="group" t-key="group.apariencia_id">
+                                                                <div class="border rounded p-2">
+                                                                    <div>
+                                                                        <b t-esc="group.apariencia_name || '-'"/>
+                                                                        <span class="text-muted">(<t t-esc="group.rollo_count || 0"/> rollos)</span>
+                                                                    </div>
+                                                                    <div class="small" t-esc="group.rollo_label || '-'"/>
+                                                                </div>
+                                                            </t>
+                                                        </div>
+                                                    </t>
+                                                    <t t-else="">
+                                                        <div class="small text-muted">No hay rollos evaluados para esta partida.</div>
+                                                    </t>
+                                                </div>
                                             </div>
                                         </div>
                                     </t>

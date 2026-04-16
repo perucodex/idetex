@@ -105,7 +105,9 @@ class ControlPedido(models.Model):
     fecoc = fields.Date(string="Customer Order Date")
     numordped = fields.Char(string="Order Number", required=True, index=True)
     customer = fields.Char('Customer')
-    salesman = fields.Char('Salesman')
+    # salesman = fields.Char('Salesman')
+    # cdgven = fields.Char('Salesman Code')
+    user_id = fields.Many2one('res.users', string='Salesman')
     tipoventa = fields.Char(string="Type of Sale")
     total_weight = fields.Float('Total Weight')
     produced_weight = fields.Float('Produced Weight')
@@ -228,7 +230,9 @@ class ControlPedido(models.Model):
                 "fecha": _safe_date(rec["FECHA"]),
                 "fecoc": _safe_date(rec["FECOC"]),
                 "customer": _safe_str(rec["RAZSOC"]),
-                "salesman": _safe_str(rec["USUARIO"]),
+                # "salesman": _safe_str(rec["USUARIO"]),
+                # "cdgven": _safe_str(rec["CDGVEN"]),
+                "user_id": self.env['res.users'].search([('vendor_code_sitpro', '=', _safe_str(rec["CDGVEN"]))], limit=1).id,
                 "tipoventa": _safe_str(rec["TIPOVENTA"]),
                 "total_weight": _safe_float(rec["TOTKIL"]),
                 "is_active": _safe_bool(rec["ACTIVO"]),

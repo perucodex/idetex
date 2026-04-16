@@ -25,6 +25,7 @@ Gestiona la carga de precios y productos en tus cotizaciones
             'sale_management',
             'sale_stock',
             'sale_subscription',
+            'idtx_batch_quality',
             'idtx_product_development',
             'idtx_laboratory',
             'idtx_printing',
@@ -33,6 +34,8 @@ Gestiona la carga de precios y productos en tus cotizaciones
     # always loaded
     'data': [
         'data/product.color.csv',
+        'security/sale_order_approval_security.xml',
+        'security/sale_mrp_readonly_security.xml',
         'security/ir.model.access.csv',
         'report/ir_actions_report_templates.xml',
         'report/ir_actions_report.xml',

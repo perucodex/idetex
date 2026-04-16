@@ -7,8 +7,9 @@
             <field name="model">mrp.routing.workcenter.operation</field>
             <field name="inherit_id" ref="idtx_mrp.mrp_routing_workcenter_operation_form_view"/>
             <field name="arch" type="xml">
-                <field name="company_id" position="after">
+                <field name="operation_type" position="after">
                     <field name="use_lab_recipe" widget="boolean_toggle"/>
+                    <field name="gives_color" widget="boolean_toggle"/>
                 </field>
             </field>
         </record>
@@ -19,7 +20,8 @@
             <field name="inherit_id" ref="idtx_mrp.mrp_routing_workcenter_operation_tree_view"/>
             <field name="arch" type="xml">
                 <field name="company_id" position="after">
-                    <field name="use_lab_recipe" widget="boolean_toggle"/>
+                    <field name="use_lab_recipe" widget="boolean_toggle" readonly="1"/>
+                    <field name="gives_color" widget="boolean_toggle" readonly="1"/>
                 </field>
             </field>
         </record>
