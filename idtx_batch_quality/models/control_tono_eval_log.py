@@ -77,6 +77,12 @@ class ControlTonoEvalLog(models.Model):
             return self.env["res.users"]
         return group.all_user_ids.filtered(lambda user: user.active and user.partner_id)
 
+    def _get_sale_manager_users(self):
+        group = self.env.ref("sales_team.group_sale_manager", raise_if_not_found=False)
+        if not group:
+            return self.env["res.users"]
+        return group.all_user_ids.filtered(lambda user: user.active and user.partner_id)
+
     def _get_salesperson_user(self):
         self.ensure_one()
         salesperson = self.pedido_line_id.pedido_id.user_id
@@ -89,6 +95,17 @@ class ControlTonoEvalLog(models.Model):
     def _get_quality_manager_notification_partners(self):
         self.ensure_one()
         return self._get_quality_manager_users().partner_id
+
+    def _get_pending_notification_partners(self):
+        self.ensure_one()
+        return (
+            self._get_internal_notification_partners()
+            | self._get_sale_manager_users().partner_id
+        )
+
+    def _get_follower_partners(self):
+        self.ensure_one()
+        return self._get_pending_notification_partners()
 
     def _get_notification_emails(self, partners):
         emails = []
@@ -105,13 +122,17 @@ class ControlTonoEvalLog(models.Model):
         self.ensure_one()
         return self._get_notification_emails(self._get_quality_manager_notification_partners())
 
+    def _get_pending_notification_emails(self):
+        self.ensure_one()
+        return self._get_notification_emails(self._get_pending_notification_partners())
+
     def _get_resultado_label(self):
         self.ensure_one()
         return dict(self._fields["resultado"].selection).get(self.resultado, self.resultado)
 
     def _subscribe_internal_followers(self):
         for rec in self:
-            partner_ids = rec._get_internal_notification_partners().ids
+            partner_ids = rec._get_follower_partners().ids
             if partner_ids:
                 rec.sudo().message_subscribe(partner_ids=partner_ids)
 
@@ -138,7 +159,7 @@ class ControlTonoEvalLog(models.Model):
     def _send_pending_notification(self):
         self._post_message_from_template(
             "idtx_batch_quality.mail_template_tono_eval_pending",
-            "_get_internal_notification_emails",
+            "_get_pending_notification_emails",
         )
 
     def _send_client_response_notification(self):
