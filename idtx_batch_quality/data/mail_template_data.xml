@@ -44,5 +44,51 @@
             <field name="auto_delete" eval="True"/>
         </record>
 
+        <record id="mail_template_tono_eval_pending" model="mail.template">
+            <field name="name">Quality Tone Evaluation Pending</field>
+            <field name="model_id" ref="idtx_batch_quality.model_control_tono_eval_log"/>
+            <field name="subject">IDETEX S.A.C. - Partida {{ object.partida or '' }} enviada al cliente para evaluacion</field>
+            <field name="email_from">{{ (object.user_id.email_formatted or user.email_formatted or object.create_uid.email_formatted) }}</field>
+            <field name="email_to">{{ object._get_internal_notification_emails() }}</field>
+            <field name="description">Notify quality managers and salesperson when a tone evaluation is sent to the client.</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px; font-size: 13px;">
+    <p style="margin: 0px; padding: 0px;">
+        Se ha enviado la partida para evaluacion del cliente.<br/><br/>
+        <strong>Partida:</strong> <t t-out="object.partida or ''"/><br/>
+        <strong>Cliente:</strong> <t t-out="object.cliente or ''"/><br/>
+        <strong>Color:</strong> <t t-out="object.color or ''"/><br/>
+        <strong>Tipo de tono:</strong> <t t-out="object.tono or ''"/><br/>
+        <strong>Resultado actual:</strong> <t t-out="object._get_resultado_label()"/><br/>
+        <strong>Vendedor:</strong> <t t-out="object.pedido_line_id.pedido_id.user_id.name or ''"/><br/>
+    </p>
+</div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <record id="mail_template_tono_eval_client_response" model="mail.template">
+            <field name="name">Quality Tone Evaluation Client Response</field>
+            <field name="model_id" ref="idtx_batch_quality.model_control_tono_eval_log"/>
+            <field name="subject">IDETEX S.A.C. - Respuesta del cliente para partida {{ object.partida or '' }}: {{ object._get_resultado_label() }}</field>
+            <field name="email_from">{{ (object.user_id.email_formatted or user.email_formatted or object.create_uid.email_formatted) }}</field>
+            <field name="email_to">{{ object._get_quality_manager_notification_emails() }}</field>
+            <field name="description">Notify quality managers when the client approves or rejects a tone evaluation.</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px; font-size: 13px;">
+    <p style="margin: 0px; padding: 0px;">
+        El cliente ha respondido la evaluacion de tono.<br/><br/>
+        <strong>Partida:</strong> <t t-out="object.partida or ''"/><br/>
+        <strong>Cliente:</strong> <t t-out="object.cliente or ''"/><br/>
+        <strong>Color:</strong> <t t-out="object.color or ''"/><br/>
+        <strong>Tipo de tono:</strong> <t t-out="object.tono or ''"/><br/>
+        <strong>Respuesta del cliente:</strong> <t t-out="object._get_resultado_label()"/><br/>
+        <strong>Vendedor:</strong> <t t-out="object.pedido_line_id.pedido_id.user_id.name or ''"/><br/>
+    </p>
+</div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
 	</data>
 </odoo>

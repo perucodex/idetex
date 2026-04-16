@@ -1,4 +1,4 @@
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 
 
 class ControlTonoEvalLog(models.Model):
@@ -6,6 +6,7 @@ class ControlTonoEvalLog(models.Model):
     _inherit = ["mail.thread", "mail.activity.mixin"]
     _description = "Historial Evaluación Tono"
     _order = "fecha_eval asc, id asc"
+    _rec_name = "pedido_line_id"
 
     pedido_line_id = fields.Many2one(
         "control.pedido.line",
@@ -70,11 +71,115 @@ class ControlTonoEvalLog(models.Model):
     barcodreo = fields.Char(string="Reprocess", readonly=True)
     user_has_group_quality_manager = fields.Boolean(compute="_compute_user_has_group_quality_manager")
 
+    def _get_quality_manager_users(self):
+        group = self.env.ref("quality.group_quality_manager", raise_if_not_found=False)
+        if not group:
+            return self.env["res.users"]
+        return group.all_user_ids.filtered(lambda user: user.active and user.partner_id)
+
+    def _get_salesperson_user(self):
+        self.ensure_one()
+        salesperson = self.pedido_line_id.pedido_id.user_id
+        return salesperson.filtered(lambda user: user.active and user.partner_id)
+
+    def _get_internal_notification_partners(self):
+        self.ensure_one()
+        return (self._get_quality_manager_users().partner_id | self._get_salesperson_user().partner_id)
+
+    def _get_quality_manager_notification_partners(self):
+        self.ensure_one()
+        return self._get_quality_manager_users().partner_id
+
+    def _get_notification_emails(self, partners):
+        emails = []
+        for partner in partners.filtered(lambda partner: partner.email):
+            if partner.email not in emails:
+                emails.append(partner.email)
+        return ",".join(emails)
+
+    def _get_internal_notification_emails(self):
+        self.ensure_one()
+        return self._get_notification_emails(self._get_internal_notification_partners())
+
+    def _get_quality_manager_notification_emails(self):
+        self.ensure_one()
+        return self._get_notification_emails(self._get_quality_manager_notification_partners())
+
+    def _get_resultado_label(self):
+        self.ensure_one()
+        return dict(self._fields["resultado"].selection).get(self.resultado, self.resultado)
+
+    def _subscribe_internal_followers(self):
+        for rec in self:
+            partner_ids = rec._get_internal_notification_partners().ids
+            if partner_ids:
+                rec.sudo().message_subscribe(partner_ids=partner_ids)
+
+    def _post_message_from_template(self, template_xmlid, email_getter):
+        template = self.env.ref(template_xmlid, raise_if_not_found=False)
+        if not template:
+            return
+        for rec in self:
+            if getattr(rec, email_getter)():
+                rec.with_context(
+                    default_composition_mode="comment",
+                    default_model=rec._name,
+                    default_res_ids=rec.ids,
+                    default_template_id=template.id,
+                    default_email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature",
+                    email_notification_allow_footer=True,
+                    force_email=True,
+                ).message_post_with_source(
+                    template,
+                    subtype_xmlid="mail.mt_comment",
+                    email_layout_xmlid="mail.mail_notification_layout_with_responsible_signature",
+                )
+
+    def _send_pending_notification(self):
+        self._post_message_from_template(
+            "idtx_batch_quality.mail_template_tono_eval_pending",
+            "_get_internal_notification_emails",
+        )
+
+    def _send_client_response_notification(self):
+        self._post_message_from_template(
+            "idtx_batch_quality.mail_template_tono_eval_client_response",
+            "_get_quality_manager_notification_emails",
+        )
+
     @api.depends_context("uid")
     def _compute_user_has_group_quality_manager(self):
         has_group = self.env.user.has_group("quality.group_quality_manager")
         for rec in self:
             rec.user_has_group_quality_manager = has_group
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        records._subscribe_internal_followers()
+        pending_records = records.filtered(lambda rec: rec.resultado == "pendiente")
+        if pending_records:
+            pending_records._send_pending_notification()
+        return records
+
+    def write(self, vals):
+        previous_results = {}
+        if "resultado" in vals:
+            previous_results = {rec.id: rec.resultado for rec in self}
+
+        result = super().write(vals)
+
+        if "resultado" in vals:
+            changed_records = self.filtered(lambda rec: previous_results.get(rec.id) != rec.resultado)
+            pending_records = changed_records.filtered(lambda rec: rec.resultado == "pendiente")
+            if pending_records:
+                pending_records._send_pending_notification()
+
+            client_response_records = changed_records.filtered(lambda rec: rec.resultado in ("aprobado", "rechazado"))
+            if self.env.context.get("notify_tono_eval_client_response") and client_response_records:
+                client_response_records._send_client_response_notification()
+
+        return result
 
     def unlink(self):
         if self.env.context.get("allow_group_eval_log_unlink"):
@@ -113,28 +218,29 @@ class ControlTonoEvalLog(models.Model):
         return result
     
     def action_approve(self):
-        self.motivo_tono = False
-        self.motivo_tacto = False
-        self.motivo_apariencia = False
-        self.resultado = "aprobado"
+        self.write({
+            "motivo_tono": False,
+            "motivo_tacto": False,
+            "motivo_apariencia": False,
+            "resultado": "aprobado",
+        })
 
     def action_conciliate(self):
-        self.resultado = "concesionado"
+        self.write({"resultado": "concesionado"})
 
     def action_reject(self):
-        self.motivo_tono = False
-        self.motivo_tacto = False
-        self.motivo_apariencia = False
-        self.resultado = "rechazado"
+        self.write({
+            "motivo_tono": False,
+            "motivo_tacto": False,
+            "motivo_apariencia": False,
+            "resultado": "rechazado",
+        })
 
     def action_send(self):
-        for rec in self:
-            rec.resultado = "pendiente"
+        self.write({"resultado": "pendiente"})
 
     def action_client_approve(self):
-        for rec in self:
-            rec.resultado = "aprobado"
+        self.with_context(notify_tono_eval_client_response=True).write({"resultado": "aprobado"})
 
     def action_client_reject(self):
-        for rec in self:
-            rec.resultado = "rechazado"
+        self.with_context(notify_tono_eval_client_response=True).write({"resultado": "rechazado"})
