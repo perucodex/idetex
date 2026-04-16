@@ -15,7 +15,16 @@
     'version': '0.1',
     'license': 'LGPL-3',
 
-    'depends': ['base', "web", "mrp", "mail", "idtx_batch_control", 'quality', 'quality_control', 'idtx_product_development'],
+    'depends': [
+        'base', 
+        "web", 
+        "mrp", 
+        "mail", 
+        "idtx_batch_control", 
+        'quality', 
+        'quality_control', 
+        'idtx_product_development',
+        ],
 
     'data': [
         'security/ir.model.access.csv',
