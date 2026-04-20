@@ -79,6 +79,8 @@ msgid ""
 "<span class=\"o_form_label mx-3 oe_edit_only text-center\" style=\"width: "
 "6ch;\">to</span>"
 msgstr ""
+"<span class=\"o_form_label mx-3 oe_edit_only text-center\" style=\"width: "
+"6ch;\">hasta</span>"
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.density_stability_twisting_form_view
@@ -1041,12 +1043,12 @@ msgstr "Longitud"
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__length_shrinkage_from
 msgid "Length Shrinkage From"
-msgstr "Porcentaje de largo desde"
+msgstr "Encogimiento de largo desde"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__length_shrinkage_to
 msgid "Length Shrinkage To"
-msgstr "Porcentaje de largo hasta"
+msgstr "Encogimiento de largo hasta"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__ligament_id
@@ -2234,12 +2236,12 @@ msgstr "Ancho"
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__width_shrinkage_from
 msgid "Width Shrinkage From"
-msgstr "Procentaje de ancho desde"
+msgstr "Encogimiento de ancho desde"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__width_shrinkage_to
 msgid "Width Shrinkage To"
-msgstr "Procentaje de ancho hasta"
+msgstr "Encogimiento de ancho hasta"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_routing_line__workcenter_id

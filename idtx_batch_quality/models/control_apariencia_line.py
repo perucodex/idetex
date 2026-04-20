@@ -23,6 +23,13 @@ class ControlAparienciaLine(models.Model):
         index=True,
     )
     apariencia_id = fields.Many2one('control.apariencia', string='Apariencia', required=True)
+    sample_type = fields.Selection(
+        related="evaluacion_id.sample_type",
+        string="Tipo de Muestra",
+        store=True,
+        readonly=True,
+        index=True,
+    )
     rollo_num = fields.Integer(string="N° Rollo", required=True, index=True)
     width = fields.Float('Width (meters)', digits=(10, 2), required=True)
     meters = fields.Float('Meters', digits=(10, 2), required=True)
@@ -58,20 +65,23 @@ class ControlAparienciaLine(models.Model):
             if rec.evaluacion_id.apariencia_id != rec.apariencia_id:
                 raise ValidationError("La evaluacion seleccionada no corresponde al control de apariencia indicado.")
 
-    @api.constrains("pedido_line_id", "apariencia_id", "rollo_num")
+    @api.constrains("pedido_line_id", "apariencia_id", "evaluacion_id", "sample_type", "rollo_num")
     def _check_rollo_unique_per_partida_and_apariencia(self):
         for rec in self:
-            if not rec.pedido_line_id or not rec.apariencia_id or rec.rollo_num <= 0:
+            if not rec.pedido_line_id or not rec.apariencia_id or not rec.evaluacion_id or rec.rollo_num <= 0:
                 continue
+            sample_type = rec.evaluacion_id.sample_type or "acabado"
+            sample_type_label = dict(rec.evaluacion_id._SAMPLE_TYPE_SELECTION).get(sample_type, sample_type)
             duplicate = self.search_count([
                 ("pedido_line_id", "=", rec.pedido_line_id.id),
                 ("apariencia_id", "=", rec.apariencia_id.id),
+                ("evaluacion_id.sample_type", "=", sample_type),
                 ("rollo_num", "=", rec.rollo_num),
                 ("id", "!=", rec.id),
             ])
             if duplicate:
                 raise ValidationError(
-                    f"El rollo {rec.rollo_num} ya fue registrado en {rec.apariencia_id.display_name} para esta partida."
+                    f"El rollo {rec.rollo_num} ya fue registrado en {rec.apariencia_id.display_name} ({sample_type_label}) para esta partida."
                 )
 
     @api.model_create_multi
@@ -88,35 +98,56 @@ class ControlAparienciaLine(models.Model):
                     vals["pedido_line_id"] = evaluacion.pedido_line_id.id
 
             if not vals.get("evaluacion_id") and pedido_line_id and apariencia_id:
+                sample_type = self._normalize_sample_type(vals.get("sample_type") or self.env.context.get("sample_type"))
                 evaluacion = eval_model.create({
                     "pedido_line_id": pedido_line_id,
                     "apariencia_id": apariencia_id,
+                    "sample_type": sample_type,
                 })
                 vals["evaluacion_id"] = evaluacion.id
 
         return super().create(vals_list)
 
     def _get_rollo_unique_domain(self, rec):
+        sample_type = rec.evaluacion_id.sample_type if rec.evaluacion_id else "acabado"
         return [
             ("pedido_line_id", "=", rec.pedido_line_id.id),
             ("apariencia_id", "=", rec.apariencia_id.id),
+            ("evaluacion_id.sample_type", "=", sample_type),
             ("rollo_num", "=", rec.rollo_num),
             ("id", "!=", rec.id),
         ]
 
-    def _get_rollo_unique_create_domain(self, pedido_line_id, apariencia_id, rollo_num):
+    def _get_rollo_unique_create_domain(self, pedido_line_id, apariencia_id, rollo_num, sample_type="acabado"):
         return [
             ("pedido_line_id", "=", pedido_line_id),
             ("apariencia_id", "=", apariencia_id),
+            ("evaluacion_id.sample_type", "=", sample_type),
             ("rollo_num", "=", rollo_num),
         ]
 
     @api.model
-    def action_tablet_check_rollo_available(self, pedido_line_id, rollo_num, apariencia_id=False, evaluacion_id=False):
+    def _normalize_sample_type(self, sample_type):
+        sample_type = sample_type or "acabado"
+        sample_type = str(sample_type)
+        valid_sample_types = {key for key, _label in self.env["control.apariencia.eval"]._SAMPLE_TYPE_SELECTION}
+        if sample_type not in valid_sample_types:
+            raise UserError("Tipo de muestra invalido.")
+        return sample_type
+
+    @api.model
+    def _sample_type_label(self, sample_type):
+        selection = dict(self.env["control.apariencia.eval"]._SAMPLE_TYPE_SELECTION)
+        return selection.get(sample_type, sample_type or "")
+
+    @api.model
+    def action_tablet_check_rollo_available(self, pedido_line_id, rollo_num, apariencia_id=False, evaluacion_id=False, sample_type=False):
         pedido_line_id = int(pedido_line_id or 0)
         rollo_num = int(rollo_num or 0)
         apariencia_id = int(apariencia_id or 0)
         evaluacion_id = int(evaluacion_id or 0)
+        sample_type = self._normalize_sample_type(sample_type)
+        sample_type_label = self._sample_type_label(sample_type)
 
         if not pedido_line_id:
             return {"ok": False, "message": "Seleccione una partida."}
@@ -129,14 +160,21 @@ class ControlAparienciaLine(models.Model):
             evaluacion = self.env["control.apariencia.eval"].browse(evaluacion_id)
             # Si la evaluacion previa no coincide con la seleccion actual,
             # la ignoramos para validar solo por partida + apariencia + rollo.
-            if not evaluacion.exists() or evaluacion.pedido_line_id.id != pedido_line_id or evaluacion.apariencia_id.id != apariencia_id:
+            if (
+                not evaluacion.exists()
+                or evaluacion.pedido_line_id.id != pedido_line_id
+                or evaluacion.apariencia_id.id != apariencia_id
+                or evaluacion.sample_type != sample_type
+            ):
                 evaluacion_id = 0
 
-        exists = self.search_count(self._get_rollo_unique_create_domain(pedido_line_id, apariencia_id, rollo_num))
+        exists = self.search_count(
+            self._get_rollo_unique_create_domain(pedido_line_id, apariencia_id, rollo_num, sample_type)
+        )
         if exists:
             return {
                 "ok": False,
-                "message": f"El rollo {rollo_num} ya fue evaluado para este control de apariencia.",
+                "message": f"El rollo {rollo_num} ya fue evaluado para este control de apariencia ({sample_type_label}).",
             }
 
         return {"ok": True}
@@ -178,9 +216,13 @@ class ControlAparienciaLine(models.Model):
         grouped = {}
         for roll_line in roll_lines:
             line_groups = grouped.setdefault(roll_line.pedido_line_id.id, {})
-            apariencia_group = line_groups.setdefault(roll_line.apariencia_id.id, {
+            sample_type = roll_line.evaluacion_id.sample_type or "acabado"
+            group_key = (roll_line.apariencia_id.id, sample_type)
+            apariencia_group = line_groups.setdefault(group_key, {
                 "apariencia_id": roll_line.apariencia_id.id,
                 "apariencia_name": roll_line.apariencia_id.display_name or "",
+                "sample_type": sample_type,
+                "sample_type_label": self._sample_type_label(sample_type),
                 "rollo_nums": [],
             })
             apariencia_group["rollo_nums"].append(int(roll_line.rollo_num or 0))
@@ -192,11 +234,13 @@ class ControlAparienciaLine(models.Model):
                 groups.append({
                     "apariencia_id": group["apariencia_id"],
                     "apariencia_name": group["apariencia_name"],
+                    "sample_type": group["sample_type"],
+                    "sample_type_label": group["sample_type_label"],
                     "rollo_nums": rollo_nums,
                     "rollo_count": len(rollo_nums),
                     "rollo_label": ", ".join(str(num) for num in rollo_nums) if rollo_nums else "",
                 })
-            groups.sort(key=lambda item: (item["apariencia_name"], item["apariencia_id"]))
+            groups.sort(key=lambda item: (item["apariencia_name"], item["sample_type_label"], item["apariencia_id"]))
             summary_by_line[pedido_line_id] = groups
 
         return summary_by_line
@@ -270,6 +314,7 @@ class ControlAparienciaLine(models.Model):
         meters=None,
         apariencia_id=None,
         evaluacion_id=None,
+        sample_type=False,
     ):
         pedido_line = self.env["control.pedido.line"].browse(int(pedido_line_id))
         if not pedido_line.exists():
@@ -280,6 +325,9 @@ class ControlAparienciaLine(models.Model):
         if not apariencia.exists():
             raise UserError("Seleccione un control de apariencia válido.")
 
+        sample_type = self._normalize_sample_type(sample_type)
+        sample_type_label = self._sample_type_label(sample_type)
+
         evaluacion = self.env["control.apariencia.eval"].browse(int(evaluacion_id or 0))
         if evaluacion and not evaluacion.exists():
             raise UserError("La evaluacion seleccionada no existe.")
@@ -287,20 +335,27 @@ class ControlAparienciaLine(models.Model):
             raise UserError("La evaluacion seleccionada no pertenece a la partida indicada.")
         if evaluacion and evaluacion.apariencia_id != apariencia:
             raise UserError("La evaluacion seleccionada no corresponde al control de apariencia indicado.")
+        if evaluacion and evaluacion.sample_type != sample_type:
+            raise UserError("La evaluacion seleccionada no corresponde al tipo de muestra indicado.")
 
         if not evaluacion:
             evaluacion = self.env["control.apariencia.eval"].create({
                 "pedido_line_id": pedido_line.id,
                 "apariencia_id": apariencia.id,
+                "sample_type": sample_type,
             })
 
         rollo_num = int(rollo_num or 0)
         if rollo_num <= 0:
             raise UserError("El N° Rollo debe ser mayor a 0.")
 
-        exists = self.search_count(self._get_rollo_unique_create_domain(pedido_line.id, apariencia.id, rollo_num))
+        exists = self.search_count(
+            self._get_rollo_unique_create_domain(pedido_line.id, apariencia.id, rollo_num, sample_type)
+        )
         if exists:
-            raise UserError(f"El rollo {rollo_num} ya fue evaluado para el control de apariencia {apariencia.display_name}.")
+            raise UserError(
+                f"El rollo {rollo_num} ya fue evaluado para el control de apariencia {apariencia.display_name} ({sample_type_label})."
+            )
 
         width = float(width or 0.0)
         if width <= 0:

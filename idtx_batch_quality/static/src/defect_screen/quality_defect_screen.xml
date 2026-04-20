@@ -89,17 +89,34 @@
                                             </div>
 
                                             <div class="o_qds_field">
+                                                <label class="form-label fw-bold mb-1">Tipo de Muestra</label>
+                                                <select class="form-select form-select-lg o_qds_input"
+                                                        t-att-value="state.sampleType"
+                                                        t-on-change="onSampleTypeChange"
+                                                        t-att-disabled="!state.selectedAparienciaId ? true : undefined">
+                                                    <t t-foreach="SAMPLE_TYPE_OPTIONS" t-as="opt" t-key="opt.value">
+                                                        <option t-att-value="opt.value"
+                                                                t-att-disabled="opt.value === '' and !!state.sampleType ? true : undefined"
+                                                                t-esc="opt.label"/>
+                                                    </t>
+                                                </select>
+                                            </div>
+
+                                            <div class="o_qds_field">
                                                 <label class="form-label fw-bold mb-1">Partida</label>
 
                                                 <t t-if="!state.selectedAparienciaId">
                                                     <div class="small text-muted mb-2">Seleccione primero el control de apariencia.</div>
+                                                </t>
+                                                <t t-elif="!state.sampleType">
+                                                    <div class="small text-muted mb-2">Seleccione primero el tipo de muestra.</div>
                                                 </t>
 
                                                 <div class="o_qds_autocomplete">
                                                     <input type="text"
                                                            class="form-control form-control-lg o_qds_input"
                                                            placeholder="Escribe la Partida..."
-                                                           t-att-disabled="!state.selectedAparienciaId ? true : undefined"
+                                                           t-att-disabled="(!state.selectedAparienciaId || !state.sampleType) ? true : undefined"
                                                            t-on-input="onPartidaQueryInput"
                                                            t-on-focus="onPartidaInputFocus"
                                                            t-att-value="state.partidaQuery"/>
@@ -192,6 +209,10 @@
                                                     <b t-esc="state.selectedAparienciaData?.name || '-'"/>
                                                 </div>
                                                 <div class="o_qds_kv">
+                                                    <span class="text-muted">Tipo de Muestra</span>
+                                                    <b t-esc="selectedSampleTypeLabel"/>
+                                                </div>
+                                                <div class="o_qds_kv">
                                                     <span class="text-muted">Partida</span>
                                                     <b t-esc="state.selectedPartidaData.batch || '-'"/>
                                                 </div>
@@ -214,10 +235,11 @@
                                                     <div class="text-muted mb-1">Rollos ya evaluados</div>
                                                     <t t-if="selectedPartidaEvaluatedRollGroups.length">
                                                         <div class="d-flex flex-column gap-2">
-                                                            <t t-foreach="selectedPartidaEvaluatedRollGroups" t-as="group" t-key="group.apariencia_id">
+                                                            <t t-foreach="selectedPartidaEvaluatedRollGroups" t-as="group" t-key="group.apariencia_id + '-' + group.sample_type">
                                                                 <div class="border rounded p-2">
                                                                     <div>
                                                                         <b t-esc="group.apariencia_name || '-'"/>
+                                                                        <span class="text-muted"> - <t t-esc="group.sample_type_label || '-'"/></span>
                                                                         <span class="text-muted">(<t t-esc="group.rollo_count || 0"/> rollos)</span>
                                                                     </div>
                                                                     <div class="small" t-esc="group.rollo_label || '-'"/>

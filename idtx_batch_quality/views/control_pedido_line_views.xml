@@ -70,6 +70,7 @@
                             <field name="create_date" string="Fecha"/>
                             <field name="create_uid" string="Usuario"/>
                             <field name="apariencia_id" string="Apariencia"/>
+                            <field name="sample_type" string="Tipo"/>
                             <field name="line_count" string="Rollos"/>
                             <field name="quality_point" string="Quality Point"/>
                         </list>

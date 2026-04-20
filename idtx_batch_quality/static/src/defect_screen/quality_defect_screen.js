@@ -21,7 +21,17 @@ const VOICE_STOPWORDS = new Set([
     "falla", "falla", "defecto", "defectos", "tamano", "tamaño", "numero", "n", "size",
 ]);
 
-const DRAFT_STORAGE_KEY = "idtx_batch_quality.defect_screen.draft.v3";
+const DRAFT_STORAGE_KEY = "idtx_batch_quality.defect_screen.draft.v4";
+
+const SAMPLE_TYPE_OPTIONS = [
+    { value: "", label: "Seleccione..." },
+    { value: "seco_ppe", label: "Seco PPE" },
+    { value: "empastado_digital", label: "Empastado Digital" },
+    { value: "seco_estampado_rama", label: "Seco Estampado Rama" },
+    { value: "acabado", label: "Acabado" },
+    { value: "sanforizado_compactado", label: "Sanforizado y Compactado" },
+    { value: "estampado", label: "Estampado" },
+];
 
 function safeJsonParse(value) {
     try {
@@ -76,6 +86,7 @@ export class QualityDefectScreen extends Component {
     };
 
     setup() {
+        this.SAMPLE_TYPE_OPTIONS = SAMPLE_TYPE_OPTIONS;
         this.orm = useService("orm");
         this.notification = useService("notification");
         this.homeMenu = useService("home_menu");
@@ -110,6 +121,7 @@ export class QualityDefectScreen extends Component {
             selectedPartidaId: "",
             selectedPartidaData: null,
             selectedEvaluacionId: "",
+            sampleType: "",
             rolloNum: "",
             width: "",
             meters: "",
@@ -227,6 +239,7 @@ export class QualityDefectScreen extends Component {
     get canProceedBasics() {
         return (
             Boolean(this._resolveAparienciaIdFromState()) &&
+            Boolean(this.state.sampleType) &&
             Boolean(this.state.selectedPartidaId) &&
             Number(this.state.rolloNum) > 0 &&
             parsePositiveFloat(this.state.width) > 0 &&
@@ -259,7 +272,17 @@ export class QualityDefectScreen extends Component {
 
     // Rollo aparece SOLO cuando ya se seleccionó una partida (y aún no empezó captura)
     get shouldShowRolloInput() {
-        return Boolean(this._resolveAparienciaIdFromState()) && Boolean(this.state.selectedPartidaId) && !this.hasSession;
+        return (
+            Boolean(this._resolveAparienciaIdFromState())
+            && Boolean(this.state.sampleType)
+            && Boolean(this.state.selectedPartidaId)
+            && !this.hasSession
+        );
+    }
+
+    get selectedSampleTypeLabel() {
+        const option = SAMPLE_TYPE_OPTIONS.find((opt) => opt.value === this.state.sampleType);
+        return option ? option.label : "-";
     }
 
     get filteredApariencias() {
@@ -290,11 +313,17 @@ export class QualityDefectScreen extends Component {
             ? [...this.state.selectedPartidaData.evaluated_roll_groups]
             : [];
         const selectedAparienciaId = Number(this.state.selectedAparienciaId || 0);
+        const selectedSampleType = this.state.sampleType || "";
         groups.sort((left, right) => {
             const leftSelected = Number(left?.apariencia_id || 0) === selectedAparienciaId ? 0 : 1;
             const rightSelected = Number(right?.apariencia_id || 0) === selectedAparienciaId ? 0 : 1;
             if (leftSelected !== rightSelected) {
                 return leftSelected - rightSelected;
+            }
+            const leftSampleSelected = String(left?.sample_type || "") === selectedSampleType ? 0 : 1;
+            const rightSampleSelected = String(right?.sample_type || "") === selectedSampleType ? 0 : 1;
+            if (leftSampleSelected !== rightSampleSelected) {
+                return leftSampleSelected - rightSampleSelected;
             }
             return String(left?.apariencia_name || "").localeCompare(String(right?.apariencia_name || ""));
         });
@@ -311,6 +340,7 @@ export class QualityDefectScreen extends Component {
             showPartidaDropdown: Boolean(this.state.showPartidaDropdown),
             selectedPartidaId: this.state.selectedPartidaId ? String(this.state.selectedPartidaId) : "",
             selectedEvaluacionId: this.state.selectedEvaluacionId ? String(this.state.selectedEvaluacionId) : "",
+            sampleType: this.state.sampleType ? String(this.state.sampleType) : "",
             rolloNum: this.state.rolloNum ? String(this.state.rolloNum) : "",
             width: this.state.width ? String(this.state.width) : "",
             meters: this.state.meters ? String(this.state.meters) : "",
@@ -345,12 +375,14 @@ export class QualityDefectScreen extends Component {
         this.state.partidaQuery = typeof draft.partidaQuery === "string" ? draft.partidaQuery : "";
         this.state.selectedPartidaId = draft.selectedPartidaId ? String(draft.selectedPartidaId) : "";
         this.state.selectedEvaluacionId = draft.selectedEvaluacionId ? String(draft.selectedEvaluacionId) : "";
+        this.state.sampleType = draft.sampleType ? String(draft.sampleType) : "";
         this.state.rolloNum = draft.rolloNum ? String(draft.rolloNum) : "";
         this.state.width = draft.width ? String(draft.width) : "";
         this.state.meters = draft.meters ? String(draft.meters) : "";
 
         const hasBasics =
             Boolean(this.state.selectedAparienciaId) &&
+            Boolean(this.state.sampleType) &&
             Boolean(this.state.selectedPartidaId) &&
             Number(this.state.rolloNum) > 0 &&
             parsePositiveFloat(this.state.width) > 0;
@@ -468,6 +500,17 @@ export class QualityDefectScreen extends Component {
             this.state.selectedAparienciaData = null;
         }
         this._syncSelectedAparienciaData();
+        this._saveDraft();
+    }
+
+    onSampleTypeChange(event) {
+        const value = String(event.target.value || "");
+        this.state.sampleType = value;
+        this.state.selectedEvaluacionId = "";
+        this.state.rolloValidationError = "";
+        if (Number(this.state.rolloNum) > 0) {
+            this._debouncedValidateRollo();
+        }
         this._saveDraft();
     }
 
@@ -642,8 +685,9 @@ export class QualityDefectScreen extends Component {
         const pedidoLineId = Number(this.state.selectedPartidaId || 0);
         const rolloNum = Number(this.state.rolloNum || 0);
         const aparienciaId = Number(this._ensureResolvedAparienciaSelection() || 0);
+        const sampleType = this.state.sampleType || "";
 
-        if (!pedidoLineId || rolloNum <= 0) {
+        if (!pedidoLineId || rolloNum <= 0 || !sampleType) {
             this.state.rolloValidationError = "";
             this.state.isCheckingRollo = false;
             return true;
@@ -655,7 +699,7 @@ export class QualityDefectScreen extends Component {
             const result = await this.orm.call(
                 "control.apariencia.line",
                 "action_tablet_check_rollo_available",
-                [pedidoLineId, rolloNum, aparienciaId, Number(this.state.selectedEvaluacionId || 0)],
+                [pedidoLineId, rolloNum, aparienciaId, Number(this.state.selectedEvaluacionId || 0), sampleType],
                 { context: { appearance_type: "quality" } }
             );
             if (seq !== this._rolloValidateSeq) {
@@ -688,6 +732,11 @@ export class QualityDefectScreen extends Component {
             return;
         }
 
+        if (!this.state.sampleType) {
+            this.notification.add("Seleccione el tipo de muestra.", { type: "warning" });
+            return;
+        }
+
         if (Number(this.state.rolloNum) <= 0) {
             this.notification.add("Ingrese un numero de rollo valido.", { type: "warning" });
             return;
@@ -716,6 +765,7 @@ export class QualityDefectScreen extends Component {
                 [
                     Number(this.state.selectedPartidaId),
                     aparienciaId,
+                    this.state.sampleType,
                     Number(this.state.selectedEvaluacionId || 0),
                 ],
                 { context: { appearance_type: "quality" } }
@@ -1342,6 +1392,7 @@ export class QualityDefectScreen extends Component {
                 metersValue,
                 Number(this.state.selectedAparienciaId),
                 Number(this.state.selectedEvaluacionId || 0),
+                this.state.sampleType,
             ]);
 
             this.notification.add("Registro guardado.", { type: "success" });
@@ -1363,6 +1414,7 @@ export class QualityDefectScreen extends Component {
         const selectedAparienciaId = this.state.selectedAparienciaId;
         const selectedAparienciaData = this.state.selectedAparienciaData;
         const aparienciaQuery = selectedAparienciaData?.name ? String(selectedAparienciaData.name) : this.state.aparienciaQuery;
+        const sampleType = this.state.sampleType;
 
         this.state.aparienciaQuery = aparienciaQuery || "";
         this.state.selectedAparienciaId = selectedAparienciaId || "";
@@ -1373,6 +1425,7 @@ export class QualityDefectScreen extends Component {
         this.state.selectedPartidaId = selectedPartidaId || "";
         this.state.selectedPartidaData = selectedPartidaData || null;
         this.state.selectedEvaluacionId = this.state.selectedEvaluacionId || "";
+        this.state.sampleType = sampleType || "";
         this.state.rolloNum = "";
         this.state.width = "";
         this.state.meters = "";
@@ -1401,6 +1454,7 @@ export class QualityDefectScreen extends Component {
         this.state.selectedPartidaId = "";
         this.state.selectedPartidaData = null;
         this.state.selectedEvaluacionId = "";
+        this.state.sampleType = "";
         this.state.rolloNum = "";
         this.state.width = "";
         this.state.meters = "";

@@ -8,6 +8,15 @@ class ControlAparienciaEval(models.Model):
     _description = "Evaluacion de Apariencia"
     _order = "create_date desc, id desc"
 
+    _SAMPLE_TYPE_SELECTION = [
+        ("seco_ppe", "Seco PPE"),
+        ("empastado_digital", "Empastado Digital"),
+        ("seco_estampado_rama", "Seco Estampado Rama"),
+        ("acabado", "Acabado"),
+        ("sanforizado_compactado", "Sanforizado y Compactado"),
+        ("estampado", "Estampado"),
+    ]
+
     name = fields.Char(string="Evaluacion", default=lambda self: _('New'), required=True, copy=False)
     pedido_line_id = fields.Many2one(
         "control.pedido.line",
@@ -20,6 +29,13 @@ class ControlAparienciaEval(models.Model):
         "control.apariencia",
         string="Apariencia",
         required=True,
+        index=True,
+    )
+    sample_type = fields.Selection(
+        _SAMPLE_TYPE_SELECTION,
+        string="Tipo de Muestra",
+        required=True,
+        default="acabado",
         index=True,
     )
     line_ids = fields.One2many(
@@ -71,23 +87,40 @@ class ControlAparienciaEval(models.Model):
 
     def _to_tablet_payload(self):
         self.ensure_one()
+        sample_type_label = dict(self._SAMPLE_TYPE_SELECTION).get(self.sample_type, self.sample_type or "")
         return {
             "id": self.id,
             "name": self.name,
             "label": f"{self.name} ({self.line_count} rollos)",
             "pedido_line_id": self.pedido_line_id.id,
             "apariencia_id": self.apariencia_id.id,
+            "sample_type": self.sample_type,
+            "sample_type_label": sample_type_label,
         }
+
+    @classmethod
+    def _normalize_sample_type(cls, sample_type):
+        sample_type = sample_type or "acabado"
+        sample_type = str(sample_type)
+        valid_sample_types = {key for key, _label in cls._SAMPLE_TYPE_SELECTION}
+        if sample_type not in valid_sample_types:
+            raise UserError(_("Tipo de muestra invalido."))
+        return sample_type
 
     def action_print_report(self):
         self.ensure_one()
         return self.env.ref("idtx_batch_quality.action_report_apariencia_eval").report_action(self)
 
     @api.model
-    def action_tablet_get_or_create_evaluacion(self, pedido_line_id, apariencia_id, evaluacion_id=False):
+    def action_tablet_get_or_create_evaluacion(self, pedido_line_id, apariencia_id, sample_type=False, evaluacion_id=False):
         pedido_line_id = int(pedido_line_id or 0)
         apariencia_id = int(apariencia_id or 0)
+        # Backward compatibility with older callers that passed evaluacion_id as 3rd arg.
+        if isinstance(sample_type, (int, float)) and not evaluacion_id:
+            evaluacion_id = int(sample_type or 0)
+            sample_type = False
         evaluacion_id = int(evaluacion_id or 0)
+        sample_type = self._normalize_sample_type(sample_type)
 
         if not pedido_line_id:
             raise UserError("Seleccione una partida valida.")
@@ -96,11 +129,17 @@ class ControlAparienciaEval(models.Model):
 
         if evaluacion_id:
             evaluacion = self.browse(evaluacion_id)
-            if evaluacion.exists() and evaluacion.pedido_line_id.id == pedido_line_id and evaluacion.apariencia_id.id == apariencia_id:
+            if (
+                evaluacion.exists()
+                and evaluacion.pedido_line_id.id == pedido_line_id
+                and evaluacion.apariencia_id.id == apariencia_id
+                and evaluacion.sample_type == sample_type
+            ):
                 return evaluacion._to_tablet_payload()
 
         evaluacion = self.create({
             "pedido_line_id": pedido_line_id,
             "apariencia_id": apariencia_id,
+            "sample_type": sample_type,
         })
         return evaluacion._to_tablet_payload()

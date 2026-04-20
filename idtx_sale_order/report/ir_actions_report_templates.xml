@@ -60,7 +60,7 @@
             <attribute name="t-if">display_taxes and not doc.is_quote</attribute>
         </xpath>
         <!-- Tabla de detalle de servicio de estampado digital -->
-        <xpath expr="//div[hasclass('oe_structure')][last()]" position="after">
+        <xpath expr="//div[span[@name='order_note']]" position="before">
             <t t-if="doc.sale_type == 'service' and doc.is_digital">
                 <div class="o_ps_pagebreak"/>
                 <h3 class="o_ps_title">Digital Printing Design Service Price Summary</h3>
@@ -161,7 +161,7 @@
             </t>
         </xpath>
         <!-- Tabla de detalle de servicio de estampado rotativo -->
-        <xpath expr="//div[hasclass('oe_structure')][last()]" position="after">
+        <xpath expr="//div[span[@name='order_note']]" position="before">
             <t t-if="doc.sale_type == 'service' and doc.is_rotary">
                 <div class="o_ps_pagebreak"/>
                 <h3 class="o_ps_title">Rotary Printing Design Service Price Summary</h3>
@@ -317,7 +317,7 @@
         </xpath>
 
         <!-- Tabla adicional para cotizaciones: resumen tecnico por analysis_id sin duplicados -->
-        <xpath expr="//div[hasclass('oe_structure')][last()]" position="after">
+        <xpath expr="//div[span[@name='order_note']]" position="before">
             <t t-if="doc.is_quote">
                 <t t-set="quote_weaving_lines" t-value="doc.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.analysis_id)"/>
                 <t t-set="quote_analyses" t-value="quote_weaving_lines.mapped('analysis_id')"/>
