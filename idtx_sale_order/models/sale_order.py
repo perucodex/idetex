@@ -462,8 +462,8 @@ class SaleOrder(models.Model):
                             order.weaving_warning += _(
                                 'Product %s has weaving operation but no thread items were found in price details.'
                             ) % (line.product_id.product_tmpl_id.display_name,) + '\n'
-                if line.is_lab_color and not any(op.gives_color for op in line.operation_ids.mapped('operation_id')):
-                    order.weaving_warning += _(('Product %s has a lab color %s but not operation to dieying.') %(line.product_id.product_tmpl_id.display_name, line.product_color_id.name)) + '\n'
+                    if line.is_lab_color and not any(op.gives_color for op in line.operation_ids.mapped('operation_id')):
+                        order.weaving_warning += _(('Product %s has a lab color %s but not operation to dieying.') %(line.product_id.product_tmpl_id.display_name, line.product_color_id.name)) + '\n'
 
             # Si se limpian los warnings, calculamos los precios nuevamente
             if has_warning and not order.weaving_warning:

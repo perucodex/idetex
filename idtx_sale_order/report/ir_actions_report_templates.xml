@@ -372,7 +372,8 @@
                 </t>
                 <t t-if="doc.is_quote">
                     <t t-set="projected_lines" t-value="doc.order_line.filtered(lambda l: not l.bom_id or not l.bom_id.technical_sheet_id.production_state or l.bom_id.technical_sheet_id.production_state == 'Sample')"/>
-                    <t t-if="projected_lines">
+                        <t t-set="projected_products" t-value="projected_lines.mapped('product_template_id')"/>
+                        <t t-if="projected_products">
                         <div style="margin-top: 12px;">
                             <table class="table table-sm" style="width: auto; display: inline-table;">
                                 <thead>
@@ -381,10 +382,10 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <t t-foreach="projected_lines" t-as="line">
+                                    <t t-foreach="projected_products" t-as="product_template">
                                         <tr>
                                             <td class="text-start" style="white-space: nowrap;">
-                                                <span t-esc="line.product_template_id.name"/>
+                                                <span t-esc="product_template.name"/>
                                             </td>
                                         </tr>
                                     </t>

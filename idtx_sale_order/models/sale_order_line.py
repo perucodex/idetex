@@ -433,7 +433,7 @@ class SaleOrderLine(models.Model):
                     subtotal = float_round(bom_line_price * qty, 2)
                     signature.append((
                         product.id,
-                        float_round(qty, 4),
+                        float_round(qty, 2),
                         subtotal,
                     ))
 

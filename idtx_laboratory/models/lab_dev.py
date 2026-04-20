@@ -32,6 +32,8 @@ class LabDev(models.Model):
     ], string='State', default='draft', tracking=True)
     
     def action_development(self):
+        for rec in self.lab_dev_line_ids:
+            rec.colorfastness_washing_id = self.env['colorfastness.washing'].create({})
         self.state = 'dev'
 
     def action_done(self):
@@ -160,11 +162,11 @@ class LabDevLine(models.Model):
                 #         (rec.color_range_id.code or '') + \
                 #         (rec.color_intensity_id.code or '')
                 
-    @api.model_create_multi
-    def create(self, vals_list):
-        for rec in self:
-            rec.colorfastness_washing_id = self.env['colorfastness.washing'].create({})
-        return super().create(vals_list)
+    # @api.model_create_multi
+    # def create(self, vals_list):
+    #     for rec in self:
+    #         rec.colorfastness_washing_id = self.env['colorfastness.washing'].create({})
+    #     return super().create(vals_list)
 
     def unlink(self):
         if any(r.state == 'approved' for r in self.color_recipe_ids):
