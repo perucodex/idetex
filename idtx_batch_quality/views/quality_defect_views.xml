@@ -10,7 +10,6 @@
                 <field name="create_date" string="Fecha"/>
                 <field name="create_uid" string="Usuario"/>
                 <field name="apariencia_id"/>
-                <field name="sample_type"/>
                 <field name="line_count" string="Rollos"/>
             </list>
         </field>
@@ -34,7 +33,6 @@
                         <group>
                             <field name="pedido_line_id" readonly="1"/>
                             <field name="apariencia_id"/>
-                            <field name="sample_type"/>
                             <field name="line_count" readonly="1"/>
                             <field name="quality_point" readonly="1"/>
                         </group>

@@ -163,8 +163,13 @@
                         <filter string="Product" name="group_by_product" domain="[]" context="{'group_by': 'product_id'}"/>
                         <filter string="Customer" name="group_by_partner" domain="[]" context="{'group_by': 'partner_id'}"/>
                         <filter string="Product Description" name="group_by_product_description" domain="[]" context="{'group_by': 'product_description'}"/>
+                        <filter string="Familia" name="group_by_family" domain="[]" context="{'group_by': 'product_family_id'}"/>
+                        <filter string="Apariencia" name="group_by_appearance" domain="[]" context="{'group_by': 'product_appearance_id'}"/>
+                        <filter string="Fiber" name="group_by_fiber" domain="[]" context="{'group_by': 'product_fiber_id'}"/>
                         <filter string="Gauge" name="group_by_gauge_id" domain="[]" context="{'group_by': 'gauge_id'}"/>
                         <filter string="Density" name="group_by_density" domain="[]" context="{'group_by': 'density'}"/>
+                        <filter string="Width" name="group_by_standard_width" domain="[]" context="{'group_by': 'standard_width'}"/>
+                        <filter string="Weave Type" name="group_by_weave_type" domain="[]" context="{'group_by': 'weave_type'}"/>
                     </group>
                 </search>
             </field>

@@ -1,10 +1,24 @@
 from odoo import models, fields, api, _
 from odoo.fields import Command
 from odoo.exceptions import UserError
+from odoo.tools import html_escape
+from markupsafe import Markup
 # from .covatex import MySQLConnector
 import logging
 
 _logger = logging.getLogger(__name__)
+
+
+def _html_bullet_list(lines):
+    return Markup('<br/>').join(Markup(line) for line in lines)
+
+
+def _html_change(label, old_value, new_value):
+    return Markup('%s: %s -&gt; %s') % (
+        html_escape(label),
+        html_escape(old_value or '-'),
+        html_escape(new_value or '-'),
+    )
 
 class TechnicalSheet(models.Model):
     _name = 'technical.sheet'
@@ -61,22 +75,22 @@ class TechnicalSheet(models.Model):
     bom_id = fields.Many2one('mrp.bom', string='LdM')
     mrp_base_process_id = fields.Many2one(related='analysis_id.mrp_base_process_id')
 
-    @staticmethod
-    def _extract_tolerance_ids_from_commands(commands):
-        tolerance_ids = set()
-        for cmd in commands or []:
-            if not isinstance(cmd, (list, tuple)) or len(cmd) < 1:
-                continue
-            operation = cmd[0]
-            if operation == Command.CREATE and len(cmd) > 2 and isinstance(cmd[2], dict):
-                tol_id = cmd[2].get('tolerance_id')
-                if tol_id:
-                    tolerance_ids.add(tol_id)
-            elif operation == Command.LINK and len(cmd) > 1 and cmd[1]:
-                tolerance_ids.add(cmd[1])
-            elif operation == Command.SET and len(cmd) > 2 and isinstance(cmd[2], (list, tuple)):
-                tolerance_ids.update([tol_id for tol_id in cmd[2] if tol_id])
-        return tolerance_ids
+    # @staticmethod
+    # def _extract_tolerance_ids_from_commands(commands):
+    #     tolerance_ids = set()
+    #     for cmd in commands or []:
+    #         if not isinstance(cmd, (list, tuple)) or len(cmd) < 1:
+    #             continue
+    #         operation = cmd[0]
+    #         if operation == Command.CREATE and len(cmd) > 2 and isinstance(cmd[2], dict):
+    #             tol_id = cmd[2].get('tolerance_id')
+    #             if tol_id:
+    #                 tolerance_ids.add(tol_id)
+    #         elif operation == Command.LINK and len(cmd) > 1 and cmd[1]:
+    #             tolerance_ids.add(cmd[1])
+    #         elif operation == Command.SET and len(cmd) > 2 and isinstance(cmd[2], (list, tuple)):
+    #             tolerance_ids.update([tol_id for tol_id in cmd[2] if tol_id])
+    #     return tolerance_ids
 
     def _compute_prod_scrap(self):
         for rec in self:
@@ -164,6 +178,67 @@ class TechnicalRouteLine(models.Model):
             rec.line_parameter_ids.unlink()
             rec.line_parameter_ids = [Command.create({'name': param.name}) for param in rec.operation_id.parameter_ids]
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        for record in records:
+            if record.technical_id:
+                record.technical_id.message_post(
+                    body=Markup('Se agrego una linea de ruta: %s.') % html_escape(record.operation_id.name or '-')
+                )
+        return records
+
+    def write(self, vals):
+        tracked_fields = {'operation_id', 'technical_id'}
+        before_by_id = {}
+        if tracked_fields.intersection(vals):
+            before_by_id = {
+                record.id: {
+                    'operation_name': record.operation_id.name,
+                    'sheet': record.technical_id,
+                }
+                for record in self
+            }
+
+        result = super().write(vals)
+
+        for record in self:
+            before = before_by_id.get(record.id)
+            if not before:
+                continue
+
+            target_sheet = record.technical_id or before['sheet']
+            if not target_sheet:
+                continue
+
+            changes = []
+            if before['operation_name'] != record.operation_id.name:
+                changes.append(_html_change('Operacion', before['operation_name'], record.operation_id.name))
+
+            if changes:
+                target_sheet.message_post(
+                    body=Markup('Se actualizo una linea de ruta:<br/>%s') % _html_bullet_list(changes)
+                )
+
+        return result
+
+    def unlink(self):
+        messages = [
+            (
+                record.technical_id,
+                Markup('Se elimino una linea de ruta: %s.') % html_escape(record.operation_id.name or '-'),
+            )
+            for record in self
+            if record.technical_id
+        ]
+
+        result = super().unlink()
+
+        for sheet, body in messages:
+            sheet.message_post(body=body)
+
+        return result
+
 class RouteLineParameter(models.Model):
     _name = 'route.line.parameter' 
     _description = 'Route Line Parameter'
@@ -172,3 +247,84 @@ class RouteLineParameter(models.Model):
     name = fields.Char('Parameter')
     value = fields.Text('Value')
     is_observation = fields.Boolean('Observación?')
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        for record in records:
+            sheet = record.technical_route_id.technical_id
+            if not sheet:
+                continue
+            sheet.message_post(
+                body=Markup('Se agrego un parametro en la operacion %s: %s.') % (
+                    html_escape(record.technical_route_id.operation_id.name or '-'),
+                    html_escape(record.name or '-'),
+                )
+            )
+        return records
+
+    def write(self, vals):
+        tracked_fields = {'name', 'value', 'is_observation'}
+        before_by_id = {}
+        if tracked_fields.intersection(vals):
+            before_by_id = {
+                record.id: {
+                    'name': record.name,
+                    'value': record.value,
+                    'is_observation': record.is_observation,
+                    'operation_name': record.technical_route_id.operation_id.name,
+                    'sheet': record.technical_route_id.technical_id,
+                }
+                for record in self
+            }
+
+        result = super().write(vals)
+
+        for record in self:
+            before = before_by_id.get(record.id)
+            if not before or not before['sheet']:
+                continue
+
+            changes = []
+            if before['name'] != record.name:
+                changes.append(_html_change('Parametro', before['name'], record.name))
+            if before['value'] != record.value:
+                changes.append(_html_change('Valor', before['value'], record.value))
+            if before['is_observation'] != record.is_observation:
+                changes.append(
+                    _html_change(
+                        'Observacion',
+                        _('Si') if before['is_observation'] else _('No'),
+                        _('Si') if record.is_observation else _('No'),
+                    )
+                )
+
+            if changes:
+                before['sheet'].message_post(
+                    body=Markup('Se actualizo un parametro de la operacion %s:<br/>%s') % (
+                        html_escape(before['operation_name'] or '-'),
+                        _html_bullet_list(changes),
+                    )
+                )
+
+        return result
+
+    def unlink(self):
+        messages = [
+            (
+                record.technical_route_id.technical_id,
+                Markup('Se elimino un parametro de la operacion %s: %s.') % (
+                    html_escape(record.technical_route_id.operation_id.name or '-'),
+                    html_escape(record.name or '-'),
+                ),
+            )
+            for record in self
+            if record.technical_route_id.technical_id
+        ]
+
+        result = super().unlink()
+
+        for sheet, body in messages:
+            sheet.message_post(body=body)
+
+        return result

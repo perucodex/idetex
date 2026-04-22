@@ -264,7 +264,7 @@ class ProductAnalysis(models.Model):
                         MAX(it)        AS it,
                         MAX(ligamento) AS ligamento,
                         MAX(lm1)       AS lm1
-                    FROM tinto_prog 
+                    FROM tinto_prog
                     GROUP BY
                         ficha,
                         item,

@@ -6,7 +6,7 @@
 
     'description': """
 Si un requerimiento tiene el mismo producto pero con diferente descripción entonces al momento
-de crar la orden de compra se cren nuevas lineas y no se juntan todas en una sola.
+de crear la orden de compra se crean nuevas lineas y no se juntan todas en una sola.
     """,
 
     'author': "Codex Development",
