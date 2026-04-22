@@ -190,7 +190,6 @@ def _normalize_texplus_text(value):
 class TechnicalSheet(models.Model):
     _inherit = 'technical.sheet'
 
-    foxpro_ficha = fields.Char('FoxPro Sheet', copy=False, readonly=True)
     foxpro_export_state = fields.Selection([
         ('draft', 'Not Exported'),
         ('done', 'Exported'),
@@ -250,7 +249,7 @@ class TechnicalSheet(models.Model):
         if not analysis.product_code:
             raise UserError(_('El analisis no tiene Product Code.'))
 
-        ficha = _clean_text(self.foxpro_ficha) or _clean_text(analysis.ficha) or self._next_foxpro_ficha()
+        ficha = _clean_text(self.sitpro_sheet) or _clean_text(analysis.ficha) or self._next_foxpro_ficha()
         cdgart = self._get_cdgart()
         cdgclie = self._ensure_cliente(partner)
         weaving_line = analysis.weaving_data_ids.filtered(lambda line: line.technical_sheet_id == self)[:1]
@@ -354,7 +353,7 @@ class TechnicalSheet(models.Model):
             texplus_warning = _('DBF exportado. TEXPLUS pendiente: %s') % error
 
         values = {
-            'foxpro_ficha': ficha,
+            'sitpro_sheet': ficha,
         }
         if not analysis.ficha:
             analysis.ficha = ficha
