@@ -202,14 +202,45 @@
                                                        t-att-disabled="state.submitting ? true : undefined"/>
                                             </div>
 
+                                            <t t-if="isTacho">
+                                                <div class="o_qts_field">
+                                                    <label class="form-label fw-bold mb-2">Comparación con receta de laboratorio</label>
+                                                    <div class="d-flex flex-wrap gap-3">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input"
+                                                                   type="radio"
+                                                                   name="receta_tacho_mode"
+                                                                   id="receta_tacho_same"
+                                                                   value="same"
+                                                                   t-att-checked="state.recetaTachoMode === 'same' ? true : undefined"
+                                                                   t-on-change="onChangeRecetaTachoMode"/>
+                                                            <label class="form-check-label" for="receta_tacho_same">Igual</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input"
+                                                                   type="radio"
+                                                                   name="receta_tacho_mode"
+                                                                   id="receta_tacho_different"
+                                                                   value="different"
+                                                                   t-att-checked="state.recetaTachoMode === 'different' ? true : undefined"
+                                                                   t-on-change="onChangeRecetaTachoMode"/>
+                                                            <label class="form-check-label" for="receta_tacho_different">Diferente</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </t>
+
                                             <div class="o_qts_field">
                                                 <label class="form-label fw-bold mb-1">Receta Tacho</label>
                                                 <input type="text"
                                                        class="form-control form-control-lg o_qts_input"
                                                        t-on-input="onChangeRecetaTono"
-                                                       t-att-value="state.receta_tono"
-                                                       t-att-readonly="selectedMode !== 'tacho' ? true : undefined"
+                                                       t-att-value="isSameRecetaTacho ? state.receta : state.receta_tono"
+                                                       t-att-readonly="selectedMode !== 'tacho' or isSameRecetaTacho ? true : undefined"
                                                        t-att-disabled="state.submitting ? true : undefined"/>
+                                                <t t-if="isSameRecetaTacho">
+                                                    <div class="form-text">Se usará la misma receta de laboratorio como receta de tacho.</div>
+                                                </t>
                                             </div>
                                         </t>
 

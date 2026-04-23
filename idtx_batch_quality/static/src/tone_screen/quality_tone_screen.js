@@ -51,6 +51,7 @@ export class QualityToneScreen extends Component {
             selectedMode: "",
             receta: "",
             receta_tono: "",
+            recetaTachoMode: "same",
             motivo_tono: false,
             motivo_tacto: false,
             motivo_apariencia: false,
@@ -180,7 +181,27 @@ export class QualityToneScreen extends Component {
         if (this.selectedMode === "secado") {
             return true;
         }
+        if (this.selectedMode === "tacho") {
+            const receta = (this.state.receta || "").trim();
+            const recetaTono = this.effectiveRecetaTono;
+            return Boolean(receta && recetaTono);
+        }
         return Boolean((this.state.receta || "").trim() && (this.state.receta_tono || "").trim());
+    }
+
+    get isTacho() {
+        return this.selectedMode === "tacho";
+    }
+
+    get isSameRecetaTacho() {
+        return this.isTacho && this.state.recetaTachoMode === "same";
+    }
+
+    get effectiveRecetaTono() {
+        if (this.isSameRecetaTacho) {
+            return (this.state.receta || "").trim();
+        }
+        return (this.state.receta_tono || "").trim();
     }
 
     get filteredPartidas() {
@@ -320,6 +341,7 @@ export class QualityToneScreen extends Component {
         this.state.selectedMode = "";
         this.state.receta = "";
         this.state.receta_tono = "";
+        this.state.recetaTachoMode = "same";
         this.state.motivo_tono = false;
         this.state.motivo_tacto = false;
         this.state.motivo_apariencia = false;
@@ -348,6 +370,7 @@ export class QualityToneScreen extends Component {
             this.state.selectedMode = context?.mode || "";
             this.state.receta = context?.receta || "";
             this.state.receta_tono = context?.receta_tono || "";
+            this.state.recetaTachoMode = "same";
             this.state.motivo_tono = false;
             this.state.motivo_tacto = false;
             this.state.motivo_apariencia = false;
@@ -372,10 +395,23 @@ export class QualityToneScreen extends Component {
 
     onChangeReceta(event) {
         this.state.receta = event.target.value || "";
+        if (this.isSameRecetaTacho) {
+            this.state.receta_tono = this.state.receta;
+        }
     }
 
     onChangeRecetaTono(event) {
         this.state.receta_tono = event.target.value || "";
+    }
+
+    onChangeRecetaTachoMode(event) {
+        const value = (event.target.value || "same").trim();
+        this.state.recetaTachoMode = value === "different" ? "different" : "same";
+        if (this.state.recetaTachoMode === "same") {
+            this.state.receta_tono = this.state.receta || "";
+        } else {
+            this.state.receta_tono = "";
+        }
     }
 
     onToggleMotivo(fieldName, event) {
@@ -387,12 +423,15 @@ export class QualityToneScreen extends Component {
             return;
         }
         this.state.selectedMode = mode;
+        this.state.recetaTachoMode = "same";
         if (mode !== "acabado") {
             this.state.motivo_tono = false;
             this.state.motivo_tacto = false;
             this.state.motivo_apariencia = false;
         }
-        if (mode !== "tacho" && this.state.tonoContext?.receta_tono) {
+        if (mode === "tacho") {
+            this.state.receta_tono = this.state.receta || "";
+        } else if (this.state.tonoContext?.receta_tono) {
             this.state.receta_tono = this.state.tonoContext.receta_tono;
         }
     }
@@ -413,7 +452,7 @@ export class QualityToneScreen extends Component {
                 this.selectedLineIds,
                 decision,
                 this.state.receta,
-                this.state.receta_tono,
+                this.effectiveRecetaTono,
                 this.state.motivo_tono,
                 this.state.motivo_tacto,
                 this.state.motivo_apariencia,
