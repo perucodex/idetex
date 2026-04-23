@@ -10,6 +10,7 @@
                     <button name="action_export_to_foxpro" type="object" string="Export DBF" invisible="state == 'draft'"/>
                 </xpath>
                 <xpath expr="//field[@name='sitpro_sheet']" position="after">
+                    <field name="foxpro_article_prefix" placeholder="P"/>
                     <field name="foxpro_export_state" widget="badge" readonly="1" decoration-success="foxpro_export_state == 'done'" decoration-danger="foxpro_export_state == 'error'" decoration-muted="foxpro_export_state == 'draft'"/>
                 </xpath>
                 <xpath expr="//field[@name='notes']" position="after">

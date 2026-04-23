@@ -11,13 +11,3 @@ class ResCompany(models.Model):
         default='/mnt/fox/sit06/JP_DBF',
         help='Directorio donde se encuentran las tablas DBF de FoxPro.',
     )
-    foxpro_article_prefix = fields.Char(
-        string='FoxPro Article Prefix',
-        default='P',
-        help='Prefijo por defecto para construir CDGART cuando el analisis no tiene CodigoProductoBD.',
-    )
-    foxpro_auto_export_technical_sheet = fields.Boolean(
-        string='Auto Export Technical Sheet to DBF',
-        default=True,
-        help='Exporta automaticamente la ficha tecnica a DBF al crearla desde el analisis.',
-    )

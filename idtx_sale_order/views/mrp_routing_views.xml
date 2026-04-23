@@ -9,7 +9,7 @@
             <field name="arch" type="xml">
                 <field name="company_id" position="before">
                     <field name="type_prices" invisible="operation_type == 'weaving'" groups="idtx_product_development.group_module_product_development_manager"/>
-                    <field name="per_title" invisible="operation_type == 'weaving'" widget="boolean_toggle" groups="idtx_product_development.group_module_product_development_manager"/>
+                    <field name="per_title" invisible="operation_type == 'weaving' or type_prices == 'pp'" widget="boolean_toggle" groups="idtx_product_development.group_module_product_development_manager"/>
                     <field name="currency_id" invisible="operation_type == 'weaving'" groups="idtx_product_development.group_module_product_development_manager"/>
                     <field name="unit_price" invisible = "type_prices == 'col' or operation_type == 'weaving'" groups="idtx_product_development.group_module_product_development_manager"/>
                 </field>

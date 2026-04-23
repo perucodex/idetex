@@ -110,7 +110,33 @@
                                 </field>
                             </page>
                             <page name="route_page" string="Routing">
-                                <field name="route_line_ids" readonly="state != 'draft'">
+                                <field name="route_line_ids" readonly="state != 'draft'" groups="!idtx_product_development.group_module_product_development_manager">
+                                    <list>
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="operation_id"/>
+                                        <field name="workcenter_id"/>
+                                    </list>
+                                    <form>
+                                        <group>
+                                            <group>
+                                                <field name="operation_id" readonly="line_parameter_ids"/>
+                                                <field name="workcenter_id"/>
+                                            </group>
+                                        </group>
+                                        <notebook>
+                                            <page name="param_page" string="Parameters">
+                                                <field name="line_parameter_ids">
+                                                    <list editable="bottom">
+                                                        <field name="name"/>
+                                                        <field name="value"/>
+                                                        <field name="is_observation" widget="boolean_toggle"/>
+                                                    </list>
+                                                </field>
+                                            </page>
+                                        </notebook>
+                                    </form>
+                                </field>
+                                <field name="route_line_ids" groups="idtx_product_development.group_module_product_development_manager">
                                     <list>
                                         <field name="sequence" widget="handle"/>
                                         <field name="operation_id"/>

@@ -19,6 +19,11 @@ de FoxPro usadas por SITPRO/Tintoreria.
         'views/res_config_settings_views.xml',
         'views/technical_sheet_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'idtx_product_development_dbf/static/src/js/technical_sheet_export_prompt.js',
+        ],
+    },
     'installable': True,
     'application': False,
 }

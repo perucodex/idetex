@@ -116,6 +116,7 @@ FIELD_NAMES = {
 
 PARAMETER_LABEL_ALIASES = {
     'ANCH DE ENTRADA': 'ANCHO DE ENTRADA',
+    'TEMPERATURA C': 'TEMPERATURA',
 }
 
 
@@ -187,9 +188,23 @@ def _normalize_texplus_text(value):
     return text.strip()
 
 
+def _normalize_export_prefix(value):
+    prefix = _clean_text(value).upper()
+    if prefix not in {'M', 'P', 'S'}:
+        raise UserError(_('Debe ingresar un prefijo valido de una sola letra: M, P o S.'))
+    return prefix
+
+
+def _is_memo_field(field_type):
+    if isinstance(field_type, str):
+        return field_type.upper() == 'M'
+    return field_type == ord('M')
+
+
 class TechnicalSheet(models.Model):
     _inherit = 'technical.sheet'
 
+    foxpro_article_prefix = fields.Char('FoxPro Article Prefix', size=1, copy=False)
     foxpro_export_state = fields.Selection([
         ('draft', 'Not Exported'),
         ('done', 'Exported'),
@@ -221,6 +236,10 @@ class TechnicalSheet(models.Model):
     def action_export_to_foxpro(self):
         for sheet in self:
             try:
+                if not _clean_text(sheet.analysis_id.codpro):
+                    prefix = sheet._get_export_prefix()
+                    if _clean_text(sheet.foxpro_article_prefix) != prefix:
+                        sheet.write({'foxpro_article_prefix': prefix})
                 warning_message = sheet._export_to_foxpro_dbf()
                 sheet.write({
                     'foxpro_export_state': 'done',
@@ -253,7 +272,7 @@ class TechnicalSheet(models.Model):
         cdgart = self._get_cdgart()
         cdgclie = self._ensure_cliente(partner)
         weaving_line = analysis.weaving_data_ids.filtered(lambda line: line.technical_sheet_id == self)[:1]
-        notes = _clean_text(self.notes or weaving_line.notes or analysis.notes)
+        notes = _clean_text(weaving_line.notes or self.notes or analysis.notes)
         fecha = self.technical_date or analysis.analysis_date or fields.Date.context_today(self)
         process_table_values = self._collect_process_table_values(ficha, fecha)
 
@@ -280,7 +299,7 @@ class TechnicalSheet(models.Model):
             'TROLLO': _dbf_number_text(self.finish_width),
             'VROLLO': _dbf_number_text(self.finish_density),
             'RROLLO': _dbf_number_text(self.finish_yield),
-            'OBS': notes,
+            'OBS': notes.upper(),
         }
         crudo_values.update(process_table_values.pop('tinto_crudo.dbf', {}))
         self._upsert_single('tinto_crudo.dbf', 'FICHA', ficha, crudo_values)
@@ -311,7 +330,6 @@ class TechnicalSheet(models.Model):
                 'FASE': _phase_code(route_line.operation_id.name),
                 'FASECOM': route_line.operation_id.name,
             })
-            print(index, route_line, route_line.operation_id.name)
 
         fibers = weaving_line.fiber_ids if weaving_line else self.env['analysis.fiber']
         if not fibers:
@@ -369,15 +387,21 @@ class TechnicalSheet(models.Model):
             raise UserError(_('La ruta DBF configurada no existe o no es un directorio valido: %s') % dbf_root)
         return root
 
+    def _get_export_prefix(self):
+        self.ensure_one()
+        return _normalize_export_prefix(
+            self.env.context.get('foxpro_article_prefix') or self.foxpro_article_prefix
+        )
+
     def _get_cdgart(self):
         self.ensure_one()
         analysis = self.analysis_id
         raw_code = _clean_text(analysis.codpro)
         if not raw_code:
-            prefix = _clean_text(self.company_id.foxpro_article_prefix or 'P')[:1] or 'P'
+            prefix = self._get_export_prefix()
             raw_code = f'{prefix}{_clean_text(analysis.product_code)}'
         if len(raw_code) != 16:
-            raise UserError(_('El codigo a exportar a CDGART debe tener 16 caracteres. Revise CodigoProductoBD o el prefijo configurado. Valor actual: %s') % raw_code)
+            raise UserError(_('El codigo a exportar a CDGART debe tener 16 caracteres. Revise CodigoProductoBD o el prefijo guardado. Valor actual: %s') % raw_code)
         return raw_code
 
     def _get_sql_connection(self):
@@ -445,7 +469,7 @@ class TechnicalSheet(models.Model):
             conn = self._get_texplus_sql_connection()
             cursor = conn.cursor()
             self._configure_texplus_cursor(cursor)
-            client_code = 1 #self._get_texplus_client_code(partner, cursor=cursor)
+            client_code = 1
             self._upsert_texplus_articu(cursor, article_code, client_code, notes)
             self._upsert_texplus_artlin(cursor, article_code, client_code)
             conn.commit()
@@ -523,7 +547,7 @@ class TechnicalSheet(models.Model):
             conn = self._get_texplus_sql_connection()
             cursor = conn.cursor()
             self._configure_texplus_cursor(cursor)
-            client_code = 1 #self._get_texplus_client_code(self.partner_id or self.analysis_id.partner_id, cursor=cursor)
+            client_code = 1
             self._replace_texplus_article_processes(cursor, article_code, client_code, route_code)
             conn.commit()
             return False
@@ -538,48 +562,6 @@ class TechnicalSheet(models.Model):
         finally:
             if cursor:
                 cursor.close()
-            if conn:
-                conn.close()
-
-    def _get_texplus_client_code(self, partner, cursor=None):
-        vat = _clean_text(partner.vat)
-        if not vat:
-            raise UserError(_('El cliente no tiene RUC para exportar a TEXPLUS.'))
-        if cursor:
-            cursor.execute(
-                """
-                SELECT TOP 1 CliCod
-                FROM dbo.CLIENT
-                WHERE CliNif = ?
-                ORDER BY CliCod
-                """,
-                vat,
-            )
-            row = cursor.fetchone()
-            if not row:
-                raise UserError(_('No existe un cliente TEXPLUS con RUC %s.') % vat)
-            return int(row.CliCod)
-        conn = None
-        local_cursor = None
-        try:
-            conn = self._get_texplus_sql_connection()
-            local_cursor = conn.cursor()
-            local_cursor.execute(
-                """
-                SELECT TOP 1 CliCod
-                FROM dbo.CLIENT
-                WHERE CliNif = ?
-                ORDER BY CliCod
-                """,
-                vat,
-            )
-            row = local_cursor.fetchone()
-            if not row:
-                raise UserError(_('No existe un cliente TEXPLUS con RUC %s.') % vat)
-            return int(row.CliCod)
-        finally:
-            if local_cursor:
-                local_cursor.close()
             if conn:
                 conn.close()
 
@@ -1035,6 +1017,8 @@ class TechnicalSheet(models.Model):
 
         if python_type is str and field_name in PADR_FIELDS:
             return _dbf_padr(value, size)
+        if python_type is str and _is_memo_field(field_type):
+            return _clean_text(value)
         if python_type is str:
             return _dbf_char(value, max_len=size)
         if python_type is int:

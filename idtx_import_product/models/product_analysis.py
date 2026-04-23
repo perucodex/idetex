@@ -333,7 +333,7 @@ class ProductAnalysis(models.Model):
                         base_process_id = self.env['mrp.base.process'].create({'name': row.fascod.strip(),'process_ids': [Command.create({'operation_id': weaving_process.id})]})
                         base_process_id.write({
                             'process_ids': [Command.create({
-                                'operation_id': self.env['mrp.routing.workcenter.operation'].search([('name','=', rrow.FasDsc.strip())]).id or self.env['mrp.routing.workcenter.operation'].create({'name': rrow.FasDsc.strip(), 'workcenter_id': self.env['mrp.workcenter'].search([('name','=', str(rrow.area).strip().upper())]).id or self.env['mrp.workcenter'].create({'name': str(rrow.area).strip().upper()}).id}).id,
+                                'operation_id': self.env['mrp.routing.workcenter.operation'].search([('name','=', rrow.FasDsc.strip())]).id or self.env['mrp.routing.workcenter.operation'].create({'name': rrow.FasDsc.strip(), 'fas_code': rrow.FasCod.strip(), 'workcenter_id': self.env['mrp.workcenter'].search([('name','=', str(rrow.area).strip().upper())]).id or self.env['mrp.workcenter'].create({'name': str(rrow.area).strip().upper()}).id}).id,
                             }) for rrow in ruta_cursor]
                         })
                         weaving_lines = base_process_id.process_ids.filtered(lambda l: l.operation_id.operation_type == 'weaving')
