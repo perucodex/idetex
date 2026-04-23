@@ -54,24 +54,24 @@
                                 <field name="diameter"/>
                                 <field name="feeders"/>
                                 <label for="density"/>
-                                <div name="density" class="o_row">
-                                    <field name="density" required="1" readonly="state != 'test'"/>
+                                <div name="density" class="o_row o_row_readonly">
+                                    <field name="density" class="oe_inline o_input_6ch" style="max-width: 7ch;" required="1" readonly="state != 'test'"/>
                                     <span class="ms-1 oe_inline">g/m²</span>
                                 </div>
                                 <field name="column_qty" readonly="state != 'test'"/>
                                 <label for="width"/>
-                                <div name="width" class="o_row">
-                                    <field name="width" readonly="1" force_save="1"/>
+                                <div name="width" class="o_row o_row_readonly">
+                                    <field name="width" class="oe_inline o_input_6ch" style="max-width: 7ch;" readonly="1" force_save="1"/>
                                     <span class="ms-1 oe_inline">cm</span>
                                 </div>
                                 <label for="standard_width"/>
-                                <div name="standard_width" class="o_row">
-                                    <field name="standard_width" required="1" readonly="state != 'test'"/>
+                                <div name="standard_width" class="o_row o_row_readonly">
+                                    <field name="standard_width" class="oe_inline o_input_6ch" style="max-width: 7ch;" required="1" readonly="state != 'test'"/>
                                     <span class="ms-1 oe_inline">cm</span>
                                 </div>
                                 <label for="tilt"/>
-                                <div name="tilt" class="o_row">
-                                    <field name="tilt" required="1" readonly="state != 'test'"/>
+                                <div name="tilt" class="o_row o_row_readonly">
+                                    <field name="tilt" class="oe_inline o_input_6ch" style="max-width: 7ch;" required="1" readonly="state != 'test'"/>
                                     <span class="ms-1 oe_inline">°</span>
                                 </div>
                                 <field name="product_code" readonly="1" force_save="1"/>

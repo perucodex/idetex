@@ -350,7 +350,7 @@ class AnalysisWeavingData(models.Model):
             for fiber in rec.fiber_ids:
                 fiber.percentage = (fiber.weight / total_weight) if total_weight else 0
 
-    @api.onchange('fiber_ids', 'fiber_ids.weight')
+    @api.onchange('fiber_ids')
     def _onchange_fiber_ids_recompute_percentages(self):
         self._recompute_fiber_percentages()
     

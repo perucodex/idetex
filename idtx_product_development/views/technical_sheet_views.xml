@@ -49,22 +49,25 @@
                             <page name="weaving_page" string="Weaving">
                                 <group string="Product Data">
                                     <group>
-                                        <field name="program" readonly="state != 'draft'"/>
+                                        <field name="program" readonly="state != 'draft'" groups="!idtx_product_development.group_module_product_development_manager"/>
+                                        <field name="program" groups="idtx_product_development.group_module_product_development_manager"/>
                                         <field name="stylo" readonly="1" force_save="1"/>
                                         <field name="fabric_composition" readonly="state != 'draft'"/>
-                                        <field name="atx" readonly="state != 'draft'"/>
+                                        <field name="atx" readonly="state != 'draft'" groups="!idtx_product_development.group_module_product_development_manager"/>
+                                        <field name="atx" groups="idtx_product_development.group_module_product_development_manager"/>
                                     </group>
                                     <group>
                                         <!-- <field name="first_wash_shrinkage" readonly="state != 'draft'"/>
                                         <field name="first_wash_twist" readonly="state != 'draft'"/> -->
                                         <label for="yield_meter"/>
                                         <div name="yield_meter" class="o_row">
-                                            <field name="yield_meter" readonly="state != 'draft'"/>
+                                            <field name="yield_meter" readonly="state != 'draft'" groups="!idtx_product_development.group_module_product_development_manager"/>
+                                            <field name="yield_meter" readonly="state != 'draft'" groups="idtx_product_development.group_module_product_development_manager"/>
                                             <span class="ms-1 oe_inline">m/kg</span>
                                         </div>
                                         <!-- <field name="yield_meter" readonly="state != 'draft'"/> -->
                                         <field name="scrap" widget="percentage" readonly="state != 'draft'"/>
-                                        <field name="mesh_length" readonly="state != 'draft'"/>
+                                        <!-- <field name="mesh_length" readonly="state != 'draft'"/> -->
                                     </group>
                                     <group>
                                         <label for="density"/>
@@ -83,14 +86,20 @@
                                         <field name="gauge_id" readonly="1"/>
                                     </group>
                                     <group string="Raw Data">
-                                        <field name="raw_width" readonly="state != 'draft'"/>
-                                        <field name="raw_density" readonly="state != 'draft'"/>
-                                        <field name="raw_widening" readonly="state != 'draft'"/>
+                                        <field name="raw_width" readonly="state != 'draft'" groups="!idtx_product_development.group_module_product_development_manager"/>
+                                        <field name="raw_density" readonly="state != 'draft'" groups="!idtx_product_development.group_module_product_development_manager"/>
+                                        <field name="raw_widening" readonly="state != 'draft'" groups="!idtx_product_development.group_module_product_development_manager"/>
+                                        <field name="raw_width" groups="idtx_product_development.group_module_product_development_manager"/>
+                                        <field name="raw_density" groups="idtx_product_development.group_module_product_development_manager"/>
+                                        <field name="raw_widening" groups="idtx_product_development.group_module_product_development_manager"/>
                                     </group>
                                     <group string="Finishing Data">
-                                        <field name="finish_width" readonly="state != 'draft'"/>
-                                        <field name="finish_density" readonly="state != 'draft'"/>
-                                        <field name="finish_yield" readonly="state != 'draft'"/>
+                                        <field name="finish_width" readonly="state != 'draft'" groups="!idtx_product_development.group_module_product_development_manager"/>
+                                        <field name="finish_density" readonly="state != 'draft'" groups="!idtx_product_development.group_module_product_development_manager"/>
+                                        <field name="finish_yield" readonly="state != 'draft'" groups="!idtx_product_development.group_module_product_development_manager"/>
+                                        <field name="finish_width" groups="idtx_product_development.group_module_product_development_manager"/>
+                                        <field name="finish_density" groups="idtx_product_development.group_module_product_development_manager"/>
+                                        <field name="finish_yield" groups="idtx_product_development.group_module_product_development_manager"/>
                                     </group>
                                 </group>
                             </page>
