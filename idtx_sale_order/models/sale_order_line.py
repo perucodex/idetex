@@ -23,6 +23,7 @@ class SaleOrderLine(models.Model):
     is_printing = fields.Boolean('is_printing', compute='_compute_is_printing', store=True, default=False)
     printing_design_id = fields.Many2one('printing.design', string='Design')
     printing_design_name = fields.Char(related='printing_design_id.file_desc')
+    printing_design_preview_image = fields.Binary(related='printing_design_id.preview_image', readonly=True)
     analysis_id = fields.Many2one(related='product_template_id.analysis_id')
     bom_id = fields.Many2one('mrp.bom', string='Bom')
     operation_ids = fields.Many2many('mrp.routing.workcenter', string='Operations')
@@ -36,6 +37,7 @@ class SaleOrderLine(models.Model):
     price_items = fields.Text(string='Price Items', default='{}')
     production_id = fields.Many2one('mrp.production', string='Production', copy=False)
     parent_is_quote = fields.Boolean(related='order_id.is_quote')
+    parent_is_company_produce = fields.Boolean(related='order_id.is_company_produce')
     has_approved_lab_line = fields.Boolean(
         string='Approved',
         compute='_compute_has_approved_lab_line',

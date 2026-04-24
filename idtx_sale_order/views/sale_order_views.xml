@@ -98,7 +98,9 @@
                 <field name="color_name" readonly="1" column_invisible="parent.is_quote or not parent.is_company_produce or parent.has_pending_labdev_lines" widget="badge" decoration-success="has_approved_lab_line" decoration-danger="not has_approved_lab_line" force_save="1"/>
                 <field name="lab_dev_line_id" required="is_weaving and parent.is_company_produce and not parent.is_quote and is_lab_color and parent.has_order_lab_dev" readonly="not is_weaving or not is_lab_color" column_invisible="parent.is_quote or not parent.is_company_produce" options="{'no_create': True}"/>
                 <field name="is_printing" column_invisible="1"/>
-                <field name="printing_design_id" options="{'no_create': True}" required="is_printing" readonly="not is_printing" column_invisible="parent.is_quote or not parent.is_company_produce" optional="hide" domain="[('partner_id','=', order_partner_id)]"/>
+                <field name="printing_design_id" options="{'no_create': True}" required="is_printing" readonly="not is_printing" column_invisible="parent.is_quote or not parent.is_company_produce" optional="hide" domain="[('partner_id','=', order_partner_id),('state','!=','draft')]"/>
+                <field name="printing_design_preview_image" column_invisible="1"/>
+                <widget name="printing_design_status_widget" column_invisible="parent.is_quote or not parent.is_company_produce" width="20px"/>
                 <field name="printing_design_name" column_invisible="parent.is_quote or not parent.is_company_produce" optional="hide"/>
                 <field name="bom_id" options="{'no_create': True}" required="is_weaving and parent.is_company_produce and not parent.is_quote" readonly="not is_weaving" domain="[('product_tmpl_id','=',product_template_id)]" optional="hide" column_invisible="not parent.is_quote or not parent.is_company_produce"/>
                 <field name="operation_ids" options="{'no_create': True}" required="parent.sale_type == 'service' and parent.is_company_produce and is_weaving" readonly="not is_weaving or parent.sale_type != 'service'" domain="[('id','in',available_operation_ids)]" widget="many2many_tags" force_save="1" optional="hide" column_invisible="not parent.is_quote or not parent.is_company_produce"/>
@@ -112,6 +114,7 @@
 
             <xpath expr="//notebook/page/field[@name='order_line']/list/field[@name='price_unit']" position="after">
                 <field name="parent_is_quote" column_invisible="1"/>
+                <field name="parent_is_company_produce" column_invisible="1"/>
                 <field name="price_items" column_invisible="1"/>
                 <field name="is_salesman" column_invisible="1"/>
                 <widget name="price_items_widget" column_invisible="is_salesman or not parent.is_company_produce" width="20px"/>

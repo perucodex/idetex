@@ -160,7 +160,7 @@ class ProductAnalysis(models.Model):
             raise UserError(_('Please add at least one fiber to the weaving data to generate the product!'))
         if not all(fiber.weight > 0 for fiber in self.weaving_data_ids.mapped('fiber_ids')) and not self.env.context.get('by_pass_error'):
             raise UserError(_('All fibers of the weaving data must have weight greater than 0 to generate the product!'))
-        if not sum(fiber.percentage for fiber in self.weaving_data_ids.mapped('fiber_ids')) == 1 and not self.env.context.get('by_pass_error'):
+        if any(abs(sum(fiber.percentage for fiber in weaving_data.fiber_ids) - 1) > 1e-6 for weaving_data in self.weaving_data_ids) and not self.env.context.get('by_pass_error'):
             raise UserError(_('All fibers of the weaving data must sum 100% to generate the product!'))
         if not self.routing_ids:
             raise UserError(_('Please select a base process and the route to generate the product!'))

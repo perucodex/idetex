@@ -52,6 +52,12 @@ class PrintingDesign(models.Model):
     rotary_unit_price_ids = fields.One2many('printing.design.price', 'rotary_printing_id', string='Rotary Prices')
     rotary_recipe_line_ids = fields.One2many('printing.design.rotary.line', 'printing_design_id', string='Rotary Recipes')
     yield_meter = fields.Float('Yield')
+    state = fields.Selection([
+        ('draft', 'Draft'),
+        ('quoting', 'Quoting'),
+        ('development', 'Development'),
+        ('done', 'Done'),
+    ], string='Status', default='draft', tracking=True, copy=False)
     is_locked = fields.Boolean(compute='_compute_is_locked', store=False)
     currency_id = fields.Many2one('res.currency', string='Currency', default=lambda self: self.env.ref('base.USD'))
     unit_price = fields.Monetary('Unit Price', currency_field='currency_id')
@@ -107,6 +113,23 @@ class PrintingDesign(models.Model):
         if name:
             base_domain &= Domain('code', operator, name) | Domain('file_desc', operator, name)
         return [(rec.id, rec.display_name) for rec in self.search(base_domain, limit=limit)]
+
+    def action_set_quoting(self):
+        for rec in self:
+            if rec.state == 'draft':
+                rec.state = 'quoting'
+
+    def action_set_development(self):
+        for rec in self:
+            if rec.state in ('draft', 'quoting'):
+                rec.state = 'development'
+
+    def _sync_state_from_recipes(self):
+        for rec in self:
+            if rec.rotary_recipe_line_ids.filtered(lambda line: line.state == 'approved'):
+                rec.state = 'done'
+            elif rec.state == 'done':
+                rec.state = 'development'
     
     #=== CRUD METHODS ===#
 
@@ -303,6 +326,7 @@ class PrintingDesignRotaryLine(models.Model):
             if previous_recipes:
                 previous_recipes.write({'state': 'obsolete'})
             rec.write({'state': 'approved', 'has_been_approved': True})
+            rec.printing_design_id._sync_state_from_recipes()
 
     def action_return_to_pending(self):
         self._ensure_not_obsolete()
@@ -320,6 +344,7 @@ class PrintingDesignRotaryLine(models.Model):
                 recipes_to_pending = previous_pending.filtered(lambda line: line.version > restored_recipe.version)
                 if recipes_to_pending:
                     recipes_to_pending.write({'state': 'pending'})
+            rec.printing_design_id._sync_state_from_recipes()
 
     def action_new_version(self):
         self.ensure_one()
