@@ -4,6 +4,7 @@ from odoo.exceptions import ValidationError
 import base64
 import io
 
+from markupsafe import Markup, escape
 from PIL import Image
 
 # Extensiones permitidas
@@ -49,6 +50,7 @@ class PrintingDesign(models.Model):
     file_desc = fields.Char('Design Name')
     digital_unit_price_ids = fields.One2many('printing.design.price', 'digital_printing_id', string='Digital Prices')
     rotary_unit_price_ids = fields.One2many('printing.design.price', 'rotary_printing_id', string='Rotary Prices')
+    rotary_recipe_line_ids = fields.One2many('printing.design.rotary.line', 'printing_design_id', string='Rotary Recipes')
     yield_meter = fields.Float('Yield')
     is_locked = fields.Boolean(compute='_compute_is_locked', store=False)
     currency_id = fields.Many2one('res.currency', string='Currency', default=lambda self: self.env.ref('base.USD'))
@@ -227,3 +229,288 @@ class PrintingDesign(models.Model):
                     rec.total_price = rec.unit_price * rec.digital_printing_id.yield_meter
                 else:
                     rec.total_price = rec.unit_price * rec.rotary_printing_id.yield_meter
+
+
+class PrintingDesignRotaryLine(models.Model):
+    _name = 'printing.design.rotary.line'
+    _description = 'Printing Design Rotary Line'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _order = 'id desc'
+    _rec_name = 'name'
+
+    printing_design_id = fields.Many2one('printing.design', string='Printing Design', ondelete='cascade', required=True)
+    printing_design_code = fields.Char(related='printing_design_id.code', string='Design Code', store=True, readonly=True)
+    printing_design_preview_image = fields.Binary(related='printing_design_id.preview_image', string='Design Preview', readonly=True)
+    name = fields.Char('Recipe', required=True, copy=False, default=lambda self: _('New'), readonly=True)
+    version = fields.Integer('Version', required=True, default=1, copy=False, readonly=True)
+    recipe_date = fields.Date('Recipe Date', default=fields.Date.context_today, copy=False)
+    previous_recipe_id = fields.Many2one('printing.design.rotary.line', string='Previous Recipe', ondelete='restrict', copy=False)
+    has_been_approved = fields.Boolean('Has Been Approved', default=False, copy=False)
+    is_current_version = fields.Boolean('Current Recipe', compute='_compute_is_current_version', store=True)
+    color_line_ids = fields.One2many('printing.design.rotary.line.color', 'rotary_line_id', string='Colors', copy=True)
+    state = fields.Selection([
+        ('pending', 'Pending Approval'),
+        ('approved', 'Approved'),
+        ('obsolete', 'Obsolete'),
+    ], string='Status', default='pending', copy=False, tracking=True)
+
+    @api.depends(
+        'version',
+        'printing_design_id.rotary_recipe_line_ids.version',
+        'printing_design_id.rotary_recipe_line_ids.state',
+    )
+    def _compute_is_current_version(self):
+        for rec in self:
+            approved_lines = rec.printing_design_id.rotary_recipe_line_ids.filtered(lambda line: line.state == 'approved') if rec.printing_design_id else self.env['printing.design.rotary.line']
+            approved_versions = approved_lines.mapped('version')
+            rec.is_current_version = rec.state == 'approved' and bool(approved_versions) and rec.version == max(approved_versions)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        version_cache = {}
+        for vals in vals_list:
+            design_id = vals.get('printing_design_id')
+            if vals.get('name', _('New')) == _('New'):
+                vals['name'] = self.env['ir.sequence'].next_by_code('printing.design.rotary.line') or _('New')
+            if design_id and not vals.get('version'):
+                if design_id not in version_cache:
+                    current_versions = self.search([('printing_design_id', '=', design_id)]).mapped('version')
+                    version_cache[design_id] = max(current_versions, default=0)
+                version_cache[design_id] += 1
+                vals['version'] = version_cache[design_id]
+        return super().create(vals_list)
+
+    def copy(self, default=None):
+        default = dict(default or {})
+        default.setdefault('name', _('New'))
+        return super().copy(default)
+
+    def _ensure_not_obsolete(self):
+        obsolete_recipes = self.filtered(lambda rec: rec.state == 'obsolete')
+        if obsolete_recipes:
+            raise ValidationError(_('Obsolete recipes are read-only and cannot be modified.'))
+
+    def action_approve(self):
+        self._ensure_not_obsolete()
+        for rec in self:
+            if not rec.color_line_ids:
+                raise ValidationError(_('The recipe must have at least one color before approval.'))
+            if any(not color.chemical_line_ids for color in rec.color_line_ids):
+                raise ValidationError(_('Each color must include at least one chemical line before approval.'))
+            previous_recipes = rec.printing_design_id.rotary_recipe_line_ids.filtered(
+                lambda line: line.id != rec.id and line.version < rec.version
+            )
+            if previous_recipes:
+                previous_recipes.write({'state': 'obsolete'})
+            rec.write({'state': 'approved', 'has_been_approved': True})
+
+    def action_return_to_pending(self):
+        self._ensure_not_obsolete()
+        for rec in self:
+            previous_approved = rec.printing_design_id.rotary_recipe_line_ids.filtered(
+                lambda line: line.id != rec.id and line.state == 'obsolete' and line.has_been_approved
+            ).sorted(key=lambda line: (line.version, line.id))
+            previous_pending = rec.printing_design_id.rotary_recipe_line_ids.filtered(
+                lambda line: line.id != rec.id and line.state == 'obsolete' and not line.has_been_approved
+            )
+            rec.write({'state': 'pending'})
+            if previous_approved:
+                restored_recipe = previous_approved[-1]
+                restored_recipe.write({'state': 'approved'})
+                recipes_to_pending = previous_pending.filtered(lambda line: line.version > restored_recipe.version)
+                if recipes_to_pending:
+                    recipes_to_pending.write({'state': 'pending'})
+
+    def action_new_version(self):
+        self.ensure_one()
+        self._ensure_not_obsolete()
+        new_version = max(self.printing_design_id.rotary_recipe_line_ids.mapped('version'), default=0) + 1
+        new_recipe = self.copy({
+            'version': new_version,
+            'state': 'pending',
+            'previous_recipe_id': self.id,
+            'recipe_date': fields.Date.context_today(self),
+        })
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Recipe Version'),
+            'view_mode': 'form',
+            'res_model': self._name,
+            'res_id': new_recipe.id,
+            'target': 'current',
+        }
+
+class PrintingDesignRotaryLineColor(models.Model):
+    _name = 'printing.design.rotary.line.color'
+    _description = 'Printing Design Rotary Line Color'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _order = 'id'
+
+    rotary_line_id = fields.Many2one('printing.design.rotary.line', string='Rotary Line', ondelete='cascade', required=True)
+    printing_design_id = fields.Many2one(related='rotary_line_id.printing_design_id', string='Printing Design', store=True)
+    color_name = fields.Char('Color', required=True)
+    chemical_line_ids = fields.One2many('printing.design.rotary.line.color.chemical', 'color_line_id', string='Chemicals', copy=True)
+
+    @staticmethod
+    def _build_chatter_body(title, lines):
+        return Markup("%s<br/>%s") % (
+            escape(title),
+            Markup('<br/>').join(escape(line) for line in lines),
+        )
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        for rec in records:
+            if rec.rotary_line_id:
+                body = self._build_chatter_body(
+                    _("Recipe color created:"),
+                    [
+                        _("Color: %s") % rec.color_name,
+                    ],
+                )
+                rec.rotary_line_id.message_post(body=body, subtype_xmlid='mail.mt_note')
+        return records
+
+    def unlink(self):
+        deleted_records = [
+            {
+                'rotary_line': rec.rotary_line_id,
+                'color_name': rec.color_name,
+            }
+            for rec in self
+        ]
+
+        result = super().unlink()
+
+        for deleted in deleted_records:
+            if deleted['rotary_line']:
+                body = self._build_chatter_body(
+                    _("Recipe color deleted:"),
+                    [
+                        _("Color: %s") % deleted['color_name'],
+                    ],
+                )
+                deleted['rotary_line'].message_post(body=body, subtype_xmlid='mail.mt_note')
+
+        return result
+
+
+class PrintingDesignRotaryLineColorChemical(models.Model):
+    _name = 'printing.design.rotary.line.color.chemical'
+    _description = 'Printing Design Rotary Line Color Chemical'
+    _order = 'id'
+
+    color_line_id = fields.Many2one('printing.design.rotary.line.color', string='Recipe Color', ondelete='cascade', required=True)
+    product_id = fields.Many2one('product.template', string='Chemical', ondelete='restrict', required=True)
+    quantity = fields.Float('Quantity', required=True, digits=(12, 5), default=0.0)
+
+    @staticmethod
+    def _build_chatter_body(title, lines):
+        return Markup("%s<br/>%s") % (
+            escape(title),
+            Markup('<br/>').join(escape(line) for line in lines),
+        )
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        for rec in records:
+            if rec.color_line_id.rotary_line_id:
+                body = self._build_chatter_body(
+                    _("Recipe chemical created:"),
+                    [
+                        _("Color: %s") % rec.color_line_id.color_name,
+                        _("Chemical: %s") % rec.product_id.display_name,
+                        _("Quantity: %s") % rec.quantity,
+                    ],
+                )
+                rec.color_line_id.rotary_line_id.message_post(body=body, subtype_xmlid='mail.mt_note')
+        return records
+
+    def write(self, vals):
+        tracked_fields = {'product_id', 'quantity'}
+        changes_by_record = {}
+        if tracked_fields.intersection(vals):
+            for rec in self:
+                changes_by_record[rec.id] = {
+                    'rotary_line': rec.color_line_id.rotary_line_id,
+                    'color_name': rec.color_line_id.color_name,
+                    'product_name': rec.product_id.display_name,
+                    'quantity': rec.quantity,
+                }
+
+        result = super().write(vals)
+
+        if changes_by_record:
+            for rec in self:
+                previous = changes_by_record.get(rec.id)
+                if not previous or not previous['rotary_line']:
+                    continue
+
+                change_lines = [
+                    _("Color: %s") % previous['color_name'],
+                ]
+                if 'product_id' in vals and previous['product_name'] != rec.product_id.display_name:
+                    change_lines.append(
+                        _("Chemical: %(old)s -> %(new)s") % {
+                            'old': previous['product_name'],
+                            'new': rec.product_id.display_name,
+                        }
+                    )
+                if 'quantity' in vals and previous['quantity'] != rec.quantity:
+                    if 'product_id' not in vals:
+                        change_lines.append(
+                            _("Chemical: %s") % rec.product_id.display_name,
+                        )
+                    change_lines.append(
+                        _("Quantity: %(old)s -> %(new)s") % {
+                            'old': previous['quantity'],
+                            'new': rec.quantity,
+                        }
+                    )
+
+                if change_lines:
+                    body = self._build_chatter_body(
+                        _("Recipe chemical updated:"),
+                        change_lines,
+                    )
+                    previous['rotary_line'].message_post(
+                        body=body,
+                        subtype_xmlid='mail.mt_note',
+                    )
+
+        return result
+
+    def unlink(self):
+        deleted_records = [
+            {
+                'rotary_line': rec.color_line_id.rotary_line_id,
+                'color_name': rec.color_line_id.color_name,
+                'product_name': rec.product_id.display_name,
+                'quantity': rec.quantity,
+            }
+            for rec in self
+        ]
+
+        result = super().unlink()
+
+        for deleted in deleted_records:
+            if deleted['rotary_line']:
+                body = self._build_chatter_body(
+                    _("Recipe chemical deleted:"),
+                    [
+                        _("Color: %s") % deleted['color_name'],
+                        _("Chemical: %s") % deleted['product_name'],
+                        _("Quantity: %s") % deleted['quantity'],
+                    ],
+                )
+                deleted['rotary_line'].message_post(body=body, subtype_xmlid='mail.mt_note')
+
+        return result
+
+    @api.constrains('quantity')
+    def _check_quantity(self):
+        for rec in self:
+            if rec.quantity <= 0:
+                raise ValidationError(_('Chemical quantity must be greater than 0.'))

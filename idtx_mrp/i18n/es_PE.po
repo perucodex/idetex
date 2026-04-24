@@ -715,7 +715,7 @@ msgstr "IP de Impresora"
 #. module: idtx_mrp
 #: model:ir.model.fields.selection,name:idtx_mrp.selection__mrp_workcenter__operation_type__printing
 msgid "Printing"
-msgstr "Imprimiendo"
+msgstr "Estampado"
 
 #. module: idtx_mrp
 #: model:ir.module.category,name:idtx_mrp.module_category_textiles

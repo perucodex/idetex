@@ -117,7 +117,7 @@ class TechnicalSheet(models.Model):
     def action_done(self):
         self.state = 'done'
         analysis_line = self.analysis_id.weaving_data_ids.filtered(lambda w: w.technical_sheet_id == self)
-        bom_id = self.env['mrp.bom'].create({
+        bom_id = self.env['mrp.bom'].sudo().create({
             'product_tmpl_id': self.product_id.id,
             'product_uom_id': self.product_id.uom_id.id,
             'code': analysis_line.stylo,
@@ -140,7 +140,6 @@ class TechnicalSheet(models.Model):
                 # Si hay productos para tejer y no se encontró un proceso de tejido
                 if bom_id.bom_line_ids:
                     raise UserError(_('There is no weaving operation in bom. Please check your product routing!'))
-        self.product_id.bom_ids += bom_id
         self.bom_id = bom_id
 
     def action_return(self):
