@@ -66,12 +66,16 @@
                 </div>
 
                 <div>
-                    <h2 style="font-size: 22px; margin-bottom: 16px;">Recipe + {{ recipe.production_percentage * 100 }}%</h2>
+                    <h2 style="font-size: 22px; margin-bottom: 16px;">
+                        Recipe + <t t-esc="'%.4f' % (recipe.production_percentage * 100)"/>%
+                    </h2>
                     <table style="width: 100%; border-collapse: collapse; border: 1px solid #d1d5db;">
                         <thead style="background: #ecfdf5;">
                             <tr>
                                 <th style="padding: 10px; text-align: left; border-bottom: 1px solid #d1d5db;">Chemical</th>
-                                <th style="padding: 10px; text-align: right; border-bottom: 1px solid #d1d5db;">Quantity + {{ recipe.production_percentage * 100 }}%</th>
+                                <th style="padding: 10px; text-align: right; border-bottom: 1px solid #d1d5db;">
+                                    Quantity + <t t-esc="'%.4f' % (recipe.production_percentage * 100)"/>%
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
@@ -84,7 +88,7 @@
                                 <t t-foreach="color.chemical_line_ids" t-as="chemical" t-key="'%s_plus' % chemical.id">
                                     <tr>
                                         <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;"><t t-esc="chemical.product_id.display_name"/></td>
-                                        <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: right;"><t t-esc="'%.5f' % (chemical.quantity * (1 + recipe.production_percentage))"/></td>
+                                        <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: right;"><t t-esc="'%.5f' % (chemical.quantity * (1 + recipe.production_percentage / 100))"/></td>
                                     </tr>
                                 </t>
                                 <tr t-if="not color.chemical_line_ids">

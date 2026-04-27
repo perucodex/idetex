@@ -268,7 +268,7 @@ class PrintingDesignRotaryLine(models.Model):
     version = fields.Integer('Version', required=True, default=1, copy=False, readonly=True)
     recipe_date = fields.Date('Recipe Date', default=fields.Date.context_today, copy=False)
     previous_recipe_id = fields.Many2one('printing.design.rotary.line', string='Previous Recipe', ondelete='restrict', copy=False)
-    production_percentage = fields.Float('Production Percentage', digits=(5, 2), default=0.25)
+    production_percentage = fields.Float('Production Percentage', digits=(5, 2), default=25.00)
     has_been_approved = fields.Boolean('Has Been Approved', default=False, copy=False)
     is_current_version = fields.Boolean('Current Recipe', compute='_compute_is_current_version', store=True)
     color_line_ids = fields.One2many('printing.design.rotary.line.color', 'rotary_line_id', string='Colors', copy=True)

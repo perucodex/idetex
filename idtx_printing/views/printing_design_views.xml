@@ -110,7 +110,11 @@
                             <field name="recipe_date" readonly="state in ('approved', 'obsolete')"/>
                             <!-- <field name="is_current_version" readonly="1"/> -->
                             <field name="previous_recipe_id" readonly="1"/>
-                            <field name="production_percentage" widget="percentage"/>
+                            <label for="production_percentage"/>
+                            <div name="production_percentage" class="o_row o_row_readonly">
+                                <field name="production_percentage" class="oe_inline o_input_6ch" style="max-width: 7ch;" required="1" readonly="state != 'test'"/>
+                                <span class="ms-1 oe_inline">%</span>
+                            </div>
                         </group>
                         <group>
                             <field name="printing_design_preview_image" widget="image" readonly="1" options="{'preview_image': 'printing_design_preview_image', 'size': [256, 256]}"/>
