@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="idtx_sale_order.PrintingDesignStatusWidget">
+        <t t-if="isVisible">
+            <a t-on-click="showPopover"
+               class="o_printing_design_status_trigger"
+               t-att-title="title"
+               href="#"
+               role="button">
+                <span t-att-class="dotClass"/>
+            </a>
+        </t>
+    </t>
+
+    <t t-name="idtx_sale_order.PrintingDesignStatusPopover">
+        <div class="o_printing_design_status_popover p-2">
+            <div class="fw-bold mb-2">
+                <t t-esc="designName"/>
+            </div>
+            <t t-if="hasDesign and previewSrc">
+                <img t-att-src="previewSrc"
+                     alt="Design preview"
+                     class="o_printing_design_status_image"/>
+            </t>
+            <t t-elif="hasDesign">
+                <div class="text-muted">
+                    <t t-esc="noPreviewMessage"/>
+                </div>
+            </t>
+            <t t-else="">
+                <div class="text-muted">
+                    <t t-esc="emptyMessage"/>
+                </div>
+            </t>
+        </div>
+    </t>
+
+</templates>

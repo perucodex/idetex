@@ -94,6 +94,7 @@
         <field name="arch" type="xml">
             <form string="Rotary Recipe">
                 <header>
+                    <button name="action_open_recipe_sheet" type="object" string="Recipe Sheet"/>
                     <button name="action_approve" type="object" string="Approve" class="oe_highlight" invisible="state in ('approved', 'obsolete')" groups="idtx_printing.group_module_print_manager"/>
                     <button name="action_return_to_pending" type="object" string="Return to Pending" invisible="state in ('pending', 'obsolete')" groups="idtx_printing.group_module_print_manager"/>
                     <button name="action_new_version" type="object" string="New Version" invisible="state == 'obsolete'"/>
@@ -109,6 +110,7 @@
                             <field name="recipe_date" readonly="state in ('approved', 'obsolete')"/>
                             <!-- <field name="is_current_version" readonly="1"/> -->
                             <field name="previous_recipe_id" readonly="1"/>
+                            <field name="production_percentage" widget="percentage"/>
                         </group>
                         <group>
                             <field name="printing_design_preview_image" widget="image" readonly="1" options="{'preview_image': 'printing_design_preview_image', 'size': [256, 256]}"/>

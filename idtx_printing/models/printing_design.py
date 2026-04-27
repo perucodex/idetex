@@ -268,6 +268,7 @@ class PrintingDesignRotaryLine(models.Model):
     version = fields.Integer('Version', required=True, default=1, copy=False, readonly=True)
     recipe_date = fields.Date('Recipe Date', default=fields.Date.context_today, copy=False)
     previous_recipe_id = fields.Many2one('printing.design.rotary.line', string='Previous Recipe', ondelete='restrict', copy=False)
+    production_percentage = fields.Float('Production Percentage', digits=(5, 2), default=0.25)
     has_been_approved = fields.Boolean('Has Been Approved', default=False, copy=False)
     is_current_version = fields.Boolean('Current Recipe', compute='_compute_is_current_version', store=True)
     color_line_ids = fields.One2many('printing.design.rotary.line.color', 'rotary_line_id', string='Colors', copy=True)
@@ -276,6 +277,12 @@ class PrintingDesignRotaryLine(models.Model):
         ('approved', 'Approved'),
         ('obsolete', 'Obsolete'),
     ], string='Status', default='pending', copy=False, tracking=True)
+
+    @api.constrains('production_percentage')
+    def _check_production_percentage(self):
+        for rec in self:
+            if rec.production_percentage <= 0 or rec.production_percentage > 100:
+                raise ValidationError(_('Production Percentage must be between 0 and 100.'))
 
     @api.depends(
         'version',
@@ -363,6 +370,14 @@ class PrintingDesignRotaryLine(models.Model):
             'res_model': self._name,
             'res_id': new_recipe.id,
             'target': 'current',
+        }
+
+    def action_open_recipe_sheet(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_url',
+            'url': '/printing/recipe/%s' % self.id,
+            'target': 'new',
         }
 
 class PrintingDesignRotaryLineColor(models.Model):
