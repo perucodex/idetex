@@ -96,7 +96,7 @@ class StockQuantImport(models.Model):
                 if not (product_code and qty):
                     continue
                 
-                color = self.env['color.recipe'].search([('color_code','=', row[header['color'] - 1].strip())], limit=1)
+                color = self.env['color.recipe'].search([('color_code','=', color_code)], limit=1)
 
                 # Línea de auditoría
                 vals_list.append({

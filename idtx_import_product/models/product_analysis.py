@@ -484,20 +484,28 @@ class ProductAnalysis(models.Model):
             return best_partner if best_score >= 2 else False
 
         def _get_or_create_lab_dev(ld_name, partner, date_value):
+            cache_key = ld_name or generic_ld_name
+            lab_dev = lab_dev_cache.get(cache_key)
+            if lab_dev:
+                if partner and not lab_dev.partner_id:
+                    lab_dev.partner_id = partner.id
+                return lab_dev
+
             LabDev = self.env['lab.dev']
-            lab_dev = LabDev.search([('name', '=', ld_name)], limit=1)
+            lab_dev = LabDev.search([('name', '=', cache_key)], limit=1)
             if not lab_dev and ld_name.startswith('LD-'):
                 number = ld_name.split('-', 1)[1]
                 lab_dev = LabDev.search([('name', 'ilike', f"LD%{number}")], limit=1)
             if not lab_dev:
                 lab_dev = LabDev.create({
-                    'name': ld_name,
+                    'name': cache_key,
                     'lab_dev_date': date_value or fields.Date.context_today(self),
                     'partner_id': partner.id if partner else False,
                     'state': 'approved',
                 })
             elif partner and not lab_dev.partner_id:
                 lab_dev.partner_id = partner.id
+            lab_dev_cache[cache_key] = lab_dev
             return lab_dev
 
         try:
@@ -524,13 +532,17 @@ class ProductAnalysis(models.Model):
             cursor.execute(query)
             columns = [col[0].lower() for col in cursor.description]
             cursor_result = [dict(zip(columns, row)) for row in cursor.fetchall()]
-            total = len(cursor_result)
             company_partner = self.env.company.partner_id
             partner_index = _build_partner_index()
             generic_ld_name = 'LD-GENERICA'
+            lab_dev_cache = {}
 
-            for contador, row in enumerate(cursor_result, 1):
-                _logger.info(str(contador) + ' / ' + str(total) + '  ' + str(int((contador / total)*100)) + '%')
+            prepared_rows = []
+            process_codes = set()
+            range_codes = set()
+            intensity_codes = set()
+            color_codes = set()
+            for row in cursor_result:
                 gt = _strip(row.get('gt'))
                 cb = _strip(row.get('cb'))
                 ints = _strip(row.get('ints'))
@@ -543,36 +555,87 @@ class ProductAnalysis(models.Model):
 
                 corr = str(a_int(corr_raw)).zfill(4) if a_int(corr_raw) else corr_raw.zfill(4)
                 color_code = f"{gt}{cb}{ints}{corr}"
+                prepared_rows.append({
+                    'gt': gt,
+                    'cb': cb,
+                    'ints': ints,
+                    'obs': obs,
+                    'desc': desc,
+                    'color_code': color_code,
+                })
+                process_codes.add(gt)
+                range_codes.add(cb)
+                intensity_codes.add(ints)
+                color_codes.add(color_code)
 
-                process = self.env['color.process.type'].search([('code', '=', gt)], limit=1)
-                color_range = self.env['color.range'].search([('code', '=', cb)], limit=1)
-                intens_obj = self.env['color.intensity'].search([('code', '=', ints)], limit=1)
+            total = len(prepared_rows)
+            if not total:
+                return
+
+            process_map = {
+                record.code: record
+                for record in self.env['color.process.type'].search([('code', 'in', list(process_codes))])
+            }
+            color_range_map = {
+                record.code: record
+                for record in self.env['color.range'].search([('code', 'in', list(range_codes))])
+            }
+            intensity_map = {
+                record.code: record
+                for record in self.env['color.intensity'].search([('code', 'in', list(intensity_codes))])
+            }
+
+            existing_lines_by_code = {}
+            for line in self.env['lab.dev.line'].search([('color_code', 'in', list(color_codes))]):
+                code_key = _strip(line.color_code).upper()
+                current = existing_lines_by_code.get(code_key)
+                if not current or (line.color_recipe_ids and not current.color_recipe_ids):
+                    existing_lines_by_code[code_key] = line
+
+            skipped_existing_recipe = 0
+
+            for contador, row in enumerate(prepared_rows, 1):
+                _logger.info(str(contador) + ' / ' + str(total) + '  ' + str(int((contador / total)*100)) + '%')
+                gt = row['gt']
+                cb = row['cb']
+                ints = row['ints']
+                obs = row['obs']
+                desc = row['desc']
+                color_code = row['color_code']
+
+                existing_line = existing_lines_by_code.get(color_code.upper())
+                if existing_line and existing_line.color_recipe_ids:
+                    skipped_existing_recipe += 1
+                    continue
+
+                process = process_map.get(gt)
+                color_range = color_range_map.get(cb)
+                intens_obj = intensity_map.get(ints)
 
                 partner = _extract_partner(obs, partner_index) or company_partner
                 ld_name = _extract_ld_name(obs) or generic_ld_name
-                lab_dev = _get_or_create_lab_dev(ld_name, partner, fields.Date.context_today(self))
-
-                existing_line = lab_dev.lab_dev_line_ids.filtered(lambda l: (l.color_code or '').strip().upper() == color_code.upper())[:1]
                 if existing_line:
                     if not existing_line.color_recipe_ids:
                         existing_line.color_recipe_ids = [Command.create({
                             'state': 'approved',
                         })]
                 else:
-                    lab_dev.write({
-                        'lab_dev_line_ids': [Command.create({
-                            # 'product_id': False,
-                            'color_name': desc or color_code,
-                            'color_code': color_code,
-                            'color_process_type_id': process.id,
-                            'color_range_id': color_range.id,
-                            'color_intensity_id': intens_obj.id,
-                            'color_recipe_ids': [Command.create({
-                                'state': 'approved',
-                            })],
+                    lab_dev = _get_or_create_lab_dev(ld_name, partner, fields.Date.context_today(self))
+                    new_line = self.env['lab.dev.line'].create({
+                        'lab_dev_id': lab_dev.id,
+                        'color_name': desc or color_code,
+                        'color_code': color_code,
+                        'color_process_type_id': process.id if process else False,
+                        'color_range_id': color_range.id if color_range else False,
+                        'color_intensity_id': intens_obj.id if intens_obj else False,
+                        'color_recipe_ids': [Command.create({
                             'state': 'approved',
                         })],
+                        'state': 'approved',
                     })
+                    existing_lines_by_code[color_code.upper()] = new_line
+            if skipped_existing_recipe:
+                _logger.info("sync_lab omitio %s registros porque la receta ya existia", skipped_existing_recipe)
         finally:
             try:
                 cursor.close()
