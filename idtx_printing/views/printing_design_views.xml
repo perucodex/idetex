@@ -112,7 +112,7 @@
                             <field name="previous_recipe_id" readonly="1"/>
                             <label for="production_percentage"/>
                             <div name="production_percentage" class="o_row o_row_readonly">
-                                <field name="production_percentage" class="oe_inline o_input_6ch" style="max-width: 7ch;" required="1" readonly="state != 'test'"/>
+                                <field name="production_percentage" class="oe_inline o_input_6ch" style="max-width: 7ch;" required="1"/>
                                 <span class="ms-1 oe_inline">%</span>
                             </div>
                         </group>
@@ -188,16 +188,16 @@
         <field name="arch" type="xml">
             <list>
                 <field name="name"/>
-                <field name="state" widget="badge"
-                       decoration-muted="state == 'draft'"
-                       decoration-info="state == 'quoting'"
-                       decoration-warning="state == 'development'"
-                       decoration-success="state == 'done'"/>
                 <field name="partner_id"/>
                 <field name="printing_type"/>
                 <field name="code"/>
                 <field name="file_desc"/>
                 <field name="fabric_base"/>
+                <field name="state" widget="badge"
+                       decoration-muted="state == 'draft'"
+                       decoration-info="state == 'quoting'"
+                       decoration-warning="state == 'development'"
+                       decoration-success="state == 'done'"/>
             </list>
         </field>
     </record>

@@ -21,7 +21,7 @@
                     <field name="option_line_ids">
                         <list editable="bottom">
                             <field name="product_id" required="1" domain="[('id', 'in', parent.available_thread_product_ids)]"/>
-                            <field name="lot_id" required="1" domain="[('product_id', '=', product_id), ('id', 'in', available_lot_ids)]"/>
+                            <field name="lot_id" required="1" domain="[('product_id', '=', product_id), ('id', 'in', available_lot_ids)]" options="{'no_create': True}"/>
                         </list>
                     </field>
                     <div class="alert alert-info" role="alert">

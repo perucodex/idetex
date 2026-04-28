@@ -67,14 +67,14 @@
 
                 <div>
                     <h2 style="font-size: 22px; margin-bottom: 16px;">
-                        Recipe + <t t-esc="'%.4f' % (recipe.production_percentage * 100)"/>%
+                        Recipe + <t t-esc="'%.2f' % (recipe.production_percentage)"/>%
                     </h2>
                     <table style="width: 100%; border-collapse: collapse; border: 1px solid #d1d5db;">
                         <thead style="background: #ecfdf5;">
                             <tr>
                                 <th style="padding: 10px; text-align: left; border-bottom: 1px solid #d1d5db;">Chemical</th>
                                 <th style="padding: 10px; text-align: right; border-bottom: 1px solid #d1d5db;">
-                                    Quantity + <t t-esc="'%.4f' % (recipe.production_percentage * 100)"/>%
+                                    Quantity + <t t-esc="'%.2f' % (recipe.production_percentage)"/>%
                                 </th>
                             </tr>
                         </thead>

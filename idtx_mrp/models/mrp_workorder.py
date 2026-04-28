@@ -17,6 +17,41 @@ class MrpWorkorder(models.Model):
             rec.workcenter_id = rec.mrwo_id.workcenter_id
             rec.name = rec.mrwo_id.name
 
+    def _get_textile_produced_qty(self):
+        self.ensure_one()
+        if self.operation_type == 'weaving':
+            if getattr(self, 'weave_type', False) == 'rect':
+                return float(sum(self.roll_ids.mapped('quantity')))
+            total_weight = float(sum(self.roll_ids.mapped('gross_weight')))
+            return total_weight or float(sum(self.roll_ids.mapped('quantity')))
+        if self.operation_type == 'dyeing':
+            batch_rolls = self.batch_ids.wo_roll_ids.filtered(
+                lambda roll: roll.workorder_id and roll.workorder_id.production_id == self.production_id
+            )
+            total_weight = float(sum(batch_rolls.mapped('gross_weight')))
+            if total_weight > 0:
+                return total_weight
+            return float(sum(batch_rolls.mapped('quantity')))
+        return 0.0
+
+    def _sync_textile_qty_produced(self):
+        for workorder in self.filtered(lambda wo: wo.operation_type in ('weaving', 'dyeing') and wo.state not in ('done', 'cancel')):
+            workorder.qty_produced = workorder._get_textile_produced_qty()
+
+    def write(self, vals):
+        if 'state' in vals and vals['state'] in ('progress', 'done') and self.filtered(lambda wo: wo.operation_type in ('weaving', 'dyeing')):
+            result = True
+            for workorder in self:
+                current_vals = dict(vals)
+                produced_qty = workorder._get_textile_produced_qty()
+                if vals['state'] == 'done' and produced_qty > 0:
+                    current_vals['qty_produced'] = produced_qty
+                elif 'qty_produced' not in current_vals and produced_qty > 0:
+                    current_vals['qty_produced'] = produced_qty
+                result = super(MrpWorkorder, workorder).write(current_vals) and result
+            return result
+        return super().write(vals)
+
     def unlink(self):
         for rec in self:
             if rec.state in ('done','progress'):

@@ -5,11 +5,7 @@ class MrpWorkorderRoll(models.Model):
     _inherit = "mrp.workorder.roll"
 
     def _sync_weaving_qty_produced(self, workorders):
-        # No intentar ajustar qty_produced en WO cerradas: el core lo prohíbe.
-        for workorder in workorders.exists().filtered(
-            lambda wo: wo.operation_type == 'weaving' and wo.state not in ('done', 'cancel')
-        ):
-            workorder.qty_produced = sum(workorder.roll_ids.mapped('gross_weight'))
+        workorders.exists()._sync_textile_qty_produced()
 
     def action_reprint_qr(self):
         if self.env.company.is_printer:

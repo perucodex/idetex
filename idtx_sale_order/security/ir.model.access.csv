@@ -14,3 +14,6 @@ access_sale_mrp_readonly_workcenter,access.sale.mrp.readonly.workcenter,mrp.mode
 access_sale_mrp_readonly_workcenter_capacity,access.sale.mrp.readonly.workcenter.capacity,mrp.model_mrp_workcenter_capacity,idtx_sale_order.group_sale_mrp_readonly,1,0,0,0
 access_sale_all_leads_workcenter_capacity,access.sale.all.leads.workcenter.capacity,mrp.model_mrp_workcenter_capacity,sales_team.group_sale_salesman_all_leads,1,0,0,0
 access_sale_mrp_readonly_stock_move,access.sale.mrp.readonly.stock.move,stock.model_stock_move,idtx_sale_order.group_sale_mrp_readonly,1,0,0,0
+access_sale_mrp_readonly_mrp_production_group,access.sale.mrp.readonly.mrp.production.group,mrp.model_mrp_production_group,idtx_sale_order.group_sale_mrp_readonly,1,0,0,0
+access_sale_mrp_readonly_mrp_unbuild,access.sale.mrp.readonly.mrp.unbuild,mrp.model_mrp_unbuild,idtx_sale_order.group_sale_mrp_readonly,1,0,0,0
+access_sale_mrp_readonly_mrp_workcenter_productivity,access.sale.mrp.readonly.mrp.workcenter.productivity,mrp.model_mrp_workcenter_productivity,idtx_sale_order.group_sale_mrp_readonly,1,0,0,0

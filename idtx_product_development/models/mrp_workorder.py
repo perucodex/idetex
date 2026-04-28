@@ -24,9 +24,6 @@ class MrpWorkorder(models.Model):
                     rec.quantity = sum(rec.roll_ids.mapped('quantity'))
                     rec.roll_weight = sum(rec.roll_ids.mapped('gross_weight'))
                     rec.progress = 100
-                    rec.state = 'progress'
-                    rec.qty_produced = rec.roll_weight if rec.roll_weight else rec.quantity
-                    rec.state = 'done'
                 else:
                     if rec.weave_type == 'rect':
                         rec.quantity = sum(rec.roll_ids.mapped('quantity'))

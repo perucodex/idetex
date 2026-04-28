@@ -43,7 +43,9 @@ class MrpWorkorderBatch(models.Model):
         return super().create(vals_list)
     
     def clear_rolls(self):
+        workorders = self.wo_roll_ids.mapped('workorder_id')
         self.wo_roll_ids = [Command.clear()]
+        workorders._sync_textile_qty_produced()
     
     def create_batch(self):
         for rec in self:
@@ -51,6 +53,7 @@ class MrpWorkorderBatch(models.Model):
                 raise UserError(_('Some rolls are in other batch, please select rolls again.'))
             rec.wo_roll_ids.write({'in_batch': True})
             rec.state = 'batch'
+            rec.wo_roll_ids.mapped('workorder_id')._sync_textile_qty_produced()
 
     def unbuild_batch(self):
         # if self.workorder_id:
@@ -58,6 +61,7 @@ class MrpWorkorderBatch(models.Model):
         for rec in self:
             rec.wo_roll_ids.write({'in_batch': False})
             rec.state = 'unbuild'
+            rec.wo_roll_ids.mapped('workorder_id')._sync_textile_qty_produced()
 
     def rebuild_batch(self):
         for rec in self:
@@ -65,3 +69,4 @@ class MrpWorkorderBatch(models.Model):
                 raise UserError(_('Some rolls are in other batch, can\'t rebuild batch.'))
             rec.wo_roll_ids.write({'in_batch': True})
             rec.state = 'batch'
+            rec.wo_roll_ids.mapped('workorder_id')._sync_textile_qty_produced()

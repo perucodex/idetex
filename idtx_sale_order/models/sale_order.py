@@ -358,20 +358,7 @@ class SaleOrder(models.Model):
     def open_productions(self):
         productions = self.production_ids
         if self.env.user.has_group('idtx_sale_order.group_sale_mrp_readonly') and not self.env.user.has_group('mrp.group_mrp_user'):
-            return {
-                'name': _("Productions"),
-                'type': 'ir.actions.act_window',
-                'res_model': 'mrp.production',
-                'view_mode': 'list,form',
-                'views': [
-                    (self.env.ref('idtx_sale_order.mrp_production_tree_view_sale_readonly').id, 'list'),
-                    (self.env.ref('idtx_sale_order.mrp_production_form_view_sale_readonly').id, 'form'),
-                ],
-                'search_view_id': self.env.ref('idtx_sale_order.mrp_production_view_search_inherit_sale_order').id,
-                'domain': [('id', 'in', productions.ids)],
-                'context': dict(self.env.context, create=False, edit=False, delete=False),
-                'target': 'current',
-            }
+            return productions.with_context(create=False, edit=False, delete=False)._get_records_action(name=_("Productions"))
         return productions._get_records_action(name=_("Productions"))
     
     def open_sales(self):
