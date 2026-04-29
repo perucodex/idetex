@@ -190,6 +190,279 @@ class ProductAnalysis(models.Model):
             return conn
         except Exception as e:
             raise UserError(f"No se pudo conectar a SQL Server: {e}")
+
+    def _get_texplus_sql_connection(self):
+        try:
+            conn = pyodbc.connect(
+                "DSN=ENBTEX1_DSN;"
+                "PORT=1433;"
+                "UID=sistemas;"
+                "PWD=idtE#21@IRdc95;"
+                "TDS_Version=7.3;"
+            )
+            return conn
+        except Exception as e:
+            raise UserError(f"No se pudo conectar a TEXPLUS SQL Server: {e}")
+
+    def _texplus_uom(self, value):
+        return {
+            1: 'gxl',
+            3: 'por',
+        }.get(a_int(value), 'gxl')
+
+    def _iter_chunked(self, items, size):
+        for start in range(0, len(items), size):
+            yield items[start:start + size]
+
+    def _get_or_create_texplus_product(self, product_code, product_name, product_cache):
+        product_code = (product_code or '').strip()
+        if not product_code:
+            return False
+        product = product_cache.get(product_code)
+        if product is not None:
+            return product
+        product = self.env['product.template'].search([('default_code', '=', product_code)], limit=1)
+        if not product:
+            product = self.env['product.template'].create({
+                'name': (product_name or '').strip() or product_code,
+                'default_code': product_code,
+                'categ_id': self.env.ref('idtx_laboratory.product_categ_3').id,
+                'uom_id': self.env.ref('uom.product_uom_kgm').id,
+                # 'uom_po_id': self.env.ref('uom.product_uom_kgm').id,
+            })
+        product_cache[product_code] = product
+        return product
+
+    def _get_or_create_texplus_base_process(self, process_name, base_process_cache):
+        process_name = (process_name or '').strip()
+        if not process_name:
+            return False
+        base_process = base_process_cache.get(process_name)
+        if base_process is not None:
+            return base_process
+        base_process = self.env['base.process'].search([('name', '=', process_name)], limit=1)
+        if not base_process:
+            base_process = self.env['base.process'].create({'name': process_name})
+        base_process_cache[process_name] = base_process
+        return base_process
+
+    def _build_texplus_recipe_commands(self, texplus_recipe, product_cache=None, base_process_cache=None):
+        if not texplus_recipe:
+            return []
+
+        product_cache = product_cache if product_cache is not None else {}
+        base_process_cache = base_process_cache if base_process_cache is not None else {}
+        commands = []
+
+        for process_data in texplus_recipe['processes']:
+            base_process = self._get_or_create_texplus_base_process(process_data['process_name'], base_process_cache)
+            line_commands = []
+            for line_data in process_data['lines']:
+                product = self._get_or_create_texplus_product(
+                    line_data['product_code'],
+                    line_data['product_name'],
+                    product_cache,
+                )
+                line_commands.append(Command.create({
+                    'product_id': product.id if product else False,
+                    'factor': float(line_data['factor'] or 0.0),
+                    'uom': self._texplus_uom(line_data['uom_code']),
+                }))
+
+            commands.append(Command.create({
+                'base_process_id': base_process.id if base_process else False,
+                'color_recipe_process_line_ids': line_commands,
+            }))
+        return commands
+
+    def _load_texplus_recipes_by_color(self, color_code_values):
+        if not color_code_values:
+            return {}
+
+        recipe_candidates = {}
+        texplus_conn = None
+        texplus_cursor = None
+        try:
+            texplus_conn = self._get_texplus_sql_connection()
+            texplus_cursor = texplus_conn.cursor()
+            sorted_codes = sorted({str(code or '').strip().upper() for code in color_code_values if str(code or '').strip()})
+
+            for chunk in self._iter_chunked(sorted_codes, 300):
+                placeholders = ', '.join('?' for _ in chunk)
+                texplus_cursor.execute(
+                    f"""
+                        SELECT
+                            RIGHT('00000000' + LTRIM(RTRIM(f.ForColNom)), 8) AS color_code,
+                            f.ForSer,
+                            f.ForColNum,
+                            f.ForNumCol,
+                            f.ForUltMod,
+                            f.ForFec,
+                            lf.ProForL,
+                            lf.ProForCod,
+                            pf.ProForDsc,
+                            lp.ProForLin,
+                            lp.ProForPrd,
+                            lp.ProForDes,
+                            lp.ForPrdUMe,
+                            lp.ProForCan
+                        FROM dbo.CFORMU f
+                        LEFT JOIN dbo.LFORMU lf
+                            ON lf.EmprCod = f.EmprCod
+                           AND lf.ForSer = f.ForSer
+                           AND lf.ForColNum = f.ForColNum
+                        LEFT JOIN dbo.CPROFO pf
+                            ON pf.EmprCod = lf.EmprCod
+                           AND pf.ProForCod = lf.ProForCod
+                        LEFT JOIN dbo.LPROFO lp
+                            ON lp.EmprCod = lf.EmprCod
+                           AND lp.ProForCod = lf.ProForCod
+                        WHERE f.ForEst = 'S'
+                          AND RIGHT('00000000' + LTRIM(RTRIM(f.ForColNom)), 8) IN ({placeholders})
+                        ORDER BY color_code, f.ForUltMod DESC, f.ForFec DESC, lf.ProForL, lp.ProForLin
+                    """,
+                    *chunk,
+                )
+                columns = [col[0].lower() for col in texplus_cursor.description]
+                raw_rows = texplus_cursor.fetchall()
+                for raw_row in raw_rows:
+                    row = dict(zip(columns, raw_row))
+                    color_code = str(row.get('color_code') or '').strip().upper()
+                    if not color_code:
+                        continue
+
+                    formula_key = (
+                        str(row.get('forser') or '').strip(),
+                        a_int(row.get('forcolnum')) or 0,
+                        a_int(row.get('fornumcol')) or 0,
+                    )
+                    formulas_for_color = recipe_candidates.setdefault(color_code, {})
+                    formula = formulas_for_color.setdefault(formula_key, {
+                        'sort_key': (
+                            row.get('forultmod') or fields.Datetime.to_datetime('1900-01-01 00:00:00'),
+                            row.get('forfec') or fields.Datetime.to_datetime('1900-01-01 00:00:00'),
+                            formula_key,
+                        ),
+                        'process_map': {},
+                    })
+
+                    process_code = str(row.get('proforcod') or '').strip()
+                    process_name = str(row.get('profordsc') or '').strip() or process_code
+                    process_order = a_int(row.get('proforl')) or 0
+                    if not process_name:
+                        continue
+
+                    process_entry = formula['process_map'].setdefault((process_order, process_code, process_name), {
+                        'process_name': process_name,
+                        'order': process_order,
+                        'line_map': {},
+                    })
+
+                    product_code = str(row.get('proforprd') or '').strip()
+                    product_name = str(row.get('profordes') or '').strip() or product_code
+                    product_order = a_int(row.get('proforlin')) or 0
+                    if product_code or product_name:
+                        process_entry['line_map'][(product_order, product_code, product_name)] = {
+                            'product_code': product_code,
+                            'product_name': product_name,
+                            'factor': row.get('proforcan') or 0.0,
+                            'uom_code': row.get('forprdume'),
+                        }
+        finally:
+            try:
+                texplus_cursor.close()
+            except Exception:
+                pass
+            try:
+                texplus_conn.close()
+            except Exception:
+                pass
+
+        selected_recipes = {}
+        for color_code, formulas in recipe_candidates.items():
+            if not formulas:
+                continue
+            selected_formula = max(formulas.values(), key=lambda item: item['sort_key'])
+            processes = []
+            for _, process_data in sorted(selected_formula['process_map'].items(), key=lambda item: item[0]):
+                lines = [line_data for _, line_data in sorted(process_data['line_map'].items(), key=lambda item: item[0])]
+                processes.append({
+                    'process_name': process_data['process_name'],
+                    'lines': lines,
+                })
+            selected_recipes[color_code] = {'processes': processes}
+        return selected_recipes
+
+    def sync_lab_recipes_from_texplus(self):
+        product_cache = {}
+        base_process_cache = {}
+        lab_lines = self.env['lab.dev.line'].search([('color_code', '!=', False)])
+        target_lines = self.env['lab.dev.line']
+
+        for line in lab_lines:
+            if line.color_recipe_ids.filtered('color_recipe_process_ids'):
+                continue
+            target_lines |= line
+
+        color_codes = {str(line.color_code or '').strip().upper() for line in target_lines if str(line.color_code or '').strip()}
+        texplus_recipes_by_color = self._load_texplus_recipes_by_color(color_codes)
+
+        created_recipes = 0
+        updated_recipes = 0
+        missing_texplus = 0
+        skipped_with_recipe = 0
+        total = len(target_lines)
+        progress_every = max(1000, total // 20) if total else 1000
+
+        for index, line in enumerate(target_lines, 1):
+            if index == 1 or index % progress_every == 0 or index == total:
+                _logger.info("sync_lab_recipes_from_texplus %s / %s", index, total)
+
+            if line.color_recipe_ids.filtered('color_recipe_process_ids'):
+                skipped_with_recipe += 1
+                continue
+
+            color_code = str(line.color_code or '').strip().upper()
+            texplus_recipe = texplus_recipes_by_color.get(color_code)
+            if not texplus_recipe:
+                missing_texplus += 1
+                continue
+
+            recipe_commands = self._build_texplus_recipe_commands(texplus_recipe, product_cache, base_process_cache)
+            if not recipe_commands:
+                missing_texplus += 1
+                continue
+
+            recipe = line.color_recipe_ids.filtered(lambda rec: not rec.color_recipe_process_ids)[:1]
+            if recipe:
+                recipe.write({'color_recipe_process_ids': [Command.clear(), *recipe_commands]})
+                updated_recipes += 1
+            elif not line.color_recipe_ids:
+                line.write({
+                    'color_recipe_ids': [Command.create({
+                        'state': 'approved',
+                        'color_recipe_process_ids': recipe_commands,
+                    })],
+                })
+                created_recipes += 1
+
+        message = (
+            f"Recetas TEXPLUS: creadas={created_recipes}, "
+            f"actualizadas={updated_recipes}, "
+            f"sin_formula={missing_texplus}, "
+            f"omitidas_con_procesos={skipped_with_recipe}"
+        )
+        _logger.info(message)
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('TEXPLUS'),
+                'message': message,
+                'type': 'success',
+                'sticky': False,
+            }
+        }
     
     def get_routing_data(self, ruta):
         try:
@@ -421,6 +694,10 @@ class ProductAnalysis(models.Model):
         def _strip(v):
             return (str(v or '')).strip()
 
+        def _chunked(items, size):
+            for start in range(0, len(items), size):
+                yield items[start:start + size]
+
         def _norm(text):
             text = _strip(text).upper()
             if not text:
@@ -508,6 +785,192 @@ class ProductAnalysis(models.Model):
             lab_dev_cache[cache_key] = lab_dev
             return lab_dev
 
+        def _texplus_uom(value):
+            return {
+                1: 'gxl',
+                3: 'por',
+            }.get(a_int(value), 'gxl')
+
+        def _get_or_create_product(product_code, product_name):
+            product_code = _strip(product_code)
+            if not product_code:
+                return False
+            product = product_cache.get(product_code)
+            if product is not None:
+                return product
+            product = self.env['product.template'].search([('default_code', '=', product_code)], limit=1)
+            if not product:
+                product = self.env['product.template'].create({
+                    'name': _strip(product_name) or product_code,
+                    'default_code': product_code,
+                    'categ_id': self.env.ref('product.product_category_all').id,
+                    'uom_id': self.env.ref('uom.product_uom_kgm').id,
+                    'uom_po_id': self.env.ref('uom.product_uom_kgm').id,
+                })
+            product_cache[product_code] = product
+            return product
+
+        def _get_or_create_base_process(process_name):
+            process_name = _strip(process_name)
+            if not process_name:
+                return False
+            base_process = base_process_cache.get(process_name)
+            if base_process is not None:
+                return base_process
+            base_process = self.env['base.process'].search([('name', '=', process_name)], limit=1)
+            if not base_process:
+                base_process = self.env['base.process'].create({'name': process_name})
+            base_process_cache[process_name] = base_process
+            return base_process
+
+        def _build_texplus_recipe_commands(texplus_recipe):
+            if not texplus_recipe:
+                return []
+
+            commands = []
+            for process_data in texplus_recipe['processes']:
+                base_process = _get_or_create_base_process(process_data['process_name'])
+                line_commands = []
+                for line_data in process_data['lines']:
+                    product = _get_or_create_product(line_data['product_code'], line_data['product_name'])
+                    line_commands.append(Command.create({
+                        'product_id': product.id if product else False,
+                        'factor': float(line_data['factor'] or 0.0),
+                        'uom': _texplus_uom(line_data['uom_code']),
+                    }))
+
+                commands.append(Command.create({
+                    'base_process_id': base_process.id if base_process else False,
+                    'color_recipe_process_line_ids': line_commands,
+                }))
+            return commands
+
+        def _load_texplus_recipes(color_code_values):
+            if not color_code_values:
+                return {}
+
+            recipe_candidates = {}
+            texplus_conn = None
+            texplus_cursor = None
+            try:
+                texplus_conn = self._get_texplus_sql_connection()
+                texplus_cursor = texplus_conn.cursor()
+                sorted_codes = sorted({_strip(code).upper() for code in color_code_values if _strip(code)})
+
+                for chunk in _chunked(sorted_codes, 300):
+                    placeholders = ', '.join('?' for _ in chunk)
+                    texplus_cursor.execute(
+                        f"""
+                            SELECT
+                                RIGHT('00000000' + LTRIM(RTRIM(f.ForColNom)), 8) AS color_code,
+                                f.ForSer,
+                                f.ForColNom,
+                                f.ForNumCol,
+                                f.ForUltMod,
+                                f.ForFec,
+                                f.ForEst,
+                                lf.ProForL,
+                                lf.ProForCod,
+                                pf.ProForDsc,
+                                lp.ProForLin,
+                                lp.ProForPrd,
+                                lp.ProForDes,
+                                lp.ForPrdUMe,
+                                lp.ProForCan
+                            FROM dbo.CFORMU f
+                            LEFT JOIN dbo.LFORMU lf
+                                ON lf.EmprCod = f.EmprCod
+                               AND lf.ForSer = f.ForSer
+                               AND lf.ForColNom = f.ForColNom
+                            LEFT JOIN dbo.CPROFO pf
+                                ON pf.EmprCod = lf.EmprCod
+                               AND pf.ProForCod = lf.ProForCod
+                            LEFT JOIN dbo.LPROFO lp
+                                ON lp.EmprCod = lf.EmprCod
+                               AND lp.ProForCod = lf.ProForCod
+                            WHERE f.ForEst = 'S'
+                              AND RIGHT('00000000' + LTRIM(RTRIM(f.ForColNom)), 8) IN ({placeholders})
+                            ORDER BY color_code, f.ForUltMod DESC, f.ForFec DESC, lf.ProForL, lp.ProForLin
+                        """,
+                        *chunk,
+                    )
+
+                    columns = [col[0].lower() for col in texplus_cursor.description]
+                    for raw_row in texplus_cursor.fetchall():
+                        row = dict(zip(columns, raw_row))
+                        color_code = _strip(row.get('color_code')).upper()
+                        if not color_code:
+                            continue
+
+                        formula_key = (
+                            _strip(row.get('forser')),
+                            a_int(row.get('forcolnum')) or 0,
+                            a_int(row.get('fornumcol')) or 0,
+                        )
+                        formulas_for_color = recipe_candidates.setdefault(color_code, {})
+                        formula = formulas_for_color.setdefault(formula_key, {
+                            'sort_key': (
+                                row.get('forultmod') or fields.Datetime.to_datetime('1900-01-01 00:00:00'),
+                                row.get('forfec') or fields.Datetime.to_datetime('1900-01-01 00:00:00'),
+                                formula_key,
+                            ),
+                            'process_map': {},
+                        })
+
+                        process_code = _strip(row.get('proforcod'))
+                        process_name = _strip(row.get('profordsc')) or process_code
+                        process_order = a_int(row.get('proforl')) or 0
+                        if not process_name:
+                            continue
+
+                        process_entry = formula['process_map'].setdefault((process_order, process_code, process_name), {
+                            'process_name': process_name,
+                            'order': process_order,
+                            'line_map': {},
+                        })
+
+                        product_code = _strip(row.get('proforprd'))
+                        product_name = _strip(row.get('profordes')) or product_code
+                        product_order = a_int(row.get('proforlin')) or 0
+                        if product_code or product_name:
+                            process_entry['line_map'][(product_order, product_code, product_name)] = {
+                                'product_code': product_code,
+                                'product_name': product_name,
+                                'factor': row.get('proforcan') or 0.0,
+                                'uom_code': row.get('forprdume'),
+                                'order': product_order,
+                            }
+            finally:
+                try:
+                    texplus_cursor.close()
+                except Exception:
+                    pass
+                try:
+                    texplus_conn.close()
+                except Exception:
+                    pass
+
+            selected_recipes = {}
+            for color_code, formulas in recipe_candidates.items():
+                if not formulas:
+                    continue
+                selected_formula = max(formulas.values(), key=lambda item: item['sort_key'])
+                processes = []
+                for _, process_data in sorted(selected_formula['process_map'].items(), key=lambda item: item[0]):
+                    lines = [
+                        line_data
+                        for _, line_data in sorted(process_data['line_map'].items(), key=lambda item: item[0])
+                    ]
+                    processes.append({
+                        'process_name': process_data['process_name'],
+                        'order': process_data['order'],
+                        'lines': lines,
+                    })
+                selected_recipes[color_code] = {
+                    'processes': processes,
+                }
+            return selected_recipes
+
         try:
             conn = self._get_sql_connection()
             cursor = conn.cursor()
@@ -536,6 +999,8 @@ class ProductAnalysis(models.Model):
             partner_index = _build_partner_index()
             generic_ld_name = 'LD-GENERICA'
             lab_dev_cache = {}
+            product_cache = {}
+            base_process_cache = {}
 
             prepared_rows = []
             process_codes = set()
@@ -592,10 +1057,27 @@ class ProductAnalysis(models.Model):
                 if not current or (line.color_recipe_ids and not current.color_recipe_ids):
                     existing_lines_by_code[code_key] = line
 
+            target_color_codes = set()
+            for row in prepared_rows:
+                color_code = row['color_code'].upper()
+                existing_line = existing_lines_by_code.get(color_code)
+                if not existing_line:
+                    target_color_codes.add(color_code)
+                    continue
+                if not existing_line.color_recipe_ids:
+                    target_color_codes.add(color_code)
+                    continue
+                if not existing_line.color_recipe_ids.filtered('color_recipe_process_ids'):
+                    target_color_codes.add(color_code)
+
+            texplus_recipes_by_color = _load_texplus_recipes(target_color_codes)
+
             skipped_existing_recipe = 0
+            progress_every = max(1000, total // 20)
 
             for contador, row in enumerate(prepared_rows, 1):
-                _logger.info(str(contador) + ' / ' + str(total) + '  ' + str(int((contador / total)*100)) + '%')
+                if contador == 1 or contador % progress_every == 0 or contador == total:
+                    _logger.info("sync_lab %s / %s  %s%%", contador, total, int((contador / total) * 100))
                 gt = row['gt']
                 cb = row['cb']
                 ints = row['ints']
@@ -604,21 +1086,29 @@ class ProductAnalysis(models.Model):
                 color_code = row['color_code']
 
                 existing_line = existing_lines_by_code.get(color_code.upper())
-                if existing_line and existing_line.color_recipe_ids:
+                if existing_line and existing_line.color_recipe_ids.filtered('color_recipe_process_ids'):
                     skipped_existing_recipe += 1
                     continue
 
                 process = process_map.get(gt)
                 color_range = color_range_map.get(cb)
                 intens_obj = intensity_map.get(ints)
+                texplus_recipe = texplus_recipes_by_color.get(color_code.upper())
+                recipe_commands = _build_texplus_recipe_commands(texplus_recipe)
 
                 partner = _extract_partner(obs, partner_index) or company_partner
                 ld_name = _extract_ld_name(obs) or generic_ld_name
                 if existing_line:
-                    if not existing_line.color_recipe_ids:
+                    recipe = existing_line.color_recipe_ids.filtered(lambda rec: not rec.color_recipe_process_ids)[:1]
+                    if not recipe and not existing_line.color_recipe_ids:
                         existing_line.color_recipe_ids = [Command.create({
                             'state': 'approved',
+                            'color_recipe_process_ids': recipe_commands,
                         })]
+                    elif recipe and recipe_commands:
+                        recipe.write({
+                            'color_recipe_process_ids': [Command.clear(), *recipe_commands],
+                        })
                 else:
                     lab_dev = _get_or_create_lab_dev(ld_name, partner, fields.Date.context_today(self))
                     new_line = self.env['lab.dev.line'].create({
@@ -630,6 +1120,7 @@ class ProductAnalysis(models.Model):
                         'color_intensity_id': intens_obj.id if intens_obj else False,
                         'color_recipe_ids': [Command.create({
                             'state': 'approved',
+                            'color_recipe_process_ids': recipe_commands,
                         })],
                         'state': 'approved',
                     })
@@ -703,6 +1194,64 @@ class AnalysisWeavingData(models.Model):
     _inherit = 'analysis.weaving.data'
 
     sitpro_sheet = fields.Char('Sitpro Sheet')
+
+
+class ColorRecipe(models.Model):
+    _inherit = 'color.recipe'
+
+    def sync_lab_recipes_from_texplus(self):
+        analysis_model = self.env['product.analysis']
+        product_cache = {}
+        base_process_cache = {}
+        selected_recipes = self.filtered(lambda recipe: recipe.lab_dev_line_id and recipe.color_code)
+        color_codes = {str(recipe.color_code or '').strip().upper() for recipe in selected_recipes if str(recipe.color_code or '').strip()}
+        texplus_recipes_by_color = analysis_model._load_texplus_recipes_by_color(color_codes)
+
+        updated_recipes = 0
+        missing_texplus = 0
+        skipped_with_recipe = 0
+
+        for recipe in selected_recipes:
+            if recipe.color_recipe_process_ids:
+                skipped_with_recipe += 1
+                continue
+
+            color_code = str(recipe.color_code or '').strip().upper()
+            texplus_recipe = texplus_recipes_by_color.get(color_code)
+            if not texplus_recipe:
+                missing_texplus += 1
+                continue
+
+            recipe_commands = analysis_model._build_texplus_recipe_commands(
+                texplus_recipe,
+                product_cache,
+                base_process_cache,
+            )
+            if not recipe_commands:
+                missing_texplus += 1
+                continue
+
+            recipe.write({
+                'color_recipe_process_ids': [Command.clear(), *recipe_commands],
+            })
+            updated_recipes += 1
+
+        message = (
+            f"Recetas TEXPLUS seleccionadas: actualizadas={updated_recipes}, "
+            f"sin_formula={missing_texplus}, "
+            f"omitidas_con_procesos={skipped_with_recipe}"
+        )
+        _logger.info(message)
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('TEXPLUS'),
+                'message': message,
+                'type': 'success',
+                'sticky': False,
+            }
+        }
 
 class TechnicalSheet(models.Model):
     _inherit = 'technical.sheet'

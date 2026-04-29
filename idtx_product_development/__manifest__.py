@@ -37,6 +37,7 @@ y ficha técnica
         'data/product.gauge.csv',
         'data/product.title.csv',
         'data/ligament.type.csv',
+        'data/ir_cron_sync_base_process.xml',
         'security/group_dev.xml',
         'security/ir.model.access.csv',
         'report/report_product_analysis.xml',

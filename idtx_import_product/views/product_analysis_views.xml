@@ -59,6 +59,19 @@
             </field>
         </record>
 
+        <record id="color_recipe_tree_view_inherit_texplus_button" model="ir.ui.view">
+            <field name="name">color.recipe.tree.inherit.texplus.button</field>
+            <field name="model">color.recipe</field>
+            <field name="inherit_id" ref="idtx_laboratory.color_recipe_tree_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//list" position="inside">
+                    <header>
+                        <button name="sync_lab_recipes_from_texplus" string="Update TEXPLUS Recipes" type="object"/>
+                    </header>
+                </xpath>
+            </field>
+        </record>
+
         <record id="analysis_weaving_data_view_tree_inherit_view" model="ir.ui.view">
             <field name="name">analysis.weaving.data.list.inherit</field>
             <field name="model">analysis.weaving.data</field>
