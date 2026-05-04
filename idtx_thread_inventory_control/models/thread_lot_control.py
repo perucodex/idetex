@@ -72,7 +72,7 @@ class ThreadLotControl(models.Model):
     )
     note = fields.Text(string="Notes")
 
-    @api.depends("line_ids.bag_qty", "line_ids.cone_qty", "line_ids.cone_weight", "line_ids.total_weight")
+    @api.depends("line_ids.bag_qty", "line_ids.cone_qty", "line_ids.total_weight")
     def _compute_totals(self):
         for rec in self:
             rec.bag_count = int(sum(rec.line_ids.mapped("bag_qty")))
@@ -144,20 +144,32 @@ class ThreadLotControlLine(models.Model):
     )
     bag_qty = fields.Integer(string="Bag Qty", required=True, default=1)
     cone_qty = fields.Integer(string="Cone Qty per Bag", required=True, default=0)
-    cone_weight = fields.Float(string="Cone Weight (kg)", required=True, default=0.0, digits=(16, 4))
-    total_weight = fields.Float(string="Bag Weight (kg)", compute="_compute_total_weight", store=True, digits=(16, 3))
+    total_weight = fields.Float(string="Bag Weight (kg)", default=0.0, digits=(16, 3))
+    # Calculado desde total_weight / (bolsas × conos) — se almacena para consultas de disponibilidad.
+    cone_weight = fields.Float(
+        string="Cone Weight (kg)",
+        compute="_compute_cone_weight",
+        store=True,
+        digits=(16, 4),
+    )
 
-    @api.depends("bag_qty", "cone_qty", "cone_weight")
-    def _compute_total_weight(self):
+    @api.depends("total_weight", "bag_qty", "cone_qty")
+    def _compute_cone_weight(self):
         for rec in self:
-            rec.total_weight = (rec.bag_qty or 0.0) * (rec.cone_qty or 0.0) * (rec.cone_weight or 0.0)
+            bags = rec.bag_qty or 0
+            cones = rec.cone_qty or 0
+            weight = rec.total_weight or 0.0
+            if bags > 0 and cones > 0 and weight > 0:
+                rec.cone_weight = weight / (bags * cones)
+            else:
+                rec.cone_weight = 0.0
 
-    @api.constrains("bag_qty", "cone_qty", "cone_weight")
+    @api.constrains("bag_qty", "cone_qty", "total_weight")
     def _check_positive_values(self):
         for rec in self:
             if rec.bag_qty <= 0:
                 raise ValidationError("Bag quantity must be greater than 0.")
             if rec.cone_qty < 0:
                 raise ValidationError("Cone quantity cannot be negative.")
-            if rec.cone_weight < 0:
-                raise ValidationError("Cone weight cannot be negative.")
+            if rec.total_weight < 0:
+                raise ValidationError("Total weight cannot be negative.")

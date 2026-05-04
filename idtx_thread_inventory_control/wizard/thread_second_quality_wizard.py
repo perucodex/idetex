@@ -100,7 +100,7 @@ class ThreadSecondQualityWizard(models.TransientModel):
             # Regla principal: saldo pendiente = recibido - consumido - ya liquidado.
             balance_qty = max(received_qty - consumed_qty - liquidated_qty, 0.0)
 
-            bag_qty, cone_qty, cone_weight = 0, 0, 0.0
+            bag_qty, cone_qty, transfer_qty = 0, 0, 0.0
             combo_default = combo_default_map.get((product_id, lot_id))
             if combo_default and balance_qty > 0:
                 _avail_bags, combo_cones, combo_weight = combo_default
@@ -113,13 +113,13 @@ class ThreadSecondQualityWizard(models.TransientModel):
                     rounded_bags = int(round(approx_bags))
 
                     if rounded_bags > 0 and abs((rounded_bags * unit_bag_weight) - balance_qty) <= 1e-6:
-                        # Caso exacto por combinacion de lote: mantener peso por cono original.
+                        # Caso exacto por combinacion de lote.
                         bag_qty = rounded_bags
-                        cone_weight = float(combo_weight)
+                        transfer_qty = round(float(rounded_bags) * float(cone_qty) * float(combo_weight), 3)
                     else:
-                        # Caso no exacto: asumir 1 bolsa y ajustar peso/cono al saldo.
+                        # Caso no exacto: 1 bolsa, total kg = saldo.
                         bag_qty = 1
-                        cone_weight = balance_qty / float(cone_qty) if cone_qty else 0.0
+                        transfer_qty = round(balance_qty, 3)
 
             line_commands.append((0, 0, {
                 "product_id": product_id,
@@ -130,7 +130,7 @@ class ThreadSecondQualityWizard(models.TransientModel):
                 "balance_qty": balance_qty,
                 "bag_qty": bag_qty,
                 "cone_qty": cone_qty,
-                "cone_weight": cone_weight,
+                "transfer_qty": transfer_qty,
             }))
         res["line_ids"] = line_commands
         return res
@@ -208,9 +208,9 @@ class ThreadSecondQualityWizard(models.TransientModel):
                 raise ValidationError(_("Falta Producto en una linea del asistente de liquidacion."))
             if not line.lot_id:
                 raise ValidationError(_("Falta Lote en una linea del asistente de liquidacion."))
-            if line.bag_qty <= 0 or line.cone_qty <= 0 or line.cone_weight <= 0:
+            if line.bag_qty <= 0 or line.cone_qty <= 0 or line.transfer_qty <= 0:
                 raise ValidationError(_(
-                    "Debe ingresar Bolsas, Conos por Bolsa y Peso por Cono mayores que cero para %(lot)s.",
+                    "Debe ingresar Bolsas, Conos por Bolsa y Kg a Enviar mayores que cero para %(lot)s.",
                     lot=line.lot_id.name,
                 ))
 
@@ -271,7 +271,6 @@ class ThreadSecondQualityWizard(models.TransientModel):
                 "quantity": qty,
                 "thread_bag_qty": line.bag_qty,
                 "thread_cone_qty": line.cone_qty,
-                "thread_cone_weight": line.cone_weight,
                 "location_id": source_location.id,
                 "location_dest_id": dest_location.id,
             })
@@ -343,31 +342,33 @@ class ThreadSecondQualityWizardLine(models.TransientModel):
     balance_qty = fields.Float(string="Saldo (Kg)", readonly=True)
     bag_qty = fields.Integer(string="Bolsas")
     cone_qty = fields.Integer(string="Conos por Bolsa")
-    cone_weight = fields.Float(string="Peso por Cono (kg)")
-    transfer_qty = fields.Float(string="Kg a Enviar", compute="_compute_transfer_qty", store=False)
+    transfer_qty = fields.Float(string="Kg a Enviar", default=0.0, digits=(16, 3))
+    # Calculado a partir de Kg a Enviar / (bolsas × conos) — solo lectura.
+    cone_weight = fields.Float(
+        string="Peso por Cono (kg)",
+        compute="_compute_cone_weight",
+        digits=(16, 4),
+    )
 
-    @api.depends("bag_qty", "cone_qty", "cone_weight")
-    def _compute_transfer_qty(self):
+    @api.depends("transfer_qty", "bag_qty", "cone_qty")
+    def _compute_cone_weight(self):
         for line in self:
-            line.transfer_qty = float((line.bag_qty or 0) * (line.cone_qty or 0) * (line.cone_weight or 0.0))
+            bags = line.bag_qty or 0
+            cones = line.cone_qty or 0
+            qty = line.transfer_qty or 0.0
+            if bags > 0 and cones > 0 and qty > 0:
+                line.cone_weight = qty / (bags * cones)
+            else:
+                line.cone_weight = 0.0
 
-    @api.onchange("bag_qty", "cone_qty")
-    def _onchange_bag_cone_autofill_weight(self):
-        """Autocalcula peso por cono según saldo, manteniéndolo editable."""
-        for line in self:
-            bags = float(line.bag_qty or 0)
-            cones = float(line.cone_qty or 0)
-            if bags > 0 and cones > 0 and float(line.balance_qty or 0.0) > 0:
-                line.cone_weight = float(line.balance_qty) / (bags * cones)
-
-    @api.constrains("transfer_qty", "bag_qty", "cone_qty", "cone_weight")
+    @api.constrains("transfer_qty", "bag_qty", "cone_qty")
     def _check_transfer_qty(self):
         for line in self:
             # Ignorar filas transitorias incompletas del list editable.
             if not line.product_id or not line.lot_id:
                 continue
-            if line.bag_qty < 0 or line.cone_qty < 0 or line.cone_weight < 0:
-                raise ValidationError(_("Bolsas, Conos por Bolsa y Peso por Cono no pueden ser negativos."))
+            if line.bag_qty < 0 or line.cone_qty < 0:
+                raise ValidationError(_("Bolsas y Conos por Bolsa no pueden ser negativos."))
             if line.transfer_qty < 0:
                 raise ValidationError(_("La cantidad a enviar no puede ser negativa."))
             if line.transfer_qty > line.balance_qty:

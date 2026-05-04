@@ -6,8 +6,8 @@
         <field name="state">code</field>
         <field name="code">model.cron_sync_from_texplus()</field>
         <field name="interval_number">1</field>
-        <field name="interval_type">days</field>
-        <field name="nextcall" eval="(DateTime.now().replace(hour=3, minute=0, second=0) + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        <field name="interval_type">hours</field>
+        <field name="nextcall" eval="(DateTime.now().replace(minute=0, second=0) + timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')"/>
         <field name="active">True</field>
     </record>
 </odoo>

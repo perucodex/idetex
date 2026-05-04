@@ -20,10 +20,10 @@
               <strong>Recipe Date:</strong>
               <div t-esc="doc.recipe_date.strftime('%m/%d/%Y')"></div>
           </div>
-          <div class="col border border-black p-2" name="informations_reference">
+          <!-- <div class="col border border-black p-2" name="informations_reference">
               <strong>Product:</strong>
               <div t-field="doc.lab_dev_line_id.product_id.display_name"></div>
-          </div>
+          </div> -->
           <div class="col border border-black p-2" name="informations_reference">
               <strong>Color Code:</strong>
               <div t-field="doc.color_code"></div>

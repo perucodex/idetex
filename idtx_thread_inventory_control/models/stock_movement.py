@@ -63,84 +63,35 @@ class StockMoveLine(models.Model):
     thread_bag_qty = fields.Integer(string="Thread Bags", default=0)
     thread_cone_qty = fields.Integer(string="Cones per Bag", default=0)
     thread_total_cones = fields.Integer(string="Total Cones", compute="_compute_thread_totals", store=True)
-    thread_cone_weight = fields.Float(string="Cone Weight (kg)", default=0.0, digits=(16, 4))
+    # Computed from quantity / (bags × cones) — the user enters total kg directly.
+    thread_cone_weight = fields.Float(
+        string="Cone Weight (kg)",
+        compute="_compute_thread_cone_weight",
+        store=True,
+        digits=(16, 4),
+    )
 
-    @api.depends("thread_bag_qty", "thread_cone_qty", "thread_cone_weight")
+    @api.depends("thread_bag_qty", "thread_cone_qty")
     def _compute_thread_totals(self):
         for line in self:
             line.thread_total_cones = int((line.thread_bag_qty or 0) * (line.thread_cone_qty or 0))
 
-    def _compute_thread_quantity(self, vals=None):
-        vals = vals or {}
-        bag_qty = vals.get("thread_bag_qty", self.thread_bag_qty)
-        cone_qty = vals.get("thread_cone_qty", self.thread_cone_qty)
-        cone_weight = vals.get("thread_cone_weight", self.thread_cone_weight)
-        return float((bag_qty or 0) * (cone_qty or 0) * (cone_weight or 0.0))
-
-    def _is_inventory_picking_thread_context(self, vals=None):
-        """True only for thread lines handled through stock pickings.
-
-        Production consumption lines (MO raw moves) must keep explicit quantity
-        and must not be recomputed from bag/cone fields.
-        """
-        vals = vals or {}
-        move = self.env["stock.move"]
-        move_id = vals.get("move_id")
-        if move_id:
-            move = self.env["stock.move"].browse(move_id)
-        elif self.move_id:
-            move = self.move_id
-
-        if move:
-            return bool(move.picking_id)
-
-        picking_id = vals.get("picking_id") or self.picking_id.id
-        return bool(picking_id)
-
-    @api.onchange("thread_bag_qty", "thread_cone_qty", "thread_cone_weight")
-    def _onchange_thread_set_quantity(self):
+    @api.depends("quantity", "thread_bag_qty", "thread_cone_qty")
+    def _compute_thread_cone_weight(self):
         for line in self:
-            if line.product_id.is_thread and line._is_inventory_picking_thread_context():
-                line.quantity = line._compute_thread_quantity()
+            bags = line.thread_bag_qty or 0
+            cones = line.thread_cone_qty or 0
+            qty = line.quantity or 0.0
+            if bags > 0 and cones > 0 and qty > 0:
+                line.thread_cone_weight = qty / (bags * cones)
+            else:
+                line.thread_cone_weight = 0.0
 
-    @api.model_create_multi
-    def create(self, vals_list):
-        for vals in vals_list:
-            product_id = vals.get("product_id")
-            if product_id and self.env["product.product"].browse(product_id).is_thread:
-                has_thread_combo_input = any(
-                    key in vals for key in ("thread_bag_qty", "thread_cone_qty", "thread_cone_weight")
-                )
-                # Keep explicit quantity (e.g. MO proportional consumption) unless
-                # thread combo fields are being used on this create payload.
-                if has_thread_combo_input and self._is_inventory_picking_thread_context(vals):
-                    bag_qty = vals.get("thread_bag_qty", 0)
-                    cone_qty = vals.get("thread_cone_qty", 0)
-                    cone_weight = vals.get("thread_cone_weight", 0.0)
-                    vals["quantity"] = float((bag_qty or 0) * (cone_qty or 0) * (cone_weight or 0.0))
-        return super().create(vals_list)
-
-    def write(self, vals):
-        tracked = {"thread_bag_qty", "thread_cone_qty", "thread_cone_weight", "product_id", "move_id", "picking_id"}
-        if not (tracked & set(vals.keys())):
-            return super().write(vals)
-
-        for line in self:
-            item_vals = dict(vals)
-            product = line.product_id
-            if item_vals.get("product_id"):
-                product = self.env["product.product"].browse(item_vals["product_id"])
-
-            if product.is_thread and line._is_inventory_picking_thread_context(item_vals):
-                item_vals["quantity"] = line._compute_thread_quantity(item_vals)
-            super(StockMoveLine, line).write(item_vals)
-        return True
-
-    @api.constrains("thread_bag_qty", "thread_cone_qty", "thread_cone_weight")
+    @api.constrains("thread_bag_qty", "thread_cone_qty")
     def _check_thread_values(self):
         for line in self:
-            if line.thread_bag_qty < 0 or line.thread_cone_qty < 0 or line.thread_cone_weight < 0:
-                raise ValidationError("Thread bags, cones and cone weight cannot be negative.")
+            if line.thread_bag_qty < 0 or line.thread_cone_qty < 0:
+                raise ValidationError("Thread bags and cones cannot be negative.")
 
     def unlink(self):
         # Only block deletion from MO component detail dialogs.
@@ -459,7 +410,7 @@ class StockMove(models.Model):
                         (0, 0, {
                             "bag_qty": line.thread_bag_qty,
                             "cone_qty": line.thread_cone_qty,
-                            "cone_weight": line.thread_cone_weight,
+                            "total_weight": float(line.quantity or 0.0),
                         })
                         for line in lot_lines
                     ]
@@ -480,6 +431,19 @@ class StockMove(models.Model):
         done_moves = super()._action_done(cancel_backorder=cancel_backorder)
         done_moves.with_context(**self.env.context)._create_thread_controls_from_move()
         return done_moves
+
+    def action_open_packing_import_wizard(self):
+        self.ensure_one()
+        return {
+            "name": _("Importar Packing List de Hilo"),
+            "type": "ir.actions.act_window",
+            "res_model": "stock.move.import.packing.wizard",
+            "view_mode": "form",
+            "target": "new",
+            "context": {
+                "default_move_id": self.id,
+            },
+        }
 
 
 class StockPicking(models.Model):
@@ -681,6 +645,17 @@ class StockPicking(models.Model):
                         extra_vals = move._prepare_move_line_vals(quantity=remaining_qty)
                         extra_vals["lot_id"] = chosen_lot.id
                         queue.append(move_line_model.create(extra_vals))
+
+    def action_open_picking_packing_import_wizard(self):
+        self.ensure_one()
+        return {
+            "name": _("Importar Packing List de Hilo"),
+            "type": "ir.actions.act_window",
+            "res_model": "stock.picking.import.packing.wizard",
+            "view_mode": "form",
+            "target": "new",
+            "context": {"default_picking_id": self.id},
+        }
 
     def action_assign(self):
         res = super().action_assign()

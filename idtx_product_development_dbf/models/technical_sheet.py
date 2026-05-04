@@ -269,6 +269,7 @@ class TechnicalSheet(models.Model):
             raise UserError(_('El analisis no tiene Product Code.'))
 
         ficha = _clean_text(self.sitpro_sheet) or _clean_text(analysis.ficha) or self._next_foxpro_ficha()
+        is_new_sheet = not self._dbf_record_exists('tinto_cab_ruta.dbf', 'FICHA', ficha)
         cdgart = self._get_cdgart()
         cdgclie = self._ensure_cliente(partner)
         weaving_line = analysis.weaving_data_ids.filtered(lambda line: line.technical_sheet_id == self)[:1]
@@ -369,6 +370,9 @@ class TechnicalSheet(models.Model):
             self._export_to_texplus_sql(cdgart, partner, notes)
         except Exception as error:
             texplus_warning = _('DBF exportado. TEXPLUS pendiente: %s') % error
+
+        if is_new_sheet:
+            self._insert_sitpro_hojacorr()
 
         values = {
             'sitpro_sheet': ficha,
@@ -807,6 +811,34 @@ class TechnicalSheet(models.Model):
             if conn:
                 conn.close()
 
+    def _insert_sitpro_hojacorr(self):
+        conn = None
+        cursor = None
+        try:
+            conn = self._get_sql_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                INSERT INTO dbo.hojacorr (correl)
+                SELECT ISNULL(MAX(correl), 0) + 1
+                FROM dbo.hojacorr WITH (UPDLOCK, HOLDLOCK)
+                """
+            )
+            conn.commit()
+        except UserError:
+            if conn:
+                conn.rollback()
+            raise
+        except Exception as error:
+            if conn:
+                conn.rollback()
+            raise UserError(_('No se pudo insertar correlativo en hojacorr: %s') % error) from error
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
     def _get_tiptej(self, weave_type):
         mapping = {
             'open': 'ABIERTO',
@@ -959,6 +991,19 @@ class TechnicalSheet(models.Model):
         try:
             if not self._update_record(table, key_field, key_value, values):
                 self._append_record_with_table(table, values)
+        finally:
+            table.close()
+
+    def _dbf_record_exists(self, filename, key_field, key_value):
+        table = self._open_table(filename)
+        try:
+            target = self._normalize_key_value(table, key_field, key_value)
+            for record in table:
+                if dbf.is_deleted(record):
+                    continue
+                if record[key_field] == target:
+                    return True
+            return False
         finally:
             table.close()
 

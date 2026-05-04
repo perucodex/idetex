@@ -14,8 +14,8 @@
                 <field name="dest_location_id"/>
                 <field name="bag_count"/>
                 <field name="cone_count"/>
-                <field name="total_weight"/>
                 <field name="average_cone_weight"/>
+                <field name="total_weight" sum="Total Weight"/>
             </list>
         </field>
     </record>
@@ -26,36 +26,39 @@
         <field name="arch" type="xml">
             <form string="Thread Lot Bag Control">
                 <sheet>
-                    <group>
+                    <group string="Header">
                         <group>
                             <field name="name" readonly="1"/>
-                            <field name="date"/>
+                            <field name="date" readonly="1"/>
                             <field name="movement_type" readonly="1"/>
+                            <field name="lot_id" readonly="1"/>
                         </group>
                         <group>
-                            <field name="lot_id"/>
                             <field name="product_id" readonly="1"/>
                             <field name="company_id" readonly="1"/>
                             <field name="source_location_id" readonly="1"/>
                             <field name="dest_location_id" readonly="1"/>
                         </group>
                     </group>
-
-                    <group>
-                        <field name="bag_count" readonly="1"/>
-                        <field name="cone_count" readonly="1"/>
-                        <field name="total_weight" readonly="1"/>
-                        <field name="average_cone_weight" readonly="1"/>
+                    <group string="Summary">
+                        <group>
+                            <field name="bag_count" readonly="1"/>
+                            <field name="cone_count" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="total_weight" readonly="1"/>
+                            <field name="average_cone_weight" readonly="1"/>
+                        </group>
                     </group>
 
                     <notebook>
                         <page name="bags" string="Bags">
-                            <field name="line_ids" nolabel="1">
+                            <field name="line_ids" nolabel="1" readonly="1">
                                 <list editable="bottom">
                                     <field name="bag_qty"/>
                                     <field name="cone_qty"/>
                                     <field name="cone_weight"/>
-                                    <field name="total_weight" readonly="1"/>
+                                    <field name="total_weight" sum="Total Weight"/>
                                 </list>
                             </field>
                         </page>
@@ -82,7 +85,7 @@
                 <field name="bag_qty"/>
                 <field name="cone_qty"/>
                 <field name="cone_weight"/>
-                <field name="total_weight"/>
+                <field name="total_weight" sum="Total Weight"/>
             </list>
         </field>
     </record>

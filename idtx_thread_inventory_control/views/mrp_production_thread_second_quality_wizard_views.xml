@@ -23,8 +23,8 @@
                             <field name="balance_qty" readonly="1" force_save="1"/>
                             <field name="bag_qty"/>
                             <field name="cone_qty"/>
-                            <field name="cone_weight"/>
-                            <field name="transfer_qty" readonly="1" force_save="1"/>
+                            <field name="transfer_qty"/>
+                            <field name="cone_weight" readonly="1"/>
                         </list>
                     </field>
                 </sheet>

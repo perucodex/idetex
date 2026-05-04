@@ -5,6 +5,15 @@
         <field name="model">stock.picking</field>
         <field name="inherit_id" ref="stock.view_picking_form"/>
         <field name="arch" type="xml">
+            <!-- Botón Importar Packing en borrador: crea moves + move.lines desde Excel -->
+            <xpath expr="//header" position="inside">
+                <button name="action_open_picking_packing_import_wizard"
+                        string="Importar Packing"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="state != 'draft'"/>
+            </xpath>
+
             <xpath expr="//field[@name='move_ids']/list/field[@name='quantity']" position="attributes">
                 <attribute name="readonly">not is_quantity_done_editable or thread_is_thread</attribute>
             </xpath>
@@ -24,6 +33,13 @@
             <xpath expr="//field[@name='product_id']" position="after">
                 <field name="thread_is_thread" invisible="True"/>
             </xpath>
+            <xpath expr="//widget[@name='import_lots']" position="after">
+                <button name="action_open_packing_import_wizard"
+                        string="Importar Packing"
+                        type="object"
+                        class="btn btn-link"
+                        invisible="not thread_is_thread or state in ('done', 'cancel') or context.get('active_mo_id')"/>
+            </xpath>
         </field>
     </record>
 
@@ -32,18 +48,16 @@
         <field name="model">stock.move.line</field>
         <field name="inherit_id" ref="stock.view_stock_move_line_detailed_operation_tree"/>
         <field name="arch" type="xml">
+            <!-- quantity is now the primary input for thread products (total kg) -->
             <xpath expr="//field[@name='quantity']" position="attributes">
-                <attribute name="readonly">(state in ('done', 'cancel') and is_locked) or parent.thread_is_thread</attribute>
+                <attribute name="readonly">state in ('done', 'cancel') and is_locked</attribute>
             </xpath>
-
-            <!-- <xpath expr="//field[@name='quantity']" position="before">
-                <field name="thread_is_thread" column_invisible="True"/>
-            </xpath> -->
 
             <xpath expr="//field[@name='quantity']" position="after">
                 <field name="thread_bag_qty" string="Bolsas" column_invisible="not parent.thread_is_thread or context.get('active_mo_id')"/>
                 <field name="thread_cone_qty" string="Conos x Bolsa" column_invisible="not parent.thread_is_thread or context.get('active_mo_id')"/>
-                <field name="thread_cone_weight" string="Peso x Cono (kg)" column_invisible="not parent.thread_is_thread or context.get('active_mo_id')"/>
+                <!-- Peso x Cono is computed from quantity / (bolsas × conos) — readonly -->
+                <field name="thread_cone_weight" string="Peso x Cono (kg)" readonly="True" column_invisible="not parent.thread_is_thread or context.get('active_mo_id')"/>
             </xpath>
         </field>
     </record>
@@ -53,16 +67,15 @@
         <field name="model">stock.move.line</field>
         <field name="inherit_id" ref="stock.view_stock_move_line_operation_tree"/>
         <field name="arch" type="xml">
-            <!-- <xpath expr="//field[@name='quantity']" position="before">
-                <field name="thread_is_thread" column_invisible="True"/>
-            </xpath> -->
+            <!-- quantity is now the primary input for thread products (total kg) -->
             <xpath expr="//field[@name='quantity']" position="attributes">
-                <attribute name="readonly">(state == 'done' and is_locked) or parent.thread_is_thread</attribute>
+                <attribute name="readonly">state == 'done' and is_locked</attribute>
             </xpath>
             <xpath expr="//field[@name='quantity']" position="after">
                 <field name="thread_bag_qty" string="Bolsas" column_invisible="not parent.thread_is_thread or context.get('active_mo_id')"/>
                 <field name="thread_cone_qty" string="Conos x Bolsa" column_invisible="not parent.thread_is_thread or context.get('active_mo_id')"/>
-                <field name="thread_cone_weight" string="Peso x Cono (kg)" column_invisible="not parent.thread_is_thread or context.get('active_mo_id')"/>
+                <!-- Peso x Cono is computed from quantity / (bolsas × conos) — readonly -->
+                <field name="thread_cone_weight" string="Peso x Cono (kg)" readonly="True" column_invisible="not parent.thread_is_thread or context.get('active_mo_id')"/>
             </xpath>
         </field>
     </record>

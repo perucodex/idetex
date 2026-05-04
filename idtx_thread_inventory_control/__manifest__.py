@@ -27,6 +27,8 @@ Thread inventory control by lot.
         "views/stock_picking_views.xml",
         "views/stock_lot_views.xml",
         "views/mrp_production_thread_second_quality_wizard_views.xml",
+        "views/stock_move_import_packing_wizard_views.xml",
+        "views/stock_picking_import_packing_wizard_views.xml",
     ],
     "installable": True,
     "application": False,

@@ -4,6 +4,7 @@ import unicodedata
 from collections import defaultdict
 
 from odoo import api, fields, models
+from odoo.exceptions import UserError
 
 
 _logger = logging.getLogger(__name__)
@@ -45,6 +46,17 @@ def _normalize_fas_code(value):
     text = _normalize_text(value).replace(' ', '')
     return text[:8] or None
 
+
+def _is_texplus_lock_error(error):
+    message = str(error or '').upper()
+    return any(token in message for token in (
+        'LOCK REQUEST TIME OUT PERIOD EXCEEDED',
+        'TIMEOUT EXPIRED',
+        'HYT00',
+        '1222',
+        'DEADLOCK',
+    ))
+
 class MrpBaseProcess(models.Model):
     _name = 'mrp.base.process'
     _description = 'Mrp Base Process'
@@ -55,12 +67,11 @@ class MrpBaseProcess(models.Model):
     def _upsert_texplus_record(self, cursor, table_name, key_values, values):
         update_values = {field_name: value for field_name, value in values.items() if field_name not in key_values}
         where_clause = ' AND '.join(f'[{field_name}] = {_sql_value(field_value)}' for field_name, field_value in key_values.items())
-        cursor.execute(f'SELECT 1 FROM dbo.{table_name} WHERE {where_clause}')
-        exists = cursor.fetchone()
-        if exists and update_values:
+        if update_values:
             set_clause = ', '.join(f'[{field_name}] = {_sql_value(field_value)}' for field_name, field_value in update_values.items())
             cursor.execute(f'UPDATE dbo.{table_name} SET {set_clause} WHERE {where_clause}')
-            return
+            if cursor.rowcount:
+                return
         insert_fields = list(values)
         cursor.execute(
             f"INSERT INTO dbo.{table_name} ({', '.join(f'[{field_name}]' for field_name in insert_fields)}) VALUES ({', '.join(_sql_value(values[field_name]) for field_name in insert_fields)})"
@@ -68,8 +79,12 @@ class MrpBaseProcess(models.Model):
 
     def _get_texplus_sql_connection(self):
         connection = self.env['mrp.routing.workcenter.operation']._get_texplus_sql_connection()
-        connection.timeout = 60
+        connection.timeout = 10
         return connection
+
+    def _configure_texplus_cursor(self, cursor):
+        cursor.execute('SET LOCK_TIMEOUT 5000')
+        cursor.execute('SET DEADLOCK_PRIORITY LOW')
 
     def _infer_workcenter_values(self, phase_name, phase_code):
         normalized = ' '.join(filter(None, (_normalize_text(phase_code), _normalize_text(phase_name))))
@@ -181,7 +196,7 @@ class MrpBaseProcess(models.Model):
             operation.sudo().with_context(skip_texplus_sync=True).write({'fas_code': phase_code})
         safe_phase_code = _sql_literal(phase_code)
         cursor.execute(
-            f"SELECT 1 FROM dbo.FASPRO WHERE EmprCod = '{TEXPLUS_EMPRCOD}' AND FasCod = '{safe_phase_code}'"
+            f"SELECT 1 FROM dbo.FASPRO WITH (NOLOCK) WHERE EmprCod = '{TEXPLUS_EMPRCOD}' AND FasCod = '{safe_phase_code}'"
         )
         if cursor.fetchone():
             return phase_code
@@ -249,6 +264,7 @@ class MrpBaseProcess(models.Model):
         try:
             conn = self._get_texplus_sql_connection()
             cursor = conn.cursor()
+            self._configure_texplus_cursor(cursor)
             for process_code in codes:
                 safe_code = _sql_literal(process_code)
                 cursor.execute(
@@ -258,6 +274,16 @@ class MrpBaseProcess(models.Model):
                     f"DELETE FROM dbo.PROCES WHERE EmprCod = '{TEXPLUS_EMPRCOD}' AND ProCod = '{safe_code}'"
                 )
             conn.commit()
+        except Exception as error:
+            if conn:
+                conn.rollback()
+            if _is_texplus_lock_error(error):
+                code_list = ', '.join(codes)
+                raise UserError(
+                    'No se pudo sincronizar con TEXPLUS porque el registro '
+                    f'{code_list} esta abierto o en uso en TEXPLUS. Cierre ese registro y vuelva a intentar.'
+                ) from error
+            raise
         finally:
             if cursor:
                 cursor.close()
@@ -303,13 +329,25 @@ class MrpBaseProcess(models.Model):
     def _sync_to_texplus(self, old_names=None):
         conn = None
         cursor = None
+        record_codes = [(record.name or '').strip() for record in self if (record.name or '').strip()]
         try:
             conn = self._get_texplus_sql_connection()
             cursor = conn.cursor()
+            self._configure_texplus_cursor(cursor)
             for record in self:
                 old_code = (old_names or {}).get(record.id)
                 record._sync_record_to_texplus(cursor, old_code=old_code)
             conn.commit()
+        except Exception as error:
+            if conn:
+                conn.rollback()
+            if _is_texplus_lock_error(error):
+                code_list = ', '.join(record_codes)
+                raise UserError(
+                    'No se pudo sincronizar con TEXPLUS porque el registro '
+                    f'{code_list} esta abierto o en uso en TEXPLUS. Cierre ese registro y vuelva a intentar.'
+                ) from error
+            raise
         finally:
             if cursor:
                 cursor.close()
@@ -345,6 +383,7 @@ class MrpBaseProcess(models.Model):
         try:
             conn = self._get_texplus_sql_connection()
             cursor = conn.cursor()
+            self._configure_texplus_cursor(cursor)
             cursor.execute(
                 """
                 SELECT

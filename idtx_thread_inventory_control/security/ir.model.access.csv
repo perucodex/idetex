@@ -3,3 +3,5 @@ access_thread_lot_control_user,thread.lot.control user,model_thread_lot_control,
 access_thread_lot_control_line_user,thread.lot.control.line user,model_thread_lot_control_line,stock.group_stock_user,1,1,1,1
 access_thread_second_quality_wizard_user,thread.second.quality.wizard user,model_thread_second_quality_wizard,stock.group_stock_user,1,1,1,1
 access_thread_second_quality_wizard_line_user,thread.second.quality.wizard.line user,model_thread_second_quality_wizard_line,stock.group_stock_user,1,1,1,1
+access_stock_move_import_packing_wizard_user,stock.move.import.packing.wizard user,model_stock_move_import_packing_wizard,stock.group_stock_user,1,1,1,1
+access_stock_picking_import_packing_wizard_user,stock.picking.import.packing.wizard user,model_stock_picking_import_packing_wizard,stock.group_stock_user,1,1,1,1

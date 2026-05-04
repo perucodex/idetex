@@ -104,7 +104,7 @@
     <record id="action_control_tono_eval_log_tacho_acabado" model="ir.actions.act_window">
         <field name="name">Evaluaciones Tono Tacho/Acabado</field>
         <field name="res_model">control.tono.eval.log</field>
-        <field name="view_mode">list,graph,form</field>
+        <field name="view_mode">list,graph,form,pivot</field>
         <field name="domain">[("tono", "in", ["tacho", "acabado"])]</field>
         <field name="search_view_id" ref="view_control_tono_log_search_tacho_acabado"/>
         <field name="context">{'search_default_group_by_fecha_dia': 1}</field>
@@ -118,6 +118,18 @@
         <field name="domain">[("tono", "in", ["tacho", "acabado"])]</field>
         <field name="search_view_id" ref="view_control_tono_log_search_tacho_acabado"/>
         <field name="context">{'search_default_pendientes': 1}</field>
+    </record>
+
+    <record id="view_control_tono_log_pivot_tacho_acabado" model="ir.ui.view">
+        <field name="name">control.tono.eval.log.pivot.tacho.acabado</field>
+        <field name="model">control.tono.eval.log</field>
+        <field name="arch" type="xml">
+            <pivot string="Análisis Evaluaciones Tono" sample="1">
+                <field name="tono" type="row"/>
+                <field name="resultado" type="col"/>
+                <!-- <field name="id" type="measure" widget="counter"/> -->
+            </pivot>
+        </field>
     </record>
     
 </odoo>
