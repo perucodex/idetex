@@ -30,23 +30,8 @@
                                 <field name="defects" colspan="2" nolabel="1"/>
                             </group>
                         </page>
-                        <page name="detail_page" string="Details">
-                            <field name="lot_detail_ids"/>
-                        </page>
                     </notebook>
                 </group>
-            </field>
-        </record>
-
-        <record id="stock_lot_detail_view_list" model="ir.ui.view">
-            <field name="name">stock.lot.detail.view.list</field>
-            <field name="model">stock.lot.detail</field>
-            <field name="arch" type="xml">
-                <list>
-                    <field name="bags"/>
-                    <field name="cones"/>
-                    <field name="weight"/>
-                </list>
             </field>
         </record>
 

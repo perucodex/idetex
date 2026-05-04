@@ -236,7 +236,6 @@ class StockMove(models.Model):
     def _consume_combo_or_raise(self, availability, line):
         req_bags = int(line.thread_bag_qty or 0)
         req_cones = int(line.thread_cone_qty or 0)
-        req_weight = round(float(line.thread_cone_weight or 0.0), 4)
         lot = self._resolve_thread_lot_from_line(line)
         lot_label = f" [{lot.name}]" if lot else ""
 
@@ -244,32 +243,31 @@ class StockMove(models.Model):
             raise ValidationError(f"No existen bolsas de {req_cones} conos en este lote{lot_label}.")
 
         cone_bucket = availability[req_cones]
-        if req_weight not in cone_bucket:
-            available_weights = sorted(
-                self._fmt_weight(weight)
-                for weight, bags in cone_bucket.items()
-                if int(bags or 0) > 0
-            )
-            available_weights_label = ", ".join(available_weights) if available_weights else "ninguno"
-            raise ValidationError(
-                f"No existen conos de {self._fmt_weight(req_weight)} kg en este lote{lot_label}. "
-                f"Existen conos de [{available_weights_label}] kg."
-            )
-
-        available_bags = int(cone_bucket.get(req_weight, 0))
+        available_bags = sum(
+            int(bags or 0)
+            for bags in cone_bucket.values()
+            if int(bags or 0) > 0
+        )
         if available_bags <= 0:
             raise ValidationError(
-                f"No hay disponibilidad de bolsas de {req_cones} conos con peso de cono "
-                f"{self._fmt_weight(req_weight)} kg en este lote{lot_label}."
+                f"No hay disponibilidad de bolsas de {req_cones} conos en este lote{lot_label}."
             )
         if req_bags > available_bags:
             raise ValidationError(
-                f"No hay bolsas suficientes de {req_cones} conos y {self._fmt_weight(req_weight)} kg "
-                f"en este lote{lot_label}. "
+                f"No hay bolsas suficientes de {req_cones} conos en este lote{lot_label}. "
                 f"Disponible: {available_bags}."
             )
 
-        cone_bucket[req_weight] = available_bags - req_bags
+        remaining_bags = req_bags
+        for weight in sorted(cone_bucket):
+            if remaining_bags <= 0:
+                break
+            weight_bags = int(cone_bucket.get(weight, 0) or 0)
+            if weight_bags <= 0:
+                continue
+            consumed_bags = min(weight_bags, remaining_bags)
+            cone_bucket[weight] = weight_bags - consumed_bags
+            remaining_bags -= consumed_bags
 
     def _resolve_thread_lot_from_line(self, line):
         """Resolve lot from a move line for all picking flows.

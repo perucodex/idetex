@@ -12,13 +12,3 @@ class StockLot(models.Model):
     defects = fields.Text('Defects')
     product_family_ids = fields.Many2many('product.family', string='Product Families', tracking=True)
     color_intensity_ids = fields.Many2many('color.intensity', string='Color Intensities', tracking=True)
-    lot_detail_ids = fields.One2many('stock.lot.detail', 'lot_id', string='Lot Detail')
-
-class StockLotDetail(models.Model):
-    _name = 'stock.lot.detail'
-    _description = 'Stock Lot Detail'
-
-    lot_id = fields.Many2one('stock.lot', string='Lot')
-    weight = fields.Float('Weight')
-    bags = fields.Integer('Bags')
-    cones = fields.Integer('Cones')
