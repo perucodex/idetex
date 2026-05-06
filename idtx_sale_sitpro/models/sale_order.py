@@ -11,21 +11,21 @@ _logger = logging.getLogger(__name__)
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
-    telefono = fields.Selection([('FIJO', 'Fijo'),('CELULAR', 'Celular'),], string='Teléfono')
-    grem = fields.Char('Guia de Remisión del Cliente')
-    occ = fields.Char('Orde de Compra del Cliente')
+    telefono = fields.Selection([('FIJO', 'Fijo'),('CELULAR', 'Celular'),], string='Teléfono', default='FIJO')
+    grem = fields.Char('Guia de Remisión del Cliente', default='123')
+    occ = fields.Char('Orde de Compra del Cliente', default='123')
     fecoc = fields.Date('Fecha de Orden de Compra', default=lambda self: fields.Date.context_today(self))
     almacen = fields.Selection([
         ('TELA ACABADA', 'Tela Acabada'),
         ('HILOS', 'Hilos'),
         ('RESIDUOS', 'Residuos'),
-    ], string='Almacen')
+    ], string='Almacen', default='TELA ACABADA')
     tipdesp = fields.Selection([
         ('PARCIAL', 'Parcial'),
         ('TODO JUNTO', 'Todo Junto'),
     ], string='Tipo de Despacho')
     fechadespacho = fields.Datetime('Fecha de Despacho', default=lambda self: fields.Datetime.to_datetime(fields.Date.context_today(self) + relativedelta(days=30)))
-    sitpro_sale_type_id = fields.Many2one('sitpro.sale.type', string='Sitpro Sale Type')
+    sitpro_sale_type_id = fields.Many2one('sitpro.sale.type', string='Sitpro Sale Type', default=lambda self: self.env.ref('idtx_sale_sitpro.sitpro_sale_type_016'))
     sale_domain = fields.Char(compute='_compute_sale_domain', store=True)
 
     def action_confirm(self):

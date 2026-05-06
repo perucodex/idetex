@@ -127,13 +127,6 @@ class SaleOrder(models.Model):
         if self.weaving_warning:
             raise UserError(_('Please solve all the warnings first.'))
         action = super().action_quotation_send()
-        if len(self) != 1:
-            return action
-        sheets = self.order_line.mapped('bom_id.technical_sheet_id').filtered(lambda s: s)
-        if sheets:
-            ctx = dict(action.get('context', {}))
-            ctx['technical_sheet_ids_to_attach'] = sheets.ids
-            action['context'] = ctx
         return action
 
     def _get_pricing_pricelist(self):
