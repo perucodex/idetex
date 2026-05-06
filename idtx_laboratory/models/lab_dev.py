@@ -30,6 +30,125 @@ class LabDev(models.Model):
         ('done', 'Done'),
         ('cancel', 'Cancelled'),
     ], string='State', default='draft', tracking=True)
+    sub_partner_id = fields.Many2one('res.partner', 'Sub-Cliente', ondelete='restrict')
+    user_id = fields.Many2one('res.users', string='Vendedor')
+    testing = fields.Selection([('si', 'SI'), ('no', 'NO')], string='Testing')
+
+    # FICHA TECNICA
+    # LUCES
+    light_primary = fields.Selection([
+        ('d65', 'D65'),
+        ('cfw', 'CFW o COLLWHITE'),
+        ('tl84', 'TL84'),
+        ('a', 'A'),
+        ('u3000', 'U3000'),
+        ('uv', 'UV'),
+        ('ninguno', 'NINGUNO')
+    ], string='Primaria')
+    light_secondary = fields.Selection([
+        ('d65', 'D65'),
+        ('cfw', 'CFW o COLLWHITE'),
+        ('tl84', 'TL84'),
+        ('a', 'A'),
+        ('u3000', 'U3000'),
+        ('uv', 'UV'),
+        ('ninguno', 'NINGUNO')
+    ], string='Secundaria')
+    light_others = fields.Selection([
+        ('d65', 'D65'),
+        ('cfw', 'CFW o COLLWHITE'),
+        ('tl84', 'TL84'),
+        ('a', 'A'),
+        ('u3000', 'U3000'),
+        ('uv', 'UV'),
+        ('ninguno', 'NINGUNO')
+    ], string='Otros')
+
+    # PRODUCCION
+    production_type = fields.Selection([
+        ('solo_desarrollo', 'SOLO DESARROLLO'),
+        ('lavanderia', 'LAVANDERIA'),
+        ('muestra_vendedores', 'MUESTRA VENDEDORES'),
+        ('prod_menor_50', 'PRODUCCION MENOR A 50 Kg'),
+        ('prod_50_200', 'PRODUCCION 50 - 200 kG'),
+        ('prod_mas_200', 'PRODUCCION MAS DE 200 Kg')
+    ], string='Tipo de Prod')
+    dyeing_type = fields.Char('Tipo de Teñido')
+    finishing_type = fields.Char('Tipo de Acabado')
+    treatment = fields.Char('Tratamiento')
+
+    # SUAVIZADOS
+    softening_dry = fields.Boolean('SECO')
+    softening_silicone = fields.Boolean('SUAVIZADO SILICONADO')
+    softening_lubricant = fields.Boolean('LUBRICANTE COSTURA')
+    softening_resin = fields.Boolean('RESINADO')
+    softening_exhaustion = fields.Boolean('SUAVIZADO HILO X AGOT..')
+    softening_double_fiber = fields.Boolean('SUAVIZADO DOBLE FIBRA')
+    softening_polyester = fields.Boolean('SUAVIZADO POLIESTER')
+
+    # SOLIDECES
+    fastness_washing = fields.Selection([
+        ('1_malo', '1 MALO'),
+        ('1-2_malo', '1-2 MALO'),
+        ('2_malo', '2 MALO'),
+        ('2-3_regular', '2-3 REGULAR'),
+        ('3_regular', '3 REGULAR'),
+        ('3-4_regular', '3-4 REGULAR'),
+        ('4_bueno', '4 BUENO'),
+        ('4-5_bueno', '4-5 BUENO'),
+        ('5_excelente', '5 EXCELENTE'),
+        ('ninguno', 'NINGUNO')
+    ], string='Lavado')
+    fastness_light = fields.Selection([
+        ('1_malo', '1 MALO'),
+        ('1-2_malo', '1-2 MALO'),
+        ('2_malo', '2 MALO'),
+        ('2-3_regular', '2-3 REGULAR'),
+        ('3_regular', '3 REGULAR'),
+        ('3-4_regular', '3-4 REGULAR'),
+        ('4_bueno', '4 BUENO'),
+        ('4-5_bueno', '4-5 BUENO'),
+        ('5_excelente', '5 EXCELENTE'),
+        ('ninguno', 'NINGUNO')
+    ], string='Luz')
+    fastness_dry_rubbing = fields.Selection([
+        ('1_malo', '1 MALO'),
+        ('1-2_malo', '1-2 MALO'),
+        ('2_malo', '2 MALO'),
+        ('2-3_regular', '2-3 REGULAR'),
+        ('3_regular', '3 REGULAR'),
+        ('3-4_regular', '3-4 REGULAR'),
+        ('4_bueno', '4 BUENO'),
+        ('4-5_bueno', '4-5 BUENO'),
+        ('5_excelente', '5 EXCELENTE'),
+        ('ninguno', 'NINGUNO')
+    ], string='Frote Seco')
+    fastness_wet_rubbing = fields.Selection([
+        ('1_malo', '1 MALO'),
+        ('1-2_malo', '1-2 MALO'),
+        ('2_malo', '2 MALO'),
+        ('2-3_regular', '2-3 REGULAR'),
+        ('3_regular', '3 REGULAR'),
+        ('3-4_regular', '3-4 REGULAR'),
+        ('4_bueno', '4 BUENO'),
+        ('4-5_bueno', '4-5 BUENO'),
+        ('5_excelente', '5 EXCELENTE'),
+        ('ninguno', 'NINGUNO')
+    ], string='Frote Humedo')
+    fastness_sublimation = fields.Selection([
+        ('1_malo', '1 MALO'),
+        ('1-2_malo', '1-2 MALO'),
+        ('2_malo', '2 MALO'),
+        ('2-3_regular', '2-3 REGULAR'),
+        ('3_regular', '3 REGULAR'),
+        ('3-4_regular', '3-4 REGULAR'),
+        ('4_bueno', '4 BUENO'),
+        ('4-5_bueno', '4-5 BUENO'),
+        ('5_excelente', '5 EXCELENTE'),
+        ('ninguno', 'NINGUNO')
+    ], string='Sublimación')
+
+    technical_observations = fields.Text('Observaciones')
     
     def action_development(self):
         for rec in self.lab_dev_line_ids:
@@ -79,7 +198,7 @@ class LabDevLine(models.Model):
     _rec_name = 'color_name'
 
     lab_dev_id = fields.Many2one('lab.dev', string='Lab Dev', ondelete='cascade')
-    # product_id = fields.Many2one('product.template','Product', ondelete='restrict')
+    product_id = fields.Many2one('product.template','Product', ondelete='restrict')
     color_name = fields.Char('Color Name')
     color_code = fields.Char('Color Code')
     color = fields.Char('Color')

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_pos_roll_return_wizard_form" model="ir.ui.view">
+        <field name="name">pos.roll.return.wizard.form</field>
+        <field name="model">pos.roll.return.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Seleccionar Rollos para Devolución">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="partner_id" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="pos_category_id" options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Rollos Vendidos">
+                            <field name="line_ids">
+                                <list editable="bottom" create="0">
+                                    <field name="selected"/>
+                                    <field name="pos_pack_lot_id" column_invisible="True"/>
+                                    <field name="lot_name" readonly="1"/>
+                                    <field name="product_id" readonly="1"/>
+                                    <field name="color_code" readonly="1"/>
+                                    <field name="color_name" readonly="1"/>
+                                    <field name="qty" readonly="1"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <footer>
+                    <button name="action_confirm_returns" string="Generar Devoluciones" type="object" class="oe_highlight"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_pos_roll_return_wizard" model="ir.actions.act_window">
+        <field name="name">Nueva Devolución (Búsqueda)</field>
+        <field name="res_model">pos.roll.return.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

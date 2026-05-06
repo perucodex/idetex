@@ -24,6 +24,8 @@
     # Archivos de datos que se cargan al instalar el módulo (Seguridad, XMLs de servidor)
     'data': [
         'security/ir.model.access.csv',
+        'wizard/pos_roll_return_wizard_views.xml',
+        'views/pos_roll_return_views.xml',
     ],
     
     # Activos de la interfaz (JavaScript, CSS, Plantillas XML)

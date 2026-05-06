@@ -1,2 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_idtx_pos_stock_report_pos_user,idtx.pos.stock.report,idtx_pos_report_stock.model_idtx_pos_stock_report,point_of_sale.group_pos_user,1,0,0,0
+access_pos_roll_return_pos_user,pos.roll.return,model_pos_roll_return,point_of_sale.group_pos_user,1,1,1,1
+access_pos_roll_return_wizard_pos_user,pos.roll.return.wizard,model_pos_roll_return_wizard,point_of_sale.group_pos_user,1,1,1,1
+access_pos_roll_return_wizard_line_pos_user,pos.roll.return.wizard.line,model_pos_roll_return_wizard_line,point_of_sale.group_pos_user,1,1,1,1

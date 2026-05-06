@@ -1,0 +1,222 @@
+<odoo>
+    <template id="report_lab_dev_document">
+        <t t-call="web.basic_layout">
+            <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)"/>
+            <div class="page" style="font-family: 'Arial', sans-serif; font-size: 12px; color: black;">
+                
+                <!-- Header -->
+                <div class="text-center" style="margin-bottom: 20px;">
+                    <h1 style="font-size: 28px; font-weight: bold; margin-bottom: 5px;">Orden de Labs</h1>
+                    <h2 style="font-size: 22px; font-weight: bold;"><t t-esc="doc.name"/></h2>
+                </div>
+
+                <div class="row" style="margin-bottom: 20px;">
+                    <div class="col-8">
+                        <div class="row">
+                            <div class="col-4"><strong>Nombre o Razón Social</strong></div>
+                            <div class="col-8"><t t-esc="doc.partner_id.name"/></div>
+                        </div>
+                        <div class="row" style="margin-top: 5px;">
+                            <div class="col-4"><strong>Contacto</strong></div>
+                            <div class="col-8"><t t-esc="doc.user_id.name or ''"/></div>
+                        </div>
+                        <div class="row" style="margin-top: 5px;">
+                            <div class="col-4"><strong>Testing</strong></div>
+                            <div class="col-8"><t t-esc="dict(doc._fields['testing'].selection).get(doc.testing, '')"/></div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="row">
+                            <div class="col-4"><strong>Fecha</strong></div>
+                            <div class="col-8"><t t-esc="doc.lab_dev_date.strftime('%d/%m/%y') if doc.lab_dev_date else ''"/></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Table -->
+                <table class="table table-sm table-bordered" style="border: 1px solid black; margin-bottom: 20px;">
+                    <thead style="text-align: center; font-weight: bold; background-color: #f2f2f2;">
+                        <tr>
+                            <th style="width: 10%; border: 1px solid black;">Código</th>
+                            <th style="width: 35%; border: 1px solid black;">Descripción del Artículo</th>
+                            <th style="width: 25%; border: 1px solid black;">Color</th>
+                            <th style="width: 4%; border: 1px solid black;">Ant</th>
+                            <th style="width: 4%; border: 1px solid black;">Esm</th>
+                            <th style="width: 4%; border: 1px solid black;">Per</th>
+                            <th style="width: 4%; border: 1px solid black;">Oxi</th>
+                            <th style="width: 14%; border: 1px solid black;">Tipo Tej.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="doc.lab_dev_line_ids" t-as="line">
+                            <tr style="height: 25px;">
+                                <td style="border: 1px solid black;"><t t-esc="line.product_id.default_code or ''"/></td>
+                                <td style="border: 1px solid black;"><t t-esc="line.product_id.name or ''"/></td>
+                                <td style="border: 1px solid black;"><t t-esc="line.color_name or ''"/></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black; text-align: center;"><t t-esc="line.color_process_type_id.name or ''"/></td>
+                            </tr>
+                        </t>
+                        <!-- Fill empty rows if needed to match image style -->
+                        <t t-foreach="range(max(0, 15 - len(doc.lab_dev_line_ids)))" t-as="i">
+                            <tr style="height: 25px;">
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                                <td style="border: 1px solid black;"></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <!-- Footer Tables -->
+                <div class="row">
+                    <!-- Left: Luces and Produccion -->
+                    <div class="col-4">
+                        <table class="table table-sm table-bordered" style="border: 1px solid black; margin-bottom: 0;">
+                            <thead>
+                                <tr><th colspan="2" style="text-align: center; background-color: #f2f2f2; border: 1px solid black;">LUCES</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="width: 40%; border: 1px solid black;">PRIMARIA</td>
+                                    <td style="border: 1px solid black;"><t t-esc="dict(doc._fields['light_primary'].selection).get(doc.light_primary, '')"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid black;">SECUNDARIA</td>
+                                    <td style="border: 1px solid black;"><t t-esc="dict(doc._fields['light_secondary'].selection).get(doc.light_secondary, '')"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid black;">OTROS</td>
+                                    <td style="border: 1px solid black;"><t t-esc="dict(doc._fields['light_others'].selection).get(doc.light_others, '')"/></td>
+                                </tr>
+                                <tr><td colspan="2" style="height: 15px; border: 1px solid black;"></td></tr>
+                                <tr><th colspan="2" style="text-align: center; background-color: #f2f2f2; border: 1px solid black;">PRODUCCION</th></tr>
+                                <tr>
+                                    <td style="border: 1px solid black;">TIPO PROD</td>
+                                    <td style="border: 1px solid black;"><t t-esc="dict(doc._fields['production_type'].selection).get(doc.production_type, '')"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid black;">TIPO TEÑIDO</td>
+                                    <td style="border: 1px solid black;"><t t-esc="doc.dyeing_type or ''"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid black;">TIPO ACABADO</td>
+                                    <td style="border: 1px solid black;"><t t-esc="doc.finishing_type or ''"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid black;">TRATAMIENTO</td>
+                                    <td style="border: 1px solid black;"><t t-esc="doc.treatment or ''"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Middle: Suavizados -->
+                    <div class="col-4">
+                        <table class="table table-sm table-bordered" style="border: 1px solid black; margin-bottom: 0;">
+                            <thead>
+                                <tr><th colspan="2" style="text-align: center; background-color: #f2f2f2; border: 1px solid black;">SUAVIZADOS</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="width: 80%; border: 1px solid black;">SECO</td>
+                                    <td style="width: 20%; text-align: center; border: 1px solid black;"><t t-if="doc.softening_dry">X</t></td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid black;">SUAVIZADO SILICONADO</td>
+                                    <td style="text-align: center; border: 1px solid black;"><t t-if="doc.softening_silicone">X</t></td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid black;">LUBRICANTE COSTURA</td>
+                                    <td style="text-align: center; border: 1px solid black;"><t t-if="doc.softening_lubricant">X</t></td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid black;">RESINADO</td>
+                                    <td style="text-align: center; border: 1px solid black;"><t t-if="doc.softening_resin">X</t></td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid black;">SUAVIZADO HILO X AGOT..</td>
+                                    <td style="text-align: center; border: 1px solid black;"><t t-if="doc.softening_exhaustion">X</t></td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid black;">SUAVIZADO DOBLE FIBRA</td>
+                                    <td style="text-align: center; border: 1px solid black;"><t t-if="doc.softening_double_fiber">X</t></td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid black;">SUAVIZADO POLIESTER</td>
+                                    <td style="text-align: center; border: 1px solid black;"><t t-if="doc.softening_polyester">X</t></td>
+                                </tr>
+                                <!-- Empty rows to match right column height -->
+                                <tr><td style="height: 25px; border: 1px solid black;"></td><td style="border: 1px solid black;"></td></tr>
+                                <tr><td style="height: 25px; border: 1px solid black;"></td><td style="border: 1px solid black;"></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Right: Solideces -->
+                    <div class="col-4">
+                        <table class="table table-sm table-bordered" style="border: 1px solid black;">
+                            <thead>
+                                <tr><th colspan="2" style="text-align: center; background-color: #f2f2f2; border: 1px solid black;">SOLIDECES</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="width: 40%; border: 1px solid black;">LAVADO</td>
+                                    <td style="border: 1px solid black;"><t t-esc="dict(doc._fields['fastness_washing'].selection).get(doc.fastness_washing, '')"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid black;">LUZ</td>
+                                    <td style="border: 1px solid black;"><t t-esc="dict(doc._fields['fastness_light'].selection).get(doc.fastness_light, '')"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid black;">FROTE SECO</td>
+                                    <td style="border: 1px solid black;"><t t-esc="dict(doc._fields['fastness_dry_rubbing'].selection).get(doc.fastness_dry_rubbing, '')"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid black;">FROTE HUMEDO</td>
+                                    <td style="border: 1px solid black;"><t t-esc="dict(doc._fields['fastness_wet_rubbing'].selection).get(doc.fastness_wet_rubbing, '')"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="border: 1px solid black;">SUBLIMACION</td>
+                                    <td style="border: 1px solid black;"><t t-esc="dict(doc._fields['fastness_sublimation'].selection).get(doc.fastness_sublimation, '')"/></td>
+                                </tr>
+                                <!-- Empty rows -->
+                                <tr><td style="height: 25px; border: 1px solid black;"></td><td style="border: 1px solid black;"></td></tr>
+                                <tr><td style="height: 25px; border: 1px solid black;"></td><td style="border: 1px solid black;"></td></tr>
+                                <tr><td style="height: 25px; border: 1px solid black;"></td><td style="border: 1px solid black;"></td></tr>
+                                <tr><td style="height: 25px; border: 1px solid black;"></td><td style="border: 1px solid black;"></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Observaciones -->
+                <div class="row" style="margin-top: 10px;">
+                    <div class="col-12">
+                        <div style="display: flex; border: 1px solid black; padding: 5px; min-height: 80px;">
+                            <div style="width: 15%; font-weight: bold;">Observaciones</div>
+                            <div style="width: 85%;"><t t-esc="doc.technical_observations or ''"/></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </t>
+    </template>
+
+    <template id="report_lab_dev">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="idtx_laboratory.report_lab_dev_document" t-lang="doc.partner_id.lang"/>
+            </t>
+        </t>
+    </template>
+</odoo>

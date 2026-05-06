@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Sequences for pos.roll.return -->
+    <record id="seq_pos_roll_return" model="ir.sequence">
+        <field name="name">Devolución de Rollos POS</field>
+        <field name="code">pos.roll.return</field>
+        <field name="prefix">DEV-POS-</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <!-- Tree (List) View -->
+    <record id="view_pos_roll_return_tree" model="ir.ui.view">
+        <field name="name">pos.roll.return.list</field>
+        <field name="model">pos.roll.return</field>
+        <field name="arch" type="xml">
+            <list string="Devoluciones de Rollos" 
+                  decoration-info="state == 'draft'" 
+                  decoration-success="state == 'done'">
+                <field name="name"/>
+                <field name="pos_pack_lot_id" string="Rollo Original"/>
+                <field name="partner_id"/>
+                <field name="pos_order_id"/>
+                <field name="product_id"/>
+                <field name="qty"/>
+                <field name="color_name"/>
+                <field name="new_lot_name"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'" decoration-success="state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_pos_roll_return_form" model="ir.ui.view">
+        <field name="name">pos.roll.return.form</field>
+        <field name="model">pos.roll.return</field>
+        <field name="arch" type="xml">
+            <form string="Devolución de Rollo">
+                <header>
+                    <button name="action_return" string="Reingresar Rollo" type="object" class="oe_highlight" invisible="state == 'done'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Búsqueda del Rollo">
+                            <!-- Allow the user to select the lot, the dropdown will be searchable by name -->
+                            <field name="pos_pack_lot_id" options="{'no_create': True}" readonly="state == 'done'"/>
+                        </group>
+                        <group string="Datos de la Venta Original">
+                            <field name="partner_id" readonly="1"/>
+                            <field name="pos_order_id" readonly="1"/>
+                            <field name="product_id" readonly="1"/>
+                            <field name="original_lot_name" readonly="1"/>
+                            <field name="qty" readonly="state == 'done'"/>
+                        </group>
+                        <group string="Datos del Nuevo Ingreso">
+                            <field name="color_code" readonly="1"/>
+                            <field name="color_name" readonly="1"/>
+                            <field name="new_lot_name" readonly="1"/>
+                            <field name="picking_id" readonly="1" invisible="not picking_id"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_pos_roll_return" model="ir.actions.act_window">
+        <field name="name">Devoluciones de Rollos</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">pos.roll.return</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+          <p class="o_view_nocontent_smiling_face">
+            Historial de Devoluciones
+          </p>
+          <p>
+            Aquí puedes ver y gestionar todos los reingresos de rollos procesados.
+          </p>
+        </field>
+    </record>
+
+    <!-- Menus -->
+    <menuitem id="menu_pos_roll_return_wizard"
+              name="Nueva Devolución"
+              parent="point_of_sale.menu_point_of_sale"
+              action="action_pos_roll_return_wizard"
+              sequence="45"/>
+
+    <menuitem id="menu_pos_roll_return"
+              name="Historial Devoluciones"
+              parent="point_of_sale.menu_point_of_sale"
+              action="action_pos_roll_return"
+              sequence="50"/>
+
+</odoo>

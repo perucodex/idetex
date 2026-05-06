@@ -25,6 +25,7 @@ Laboratory  module allows colors for dieying
             'portal',
             'sale',
             'idtx_mrp',
+            'idtx_product_development',
         ],
 
     # always loaded
@@ -44,6 +45,7 @@ Laboratory  module allows colors for dieying
         'data/color.range.csv',
         'data/ir_sequence.xml',
         'report/report_color_recipe.xml',
+        'report/report_lab_dev.xml',
         'report/ir_actions_report.xml',
         'views/base_process_views.xml',
         'views/color_code_system_views.xml',
@@ -53,6 +55,7 @@ Laboratory  module allows colors for dieying
         'views/mrp_routing_views.xml',
         'views/product_template_views.xml',
         'views/res_config_settings_views.xml',
+        'views/stock_lot_views.xml',
         'views/lab_menu.xml',
     ],
     
