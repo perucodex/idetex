@@ -24,26 +24,79 @@
                             <field name="recipe_lot_title" readonly="1"/>
                         </h1>
                     </div>
+                    <group>
+                        <field name="colorfastness_washing_id"/>
+                    </group>
                     <notebook>
                         <page name="recipe_page" string="Receta">
                             <field name="color_recipe_process_ids" nolabel="1">
                                 <list>
                                     <field name="sequence" widget="handle"/>
                                     <field name="base_process_id"/>
+                                    <field name="colorfastness_washing_id"/>
                                 </list>
                                 <form>
                                     <group>
                                         <field name="base_process_id"/>
+                                        <field name="colorfastness_washing_id"/>
                                     </group>
-                                    <field name="color_recipe_process_line_ids" nolabel="1">
-                                        <list editable="bottom">
-                                            <field name="product_id"/>
-                                            <field name="factor"/>
-                                            <field name="uom"/>
-                                        </list>
-                                    </field>
+                                    <notebook>
+                                        <page name="lines_page" string="Lines">
+                                            <field name="color_recipe_process_line_ids" nolabel="1">
+                                                <list editable="bottom">
+                                                    <field name="product_id"/>
+                                                    <field name="factor"/>
+                                                    <field name="uom"/>
+                                                </list>
+                                            </field>
+                                        </page>
+                                        <page name="colorfastness_tab" string="Solidez al Lavado">
+                                            <group col="2">
+                                                <group string="SOLIDEZ AL LAVADO">
+                                                    <field name="color_change_degree"/>
+                                                    <field name="migration_acetate"/>
+                                                    <field name="migration_cotton"/>
+                                                    <field name="migration_nylon"/>
+                                                    <field name="migration_polyester"/>
+                                                    <field name="migration_acrylic"/>
+                                                    <field name="migration_wool"/>
+                                                </group>
+                                                <group>
+                                                    <group string="SOLIDEZ AL FROTE">
+                                                        <field name="colorfastness_to_dry_rubbing" string="Seco"/>
+                                                        <field name="colorfastness_to_wet_rubbing" string="Húmedo"/>
+                                                    </group>
+                                                    <group string="SOLIDEZ A LA LUZ">
+                                                        <field name="light_fastness_light"/>
+                                                    </group>
+                                                </group>
+                                            </group>
+                                        </page>
+                                    </notebook>
                                 </form>
                             </field>
+                        </page>
+                        <page name="colorfastness_tab" string="Solidez al Lavado">
+                            <group col="2">
+                                <group string="SOLIDEZ AL LAVADO">
+                                    <field name="color_change_degree"/>
+                                    <field name="migration_acetate"/>
+                                    <field name="migration_cotton"/>
+                                    <field name="migration_nylon"/>
+                                    <field name="migration_polyester"/>
+                                    <field name="migration_acrylic"/>
+                                    <field name="migration_wool"/>
+                                </group>
+                                <group>
+                                    <group string="SOLIDEZ AL FROTE">
+                                        <field name="colorfastness_to_dry_rubbing" string="Seco"/>
+                                        <field name="colorfastness_to_wet_rubbing" string="Húmedo"/>
+                                    </group>
+                                    <group string="SOLIDEZ A LA LUZ">
+                                        <field name="light_fastness_light"/>
+                                    </group>
+                                </group>
+                            </group>
                         </page>
                     </notebook>
                 </sheet>

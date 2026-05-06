@@ -53,11 +53,11 @@
                                 <td style="border: 1px solid black;"><t t-esc="line.product_id.default_code or ''"/></td>
                                 <td style="border: 1px solid black;"><t t-esc="line.product_id.name or ''"/></td>
                                 <td style="border: 1px solid black;"><t t-esc="line.color_name or ''"/></td>
-                                <td style="border: 1px solid black;"></td>
-                                <td style="border: 1px solid black;"></td>
-                                <td style="border: 1px solid black;"></td>
-                                <td style="border: 1px solid black;"></td>
-                                <td style="border: 1px solid black; text-align: center;"><t t-esc="line.color_process_type_id.name or ''"/></td>
+                                <td style="border: 1px solid black; text-align: center;"><t t-if="line.ant">X</t></td>
+                                <td style="border: 1px solid black; text-align: center;"><t t-if="line.esm">X</t></td>
+                                <td style="border: 1px solid black; text-align: center;"><t t-if="line.per">X</t></td>
+                                <td style="border: 1px solid black; text-align: center;"><t t-if="line.oxi">X</t></td>
+                                <td style="border: 1px solid black; text-align: center;"><t t-esc="dict(line._fields['weaving_type'].selection).get(line.weaving_type, '')"/></td>
                             </tr>
                         </t>
                         <!-- Fill empty rows if needed to match image style -->

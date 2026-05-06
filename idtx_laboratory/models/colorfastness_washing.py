@@ -15,6 +15,7 @@ class ColorfastnessWashing(models.Model):
     migration_wool = fields.Float('Wool', default=0.03)
     colorfastness_to_dry_rubbing = fields.Float('Dry', default=0.04)
     colorfastness_to_wet_rubbing = fields.Float('Wet', default=0.03)
+    light_fastness_light = fields.Float('Luz')
     state = fields.Selection([
         ('draft', 'Draft'),
         ('done', 'Done'),

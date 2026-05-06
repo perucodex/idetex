@@ -52,6 +52,11 @@
                                         <field name="color" widget="color" readonly="1"/>
                                         <field name="color" string="Hex" readonly="1"/>
                                         <field name="color_recipe_ids"/>
+                                        <field name="ant"/>
+                                        <field name="esm"/>
+                                        <field name="per"/>
+                                        <field name="oxi"/>
+                                        <field name="weaving_type"/>
                                         <field name="state" widget="badge" decoration-success="state == 'approved'"/>
                                     </list>
                                 </field>
@@ -65,6 +70,11 @@
                                         <field name="color" widget="color" readonly="1"/>
                                         <field name="color" string="Hex" readonly="1"/>
                                         <field name="color_recipe_ids"/>
+                                        <field name="ant"/>
+                                        <field name="esm"/>
+                                        <field name="per"/>
+                                        <field name="oxi"/>
+                                        <field name="weaving_type"/>
                                         <field name="state" widget="badge" decoration-success="state == 'approved'"/>
                                     </list>
                                 </field>
@@ -97,10 +107,10 @@
                                         <field name="fastness_wet_rubbing"/>
                                         <field name="fastness_sublimation"/>
                                     </group>
-                                    <group string="Observaciones" colspan="3">
-                                        <field name="technical_observations" nolabel="1" placeholder="Ingrese observaciones técnicas aquí..."/>
-                                    </group>
                                 </group>
+                            </page>
+                            <page name="observations_page" string="Observaciones">
+                                <field name="technical_observations" nolabel="1" placeholder="Ingrese observaciones técnicas aquí..."/>
                             </page>
                         </notebook>
                     </sheet>
@@ -199,6 +209,28 @@
                                         <field name="state" widget="badge" decoration-success="state == 'approved'"/>
                                     </list>
                                 </field>
+                            </page>
+                            <page name="colorfastness_tab" string="Solidez al Lavado">
+                                <group col="2">
+                                    <group string="SOLIDEZ AL LAVADO">
+                                        <field name="color_change_degree"/>
+                                        <field name="migration_acetate"/>
+                                        <field name="migration_cotton"/>
+                                        <field name="migration_nylon"/>
+                                        <field name="migration_polyester"/>
+                                        <field name="migration_acrylic"/>
+                                        <field name="migration_wool"/>
+                                    </group>
+                                    <group>
+                                        <group string="SOLIDEZ AL FROTE">
+                                            <field name="colorfastness_to_dry_rubbing" string="Seco"/>
+                                            <field name="colorfastness_to_wet_rubbing" string="Húmedo"/>
+                                        </group>
+                                        <group string="SOLIDEZ A LA LUZ">
+                                            <field name="light_fastness_light"/>
+                                        </group>
+                                    </group>
+                                </group>
                             </page>
                         </notebook>
                     </sheet>

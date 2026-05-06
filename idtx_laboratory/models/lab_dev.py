@@ -215,6 +215,14 @@ class LabDevLine(models.Model):
         ('color', 'Colorfastness'),
         ('approved', 'Approved'),
     ], string='State', default='test', tracking=True)
+    ant = fields.Boolean('Ant')
+    esm = fields.Boolean('Esm')
+    per = fields.Boolean('Per')
+    oxi = fields.Boolean('Oxi')
+    weaving_type = fields.Selection([
+        ('abierto', 'ABIERTO'),
+        ('tubular', 'TUBULAR')
+    ], string='Tipo Tej.', default='abierto')
     available_product_ids = fields.Many2many(
         'product.template',
         compute='_compute_available_products',
@@ -226,6 +234,18 @@ class LabDevLine(models.Model):
             store=True,
         )
     colorfastness_washing_id = fields.Many2one('colorfastness.washing', string='Colorfastness to Washing', ondelete='cascade')
+    
+    # Related fields for direct editing
+    color_change_degree = fields.Float(related='colorfastness_washing_id.color_change_degree', readonly=False, store=True)
+    migration_acetate = fields.Float(related='colorfastness_washing_id.migration_acetate', readonly=False, store=True)
+    migration_cotton = fields.Float(related='colorfastness_washing_id.migration_cotton', readonly=False, store=True)
+    migration_nylon = fields.Float(related='colorfastness_washing_id.migration_nylon', readonly=False, store=True)
+    migration_polyester = fields.Float(related='colorfastness_washing_id.migration_polyester', readonly=False, store=True)
+    migration_acrylic = fields.Float(related='colorfastness_washing_id.migration_acrylic', readonly=False, store=True)
+    migration_wool = fields.Float(related='colorfastness_washing_id.migration_wool', readonly=False, store=True)
+    colorfastness_to_dry_rubbing = fields.Float(related='colorfastness_washing_id.colorfastness_to_dry_rubbing', readonly=False, store=True)
+    colorfastness_to_wet_rubbing = fields.Float(related='colorfastness_washing_id.colorfastness_to_wet_rubbing', readonly=False, store=True)
+    light_fastness_light = fields.Float(related='colorfastness_washing_id.light_fastness_light', readonly=False, store=True)
 
     @api.depends('color_code', 'color_name')
     def _compute_display_name(self):

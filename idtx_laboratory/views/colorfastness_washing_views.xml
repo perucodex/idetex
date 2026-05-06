@@ -16,7 +16,7 @@
                             <field name="name" readonly="1"/>
                         </h1>
                     </div>
-                    <group string="Colorfastness Washing" col="2">
+                    <group string="SOLIDEZ AL LAVADO" col="2">
                         <group colspan="2">
                             <field name="color_change_degree"/>
                         </group>
@@ -31,10 +31,15 @@
                             <field name="migration_wool"/>
                         </group>
                     </group>
-                    <group string="Rubbing Fastness" col="2">
+                    <group string="SOLIDEZ AL FROTE" col="2">
                         <group>
-                            <field name="colorfastness_to_dry_rubbing"/>
-                            <field name="colorfastness_to_wet_rubbing"/>
+                            <field name="colorfastness_to_dry_rubbing" string="Seco"/>
+                            <field name="colorfastness_to_wet_rubbing" string="Húmedo"/>
+                        </group>
+                    </group>
+                    <group string="SOLIDEZ A LA LUZ" col="2">
+                        <group>
+                            <field name="light_fastness_light"/>
                         </group>
                     </group>
                 </sheet>

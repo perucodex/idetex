@@ -26,10 +26,24 @@ class ColorRecipe(models.Model):
         index=True,
         required=True
     )
+    colorfastness_washing_id = fields.Many2one('colorfastness.washing', string='Solidez al Lavado', ondelete='cascade')
+    
+    # Related fields for direct editing
+    color_change_degree = fields.Float(related='colorfastness_washing_id.color_change_degree', readonly=False, store=True)
+    migration_acetate = fields.Float(related='colorfastness_washing_id.migration_acetate', readonly=False, store=True)
+    migration_cotton = fields.Float(related='colorfastness_washing_id.migration_cotton', readonly=False, store=True)
+    migration_nylon = fields.Float(related='colorfastness_washing_id.migration_nylon', readonly=False, store=True)
+    migration_polyester = fields.Float(related='colorfastness_washing_id.migration_polyester', readonly=False, store=True)
+    migration_acrylic = fields.Float(related='colorfastness_washing_id.migration_acrylic', readonly=False, store=True)
+    migration_wool = fields.Float(related='colorfastness_washing_id.migration_wool', readonly=False, store=True)
+    colorfastness_to_dry_rubbing = fields.Float(related='colorfastness_washing_id.colorfastness_to_dry_rubbing', readonly=False, store=True)
+    colorfastness_to_wet_rubbing = fields.Float(related='colorfastness_washing_id.colorfastness_to_wet_rubbing', readonly=False, store=True)
+    light_fastness_light = fields.Float(related='colorfastness_washing_id.light_fastness_light', readonly=False, store=True)
     state = fields.Selection([
         ('test', 'Test'),
         ('approved', 'Approved'),
     ], string='State', default='test', tracking=True)
+    observations = fields.Text('Observaciones')
     
     #=== CRUD METHODS ===#
 
@@ -66,7 +80,11 @@ class ColorRecipe(models.Model):
                     vals['recipe_color_code'] = f'{prefix}-{new_suffix}'
                     counter += 1
 
-        return super().create(vals_list)
+        records = super().create(vals_list)
+        for rec in records:
+            if not rec.colorfastness_washing_id:
+                rec.colorfastness_washing_id = self.env['colorfastness.washing'].create({})
+        return records
     
     def action_approve(self):
         if any(cr.state == 'approved' for cr in self.lab_dev_line_id.color_recipe_ids.filtered(lambda cr: cr.color_name == self.color_name)):
