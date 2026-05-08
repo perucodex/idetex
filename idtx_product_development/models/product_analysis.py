@@ -27,7 +27,7 @@ class ProductAnalysis(models.Model):
     ], string='Weave Type')
     column_qty = fields.Integer('Column Qty')
     width = fields.Float('Analysis Width', compute='_compute_width')
-    standard_width = fields.Float('Standard Width')
+    standard_width = fields.Integer('Standard Width')
     density = fields.Integer('Analysis Density')
     tilt = fields.Integer('Tilt')
     product_appearance_id = fields.Many2one('product.appearance', string='Appearance', ondelete='restrict')
