@@ -36,10 +36,11 @@
                             <group>
                                 <field name="technical_date" readonly="1"/>
                                 <field name="analysis_id" readonly="1"/>
+                                <field name="product_code" force_save="1"/>
+                                <field name="description" readonly="1"/>
                             </group>
                             <group>
                                 <field name="partner_id" readonly="1"/>
-                                <field name="product_code" force_save="1"/>
                                 <field name="bom_id" readonly="1"/>
                             </group>
                         </group>

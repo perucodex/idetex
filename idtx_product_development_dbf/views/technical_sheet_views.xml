@@ -11,10 +11,18 @@
                 </xpath>
                 <xpath expr="//field[@name='sitpro_sheet']" position="after">
                     <field name="foxpro_article_prefix" placeholder="P" groups="idtx_product_development.group_module_product_development_manager"/>
+                    <field name="foxpro_article_code" groups="idtx_product_development.group_module_product_development_manager"/>
                     <field name="foxpro_export_state" widget="badge" readonly="1" decoration-success="foxpro_export_state == 'done'" decoration-danger="foxpro_export_state == 'error'" decoration-muted="foxpro_export_state == 'draft'" groups="idtx_product_development.group_module_product_development_manager"/>
                 </xpath>
                 <xpath expr="//field[@name='notes']" position="after">
                     <field name="foxpro_export_message" readonly="1" invisible="not foxpro_export_message" groups="idtx_product_development.group_module_product_development_manager"/>
+                </xpath>
+                <xpath expr="//field[@name='description']" position="replace">
+                    <label for="description"/>
+                    <div class="o_row">
+                        <field name="description" readonly="1" nolabel="1"/>
+                        <field name="clipboard_summary" widget="CopyClipboardButton" nolabel="1" string="" options="{'btn_class': 'secondary'}"/>
+                    </div>
                 </xpath>
             </field>
         </record>

@@ -7,7 +7,7 @@ from pathlib import Path
 import dbf
 import pyodbc
 
-from odoo import _, fields, models
+from odoo import _, fields, models, api
 from odoo.exceptions import UserError
 
 
@@ -147,11 +147,7 @@ def _dbf_padr(value, size):
 def _dbf_number_text(value, digits=2):
     if value in (False, None, ''):
         return ''
-    number = float(value)
-    formatted = f'{number:.{digits}f}'
-    if '.' in formatted:
-        formatted = formatted.rstrip('0').rstrip('.')
-    return formatted
+    return f'{float(value):.{digits}f}'
 
 
 def _phase_code(name):
@@ -205,6 +201,7 @@ class TechnicalSheet(models.Model):
     _inherit = 'technical.sheet'
 
     foxpro_article_prefix = fields.Char('FoxPro Article Prefix', size=1, copy=False)
+    foxpro_article_code = fields.Char('FoxPro Article Code', compute='_compute_foxpro_article_code', store=True)
     foxpro_export_state = fields.Selection([
         ('draft', 'Not Exported'),
         ('done', 'Exported'),
@@ -212,6 +209,24 @@ class TechnicalSheet(models.Model):
     ], string='FoxPro Export State', default='draft', copy=False, readonly=True)
     foxpro_export_message = fields.Text('FoxPro Export Message', copy=False, readonly=True)
     foxpro_export_date = fields.Datetime('FoxPro Export Date', copy=False, readonly=True)
+    clipboard_summary = fields.Char(compute='_compute_clipboard_summary')
+
+    @api.depends('product_code', 'foxpro_article_prefix')
+    def _compute_foxpro_article_code(self):
+        for sheet in self:
+            if sheet.product_code and sheet.foxpro_article_prefix:
+                sheet.foxpro_article_code = f"{sheet.foxpro_article_prefix}{sheet.product_code}"
+            else:
+                sheet.foxpro_article_code = ''
+
+    @api.depends('foxpro_article_code', 'description', 'analysis_id.notes')
+    def _compute_clipboard_summary(self):
+        for sheet in self:
+            sheet.clipboard_summary = "\n".join([
+                sheet.foxpro_article_code or '',
+                sheet.description or '',
+                sheet.analysis_id.notes or '',
+            ])
 
     def _get_table_field_label_cache(self, table_name, cache=None):
         cache = cache if cache is not None else {}

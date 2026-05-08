@@ -88,7 +88,7 @@
             <field name="model">technical.sheet</field>
             <field name="inherit_id" ref="idtx_product_development.technical_sheet_form_view"/>
             <field name="arch" type="xml">
-                <field name="product_code" position="after">
+                <field name="bom_id" position="after">
                     <field name="sitpro_sheet" readonly="1"/>
                 </field>
             </field>

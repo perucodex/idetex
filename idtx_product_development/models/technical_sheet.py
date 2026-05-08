@@ -28,6 +28,7 @@ class TechnicalSheet(models.Model):
     name = fields.Char('Name', required=True, copy=False, readonly=False, default=lambda self: _('New'))
     technical_date = fields.Date('Technical Date', required=True, default=lambda self: fields.Date.context_today(self))
     analysis_id = fields.Many2one('product.analysis', string='Product Analysis', ondelete='restrict')
+    description = fields.Char('Description', related='analysis_id.product_description')
     product_code = fields.Char('Product Code', readonly=True, copy=False)
     partner_id = fields.Many2one('res.partner', string='Customer', ondelete='restrict')
     # Tejido
