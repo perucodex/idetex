@@ -195,16 +195,10 @@
                     <field name="name"/>
                     <field name="technical_date"/>
                     <field name="product_code"/>
+                    <field name="partner_id"/>
                     <field name="program"/>
                     <field name="atx"/>
-                    <!-- <field name="density"/>
-                    <field name="width"/>
-                    <field name="gauge_id"/> -->
-                    <!-- <field name="first_wash_shrinkage"/>
-                    <field name="first_wash_twist"/> -->
-                    <!-- <field name="scrap" widget="percentage"/> -->
                     <field name="weave_type"/>
-                    <!-- <field name="mesh_length"/> -->
                     <field name="company_id" groups="base.group_multi_company" optional="hide" readonly="1"/>
                     <field name="production_state" widget="badge" decoration-success="production_state == 'Production'" decoration-info="production_state == 'Pilot'" decoration-warning="production_state == 'Sample'"/>
                 </list>
@@ -215,8 +209,14 @@
             <field name="name">technical.sheet.list.inherit</field>
             <field name="model">technical.sheet</field>
             <field name="arch" type="xml">
-                <search string="Search Product Analysis">
+                <search string="Search Technical Sheets">
                     <field name="name"/>
+                    <field name="description"/>
+                    <field name="analysis_product_family_id"/>
+                    <field name="analysis_product_fiber_id"/>
+                    <field name="analysis_product_title_id"/>
+                    <field name="density"/>
+                    <field name="width"/>
                     <field name="production_state"/>
                 </search>
             </field>

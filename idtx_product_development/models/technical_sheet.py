@@ -37,7 +37,7 @@ class TechnicalSheet(models.Model):
     fabric_composition = fields.Text('Fabric Composition')
     atx = fields.Char('ATX')
     density = fields.Integer('Density')
-    width = fields.Float('Width')
+    width = fields.Integer('Width')
     gauge_id = fields.Many2one('product.gauge', string='Gauge')
     first_wash_shrinkage = fields.Char('First Wash Shrinkage')
     first_wash_twist = fields.Char('First Wash Twist')
@@ -75,6 +75,10 @@ class TechnicalSheet(models.Model):
     route_line_ids = fields.One2many('technical.route.line', 'technical_id', string='Route Line')
     bom_id = fields.Many2one('mrp.bom', string='LdM')
     mrp_base_process_id = fields.Many2one(related='analysis_id.mrp_base_process_id')
+    # Campos de busqueda del analisis
+    analysis_product_family_id = fields.Many2one(related='analysis_id.product_family_id', store=True, readonly=True, index=True)
+    analysis_product_fiber_id = fields.Many2one(related='analysis_id.product_fiber_id', store=True, readonly=True, index=True)
+    analysis_product_title_id = fields.Many2one(related='analysis_id.product_title_id', store=True, readonly=True, index=True)
 
     # @staticmethod
     # def _extract_tolerance_ids_from_commands(commands):
