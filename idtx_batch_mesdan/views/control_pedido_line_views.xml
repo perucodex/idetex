@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_control_pedido_line_form_mesdan" model="ir.ui.view">
+        <field name="name">control.pedido.line.form.mesdan</field>
+        <field name="model">control.pedido.line</field>
+        <field name="inherit_id" ref="idtx_batch_control.view_control_pedido_line_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_open_start_wizard']" position="after">
+                <button name="action_fetch_report_pdf" type="object" string="Importar Reporte PDF" class="btn-secondary" invisible="not batch or report_pdf_attached"/>
+                <field name="report_pdf_attached" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
