@@ -10,7 +10,7 @@ class PosRollReturn(models.Model):
     name = fields.Char(string='Referencia', required=True, copy=False, readonly=True, index=True, default=lambda self: _('Nuevo'))
     
     # Filtros y Selección
-    pos_pack_lot_id = fields.Many2one('pos.pack.operation.lot', string='Rollo Original (Lote)', required=True, invisible=False)
+    pos_pack_lot_id = fields.Many2one('pos.pack.operation.lot', string='Rollo Original (Lote)', required=True)
     pos_order_line_id = fields.Many2one('pos.order.line', string='Línea de Venta', related='pos_pack_lot_id.pos_order_line_id', store=True)
     pos_order_id = fields.Many2one('pos.order', string='Documento (Venta)', related='pos_order_line_id.order_id', store=True)
     partner_id = fields.Many2one('res.partner', string='Cliente', related='pos_order_id.partner_id', store=True)
@@ -30,7 +30,7 @@ class PosRollReturn(models.Model):
     state = fields.Selection([
         ('draft', 'Borrador'),
         ('done', 'Reingresado')
-    ], string='Estado', default='draft', tracking=True)
+    ], string='Estado', default='draft')
 
     @api.depends('original_lot_name')
     def _compute_lot_data(self):
