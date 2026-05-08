@@ -268,7 +268,7 @@ class TechnicalSheet(models.Model):
         if not analysis.product_code:
             raise UserError(_('El analisis no tiene Product Code.'))
 
-        ficha = _clean_text(self.sitpro_sheet) or _clean_text(analysis.ficha) or self._next_foxpro_ficha()
+        ficha = _clean_text(self.sitpro_sheet) or self._next_foxpro_ficha()
         is_new_sheet = not self._dbf_record_exists('tinto_cab_ruta.dbf', 'FICHA', ficha)
         cdgart = self._get_cdgart()
         cdgclie = self._ensure_cliente(partner)
@@ -377,8 +377,9 @@ class TechnicalSheet(models.Model):
         values = {
             'sitpro_sheet': ficha,
         }
-        if not analysis.ficha:
-            analysis.ficha = ficha
+        weaving_data = analysis.weaving_data_ids.filtered(lambda line: line.technical_sheet_id == self)
+        if not weaving_data.sitpro_sheet:
+            weaving_data.write({'sitpro_sheet': ficha})
         self.write(values)
         return texplus_warning
 

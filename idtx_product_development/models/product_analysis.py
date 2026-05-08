@@ -65,8 +65,6 @@ class ProductAnalysis(models.Model):
     weaving_price = fields.Monetary('Weaving Price')
     # Tolerancia de tela
     density_stability_twisting_id = fields.Many2one('density.stability.twisting', string='Density Stability Twisting Data', copy=False)
-    # Rendimiento adicional a la ficha tecnica
-    # TODO en realidad deberia estar solamente en este modelo
     yield_meter = fields.Float('Yield', compute='_compute_yield_meter')
 
     _check_standard_width = models.Constraint(
@@ -354,6 +352,21 @@ class AnalysisWeavingData(models.Model):
     def _onchange_fiber_ids_recompute_percentages(self):
         self._recompute_fiber_percentages()
     
+    def action_duplicate(self):
+        for rec in self:
+            new_rec = rec.copy({
+                'analysis_id': rec.analysis_id.id,
+                'fiber_ids': [Command.create({
+                    'sequence': fiber.sequence,
+                    'system_type': fiber.system_type,
+                    'weight': fiber.weight,
+                    'thread_qty': fiber.thread_qty,
+                    'product_template_id': fiber.product_template_id.id,
+                    'ligament_id': fiber.ligament_id.id,
+                }) for fiber in rec.fiber_ids],
+            })
+            new_rec._recompute_fiber_percentages()
+
 class AnalysisFiber(models.Model):
     _name = 'analysis.fiber'
     _description = 'Analysis Fibers'

@@ -59,6 +59,10 @@ Gestiona la carga de precios y productos en tus cotizaciones
     ],
     
     'assets': {
+        'web.assets_frontend': [
+            'idtx_sale_order/static/src/portal/signature_form_patch.js',
+            'idtx_sale_order/static/src/portal/name_and_signature_patch.xml',
+        ],
         'web.assets_backend': [
             'idtx_sale_order/static/src/price_items/**/*',
             'idtx_sale_order/static/src/printing_design_status/**/*',

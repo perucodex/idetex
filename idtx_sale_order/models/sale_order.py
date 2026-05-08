@@ -52,7 +52,19 @@ class SaleOrder(models.Model):
     is_printing = fields.Boolean(compute='_compute_is_printing')
     is_rotary = fields.Boolean(compute='_compute_is_rotary')
     is_digital = fields.Boolean(compute='_compute_is_digital')
+    # Ordenes no cerradas
+    unclosed = fields.Boolean('Unclosed', compute='_compute_unclosed', store=True)
 
+    @api.depends('order_line.qty_delivered', 'order_line.product_uom_qty')
+    def _compute_unclosed(self):
+        for rec in self:
+            rec.unclosed = bool(any(line.qty_delivered < line.product_uom_qty for line in rec.order_line))
+
+    # Evitar que salga las lineas debajo de la cotización con este mensaje:
+    # "Conecta tu software con IDETEX S.A.C. para crear cotizaciones automaticas"
+    def _get_edi_builders(self):
+        return []
+    
     @api.depends('order_line.is_printing')
     def _compute_is_printing(self):
         for rec in self:
@@ -330,10 +342,10 @@ class SaleOrder(models.Model):
             'sale_order_id': self.id,
             'partner_id': self.partner_id.id,
             'lab_dev_line_ids': [Command.create({
-                #  'product_id': line.product_template_id.id,
-                 'color_name': color.upper(),
-                #  'sale_order_line_id': line.id,
-            }) for color in set(self.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.is_lab_color and not l.lab_dev_line_id).mapped('color_name'))]
+                 'product_id': line.product_template_id.id,
+                 'color_name': line.color_name.upper(),
+                 'sale_order_line_id': line.id,
+            }) for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.is_lab_color and not l.lab_dev_line_id)]
         }
         lab_dev = self.env['lab.dev'].create(data)
         self.lab_dev_ids = self.lab_dev_ids | lab_dev
@@ -342,7 +354,7 @@ class SaleOrder(models.Model):
         #         ld_line.sale_order_line_id.lab_dev_line_id = ld_line.id
         for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.is_lab_color and not l.lab_dev_line_id):
             line.color_name = line.color_name.upper()
-            line.lab_dev_line_id = lab_dev.lab_dev_line_ids.filtered(lambda l: l.color_name == line.color_name)
+            line.lab_dev_line_id = lab_dev.lab_dev_line_ids.filtered(lambda l: l.color_name == line.color_name and l.product_id == line.product_template_id)
         self.open_labdev()
     
     def open_labdev(self):
@@ -468,6 +480,8 @@ class SaleOrder(models.Model):
     def _validate_order(self):
         # Evitamos confirmar la cotizacion al firmar desde el portal
         if self.is_quote:
+            if self.signed_on:
+                self.locked = True
             return
         return super()._validate_order()
 

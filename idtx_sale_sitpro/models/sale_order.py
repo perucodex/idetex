@@ -23,19 +23,21 @@ class SaleOrder(models.Model):
     tipdesp = fields.Selection([
         ('PARCIAL', 'Parcial'),
         ('TODO JUNTO', 'Todo Junto'),
-    ], string='Tipo de Despacho')
+    ], string='Tipo de Despacho', default='TODO JUNTO')
     fechadespacho = fields.Datetime('Fecha de Despacho', default=lambda self: fields.Datetime.to_datetime(fields.Date.context_today(self) + relativedelta(days=30)))
     sitpro_sale_type_id = fields.Many2one('sitpro.sale.type', string='Sitpro Sale Type', default=lambda self: self.env.ref('idtx_sale_sitpro.sitpro_sale_type_016'))
     sale_domain = fields.Char(compute='_compute_sale_domain', store=True)
 
     def action_confirm(self):
+        for order in self:
+            if not order.user_id.vendor_code_sitpro:
+                raise UserError(_('Salesman %s does not have a vendor code for SitPro. Please contact your sales representative.') % order.user_id.name)
+            if not order.payment_term_id.sitpro_code:
+                raise UserError(_('Payment Term %s does not have a SitPro code. Please contact your sales representative.') % order.payment_term_id.name)
+
         res = super().action_confirm()
 
         for order in self:
-            if not order.user_id.vendor_code_sitpro:
-                raise UserError(_('Salesman %s does not have a vendor code for SitPro') % order.user_id.name)
-            if not self.payment_term_id.sitpro_code:
-                raise UserError(_('Payment Term %s does not have a SitPro code') % self.payment_term_id.name)
             if not order.company_id.is_company_produce or order.is_quote:
                 continue
 

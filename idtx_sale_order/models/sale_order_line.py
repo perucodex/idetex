@@ -701,9 +701,10 @@ class SaleOrderLine(models.Model):
             ('product_id', '=', self.product_id.id),
             ('product_color_id', '=', self.product_color_id.id),
             ('printing_design_id', '=', self.printing_design_id.id),
-            # ('order_id.is_quote', '=', True),
+            ('order_id.is_quote', '=', True),
             ('operation_ids','=', self.operation_ids.ids),
-            ('order_id.state', 'in', ('draft','sent')),
+            ('order_id.state', '=', 'sent'),
+            ('order_id.signed_on', '!=', False),
         ])
         # ordenamos en Python por validez (más reciente primero)
         lines = lines - self

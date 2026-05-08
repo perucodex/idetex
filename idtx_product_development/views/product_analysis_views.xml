@@ -184,6 +184,7 @@
                         <!-- <button name="action_create_technical_sheet" type="object" string="Create Technical Sheet" class="oe_highlight" invisible="technical_sheet_id"/> -->
                         <button name="open_tech" type="object" string="Open Technical Sheet" class="oe_highlight" invisible="not technical_sheet_id"/>
                         <button name="print_analysis_report" type="object" icon="fa-print" string="Print Analysis"/>
+                        <button name="action_duplicate" type="object" string="Duplicate"/>
                     </header>
                     <sheet>
                         <group>    

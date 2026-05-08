@@ -803,9 +803,9 @@ class ProductAnalysis(models.Model):
                 product = self.env['product.template'].create({
                     'name': _strip(product_name) or product_code,
                     'default_code': product_code,
-                    'categ_id': self.env.ref('product.product_category_all').id,
+                    'categ_id': self.env.ref('idtx_laboratory.product_categ_3').id,
                     'uom_id': self.env.ref('uom.product_uom_kgm').id,
-                    'uom_po_id': self.env.ref('uom.product_uom_kgm').id,
+                    # 'uom_po_id': self.env.ref('uom.product_uom_kgm').id,
                 })
             product_cache[product_code] = product
             return product
@@ -974,23 +974,53 @@ class ProductAnalysis(models.Model):
         try:
             conn = self._get_sql_connection()
             cursor = conn.cursor()
+            # query = f"""
+            #     SELECT
+            #         l.gt,
+            #         l.cb,
+            #         l.ints,
+            #         l.corr,
+            #         l.descrip,
+            #         l.obs
+            #     FROM lab_colores02 l
+            #     where l.gt is NOT NULL 
+            #     AND l.cb is not null 
+            #     AND l.ints is not null 
+            #     AND l.corr is not null 
+            #     and LTRIM(RTRIM(l.gt)) <> ''
+            #     and LTRIM(RTRIM(l.cb)) <> ''
+            #     and LTRIM(RTRIM(l.ints)) <> ''
+            #     and LTRIM(RTRIM(l.corr)) <> '';
+            # """
+            
             query = f"""
-                SELECT
-                    l.gt,
-                    l.cb,
-                    l.ints,
-                    l.corr,
-                    l.descrip,
-                    l.obs
-                FROM lab_colores02 l
-                where l.gt is NOT NULL 
-                AND l.cb is not null 
-                AND l.ints is not null 
-                AND l.corr is not null 
-                and LTRIM(RTRIM(l.gt)) <> ''
-                and LTRIM(RTRIM(l.cb)) <> ''
-                and LTRIM(RTRIM(l.ints)) <> ''
-                and LTRIM(RTRIM(l.corr)) <> '';
+                    SELECT
+                        lc.gt,
+                        lc.cb,
+                        lc.ints,
+                        lc.corr,
+                        lc.descrip,
+                        lc.obs,
+                        vl.cdgart
+                    FROM lab_colores02 lc
+                    CROSS APPLY (
+                        SELECT TOP 1 vl2.cdgart
+                        FROM vta_det_pedido vl2
+                        WHERE vl2.cdgcol =
+                            LTRIM(RTRIM(ISNULL(lc.gt,''))) +
+                            LTRIM(RTRIM(ISNULL(lc.cb,''))) +
+                            LTRIM(RTRIM(ISNULL(lc.ints,''))) +
+                            RIGHT('0000' + CAST(CAST(lc.corr AS INT) AS VARCHAR(10)), 4)
+                        AND LTRIM(RTRIM(vl2.cdgart)) <> ''
+                    ) vl
+                    WHERE lc.gt IS NOT NULL
+                    AND lc.cb IS NOT NULL
+                    AND lc.ints IS NOT NULL
+                    AND lc.corr IS NOT NULL
+                    AND LTRIM(RTRIM(lc.gt)) <> ''
+                    AND LTRIM(RTRIM(lc.cb)) <> ''
+                    AND LTRIM(RTRIM(lc.ints)) <> ''
+                    AND LTRIM(RTRIM(lc.corr)) <> '';
             """
             cursor.execute(query)
             columns = [col[0].lower() for col in cursor.description]
@@ -1014,6 +1044,7 @@ class ProductAnalysis(models.Model):
                 corr_raw = _strip(row.get('corr'))
                 obs = _strip(row.get('obs'))
                 desc = _strip(row.get('descrip'))
+                cdgart = _strip(row.get('cdgart'))
 
                 if not (gt and cb and ints and corr_raw):
                     continue
@@ -1027,6 +1058,7 @@ class ProductAnalysis(models.Model):
                     'obs': obs,
                     'desc': desc,
                     'color_code': color_code,
+                    'cdgart': cdgart
                 })
                 process_codes.add(gt)
                 range_codes.add(cb)
@@ -1084,6 +1116,7 @@ class ProductAnalysis(models.Model):
                 obs = row['obs']
                 desc = row['desc']
                 color_code = row['color_code']
+                cdgart = row['cdgart'][1:]
 
                 existing_line = existing_lines_by_code.get(color_code.upper())
                 if existing_line and existing_line.color_recipe_ids.filtered('color_recipe_process_ids'):
@@ -1098,8 +1131,13 @@ class ProductAnalysis(models.Model):
 
                 partner = _extract_partner(obs, partner_index) or company_partner
                 ld_name = _extract_ld_name(obs) or generic_ld_name
+                product = self.env['product.template'].search([('default_code', '=', cdgart)], limit=1)
+                
                 if existing_line:
                     recipe = existing_line.color_recipe_ids.filtered(lambda rec: not rec.color_recipe_process_ids)[:1]
+                    existing_line.write({
+                        'product_id': product.id if product else False,
+                    })
                     if not recipe and not existing_line.color_recipe_ids:
                         existing_line.color_recipe_ids = [Command.create({
                             'state': 'approved',
@@ -1113,6 +1151,7 @@ class ProductAnalysis(models.Model):
                     lab_dev = _get_or_create_lab_dev(ld_name, partner, fields.Date.context_today(self))
                     new_line = self.env['lab.dev.line'].create({
                         'lab_dev_id': lab_dev.id,
+                        'product_id': product.id if product else False,
                         'color_name': desc or color_code,
                         'color_code': color_code,
                         'color_process_type_id': process.id if process else False,

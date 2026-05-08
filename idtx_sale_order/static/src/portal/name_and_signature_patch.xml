@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="idtx_sale_order.NameAndSignature" t-inherit="web.NameAndSignature" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('row') and hasclass('g-0')]" position="replace">
+            <div class="row g-0">
+                <div class="col-auto">
+                    <a role="button" href="#" t-on-click.prevent="() => this.setMode('draw')" t-attf-class="o_web_sign_draw_button me-2 btn btn-light {{ state.signMode === 'draw' ? 'active': '' }}">
+                        Draw
+                    </a>
+                </div>
+                <div class="col-auto">
+                    <a role="button" href="#" t-on-click.prevent="onClickSignLoad" t-attf-class="o_web_sign_load_button me-2 btn btn-light {{ state.signMode === 'load' ? 'active': '' }}">
+                        Load
+                    </a>
+                </div>
+                <div t-if="!props.noInputName or defaultName" class="col-auto">
+                    <a role="button" href="#" t-on-click.prevent="onClickSignAuto" t-attf-class="o_web_sign_auto_button me-2 btn btn-light {{ state.signMode === 'auto' ? 'active': '' }}">
+                        Auto
+                    </a>
+                </div>
+
+                <div class="col-auto division ms-auto"></div>
+
+                <div t-if="state.signMode === 'auto'" class="o_web_sign_auto_select_style col-auto">
+                    <Dropdown>
+                        <button type="button" class="btn btn-link fa fa-font o-dropdown-caret"/>
+                        <t t-set-slot="content">
+                            <t t-foreach="fonts" t-as="font" t-key="font_index">
+                                <DropdownItem onSelected="() => this.onSelectFont(font_index)">
+                                    <img class="img-fluid" t-att-src="getSVGTextFont(font)"/>
+                                </DropdownItem>
+                            </t>
+                        </t>
+                    </Dropdown>
+                </div>
+
+                <div t-if="state.signMode === 'draw'" t-attf-class="o_web_sign_draw_clear col-auto">
+                    <a role="button" href="#" t-on-click.prevent="onClickSignDrawClear" class="btn btn-link fa fa-trash"/>
+                </div>
+
+                <div t-if="state.signMode === 'load'" class="o_web_sign_load_file col-auto">
+                    <button type="button" id="loadFileXml" t-on-click="uploadFile"
+                        class="btn btn-link fa fa-upload" />
+                    <input t-ref="signInputLoad" type="file" role="button" name="files[]" class="d-none" t-on-change="onChangeSignLoadInput"/>
+                </div>
+            </div>
+        </xpath>
+    </t>
+
+</templates>

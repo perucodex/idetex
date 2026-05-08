@@ -1560,7 +1560,7 @@ msgstr ""
 #. module: idtx_sale_order
 #: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_portal_sign_modal_remove_amount_sentence
 msgid "for the"
-msgstr "para el presupuesto por un importe de"
+msgstr "para la orden por un importe de"
 
 #. module: idtx_sale_order
 #: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__is_printing

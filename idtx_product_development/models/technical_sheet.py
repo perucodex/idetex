@@ -40,7 +40,7 @@ class TechnicalSheet(models.Model):
     gauge_id = fields.Many2one('product.gauge', string='Gauge')
     first_wash_shrinkage = fields.Char('First Wash Shrinkage')
     first_wash_twist = fields.Char('First Wash Twist')
-    yield_meter = fields.Float('Yield', compute='_compute_yield_meter')
+    yield_meter = fields.Float('Yield', related='analysis_id.yield_meter')
     scrap = fields.Float('Weaving Scrap', default=0.01)
     prod_scrap = fields.Float('Production Scrap', compute='_compute_prod_scrap')
     weave_type = fields.Selection(related='analysis_id.weave_type', store=True)
@@ -95,11 +95,6 @@ class TechnicalSheet(models.Model):
     def _compute_prod_scrap(self):
         for rec in self:
             rec.prod_scrap = 0.09
-
-    @api.depends('density','width')
-    def _compute_yield_meter(self):
-        for rec in self:
-            rec.yield_meter = 1000 / (rec.density * (rec.width / 100)) if (rec.density and rec.width) else 1
 
     #=== CRUD METHODS ===#
 
