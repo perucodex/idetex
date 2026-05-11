@@ -50,6 +50,7 @@ Laboratory  module allows colors for dieying
         'views/base_process_views.xml',
         'views/color_code_system_views.xml',
         'views/color_recipe_views.xml',
+        'views/color_recipe_mixing_views.xml',
         'views/colorfastness_washing_views.xml',
         'views/lab_dev_views.xml',
         'views/mrp_routing_views.xml',

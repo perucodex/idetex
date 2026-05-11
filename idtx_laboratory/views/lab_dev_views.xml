@@ -49,8 +49,6 @@
                                         <field name="product_id" readonly="1"/>
                                         <field name="color_name" readonly="1"/>
                                         <field name="color_code" readonly="1"/>
-                                        <field name="color" widget="color" readonly="1"/>
-                                        <field name="color" string="Hex" readonly="1"/>
                                         <field name="color_recipe_ids"/>
                                         <field name="ant"/>
                                         <field name="esm"/>
@@ -67,8 +65,6 @@
                                         <field name="product_id"/>
                                         <field name="color_name"/>
                                         <field name="color_code" readonly="1"/>
-                                        <field name="color" widget="color" readonly="1"/>
-                                        <field name="color" string="Hex" readonly="1"/>
                                         <field name="color_recipe_ids"/>
                                         <field name="ant"/>
                                         <field name="esm"/>
@@ -205,7 +201,7 @@
                                         <field name="product_id"/>
                                         <field name="color_name"/>
                                         <field name="recipe_color_code" readonly="1"/>
-                                        <field name="company_id" groups="base.group_multi_company" readonly="1"/>
+                                        <field name="company_id" groups="base.group_multi_company" readonly="1" column_invisible="1"/>
                                         <field name="state" widget="badge" decoration-success="state == 'approved'"/>
                                     </list>
                                 </field>

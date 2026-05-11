@@ -111,15 +111,29 @@
                                 <field name="observations" nolabel="1" placeholder="Ingrese observaciones aquí..."/>
                             </page>
                             <page name="lot_page" string="Recetas x Lote">
-                                <field name="lot_ids" nolabel="1" widget="many2many" domain="[('product_id.product_tmpl_id.is_thread', '=', True)]">
+                                <field name="mixing_group_ids" nolabel="1">
                                     <list>
                                         <field name="name"/>
-                                        <field name="product_id"/>
-                                        <field name="color_code"/>
-                                        <field name="color_name"/>
-                                        <field name="company_id" column_invisible="1"/>
-                                        <button name="action_view_lot_recipe" type="object" string="Vista" class="btn btn-link"/>
+                                        <field name="lot_summary"/>
+                                        <button name="action_view_group_recipe" type="object" string="Vista" class="btn btn-link"/>
                                     </list>
+                                    <form>
+                                        <header>
+                                            <button name="action_view_group_recipe" type="object" string="Vista de Receta" class="oe_highlight"/>
+                                        </header>
+                                        <group>
+                                            <field name="name"/>
+                                        </group>
+                                        <field name="mixing_line_ids">
+                                            <list editable="bottom">
+                                                <field name="lot_id" domain="[('product_id.product_tmpl_id.is_thread', '=', True)]"/>
+                                                <field name="product_id"/>
+                                                <field name="color_code"/>
+                                                <field name="color_name"/>
+                                                <field name="percentage"/>
+                                            </list>
+                                        </field>
+                                    </form>
                                 </field>
                             </page>
                         </notebook>

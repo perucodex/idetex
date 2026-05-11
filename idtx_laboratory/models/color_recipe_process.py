@@ -7,6 +7,7 @@ class ColorRecipeProcess(models.Model):
     sequence = fields.Integer('Sequence')
     color_recipe_id = fields.Many2one('color.recipe', string='Color Recipe', ondelete='cascade')
     stock_lot_id = fields.Many2one('stock.lot', string='Lot', ondelete='cascade')
+    mixing_group_id = fields.Many2one('color.recipe.mixing.group', string='Mixing Group', ondelete='cascade')
     base_process_id = fields.Many2one('base.process', string='Process Template', ondelete='restrict')
     colorfastness_washing_id = fields.Many2one('colorfastness.washing', string='Solidez al Lavado', ondelete='cascade')
     

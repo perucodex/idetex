@@ -12,3 +12,4 @@ from . import product_template
 from . import res_company
 from . import res_config_settings
 from . import stock_lot
+from . import color_recipe_mixing

@@ -44,6 +44,7 @@ class ColorRecipe(models.Model):
         ('approved', 'Approved'),
     ], string='State', default='test', tracking=True)
     observations = fields.Text('Observaciones')
+    mixing_group_ids = fields.One2many('color.recipe.mixing.group', 'color_recipe_id', string='Grupos de Mezcla')
     
     #=== CRUD METHODS ===#
 
