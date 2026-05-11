@@ -207,7 +207,7 @@ msgstr "Fecha de Analyisis"
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__density
 msgid "Analysis Density"
-msgstr "Densidad"
+msgstr "Densidad Standard"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber_line__analysis_fiber_id
@@ -520,7 +520,7 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_view_search
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
 msgid "Density"
-msgstr "Densidad"
+msgstr "Densidad Standard"
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.density_stability_twisting_form_view
@@ -1322,7 +1322,6 @@ msgstr "Normal"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__notes
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__notes
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
 msgid "Notes"
@@ -2156,6 +2155,7 @@ msgstr "Datos de Tejido Padre"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__notes
+#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__notes
 msgid "Weaving Notes"
 msgstr "Observaciones de Tejido"
 

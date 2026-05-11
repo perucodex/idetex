@@ -192,6 +192,7 @@ class ProductAnalysis(models.Model):
                 'width': self.standard_width,
                 'gauge_id': self.gauge_id.id,
                 'stylo': rec.stylo,
+                'notes': rec.notes,
                 'route_line_ids': [Command.create({
                     'operation_id': route.operation_id.id,
                     'line_parameter_ids': [Command.create({'name': param.name}) for param in route.operation_id.parameter_ids],

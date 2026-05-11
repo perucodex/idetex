@@ -139,14 +139,12 @@ def _dbf_char(value, max_len=None):
         text = text[:max_len]
     return text
 
-
 def _dbf_padr(value, size):
     return _dbf_char(value, max_len=size).ljust(size)
 
-
 def _dbf_number_text(value, digits=2):
     if value in (False, None, ''):
-        return ''
+        return '0' if digits == 0 else '0.' + '0' * digits
     return f'{float(value):.{digits}f}'
 
 
