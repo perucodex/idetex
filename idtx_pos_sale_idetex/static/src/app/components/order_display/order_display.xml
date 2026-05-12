@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- 
+        Extensión de OrderDisplay para agregar los encabezados de las columnas 
+        en la parte superior del carrito.
+    -->
+    <t t-name="idtx_pos_sale_idetex.OrderDisplay" t-inherit="point_of_sale.OrderDisplay" t-inherit-mode="extension" owl="1">
+        
+        <!-- Insertamos los encabezados antes del contenedor de las líneas -->
+        <xpath expr="//div[hasclass('order-container')]" position="before">
+            <div class="idtx-cart-headers d-flex align-items-center w-100 px-2 py-2 bg-light border-bottom text-uppercase fw-bold text-muted" 
+                 style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                
+                <div style="width: 80px; flex-shrink: 0;">Kilos</div>
+                <div class="flex-grow-1 px-2">Artículo</div>
+                <div style="width: 100px; flex-shrink: 0;">Color</div>
+                <div style="width: 120px; flex-shrink: 0;">Partida</div>
+                <div style="width: 80px; flex-shrink: 0;" class="text-end px-2">Precio</div>
+                <div style="width: 90px; flex-shrink: 0;" class="text-end">Total</div>
+                <!-- Espacio para el icono del lote/borrar -->
+                <div style="width: 25px; flex-shrink: 0;"></div>
+            </div>
+        </xpath>
+    </t>
+</templates>

@@ -34,9 +34,9 @@
             </div>
 
             <!-- Lista de Hijos (Expandible) -->
-            <div t-if="state.expanded" class="group-children ps-4 pe-2 bg-100">
+            <div t-if="state.expanded" class="group-children bg-white border-bottom">
                 <t t-foreach="group.children" t-as="line" t-key="line.uuid">
-                    <div class="d-flex align-items-center">
+                    <div class="d-flex align-items-center border-bottom border-light">
                         <div class="flex-grow-1">
                              <Orderline line="line" 
                                 onClick="(ev) => this.props.onLineClick(ev, line)"

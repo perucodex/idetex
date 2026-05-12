@@ -2,24 +2,16 @@
 <templates id="template" xml:space="preserve">
     <!-- 
         Extensión optimizada de ProductScreen para Odoo 19.
-        Unificamos el reemplazo de la zona de productos para evitar errores de herencia (Xpath).
     -->
     <t t-name="idtx_pos_sale_idetex.ProductScreen" t-inherit="point_of_sale.ProductScreen" t-inherit-mode="extension" owl="1">
         
-        <!-- Reemplazamos el contenedor interno de la derecha para controlar la visibilidad -->
+        <!-- Reemplazamos el contenedor interno de la derecha para el Informe Técnico -->
         <xpath expr="//div[hasclass('rightpane')]//div[hasclass('position-relative')]" position="replace">
             <div class="position-relative d-flex flex-column flex-grow-1 overflow-hidden">
-                
-                <!-- 1. Desactivamos categorías (Se mantiene el componente por compatibilidad pero oculto) -->
                 <CategorySelector t-if="false" />
-
-                <!-- 2. Mantener escáner de video nativo -->
                 <BarcodeVideoScanner t-if="pos.scanning" t-props="barcodeVideoScannerProps" />
                 
-                <!-- 3. Informe Técnico Idetex (Visible si no se está escaneando) -->
                 <div t-else="" class="idtx-stock-table-container d-flex flex-column h-100 bg-light">
-                    
-                    <!-- Barra superior vinculada a idtxState -->
                     <div class="idtx-action-bar p-3 bg-white border-bottom d-flex justify-content-between align-items-center shadow-sm">
                         <div class="d-flex flex-column">
                             <span class="fs-4 fw-bold text-primary">Existencias Técnicas</span>
@@ -36,7 +28,6 @@
                         </button>
                     </div>
 
-                    <!-- Tabla de existencias técnica -->
                     <div class="flex-grow-1 overflow-y-auto px-3 py-2">
                         <table class="table table-hover idtx-stock-table text-nowrap rounded-3 overflow-hidden shadow-sm bg-white">
                             <thead class="bg-primary text-white sticky-top">
@@ -89,6 +80,53 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+        </xpath>
+    </t>
+
+    <!-- [PATCH] ActionpadWidget: Reestructurar para incluir métricas y botones alineados al fondo -->
+    <t t-name="idtx_pos_sale_idetex.ActionpadWidget" t-inherit="point_of_sale.ActionpadWidget" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('actionpad')]" position="replace">
+            <div class="actionpad d-flex flex-column h-100">
+                <!-- 1. Grid de Totales -->
+                <div t-if="currentOrder and !currentOrder.isEmpty()" class="idtx-actionpad-summary d-grid gap-1 p-2 bg-white rounded border mb-2" style="grid-template-columns: 1fr 1fr;">
+                    <div class="summary-box d-flex justify-content-between border-bottom pb-1">
+                        <span class="text-muted" style="font-size: 0.65rem;">Kilos:</span>
+                        <span class="fw-bold" style="font-size: 0.75rem;" t-esc="totalKilos.toFixed(2)"/>
+                    </div>
+                    <div class="summary-box d-flex justify-content-between border-bottom pb-1 ms-2">
+                        <span class="text-muted" style="font-size: 0.65rem;">Subtotal:</span>
+                        <span class="fw-bold" style="font-size: 0.75rem;" t-esc="currentOrder.currencyDisplayPriceExcl"/>
+                    </div>
+                    <div class="summary-box d-flex justify-content-between border-bottom py-1">
+                        <span class="text-muted" style="font-size: 0.65rem;">Rollos:</span>
+                        <span class="fw-bold" style="font-size: 0.75rem;" t-esc="totalRolls"/>
+                    </div>
+                    <div class="summary-box d-flex justify-content-between border-bottom py-1 ms-2">
+                        <span class="text-muted" style="font-size: 0.65rem;">Impuestos:</span>
+                        <span class="fw-bold" style="font-size: 0.75rem;" t-esc="currentOrder.currencyAmountTaxes"/>
+                    </div>
+                    <div class="summary-box d-flex justify-content-between align-items-center pt-2" style="grid-column: span 2;">
+                        <span class="text-primary fw-bold text-uppercase" style="font-size: 0.75rem;">Total:</span>
+                        <span class="text-primary fw-bold fs-5" t-esc="currentOrder.currencyDisplayPriceIncl"/>
+                    </div>
+                </div>
+
+                <!-- 2. Fila de Botones -->
+                <div class="idtx-actionpad-buttons d-flex gap-1 mt-auto">
+                     <SelectPartnerButton partner="props.partner"/>
+                     
+                     <button t-att-disabled="!currentOrder or currentOrder.isEmpty()" class="btn btn-secondary flex-grow-1 d-flex align-items-center justify-content-center" t-on-click="() => this.pos.clickSaveOrder()">
+                        <i class="fa fa-upload"/>
+                     </button>
+                     
+                     <button class="btn btn-secondary align-items-center justify-content-center" t-on-click="props.onClickMore">
+                        <i class="oi oi-fw oi-ellipsis-v" />
+                     </button>
+
+                     <button t-if="props.showActionButton" class="btn btn-primary align-items-center justify-content-center" 
+                             t-on-click="props.actionToTrigger" t-out="props.actionName" />
                 </div>
             </div>
         </xpath>

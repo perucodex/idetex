@@ -1,145 +1,277 @@
-.idtx-stock-table-container {
-    background-color: #f8f9fa;
-    border-radius: 4px;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+.product-screen {
+    .rightpane {
+        flex: 0 0 50% !important;
+        width: 50% !important;
+        border-left: 1px solid #dee2e6;
 
-    .idtx-stock-table {
-        font-size: 0.9rem;
-        border-collapse: separate;
-        border-spacing: 0;
-
-        thead {
-            tr {
-                th {
-                    background-color: #6C5B7B; // Color Botón Pago
-                    color: white;
-                    font-weight: bold;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                    border: none;
-                }
-            }
-        }
-
-        tbody {
-            tr {
-                transition: background-color 0.2s;
-
-                &:nth-child(even) {
-                    background-color: rgba(0, 0, 0, 0.02);
-                }
-
-                &:hover {
-                    background-color: #e9ecef !important;
-                }
-
-                td {
-                    border-bottom: 1px solid #dee2e6;
-                    vertical-align: middle;
-                }
-            }
-        }
-
-        .cursor-pointer {
-            cursor: pointer;
-        }
-
-        .bg-white-hover:hover {
-            background-color: #f1f3f5;
-        }
-
-        // Columna Referencia específica
-        .idtx-col-ref {
-            width: 120px !important;
-            min-width: 120px !important;
-            max-width: 120px !important;
-            padding: 2px !important;
-            overflow: hidden;
-            vertical-align: middle;
-
-            .idtx-ref-text {
-                display: block;
-                width: 100%;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: clip; // Cortar si es demasiado largo
-                font-size: 0.85rem;
-
-                // Si el texto es muy largo, intentamos que se vea pequeño
-                // Odoo 19 permite usar variables CSS o selectores de longitud si fuera necesario
-                // por ahora usamos un tamaño base pequeño y seguro.
-                line-height: 1;
-            }
+        .idtx-stock-table-container {
+            height: 100%;
         }
     }
 }
 
-// Barra de acciones superior para selección múltiple
-.idtx-action-bar {
-    z-index: 10;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+// Estilos para el carrito en una sola fila (Table look)
+.idtx-cart-headers {
+    background-color: #f8f9fa !important;
+    border-bottom: 1px solid #dee2e6;
+    color: #495057 !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    font-size: 0.65rem !important; // Más pequeño
+    padding: 4px 8px !important; // Más compacto
+}
 
-    .btn-primary {
-        background-color: #004a99;
-        border-color: #003366;
+.orderline {
+    border-bottom: 1px solid #f0f0f0 !important;
+
+    &:last-child {
+        border-bottom: none !important;
+    }
+
+    &.selected {
+        background-color: rgba(113, 75, 103, 0.05) !important;
+        border-left: 3px solid #714B67 !important;
+    }
+}
+
+.idtx-orderline-row {
+    font-size: 0.76rem !important; // Reducido
+    padding: 2px 8px !important; // Más compacto
+
+    .idtx-col-qty {
+        color: #212529;
+    }
+
+    .idtx-col-name {
+        color: #212529;
         font-weight: 600;
+    }
 
-        &:disabled {
-            background-color: #6c757d;
-            border-color: #6c757d;
-            opacity: 0.6;
-        }
+    .idtx-col-color {
+        color: #6c757d;
+    }
+
+    .idtx-col-lot {
+        color: #6c757d;
+    }
+
+    .idtx-col-price {
+        color: #6c757d;
+    }
+
+    .idtx-col-total {
+        color: #000;
     }
 }
 
-// Filas deshabilitadas (ya en el pedido)
-.idtx-row-disabled {
-    background-color: #f1f3f5 !important;
-    color: #adb5bd !important;
-    cursor: not-allowed !important;
-    opacity: 0.8;
+// Estilos para la tabla de stock técnica
+.idtx-stock-table {
+    font-size: 0.74rem !important; // Reducido
+
+    thead th {
+        background-color: #714B67 !important;
+        color: white;
+        font-weight: bold;
+        padding: 4px 6px !important;
+    }
 
     td {
-        pointer-events: none; // Evitar clics internos
+        padding: 3px 6px !important;
     }
 
-    .idtx-ref-text {
-        color: #adb5bd !important;
+    .idtx-row-selected {
+        background-color: rgba(113, 75, 103, 0.1) !important;
+    }
+
+    .idtx-row-disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
     }
 }
 
-// Optimización de la tabla para checkboxes
-.idtx-stock-table {
-    .form-check-input {
+// Limitación del ancho del buscador en el Navbar
+.pos-topheader {
+    .o-input-container {
+        max-width: 280px !important;
+    }
+}
+
+@include media-breakpoint-up(lg) {
+    .product-screen {
+
+        // 1. Ampliar ancho del carrito al 50%
+        .leftpane {
+            width: 50% !important;
+            max-width: 50% !important;
+            flex: 0 0 50% !important;
+            flex-direction: column !important;
+            font-size: 0.82rem !important;
+
+            .order-container {
+                padding: 0 !important;
+            }
+
+            .orderline {
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            .order-summary {
+                display: none !important;
+            }
+
+            // 2. Reacomodo: Numpad (Izquierda) | [4 Botones + Pago] (Derecha)
+            .pads {
+                width: 100% !important;
+                flex: 0 0 auto !important;
+                display: flex !important;
+                flex-direction: row !important;
+                background-color: #f8f9fa;
+                border-top: 1px solid #dee2e6;
+                padding: 6px !important;
+                gap: 8px !important;
+
+                .subpads {
+                    width: 100% !important;
+                    display: flex !important;
+                    flex-direction: row !important;
+                    gap: 8px !important;
+                    align-items: stretch;
+
+                    .numpad {
+                        flex: 0 0 320px !important; // Más estrecho
+                        margin: 0 !important;
+
+                        button {
+                            height: 38px !important; // Altura estándar
+                            font-size: 0.95rem !important;
+                        }
+                    }
+
+                    .actionpad {
+                        flex: 1 1 auto !important;
+                        display: flex !important;
+                        flex-direction: column !important;
+                        gap: 0 !important;
+                        justify-content: flex-start !important;
+
+                        // Grid de métricas en la parte superior
+                        .idtx-actionpad-summary {
+                            background-color: white;
+                            border-radius: 4px;
+                            border: 1px solid #dee2e6;
+                            margin-bottom: 5px;
+
+                            .summary-box {
+                                padding: 2px 4px;
+                            }
+                        }
+
+                        // Fila de botones al fondo (alineado con la última fila del numpad)
+                        .idtx-actionpad-buttons {
+                            margin-top: auto;
+                            display: flex;
+                            flex-direction: row;
+                            gap: 5px;
+
+                            button,
+                            .SelectPartnerButton,
+                            .btn {
+                                flex: 1 !important;
+                                height: 38px !important; // Altura manual del usuario
+                                font-size: 0.72rem !important;
+                                padding: 0 !important;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                            }
+
+                            .pay-order-button {
+                                flex: 1 !important;
+                                height: 38px !important;
+                                padding: 0 !important;
+                                font-size: 0.75rem !important;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                            }
+                        }
+                    }
+                }
+
+                // Ocultar botones de control externos
+                .control-buttons {
+                    display: none !important;
+                }
+            }
+        }
+
+        // Panel derecho al 50%
+        .rightpane {
+            flex: 0 0 50% !important;
+            width: 50% !important;
+            border-left: 1px solid #dee2e6;
+        }
+    }
+}
+
+// Estilos para grupos de líneas
+.group-orderline {
+    border-bottom: 1px solid #dee2e6 !important;
+
+    .group-header {
+        background-color: #f1f3f5 !important;
         cursor: pointer;
-        width: 1.2rem;
-        height: 1.2rem;
-        margin-top: 0;
+        padding: 4px 10px !important;
+
+        &:hover {
+            background-color: #e9ecef !important;
+        }
+
+        .fs-5 {
+            font-size: 0.85rem !important;
+        }
+
+        .text-muted {
+            font-size: 0.7rem !important;
+        }
+
+        .text-success {
+            color: #714B67 !important;
+            font-size: 0.85rem !important;
+        }
+    }
+
+    .group-children {
+        .orderline {
+            padding-left: 0 !important;
+            border-left: 3px solid #dee2e6 !important;
+        }
     }
 }
 
-// Ocultar categorías para maximizar espacio
-.product-screen .rightpane .category-selector {
-    display: none !important;
+// Reducción del buscador en el Navbar
+.pos-topheader {
+    .o-input-container {
+        max-width: 240px !important; // Aún más estrecho
+
+        .form-control {
+            font-size: 0.85rem !important;
+            height: 32px !important;
+        }
+    }
 }
 
-// Ajuste del contenedor para que la tabla use todo el espacio
-.product-screen .rightpane .overflow-hidden {
-    display: flex;
-    flex-direction: column;
-}
+// Tabla técnica ultra-compacta
+.idtx-stock-table {
+    font-size: 0.78rem !important;
 
-// Estilos para el precio unitario en el carrito (Orderline)
-.orderline {
-    .idtx-unit-price {
-        white-space: nowrap;
-        color: #6c757d; // Gris suave
-        font-family: inherit;
-        letter-spacing: -0.2px;
+    th,
+    td {
+        padding: 6px 8px !important; // Padding mínimo
     }
 
-    .price {
-        min-width: 80px;
-        text-align: right;
+    .md-checkbox {
+        transform: scale(0.8); // Checkbox más pequeño
     }
 }

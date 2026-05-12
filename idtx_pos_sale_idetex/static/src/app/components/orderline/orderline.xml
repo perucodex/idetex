@@ -1,24 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
     <!-- 
-        Extensión del componente Orderline para mostrar el precio unitario 
-        a la izquierda del total de la línea.
+        Extensión del componente Orderline para mostrar toda la información 
+        en una sola fila con columnas alineadas (Kilos, Artículo, Color, Partida, Precio, Total).
+        Se mantiene la estructura original para no romper la compatibilidad con el Recibo.
     -->
     <t t-name="idtx_pos_sale_idetex.Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension" owl="1">
         
-        <!-- 1. Insertamos el precio unitario con etiqueta P.U. -->
-        <xpath expr="//div[hasclass('product-price')]" position="before">
-            <div t-if="vals.displayPriceUnit and !vals.isReceipt" 
-                 class="idtx-unit-price text-muted me-2 align-self-center" 
-                 style="font-size: 0.85rem;">
-                 <!-- Usamos line.currencyDisplayPriceUnit para evitar el sufijo / kg -->
-                <t t-esc="line.currencyDisplayPriceUnit"/>
-            </div>
+        <!-- 1. Ocultamos el bloque original en la pantalla de ventas (pero lo dejamos en el DOM para el Recibo) -->
+        <xpath expr="//div[hasclass('line-details')]" position="attributes">
+            <attribute name="t-if">vals.isReceipt</attribute>
+        </xpath>
+        <xpath expr="//ul[hasclass('info-list')]" position="attributes">
+            <attribute name="t-if">vals.isReceipt</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('o_line_container')]" position="attributes">
+            <attribute name="t-if">vals.isReceipt</attribute>
         </xpath>
 
-        <!-- 2. Ocultamos la visualización original en la info-list para no duplicar -->
-        <xpath expr="//li[hasclass('price-per-unit')]" position="attributes">
-            <attribute name="style">display: none !important;</attribute>
+        <!-- 2. Insertamos la fila única estilo TABLA antes de los detalles originales -->
+        <xpath expr="//div[hasclass('line-details')]" position="before">
+            <div t-if="!vals.isReceipt" class="idtx-orderline-row d-flex align-items-center w-100 py-1 pe-2" t-att-class="lineClasses">
+                
+                <!-- Kilos -->
+                <div class="idtx-col-qty text-start fw-bold" style="width: 80px; flex-shrink: 0;">
+                    <t t-esc="vals.unitPart"/><t t-out="vals.decimalPart" />
+                </div>
+                
+                <!-- Artículo -->
+                <div class="idtx-col-name text-truncate px-2 flex-grow-1" t-att-title="vals.name" style="min-width: 150px;">
+                    <t t-esc="vals.name" />
+                </div>
+                
+                <!-- Color -->
+                <div class="idtx-col-color text-truncate px-2" style="width: 100px; flex-shrink: 0;">
+                    <t t-esc="vals.color_name" />
+                </div>
+                
+                <!-- Partida (Lote) -->
+                <div class="idtx-col-lot text-truncate px-2" style="width: 120px; flex-shrink: 0;">
+                    <t t-esc="vals.lot_name" />
+                </div>
+                
+                <!-- Precio -->
+                <div class="idtx-col-price text-end px-2 text-muted" style="width: 80px; flex-shrink: 0; font-size: 0.85rem;">
+                    <t t-esc="line.currencyDisplayPriceUnit"/>
+                </div>
+                
+                <!-- Total -->
+                <div class="idtx-col-total text-end fw-bold" style="width: 90px; flex-shrink: 0;">
+                    <t t-esc="vals.price" />
+                </div>
+
+                <!-- Icono de lote (Slot) -->
+                <div t-if="props.slots and props.slots['pack-lot-icon']" class="ms-1" style="width: 25px;">
+                    <t t-slot="pack-lot-icon" />
+                </div>
+            </div>
         </xpath>
     </t>
 </templates>

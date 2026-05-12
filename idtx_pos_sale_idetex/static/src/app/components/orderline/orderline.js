@@ -26,6 +26,15 @@ patch(Orderline.prototype, {
             }
         }
 
+        // Agregamos color y lote a los valores de pantalla
+        values.color_name = line.color_name || "";
+        // Extraemos el primer lote de la lista de lotes y limpiamos el texto "Lot Number"
+        let firstLot = values.lotLines && values.lotLines.length > 0 ? values.lotLines[0] : "";
+        if (typeof firstLot === 'string') {
+            firstLot = firstLot.replace(/Lot Number/gi, '').replace(':', '').trim();
+        }
+        values.lot_name = firstLot;
+
         return values;
     }
 });
