@@ -50,6 +50,24 @@
                 <div t-field="doc.applicant_id.name">Mitchell Admin</div>
             </div>
         </xpath>
+        <!-- Mover la firma del cliente al final del reporte (despues de todas las tablas) -->
+        <xpath expr="//div[@name='signature']" position="replace">
+            <t/>
+        </xpath>
+        <xpath expr="//div[span[@name='order_note']]" position="after">
+            <div t-if="doc.signature"
+                 class="mt-4 ml64 mr4" name="signature">
+                <div class="offset-8">
+                    <strong>Firma</strong>
+                </div>
+                <div class="offset-8">
+                    <img t-att-src="image_data_uri(doc.signature)" style="max-height: 4cm; max-width: 8cm;"/>
+                </div>
+                <div class="offset-8 text-center">
+                    <span t-field="doc.signed_by"/>
+                </div>
+            </div>
+        </xpath>
         <xpath expr="//div[@name='so_total_summary']" position="attributes">
             <attribute name="t-if">not doc.is_quote</attribute>
         </xpath>
