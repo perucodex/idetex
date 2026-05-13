@@ -482,6 +482,99 @@ class MrpBaseProcess(models.Model):
         )
         return True
 
+class MrpRoutingWorkcenterOperation(models.Model):
+    _inherit = 'mrp.routing.workcenter.operation'
+
+    def _check_used_in_base_process(self):
+        line_model = self.env['mrp.base.process.line'].sudo()
+        blocked = {}
+        for operation in self:
+            lines = line_model.search([('operation_id', '=', operation.id)])
+            if lines:
+                blocked[operation] = lines.mapped('mrp_base_process_id')
+        return blocked
+
+    def _check_used_in_texplus_prolin(self, cursor):
+        blocked = {}
+        for operation in self:
+            phase_code = (operation.fas_code or '').strip()
+            if not phase_code:
+                continue
+            cursor.execute(
+                "SELECT LTRIM(RTRIM(ProCod)) FROM dbo.PROLIN WITH (NOLOCK) "
+                "WHERE EmprCod = ? AND FasCod = ?",
+                TEXPLUS_EMPRCOD,
+                phase_code,
+            )
+            process_codes = [row[0] for row in cursor.fetchall() if row and row[0]]
+            if process_codes:
+                blocked[operation] = process_codes
+        return blocked
+
+    def _delete_from_texplus_faspro(self, cursor):
+        for operation in self:
+            phase_code = (operation.fas_code or '').strip()
+            if not phase_code:
+                continue
+            cursor.execute(
+                "DELETE FROM dbo.FASPRO WHERE EmprCod = ? AND FasCod = ?",
+                TEXPLUS_EMPRCOD,
+                phase_code,
+            )
+
+    def unlink(self):
+        if not self or self.env.context.get('skip_texplus_faspro_delete'):
+            return super().unlink()
+
+        used_in_odoo = self._check_used_in_base_process()
+        if used_in_odoo:
+            details = '\n'.join(
+                '- %s: %s' % (op.name, ', '.join(processes.mapped('name')))
+                for op, processes in used_in_odoo.items()
+            )
+            raise UserError(
+                'No se puede eliminar las siguientes fases porque estan en uso '
+                'en procesos base de Odoo:\n%s' % details
+            )
+
+        conn = None
+        cursor = None
+        try:
+            conn = self._get_texplus_sql_connection()
+            cursor = conn.cursor()
+
+            used_in_texplus = self._check_used_in_texplus_prolin(cursor)
+            if used_in_texplus:
+                details = '\n'.join(
+                    '- %s (%s): %s' % (op.name, op.fas_code, ', '.join(codes))
+                    for op, codes in used_in_texplus.items()
+                )
+                raise UserError(
+                    'No se puede eliminar las siguientes fases porque estan en uso '
+                    'en la tabla PROLIN de TEXPLUS:\n%s' % details
+                )
+
+            self._delete_from_texplus_faspro(cursor)
+            conn.commit()
+        except Exception as error:
+            if conn:
+                conn.rollback()
+            if not isinstance(error, UserError) and _is_texplus_lock_error(error):
+                phase_codes = ', '.join(filter(None, (op.fas_code for op in self)))
+                raise UserError(
+                    'No se pudo sincronizar con TEXPLUS porque la fase '
+                    f'{phase_codes} esta abierta o en uso en TEXPLUS. Cierre ese registro y vuelva a intentar.'
+                ) from error
+            raise
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+        return super().unlink()
+
+
 class MrpBaseProcessLine(models.Model):
     _name = 'mrp.base.process.line'
     _description = 'Mrp Base Process Line'
