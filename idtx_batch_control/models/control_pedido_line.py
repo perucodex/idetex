@@ -90,30 +90,26 @@ class ControlPedidoLine(models.Model):
 
         now = fields.Datetime.now()
         for rec in records_with_data:
-            # Sort by barOrdLin asc; walk from the latest backwards.
+            # Walk only over FINISHED processes (those with barFasDTF). Starting
+            # from the latest one, build a consecutive run of same-area
+            # processes; days = now - earliest start in that run. As soon as
+            # we hit a different-area process the run ends.
             procs = rec.proceso_ids.sorted(key=lambda p: p.barOrdLin or 0)
-            boundary_dt = False
-            entry_dt = False  # earliest start time within the current area
             current_area = rec.area
+            earliest_start = False
             for proc in reversed(procs):
-                # Skip processes that haven't started yet — they belong to the
-                # future plan, not to the line's actual history.
-                if not proc.barFasDTI:
+                if not proc.barFasDTF:
+                    # Not yet finished — ignore.
                     continue
                 proc_area = area_by_fas.get(proc.fas_code)
                 if proc_area and proc_area != current_area:
-                    # First different-area started process found walking
-                    # backwards: the line entered `current_area` when this
-                    # process ended (fall back to its start time if still open).
-                    boundary_dt = proc.barFasDTF or proc.barFasDTI
+                    # Run interrupted by another area: stop.
                     break
-                # Same area (or unknown): keep updating — since we iterate
-                # latest → earliest, the last assignment is the earliest start.
-                entry_dt = proc.barFasDTI
+                if proc.barFasDTI:
+                    earliest_start = proc.barFasDTI
 
-            reference_dt = boundary_dt or entry_dt
-            if reference_dt:
-                rec.area_num_days = max(0, (now - reference_dt).days)
+            if earliest_start:
+                rec.area_num_days = max(0, (now - earliest_start).days)
 
     @api.model
     def _fetch_areas_by_fas_code(self, fas_codes):

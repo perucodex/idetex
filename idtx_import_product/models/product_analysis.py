@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import datetime
 import re
 import unicodedata
 import pyodbc
@@ -464,6 +465,225 @@ class ProductAnalysis(models.Model):
             }
         }
     
+    # ---------------------------------------------------------------------
+    # TEXPLUS — route lookup (replaces SITPRO Ruta_Detalle).
+    # ARTLIN holds (ArtCod, ProCod, CliCod, ProAct). Odoo product_code is the
+    # TEXPLUS ArtCod minus its leading character, so we match with RIGHT(ArtCod,15).
+    # Texplus_Ruta_Proceso (Cod_Ruta, Orden, Proceso, Dsc_Proceso) gives the
+    # ordered phase list for a route. Both queries live in this class so they
+    # reuse `_get_texplus_sql_connection`.
+    # ---------------------------------------------------------------------
+    def _get_texplus_route_map(self, product_codes):
+        """Return {15-char product_code: route_code} from ARTLIN.
+
+        Filters to active routes only (ProAct='S'). When several rows match the
+        same product (different clients), keeps the most recently touched one
+        (ProFecA, then ProFecM).
+        """
+        codes = sorted({(c or '').strip() for c in product_codes if (c or '').strip()})
+        if not codes:
+            return {}
+        try:
+            conn = self._get_texplus_sql_connection()
+        except Exception:
+            _logger.warning("TEXPLUS unreachable for ARTLIN lookup", exc_info=True)
+            return {}
+        rows = []
+        try:
+            cursor = conn.cursor()
+            for start in range(0, len(codes), 800):
+                chunk = codes[start:start + 800]
+                placeholders = ",".join(["?"] * len(chunk))
+                cursor.execute(
+                    f"""
+                    SELECT RIGHT(RTRIM(ArtCod), 15) AS code,
+                           RTRIM(ProCod) AS ProCod,
+                           COALESCE(ProFecA, ProFecM) AS fecha
+                    FROM ARTLIN
+                    WHERE ProAct = 'S'
+                      AND RIGHT(RTRIM(ArtCod), 15) IN ({placeholders})
+                    """,
+                    *chunk,
+                )
+                rows.extend(cursor.fetchall())
+        finally:
+            try: cursor.close()
+            except Exception: pass
+            try: conn.close()
+            except Exception: pass
+        # Dedup: keep latest active route per Odoo product code.
+        best = {}
+        for code, procod, fecha in rows:
+            if not code or not procod:
+                continue
+            current = best.get(code)
+            if current is None or (fecha or datetime.datetime.min) > (current[1] or datetime.datetime.min):
+                best[code] = (procod, fecha)
+        return {code: data[0] for code, data in best.items()}
+
+    def _get_texplus_route_processes(self, route_codes):
+        """Return {route_code: [(orden, fascod, fasdsc), ...]} from Texplus_Ruta_Proceso."""
+        codes = sorted({(c or '').strip() for c in route_codes if (c or '').strip()})
+        if not codes:
+            return {}
+        try:
+            conn = self._get_texplus_sql_connection()
+        except Exception:
+            return {}
+        by_route = {}
+        try:
+            cursor = conn.cursor()
+            for start in range(0, len(codes), 800):
+                chunk = codes[start:start + 800]
+                placeholders = ",".join(["?"] * len(chunk))
+                cursor.execute(
+                    f"""
+                    SELECT RTRIM(Cod_Ruta), Orden,
+                           RTRIM(Proceso), RTRIM(Dsc_Proceso)
+                    FROM Texplus_Ruta_Proceso
+                    WHERE Cod_Ruta IN ({placeholders})
+                    ORDER BY Cod_Ruta, Orden
+                    """,
+                    *chunk,
+                )
+                for cod, orden, fascod, fasdsc in cursor.fetchall():
+                    by_route.setdefault(cod, []).append((orden, fascod, fasdsc))
+        finally:
+            try: cursor.close()
+            except Exception: pass
+            try: conn.close()
+            except Exception: pass
+        return by_route
+
+    def _ensure_texplus_base_process(self, route_code, processes_list, operation_cache):
+        """Find-or-create mrp.base.process named `route_code` and sync its lines
+        from `processes_list` (list of (orden, fascod, fasdsc) tuples).
+
+        Replaces existing lines if the TEXPLUS list differs from what's stored.
+        """
+        BaseProcess = self.env['mrp.base.process']
+        base_process = BaseProcess.search([('name', '=', route_code)], limit=1)
+        if not base_process:
+            base_process = BaseProcess.create({'name': route_code})
+
+        desired = []
+        for orden, fascod, fasdsc in processes_list:
+            operation = BaseProcess._get_or_create_operation(fascod, fasdsc, operation_cache)
+            if operation:
+                desired.append((orden, operation.id))
+        if not desired:
+            return base_process
+
+        current = [
+            (line.sequence, line.operation_id.id)
+            for line in base_process.process_ids.sorted(key=lambda l: (l.sequence, l.id))
+            if line.operation_id
+        ]
+        if current == desired:
+            return base_process
+
+        commands = [(5, 0, 0)]
+        for orden, op_id in desired:
+            commands.append((0, 0, {'sequence': orden, 'operation_id': op_id}))
+        base_process.with_context(skip_texplus_sync=True).write({'process_ids': commands})
+        return base_process
+
+    def _apply_texplus_route_to_analyses(self, analyses=None):
+        """For each analysis with a product_code, look up its route in TEXPLUS
+        (ARTLIN → Texplus_Ruta_Proceso) and set mrp_base_process_id accordingly.
+        Regenerates routing_ids and propagates to related technical sheets.
+        Returns the number of analyses whose route changed.
+        """
+        analyses = (analyses or self).filtered('product_code')
+        if not analyses:
+            return 0
+        code_to_route = self._get_texplus_route_map(analyses.mapped('product_code'))
+        if not code_to_route:
+            return 0
+        route_codes = set(code_to_route.values())
+        route_processes = self._get_texplus_route_processes(route_codes)
+        operation_cache = {}
+        base_process_by_code = {}
+        for route_code in route_codes:
+            base_process_by_code[route_code] = self._ensure_texplus_base_process(
+                route_code, route_processes.get(route_code, []), operation_cache,
+            )
+        # Ensure TEJIDO CRUDO is the first line of every touched base process.
+        touched = self.env['mrp.base.process'].browse([
+            bp.id for bp in base_process_by_code.values() if bp
+        ])
+        if touched:
+            touched._ensure_weaving_first_line()
+        changed = 0
+        for analysis in analyses:
+            route_code = code_to_route.get(analysis.product_code)
+            if not route_code:
+                continue
+            new_bp = base_process_by_code.get(route_code)
+            if new_bp and analysis._set_base_process_and_propagate(new_bp):
+                changed += 1
+        return changed
+
+    def _set_base_process_and_propagate(self, new_base_process):
+        """Set mrp_base_process_id, rebuild routing_ids, and propagate the new
+        operations to the related technical sheets' route_line_ids. Returns
+        True when something actually changed."""
+        self.ensure_one()
+        if not new_base_process or new_base_process == self.mrp_base_process_id:
+            return False
+        self.mrp_base_process_id = new_base_process
+        # Replicate _onchange_mrp_base_process_id manually (onchange does not
+        # fire on programmatic writes). The analysis has a constraint that
+        # forbids more than one weaving operation; the base process can have
+        # several (e.g. TEJIDO CRUDO + ABCRUDO + LIJCRUDO all classify as
+        # operation_type='weaving'). Keep only the first weaving line.
+        lines = new_base_process.process_ids.sorted(key=lambda l: (l.sequence, l.id))
+        weaving_seen = False
+        operation_ids = []
+        for line in lines:
+            op = line.operation_id
+            if not op:
+                continue
+            if op.operation_type == 'weaving':
+                if weaving_seen:
+                    continue
+                weaving_seen = True
+            operation_ids.append(op.id)
+        self.routing_ids = [Command.clear()] + [
+            Command.create({'operation_id': op_id}) for op_id in operation_ids
+        ]
+        # Replicate the route_line_ids construction used in action_create_technical_sheet.
+        for sheet in self.technical_sheet_ids:
+            sheet.route_line_ids = [Command.clear()] + [
+                Command.create({
+                    'operation_id': route.operation_id.id,
+                    'line_parameter_ids': [
+                        Command.create({'name': param.name})
+                        for param in route.operation_id.parameter_ids
+                    ],
+                })
+                for route in self.routing_ids.sorted(key=lambda r: r.sequence)
+                if route.operation_id
+            ]
+        return True
+
+    def action_sync_routes_from_texplus(self):
+        """Manual trigger: re-sync routes from TEXPLUS for the selected analyses
+        (or all analyses with a product_code when called from the model menu).
+        """
+        targets = self or self.search([('product_code', '!=', False)])
+        changed = self._apply_texplus_route_to_analyses(targets)
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Sincronización TEXPLUS'),
+                'message': _('Rutas actualizadas en %s análisis.') % changed,
+                'sticky': False,
+                'type': 'success',
+            },
+        }
+
     def get_routing_data(self, ruta):
         try:
             conn = self._get_sql_connection()
@@ -600,21 +820,17 @@ class ProductAnalysis(models.Model):
                         is_problem = True
                     else:
                         is_problem = False
-                    base_process_id = self.env['mrp.base.process'].search([('name','=', row.fascod.strip())])
+                    # Route is no longer pulled from SITPRO; we create the
+                    # analysis with the weaving-only placeholder and let the
+                    # TEXPLUS pass below assign the real route.
+                    base_process_id = self.env['mrp.base.process'].search([
+                        ('name', '=', '__SITPRO_PLACEHOLDER__'),
+                    ], limit=1)
                     if not base_process_id:
-                        ruta_cursor = self.get_routing_data(row.fascod.strip())
-                        base_process_id = self.env['mrp.base.process'].create({'name': row.fascod.strip(),'process_ids': [Command.create({'operation_id': weaving_process.id})]})
-                        base_process_id.write({
-                            'process_ids': [Command.create({
-                                'operation_id': self.env['mrp.routing.workcenter.operation'].search([('name','=', rrow.FasDsc.strip())]).id or self.env['mrp.routing.workcenter.operation'].create({'name': rrow.FasDsc.strip(), 'fas_code': rrow.FasCod.strip(), 'workcenter_id': self.env['mrp.workcenter'].search([('name','=', str(rrow.area).strip().upper())]).id or self.env['mrp.workcenter'].create({'name': str(rrow.area).strip().upper()}).id}).id,
-                            }) for rrow in ruta_cursor]
+                        base_process_id = self.env['mrp.base.process'].create({
+                            'name': '__SITPRO_PLACEHOLDER__',
+                            'process_ids': [Command.create({'operation_id': weaving_process.id})],
                         })
-                        weaving_lines = base_process_id.process_ids.filtered(lambda l: l.operation_id.operation_type == 'weaving')
-                        # Si no hay tejido creamos uno sino eliminamos hasta que quede el primero
-                        if weaving_lines:
-                            weaving_line = weaving_lines[0]
-                            if len(weaving_lines) > 1:
-                                (weaving_lines - weaving_line).unlink()
                     vals = {
                         'analysis_date': row.fecha,
                         'partner_id': partner.id or False,
@@ -689,6 +905,14 @@ class ProductAnalysis(models.Model):
                 conn.close()
             except Exception:
                 pass
+        # Replace SITPRO routes (or the placeholder created above) with the
+        # ones currently in TEXPLUS for every analysis we touched.
+        try:
+            self._apply_texplus_route_to_analyses(
+                self.search([('product_code', '!=', False)])
+            )
+        except Exception:
+            _logger.exception("TEXPLUS route post-sync failed")
 
     def sync_lab(self):
         def _strip(v):

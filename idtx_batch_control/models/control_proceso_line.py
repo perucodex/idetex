@@ -14,7 +14,7 @@ class ControlProcesoLine(models.Model):
     )
     barOrdLin = fields.Integer("Orden")
     fas_code = fields.Char("Código Proceso")
-    fasCod = fields.Char("Proceso (Descr)")
+    fasCod = fields.Char("Proceso")
     maqCodBis = fields.Char("Máquina")
 
     barFasDTI = fields.Datetime("Fecha Inicio")

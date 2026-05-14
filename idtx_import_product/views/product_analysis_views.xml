@@ -51,6 +51,7 @@
                 <xpath expr="//list" position="inside">
                     <header>
                         <button name="sync_from_sql" string="Update" type="object"/>
+                        <button name="action_sync_routes_from_texplus" string="Update TEXPLUS Routes" type="object"/>
                     </header>
                 </xpath>
                 <xpath expr="//list" position="attributes">
