@@ -93,6 +93,22 @@ class MrpBaseProcess(models.Model):
 
     product_analysis_ids = fields.One2many('product.analysis', 'mrp_base_process_id', string='Product Analyses')
 
+    operation_ids = fields.Many2many(
+        'mrp.routing.workcenter.operation', string='Operaciones',
+        compute='_compute_operation_ids', search='_search_operation_ids',
+    )
+
+    @api.depends('process_ids.operation_id')
+    def _compute_operation_ids(self):
+        for rec in self:
+            rec.operation_ids = rec.process_ids.operation_id
+
+    def _search_operation_ids(self, operator, value):
+        # Allow searching directly by a specific operation in the search view.
+        Line = self.env['mrp.base.process.line']
+        lines = Line.search([('operation_id', operator, value)])
+        return [('id', 'in', lines.mrp_base_process_id.ids)]
+
     def action_view_products(self):
         self.ensure_one()
         return self.product_ids._get_records_action(name=_('Productos'))
