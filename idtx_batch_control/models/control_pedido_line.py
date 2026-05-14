@@ -46,7 +46,22 @@ class ControlPedidoLine(models.Model):
     state = fields.Selection([
         ('active', 'Active'),
         ('completed', 'Completed'),
-    ], string='State')
+    ], string='State', default='active')
+
+    def _auto_init(self):
+        # Backfill NULL state to 'active' on module upgrades — idempotent
+        # because the WHERE clause skips rows that already have a value.
+        res = super()._auto_init()
+        self.env.cr.execute(
+            "UPDATE control_pedido_line SET state = 'active' WHERE state IS NULL"
+        )
+        return res
+
+    def action_set_completed(self):
+        self.write({'state': 'completed'})
+
+    def action_set_active(self):
+        self.write({'state': 'active'})
 
     @api.depends('area', 'proceso_ids.barFasDTI', 'proceso_ids.barFasDTF', 'proceso_ids.fas_code')
     def _compute_area_num_days(self):
@@ -81,16 +96,20 @@ class ControlPedidoLine(models.Model):
             entry_dt = False  # earliest start time within the current area
             current_area = rec.area
             for proc in reversed(procs):
+                # Skip processes that haven't started yet — they belong to the
+                # future plan, not to the line's actual history.
+                if not proc.barFasDTI:
+                    continue
                 proc_area = area_by_fas.get(proc.fas_code)
                 if proc_area and proc_area != current_area:
-                    # First different-area process found walking backwards:
-                    # the line entered `current_area` when this process ended
-                    # (fall back to its start time if no end is recorded).
+                    # First different-area started process found walking
+                    # backwards: the line entered `current_area` when this
+                    # process ended (fall back to its start time if still open).
                     boundary_dt = proc.barFasDTF or proc.barFasDTI
                     break
-                # Same area (or unknown): track the earliest start we've seen.
-                if proc.barFasDTI:
-                    entry_dt = proc.barFasDTI
+                # Same area (or unknown): keep updating — since we iterate
+                # latest → earliest, the last assignment is the earliest start.
+                entry_dt = proc.barFasDTI
 
             reference_dt = boundary_dt or entry_dt
             if reference_dt:

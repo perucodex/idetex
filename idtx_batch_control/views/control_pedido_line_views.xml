@@ -5,7 +5,8 @@
         <field name="model">control.pedido.line</field>
         <field name="arch" type="xml">
 
-        <list decoration-danger="process == 'SIN AVANCE'" create="0" edit="0" delete="0">
+        <list create="0" edit="0" delete="0">
+            <field name="state" column_invisible="1"/>
             <field name="pedido_id"/>
             <field name="route"/>
             <field name="batch"/>
@@ -21,7 +22,7 @@
             <field name="kilograms" sum="Total"/>
             <field name="start_date"/>
             <field name="end_date"/>
-            <field name="state"/>
+            <field name="state" widget="badge" decoration-success="state == 'active'" decoration-danger="state == 'completed'"/>
         </list>
     
             <!-- <list decoration-danger="area == 'AREA NO CONOCIDA'" create="0">
@@ -145,7 +146,8 @@
                 <field name="colorname"/>
                 <filter string="Active" name="active" domain="[('state', '=', 'active')]"/>
                 <filter string="Completed" name="completed" domain="[('state', '=', 'completed')]"/>
-                <filter string="Reproceso/Reposición" name="reproceso_reposicion" domain="[('motivo1', '!=', False)]"/>
+                <filter string="Reproceso/Reposición" name="reproceso_reposicion"
+                        domain="[('motivo1', '!=', False), ('state', '=', 'active')]"/>
                 <group>
                     <filter string="Pedido" name="group_by_pedido_id" domain="[]" context="{'group_by': 'pedido_id'}"/>
                     <filter string="Producto" name="group_by_codpro" domain="[]" context="{'group_by': 'codpro'}"/>
@@ -154,6 +156,24 @@
                 </group>
             </search>
         </field>
+    </record>
+
+    <record id="action_control_pedido_line_set_completed" model="ir.actions.server">
+        <field name="name">Marcar como Completada</field>
+        <field name="model_id" ref="model_control_pedido_line"/>
+        <field name="binding_model_id" ref="model_control_pedido_line"/>
+        <field name="binding_view_types">form,list</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_set_completed()</field>
+    </record>
+
+    <record id="action_control_pedido_line_set_active" model="ir.actions.server">
+        <field name="name">Marcar como Activa</field>
+        <field name="model_id" ref="model_control_pedido_line"/>
+        <field name="binding_model_id" ref="model_control_pedido_line"/>
+        <field name="binding_view_types">form,list</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_set_active()</field>
     </record>
 
     <record id="action_control_partida" model="ir.actions.act_window">
