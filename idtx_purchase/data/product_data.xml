@@ -7,5 +7,10 @@
             <field name="digits">4</field>
         </record>
 
+        <record id="decimal_quantity_custom_purchase" model="decimal.precision">
+            <field name="name">Product Quantity Custom Purchase</field>
+            <field name="digits">4</field>
+        </record>
+
     </data>
 </odoo>

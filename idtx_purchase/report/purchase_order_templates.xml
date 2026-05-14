@@ -81,6 +81,11 @@
             <attribute name="t-options">{"widget": "float", "precision": 4}</attribute>
         </xpath>
 
+        <!-- Asegurar 4 dígitos en la cantidad -->
+        <xpath expr="//span[@t-field='line.product_qty']" position="attributes">
+            <attribute name="t-options">{"widget": "float", "precision": 4}</attribute>
+        </xpath>
+
         <xpath expr="//th[@name='th_description']" position="after">
             <th name="th_price_unit_discounted" t-if="any(line.analytic_distribution for line in o.order_line if not line.display_type)">
                 <strong>Distr.</strong>

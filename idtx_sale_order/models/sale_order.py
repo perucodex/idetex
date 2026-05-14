@@ -171,10 +171,10 @@ class SaleOrder(models.Model):
             if not rec.is_quote and not rec.lab_dev_ids and rec.company_id.is_company_produce and any(line.product_template_id.is_weaving and line.is_lab_color for line in rec.order_line):
                 raise UserError(_('Cant\'t confirm sale order without LD'))
             lines = rec.order_line.filtered(lambda line: line.product_template_id.is_weaving and line.is_lab_color)
-            if any(not line.lab_dev_line_id for line in lines):
-                raise UserError(_('Cant\'t confirm sale order without colors.'))
-            if rec.is_quote and rec.company_id.is_company_produce:
-                raise UserError(_('Cant\'t confirm a quotation.'))
+            # if any(not line.lab_dev_line_id for line in lines):
+            #     raise UserError(_('Cant\'t confirm sale order without colors.'))
+            # if rec.is_quote and rec.company_id.is_company_produce:
+            #     raise UserError(_('Cant\'t confirm a quotation.'))
 
     def _subscribe_sale_approval_followers(self):
         orders = self.filtered(lambda order: not order.is_quote and order.is_company_produce)
