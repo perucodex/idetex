@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_mrp_base_process_document">
+        <t t-call="web.external_layout">
+            <t t-set="o" t-value="o.with_context(lang=o.env.user.lang)"/>
+            <div class="page">
+                <div class="oe_structure"/>
+                <h2>
+                    <span>Proceso Base:</span>
+                    <span t-field="o.name"/>
+                </h2>
+
+                <table class="table table-sm o_main_table" style="margin-top:1rem;">
+                    <thead>
+                        <tr>
+                            <th class="text-center" style="width:10%;">Secuencia</th>
+                            <th style="width:25%;">Código (fas_code)</th>
+                            <th>Operación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-set="lines" t-value="o.process_ids.sorted(lambda l: (l.sequence, l.id))"/>
+                        <t t-foreach="lines" t-as="line">
+                            <tr>
+                                <td class="text-center">
+                                    <span t-field="line.sequence"/>
+                                </td>
+                                <td>
+                                    <span t-field="line.operation_id.fas_code"/>
+                                </td>
+                                <td>
+                                    <span t-field="line.operation_id.name"/>
+                                </td>
+                            </tr>
+                        </t>
+                        <tr t-if="not lines">
+                            <td colspan="3" class="text-center text-muted">
+                                Este proceso no tiene operaciones registradas.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_mrp_base_process">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="idtx_product_development.report_mrp_base_process_document" t-lang="o.env.user.lang"/>
+            </t>
+        </t>
+    </template>
+</odoo>

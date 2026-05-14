@@ -202,6 +202,15 @@ class ControlPedido(models.Model):
             return conn
         except Exception as e:
             raise UserError(f"No se pudo conectar a SQL Server: {e}")
+
+    def _get_sitpro_connection(self):
+        try:
+            conn = pyodbc.connect(
+                "DSN=SITPRO_DSN;PORT=1433;UID=sistemas;PWD=idtE#21@IRdc95;TDS_Version=7.3;"
+            )
+            return conn
+        except Exception as e:
+            raise UserError(f"No se pudo conectar a SITPRO: {e}")
         
     @api.model
     def sync_from_dbf(self):
@@ -422,7 +431,84 @@ class ControlPedido(models.Model):
                     process_vals_to_create.append(vals_proc)
         if process_vals_to_create:
             self.env['control.proceso.lines'].create(process_vals_to_create)
+        self._sync_ctrl_info_reprocesos(list(existing_map.values()) + list(self.env['control.pedido'].browse(line_cmds_by_pedido.keys())))
         return {"created": created, "updated": updated}
+
+    def _sync_ctrl_info_reprocesos(self, pedidos):
+        """Pull motivo/area from SQL Server `ctrl_info` and apply to lines.
+
+        We match `ctrl_info.correlvouc` against `control.pedido.line.batch`.
+        Only open (ACTIVO=0) REPROCESO/REPOSICION records from years after
+        2023 are considered — same filter the user runs by hand.
+        """
+        pedido_ids = {p.id for p in pedidos if p}
+        if not pedido_ids:
+            return
+        lines = self.env['control.pedido.line'].search([
+            ('pedido_id', 'in', list(pedido_ids)),
+            ('batch', '!=', False),
+        ])
+        if not lines:
+            return
+        batches = list({l.batch for l in lines if l.batch})
+        info_map = self._fetch_ctrl_info_reprocesos(batches)
+        # Group writes: same (motivo, area) tuple → single bulk write.
+        Line = self.env['control.pedido.line']
+        by_vals = {}
+        for line in lines:
+            info = info_map.get(line.batch)
+            key = (
+                (info or {}).get('motivo1') or False,
+                (info or {}).get('area1') or False,
+            )
+            by_vals[key] = by_vals.get(key, Line) | line
+        for (motivo, area), recs in by_vals.items():
+            recs.write({'motivo1': motivo, 'area1': area})
+
+    def _fetch_ctrl_info_reprocesos(self, correlvoucs):
+        """Return {correlvouc: {'motivo1': str, 'area1': str}} from ctrl_info.
+
+        SQL columns: correlvouc (joins to control.pedido.line.batch),
+        motivo1, area1, FECHA, ACTIVO.
+        Filters: YEAR(FECHA) > 2023, ACTIVO = 0,
+                 motivo1 IN (REPROCESO, REPOSICION).
+        When several rows match the same correlvouc the most recent FECHA wins.
+        """
+        if not correlvoucs:
+            return {}
+        try:
+            conn = self._get_sitpro_connection()
+        except Exception:
+            return {}
+        out = {}
+        try:
+            cursor = conn.cursor()
+            chunk = 900
+            for i in range(0, len(correlvoucs), chunk):
+                batch = correlvoucs[i:i + chunk]
+                # `correlvouc` is often a CHAR(n) column padded with trailing
+                # spaces; RTRIM on the column side makes the IN comparison
+                # tolerant to that without forcing us to pad the bind params.
+                placeholders = ",".join(["?"] * len(batch))
+                cursor.execute(
+                    f"""
+                    SELECT correlvouc, motivo1, area1, FECHA
+                    FROM ctrl_info
+                    WHERE YEAR(FECHA) > 2023
+                      AND ACTIVO = 0
+                      AND motivo IN ('REPROCESO', 'REPOSICION')
+                      AND RTRIM(correlvouc) IN ({placeholders})
+                    ORDER BY correlvouc, FECHA DESC
+                    """,
+                    *batch,
+                )
+                for correlvouc, motivo1, area1, _fecha in cursor.fetchall():
+                    key = _safe_str(correlvouc).strip()
+                    if key and key not in out:  # first row per correlvouc = newest
+                        out[key] = {'motivo1': _safe_str(motivo1), 'area1': _safe_str(area1)}
+        finally:
+            conn.close()
+        return out
 
     def action_sync_from_dbf(self):
         self.sync_master_data()

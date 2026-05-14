@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
+import logging
+
 from odoo import models, fields, api
 import pytz
 from .utils import _safe_date, _safe_str, _safe_float
+
+_logger = logging.getLogger(__name__)
 
 class ControlPedidoLine(models.Model):
     _name = "control.pedido.line"
@@ -32,6 +36,103 @@ class ControlPedidoLine(models.Model):
         "pedido_line_id",
         string="Procesos"
     )
+    # Adicionales para control con sitpro reprocesos
+    area_num_days = fields.Integer('Area Num Days', compute='_compute_area_num_days')
+    num_days = fields.Integer(related='pedido_id.num_days')
+    # Filled from SQL Server ctrl_info during sync: motivo/area of the most
+    # recent open REPROCESO/REPOSICION record whose `correlvou` matches `batch`.
+    motivo1 = fields.Char('Motivo Reproceso')
+    area1 = fields.Char('Área Reproceso')
+    state = fields.Selection([
+        ('active', 'Active'),
+        ('completed', 'Completed'),
+    ], string='State')
+
+    @api.depends('area', 'proceso_ids.barFasDTI', 'proceso_ids.barFasDTF', 'proceso_ids.fas_code')
+    def _compute_area_num_days(self):
+        # The current area is derived (in SQL) from estatus_reproceso(fase=FasCod).
+        # To know how long this line has been in `area`, we resolve the area of
+        # every earlier process via the same SQL Server table, then walk
+        # backwards through proceso_ids until we hit a process from a different
+        # area. The timestamp of that boundary process tells us when this line
+        # entered its current area.
+        for rec in self:
+            rec.area_num_days = 0
+
+        records_with_data = self.filtered(lambda r: r.area and r.proceso_ids)
+        if not records_with_data:
+            return
+
+        fas_codes = {
+            p.fas_code
+            for r in records_with_data
+            for p in r.proceso_ids
+            if p.fas_code
+        }
+        area_by_fas = self._fetch_areas_by_fas_code(fas_codes)
+        if not area_by_fas:
+            return
+
+        now = fields.Datetime.now()
+        for rec in records_with_data:
+            # Sort by barOrdLin asc; walk from the latest backwards.
+            procs = rec.proceso_ids.sorted(key=lambda p: p.barOrdLin or 0)
+            boundary_dt = False
+            entry_dt = False  # earliest start time within the current area
+            current_area = rec.area
+            for proc in reversed(procs):
+                proc_area = area_by_fas.get(proc.fas_code)
+                if proc_area and proc_area != current_area:
+                    # First different-area process found walking backwards:
+                    # the line entered `current_area` when this process ended
+                    # (fall back to its start time if no end is recorded).
+                    boundary_dt = proc.barFasDTF or proc.barFasDTI
+                    break
+                # Same area (or unknown): track the earliest start we've seen.
+                if proc.barFasDTI:
+                    entry_dt = proc.barFasDTI
+
+            reference_dt = boundary_dt or entry_dt
+            if reference_dt:
+                rec.area_num_days = max(0, (now - reference_dt).days)
+
+    @api.model
+    def _fetch_areas_by_fas_code(self, fas_codes):
+        """Return {fas_code: area} for the given fas_codes, querying SQL Server.
+
+        The mapping lives in the `estatus_reproceso` table (column `fase`
+        joins BARFAS.FasCod, column `area` is the human-readable area).
+        Returns an empty dict if anything goes wrong — callers must treat
+        missing entries as "unknown area" and degrade gracefully.
+        """
+        fas_codes = [fc for fc in fas_codes if fc]
+        if not fas_codes:
+            return {}
+        pedido = self.env['control.pedido']
+        try:
+            conn = pedido._get_sql_connection()
+        except Exception:
+            _logger.warning("control.pedido.line: SQL Server unreachable, area_num_days=0", exc_info=True)
+            return {}
+        out = {}
+        try:
+            cursor = conn.cursor()
+            chunk = 900
+            for i in range(0, len(fas_codes), chunk):
+                batch = fas_codes[i:i + chunk]
+                placeholders = ",".join(["?"] * len(batch))
+                cursor.execute(
+                    f"SELECT fase, area FROM estatus_reproceso WHERE fase IN ({placeholders})",
+                    *batch,
+                )
+                for fase, area in cursor.fetchall():
+                    out[_safe_str(fase)] = _safe_str(area)
+        except Exception:
+            _logger.warning("control.pedido.line: failed to fetch estatus_reproceso", exc_info=True)
+            return {}
+        finally:
+            conn.close()
+        return out
 
     @api.model
     def _vals_from_det_row(self, dr):

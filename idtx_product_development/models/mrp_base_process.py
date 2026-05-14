@@ -3,7 +3,7 @@ import re
 import unicodedata
 from collections import defaultdict
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 
@@ -63,6 +63,39 @@ class MrpBaseProcess(models.Model):
 
     name = fields.Char('Name')
     process_ids = fields.One2many('mrp.base.process.line', 'mrp_base_process_id', string='Process')
+    product_ids = fields.Many2many(
+        'product.template', string='Products',
+        compute='_compute_products', search='_search_products',
+    )
+    product_count = fields.Integer(compute='_compute_products')
+
+    @api.depends('product_analysis_ids.product_id')
+    def _compute_products(self):
+        # Resolve the products via the analyses that reference this base process.
+        Analysis = self.env['product.analysis']
+        analyses = Analysis.search([
+            ('mrp_base_process_id', 'in', self.ids),
+            ('product_id', '!=', False),
+        ])
+        by_process = {}
+        for a in analyses:
+            by_process.setdefault(a.mrp_base_process_id.id, self.env['product.template'])
+            by_process[a.mrp_base_process_id.id] |= a.product_id
+        for rec in self:
+            products = by_process.get(rec.id, self.env['product.template'])
+            rec.product_ids = products
+            rec.product_count = len(products)
+
+    def _search_products(self, operator, value):
+        Analysis = self.env['product.analysis']
+        analyses = Analysis.search([('product_id', operator, value)])
+        return [('id', 'in', analyses.mapped('mrp_base_process_id').ids)]
+
+    product_analysis_ids = fields.One2many('product.analysis', 'mrp_base_process_id', string='Product Analyses')
+
+    def action_view_products(self):
+        self.ensure_one()
+        return self.product_ids._get_records_action(name=_('Productos'))
 
     def _upsert_texplus_record(self, cursor, table_name, key_values, values):
         update_values = {field_name: value for field_name, value in values.items() if field_name not in key_values}
