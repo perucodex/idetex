@@ -173,15 +173,6 @@ def _texplus_decimal(value):
     return float(value or 0.0)
 
 
-def _normalize_texplus_text(value):
-    text = _clean_text(value).upper()
-    if not text:
-        return ''
-    text = ''.join(ch for ch in unicodedata.normalize('NFD', text) if unicodedata.category(ch) != 'Mn')
-    text = re.sub(r'\s+', ' ', text)
-    return text.strip()
-
-
 def _normalize_export_prefix(value):
     prefix = _clean_text(value).upper()
     if prefix not in {'M', 'P', 'S'}:
@@ -619,55 +610,14 @@ class TechnicalSheet(models.Model):
         return phase_code
 
     def _get_texplus_fabric_composition(self):
-        composition = _clean_text(self.fabric_composition)
-        if composition:
-            return re.sub(r'\s*\n\s*', ' ', composition).strip()
+        """Return the TIPART code to export to TEXPLUS.
 
-        analysis = self.analysis_id
-        weaving_line = analysis.weaving_data_ids.filtered(lambda line: line.technical_sheet_id == self)[:1]
-        if weaving_line and weaving_line.fiber_ids:
-            return ' '.join(
-                f'{round(fiber.percentage * 100)}% {_clean_text(fiber.product_template_id.name)}'
-                for fiber in weaving_line.fiber_ids
-                if fiber.product_template_id
-            ).strip()
-        return ''
-
-    def _ensure_texplus_tipart(self, cursor):
-        composition = self._get_texplus_fabric_composition()
-        if not composition:
-            return 1
-
-        normalized_composition = _normalize_texplus_text(composition)
-        cursor.execute(
-            'SELECT TipArtCod, TipArtDsc, TipArtDsc2 FROM dbo.TIPART WHERE EmprCod = ?',
-            TEXPLUS_EMPRCOD,
-        )
-        rows = cursor.fetchall()
-        for row in rows:
-            descriptions = [row.TipArtDsc, row.TipArtDsc2]
-            for description in descriptions:
-                if _normalize_texplus_text(description) == normalized_composition:
-                    return int(row.TipArtCod)
-
-        cursor.execute('SELECT ISNULL(MAX(TipArtCod), 0) + 1 AS next_code FROM dbo.TIPART WHERE EmprCod = ?', TEXPLUS_EMPRCOD)
-        next_code = int(cursor.fetchone().next_code)
-        cursor.execute(
-            """
-            INSERT INTO dbo.TIPART
-                (EmprCod, TipArtCod, TipArtDsc, TipArtCtb, TipArtDsc2, TipArtProd, TipArtDias, TipArtEst)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            TEXPLUS_EMPRCOD,
-            next_code,
-            _dbf_char(composition, max_len=30),
-            0,
-            _dbf_char(composition, max_len=80),
-            0,
-            0,
-            'N',
-        )
-        return next_code
+        The composition is now chosen in Odoo via `fabric_composition_id`
+        (a row of the local TIPART mirror), so there is no need to search or
+        create rows in TEXPLUS — we just send the code. Falls back to 1
+        ('X DEFINIR') when no composition is set.
+        """
+        return self.fabric_composition_id.tipart_cod or 1
 
     def _upsert_texplus_articu(self, cursor, article_code, client_code, notes):
         finish_width = _texplus_int(self.width or self.finish_width)
@@ -677,7 +627,7 @@ class TechnicalSheet(models.Model):
             'EmprCod': TEXPLUS_EMPRCOD,
             'CliCod': client_code,
             'ArtCod': article_code,
-            'TipArtCod': self._ensure_texplus_tipart(cursor),
+            'TipArtCod': self._get_texplus_fabric_composition(),
             'ArtDsc': _dbf_char(self.analysis_id.product_description or self.product_id.name, max_len=26),
             'ArtGraCru': _texplus_int(self.density),
             'ArtGraAca': finished_weight,
