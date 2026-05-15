@@ -20,14 +20,28 @@ class PurchaseOrderLine(models.Model):
         """ Formats a float value stripping trailing zeros and the decimal point if it's an integer. """
         if not value:
             return "0"
-        # Use Odoo's built-in float formatter to get thousands separators and current lang settings
-        formatted = self.env['ir.qweb.fields'].get_formatter('float')(value, {'precision': 4, 'use_thousand': True})
         
-        # Get the decimal point for the current language
+        # Use the float field converter from Odoo's QWeb fields
+        # Note: In Odoo 19, the model is 'ir.qweb.field.float'
+        formatted = self.env['ir.qweb.field.float'].value_to_html(value, {'precision': 4})
+        
+        # Ensure we have a string to perform rstrip
+        formatted = str(formatted)
+        
+        # Get the decimal point for the current language to safely strip zeros
         lang_code = self.env.context.get('lang') or self.env.user.lang or 'en_US'
         lang = self.env['res.lang']._lang_get(lang_code)
         decimal_point = lang.decimal_point
         
         if decimal_point in formatted:
-            formatted = formatted.rstrip('0').rstrip(decimal_point)
+            # We only strip zeros after the decimal point
+            # If the number is something like '4,000.0000', it becomes '4,000'
+            # If it's '25.0500', it becomes '25.05'
+            parts = formatted.split(decimal_point)
+            if len(parts) == 2:
+                fractional = parts[1].rstrip('0')
+                if fractional:
+                    formatted = parts[0] + decimal_point + fractional
+                else:
+                    formatted = parts[0]
         return formatted
