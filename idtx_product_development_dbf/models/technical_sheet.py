@@ -10,9 +10,7 @@ import pyodbc
 from odoo import _, fields, models, api
 from odoo.exceptions import UserError
 
-
 pyodbc.setDecimalSeparator('.')
-
 
 PADR_FIELDS = {'FICHA', 'CDGCLIE', 'RUC'}
 TEXPLUS_EMPRCOD = '001'
@@ -119,10 +117,8 @@ PARAMETER_LABEL_ALIASES = {
     'TEMPERATURA C': 'TEMPERATURA',
 }
 
-
 def _clean_text(value):
     return (str(value or '')).strip()
-
 
 def _normalize_label(value):
     text = _clean_text(value).upper()
@@ -131,7 +127,6 @@ def _normalize_label(value):
     text = ''.join(ch for ch in unicodedata.normalize('NFD', text) if unicodedata.category(ch) != 'Mn')
     text = re.sub(r'[^A-Z0-9]+', ' ', text)
     return re.sub(r'\s+', ' ', text).strip()
-
 
 def _dbf_char(value, max_len=None):
     text = _clean_text(value)
@@ -147,7 +142,6 @@ def _dbf_number_text(value, digits=2):
         return '0' if digits == 0 else '0.' + '0' * digits
     return f'{float(value):.{digits}f}'
 
-
 def _phase_code(name):
     text = _clean_text(name).upper()
     if not text:
@@ -156,7 +150,6 @@ def _phase_code(name):
     text = re.sub(r'[^A-Z0-9]+', '', text)
     return text[:12]
 
-
 def _cab_width_value(value):
     number = float(value or 0.0)
     if not number:
@@ -164,14 +157,11 @@ def _cab_width_value(value):
     # En FoxPro tinto_cab_ruta.ANCHO guarda 170 cm como 1.70.
     return round(number / 100.0, 2)
 
-
 def _texplus_int(value):
     return int(round(float(value or 0.0))) if value not in (False, None, '') else 0
 
-
 def _texplus_decimal(value):
     return float(value or 0.0)
-
 
 def _normalize_export_prefix(value):
     prefix = _clean_text(value).upper()
@@ -179,12 +169,10 @@ def _normalize_export_prefix(value):
         raise UserError(_('Debe ingresar un prefijo valido de una sola letra: M, P o S.'))
     return prefix
 
-
 def _is_memo_field(field_type):
     if isinstance(field_type, str):
         return field_type.upper() == 'M'
     return field_type == ord('M')
-
 
 class TechnicalSheet(models.Model):
     _inherit = 'technical.sheet'
