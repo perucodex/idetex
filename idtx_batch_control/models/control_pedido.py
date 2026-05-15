@@ -528,8 +528,8 @@ class ControlPedido(models.Model):
                         WHERE YEAR(FECHA) > 2023
                           AND ACTIVO = 0
                           AND motivo IN ('REPROCESO', 'REPOSICION')
-                          AND RTRIM(correlvouc) IN ({b_placeholders})
-                          AND RTRIM(numot) IN ({r_placeholders})
+                          AND LTRIM(RTRIM(correlvouc)) IN ({b_placeholders})
+                          AND LTRIM(RTRIM(numot)) IN ({r_placeholders})
                         ORDER BY correlvouc, numot, FECHA DESC
                         """,
                         *batch_chunk, *route_chunk,
