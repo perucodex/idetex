@@ -305,15 +305,27 @@ class ControlPedido(models.Model):
                     SELECT bp.BarCod, bp.BarCodReo, SUM(bp.BarPieKil) AS Kilos, COUNT(bp.BarCod) AS Rollos
                     FROM BARPIE bp WHERE bp.BarCod IN (SELECT BarCod FROM PedidoHDR) GROUP BY bp.BarCod, bp.BarCodReo
                 )
-                SELECT h.Pedido, h.Partida, h.BarCod AS HojaDeRuta, h.BarCodReo, h.BarCodPar, h.BarSer, h.BarSerDsc, h.ColorCode, h.ColorName, ISNULL(k.Kilos, 0) AS PesoTotal, ISNULL(k.Rollos, 0) AS Rollos, fp.FasDsc AS Proceso_Ultimo, sp.area AS Area, bf_last.BarFasDTI AS FechaInicio, bf_last.BarFasDTF AS FechaFinal
+                SELECT h.Pedido, h.Partida, h.BarCod AS HojaDeRuta, h.BarCodReo, h.BarCodPar, h.BarSer, h.BarSerDsc, h.ColorCode, h.ColorName, ISNULL(k.Kilos, 0) AS PesoTotal, ISNULL(k.Rollos, 0) AS Rollos, fp.FasDsc AS Proceso_Ultimo,
+                       CASE WHEN bf_last.BarFasDTF IS NOT NULL AND bf_next.FasCod IS NOT NULL
+                            THEN sp_next.area ELSE sp.area END AS Area,
+                       bf_last.BarFasDTI AS FechaInicio, bf_last.BarFasDTF AS FechaFinal
                 FROM PedidoHDR h JOIN Kilos k ON k.BarCod = h.BarCod AND k.BarCodReo = h.BarCodReo AND k.Kilos > 0 AND k.Rollos > 0
                 OUTER APPLY (
                     SELECT TOP (1) bf.FasCod, bf.BarFasDTI, bf.BarFasDTF, bf.BarOrdLin FROM BARFAS bf
                     WHERE bf.BarCod = h.BarCod AND bf.BarCodReo = h.BarCodReo AND ISNULL(bf.BarCodPar,'') = ISNULL(h.BarCodPar,'') AND bf.BarFasDTI > '1753-01-01'
                     ORDER BY bf.BarOrdLin DESC, bf.BarFasDTI DESC
                 ) bf_last
+                OUTER APPLY (
+                    -- Siguiente proceso de la ruta (por BarOrdLin) despues del ultimo
+                    -- iniciado. Si no existe, bf_last es el ultimo proceso.
+                    SELECT TOP (1) bf2.FasCod, bf2.BarOrdLin FROM BARFAS bf2
+                    WHERE bf2.BarCod = h.BarCod AND bf2.BarCodReo = h.BarCodReo AND ISNULL(bf2.BarCodPar,'') = ISNULL(h.BarCodPar,'')
+                      AND bf2.BarOrdLin > bf_last.BarOrdLin
+                    ORDER BY bf2.BarOrdLin ASC
+                ) bf_next
                 LEFT JOIN FASPRO fp ON fp.FasCod = bf_last.FasCod
                 LEFT JOIN estatus_reproceso sp ON sp.fase = bf_last.FasCod
+                LEFT JOIN estatus_reproceso sp_next ON sp_next.fase = bf_next.FasCod
                 ORDER BY h.Pedido, h.BarCod, h.BarCodReo, h.BarCodPar;
                 """
                 cursor.execute(query, *nums_batch)

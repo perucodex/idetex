@@ -75,6 +75,8 @@ class ControlPedidoLine(models.Model):
         # area. The timestamp of that boundary process tells us when this line
         # entered its current area.
         for rec in self:
+            if rec.batch == 'C374254':
+                x = 1
             rec.area_num_days = 0
 
         records_with_data = self.filtered(lambda r: r.area and r.proceso_ids)
