@@ -81,6 +81,14 @@
             <span t-out="line.format_num_custom(line.price_unit)"/>
         </xpath>
 
+        <!-- Modificar ancho y titulo de cantidad y precio -->
+        <xpath expr="//th[@name='th_quantity']" position="attributes">
+            <attribute name="style">width: 15%;</attribute>
+        </xpath>
+        <xpath expr="//th[@name='th_price_unit']" position="replace">
+            <th name="th_price_unit" class="text-end" style="width: 15%;"><strong>Precio Unit.</strong></th>
+        </xpath>
+
         <!-- Asegurar 4 dígitos en la cantidad -->
         <xpath expr="//span[@t-field='line.product_qty']" position="replace">
             <span t-out="line.format_num_custom(line.product_qty)"/>
