@@ -24,4 +24,10 @@
               sequence="30" 
               parent="menu_sitpro_texplus" 
               action="action_control_faspro_definition"/>
+
+    <menuitem id="menu_control_partida_non_compliant" 
+              name="No Conformes" 
+              sequence="40" 
+              parent="menu_sitpro_texplus" 
+              action="action_control_partida_non_compliant"/>
 </odoo>

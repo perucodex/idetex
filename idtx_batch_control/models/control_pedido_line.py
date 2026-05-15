@@ -25,6 +25,7 @@ class ControlPedidoLine(models.Model):
     area = fields.Char('Area')
     rollos = fields.Integer('Rolls')
     kilograms = fields.Float('Kilograms')
+    to_reprocess = fields.Float('To Reprocess')
     start_date = fields.Datetime('Start Date')
     end_date = fields.Datetime('End Date')
     colorcode = fields.Char('Color Code')

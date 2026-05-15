@@ -452,7 +452,7 @@ class ControlPedido(models.Model):
             return
         batches = list({l.batch for l in lines if l.batch})
         info_map = self._fetch_ctrl_info_reprocesos(batches)
-        # Group writes: same (motivo, area, report_date) tuple → single bulk write.
+        # Group writes: same value tuple → single bulk write.
         Line = self.env['control.pedido.line']
         by_vals = {}
         for line in lines:
@@ -461,10 +461,16 @@ class ControlPedido(models.Model):
                 (info or {}).get('motivo1') or False,
                 (info or {}).get('area1') or False,
                 (info or {}).get('report_date') or False,
+                (info or {}).get('to_reprocess') or 0.0,
             )
             by_vals[key] = by_vals.get(key, Line) | line
-        for (motivo, area, report_date), recs in by_vals.items():
-            recs.write({'motivo1': motivo, 'area1': area, 'report_date': report_date})
+        for (motivo, area, report_date, to_reprocess), recs in by_vals.items():
+            recs.write({
+                'motivo1': motivo,
+                'area1': area,
+                'report_date': report_date,
+                'to_reprocess': to_reprocess,
+            })
 
     def _fetch_ctrl_info_reprocesos(self, correlvoucs):
         """Return {correlvouc: {'motivo1': str, 'area1': str}} from ctrl_info.
@@ -493,7 +499,7 @@ class ControlPedido(models.Model):
                 placeholders = ",".join(["?"] * len(batch))
                 cursor.execute(
                     f"""
-                    SELECT correlvouc, motivo1, area1, FECHA
+                    SELECT correlvouc, motivo1, area1, FECHA, kneto
                     FROM ctrl_info
                     WHERE YEAR(FECHA) > 2023
                       AND ACTIVO = 0
@@ -503,13 +509,14 @@ class ControlPedido(models.Model):
                     """,
                     *batch,
                 )
-                for correlvouc, motivo1, area1, fecha in cursor.fetchall():
+                for correlvouc, motivo1, area1, fecha, kneto in cursor.fetchall():
                     key = _safe_str(correlvouc).strip()
                     if key and key not in out:  # first row per correlvouc = newest
                         out[key] = {
                             'motivo1': _safe_str(motivo1),
                             'area1': _safe_str(area1),
                             'report_date': fecha or False,
+                            'to_reprocess': _safe_float(kneto),
                         }
         finally:
             conn.close()

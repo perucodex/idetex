@@ -75,21 +75,31 @@ class ControlPedidoLine(models.Model):
         try:
             ftp.login(FTP_USER, password)
             filename, folder, content = self._ftp_find_report_pdf(ftp, self.batch)
+
+            attachment = self.env['ir.attachment'].create({
+                'name': filename,
+                'datas': base64.b64encode(content),
+                'res_model': self._name,
+                'res_id': self.id,
+                'mimetype': 'application/pdf',
+            })
+            self.message_post(
+                body=_("Reporte importado desde FTP (%s): %s") % (folder, filename),
+                attachment_ids=[attachment.id],
+            )
+
+            # Remove the report from the FTP only after it is safely stored in
+            # Odoo. _ftp_find_report_pdf leaves the cwd at FTP_REPORTS_DIR.
+            try:
+                ftp.delete(f"{folder}/{filename}")
+            except Exception:
+                # The PDF is already attached; a failed cleanup must not abort.
+                self.message_post(body=_(
+                    "No se pudo borrar %s del FTP; eliminarlo manualmente."
+                ) % filename)
         finally:
             try:
                 ftp.quit()
             except Exception:
                 ftp.close()
-
-        attachment = self.env['ir.attachment'].create({
-            'name': filename,
-            'datas': base64.b64encode(content),
-            'res_model': self._name,
-            'res_id': self.id,
-            'mimetype': 'application/pdf',
-        })
-        self.message_post(
-            body=_("Reporte importado desde FTP (%s): %s") % (folder, filename),
-            attachment_ids=[attachment.id],
-        )
         return True
