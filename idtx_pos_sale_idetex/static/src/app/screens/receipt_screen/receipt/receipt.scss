@@ -1,5 +1,19 @@
 /* Estilos para Recibo A4 en POS Idetex */
 
+/* Expandir el contenedor de vista previa en la pantalla para acomodar el A4 */
+.pos-receipt-container {
+    flex-grow: 1 !important;
+    flex-basis: 60% !important; /* Permitir que el panel izquierdo respire */
+    max-width: 75% !important;
+    overflow-x: auto !important;
+}
+
+.pos-receipt-container > div {
+    width: auto !important;
+    max-width: none !important;
+    overflow-x: visible !important;
+}
+
 .pos-receipt.pos-receipt-a4 {
     width: 210mm !important;
     max-width: 210mm !important;

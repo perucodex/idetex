@@ -2,14 +2,6 @@
 
 import { TicketScreen } from "@point_of_sale/app/screens/ticket_screen/ticket_screen";
 import { patch } from "@web/core/utils/patch";
-import { AccountMoveService } from "@account/services/account_move_service";
-
-patch(AccountMoveService.prototype, {
-    async downloadPdf(accountMoveId, target = "new") {
-        const url = `/report/pdf/account.account_invoices/${accountMoveId}`;
-        window.open(url, "_blank");
-    }
-});
 
 patch(TicketScreen.prototype, {
     setup() {
@@ -32,19 +24,13 @@ patch(TicketScreen.prototype, {
             }
 
             if (accountMoveId) {
-                const action = await this.pos.data.call("account.move", "preview_invoice", [accountMoveId]);
-                if (action && action.url) {
-                    window.open(action.url, "_blank");
-                }
+                await this.pos.env.services.account_move.downloadPdf(accountMoveId);
             } else {
                 // Si la orden no tiene factura asociada, intentar generarla
                 await this.pos.data.call("pos.order", "action_pos_order_invoice", [order.id]);
                 const orders = await this.pos.data.loadServerOrders([["id", "=", order.id]]);
                 if (orders && orders.length > 0 && orders[0].raw.account_move) {
-                    const action = await this.pos.data.call("account.move", "preview_invoice", [orders[0].raw.account_move]);
-                    if (action && action.url) {
-                        window.open(action.url, "_blank");
-                    }
+                    await this.pos.env.services.account_move.downloadPdf(orders[0].raw.account_move);
                 }
             }
         } catch (error) {

@@ -3,10 +3,18 @@
     <t t-name="idtx_pos_sale_idetex.ReceiptScreen" t-inherit="point_of_sale.ReceiptScreen" t-inherit-mode="extension">
         <!-- Agregar botón de Toggle en la barra de acciones -->
         <xpath expr="//div[hasclass('receipt-options')]/div[hasclass('d-flex')]" position="inside">
-             <button class="button print btn btn-lg btn-light w-100 py-3 mt-1 text-primary border-primary" 
+             <button class="button print btn btn-lg btn-light w-100 py-3 text-primary border-primary" 
                     t-on-click="togglePrintDetailed">
                 <i t-attf-class="fa {{ receiptState.printDetailed ? 'fa-compress' : 'fa-expand' }} me-1" />
                 <span t-esc="receiptState.printDetailed ? 'Imprimir Agrupado' : 'Imprimir Detallado'"/>
+            </button>
+        </xpath>
+        
+        <xpath expr="//div[hasclass('receipt-options')]/div[hasclass('d-flex')]" position="after">
+            <button class="button print btn btn-lg btn-info w-100 py-3 text-white" 
+                    t-att-disabled="!currentOrder.raw.account_move"
+                    t-on-click="printInvoice">
+                <i class="fa fa-file-pdf-o me-1" /> Imprimir Factura Boleta
             </button>
         </xpath>
 

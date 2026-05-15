@@ -7,13 +7,6 @@
             <attribute name="t-att-class">{'pos-receipt-a4': true, 'pos-receipt-detailed': props.detailed}</attribute>
         </xpath>
 
-        <xpath expr="//OrderDisplay" position="replace">
-            <div t-att-class="props.detailed ? 'receipt-detailed' : ''">
-                <OrderDisplay order="order" detailed="props.detailed" mode="'receipt'" t-slot-scope="scope">
-                    <Orderline line="scope.line" showTaxGroup="showTaxGroupLabels" mode="'receipt'"/>
-                </OrderDisplay>
-            </div>
-        </xpath>
 
         <!-- [FIX Odoo 19] 1. Eliminar bloque QR y datos de factura del ticket -->
         <xpath expr="//div[@t-if='order.company.point_of_sale_use_ticket_qr_code and order.finalized']" position="replace">
