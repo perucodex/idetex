@@ -207,6 +207,9 @@ class TechnicalSheet(models.Model):
     ], string='FoxPro Export State', default='draft', copy=False, readonly=True)
     foxpro_export_message = fields.Text('FoxPro Export Message', copy=False, readonly=True)
     foxpro_export_date = fields.Datetime('FoxPro Export Date', copy=False, readonly=True)
+    fabric_composition_id = fields.Many2one(
+        'texplus.tipart', string='Composicion',
+        help="Tipo de articulo del catalogo TIPART de TEXPLUS.")
     clipboard_summary = fields.Char(compute='_compute_clipboard_summary')
 
     @api.depends('product_code', 'foxpro_article_prefix')

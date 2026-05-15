@@ -16,6 +16,8 @@ de FoxPro usadas por SITPRO/Tintoreria.
         'python': ['dbf', 'pyodbc'],
     },
     'data': [
+        'security/ir.model.access.csv',
+        'data/cron.xml',
         'views/res_config_settings_views.xml',
         'views/technical_sheet_views.xml',
     ],

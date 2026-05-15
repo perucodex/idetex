@@ -53,7 +53,8 @@
                                         <field name="program" readonly="state != 'draft'" groups="!idtx_product_development.group_module_product_development_manager"/>
                                         <field name="program" groups="idtx_product_development.group_module_product_development_manager"/>
                                         <field name="stylo" readonly="1" force_save="1"/>
-                                        <field name="fabric_composition" readonly="state != 'draft'"/>
+                                        <field name="fabric_composition" readonly="state != 'draft'" groups="!idtx_product_development.group_module_product_development_manager"/>
+                                        <field name="fabric_composition" groups="idtx_product_development.group_module_product_development_manager"/>
                                         <field name="atx" readonly="state != 'draft'" groups="!idtx_product_development.group_module_product_development_manager"/>
                                         <field name="atx" groups="idtx_product_development.group_module_product_development_manager"/>
                                     </group>

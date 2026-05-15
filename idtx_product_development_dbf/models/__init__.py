@@ -2,4 +2,5 @@
 
 from . import res_company
 from . import res_config_settings
+from . import texplus_tipart
 from . import technical_sheet

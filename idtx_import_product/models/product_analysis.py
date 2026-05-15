@@ -1519,4 +1519,4 @@ class ColorRecipe(models.Model):
 class TechnicalSheet(models.Model):
     _inherit = 'technical.sheet'
 
-    sitpro_sheet = fields.Char('Sitpro Sheet')
+    sitpro_sheet = fields.Char('Sitpro Sheet', copy=False)

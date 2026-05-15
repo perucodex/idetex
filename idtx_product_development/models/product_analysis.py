@@ -76,8 +76,8 @@ class ProductAnalysis(models.Model):
         'Density should be grather than zero.',
     )
     _check_weaving_price = models.Constraint(
-        'CHECK(weaving_price > 0 and state != \'test\')',
-        'Weaving Price should be grather than zero.',
+        "CHECK(weaving_price > 0 and state != 'test')",
+        'Weaving Price should be greater than zero.',
     )
 
     _product_code_unique = models.Constraint(
@@ -184,10 +184,10 @@ class ProductAnalysis(models.Model):
                 'product_code': self.product_code,
                 'product_id': self.product_id.id,
                 'partner_id': rec.partner_id.id,
-                'fabric_composition': '\n'.join([
-                    f'{round(f.percentage * 100)}% {f.product_template_id.name}'
-                    for f in rec.fiber_ids if f.product_template_id
-                ]).strip(),
+                # 'fabric_composition': '\n'.join([
+                #     f'{round(f.percentage * 100)}% {f.product_template_id.name}'
+                #     for f in rec.fiber_ids if f.product_template_id
+                # ]).strip(),
                 'density': self.density,
                 'width': self.standard_width,
                 'gauge_id': self.gauge_id.id,
@@ -325,7 +325,7 @@ class AnalysisWeavingData(models.Model):
     partner_id = fields.Many2one('res.partner', string='Customer', ondelete='restrict')
     stylo = fields.Char('Stylo')
     fiber_ids = fields.One2many('analysis.fiber', 'weaving_data_id', string='Fibers')
-    technical_sheet_id = fields.Many2one('technical.sheet', string='Technical Sheet')
+    technical_sheet_id = fields.Many2one('technical.sheet', string='Technical Sheet', copy=False)
     notes = fields.Text('Weaving Notes')
 
     @api.onchange('analysis_id')
