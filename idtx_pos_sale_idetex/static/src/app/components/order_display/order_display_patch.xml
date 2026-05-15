@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="idtx_pos_sale_idetex.OrderDisplay" t-inherit="point_of_sale.OrderDisplay" t-inherit-mode="extension">
+        <!-- Aplicar 2 columnas solo en modo recibo -->
+        <xpath expr="//div[hasclass('order-container')]" position="attributes">
+            <attribute name="t-attf-style">{{ props.mode === 'receipt' ? 'display: block !important; columns: 2; column-gap: 20px; column-fill: auto;' : '' }}</attribute>
+        </xpath>
+    </t>
+</templates>

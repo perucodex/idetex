@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="idtx_pos_sale_idetex.TicketScreen" t-inherit="point_of_sale.TicketScreen" t-inherit-mode="extension" owl="1">
+        
+        <!-- 1. Forzar distribución 50/50 en pantallas grandes -->
+        <xpath expr="//div[hasclass('rightpane')]" position="attributes">
+            <attribute name="t-attf-style">{{ !ui.isSmall ? 'flex: 0 0 50% !important; max-width: 50% !important; background: #f8f9fa;' : '' }}</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('leftpane')]" position="attributes">
+            <attribute name="t-attf-style">{{ !ui.isSmall ? 'flex: 0 0 50% !important; max-width: 50% !important; border-left: 2px solid #dee2e6;' : '' }}</attribute>
+        </xpath>
+
+        <!-- 2. Cabecera del Listado de Órdenes -->
+        <xpath expr="//table[hasclass('table')]/tbody" position="before">
+            <thead t-if="!ui.isSmall" class="bg-white text-muted small text-uppercase fw-bold border-bottom">
+                <tr>
+                    <th class="p-3">Fecha</th>
+                    <th class="p-3">Referencia</th>
+                    <th class="p-3">Cliente</th>
+                    <th class="p-3 text-end">Total</th>
+                    <th class="p-3 text-center">Estado</th>
+                    <th class="p-3"></th>
+                </tr>
+            </thead>
+        </xpath>
+
+        <xpath expr="//td[hasclass('address-cell')]" position="attributes"><attribute name="class">d-none</attribute></xpath>
+        <xpath expr="//td[6]" position="attributes"><attribute name="class">d-none</attribute></xpath>
+        <xpath expr="//td[7]" position="attributes"><attribute name="class">d-none</attribute></xpath>
+        <xpath expr="//td[8]" position="attributes"><attribute name="class">d-none</attribute></xpath>
+
+        <!-- 3. Cabecera del Detalle de la Orden -->
+        <xpath expr="//OrderDisplay" position="before">
+            <div t-if="!ui.isSmall and _selectedSyncedOrder" class="idtx-detail-header d-flex align-items-center w-100 py-2 px-3 border-bottom bg-white fw-bold text-muted shadow-sm" style="font-size: 0.7rem; text-transform: uppercase;">
+                <div style="width: 80px;">Kilos</div>
+                <div class="flex-grow-1 px-2">Artículo</div>
+                <div style="width: 100px;">Color</div>
+                <div style="width: 120px;">Partida</div>
+                <div class="text-end" style="width: 80px;">Precio</div>
+                <div class="text-end" style="width: 90px;">Total</div>
+            </div>
+        </xpath>
+
+        <!-- 4. Reestructuración TOTAL de los PADS (Botones y Teclado) para igualar al Carrito -->
+        <xpath expr="//div[hasclass('pads')]" position="replace">
+            <div t-if="_selectedSyncedOrder" class="idtx-pads-container d-flex flex-column bg-white border-top">
+                
+                <!-- Mantener la clase 'subpads' para compatibilidad con otros módulos (ej. pos_hr) -->
+                <div class="subpads d-flex flex-column h-100">
+                    <!-- Fila Superior: Teclado (Izquierda) + Resumen y Botones de Acción (Derecha) -->
+                    <div class="d-flex flex-row h-100 p-2 gap-2">
+                        
+                        <!-- Teclado Izquierdo -->
+                        <div class="numpad-container" style="width: 45%;">
+                            <Numpad class="'small shadow-sm'" buttons="getNumpadButtons()"/>
+                        </div>
+
+                        <!-- Resumen y Botones Centrales -->
+                        <div class="summary-actions-container d-flex flex-column flex-grow-1 gap-2">
+                            
+                            <!-- Bloque de Resumen (Estilo Carrito) -->
+                            <div class="idtx-ticket-summary p-2 rounded border bg-light shadow-xs">
+                                <div class="d-flex justify-content-between border-bottom pb-1 mb-1">
+                                    <span class="text-muted small uppercase">Kilos:</span>
+                                    <span class="fw-bold" t-esc="(totalKilos || 0).toFixed(2)"/>
+                                </div>
+                                <div class="d-flex justify-content-between border-bottom pb-1 mb-1">
+                                    <span class="text-muted small uppercase">Rollos:</span>
+                                    <span class="fw-bold" t-esc="totalRolls || 0"/>
+                                </div>
+                                <div class="d-flex justify-content-between pt-1">
+                                    <span class="text-primary fw-bold small uppercase">TOTAL:</span>
+                                    <span class="text-primary fw-bold fs-5" t-esc="getTotal(_selectedSyncedOrder)"/>
+                                </div>
+                            </div>
+
+                            <!-- Botones de Control Compactos -->
+                            <div class="d-flex gap-1">
+                                <button class="edit-order-payment control-button btn btn-secondary btn-sm flex-grow-1 py-2" t-on-click="() => this.pos.orderDetails(_selectedSyncedOrder)">
+                                    <i class="fa fa-pencil-square-o me-1"/>Detalles
+                                </button>
+                                <button class="control-button btn btn-secondary btn-sm flex-grow-1 py-2" t-on-click="() => this.reprintInvoice(_selectedSyncedOrder)">
+                                    <i class="fa fa-file-pdf-o me-1"/>Factura
+                                </button>
+                                <button class="control-button btn btn-secondary btn-sm flex-grow-1 py-2" t-on-click="() => doPrint.call(_selectedSyncedOrder)">
+                                    <i t-attf-class="fa {{doPrint.status === 'loading' ? 'fa-fw fa-spin fa-circle-o-notch' : 'fa-print'}} me-1" />Recibo
+                                </button>
+                            </div>
+
+                            <!-- Actionpad (Botón Cliente y Reembolso) -->
+                            <ActionpadWidget
+                                partner="_selectedSyncedOrder?.getPartner()"
+                                actionName.translate="Refund"
+                                actionToTrigger.bind="onDoRefund"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+
+    </t>
+</templates>

@@ -72,18 +72,18 @@
         <!-- Crear la columna correspondiente en el tbody -->
         <xpath expr="//table[hasclass('o_main_table')]//tbody//tr[not(hasclass('o_line_section')) and not(hasclass('o_line_note'))]//td[position()=5]" position="after">
             <td class="text-end" t-if="any(line.discount for line in o.order_line if not line.display_type)">
-                <span t-field="line.price_unit_discounted" t-options='{"widget": "float", "precision": 4}'/>
+                <span t-out="line.format_num_custom(line.price_unit_discounted)"/>
             </td>
         </xpath>
 
         <!-- Asegurar 4 dígitos en el precio unitario estándar -->
-        <xpath expr="//span[@t-field='line.price_unit']" position="attributes">
-            <attribute name="t-options">{"widget": "float", "precision": 4}</attribute>
+        <xpath expr="//span[@t-field='line.price_unit']" position="replace">
+            <span t-out="line.format_num_custom(line.price_unit)"/>
         </xpath>
 
         <!-- Asegurar 4 dígitos en la cantidad -->
-        <xpath expr="//span[@t-field='line.product_qty']" position="attributes">
-            <attribute name="t-options">{"widget": "float", "precision": 4}</attribute>
+        <xpath expr="//span[@t-field='line.product_qty']" position="replace">
+            <span t-out="line.format_num_custom(line.product_qty)"/>
         </xpath>
 
         <xpath expr="//th[@name='th_description']" position="after">

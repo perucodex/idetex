@@ -20,5 +20,13 @@
             </span>
         </xpath>
 
+        <!-- [NEW] Eliminar dirección y RUC del cliente en el recibo - Reemplazo total -->
+        <xpath expr="//div[hasclass('pos-receipt-customer')]/div[2]" position="replace">
+            <div class="d-none" />
+        </xpath>
+        <xpath expr="//div[hasclass('pos-receipt-customer')]/div[3]" position="replace">
+            <div class="d-none" />
+        </xpath>
+
     </t>
 </templates>

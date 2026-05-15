@@ -8,15 +8,15 @@
         
         <!-- Insertamos los encabezados antes del contenedor de las líneas -->
         <xpath expr="//div[hasclass('order-container')]" position="before">
-            <div class="idtx-cart-headers d-flex align-items-center w-100 px-2 py-2 bg-light border-bottom text-uppercase fw-bold text-muted" 
+            <div t-if="!props.mode or props.mode !== 'receipt'" class="idtx-cart-headers d-flex align-items-center w-100 px-2 py-2 bg-light border-bottom text-uppercase fw-bold text-muted d-print-none" 
                  style="font-size: 0.7rem; letter-spacing: 0.5px;">
                 
-                <div style="width: 80px; flex-shrink: 0;">Kilos</div>
+                <div style="width: 70px; flex-shrink: 0;">Kilos</div>
                 <div class="flex-grow-1 px-2">Artículo</div>
-                <div style="width: 100px; flex-shrink: 0;">Color</div>
-                <div style="width: 120px; flex-shrink: 0;">Partida</div>
-                <div style="width: 80px; flex-shrink: 0;" class="text-end px-2">Precio</div>
-                <div style="width: 90px; flex-shrink: 0;" class="text-end">Total</div>
+                <div style="width: 90px; flex-shrink: 0;">Color</div>
+                <div style="width: 110px; flex-shrink: 0;">Partida</div>
+                <div style="width: 70px; flex-shrink: 0;" class="text-end px-2">Precio</div>
+                <div style="width: 80px; flex-shrink: 0;" class="text-end">Total</div>
                 <!-- Espacio para el icono del lote/borrar -->
                 <div style="width: 25px; flex-shrink: 0;"></div>
             </div>

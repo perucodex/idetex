@@ -1,0 +1,104 @@
+/* Estilos para Recibo A4 en POS Idetex */
+
+.pos-receipt.pos-receipt-a4 {
+    width: 210mm !important;
+    max-width: 210mm !important;
+    min-height: 297mm;
+    padding: 10mm 15mm !important;
+    margin: 20px auto !important; /* Centrado en pantalla */
+    background: white !important;
+    color: black !important;
+    font-family: 'Inter', 'Roboto', sans-serif !important;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    box-sizing: border-box;
+    font-size: 11pt !important;
+    line-height: 1.3 !important;
+}
+
+/* Modo Detallado - 2 Columnas */
+/* Target the order-container inside OrderDisplay when in detailed mode */
+.pos-receipt-detailed .order-container {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-content: flex-start;
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.pos-receipt-detailed .order-container > div {
+    width: 50% !important;
+    box-sizing: border-box;
+    padding: 5px 15px !important;
+    border-bottom: 1px solid #eee;
+    min-height: 50px;
+}
+
+/* Notas de cliente ocupan todo el ancho */
+.pos-receipt-detailed .order-container .customer-note {
+    width: 100% !important;
+    background: #f9f9f9;
+    border: none !important;
+}
+
+/* Cabecera A4 */
+.pos-receipt-a4 .pos-receipt-header {
+    text-align: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #333;
+    padding-bottom: 10px;
+}
+
+.pos-receipt-a4 .pos-receipt-header .ticket-name-prefix {
+    font-size: 18pt;
+    font-weight: bold;
+    display: block;
+}
+
+/* Totales A4 */
+.pos-receipt-a4 .receipt-total {
+    margin-top: 30px;
+    padding: 10px 0;
+    border-top: 2px solid #000;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.pos-receipt-a4 .receipt-total .label-total {
+    font-size: 14pt;
+}
+
+.pos-receipt-a4 .pos-receipt-amount {
+    font-size: 20pt !important;
+    font-weight: 900 !important;
+}
+
+/* Alineación de precios a la derecha en A4 */
+.pos-receipt-a4 .pos-receipt-right-align {
+    float: right;
+}
+
+/* Impresión */
+@media print {
+    @page {
+        size: A4;
+        margin: 10mm;
+    }
+    body {
+        background: white !important;
+        margin: 0 !important;
+    }
+    .pos-receipt.pos-receipt-a4 {
+        box-shadow: none !important;
+        margin: 0 !important;
+        width: 100% !important;
+        padding: 0 !important;
+    }
+    /* Ocultar scrollbars en impresión */
+    .overflow-y-auto {
+        overflow: visible !important;
+    }
+}
