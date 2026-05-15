@@ -25,7 +25,6 @@ class ControlPedidoLine(models.Model):
     area = fields.Char('Area')
     rollos = fields.Integer('Rolls')
     kilograms = fields.Float('Kilograms')
-    to_reprocess = fields.Float('To Reprocess')
     start_date = fields.Datetime('Start Date')
     end_date = fields.Datetime('End Date')
     colorcode = fields.Char('Color Code')
@@ -39,13 +38,14 @@ class ControlPedidoLine(models.Model):
         string="Procesos"
     )
     # Adicionales para control con sitpro reprocesos
-    area_num_days = fields.Integer('Area Num Days', compute='_compute_area_num_days')
-    num_days = fields.Integer(related='pedido_id.num_days')
+    area_num_days = fields.Integer('Area Num Days', compute='_compute_area_num_days', store=True)
+    num_days = fields.Integer(related='pedido_id.num_days', store=True)
     # Filled from SQL Server ctrl_info during sync: motivo/area of the most
     # recent open REPROCESO/REPOSICION record whose `correlvou` matches `batch`.
     report_date = fields.Datetime('Fecha Reproceso')
     motivo1 = fields.Char('Motivo Reproceso')
     area1 = fields.Char('Área Reproceso')
+    to_reprocess = fields.Float('To Reprocess')
     state = fields.Selection([
         ('active', 'Active'),
         ('completed', 'Completed'),
