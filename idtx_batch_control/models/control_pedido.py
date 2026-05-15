@@ -449,9 +449,10 @@ class ControlPedido(models.Model):
     def _sync_ctrl_info_reprocesos(self, pedidos):
         """Pull motivo/area from SQL Server `ctrl_info` and apply to lines.
 
-        We match `ctrl_info.correlvouc` against `control.pedido.line.batch`.
-        Only open (ACTIVO=0) REPROCESO/REPOSICION records from years after
-        2023 are considered — same filter the user runs by hand.
+        A report is matched by partida AND ruta: `ctrl_info.correlvouc` against
+        `control.pedido.line.batch`, and `ctrl_info.numot` against
+        `control.pedido.line.route`. Only open (ACTIVO=0) REPROCESO/REPOSICION
+        records from years after 2023 are considered.
         """
         pedido_ids = {p.id for p in pedidos if p}
         if not pedido_ids:
@@ -459,16 +460,17 @@ class ControlPedido(models.Model):
         lines = self.env['control.pedido.line'].search([
             ('pedido_id', 'in', list(pedido_ids)),
             ('batch', '!=', False),
+            ('route', '!=', False),
         ])
         if not lines:
             return
-        batches = list({l.batch for l in lines if l.batch})
-        info_map = self._fetch_ctrl_info_reprocesos(batches)
+        pairs = {(l.batch, l.route) for l in lines if l.batch and l.route}
+        info_map = self._fetch_ctrl_info_reprocesos(pairs)
         # Group writes: same value tuple → single bulk write.
         Line = self.env['control.pedido.line']
         by_vals = {}
         for line in lines:
-            info = info_map.get(line.batch)
+            info = info_map.get((line.batch, line.route))
             key = (
                 (info or {}).get('motivo1') or False,
                 (info or {}).get('area1') or False,
@@ -484,17 +486,25 @@ class ControlPedido(models.Model):
                 'to_reprocess': to_reprocess,
             })
 
-    def _fetch_ctrl_info_reprocesos(self, correlvoucs):
-        """Return {correlvouc: {'motivo1': str, 'area1': str}} from ctrl_info.
+    def _fetch_ctrl_info_reprocesos(self, pairs):
+        """Return {(correlvouc, numot): {...}} from ctrl_info.
 
-        SQL columns: correlvouc (joins to control.pedido.line.batch),
-        motivo1, area1, FECHA, ACTIVO.
-        Filters: YEAR(FECHA) > 2023, ACTIVO = 0,
-                 motivo1 IN (REPROCESO, REPOSICION).
-        When several rows match the same correlvouc the most recent FECHA wins.
+        `pairs` is an iterable of (batch, route) tuples. SQL columns:
+        correlvouc (joins to batch), numot (joins to route), motivo1, area1,
+        FECHA, ACTIVO, kneto.
+        Filters: YEAR(FECHA) > 2023, ACTIVO = 0, motivo IN (REPROCESO, REPOSICION).
+        When several reports match the same (partida, ruta) the most recent
+        FECHA wins.
         """
-        if not correlvoucs:
+        pairs = [(b, r) for b, r in pairs if b and r]
+        if not pairs:
             return {}
+        wanted = {(_safe_str(b).strip(), _safe_str(r).strip()) for b, r in pairs}
+        # Query a superset by the distinct batches and routes, then keep only
+        # the rows whose (correlvouc, numot) is an actually requested pair.
+        # SQL Server has no clean tuple-IN, and over-fetching here is cheap.
+        batches = sorted({b for b, _ in wanted})
+        routes = sorted({r for _, r in wanted})
         try:
             conn = self._get_sitpro_connection()
         except Exception:
@@ -503,33 +513,36 @@ class ControlPedido(models.Model):
         try:
             cursor = conn.cursor()
             chunk = 900
-            for i in range(0, len(correlvoucs), chunk):
-                batch = correlvoucs[i:i + chunk]
-                # `correlvouc` is often a CHAR(n) column padded with trailing
-                # spaces; RTRIM on the column side makes the IN comparison
-                # tolerant to that without forcing us to pad the bind params.
-                placeholders = ",".join(["?"] * len(batch))
-                cursor.execute(
-                    f"""
-                    SELECT correlvouc, motivo1, area1, FECHA, kneto
-                    FROM ctrl_info
-                    WHERE YEAR(FECHA) > 2023
-                      AND ACTIVO = 0
-                      AND motivo IN ('REPROCESO', 'REPOSICION')
-                      AND RTRIM(correlvouc) IN ({placeholders})
-                    ORDER BY correlvouc, FECHA DESC
-                    """,
-                    *batch,
-                )
-                for correlvouc, motivo1, area1, fecha, kneto in cursor.fetchall():
-                    key = _safe_str(correlvouc).strip()
-                    if key and key not in out:  # first row per correlvouc = newest
-                        out[key] = {
-                            'motivo1': _safe_str(motivo1),
-                            'area1': _safe_str(area1),
-                            'report_date': fecha or False,
-                            'to_reprocess': _safe_float(kneto),
-                        }
+            for i in range(0, len(batches), chunk):
+                batch_chunk = batches[i:i + chunk]
+                # correlvouc / numot are CHAR(n) columns padded with trailing
+                # spaces; RTRIM on the column side keeps the IN tolerant.
+                b_placeholders = ",".join(["?"] * len(batch_chunk))
+                for j in range(0, len(routes), chunk):
+                    route_chunk = routes[j:j + chunk]
+                    r_placeholders = ",".join(["?"] * len(route_chunk))
+                    cursor.execute(
+                        f"""
+                        SELECT correlvouc, numot, motivo1, area1, FECHA, kneto
+                        FROM ctrl_info
+                        WHERE YEAR(FECHA) > 2023
+                          AND ACTIVO = 0
+                          AND motivo IN ('REPROCESO', 'REPOSICION')
+                          AND RTRIM(correlvouc) IN ({b_placeholders})
+                          AND RTRIM(numot) IN ({r_placeholders})
+                        ORDER BY correlvouc, numot, FECHA DESC
+                        """,
+                        *batch_chunk, *route_chunk,
+                    )
+                    for correlvouc, numot, motivo1, area1, fecha, kneto in cursor.fetchall():
+                        key = (_safe_str(correlvouc).strip(), _safe_str(numot).strip())
+                        if key in wanted and key not in out:  # first row per pair = newest
+                            out[key] = {
+                                'motivo1': _safe_str(motivo1),
+                                'area1': _safe_str(area1),
+                                'report_date': fecha or False,
+                                'to_reprocess': _safe_float(kneto),
+                            }
         finally:
             conn.close()
         return out
