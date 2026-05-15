@@ -76,7 +76,7 @@ class ProductAnalysis(models.Model):
         'Density should be grather than zero.',
     )
     _check_weaving_price = models.Constraint(
-        'CHECK(weaving_price > 0)',
+        'CHECK(weaving_price > 0 and state != \'test\')',
         'Weaving Price should be grather than zero.',
     )
 

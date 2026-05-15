@@ -826,32 +826,40 @@ class TechnicalSheet(models.Model):
                 conn.close()
 
     def _insert_sitpro_hojacorr(self):
-        conn = None
-        cursor = None
+        """Append a new correlative row to the hojacorr.dbf table.
+
+        hojacorr is a FoxPro DBF (not a SQL table): we read the current
+        max(correl), then append a record with max+1. Returns the new value.
+        """
         try:
-            conn = self._get_sql_connection()
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                INSERT INTO dbo.hojacorr (correl)
-                SELECT ISNULL(MAX(correl), 0) + 1
-                FROM dbo.hojacorr WITH (UPDLOCK, HOLDLOCK)
-                """
-            )
-            conn.commit()
+            table = self._open_table('hojacorr.dbf')
         except UserError:
-            if conn:
-                conn.rollback()
             raise
         except Exception as error:
-            if conn:
-                conn.rollback()
-            raise UserError(_('No se pudo insertar correlativo en hojacorr: %s') % error) from error
+            raise UserError(_('No se pudo abrir hojacorr.dbf: %s') % error) from error
+        try:
+            correl_field = next(
+                (name for name in table.field_names if name.upper() == 'CORREL'),
+                None,
+            )
+            if not correl_field:
+                raise UserError(_('hojacorr.dbf no tiene la columna CORREL.'))
+            max_correl = 0
+            for record in table:
+                if dbf.is_deleted(record):
+                    continue
+                value = record[correl_field]
+                if value:
+                    max_correl = max(max_correl, int(value))
+            new_correl = max_correl + 1
+            self._append_record_with_table(table, {correl_field: new_correl})
+            return new_correl
+        except UserError:
+            raise
+        except Exception as error:
+            raise UserError(_('No se pudo insertar correlativo en hojacorr.dbf: %s') % error) from error
         finally:
-            if cursor:
-                cursor.close()
-            if conn:
-                conn.close()
+            table.close()
 
     def _get_tiptej(self, weave_type):
         mapping = {
