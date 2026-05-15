@@ -42,7 +42,8 @@ class ControlPedidoLine(models.Model):
     num_days = fields.Integer(related='pedido_id.num_days', store=True)
     # Filled from SQL Server ctrl_info during sync: motivo/area of the most
     # recent open REPROCESO/REPOSICION record whose `correlvou` matches `batch`.
-    report_date = fields.Datetime('Fecha Reproceso')
+    report_date = fields.Datetime('Fecha Informe')
+    change_date = fields.Datetime('Fecha Cambio Area', compute='_compute_area_num_days', store=True)
     motivo1 = fields.Char('Motivo Reproceso')
     area1 = fields.Char('Área Reproceso')
     to_reprocess = fields.Float('To Reprocess')
@@ -72,12 +73,12 @@ class ControlPedidoLine(models.Model):
         # To know how long this line has been in `area`, we resolve the area of
         # every earlier process via the same SQL Server table, then walk
         # backwards through proceso_ids until we hit a process from a different
-        # area. The timestamp of that boundary process tells us when this line
-        # entered its current area.
+        # area. That boundary process tells us when the line entered its
+        # current area: `change_date` = its date, `area_num_days` = days since
+        # the first process of the current-area run.
         for rec in self:
-            if rec.batch == 'C374254':
-                x = 1
             rec.area_num_days = 0
+            rec.change_date = False
 
         records_with_data = self.filtered(lambda r: r.area and r.proceso_ids)
         if not records_with_data:
@@ -96,9 +97,9 @@ class ControlPedidoLine(models.Model):
         now = fields.Datetime.now()
         for rec in records_with_data:
             # Walk only over FINISHED processes (those with barFasDTF). Starting
-            # from the latest one, build a consecutive run of same-area
-            # processes; days = now - earliest start in that run. As soon as
-            # we hit a different-area process the run ends.
+            # from the latest one, walk back through the consecutive same-area
+            # run. The first different-area process gives us change_date — the
+            # moment the line entered its current area.
             procs = rec.proceso_ids.sorted(key=lambda p: p.barOrdLin or 0)
             current_area = rec.area
             earliest_start = False
@@ -108,13 +109,18 @@ class ControlPedidoLine(models.Model):
                     continue
                 proc_area = area_by_fas.get(proc.fas_code)
                 if proc_area and proc_area != current_area:
-                    # Run interrupted by another area: stop.
+                    # First different-area process walking backwards: this is
+                    # when the line moved into its current area.
+                    rec.change_date = proc.barFasDTF or proc.barFasDTI
                     break
                 if proc.barFasDTI:
                     earliest_start = proc.barFasDTI
 
-            if earliest_start:
-                rec.area_num_days = max(0, (now - earliest_start).days)
+            # Days in the current area = from the area change until today.
+            # If the line never changed area, fall back to the first process.
+            reference_dt = rec.change_date or earliest_start
+            if reference_dt:
+                rec.area_num_days = max(0, (now - reference_dt).days)
 
     @api.model
     def _fetch_areas_by_fas_code(self, fas_codes):

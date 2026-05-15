@@ -35,9 +35,9 @@
                 <field name="to_reprocess" sum="Total"/>
                 <field name="motivo1"/>
                 <field name="area1"/>
-                <field name="end_date"/>
-                <field name="num_days"/>
                 <field name="report_date"/>
+                <field name="num_days"/>
+                <field name="change_date"/>
                 <field name="area_num_days"/>
                 <field name="area"/>
                 <field name="state" widget="badge" decoration-success="state == 'active'" decoration-danger="state == 'completed'"/>
