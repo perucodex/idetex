@@ -306,7 +306,7 @@ class ControlPedido(models.Model):
                     FROM BARPIE bp WHERE bp.BarCod IN (SELECT BarCod FROM PedidoHDR) GROUP BY bp.BarCod, bp.BarCodReo
                 )
                 SELECT h.Pedido, h.Partida, h.BarCod AS HojaDeRuta, h.BarCodReo, h.BarCodPar, h.BarSer, h.BarSerDsc, h.ColorCode, h.ColorName, ISNULL(k.Kilos, 0) AS PesoTotal, ISNULL(k.Rollos, 0) AS Rollos, fp.FasDsc AS Proceso_Ultimo,
-                       CASE WHEN bf_last.BarFasDTF IS NOT NULL AND bf_next.FasCod IS NOT NULL
+                       CASE WHEN bf_last.BarFasDTF > '1753-01-01' AND bf_next.FasCod IS NOT NULL
                             THEN sp_next.area ELSE sp.area END AS Area,
                        bf_last.BarFasDTI AS FechaInicio, bf_last.BarFasDTF AS FechaFinal
                 FROM PedidoHDR h JOIN Kilos k ON k.BarCod = h.BarCod AND k.BarCodReo = h.BarCodReo AND k.Kilos > 0 AND k.Rollos > 0
