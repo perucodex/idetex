@@ -7,21 +7,23 @@
 
         <list create="0" edit="0" delete="0">
             <field name="state" column_invisible="1"/>
-            <field name="pedido_id"/>
-            <field name="route"/>
+            <field name="pedido_id" optional="show"/>
+            <field name="route" optional="show"/>
             <field name="batch"/>
-            <field name="codpro"/>
+            <field name="customer" optional="show"/>
+            <field name="codpro" optional="show"/>
+            <field name="colorname" optional="show"/>
             <field name="description"/>
-            <field name="num_days"/>
             <field name="process"/>
-            <field name="area"/>
-            <field name="area_num_days"/>
+            <field name="rollos" optional="show"/>
+            <field name="kilograms" sum="Total"/>
             <field name="motivo1" optional="show"/>
             <field name="area1" optional="show"/>
-            <field name="rollos"/>
-            <field name="kilograms" sum="Total"/>
-            <field name="start_date"/>
-            <field name="end_date"/>
+            <field name="num_days"/>
+            <field name="area_num_days" optional="show"/>
+            <field name="area" optional="show"/>
+            <field name="start_date" optional="show"/>
+            <field name="end_date" optional="show"/>
             <field name="state" widget="badge" decoration-success="state == 'active'" decoration-danger="state == 'completed'"/>
         </list>
     
@@ -92,8 +94,8 @@
                             <field name="kilograms" readonly="1"/>
                             <field name="start_date" readonly="1"/>
                             <field name="end_date" readonly="1"/>
-                            <field name="colorcode" readonly="1" invisible="lab_dev_line_id"/>
-                            <field name="colorname" readonly="1" invisible="lab_dev_line_id"/>
+                            <field name="colorcode" readonly="1" invisible="not lab_dev_line_id"/>
+                            <field name="colorname" readonly="1" invisible="not lab_dev_line_id"/>
                             <!-- <field name="lab_dev_line_id" readonly="1" invisible="not lab_dev_line_id"/> -->
                             <field name="colorfastness_id" readonly="1" invisible="not colorfastness_id"/>
                             <field name="density_stability_twisting_id" readonly="1" invisible="not density_stability_twisting_id"/>

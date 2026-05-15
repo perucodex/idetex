@@ -14,6 +14,7 @@ class ControlPedidoLine(models.Model):
     _rec_name = 'batch'
 
     pedido_id = fields.Many2one("control.pedido", required=True, ondelete="cascade")
+    customer = fields.Char(related='pedido_id.customer', store=True, readonly=True)
     route = fields.Char(string="Route")
     codpro = fields.Char('Codigo Producto')
     product_id = fields.Many2one('product.template', string='Product')
@@ -41,6 +42,7 @@ class ControlPedidoLine(models.Model):
     num_days = fields.Integer(related='pedido_id.num_days')
     # Filled from SQL Server ctrl_info during sync: motivo/area of the most
     # recent open REPROCESO/REPOSICION record whose `correlvou` matches `batch`.
+    report_date = fields.Datetime('Fecha Reproceso')
     motivo1 = fields.Char('Motivo Reproceso')
     area1 = fields.Char('Área Reproceso')
     state = fields.Selection([
