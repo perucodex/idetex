@@ -31,6 +31,21 @@ class TexplusTipart(models.Model):
         self._sanitize_required_columns()
         return super()._auto_init()
 
+    def init(self):
+        self._sanitize_required_columns()
+        self._apply_required_column_constraints()
+
+    def _apply_required_column_constraints(self):
+        cr = self.env.cr
+        if not sql.table_exists(cr, self._table):
+            return
+
+        columns = sql.table_columns(cr, self._table)
+        for column_name in ('tipart_cod', 'name'):
+            column = columns.get(column_name)
+            if column and column['is_nullable'] == 'YES':
+                sql.set_not_null(cr, self._table, column_name)
+
     def _sanitize_required_columns(self):
         """Backfill old incomplete rows so Odoo can add NOT NULL constraints."""
         cr = self.env.cr

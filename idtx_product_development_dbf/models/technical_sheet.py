@@ -9,6 +9,7 @@ import pyodbc
 
 from odoo import _, fields, models, api
 from odoo.exceptions import UserError
+from odoo.tools import sql
 
 pyodbc.setDecimalSeparator('.')
 
@@ -196,6 +197,33 @@ class TechnicalSheet(models.Model):
     @api.model
     def _default_fabric_composition_id(self):
         return self.env['texplus.tipart']._get_default_tipart().id
+
+    def init(self):
+        self._sanitize_fabric_composition_column()
+        self._apply_fabric_composition_required_constraint()
+
+    def _sanitize_fabric_composition_column(self):
+        cr = self.env.cr
+        if (
+            not sql.table_exists(cr, self._table)
+            or not sql.column_exists(cr, self._table, 'fabric_composition_id')
+        ):
+            return
+
+        default_tipart = self.env['texplus.tipart']._get_default_tipart()
+        cr.execute(
+            "UPDATE technical_sheet SET fabric_composition_id = %s WHERE fabric_composition_id IS NULL",
+            [default_tipart.id],
+        )
+
+    def _apply_fabric_composition_required_constraint(self):
+        cr = self.env.cr
+        if not sql.table_exists(cr, self._table):
+            return
+
+        column = sql.table_columns(cr, self._table).get('fabric_composition_id')
+        if column and column['is_nullable'] == 'YES':
+            sql.set_not_null(cr, self._table, 'fabric_composition_id')
 
     @api.depends('product_code', 'foxpro_article_prefix')
     def _compute_foxpro_article_code(self):
