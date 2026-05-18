@@ -188,8 +188,14 @@ class TechnicalSheet(models.Model):
     foxpro_export_date = fields.Datetime('FoxPro Export Date', copy=False, readonly=True)
     fabric_composition_id = fields.Many2one(
         'texplus.tipart', string='Composicion',
+        required=True,
+        default=lambda self: self._default_fabric_composition_id(),
         help="Tipo de articulo del catalogo TIPART de TEXPLUS.")
     clipboard_summary = fields.Char(compute='_compute_clipboard_summary')
+
+    @api.model
+    def _default_fabric_composition_id(self):
+        return self.env['texplus.tipart']._get_default_tipart().id
 
     @api.depends('product_code', 'foxpro_article_prefix')
     def _compute_foxpro_article_code(self):
@@ -207,6 +213,112 @@ class TechnicalSheet(models.Model):
                 sheet.description or '',
                 sheet.analysis_id.notes or '',
             ])
+
+    def _get_texplus_articu_lookup_code(self):
+        self.ensure_one()
+        article_code = _clean_text(self.analysis_id.codpro)
+        if article_code:
+            return article_code[-15:]
+        return _clean_text(self.product_code or self.analysis_id.product_code)
+
+    @api.model
+    def _get_texplus_articu_tipart_map(self, product_codes):
+        codes = sorted({code for code in product_codes if code})
+        if not codes:
+            return {}
+
+        conn = self._get_texplus_sql_connection()
+        cursor = None
+        rows = []
+        try:
+            cursor = conn.cursor()
+            for start in range(0, len(codes), 800):
+                chunk = codes[start:start + 800]
+                placeholders = ",".join(["?"] * len(chunk))
+                cursor.execute(
+                    f"""
+                    SELECT RIGHT(RTRIM(ArtCod), 15) AS code,
+                           TipArtCod,
+                           ArtFecCre
+                      FROM ARTICU
+                     WHERE EmprCod = ?
+                       AND TipArtCod IS NOT NULL
+                       AND RIGHT(RTRIM(ArtCod), 15) IN ({placeholders})
+                    """,
+                    TEXPLUS_EMPRCOD,
+                    *chunk,
+                )
+                rows.extend(cursor.fetchall())
+        finally:
+            try:
+                cursor.close()
+            except Exception:
+                pass
+            conn.close()
+
+        best_by_code = {}
+        default_date = fields.Datetime.to_datetime('1900-01-01')
+        for code, tipart_cod, date_value in rows:
+            code = _clean_text(code)
+            if not code or tipart_cod in (False, None, ''):
+                continue
+            date_value = fields.Datetime.to_datetime(date_value) if date_value else default_date
+            current = best_by_code.get(code)
+            if current is None or date_value > current[1]:
+                best_by_code[code] = (int(tipart_cod), date_value)
+        return {code: tipart_cod for code, (tipart_cod, _date_value) in best_by_code.items()}
+
+    def _sync_fabric_compositions_from_texplus(self):
+        Tipart = self.env['texplus.tipart']
+        Tipart._sync_from_texplus()
+        default_tipart = Tipart._get_default_tipart()
+
+        sheets = (self or self.search([])).sudo()
+        code_by_sheet = {
+            sheet.id: sheet._get_texplus_articu_lookup_code()
+            for sheet in sheets
+        }
+        tipart_by_code = self._get_texplus_articu_tipart_map(code_by_sheet.values())
+        tipart_records_by_code = Tipart._ensure_tipart_codes(tipart_by_code.values())
+
+        sheet_ids_by_tipart_id = {}
+        matched = 0
+        defaulted = 0
+        for sheet in sheets:
+            tipart_cod = tipart_by_code.get(code_by_sheet.get(sheet.id))
+            tipart = tipart_records_by_code.get(tipart_cod) or default_tipart
+            if tipart == default_tipart and not tipart_cod:
+                defaulted += 1
+            else:
+                matched += 1
+            if sheet.fabric_composition_id != tipart:
+                sheet_ids_by_tipart_id.setdefault(tipart.id, []).append(sheet.id)
+
+        for tipart_id, sheet_ids in sheet_ids_by_tipart_id.items():
+            self.browse(sheet_ids).sudo().write({'fabric_composition_id': tipart_id})
+
+        return {
+            'total': len(sheets),
+            'matched': matched,
+            'defaulted': defaulted,
+            'updated': sum(len(sheet_ids) for sheet_ids in sheet_ids_by_tipart_id.values()),
+        }
+
+    def action_sync_fabric_compositions_from_texplus(self):
+        stats = self.search([])._sync_fabric_compositions_from_texplus()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('TEXPLUS'),
+                'message': _(
+                    'Composiciones actualizadas: %(updated)s de %(total)s fichas. '
+                    'Coincidencias ARTICU: %(matched)s. Por defecto: %(defaulted)s.'
+                ) % stats,
+                'sticky': False,
+                'type': 'success',
+            },
+        }
 
     def _get_table_field_label_cache(self, table_name, cache=None):
         cache = cache if cache is not None else {}

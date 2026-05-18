@@ -8,6 +8,7 @@ data/cron.xml) plus an on-demand manual refresh.
 import logging
 
 from odoo import _, api, fields, models
+from odoo.tools import SQL, sql
 
 _logger = logging.getLogger(__name__)
 
@@ -25,6 +26,82 @@ class TexplusTipart(models.Model):
         'unique(tipart_cod)',
         'El codigo TIPART debe ser unico.',
     )
+
+    def _auto_init(self):
+        self._sanitize_required_columns()
+        return super()._auto_init()
+
+    def _sanitize_required_columns(self):
+        """Backfill old incomplete rows so Odoo can add NOT NULL constraints."""
+        cr = self.env.cr
+        if not sql.table_exists(cr, self._table):
+            return
+
+        has_tipart_cod = sql.column_exists(cr, self._table, 'tipart_cod')
+        has_name = sql.column_exists(cr, self._table, 'name')
+
+        if has_tipart_cod:
+            cr.execute(SQL(
+                """
+                WITH bounds AS (
+                    SELECT COALESCE(MIN(tipart_cod), 0) AS min_code
+                      FROM %(table)s
+                     WHERE tipart_cod IS NOT NULL
+                ),
+                missing AS (
+                    SELECT id,
+                           (bounds.min_code - ROW_NUMBER() OVER (ORDER BY id))::integer AS generated_code
+                      FROM %(table)s
+               CROSS JOIN bounds
+                     WHERE tipart_cod IS NULL
+                )
+                UPDATE %(table)s AS tipart
+                   SET tipart_cod = missing.generated_code
+                  FROM missing
+                 WHERE tipart.id = missing.id
+                """,
+                table=SQL.identifier(self._table),
+            ))
+
+        if has_name:
+            cr.execute(SQL(
+                """
+                UPDATE %(table)s
+                   SET name = 'TIPART ' || COALESCE(tipart_cod::varchar, id::varchar)
+                 WHERE name IS NULL
+                """,
+                table=SQL.identifier(self._table),
+            ))
+
+    @api.model
+    def _get_default_tipart(self):
+        tipart = self.sudo().search([('tipart_cod', '=', 1)], limit=1)
+        if tipart:
+            return tipart
+        return self.sudo().create({
+            'tipart_cod': 1,
+            'name': 'X DEFINIR',
+        })
+
+    @api.model
+    def _ensure_tipart_codes(self, tipart_codes):
+        tipart_codes = {
+            int(code)
+            for code in tipart_codes
+            if code not in (False, None, '')
+        }
+        if not tipart_codes:
+            return {}
+
+        records = self.sudo().search([('tipart_cod', 'in', list(tipart_codes))])
+        by_code = {record.tipart_cod: record for record in records}
+        missing_codes = sorted(tipart_codes - set(by_code))
+        for record in self.sudo().create([
+            {'tipart_cod': code, 'name': 'TIPART %s' % code}
+            for code in missing_codes
+        ]):
+            by_code[record.tipart_cod] = record
+        return by_code
 
     @api.model
     def _sync_from_texplus(self):

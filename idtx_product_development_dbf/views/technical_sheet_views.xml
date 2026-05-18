@@ -43,5 +43,15 @@
             </field>
         </record>
 
+        <record id="action_sync_technical_sheet_fabric_compositions" model="ir.actions.server">
+            <field name="name">Actualizar composiciones desde TEXPLUS</field>
+            <field name="model_id" ref="idtx_product_development.model_technical_sheet"/>
+            <field name="binding_model_id" ref="idtx_product_development.model_technical_sheet"/>
+            <field name="binding_type">action</field>
+            <field name="groups_id" eval="[(4, ref('idtx_product_development.group_module_product_development_manager'))]"/>
+            <field name="state">code</field>
+            <field name="code">action = model.action_sync_fabric_compositions_from_texplus()</field>
+        </record>
+
     </data>
 </odoo>
