@@ -1456,7 +1456,7 @@ class ProductAnalysis(models.Model):
 class AnalysisWeavingData(models.Model):
     _inherit = 'analysis.weaving.data'
 
-    sitpro_sheet = fields.Char('Sitpro Sheet')
+    sitpro_sheet = fields.Char('Sitpro Sheet', copy=False)
 
 
 class ColorRecipe(models.Model):
