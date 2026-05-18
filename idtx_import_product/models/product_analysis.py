@@ -168,7 +168,7 @@ class ProductAnalysis(models.Model):
     state = fields.Selection(selection_add=[('impo', 'Imported')],)
     sitpro_code = fields.Char('sitpro_code') 
     
-    @api.onchange('product_code','partner_id')
+    @api.onchange('product_code','partner_id','product_family_id','product_appearance_id','product_fiber_id','product_title_id','gauge_id')
     def _onchange_is_problem(self):
         for rec in self:
             if not rec.partner_id or not rec.product_family_id or not rec.product_appearance_id or not rec.product_fiber_id or not rec.product_title_id or not rec.gauge_id:
@@ -785,10 +785,9 @@ class ProductAnalysis(models.Model):
                 weaving_process = self.env['mrp.routing.workcenter.operation'].create({'name': 'TEJIDO CRUDO', 'workcenter_id': weaving_workcenter.id})
             for contador, row in enumerate(cursor_result, 1):
                 _logger.info(str(contador) + ' / ' + str(total) + '  ' + str(int((contador / total)*100)) + '%')
-                if self.env['technical.sheet'].search([('sitpro_sheet','=',row.ficha.strip())]):
-                    continue
+                existing_technical_sheet = self.env['technical.sheet'].search([('sitpro_sheet','=',row.ficha.strip())], limit=1)
                 code = row.cdgart.strip()
-                product_analysis = self.search([('product_code','=', code[1:])])
+                product_analysis = self.search([('product_code','=', code[1:])], limit=1)
                 partner = self.env['res.partner'].search([('vat','=', row.ruc.strip()),('is_company','=', True)])
                 if len(partner) > 1:
                     partner = partner[0]
@@ -807,19 +806,35 @@ class ProductAnalysis(models.Model):
                             # 'l10n_latam_identification_type_id': self.env.ref('l10n_pe.it_RUC').id,
                             'is_company': True,
                         })
+                fam = self.env['product.family'].search([('code','=', code[1:3])], limit=1)
+                app = self.env['product.appearance'].search([('code','=', code[8:10])], limit=1)
+                fib = self.env['product.fiber'].search([('code','=', code[5:6])], limit=1)
+                tit = self.env['product.title'].search([('code','=', code[3:5])], limit=1)
+                gau = self.env['product.gauge'].search([('code','=', code[6:8])], limit=1)
+                codfam = 'rect' if code[1:3] in ('CD','CO','CR','CT','CU','PO','PT','PU') else False
+                if not codfam:
+                    codfam = 'othe' if code[1:3] in ('BL','EN','PP','PR','TO','TP','TW') else False
+                is_problem = not all([partner, fam, app, fib, tit, gau])
+                analysis_values = {
+                    'analysis_date': row.fecha,
+                    'partner_id': partner.id or False,
+                    'product_description': row.descrip.strip(),
+                    'product_family_id': fam.id or False,
+                    'product_appearance_id': app.id or False,
+                    'product_fiber_id': fib.id or False,
+                    'product_title_id': tit.id or False,
+                    'weave_type': codfam if codfam else ('tubu' if row.tiptej.strip()[:1] == 'T' else 'open'),
+                    'gauge_id': gau.id or False,
+                    'needles': a_int(row.agujas),
+                    'diameter': a_int(row.diametro),
+                    'feeders': a_int(row.alimenta),
+                    'density': a_int(code[13:16]) if a_int(code[13:16]) else 1,
+                    'standard_width': a_float(code[10:13]) if a_float(code[10:13]) else 1,
+                    'product_code': code[1:],
+                    'is_problem': is_problem,
+                    'sitpro_code': code,
+                }
                 if not product_analysis:
-                    fam = self.env['product.family'].search([('code','=', code[1:3])])
-                    app = self.env['product.appearance'].search([('code','=', code[8:10])])
-                    fib = self.env['product.fiber'].search([('code','=', code[5:6])])
-                    tit = self.env['product.title'].search([('code','=', code[3:5])])
-                    gau = self.env['product.gauge'].search([('code','=', code[6:8])])
-                    codfam = 'rect' if code[1:3] in ('CD','CO','CR','CT','CU','PO','PT','PU') else False
-                    if not codfam:
-                        codfam = 'othe' if code[1:3] in ('BL','EN','PP','PR','TO','TP','TW') else False
-                    if not partner or not fam or not app or not fib or not tit or not gau:
-                        is_problem = True
-                    else:
-                        is_problem = False
                     # Route is no longer pulled from SITPRO; we create the
                     # analysis with the weaving-only placeholder and let the
                     # TEXPLUS pass below assign the real route.
@@ -832,30 +847,18 @@ class ProductAnalysis(models.Model):
                             'process_ids': [Command.create({'operation_id': weaving_process.id})],
                         })
                     vals = {
-                        'analysis_date': row.fecha,
-                        'partner_id': partner.id or False,
-                        'product_description': row.descrip.strip(),
-                        'product_family_id': fam.id or False,
-                        'product_appearance_id': app.id or False,
-                        'product_fiber_id': fib.id or False,
-                        'product_title_id': tit.id or False,
-                        'weave_type': codfam if codfam else ('tubu' if row.tiptej.strip()[:1] == 'T' else 'open'),
-                        'gauge_id': gau.id or False,
-                        'needles': a_int(row.agujas),
-                        'diameter': a_int(row.diametro),
-                        'feeders': a_int(row.alimenta),
-                        'density': a_int(code[13:16]) if a_int(code[13:16]) else 1,
-                        'standard_width': a_float(code[10:13]) if a_float(code[10:13]) else 1,
-                        'product_code': code[1:],
-                        'is_problem': is_problem,
+                        **analysis_values,
                         'mrp_base_process_id': base_process_id.id,
-                        'sitpro_code': code,
                     }
                     product_analysis = self.create(vals)
                     # Actualizamos el detalle de las rutas desde la base
                     product_analysis._onchange_mrp_base_process_id()
+                else:
+                    product_analysis.write(analysis_values)
                 if not product_analysis.product_id:
                     product_analysis.with_context(by_pass_error=True).action_product()
+                if existing_technical_sheet:
+                    continue
                 ligament = self.env['ligament.type'].search([('name','=',row.ligamento.strip())])
                 codhil = row.codigo.strip() if row.codigo.strip() != '0' or row.codigo.strip() != '' else ''
                 if last_weaving_data_id and last_weaving_data_id.sitpro_sheet != row.ficha.strip():
