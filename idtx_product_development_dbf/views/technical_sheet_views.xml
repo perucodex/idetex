@@ -17,10 +17,10 @@
                 <xpath expr="//field[@name='notes']" position="after">
                     <field name="foxpro_export_message" readonly="1" invisible="not foxpro_export_message" groups="idtx_product_development.group_module_product_development_manager"/>
                 </xpath>
-                <xpath expr="//field[@name='fabric_composition'][1]" position="replace">
+                <xpath expr="//field[@name='fabric_composition' and @groups='!idtx_product_development.group_module_product_development_manager']" position="replace">
                     <field name="fabric_composition_id" readonly="state != 'draft'" options="{'no_create': True, 'no_open': True}" groups="!idtx_product_development.group_module_product_development_manager"/>
                 </xpath>
-                <xpath expr="//field[@name='fabric_composition'][2]" position="replace">
+                <xpath expr="//field[@name='fabric_composition' and @groups='idtx_product_development.group_module_product_development_manager']" position="replace">
                     <field name="fabric_composition_id" required="1" options="{'no_create': True, 'no_open': True}" groups="idtx_product_development.group_module_product_development_manager"/>
                 </xpath>
                 <xpath expr="//field[@name='description']" position="replace">
