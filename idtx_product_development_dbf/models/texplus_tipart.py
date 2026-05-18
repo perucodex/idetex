@@ -19,8 +19,8 @@ class TexplusTipart(models.Model):
     _description = 'TEXPLUS Tipo de Articulo (TIPART)'
     _order = 'name'
 
-    tipart_cod = fields.Integer('Codigo TIPART', required=True, index=True)
-    name = fields.Char('Composicion', required=True)
+    tipart_cod = fields.Integer('Codigo TIPART', index=True)
+    name = fields.Char('Composicion')
 
     _tipart_cod_unique = models.Constraint(
         'unique(tipart_cod)',
