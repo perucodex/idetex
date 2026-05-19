@@ -190,6 +190,41 @@ class MrpBaseProcess(models.Model):
             used_codes.add(_texplus_process_code(new_name))
         return vals_list
 
+    def action_open_duplicate_form(self):
+        """Abre un form en modo creacion prellenado con los datos de este proceso.
+
+        A diferencia del duplicate estandar de Odoo (que crea el registro
+        inmediatamente y dispara los constraints sobre la composicion
+        identica al original), aqui el registro NO se crea hasta que el
+        usuario modifique las lineas y guarde. Esto permite usar el original
+        como punto de partida sin que el constraint de composicion unica
+        bloquee la duplicacion."""
+        self.ensure_one()
+        all_records = self.sudo().search([('name', '!=', False)])
+        used_names = {(p.name or '').strip().lower() for p in all_records}
+        used_codes = {_texplus_process_code(p.name) for p in all_records if p.name}
+        default_name = self._generate_unique_copy_name(used_names, used_codes)
+
+        default_lines = []
+        for line in self.process_ids.sorted(key=lambda l: (l.sequence, l.id)):
+            if line.operation_id:
+                default_lines.append((0, 0, {
+                    'sequence': line.sequence,
+                    'operation_id': line.operation_id.id,
+                }))
+
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Duplicar Proceso Base'),
+            'res_model': 'mrp.base.process',
+            'view_mode': 'form',
+            'target': 'current',
+            'context': {
+                'default_name': default_name,
+                'default_process_ids': default_lines,
+            },
+        }
+
     def _generate_unique_copy_name(self, used_names, used_codes):
         """Construye un nombre para la copia que satisface:
            - El nombre completo es unico (case-insensitive).

@@ -6,7 +6,13 @@
             <field name="name">mrp.base.process.form</field>
             <field name="model">mrp.base.process</field>
             <field name="arch" type="xml">
-                <form string="Routing Work Centers Operations">
+                <form string="Routing Work Centers Operations" duplicate="false">
+                    <header>
+                        <button name="action_open_duplicate_form" type="object"
+                                string="Duplicar"
+                                invisible="not id"
+                                help="Abre un nuevo proceso prellenado con las lineas de este. Tienes que modificar al menos una linea para que pase el constraint de composicion unica."/>
+                    </header>
                     <sheet>
                         <div name="button_box" class="oe_button_box">
                             <button name="action_view_products"
