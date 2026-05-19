@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+
+        <record id="texplus_machine_view_list" model="ir.ui.view">
+            <field name="name">texplus.machine.list</field>
+            <field name="model">texplus.machine</field>
+            <field name="arch" type="xml">
+                <list string="Maquinas TEXPLUS" multi_edit="1" sample="1">
+                    <field name="code"/>
+                    <field name="name"/>
+                    <field name="is_general"/>
+                    <field name="general_machine_id"/>
+                    <field name="specific_machine_count" string="# Especificas"/>
+                    <field name="active" widget="boolean_toggle" optional="show"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="texplus_machine_view_form" model="ir.ui.view">
+            <field name="name">texplus.machine.form</field>
+            <field name="model">texplus.machine</field>
+            <field name="arch" type="xml">
+                <form string="Maquina TEXPLUS">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="code"/>
+                            <h1><field name="code" placeholder="ACRM"/></h1>
+                        </div>
+                        <widget name="web_ribbon" title="Inactiva" bg_color="bg-danger" invisible="active"/>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="is_general"/>
+                                <field name="active" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="general_machine_id" invisible="is_general"/>
+                                <field name="specific_machine_count" invisible="not is_general"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Maquinas Especificas" invisible="not is_general">
+                                <field name="specific_machine_ids">
+                                    <list>
+                                        <field name="code"/>
+                                        <field name="name"/>
+                                    </list>
+                                </field>
+                            </page>
+                            <page string="Fases asignadas" invisible="is_general">
+                                <field name="operation_ids">
+                                    <list>
+                                        <field name="fas_code"/>
+                                        <field name="name"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="texplus_machine_view_search" model="ir.ui.view">
+            <field name="name">texplus.machine.search</field>
+            <field name="model">texplus.machine</field>
+            <field name="arch" type="xml">
+                <search string="Maquinas TEXPLUS">
+                    <field name="code"/>
+                    <field name="name"/>
+                    <field name="general_machine_id"/>
+                    <filter name="filter_general" string="Generales" domain="[('is_general','=',True)]"/>
+                    <filter name="filter_specific" string="Especificas" domain="[('is_general','=',False)]"/>
+                    <separator/>
+                    <filter name="filter_inactive" string="Inactivas" domain="[('active','=',False)]"/>
+                    <group>
+                        <filter name="group_by_general" string="Maquina General"
+                                domain="[]" context="{'group_by': 'general_machine_id'}"/>
+                        <filter name="group_by_is_general" string="Tipo"
+                                domain="[]" context="{'group_by': 'is_general'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="texplus_machine_action" model="ir.actions.act_window">
+            <field name="name">Maquinas TEXPLUS</field>
+            <field name="res_model">texplus.machine</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="texplus_machine_view_search"/>
+            <field name="context">{'search_default_filter_general': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">No hay maquinas cargadas todavia.</p>
+                <p>Las maquinas se importan automaticamente al instalar/actualizar el modulo desde <code>data/texplus.machine.csv</code>.</p>
+            </field>
+        </record>
+
+        <menuitem id="dev_texplus_machine_menu"
+                  name="Maquinas TEXPLUS"
+                  parent="dev_settings_menu"
+                  action="texplus_machine_action"
+                  sequence="35"/>
+
+        <record id="mrp_routing_workcenter_operation_form_view_texplus_machine" model="ir.ui.view">
+            <field name="name">mrp.routing.workcenter.operation.form.texplus.machine</field>
+            <field name="model">mrp.routing.workcenter.operation</field>
+            <field name="inherit_id" ref="idtx_mrp.mrp_routing_workcenter_operation_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='workcenter_id']" position="after">
+                    <field name="general_machine_id" options="{'no_create': True}"/>
+                    <field name="specific_machine_ids" widget="many2many_tags"
+                           options="{'no_create': True}"/>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="mrp_routing_workcenter_operation_tree_view_texplus_machine" model="ir.ui.view">
+            <field name="name">mrp.routing.workcenter.operation.list.texplus.machine</field>
+            <field name="model">mrp.routing.workcenter.operation</field>
+            <field name="inherit_id" ref="idtx_mrp.mrp_routing_workcenter_operation_tree_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='workcenter_id']" position="after">
+                    <field name="general_machine_id" optional="show"/>
+                    <field name="specific_machine_ids" widget="many2many_tags" optional="hide"/>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>
