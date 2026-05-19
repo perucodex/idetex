@@ -60,6 +60,10 @@ y ficha técnica
         'views/technical_sheet_views.xml',
         'wizards/split_roll_views.xml',
         'views/dev_menu.xml',
+        'views/texplus_machine_views.xml',
+        'data/texplus_machine_data.xml',
+        'data/texplus_maqfas_data.xml',
+        'data/texplus_faspro_general_data.xml',
     ],
     
     'assets': {
