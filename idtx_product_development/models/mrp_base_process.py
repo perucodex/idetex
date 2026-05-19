@@ -4,12 +4,21 @@ import unicodedata
 from collections import defaultdict
 
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 
 _logger = logging.getLogger(__name__)
 TEXPLUS_EMPRCOD = '001'
 FASPRO_CODE_MAX_LEN = 8
+PROCES_CODE_MAX_LEN = 8
+
+
+def _texplus_process_code(name):
+    """Devuelve el codigo TEXPLUS efectivo (ProCod) que se genera a partir
+    del nombre del proceso base: strip + upper + primeros 8 caracteres.
+    Dos nombres distintos en Odoo cuyo _texplus_process_code coincide
+    colisionarian en la tabla PROCES de TEXPLUS (char(8))."""
+    return (name or '').strip().upper()[:PROCES_CODE_MAX_LEN]
 
 
 def _normalize_text(value):
@@ -92,14 +101,127 @@ class MrpBaseProcess(models.Model):
     _name = 'mrp.base.process'
     _description = 'Mrp Base Process'
 
-    name = fields.Char('Name')
-    process_ids = fields.One2many('mrp.base.process.line', 'mrp_base_process_id', string='Process')
+    name = fields.Char('Name', required=True)
+    process_ids = fields.One2many(
+        'mrp.base.process.line', 'mrp_base_process_id', string='Process', copy=True,
+    )
     product_ids = fields.Many2many(
         'product.template', string='Products',
         compute='_compute_products', search='_search_products',
     )
     product_count = fields.Integer(compute='_compute_products')
+    product_analysis_ids = fields.One2many('product.analysis', 'mrp_base_process_id', string='Product Analyses')
+    operation_ids = fields.Many2many(
+        'mrp.routing.workcenter.operation', string='Operaciones',
+        compute='_compute_operation_ids', search='_search_operation_ids',
+    )
 
+    @api.constrains('name')
+    def _check_unique_name(self):
+        for record in self:
+            name = (record.name or '').strip()
+            if not name:
+                continue
+            normalized = name.lower()
+            target_code = _texplus_process_code(name)
+            others = self.sudo().search([
+                ('id', '!=', record.id),
+                ('name', '!=', False),
+            ])
+            for other in others:
+                other_name = (other.name or '').strip()
+                if not other_name:
+                    continue
+                if other_name.lower() == normalized:
+                    raise ValidationError(
+                        'Ya existe un proceso base con el nombre "%s". '
+                        'El nombre debe ser unico.' % name
+                    )
+                if target_code and _texplus_process_code(other_name) == target_code:
+                    raise ValidationError(
+                        'El nombre "%s" colisiona con "%s" en TEXPLUS: ambos '
+                        'se truncan a "%s" (TEXPLUS solo guarda %d caracteres '
+                        'en ProCod). Modifica el nombre para que los primeros '
+                        '%d caracteres sean distintos.'
+                        % (name, other_name, target_code,
+                           PROCES_CODE_MAX_LEN, PROCES_CODE_MAX_LEN)
+                    )
+
+    @api.constrains('process_ids', 'process_ids.sequence', 'process_ids.operation_id')
+    def _check_unique_composition(self):
+        for record in self:
+            signature = record._composition_signature()
+            if not signature:
+                continue
+            others = self.sudo().search([('id', '!=', record.id)])
+            for other in others:
+                if other._composition_signature() == signature:
+                    raise ValidationError(
+                        'El proceso base "%s" ya tiene exactamente las mismas '
+                        'fases en el mismo orden que "%s". No se permite '
+                        'duplicar la composicion.' % (other.name, record.name)
+                    )
+
+    def _composition_signature(self):
+        """Firma ordenada del proceso: tuple de (sequence, operation_id)
+        para cada linea, ordenada por (sequence, id). Sirve para comparar
+        si dos procesos base tienen la misma composicion."""
+        self.ensure_one()
+        return tuple(
+            (line.sequence, line.operation_id.id)
+            for line in self.process_ids.sorted(key=lambda l: (l.sequence, l.id))
+            if line.operation_id
+        )
+
+    def copy_data(self, default=None):
+        default = dict(default or {})
+        vals_list = super().copy_data(default=default)
+        if 'name' in default:
+            return vals_list
+
+        all_records = self.sudo().search([('name', '!=', False)])
+        used_names = {(p.name or '').strip().lower() for p in all_records}
+        used_codes = {_texplus_process_code(p.name) for p in all_records if p.name}
+
+        for record, vals in zip(self, vals_list):
+            new_name = record._generate_unique_copy_name(used_names, used_codes)
+            vals['name'] = new_name
+            used_names.add((new_name or '').strip().lower())
+            used_codes.add(_texplus_process_code(new_name))
+        return vals_list
+
+    def _generate_unique_copy_name(self, used_names, used_codes):
+        """Construye un nombre para la copia que satisface:
+           - El nombre completo es unico (case-insensitive).
+           - Los primeros 8 caracteres (ProCod en TEXPLUS) son unicos.
+        Estrategia: intentar primero '<name> (Copia)'; si el codigo de 8
+        caracteres ya colisiona (caso de nombres >= 8 chars), modificar
+        los primeros caracteres con un sufijo numerico hasta encontrar uno
+        libre."""
+        self.ensure_one()
+        base_name = (self.name or '').strip()
+        if not base_name:
+            return ''
+
+        candidate = '%s (Copia)' % base_name
+        cand_code = _texplus_process_code(candidate)
+        if (candidate.strip().lower() not in used_names
+                and cand_code not in used_codes):
+            return candidate
+
+        base_code = _texplus_process_code(base_name)
+        rest = base_name[len(base_code):] if len(base_name) > len(base_code) else ''
+        for counter in range(2, 1000):
+            suffix = str(counter)
+            prefix_len = max(1, PROCES_CODE_MAX_LEN - len(suffix))
+            new_prefix = base_name[:prefix_len] + suffix
+            candidate = '%s%s (Copia)' % (new_prefix, rest)
+            cand_code = _texplus_process_code(candidate)
+            if (candidate.strip().lower() not in used_names
+                    and cand_code not in used_codes):
+                return candidate
+        return '%s (Copia)' % base_name
+    
     @api.depends('product_analysis_ids.product_id')
     def _compute_products(self):
         # Resolve the products via the analyses that reference this base process.
@@ -121,13 +243,6 @@ class MrpBaseProcess(models.Model):
         Analysis = self.env['product.analysis']
         analyses = Analysis.search([('product_id', operator, value)])
         return [('id', 'in', analyses.mapped('mrp_base_process_id').ids)]
-
-    product_analysis_ids = fields.One2many('product.analysis', 'mrp_base_process_id', string='Product Analyses')
-
-    operation_ids = fields.Many2many(
-        'mrp.routing.workcenter.operation', string='Operaciones',
-        compute='_compute_operation_ids', search='_search_operation_ids',
-    )
 
     @api.depends('process_ids.operation_id')
     def _compute_operation_ids(self):
