@@ -30,12 +30,19 @@ class IdtxPosStockReport(models.Model):
     location_id = fields.Many2one('stock.location', string='Ubicación', readonly=True)
     write_date = fields.Datetime('Última Actualización', readonly=True)
 
+    # Campos de reserva: indican si el rollo está bloqueado por un pedido POS guardado
+    is_reserved = fields.Boolean('Bloqueado', readonly=True,
+        help='True cuando el rollo está reservado por un pedido POS guardado y no se puede vender.')
+    reserved_by_order_id = fields.Many2one('pos.order', string='Reservado por pedido', readonly=True,
+        help='Pedido POS que tiene este rollo bloqueado.')
+
     @api.model
     def _load_pos_data_fields(self, config):
         return [
             'id', 'product_id', 'product_name', 'product_code', 'product_label',
             'lot_id', 'lot_name', 'partida', 'partida_label', 'roll_id', 'roll_name',
-            'color_code', 'color_name', 'quantity', 'location_id', 'write_date'
+            'color_code', 'color_name', 'quantity', 'location_id', 'write_date',
+            'is_reserved', 'reserved_by_order_id',   # campos de bloqueo para el POS
         ]
 
     @api.model
@@ -99,49 +106,59 @@ class IdtxPosStockReport(models.Model):
         self.env.cr.execute("""
             CREATE OR REPLACE VIEW %s AS (
                 SELECT
-                    q.id AS id,
-                    q.product_id AS product_id,
+                    sub.lot_id AS id,                   -- lot_id como ID estable: un lote = una fila, sin importar cuántos quants existan
+                    sub.product_id AS product_id,
                     pt.default_code AS product_code,
                     '[' || pt.default_code || '] ' || COALESCE(pt.name->>'es_PE', pt.name->>'en_US', pt.name->>'und') AS product_label,
                     COALESCE(pt.name->>'es_PE', pt.name->>'en_US', pt.name->>'und') AS product_name,
-                    q.lot_id AS lot_id,
+                    sub.lot_id AS lot_id,
                     l.name AS lot_name,
-                    CASE 
+                    CASE
                         WHEN LENGTH(l.name) > 4 THEN LEFT(l.name, LENGTH(l.name) - 4)
-                        ELSE l.name 
+                        ELSE l.name
                     END AS partida,
-                    '[' || pt.default_code || '] ' || COALESCE(pt.name->>'es_PE', pt.name->>'en_US', pt.name->>'und') || ' | ' || COALESCE(ldl.color_name, 'S/C') || ' | P:' || 
-                    CASE 
+                    '[' || pt.default_code || '] ' || COALESCE(pt.name->>'es_PE', pt.name->>'en_US', pt.name->>'und') || ' | ' || COALESCE(ldl.color_name, 'S/C') || ' | P:' ||
+                    CASE
                         WHEN LENGTH(l.name) > 4 THEN LEFT(l.name, LENGTH(l.name) - 4)
-                        ELSE l.name 
+                        ELSE l.name
                     END AS partida_label,
                     ldl.color_code AS color_code,
                     ldl.color_name AS color_name,
                     r.id AS roll_id,
                     r.name AS roll_name,
-                    q.quantity AS quantity,
-                    q.location_id AS location_id,
-                    q.write_date AS write_date
-                FROM
-                    stock_quant q
-                JOIN
-                    product_product pp ON pp.id = q.product_id
-                JOIN
-                    product_template pt ON pt.id = pp.product_tmpl_id
-                JOIN
-                    stock_location sl ON sl.id = q.location_id
-                LEFT JOIN
-                    stock_lot l ON l.id = q.lot_id
-                LEFT JOIN
-                    color_recipe cr ON cr.id = l.color_recipe_id
-                LEFT JOIN
-                    lab_dev_line ldl ON ldl.id = cr.lab_dev_line_id
-                LEFT JOIN
-                    mrp_production_roll r ON r.id = l.roll_id
-                WHERE
-                    q.quantity > 0
-                    AND pt.available_in_pos = True
-                    AND sl.usage = 'internal'
+                    sub.quantity AS quantity,           -- stock NETO (suma de todos los quants del lote en ubicaciones internas)
+                    sub.location_id AS location_id,
+                    GREATEST(sub.write_date, COALESCE(l.write_date, sub.write_date)) AS write_date,
+                    -- ^ usamos el write_date más reciente entre el quant y el lote, para que cuando se reserve/libere
+                    --   el lote (write en stock.lot), la sincronización incremental del POS lo detecte y refresque is_reserved.
+                    (l.pos_reserved_order_id IS NOT NULL) AS is_reserved,       -- flag para bloquear en frontend
+                    l.pos_reserved_order_id AS reserved_by_order_id             -- referencia al pedido que lo bloquea
+                FROM (
+                    -- Subconsulta de agregación: suma todos los quants del mismo lote en ubicaciones internas
+                    -- Esto evita que un quant positivo "tape" a otro quant negativo del mismo lote
+                    SELECT
+                        q.lot_id,
+                        q.product_id,
+                        SUM(q.quantity) AS quantity,    -- stock neto real del lote
+                        MIN(q.location_id) AS location_id,
+                        MAX(q.write_date) AS write_date -- cualquier cambio en cualquier quant del lote dispara la sincronización
+                    FROM stock_quant q
+                    JOIN stock_location sl ON sl.id = q.location_id
+                    JOIN product_product pp ON pp.id = q.product_id
+                    JOIN product_template pt ON pt.id = pp.product_tmpl_id
+                    WHERE
+                        pt.available_in_pos = True
+                        AND sl.usage = 'internal'
+                        AND q.lot_id IS NOT NULL        -- productos sin lote se excluyen (todos los textiles tienen lote)
+                    GROUP BY q.lot_id, q.product_id
+                    HAVING SUM(q.quantity) >= 0         -- >= 0 permite que los lotes vendidos (stock=0) aparezcan en la sincronización incremental
+                ) sub
+                JOIN product_product pp ON pp.id = sub.product_id
+                JOIN product_template pt ON pt.id = pp.product_tmpl_id
+                LEFT JOIN stock_lot l ON l.id = sub.lot_id
+                LEFT JOIN color_recipe cr ON cr.id = l.color_recipe_id
+                LEFT JOIN lab_dev_line ldl ON ldl.id = cr.lab_dev_line_id
+                LEFT JOIN mrp_production_roll r ON r.id = l.roll_id
             )
         """ % self._table)
 

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# Nota: el campo pos_reserved_order_id se declara en idtx_pos_report_stock/models/stock_lot.py
+# para que exista antes de que se cree la vista SQL que lo referencia.
 from odoo import models, api, _
 
 class StockLot(models.Model):

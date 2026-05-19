@@ -8,6 +8,10 @@ patch(TicketScreen.prototype, {
         super.setup();
         this.state.filter = "SYNCED";
         this.state.search = { fieldName: "RECEIPT_NUMBER", searchTerm: "" };
+        // No auto-seleccionar la orden activa al entrar a Órdenes: el detalle de la derecha
+        // y el resumen quedan en blanco hasta que el cajero elija una orden manualmente.
+        // (El core hace selectedOrderUuid = pos.getOrder()?.uuid, lo cual mostraba la orden actual.)
+        this.state.selectedOrderUuid = null;
     },
     async reprintInvoice(order) {
         if (!order) return;
@@ -49,5 +53,18 @@ patch(TicketScreen.prototype, {
         const order = this.getSelectedOrder();
         if (!order) return 0;
         return order.getOrderlines().length;
+    },
+
+    /*
+     * Override getNumpadButtons: el botón "% Disc" del TicketScreen se traduce como
+     * "% de descuento" en español y se ve recortado/extraño en el numpad. Forzamos "%".
+     */
+    getNumpadButtons() {
+        const buttons = super.getNumpadButtons(...arguments);   // obtener la lista original
+        const discBtn = buttons.find(b => b.value === "discount");
+        if (discBtn) {
+            discBtn.text = "%";                                  // forzar el símbolo corto
+        }
+        return buttons;
     }
 });

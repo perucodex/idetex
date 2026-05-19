@@ -87,6 +87,27 @@
         opacity: 0.5;
         cursor: not-allowed;
     }
+
+    // Rollo bloqueado por otro pedido POS guardado: fondo rojo claro y texto atenuado.
+    // El cursor `not-allowed` evita confusiones (el click está bloqueado en JS).
+    .idtx-row-reserved {
+        background-color: rgba(220, 53, 69, 0.12) !important;       // bootstrap danger con baja opacidad
+        cursor: not-allowed !important;
+        color: #842029;                                              // texto oscuro rojizo para contraste
+        pointer-events: auto;                                        // mantener para que el tooltip funcione
+
+        // Cuando ADEMÁS está seleccionado (caso imposible normal, pero defensivo)
+        // tiene prioridad el estilo de bloqueo.
+        &.idtx-row-selected {
+            background-color: rgba(220, 53, 69, 0.20) !important;
+        }
+
+        // Tachar el lote para reforzar visualmente la indisponibilidad
+        td:nth-child(5) {                                            // columna del lote
+            text-decoration: line-through;
+            text-decoration-color: rgba(132, 32, 41, 0.5);
+        }
+    }
 }
 
 // Limitación del ancho del buscador en el Navbar
@@ -273,5 +294,98 @@
 
     .md-checkbox {
         transform: scale(0.8); // Checkbox más pequeño
+    }
+}
+
+// En el detalle de la orden de la TicketScreen (Reembolso), ocultar el bloque
+// "Subtotal / Impuestos / Total" del OrderDisplay porque esa info ya aparece
+// en el resumen del actionpad de la derecha (Kilos/Rollos/Subtotal/Impuestos/TOTAL).
+.ticket-screen .order-summary {
+    display: none !important;
+}
+
+// Reglas para la barra inferior de la TicketScreen (Órdenes / Reembolso).
+// Sin estas reglas, los botones cambian de tamaño según el largo del nombre del cliente
+// porque toman los tamaños default de Bootstrap. Aquí los igualamos a los de ProductScreen.
+.idtx-pads-container {
+    .numpad-container {
+        display: flex !important;                               // contenedor flex para que el numpad llene su altura
+        flex-direction: column;
+
+        .numpad {
+            flex: 0 1 auto !important;                          // ya no llena 100%, solo lo necesario
+            display: grid !important;
+            grid-auto-rows: minmax(38px, 50px) !important;      // cada fila como máximo 50px (~20% menos que antes)
+            column-gap: 0.4rem !important;                      // espaciado horizontal entre botones
+            row-gap: 0.4rem !important;                         // espaciado vertical entre filas
+            background-color: transparent !important;           // permitir que se vea el fondo entre botones
+        }
+
+        .numpad-button {
+            height: auto !important;                            // dejar que se ajuste a la fila del grid
+            min-height: 38px !important;                        // pero garantizamos un mínimo legible
+            max-height: 50px !important;                        // tope explícito de 50px para no crecer demasiado
+            font-size: 0.95rem !important;
+            border-radius: 0.4rem !important;                   // bordes redondeados ahora que tienen separación
+        }
+
+        // Anular bordes redondeados que el numpad base aplica solo a las esquinas
+        .numpad-button:where(:not(.modal-body .numpad-button)) {
+            &:first-child, &:nth-child(4),
+            &:nth-last-child(4), &:last-child {
+                border-radius: 0.4rem !important;               // todos los botones con mismo radio
+            }
+        }
+    }
+
+    .summary-actions-container {
+        gap: 2px !important;                                    // espaciado vertical ultra-compacto entre bloques
+
+        // Botones superiores (Detalles / Factura / Recibo)
+        > div.d-flex.gap-1 {
+            gap: 2px !important;                                // espaciado horizontal ultra-compacto entre botones
+            button {
+                height: 38px !important;                        // altura fija para alineación con numpad
+                font-size: 0.78rem !important;
+                padding: 0 !important;
+                flex: 1 1 0 !important;                         // todos del mismo ancho
+                min-width: 0 !important;                        // permitir reducir si hace falta
+            }
+        }
+
+        // Bloque de resumen (Kilos/Subtotal/Rollos/Impuestos/Total)
+        .idtx-actionpad-summary {
+            background-color: white;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+            margin-bottom: 2px;                                 // menos separación con la fila siguiente
+            .summary-box {
+                padding: 2px 4px;
+            }
+        }
+
+        // Fila inferior de botones (Cliente / Upload / Más / Reembolso).
+        // El SelectPartnerButton viene por defecto como btn-lg (~48px). Hacemos que TODOS
+        // los demás botones igualen esa altura para que la fila quede uniforme.
+        .idtx-actionpad-buttons {
+            gap: 2px !important;                                // espaciado horizontal ultra-compacto entre botones
+
+            button,
+            .SelectPartnerButton,
+            .btn {
+                flex: 1 1 0 !important;                         // todos comparten ancho equitativo
+                min-width: 0 !important;                        // evitar que un nombre largo expanda al partner
+                height: 48px !important;                        // altura alineada con el botón del cliente (btn-lg)
+                min-height: 48px !important;
+                font-size: 0.85rem !important;
+                padding: 0 0.5rem !important;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;                        // truncar nombre del cliente si es largo
+            }
+        }
     }
 }

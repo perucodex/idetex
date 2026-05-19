@@ -55,24 +55,8 @@
                             <Numpad class="'small shadow-sm'" buttons="getNumpadButtons()"/>
                         </div>
 
-                        <!-- Resumen y Botones Centrales -->
+                        <!-- Botones de Acción (sin bloque de resumen duplicado: el resumen ya aparece arriba en la cabecera del detalle de la orden) -->
                         <div class="summary-actions-container d-flex flex-column flex-grow-1 gap-2">
-                            
-                            <!-- Bloque de Resumen (Estilo Carrito) -->
-                            <div class="idtx-ticket-summary p-2 rounded border bg-light shadow-xs">
-                                <div class="d-flex justify-content-between border-bottom pb-1 mb-1">
-                                    <span class="text-muted small uppercase">Kilos:</span>
-                                    <span class="fw-bold" t-esc="(totalKilos || 0).toFixed(2)"/>
-                                </div>
-                                <div class="d-flex justify-content-between border-bottom pb-1 mb-1">
-                                    <span class="text-muted small uppercase">Rollos:</span>
-                                    <span class="fw-bold" t-esc="totalRolls || 0"/>
-                                </div>
-                                <div class="d-flex justify-content-between pt-1">
-                                    <span class="text-primary fw-bold small uppercase">TOTAL:</span>
-                                    <span class="text-primary fw-bold fs-5" t-esc="getTotal(_selectedSyncedOrder)"/>
-                                </div>
-                            </div>
 
                             <!-- Botones de Control Compactos -->
                             <div class="d-flex gap-1">
@@ -88,10 +72,12 @@
                             </div>
 
                             <!-- Actionpad (Botón Cliente y Reembolso) -->
+                            <!-- Pasamos la orden seleccionada para que el resumen muestre sus totales (kilos/rollos/subtotal/impuestos/total) -->
                             <ActionpadWidget
                                 partner="_selectedSyncedOrder?.getPartner()"
                                 actionName.translate="Refund"
                                 actionToTrigger.bind="onDoRefund"
+                                order="_selectedSyncedOrder"
                             />
                         </div>
                     </div>

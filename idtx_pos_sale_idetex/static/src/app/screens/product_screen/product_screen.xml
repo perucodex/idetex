@@ -44,11 +44,20 @@
                             <tbody class="align-middle">
                                 <t t-foreach="quantsToDisplay" t-as="quant" t-key="quant.id">
                                     <t t-set="inOrder" t-value="this.isQuantInOrder(quant)"/>
-                                    <tr t-att-class="{'idtx-row-disabled': inOrder, 'cursor-pointer': !inOrder, 'idtx-row-selected': idtxState.selectedQuants[quant.id]}" 
+                                    <!-- isReserved: rollo bloqueado por OTRO pedido POS guardado (no se puede seleccionar/escanear) -->
+                                    <t t-set="isReserved" t-value="this.isQuantReservedByOtherOrder(quant)"/>
+                                    <tr t-att-class="{
+                                            'idtx-row-disabled': inOrder,
+                                            'idtx-row-reserved': isReserved,
+                                            'cursor-pointer': !inOrder and !isReserved,
+                                            'idtx-row-selected': idtxState.selectedQuants[quant.id]
+                                        }"
                                         t-on-click="() => this.toggleQuantSelection(quant)">
                                         <td class="p-3 text-center">
-                                            <div class="form-check d-inline-block">
-                                                <input type="checkbox" 
+                                            <!-- Si el rollo está bloqueado, mostrar candado en lugar del checkbox -->
+                                            <i t-if="isReserved" class="fa fa-lock text-danger" title="Bloqueado por otro pedido"/>
+                                            <div t-else="" class="form-check d-inline-block">
+                                                <input type="checkbox"
                                                        t-att-checked="idtxState.selectedQuants[quant.id]"
                                                        t-att-disabled="inOrder"
                                                        class="form-check-input md-checkbox"
@@ -58,7 +67,11 @@
                                         <td class="p-3 fw-bold text-truncate"><t t-esc="quant.product_code"/></td>
                                         <td class="p-3 fw-bold text-truncate" title="quant.product_name"><t t-esc="quant.product_name"/></td>
                                         <td class="p-3 fw-bold text-truncate"><t t-esc="quant.color_name"/></td>
-                                        <td class="p-3 fw-bold text-truncate"><t t-esc="quant.lot_name"/></td>
+                                        <td class="p-3 fw-bold text-truncate">
+                                            <t t-esc="quant.lot_name"/>
+                                            <!-- Badge "BLOQUEADO" al lado del lote cuando aplica -->
+                                            <span t-if="isReserved" class="badge bg-danger ms-2" style="font-size: 0.65rem;">BLOQUEADO</span>
+                                        </td>
                                         <td class="p-3 idtx-col-ref text-center">
                                             <span class="idtx-ref-pill shadow-xs fw-bold"><t t-esc="quant.roll_name"/></span>
                                         </td>
@@ -89,7 +102,7 @@
     <t t-name="idtx_pos_sale_idetex.ActionpadWidget" t-inherit="point_of_sale.ActionpadWidget" t-inherit-mode="extension" owl="1">
         <xpath expr="//div[hasclass('actionpad')]" position="replace">
             <div class="actionpad d-flex flex-column h-100">
-                <!-- 1. Grid de Totales -->
+                <!-- 1. Grid de Totales (currentOrder se resuelve a props.order si se pasa, sino a pos.getOrder()) -->
                 <div t-if="currentOrder and !currentOrder.isEmpty()" class="idtx-actionpad-summary d-grid gap-1 p-2 bg-white rounded border mb-2" style="grid-template-columns: 1fr 1fr;">
                     <div class="summary-box d-flex justify-content-between border-bottom pb-1">
                         <span class="text-muted" style="font-size: 0.65rem;">Kilos:</span>

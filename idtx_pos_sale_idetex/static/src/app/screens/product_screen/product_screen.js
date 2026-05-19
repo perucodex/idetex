@@ -35,7 +35,7 @@ patch(ProductScreen.prototype, {
                 return [];
             }
 
-            const report = reportModel.getAll();
+            const report = reportModel.getAll().filter(q => q.quantity > 0);  // solo mostrar lotes con stock disponible; los que lleguen a 0 via sync incremental quedan ocultos automáticamente
             const searchWord = (this.pos.searchProductWord || "").trim().toLowerCase();
 
             if (!searchWord) {
@@ -79,9 +79,36 @@ patch(ProductScreen.prototype, {
     },
 
     /*
+     * Helper: indica si el rollo está bloqueado por OTRO pedido POS guardado.
+     * Devuelve true si is_reserved=true y reserved_by_order_id NO es la orden actual.
+     * Si es la orden actual, se considera "ya está en el pedido" (lo maneja isQuantInOrder).
+     */
+    isQuantReservedByOtherOrder(quant) {
+        if (!quant || !quant.is_reserved) return false;                         // no bloqueado → libre
+        const currentOrder = this.pos.getOrder();
+        // reserved_by_order_id puede llegar como record, integer o array [id, "nombre"]
+        const rawOrderId = quant.reserved_by_order_id;
+        const reservedOrderId = rawOrderId?.id ?? (Array.isArray(rawOrderId) ? rawOrderId[0] : rawOrderId);
+        // Si la reserva pertenece a la orden actual del cajero, no la consideramos "ajena"
+        return currentOrder ? reservedOrderId !== currentOrder.id : true;
+    },
+
+    /*
      * Gestiona la selección manual de filas.
+     * Bloquea la selección si el rollo está reservado por otro pedido POS guardado.
      */
     toggleQuantSelection(quant) {
+        // Bloqueo por reserva: notificar y abortar
+        if (this.isQuantReservedByOtherOrder(quant)) {
+            if (this.notification) {
+                this.notification.add(
+                    `El rollo ${quant.lot_name || ''} está bloqueado por otro pedido guardado.`,
+                    { type: "warning", sticky: false }
+                );
+            }
+            return;                                                             // no permitir selección
+        }
+
         if (this.isQuantInOrder(quant)) return;
 
         if (this.idtxState.selectedQuants[quant.id]) {
@@ -94,18 +121,65 @@ patch(ProductScreen.prototype, {
     },
 
     /*
+     * Intercepta escaneos de código de barras tipo lot.
+     * Si el lote escaneado está reservado por otro pedido, rechaza el escaneo con notificación.
+     */
+    async _barcodeGS1Action(parsed_results) {
+        const lotBarcode = parsed_results.find((element) => element.type === "lot");
+        if (lotBarcode && lotBarcode.value) {
+            // Buscar el rollo en el reporte de stock para verificar si está bloqueado
+            const reportModel = this.pos.models["idtx.pos.stock.report"];
+            if (reportModel) {
+                const quant = reportModel.getAll().find(q => q.lot_name === lotBarcode.value);
+                // Si el rollo está reservado por otro pedido, abortar el escaneo
+                if (quant && this.isQuantReservedByOtherOrder(quant)) {
+                    if (this.sound) this.sound.play("scan-error");              // sonido de error
+                    if (this.notification) {
+                        this.notification.add(
+                            `Rollo ${lotBarcode.value} bloqueado por otro pedido guardado. No se puede escanear.`,
+                            { type: "warning", sticky: false }
+                        );
+                    }
+                    return;                                                     // no procesar el escaneo
+                }
+            }
+        }
+        // Caso normal: delegar al comportamiento original
+        return super._barcodeGS1Action(parsed_results);
+    },
+
+    /*
      * AGREGA PRODUCTOS EN BLOQUE: Técnica silenciosa para lotes.
+     * Filtra rollos que pudieran haber sido reservados por otro pedido entre selección y agregado.
      */
     async addSelectedQuants() {
         const selectedIds = Object.keys(this.idtxState.selectedQuants).map(id => parseInt(id));
         if (selectedIds.length === 0) return;
 
         const reportModel = this.pos.models["idtx.pos.stock.report"];
-        const quantsToAdd = selectedIds.map(id => reportModel.get(id)).filter(q => q);
+        // Filtrar rollos válidos: existen y no están reservados por otra orden
+        const allQuants = selectedIds.map(id => reportModel.get(id)).filter(q => q);
+        const blockedQuants = allQuants.filter(q => this.isQuantReservedByOtherOrder(q));
+        const quantsToAdd = allQuants.filter(q => !this.isQuantReservedByOtherOrder(q));
+
+        // Avisar al usuario si alguno fue rechazado por bloqueo (race condition con otra caja)
+        if (blockedQuants.length > 0 && this.notification) {
+            this.notification.add(
+                `${blockedQuants.length} rollo(s) fueron bloqueados por otro pedido y se omitieron.`,
+                { type: "warning", sticky: false }
+            );
+        }
+
+        console.log('[IDTX] addSelectedQuants selectedIds:', selectedIds, 'quantsToAdd:', quantsToAdd.length);
 
         for (const quant of quantsToAdd) {
-            const pId = Array.isArray(quant.product_id) ? quant.product_id[0] : (quant.product_id?.id || quant.product_id);
+            // quant.product_id puede ser: el record del producto (Many2one conectado),
+            // un entero (ID raw si no se conectó), o un array [id,"nombre"] (de search_read).
+            const rawPid = quant.product_id;
+            const pId = rawPid?.id ?? (Array.isArray(rawPid) ? rawPid[0] : rawPid);
             const product = this.pos.models["product.product"].get(pId);
+
+            console.log('[IDTX] quant:', quant.lot_name, 'rawPid:', rawPid, 'pId:', pId, 'product:', product?.id, 'tmpl:', product?.product_tmpl_id?.id, 'qty:', quant.quantity);
 
             if (product && !this.isQuantInOrder(quant)) {
                 // Truco de bypass: simulamos que el lote viene de un escáner.

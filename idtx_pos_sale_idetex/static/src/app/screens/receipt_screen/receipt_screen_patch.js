@@ -8,7 +8,17 @@ import OrderPaymentValidation from "@point_of_sale/app/utils/order_payment_valid
 patch(OrderPaymentValidation.prototype, {
     shouldDownloadInvoice() {
         return false;
-    }
+    },
+
+    // Se ejecuta automáticamente después de que el pago queda validado y el comprobante enviado.
+    // Aprovechamos este gancho para actualizar el stock en memoria sin bloquear la pantalla de recibo.
+    async afterOrderValidation() {
+        const result = await super.afterOrderValidation(...arguments); // ejecutar lógica original primero
+        this.pos.refreshStockData().catch(                             // actualizar stock en segundo plano
+            e => console.error('IDTX: Stock refresh falló:', e)
+        );
+        return result;
+    },
 });
 
 patch(ReceiptScreen.prototype, {

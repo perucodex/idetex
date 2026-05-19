@@ -5,7 +5,9 @@
         <field name="name">idtx.pos.stock.report.list</field>
         <field name="model">idtx.pos.stock.report</field>
         <field name="arch" type="xml">
-            <list string="Existencias PdV" create="false" edit="false" delete="false">
+            <!-- decoration-danger: pinta la fila en rojo cuando is_reserved=True (rollo bloqueado) -->
+            <list string="Existencias PdV" create="false" edit="false" delete="false"
+                  decoration-danger="is_reserved">
                 <header>
                     <button name="reprint" string="Print Bar Code" type="object" class="btn-primary"/>
                     <button name="action_screen_barcode" string="Screen Bar Code" type="object" class="btn-secondary"/>
@@ -20,6 +22,9 @@
                 <field name="quantity" sum="Total"/>
                 <field name="location_id"/>
                 <field name="lot_name"/>
+                <!-- Columna visual del bloqueo: muestra badge con el pedido que lo reserva -->
+                <field name="is_reserved" widget="boolean_toggle" readonly="1" string="Bloq."/>
+                <field name="reserved_by_order_id" optional="show" string="Pedido que bloquea"/>
                 <field name="product_id" optional="hide"/>
                 <field name="lot_id" optional="hide"/>
                 <field name="partida_label" optional="hide"/>
@@ -43,6 +48,16 @@
                 <field name="roll_name"/>
                 <field name="product_id"/>
                 <field name="location_id"/>
+                <!-- Filtro por defecto: solo mostrar lotes con stock disponible -->
+                <filter string="Con Stock" name="filter_with_stock"
+                        domain="[('quantity', '>', 0)]"/>
+                <!-- Filtros para distinguir rollos disponibles vs bloqueados por pedidos POS -->
+                <filter string="Solo Bloqueados" name="filter_only_reserved"
+                        domain="[('is_reserved', '=', True)]"/>
+                <filter string="Solo Disponibles" name="filter_only_available"
+                        domain="[('is_reserved', '=', False)]"/>
+                <!-- Separador visual entre filtros y agrupaciones -->
+                <separator/>
                 <group>
                     <filter string="Código" name="group_code" domain="[]" context="{'group_by':'product_label'}"/>
                     <filter string="Color" name="group_color" domain="[]" context="{'group_by':'color_name'}"/>
@@ -50,6 +65,7 @@
                     <filter string="Producto" name="group_product" domain="[]" context="{'group_by':'product_name'}"/>
                     <filter string="Lote" name="group_lot" domain="[]" context="{'group_by':'lot_name'}"/>
                     <filter string="Ubicación" name="group_location" domain="[]" context="{'group_by':'location_id'}"/>
+                    <filter string="Estado Bloqueo" name="group_reserved" domain="[]" context="{'group_by':'is_reserved'}"/>
                 </group>
             </search>
         </field>
@@ -60,6 +76,8 @@
         <field name="name">Existencias PdV</field>
         <field name="res_model">idtx.pos.stock.report</field>
         <field name="view_mode">list</field>
+        <!-- Dominio por defecto: ocultar lotes con stock 0 -->
+        <field name="domain">[('quantity', '>', 0)]</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
                 No hay existencias registradas.

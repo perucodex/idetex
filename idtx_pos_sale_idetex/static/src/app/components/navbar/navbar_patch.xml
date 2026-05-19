@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!--
+        Agrega el botón "Actualizar Stock" a la izquierda de la barra de búsqueda de productos.
+        Solo visible cuando la barra de búsqueda está visible (en ProductScreen).
+    -->
+    <t t-name="idtx_pos_sale_idetex.Navbar" t-inherit="point_of_sale.Navbar" t-inherit-mode="extension" owl="1">
+        <xpath expr="//Input[@tModel]" position="before">
+            <button t-if="pos.showSearchButton()"
+                    class="btn btn-warning btn-lg lh-lg text-nowrap flex-shrink-0"
+                    t-on-click="refreshStockData"
+                    title="Actualizar Stock - Recalcular existencias">
+                <i class="fa fa-fw fa-refresh"/><span class="ms-1 d-none d-xxl-inline">Actualizar Stock</span>
+            </button>
+        </xpath>
+    </t>
+</templates>
