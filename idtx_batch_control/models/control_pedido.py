@@ -299,11 +299,11 @@ class ControlPedido(models.Model):
                 query = f"""
                 WITH PedidoHDR AS (
                     SELECT bc.BarCod, bc.BarSer, bc.BarSerDsc, bc.BarCodReo, bc.BarCodPar, bc.BarItem2 AS Pedido, bc.BarItem4 AS Partida, bc.BarColNom as ColorCode, bc.BarNomCli as ColorName
-                    FROM BARCAD bc WHERE bc.BarItem2 IN ({placeholders})
+                    FROM BARCAD bc WITH (NOLOCK) WHERE bc.BarItem2 IN ({placeholders})
                 ),
                 Kilos AS (
                     SELECT bp.BarCod, bp.BarCodReo, SUM(bp.BarPieKil) AS Kilos, COUNT(bp.BarCod) AS Rollos
-                    FROM BARPIE bp WHERE bp.BarCod IN (SELECT BarCod FROM PedidoHDR) GROUP BY bp.BarCod, bp.BarCodReo
+                    FROM BARPIE bp WITH (NOLOCK) WHERE bp.BarCod IN (SELECT BarCod FROM PedidoHDR) GROUP BY bp.BarCod, bp.BarCodReo
                 )
                 SELECT h.Pedido, h.Partida, h.BarCod AS HojaDeRuta, h.BarCodReo, h.BarCodPar, h.BarSer, h.BarSerDsc, h.ColorCode, h.ColorName, ISNULL(k.Kilos, 0) AS PesoTotal, ISNULL(k.Rollos, 0) AS Rollos, fp.FasDsc AS Proceso_Ultimo,
                        CASE WHEN bf_last.BarFasDTF > '1753-01-01' AND bf_next.FasCod IS NOT NULL
@@ -311,21 +311,21 @@ class ControlPedido(models.Model):
                        bf_last.BarFasDTI AS FechaInicio, bf_last.BarFasDTF AS FechaFinal
                 FROM PedidoHDR h JOIN Kilos k ON k.BarCod = h.BarCod AND k.BarCodReo = h.BarCodReo AND k.Kilos > 0 AND k.Rollos > 0
                 OUTER APPLY (
-                    SELECT TOP (1) bf.FasCod, bf.BarFasDTI, bf.BarFasDTF, bf.BarOrdLin FROM BARFAS bf
+                    SELECT TOP (1) bf.FasCod, bf.BarFasDTI, bf.BarFasDTF, bf.BarOrdLin FROM BARFAS bf WITH (NOLOCK)
                     WHERE bf.BarCod = h.BarCod AND bf.BarCodReo = h.BarCodReo AND ISNULL(bf.BarCodPar,'') = ISNULL(h.BarCodPar,'') AND bf.BarFasDTI > '1753-01-01'
                     ORDER BY bf.BarOrdLin DESC, bf.BarFasDTI DESC
                 ) bf_last
                 OUTER APPLY (
                     -- Siguiente proceso de la ruta (por BarOrdLin) despues del ultimo
                     -- iniciado. Si no existe, bf_last es el ultimo proceso.
-                    SELECT TOP (1) bf2.FasCod, bf2.BarOrdLin FROM BARFAS bf2
+                    SELECT TOP (1) bf2.FasCod, bf2.BarOrdLin FROM BARFAS bf2 WITH (NOLOCK)
                     WHERE bf2.BarCod = h.BarCod AND bf2.BarCodReo = h.BarCodReo AND ISNULL(bf2.BarCodPar,'') = ISNULL(h.BarCodPar,'')
                       AND bf2.BarOrdLin > bf_last.BarOrdLin
                     ORDER BY bf2.BarOrdLin ASC
                 ) bf_next
-                LEFT JOIN FASPRO fp ON fp.FasCod = bf_last.FasCod
-                LEFT JOIN estatus_reproceso sp ON sp.fase = bf_last.FasCod
-                LEFT JOIN estatus_reproceso sp_next ON sp_next.fase = bf_next.FasCod
+                LEFT JOIN FASPRO fp WITH (NOLOCK) ON fp.FasCod = bf_last.FasCod
+                LEFT JOIN estatus_reproceso sp WITH (NOLOCK) ON sp.fase = bf_last.FasCod
+                LEFT JOIN estatus_reproceso sp_next WITH (NOLOCK) ON sp_next.fase = bf_next.FasCod
                 ORDER BY h.Pedido, h.BarCod, h.BarCodReo, h.BarCodPar;
                 """
                 cursor.execute(query, *nums_batch)
@@ -358,7 +358,8 @@ class ControlPedido(models.Model):
                     placeholders_bc = ",".join(["?"] * len(chunk))
                     q_procs = f"""
                         SELECT bf.BarCod, bf.BarOrdLin, bf.FasCod, bf.MaqCodBis, bf.BarFasDTI, bf.BarFasDTF, bf.BarCodReo, bf.BarCodPar, fp.FasDsc
-                        FROM BARFAS bf LEFT JOIN FASPRO fp ON fp.FasCod = bf.FasCod
+                        FROM BARFAS bf WITH (NOLOCK)
+                        LEFT JOIN FASPRO fp WITH (NOLOCK) ON fp.FasCod = bf.FasCod
                         WHERE bf.BarCod IN ({placeholders_bc}) ORDER BY bf.BarCod, bf.BarOrdLin
                     """
                     cursor.execute(q_procs, *chunk)
@@ -524,7 +525,7 @@ class ControlPedido(models.Model):
                     cursor.execute(
                         f"""
                         SELECT correlvouc, numot, motivo1, area1, FECHA, kneto
-                        FROM ctrl_info
+                        FROM ctrl_info WITH (NOLOCK)
                         WHERE YEAR(FECHA) > 2023
                           AND ACTIVO = 0
                           AND motivo IN ('REPROCESO', 'REPOSICION')
@@ -557,7 +558,7 @@ class ControlPedido(models.Model):
         conn = self._get_sql_connection()
         try:
             cursor = conn.cursor()
-            cursor.execute("SELECT FasCod, FasDsc, MaqCod FROM FASPRO")
+            cursor.execute("SELECT FasCod, FasDsc, MaqCod FROM FASPRO WITH (NOLOCK)")
             for row in cursor.fetchall():
                 code, name, def_maq = _safe_str(row[0]), _safe_str(row[1]), _safe_str(row[2])
                 if not code: continue
@@ -578,7 +579,7 @@ class ControlPedido(models.Model):
         conn = self._get_sql_connection()
         try:
             cursor = conn.cursor()
-            cursor.execute("SELECT OpeCod, OpeNom FROM OPERAR")
+            cursor.execute("SELECT OpeCod, OpeNom FROM OPERAR WITH (NOLOCK)")
             for row in cursor.fetchall():
                 code, name = _safe_str(row[0]), _safe_str(row[1])
                 if not code: continue

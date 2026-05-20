@@ -2,6 +2,7 @@
 
 from . import mrp_production_roll
 from . import mrp_production
+from . import mrp_routing_workcenter_operation
 from . import mrp_routing
 from . import mrp_workcenter
 from . import mrp_workorder_batch

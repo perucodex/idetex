@@ -107,11 +107,28 @@
             <field name="model">mrp.routing.workcenter.operation</field>
             <field name="inherit_id" ref="idtx_mrp.mrp_routing_workcenter_operation_form_view"/>
             <field name="arch" type="xml">
+                <xpath expr="//sheet" position="inside">
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_base_processes" type="object"
+                                class="oe_stat_button" icon="fa-cogs"
+                                invisible="base_process_count == 0">
+                            <field name="base_process_count" widget="statinfo" string="Rutas"/>
+                        </button>
+                    </div>
+                </xpath>
                 <xpath expr="//field[@name='workcenter_id']" position="after">
                     <field name="fas_code" readonly="1"/>
                     <field name="general_machine_id" options="{'no_create': True}" required="1"/>
-                    <field name="specific_machine_ids" widget="many2many_tags"
-                           options="{'no_create': True}"/>
+                </xpath>
+                <xpath expr="//notebook" position="inside">
+                    <page name="texplus_machines_page" string="Maquinas Especificas (TEXPLUS)" groups="idtx_product_development.group_module_product_development_manager">
+                        <field name="specific_machine_ids" options="{'no_create': True}">
+                            <list editable="bottom">
+                                <field name="code"/>
+                                <field name="name"/>
+                            </list>
+                        </field>
+                    </page>
                 </xpath>
             </field>
         </record>
@@ -123,7 +140,8 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='workcenter_id']" position="after">
                     <field name="general_machine_id" optional="show"/>
-                    <field name="specific_machine_ids" widget="many2many_tags" optional="hide"/>
+                    <field name="specific_machine_ids" widget="many2many_tags" optional="hide"
+                           groups="idtx_product_development.group_module_product_development_manager"/>
                 </xpath>
             </field>
         </record>

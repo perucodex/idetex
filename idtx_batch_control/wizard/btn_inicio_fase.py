@@ -40,7 +40,7 @@ class BtnInicioFaseWizard(models.TransientModel):
         try:
             cursor = conn.cursor()
             # Buscamos en la tabla OPERAR por OpeCod
-            query = "SELECT OpeNom FROM OPERAR WHERE OpeCod = ?"
+            query = "SELECT OpeNom FROM OPERAR WITH (NOLOCK) WHERE OpeCod = ?"
             cursor.execute(query, self.operator_code)
             row = cursor.fetchone()
             

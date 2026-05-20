@@ -124,7 +124,11 @@ class TexplusMachine(models.Model):
         return result
 
     def unlink(self):
-        if self.env.context.get('skip_texplus_sync'):
+        # Saltar el chequeo en operaciones internas:
+        # - skip_texplus_sync: imports/cleanups que ya gestionan la sincronia.
+        # - _force_unlink (MODULE_UNINSTALL_FLAG): Odoo limpiando huerfanos
+        #   de ir.model.data durante install/update/uninstall del modulo.
+        if self.env.context.get('skip_texplus_sync') or self.env.context.get('_force_unlink'):
             return super().unlink()
         self._check_not_in_texplus_maquin()
         return super().unlink()
@@ -263,9 +267,33 @@ class TexplusMachine(models.Model):
                     'general_machine_id': general.id,
                 })
 
+        # Tercera pasada: refrescar ir.model.data para que Odoo no trate a
+        # estos registros como huerfanos durante el module update (`_process_end`
+        # borraria ext_ids que ya no aparecen en el data file, y al intentar
+        # eliminar los registros referenciados por mrp.routing.workcenter.operation
+        # rompe por FK constraint). Usamos el helper estandar `_update_xmlids`.
+        # El naming `texplus_machine_<code>` coincide con el del CSV anterior
+        # para reaprovechar las filas ya existentes en ir_model_data.
+        xmlid_data = []
+        for code, _name, _is_general, _general_code in entries:
+            code = (code or '').strip()
+            if not code:
+                continue
+            record = code_to_record.get(code.upper())
+            if not record:
+                continue
+            safe = ''.join(ch if ch.isalnum() else '_' for ch in code)
+            xmlid_data.append({
+                'xml_id': 'idtx_product_development.texplus_machine_%s' % safe,
+                'record': record,
+                'noupdate': False,
+            })
+        if xmlid_data:
+            self.env['ir.model.data'].sudo()._update_xmlids(xmlid_data, update=True)
+
         _logger.info(
-            'texplus.machine: catalogo MAQUIN aplicado (%s entradas procesadas)',
-            len(entries),
+            'texplus.machine: catalogo MAQUIN aplicado (%s entradas procesadas, %s xmlids refrescados)',
+            len(entries), len(xmlid_data),
         )
         return True
 
