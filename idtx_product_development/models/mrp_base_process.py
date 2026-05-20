@@ -1079,6 +1079,7 @@ class MrpBaseProcessLine(models.Model):
     mrp_base_process_id = fields.Many2one('mrp.base.process', string='Base Process')
     sequence = fields.Integer('sequence')
     operation_id = fields.Many2one('mrp.routing.workcenter.operation', string='Operation Name', ondelete='restrict')
+    general_machine_id = fields.Many2one(related="operation_id.general_machine_id", string='Maquina General (TEXPLUS)', readonly=True)
 
     @api.constrains('sequence', 'operation_id', 'mrp_base_process_id')
     def _check_parent_composition(self):
