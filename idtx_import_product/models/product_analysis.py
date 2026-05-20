@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 import re
+import time
 import unicodedata
 import pyodbc
 pyodbc.setDecimalSeparator(".")
@@ -10,6 +11,58 @@ from odoo.exceptions import UserError
 
 import logging
 _logger = logging.getLogger(__name__)
+
+
+def _format_duration(seconds):
+    """Formato compacto h/m/s para logs de progreso."""
+    seconds = int(max(0, seconds))
+    h, rem = divmod(seconds, 3600)
+    m, s = divmod(rem, 60)
+    if h:
+        return '%dh%02dm%02ds' % (h, m, s)
+    if m:
+        return '%dm%02ds' % (m, s)
+    return '%ds' % s
+
+
+class _ProgressLogger:
+    """Reporta progreso cada `every_n` items O `every_seconds` segundos
+    (lo que ocurra primero). Imprime porcentaje, items/s, transcurrido y ETA.
+    Pensado para loops largos donde loggear cada item ahoga el log.
+    """
+    def __init__(self, label, total, every_n=50, every_seconds=10.0, log=_logger):
+        self.label = label
+        self.total = max(0, int(total))
+        self.every_n = max(1, int(every_n))
+        self.every_seconds = float(every_seconds)
+        self.log = log
+        self.start_t = time.time()
+        self.last_log_t = self.start_t
+        self.last_log_count = 0
+
+    def tick(self, count, extra=''):
+        if self.total <= 0:
+            return
+        now = time.time()
+        is_last = count >= self.total
+        is_first = self.last_log_count == 0
+        delta_n = count - self.last_log_count
+        delta_t = now - self.last_log_t
+        if not is_first and not is_last and delta_n < self.every_n and delta_t < self.every_seconds:
+            return
+        elapsed = now - self.start_t
+        rate = (count / elapsed) if elapsed > 0 else 0.0
+        remaining = ((self.total - count) / rate) if rate > 0 else 0.0
+        pct = (count / self.total) * 100
+        self.log.info(
+            '[%s] %d/%d %.1f%% | %.1f items/s | elapsed %s | ETA %s%s',
+            self.label, count, self.total, pct, rate,
+            _format_duration(elapsed), _format_duration(remaining),
+            (' | ' + extra) if extra else '',
+        )
+        self.last_log_t = now
+        self.last_log_count = count
+
 
 TERMO_2 = []
 MCS = []
@@ -473,6 +526,185 @@ class ProductAnalysis(models.Model):
     # ordered phase list for a route. Both queries live in this class so they
     # reuse `_get_texplus_sql_connection`.
     # ---------------------------------------------------------------------
+    def _get_texplus_active_articles(self):
+        """TEXPLUS truth: dict product_code(15 chars) -> article metadata.
+
+        Una sola query: el server hace el JOIN y devuelve solo los ~16k
+        ArtCods activos enriquecidos con ARTICU+CLIENT. Asi no traemos
+        las tablas completas al cliente (ARTICU tiene >60k filas y un
+        SELECT * tarda mas de 5 min incluso en SSMS).
+
+        Claves de la optimizacion:
+        - JOINs por columnas CHAR puras (sin LTRIM/RTRIM) para que el
+          optimizador use indices.
+        - WITH (NOLOCK) en las 3 tablas para evitar contencion de locks
+          con sesiones concurrentes de TEXPLUS.
+        - ROW_NUMBER() para tomar la fila mas reciente por ArtCod en una
+          sola pasada server-side.
+        """
+        try:
+            conn = self._get_texplus_sql_connection()
+        except Exception:
+            _logger.warning("TEXPLUS unreachable for active article catalog", exc_info=True)
+            return {}
+        try:
+            conn.timeout = 300  # tope: 5 min
+            cursor = conn.cursor()
+            t0 = time.time()
+            _logger.info("active_articles: query server-side JOIN ARTLIN+ARTICU+CLIENT...")
+            cursor.execute(
+                """
+                SELECT
+                    RTRIM(r.ArtCod) AS ArtCod,
+                    r.CliCod,
+                    r.ProCod,
+                    r.Fecha,
+                    RTRIM(ISNULL(a.ArtDsc, '')) AS ArtDsc,
+                    RTRIM(ISNULL(c.CliNif, '')) AS CliNif,
+                    RTRIM(ISNULL(c.CliNom, '')) AS CliNom
+                FROM (
+                    SELECT EmprCod, ArtCod, CliCod, RTRIM(ProCod) AS ProCod,
+                           COALESCE(ProFecA, ProFecM) AS Fecha,
+                           ROW_NUMBER() OVER (
+                               PARTITION BY ArtCod
+                               ORDER BY COALESCE(ProFecA, ProFecM) DESC, CliCod ASC
+                           ) AS rn
+                    FROM dbo.ARTLIN WITH (NOLOCK)
+                    WHERE EmprCod = ?
+                      AND ProAct = ?
+                      AND LEN(RTRIM(ArtCod)) = 16
+                ) r
+                LEFT JOIN dbo.ARTICU a WITH (NOLOCK)
+                    ON a.EmprCod = r.EmprCod
+                   AND a.ArtCod = r.ArtCod
+                   AND a.CliCod = r.CliCod
+                LEFT JOIN dbo.CLIENT c WITH (NOLOCK)
+                    ON c.EmprCod = r.EmprCod
+                   AND c.CliCod = r.CliCod
+                WHERE r.rn = 1
+                """,
+                '001', 'S',
+            )
+            articles = {}
+            for art, cli, pro, fecha, dsc, nif, nom in cursor.fetchall():
+                art_cod = (art or '').strip()
+                if not art_cod or len(art_cod) != 16:
+                    continue
+                pro_cod = (pro or '').strip()
+                if not pro_cod:
+                    continue
+                articles[art_cod[1:]] = {
+                    'art_cod': art_cod,
+                    'pro_cod': pro_cod,
+                    'cli_cod': cli,
+                    'fecha': fecha,
+                    'art_dsc': (dsc or '').strip(),
+                    'cli_nif': (nif or '').strip(),
+                    'cli_nom': (nom or '').strip(),
+                }
+            _logger.info(
+                "active_articles: %d articulos cargados | %s",
+                len(articles), _format_duration(time.time() - t0),
+            )
+            return articles
+        finally:
+            try: cursor.close()
+            except Exception: pass
+            try: conn.close()
+            except Exception: pass
+
+    def _import_texplus_skeleton_articles(self, articles_map, seen_codes, weaving_process):
+        """Crea product_analysis esqueleto para articulos TEXPLUS que NO
+        aparecieron en el loop SITPRO. Datos minimos: codigo parseado +
+        descripcion ARTICU + partner CLIENT. La ruta se aplica luego por
+        `_apply_texplus_route_to_analyses` (que tambien usa la mas reciente).
+        """
+        if not articles_map:
+            return 0
+
+        existing_codes = {
+            (a.product_code or '').strip()
+            for a in self.sudo().search([('product_code', '!=', False)])
+            if a.product_code
+        }
+        pending_codes = set(articles_map) - set(seen_codes) - existing_codes
+        if not pending_codes:
+            return 0
+
+        placeholder = self.env['mrp.base.process'].search(
+            [('name', '=', '__SITPRO_PLACEHOLDER__')], limit=1
+        )
+        if not placeholder:
+            placeholder = self.env['mrp.base.process'].create({
+                'name': '__SITPRO_PLACEHOLDER__',
+                'process_ids': [Command.create({'operation_id': weaving_process.id})] if weaving_process else [],
+            })
+
+        ruc_type = False
+        try:
+            ruc_type = self.env.ref('l10n_pe.it_RUC').id
+        except Exception:
+            ruc_type = False
+
+        Partner = self.env['res.partner']
+        created = 0
+        total = len(pending_codes)
+        progress = _ProgressLogger('skeleton', total, every_n=50, every_seconds=10.0)
+        for index, product_code in enumerate(sorted(pending_codes), 1):
+            data = articles_map[product_code]
+            art_cod = data['art_cod']
+            progress.tick(index, extra=art_cod)
+
+            partner = Partner.browse()
+            cli_nif = data['cli_nif']
+            cli_nom = data['cli_nom']
+            if cli_nif:
+                partner = Partner.search(
+                    [('vat', '=', cli_nif), ('is_company', '=', True)], limit=1
+                )
+                if not partner:
+                    partner_vals = {
+                        'name': cli_nom or cli_nif,
+                        'vat': cli_nif,
+                        'is_company': True,
+                    }
+                    if len(cli_nif) == 11 and validar_ruc_peru(cli_nif) and ruc_type:
+                        partner_vals['l10n_latam_identification_type_id'] = ruc_type
+                    partner = Partner.create(partner_vals)
+
+            fam = self.env['product.family'].search([('code', '=', art_cod[1:3])], limit=1)
+            app = self.env['product.appearance'].search([('code', '=', art_cod[8:10])], limit=1)
+            fib = self.env['product.fiber'].search([('code', '=', art_cod[5:6])], limit=1)
+            tit = self.env['product.title'].search([('code', '=', art_cod[3:5])], limit=1)
+            gau = self.env['product.gauge'].search([('code', '=', art_cod[6:8])], limit=1)
+            codfam = 'rect' if art_cod[1:3] in ('CD', 'CO', 'CR', 'CT', 'CU', 'PO', 'PT', 'PU') else False
+            if not codfam:
+                codfam = 'othe' if art_cod[1:3] in ('BL', 'EN', 'PP', 'PR', 'TO', 'TP', 'TW') else False
+            is_problem = not all([partner, fam, app, fib, tit, gau])
+            vals = {
+                'analysis_date': data['fecha'] or fields.Date.today(),
+                'partner_id': partner.id if partner else False,
+                'product_description': data['art_dsc'],
+                'product_family_id': fam.id or False,
+                'product_appearance_id': app.id or False,
+                'product_fiber_id': fib.id or False,
+                'product_title_id': tit.id or False,
+                'weave_type': codfam if codfam else 'open',
+                'gauge_id': gau.id or False,
+                'density': a_int(art_cod[13:16]) or 1,
+                'standard_width': a_float(art_cod[10:13]) or 1,
+                'product_code': product_code,
+                'is_problem': is_problem,
+                'sitpro_code': art_cod,
+                'mrp_base_process_id': placeholder.id,
+            }
+            analysis = self.create(vals)
+            analysis._onchange_mrp_base_process_id()
+            if not analysis.product_id:
+                analysis.with_context(by_pass_error=True).action_product()
+            created += 1
+        return created
+
     def _get_texplus_route_map(self, product_codes):
         """Return {15-char product_code: route_code} from ARTLIN.
 
@@ -737,7 +969,27 @@ class ProductAnalysis(models.Model):
 
     # ----- Sync -----
     def sync_from_sql(self):
+        _logger.info("sync_from_sql: INICIO")
+        # Verdad TEXPLUS: art_cod activos con ruta. Filtra el loop SITPRO
+        # (no importa articulos sin ruta TEXPLUS) y alimenta la pasada de
+        # esqueletos al final.
+        t0 = time.time()
+        _logger.info("sync_from_sql: consultando TEXPLUS ARTLIN+ARTICU+CLIENT...")
+        texplus_articles = self._get_texplus_active_articles()
+        _logger.info(
+            "sync_from_sql: TEXPLUS devolvio %d articulos activos (%s)",
+            len(texplus_articles), _format_duration(time.time() - t0),
+        )
+        if not texplus_articles:
+            _logger.warning(
+                "TEXPLUS no devolvio articulos activos; el importador "
+                "filtrara todo. Revisa la conexion."
+            )
+        seen_codes = set()
+
         try:
+            t0 = time.time()
+            _logger.info("sync_from_sql: conectando a SITPRO...")
             conn = self._get_sql_connection()
             cursor = conn.cursor()
             query = f"""
@@ -772,21 +1024,33 @@ class ProductAnalysis(models.Model):
                     tcr.ficha,
                     tp.item;
             """
+            _logger.info("sync_from_sql: ejecutando query principal SITPRO (6 JOINs)...")
+            t_q = time.time()
             cursor.execute(query)
-            
+            _logger.info("sync_from_sql: query ejecutado en %s, haciendo fetchall...", _format_duration(time.time() - t_q))
+            t_f = time.time()
             last_weaving_data_id = self.env['analysis.weaving.data']
             cursor_result = cursor.fetchall()
             total = len(cursor_result)
+            _logger.info(
+                "sync_from_sql: fetchall %s | %d filas SITPRO listas | total fase SITPRO setup: %s",
+                _format_duration(time.time() - t_f), total, _format_duration(time.time() - t0),
+            )
             weaving_workcenter = self.env['mrp.workcenter'].search([('name','=','TEJEDURIA')])
             if not weaving_workcenter:
                 weaving_workcenter = self.env['mrp.workcenter'].create({'name': 'TEJEDURIA', 'operation_type': 'weaving'})
             weaving_process = self.env['mrp.routing.workcenter.operation'].search([('name','=','TEJIDO CRUDO')])
             if not weaving_process:
                 weaving_process = self.env['mrp.routing.workcenter.operation'].create({'name': 'TEJIDO CRUDO', 'workcenter_id': weaving_workcenter.id})
+            progress = _ProgressLogger('SITPRO loop', total, every_n=100, every_seconds=10.0)
             for contador, row in enumerate(cursor_result, 1):
-                _logger.info(str(contador) + ' / ' + str(total) + '  ' + str(int((contador / total)*100)) + '%')
-                existing_technical_sheet = self.env['technical.sheet'].search([('sitpro_sheet','=',row.ficha.strip())], limit=1)
+                progress.tick(contador)
                 code = row.cdgart.strip()
+                if code[1:] not in texplus_articles:
+                    # Sin ruta activa en TEXPLUS -> no se importa (regla del usuario).
+                    continue
+                seen_codes.add(code[1:])
+                existing_technical_sheet = self.env['technical.sheet'].search([('sitpro_sheet','=',row.ficha.strip())], limit=1)
                 product_analysis = self.search([('product_code','=', code[1:])], limit=1)
                 partner = self.env['res.partner'].search([('vat','=', row.ruc.strip()),('is_company','=', True)])
                 if len(partner) > 1:
@@ -859,6 +1123,18 @@ class ProductAnalysis(models.Model):
                     product_analysis.with_context(by_pass_error=True).action_product()
                 if existing_technical_sheet:
                     continue
+                porcen_val = a_float(row.porcen)
+                if porcen_val <= 0:
+                    # SITPRO trae filas con porcen=0 (datos huerfanos del flujo de
+                    # composicion). El constraint _check_weight_positive en
+                    # product_analysis.py:435 las rechaza, asi que se saltan aqui
+                    # para no abortar todo el import.
+                    _logger.warning(
+                        'SITPRO row %s: fiber %r has porcen=%r (<=0), skipping fiber line.',
+                        row.ficha.strip() if row.ficha else '?',
+                        (row.articulo or '').strip(), row.porcen,
+                    )
+                    continue
                 ligament = self.env['ligament.type'].search([('name','=',row.ligamento.strip())])
                 codhil = row.codigo.strip() if row.codigo.strip() != '0' or row.codigo.strip() != '' else ''
                 if last_weaving_data_id and last_weaving_data_id.sitpro_sheet != row.ficha.strip():
@@ -908,8 +1184,19 @@ class ProductAnalysis(models.Model):
                 conn.close()
             except Exception:
                 pass
-        # Replace SITPRO routes (or the placeholder created above) with the
-        # ones currently in TEXPLUS for every analysis we touched.
+        # Segunda pasada: articulos que estan en TEXPLUS pero NO en SITPRO
+        # (tipico de servicios S* sin ficha). Se crean como esqueleto con la
+        # metadata derivable del codigo + ARTICU + CLIENT.
+        try:
+            skeleton_count = self._import_texplus_skeleton_articles(
+                texplus_articles, seen_codes, weaving_process,
+            )
+            _logger.info("TEXPLUS skeleton import: %s nuevos articulos", skeleton_count)
+        except Exception:
+            _logger.exception("TEXPLUS skeleton import failed")
+
+        # Apply real TEXPLUS routes (mas reciente por ArtCod) a todos los
+        # analysis. Reemplaza el placeholder por la ruta real.
         try:
             self._apply_texplus_route_to_analyses(
                 self.search([('product_code', '!=', False)])

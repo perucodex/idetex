@@ -147,13 +147,26 @@ class MrpBaseProcess(models.Model):
                            PROCES_CODE_MAX_LEN, PROCES_CODE_MAX_LEN)
                     )
 
-    @api.constrains('process_ids', 'process_ids.sequence', 'process_ids.operation_id')
+    # Nombre del proceso base "comodin" creado por el importador SITPRO como
+    # paso intermedio antes de asignar la ruta real de TEXPLUS. Esta excluido
+    # del constraint de composicion porque es un registro de sistema que muchos
+    # analisis comparten transitoriamente.
+    _SITPRO_PLACEHOLDER_NAME = '__SITPRO_PLACEHOLDER__'
+
+    @api.constrains('process_ids')
     def _check_unique_composition(self):
+        if self.env.context.get('skip_composition_check'):
+            return
         for record in self:
+            if (record.name or '').strip() == self._SITPRO_PLACEHOLDER_NAME:
+                continue
             signature = record._composition_signature()
             if not signature:
                 continue
-            others = self.sudo().search([('id', '!=', record.id)])
+            others = self.sudo().search([
+                ('id', '!=', record.id),
+                ('name', '!=', self._SITPRO_PLACEHOLDER_NAME),
+            ])
             for other in others:
                 if other._composition_signature() == signature:
                     raise ValidationError(
@@ -432,10 +445,14 @@ class MrpBaseProcess(models.Model):
         )
         if cursor.fetchone():
             return phase_code
+        # MaqCod solo proviene de la maquina general TEXPLUS. Si la operacion
+        # no tiene general_machine_id asignada, se deja en NULL. NO usamos
+        # operation.workcenter_id.name porque ese es el AREA (ej. "PRE ESTAMPADO")
+        # que truncado a 6 chars produce codigos basura ("PRE ES") inexistentes
+        # en MAQUIN.
+        workcenter_code = None
         if operation.general_machine_id and operation.general_machine_id.code:
             workcenter_code = _fit_char(operation.general_machine_id.code, 6)
-        else:
-            workcenter_code = _fit_char(operation.workcenter_id.name if operation.workcenter_id else None, 6)
         self._upsert_texplus_record(
             cursor,
             'FASPRO',
@@ -589,14 +606,21 @@ class MrpBaseProcess(models.Model):
         )
 
     def _sync_to_texplus(self, old_names=None):
+        # Excluir el placeholder de sistema: su nombre (22 chars) no cabe en
+        # TEXPLUS.PROCES.ProCod (char 8) y ademas no representa un proceso real.
+        syncable = self.filtered(
+            lambda r: (r.name or '').strip() and (r.name or '').strip() != self._SITPRO_PLACEHOLDER_NAME
+        )
+        if not syncable:
+            return
         conn = None
         cursor = None
-        record_codes = [(record.name or '').strip() for record in self if (record.name or '').strip()]
+        record_codes = [(record.name or '').strip() for record in syncable]
         try:
             conn = self._get_texplus_sql_connection()
             cursor = conn.cursor()
             self._configure_texplus_cursor(cursor)
-            for record in self:
+            for record in syncable:
                 old_code = (old_names or {}).get(record.id)
                 record._sync_record_to_texplus(cursor, old_code=old_code)
             conn.commit()
@@ -632,9 +656,15 @@ class MrpBaseProcess(models.Model):
         return result
 
     def unlink(self):
-        process_codes = [(record.name or '').strip() for record in self]
+        # Excluir placeholder de la propagacion a TEXPLUS (no existe alla).
+        process_codes = [
+            (record.name or '').strip()
+            for record in self
+            if (record.name or '').strip()
+            and (record.name or '').strip() != self._SITPRO_PLACEHOLDER_NAME
+        ]
         self.mapped('process_ids').with_context(skip_texplus_sync=True).unlink()
-        if not self.env.context.get('skip_texplus_sync'):
+        if not self.env.context.get('skip_texplus_sync') and process_codes:
             self.sudo()._delete_from_texplus(process_codes)
         result = super(MrpBaseProcess, self.with_context(skip_texplus_sync=True)).unlink()
         return result
@@ -912,10 +942,10 @@ class MrpRoutingWorkcenterOperation(models.Model):
                     continue
 
                 if sync_faspro:
+                    # MaqCod solo de la maquina general TEXPLUS. No usar
+                    # workcenter_id.name (es el AREA, no un codigo de maquina).
                     if operation.general_machine_id and operation.general_machine_id.code:
                         general_code = _fit_char(operation.general_machine_id.code, 6)
-                    elif operation.workcenter_id:
-                        general_code = _fit_char(operation.workcenter_id.name, 6)
                     else:
                         general_code = None
                     cursor.execute(
@@ -1049,6 +1079,17 @@ class MrpBaseProcessLine(models.Model):
     mrp_base_process_id = fields.Many2one('mrp.base.process', string='Base Process')
     sequence = fields.Integer('sequence')
     operation_id = fields.Many2one('mrp.routing.workcenter.operation', string='Operation Name', ondelete='restrict')
+
+    @api.constrains('sequence', 'operation_id', 'mrp_base_process_id')
+    def _check_parent_composition(self):
+        """Reverifica el constraint de composicion del proceso padre cuando se
+        modifican lineas. Equivalente al efecto de `@api.constrains` con paths
+        dotted, que Odoo no soporta sintacticamente."""
+        if self.env.context.get('skip_composition_check'):
+            return
+        parents = self.mapped('mrp_base_process_id')
+        if parents:
+            parents._check_unique_composition()
 
     @api.model_create_multi
     def create(self, vals_list):

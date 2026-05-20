@@ -108,7 +108,8 @@
             <field name="inherit_id" ref="idtx_mrp.mrp_routing_workcenter_operation_form_view"/>
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='workcenter_id']" position="after">
-                    <field name="general_machine_id" options="{'no_create': True}"/>
+                    <field name="fas_code" readonly="1"/>
+                    <field name="general_machine_id" options="{'no_create': True}" required="1"/>
                     <field name="specific_machine_ids" widget="many2many_tags"
                            options="{'no_create': True}"/>
                 </xpath>

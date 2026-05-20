@@ -34,6 +34,7 @@
                                     <list editable="bottom">
                                         <field name="sequence" widget="handle"/>
                                         <field name="operation_id"/>
+                                        <field name="general_machine_id"/>
                                     </list> 
                                 </field>
                             </page>
