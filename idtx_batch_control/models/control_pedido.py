@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from dbf import Char
 import datetime
+import logging
 import pyodbc
 pyodbc.setDecimalSeparator(".")
 from odoo import models, fields, api, _
@@ -8,6 +9,8 @@ from odoo.exceptions import UserError
 import dbf
 
 from .utils import _safe_str, _safe_float, _safe_date, _safe_bool
+
+_logger = logging.getLogger(__name__)
 
 # ---------- Helpers DBF ----------
 def _read_dbf(filename, limit=None, nums=None):
@@ -459,7 +462,77 @@ class ControlPedido(models.Model):
         if process_vals_to_create:
             self.env['control.proceso.lines'].create(process_vals_to_create)
         self._sync_ctrl_info_reprocesos(list(existing_map.values()) + list(self.env['control.pedido'].browse(line_cmds_by_pedido.keys())))
+        self._cleanup_zombie_lines(rows, existing_map)
         return {"created": created, "updated": updated}
+
+    def _cleanup_zombie_lines(self, rows, existing_map):
+        """Borra lineas Odoo cuya combinacion (pedido, route, batch) ya no
+        existe en TEXPLUS. Aparecen cuando una partida es anulada/movida en
+        TEXPLUS a otra hoja de ruta o pedido distinto: la linea original
+        queda huérfana porque el sync solo agrega/actualiza, nunca borra
+        lo que ya no aparece.
+
+        Antes de borrar, las evaluaciones de tono (`control.tono.eval.group.line`)
+        de la zombie se reasignan a la 'gemela' del mismo batch (si existe),
+        para no perder datos de calidad.
+
+        Solo limpia pedidos confirmados (que devolvieron al menos una fila
+        TEXPLUS); pedidos sin datos quedan intactos para evitar borrados
+        accidentales cuando hay errores transitorios de la conexion.
+        """
+        valid_keys_by_pedido = {}
+        for row in rows:
+            pedido_num = _safe_str(row.get("Pedido"))
+            pedido = existing_map.get(pedido_num)
+            if not pedido:
+                continue
+            route = _safe_str(row.get("HojaDeRuta"))
+            batch = _safe_str(row.get("Partida")) or ''
+            if route and batch:
+                valid_keys_by_pedido.setdefault(pedido.id, set()).add((route, batch))
+
+        if not valid_keys_by_pedido:
+            return
+
+        Line = self.env['control.pedido.line']
+        zombies = Line.browse()
+        for pedido_id, valid_keys in valid_keys_by_pedido.items():
+            odoo_lines = Line.search([
+                ('pedido_id', '=', pedido_id),
+                ('batch', '!=', False), ('batch', '!=', ''),
+                ('route', '!=', False), ('route', '!=', ''),
+            ])
+            for line in odoo_lines:
+                if (line.route, line.batch) not in valid_keys:
+                    zombies |= line
+
+        if not zombies:
+            return
+
+        # Reasignar tono evals a la gemela del mismo batch en otro pedido
+        # (la sincronizada actualmente con TEXPLUS).
+        keeper_by_zombie = {}
+        for zombie in zombies:
+            keeper = Line.search([
+                ('id', 'not in', zombies.ids),
+                ('batch', '=', zombie.batch),
+            ], limit=1)
+            if keeper:
+                keeper_by_zombie[zombie.id] = keeper.id
+
+        if keeper_by_zombie:
+            TonoLine = self.env['control.tono.eval.group.line'].sudo()
+            evals = TonoLine.search([('pedido_line_id', 'in', list(keeper_by_zombie.keys()))])
+            for ev in evals:
+                new_id = keeper_by_zombie.get(ev.pedido_line_id.id)
+                if new_id and ev.pedido_line_id.id != new_id:
+                    ev.pedido_line_id = new_id
+
+        _logger.info(
+            "sync_from_dbf: cleanup zombie lines = %s (re-asignadas %s evaluaciones de tono)",
+            len(zombies), len(keeper_by_zombie),
+        )
+        zombies.unlink()
 
     def _sync_ctrl_info_reprocesos(self, pedidos):
         """Pull motivo/area from SQL Server `ctrl_info` and apply to lines.
