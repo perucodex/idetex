@@ -278,16 +278,24 @@ class ControlPedido(models.Model):
                 created += 1
                 existing_map[num] = pedido
             pedidos |= pedido
+        # Indices de lineas existentes:
+        # - by_full_key: (route, batch, codpro) -> match exacto preferente.
+        # - by_route_batch: (route, batch) -> fallback cuando el codpro
+        #   historico era distinto (campo vacio o con un prefijo diferente).
+        #   Evita duplicar lineas zombies cuando la logica de codpro cambia.
         existing_lines_by_pedido = {}
+        existing_by_route_batch = {}
         if pedidos:
             for line in self.env["control.pedido.line"].search([("pedido_id", "in", pedidos.ids)]):
                 pedido_id = line.pedido_id.id
-                if pedido_id not in existing_lines_by_pedido:
-                    existing_lines_by_pedido[pedido_id] = {}
-                key = (line.route, line.batch, line.codpro)
-                if key not in existing_lines_by_pedido[pedido_id]:
-                    existing_lines_by_pedido[pedido_id][key] = self.env["control.pedido.line"]
-                existing_lines_by_pedido[pedido_id][key] |= line
+                existing_lines_by_pedido.setdefault(pedido_id, {})
+                existing_by_route_batch.setdefault(pedido_id, {})
+                full_key = (line.route, line.batch, line.codpro)
+                rb_key = (line.route, line.batch)
+                existing_lines_by_pedido[pedido_id].setdefault(full_key, self.env["control.pedido.line"])
+                existing_lines_by_pedido[pedido_id][full_key] |= line
+                existing_by_route_batch[pedido_id].setdefault(rb_key, self.env["control.pedido.line"])
+                existing_by_route_batch[pedido_id][rb_key] |= line
         conn = self._get_sql_connection()
         try:
             cursor = conn.cursor()
@@ -398,6 +406,12 @@ class ControlPedido(models.Model):
             if key in processes_by_valid_key: vals_line["proceso_ids"] = processes_by_valid_key[key]
             line_key = (vals_line.get("route"), vals_line.get("batch"), vals_line.get("codpro"))
             existing_lines = existing_lines_by_pedido.get(pedido.id, {}).get(line_key)
+            if not existing_lines:
+                # Fallback: linea creada en sync anterior con un codpro distinto
+                # (vacio o con la 'P' inicial antes de aplicarse [1:]). La
+                # actualizamos in-place en vez de crear una duplicada zombie.
+                rb_key = (vals_line.get("route"), vals_line.get("batch"))
+                existing_lines = existing_by_route_batch.get(pedido.id, {}).get(rb_key)
             if existing_lines:
                 target_line = existing_lines.sorted(
                     key=lambda l: (_barcodreo_rank(l.barcodreo), l.id),
