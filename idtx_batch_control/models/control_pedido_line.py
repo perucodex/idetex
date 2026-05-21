@@ -182,7 +182,14 @@ class ControlPedidoLine(models.Model):
             end = False
 
         product = self.env['product.template'].search([('default_code', '=', _safe_str(dr["BarSer"])[1:])], limit=1)
-        lav_dev_line = self.env['lab.dev.line'].search([('color_code', '=', _safe_str(dr["ColorCode"]))], limit=1)  
+        lav_dev_line = self.env['lab.dev.line'].search([('color_code', '=', _safe_str(dr["ColorCode"]))], limit=1)
+
+        process = _safe_str(dr["Proceso_Ultimo"]) or 'SIN AVANCE'
+        area = _safe_str(dr["Area"]) or 'VOUCHER'
+        # Si la partida termino control de calidad con fechas de inicio y fin
+        # cerradas, se considera TERMINADA y el area refleja ese estado final.
+        if process.strip().upper() == 'CONTROL DE CALIDAD' and start and end:
+            area = 'TERMINADO'
 
         return {
             "route": _safe_str(dr["HojaDeRuta"]),
@@ -192,8 +199,8 @@ class ControlPedidoLine(models.Model):
             "batch": _safe_str(dr["Partida"]) or '',
             "kilograms": _safe_float(dr["PesoTotal"]),
             "rollos": _safe_float(dr["Rollos"]),
-            "process": _safe_str(dr["Proceso_Ultimo"]) or 'SIN AVANCE',
-            "area": _safe_str(dr["Area"]) or 'VOUCHER',
+            "process": process,
+            "area": area,
             "start_date": start,
             "end_date": end,
             "colorcode": _safe_str(dr["ColorCode"]),
