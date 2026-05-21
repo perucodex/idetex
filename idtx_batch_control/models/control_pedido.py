@@ -470,12 +470,19 @@ class ControlPedido(models.Model):
 
                 if "proceso_ids" in vals_line and vals_line["proceso_ids"]:
                     existing_procs = {proc.barOrdLin: proc for proc in target_line.proceso_ids}
+                    new_ordlines = {cmd[2].get('barOrdLin') for cmd in vals_line["proceso_ids"]}
                     for cmd in vals_line["proceso_ids"]:
                         vals_proc = cmd[2].copy()
                         vals_proc['pedido_line_id'] = target_line.id
                         proc_key = vals_proc.get('barOrdLin')
                         if proc_key in existing_procs: existing_procs[proc_key].write(vals_proc)
                         else: process_vals_to_create.append(vals_proc)
+                    # Borrar procesos huerfanos: existen en Odoo pero ya no en
+                    # TEXPLUS para esta (BarCod, BarCodReo). Pasa cuando una
+                    # linea cambia de Reo y los procesos viejos quedan atados.
+                    zombie_procs = [proc for ord_lin, proc in existing_procs.items() if ord_lin not in new_ordlines]
+                    if zombie_procs:
+                        self.env['control.proceso.lines'].browse([p.id for p in zombie_procs]).unlink()
             else:
                 procesos_temp = vals_line.pop("proceso_ids", None)
                 line_cmds_by_pedido.setdefault(pedido.id, []).append((0, 0, vals_line))
@@ -746,6 +753,26 @@ class ControlPedido(models.Model):
                 cursor.execute(query, *nums_batch)
                 cols = [c[0] for c in cursor.description]
                 rows.extend([dict(zip(cols, row)) for row in cursor.fetchall()])
+
+            # Procesos detalle por (BarCod, BarCodReo, BarCodPar) — para
+            # validar y limpiar procesos huerfanos en Odoo.
+            barcods = {_safe_str(r.get("HojaDeRuta")) for r in rows if r.get("HojaDeRuta")}
+            barcods.discard('')
+            processes_by_valid_key = {}
+            if barcods:
+                bc_list = list(barcods)
+                for i in range(0, len(bc_list), 1000):
+                    chunk = bc_list[i:i + 1000]
+                    placeholders_bc = ",".join(["?"] * len(chunk))
+                    cursor.execute(
+                        f"""SELECT bf.BarCod, bf.BarOrdLin, bf.BarCodReo, bf.BarCodPar
+                            FROM BARFAS bf WITH (NOLOCK)
+                            WHERE bf.BarCod IN ({placeholders_bc})""",
+                        *chunk,
+                    )
+                    for bc, ordlin, bcreo, bcpar in cursor.fetchall():
+                        k = (_safe_str(bc), _safe_float(bcreo) or '', _safe_str(bcpar) or '')
+                        processes_by_valid_key.setdefault(k, set()).add(int(ordlin or 0))
         finally:
             conn.close()
 
@@ -785,6 +812,16 @@ class ControlPedido(models.Model):
             }
             existing_lines.write(write_vals)
             updated += len(existing_lines)
+            # Limpiar procesos huerfanos para cada linea: procesos en Odoo
+            # cuyo BarOrdLin no esta en TEXPLUS para esa (BarCod, BarCodReo).
+            bc = _safe_str(dr.get("HojaDeRuta"))
+            bcreo = _safe_float(dr.get("BarCodReo")) or ''
+            bcpar = _safe_str(dr.get("BarCodPar")) or ''
+            valid_ordlines = processes_by_valid_key.get((bc, bcreo, bcpar), set())
+            for line in existing_lines:
+                zombies = line.proceso_ids.filtered(lambda p: p.barOrdLin not in valid_ordlines)
+                if zombies:
+                    zombies.unlink()
         # Tambien refresca motivo/area de reproceso y kilos a reprocesar
         # desde SITPRO ctrl_info para los pedidos cerrados (cuando esos
         # datos fueron completados despues del cierre del pedido).
