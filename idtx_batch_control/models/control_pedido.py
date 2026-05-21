@@ -252,9 +252,35 @@ class ControlPedido(models.Model):
             # if num.strip() == '00434-26':
             # import logging
             # logging.getLogger(__name__).info(f"Debug sync: {num}")
+        # Cierre suave: pedidos que estaban activos en Odoo y acaban de
+        # cerrarse en SITPRO (ACTIVO=False en DBF) se sincronizan UNA ULTIMA
+        # VEZ antes de marcarlos inactivos. Asi su estado final (areas,
+        # procesos, fechas) queda congelado limpio. Sin esto, se quedaban con
+        # el estado de la corrida anterior - tipico caso: area=ACABADO cuando
+        # ya tenian CALIDAD como next process.
+        if nums_to_settle:
+            recently_closed = self.search([
+                ('numordped', 'in', list(set(nums_to_settle))),
+                ('is_active', '=', True),
+            ])
+            for rec in recently_closed:
+                num = rec.numordped
+                if num and num not in nums_seen:
+                    nums_seen.add(num)
+                    nums.append(num)
+                    cab_by_num[num] = {
+                        'fecha': rec.fecha,
+                        'fecoc': rec.fecoc,
+                        'customer': rec.customer or '',
+                        'user_id': rec.user_id.id if rec.user_id else False,
+                        'tipoventa': rec.tipoventa or '',
+                        'total_weight': rec.total_weight or 0.0,
+                        'is_active': False,  # queda inactivo despues del refresh
+                    }
+
         if not nums:
             return {"created": 0, "updated": 0}
-        
+
         settle_chunk = 2000
         for i in range(0, len(nums_to_settle), settle_chunk):
             settle_batch = nums_to_settle[i:i + settle_chunk]
@@ -640,6 +666,119 @@ class ControlPedido(models.Model):
         self.sync_operators()
         res = self.sync_from_dbf()
         return {"type": "ir.actions.client", "tag": "display_notification", "params": {"title": "FoxPro → Odoo", "message": f"Creados: {res['created']} | Actualizados: {res['updated']}", "sticky": False}}
+
+    def sync_closed_pedidos_once(self):
+        """One-shot: refresca lineas de pedidos cerrados (is_active=False)
+        con los datos actuales de TEXPLUS. Util para corregir areas/procesos
+        que quedaron congelados con el estado de antes del cierre del pedido.
+
+        Re-ejecuta la query principal del cron sin filtrar por activos.
+        Solo ACTUALIZA lineas existentes (no crea ni borra). Tampoco toca
+        el flag is_active del pedido.
+
+        Pensado para correr UNA VEZ desde shell, no como cron periodico.
+        """
+        pedidos = self.search([('is_active', '=', False)])
+        nums = [p.numordped for p in pedidos if p.numordped]
+        if not nums:
+            return {"updated": 0}
+        _logger.info("sync_closed_pedidos_once: procesando %s pedidos inactivos", len(nums))
+        existing_map = {p.numordped: p for p in pedidos}
+
+        existing_lines_by_pedido = {}
+        existing_by_route_batch = {}
+        for line in self.env['control.pedido.line'].search([('pedido_id', 'in', pedidos.ids)]):
+            pedido_id = line.pedido_id.id
+            existing_lines_by_pedido.setdefault(pedido_id, {})
+            existing_by_route_batch.setdefault(pedido_id, {})
+            full_key = (line.route, line.batch, line.codpro)
+            rb_key = (line.route, line.batch)
+            existing_lines_by_pedido[pedido_id].setdefault(full_key, self.env['control.pedido.line'])
+            existing_lines_by_pedido[pedido_id][full_key] |= line
+            existing_by_route_batch[pedido_id].setdefault(rb_key, self.env['control.pedido.line'])
+            existing_by_route_batch[pedido_id][rb_key] |= line
+
+        conn = self._get_sql_connection()
+        rows = []
+        try:
+            cursor = conn.cursor()
+            sql_chunk = 900
+            for i in range(0, len(nums), sql_chunk):
+                nums_batch = nums[i:i + sql_chunk]
+                placeholders = ",".join(["?"] * len(nums_batch))
+                query = f"""
+                WITH PedidoHDR AS (
+                    SELECT bc.BarCod, bc.BarSer, bc.BarSerDsc, bc.BarCodReo, bc.BarCodPar, bc.BarItem2 AS Pedido, bc.BarItem4 AS Partida, bc.BarColNom as ColorCode, bc.BarNomCli as ColorName
+                    FROM BARCAD bc WITH (NOLOCK) WHERE bc.BarItem2 IN ({placeholders})
+                ),
+                Kilos AS (
+                    SELECT bp.BarCod, bp.BarCodReo, SUM(bp.BarPieKil) AS Kilos, COUNT(bp.BarCod) AS Rollos
+                    FROM BARPIE bp WITH (NOLOCK) WHERE bp.BarCod IN (SELECT BarCod FROM PedidoHDR) GROUP BY bp.BarCod, bp.BarCodReo
+                )
+                SELECT h.Pedido, h.Partida, h.BarCod AS HojaDeRuta, h.BarCodReo, h.BarCodPar, h.BarSer, h.BarSerDsc, h.ColorCode, h.ColorName, ISNULL(k.Kilos, 0) AS PesoTotal, ISNULL(k.Rollos, 0) AS Rollos, fp.FasDsc AS Proceso_Ultimo,
+                       CASE WHEN bf_last.BarFasDTF > '1753-01-01' AND bf_next.FasCod IS NOT NULL
+                            THEN sp_next.area ELSE sp.area END AS Area,
+                       bf_last.BarFasDTI AS FechaInicio, bf_last.BarFasDTF AS FechaFinal
+                FROM PedidoHDR h JOIN Kilos k ON k.BarCod = h.BarCod AND k.BarCodReo = h.BarCodReo AND k.Kilos > 0 AND k.Rollos > 0
+                OUTER APPLY (
+                    SELECT TOP (1) bf.FasCod, bf.BarFasDTI, bf.BarFasDTF, bf.BarOrdLin FROM BARFAS bf WITH (NOLOCK)
+                    WHERE bf.BarCod = h.BarCod AND bf.BarCodReo = h.BarCodReo AND ISNULL(bf.BarCodPar,'') = ISNULL(h.BarCodPar,'') AND bf.BarFasDTI > '1753-01-01'
+                    ORDER BY bf.BarOrdLin DESC, bf.BarFasDTI DESC
+                ) bf_last
+                OUTER APPLY (
+                    SELECT TOP (1) bf2.FasCod, bf2.BarOrdLin FROM BARFAS bf2 WITH (NOLOCK)
+                    WHERE bf2.BarCod = h.BarCod AND bf2.BarCodReo = h.BarCodReo AND ISNULL(bf2.BarCodPar,'') = ISNULL(h.BarCodPar,'')
+                      AND bf2.BarOrdLin > bf_last.BarOrdLin
+                    ORDER BY bf2.BarOrdLin ASC
+                ) bf_next
+                LEFT JOIN FASPRO fp WITH (NOLOCK) ON fp.FasCod = bf_last.FasCod
+                LEFT JOIN estatus_reproceso sp WITH (NOLOCK) ON sp.fase = bf_last.FasCod
+                LEFT JOIN estatus_reproceso sp_next WITH (NOLOCK) ON sp_next.fase = bf_next.FasCod
+                """
+                cursor.execute(query, *nums_batch)
+                cols = [c[0] for c in cursor.description]
+                rows.extend([dict(zip(cols, row)) for row in cursor.fetchall()])
+        finally:
+            conn.close()
+
+        latest_rows = {}
+        for row in rows:
+            key = (_safe_str(row.get("Pedido")), _safe_str(row.get("Partida")),
+                   _safe_str(row.get("HojaDeRuta")), _safe_str(row.get("BarSer")))
+            current = latest_rows.get(key)
+            if not current or _barcodreo_rank(row.get("BarCodReo")) >= _barcodreo_rank(current.get("BarCodReo")):
+                latest_rows[key] = row
+        rows = list(latest_rows.values())
+
+        Line = self.env['control.pedido.line']
+        updated = 0
+        for dr in rows:
+            num = _safe_str(dr.get("Pedido"))
+            pedido = existing_map.get(num)
+            if not pedido:
+                continue
+            vals_line = Line._vals_from_det_row(dr)
+            full_key = (vals_line.get("route"), vals_line.get("batch"), vals_line.get("codpro"))
+            existing_lines = existing_lines_by_pedido.get(pedido.id, {}).get(full_key)
+            if not existing_lines:
+                rb_key = (vals_line.get("route"), vals_line.get("batch"))
+                existing_lines = existing_by_route_batch.get(pedido.id, {}).get(rb_key)
+            if not existing_lines:
+                continue
+            write_vals = {
+                'codpro': vals_line.get('codpro'),
+                'rollos': vals_line.get('rollos'),
+                'kilograms': vals_line.get('kilograms'),
+                'process': vals_line.get('process'),
+                'area': vals_line.get('area'),
+                'start_date': vals_line.get('start_date'),
+                'end_date': vals_line.get('end_date'),
+                'barcodreo': vals_line.get('barcodreo'),
+            }
+            existing_lines.write(write_vals)
+            updated += len(existing_lines)
+        _logger.info("sync_closed_pedidos_once: actualizadas %s lineas", updated)
+        return {"updated": updated}
 
     def sync_master_data(self):
         conn = self._get_sql_connection()
