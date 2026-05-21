@@ -186,9 +186,13 @@ class ControlPedidoLine(models.Model):
 
         process = _safe_str(dr["Proceso_Ultimo"]) or 'SIN AVANCE'
         area = _safe_str(dr["Area"]) or 'VOUCHER'
-        # Si la partida termino control de calidad con fechas de inicio y fin
-        # cerradas, se considera TERMINADA y el area refleja ese estado final.
-        if process.strip().upper() == 'CONTROL DE CALIDAD' and start and end:
+        # TERMINADO solo si CALIDAD es la ULTIMA fase de la ruta (no hay
+        # proceso siguiente planificado, ni siquiera reprocesos), y tiene
+        # fecha de inicio y fin cerradas.
+        next_process = _safe_str(dr.get("Proceso_Siguiente"))
+        if (process.strip().upper() == 'CONTROL DE CALIDAD'
+                and start and end
+                and not next_process):
             area = 'TERMINADO'
 
         return {

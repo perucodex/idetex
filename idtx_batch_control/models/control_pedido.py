@@ -194,7 +194,13 @@ class ControlPedido(models.Model):
     def settle_order(self):
         res = _settle_order_dbf("/mnt/fox/sit06/dbf/vta_cab_pedido.dbf", self.numordped, not self.is_active)
         if res:
-            self.is_active = not self.is_active
+            new_active = not self.is_active
+            self.is_active = new_active
+            # Propagar al estado de las lineas:
+            # - Liquidacion (is_active False -> state='se'): lineas a 'completed'.
+            # - Reversion (is_active True): lineas vuelven a 'active'.
+            line_state = 'active' if new_active else 'completed'
+            self.line_ids.write({'state': line_state})
         return res
 
     def _get_sql_connection(self):
@@ -345,7 +351,8 @@ class ControlPedido(models.Model):
                 SELECT h.Pedido, h.Partida, h.BarCod AS HojaDeRuta, h.BarCodReo, h.BarCodPar, h.BarSer, h.BarSerDsc, h.ColorCode, h.ColorName, ISNULL(k.Kilos, 0) AS PesoTotal, ISNULL(k.Rollos, 0) AS Rollos, fp.FasDsc AS Proceso_Ultimo,
                        CASE WHEN bf_last.BarFasDTF > '1753-01-01' AND bf_next.FasCod IS NOT NULL
                             THEN sp_next.area ELSE sp.area END AS Area,
-                       bf_last.BarFasDTI AS FechaInicio, bf_last.BarFasDTF AS FechaFinal
+                       bf_last.BarFasDTI AS FechaInicio, bf_last.BarFasDTF AS FechaFinal,
+                       bf_next.FasCod AS Proceso_Siguiente
                 FROM PedidoHDR h JOIN Kilos k ON k.BarCod = h.BarCod AND k.BarCodReo = h.BarCodReo AND k.Kilos > 0 AND k.Rollos > 0
                 OUTER APPLY (
                     SELECT TOP (1) bf.FasCod, bf.BarFasDTI, bf.BarFasDTF, bf.BarOrdLin FROM BARFAS bf WITH (NOLOCK)
@@ -718,7 +725,8 @@ class ControlPedido(models.Model):
                 SELECT h.Pedido, h.Partida, h.BarCod AS HojaDeRuta, h.BarCodReo, h.BarCodPar, h.BarSer, h.BarSerDsc, h.ColorCode, h.ColorName, ISNULL(k.Kilos, 0) AS PesoTotal, ISNULL(k.Rollos, 0) AS Rollos, fp.FasDsc AS Proceso_Ultimo,
                        CASE WHEN bf_last.BarFasDTF > '1753-01-01' AND bf_next.FasCod IS NOT NULL
                             THEN sp_next.area ELSE sp.area END AS Area,
-                       bf_last.BarFasDTI AS FechaInicio, bf_last.BarFasDTF AS FechaFinal
+                       bf_last.BarFasDTI AS FechaInicio, bf_last.BarFasDTF AS FechaFinal,
+                       bf_next.FasCod AS Proceso_Siguiente
                 FROM PedidoHDR h JOIN Kilos k ON k.BarCod = h.BarCod AND k.BarCodReo = h.BarCodReo AND k.Kilos > 0 AND k.Rollos > 0
                 OUTER APPLY (
                     SELECT TOP (1) bf.FasCod, bf.BarFasDTI, bf.BarFasDTF, bf.BarOrdLin FROM BARFAS bf WITH (NOLOCK)
@@ -777,6 +785,10 @@ class ControlPedido(models.Model):
             }
             existing_lines.write(write_vals)
             updated += len(existing_lines)
+        # Tambien refresca motivo/area de reproceso y kilos a reprocesar
+        # desde SITPRO ctrl_info para los pedidos cerrados (cuando esos
+        # datos fueron completados despues del cierre del pedido).
+        self._sync_ctrl_info_reprocesos(pedidos)
         _logger.info("sync_closed_pedidos_once: actualizadas %s lineas", updated)
         return {"updated": updated}
 
