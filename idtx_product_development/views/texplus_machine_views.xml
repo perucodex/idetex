@@ -123,7 +123,7 @@
                 <xpath expr="//notebook" position="inside">
                     <page name="texplus_machines_page" string="Maquinas Especificas (TEXPLUS)" groups="idtx_product_development.group_module_product_development_manager">
                         <field name="specific_machine_ids" options="{'no_create': True}">
-                            <list editable="bottom">
+                            <list>
                                 <field name="code"/>
                                 <field name="name"/>
                             </list>
