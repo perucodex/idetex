@@ -16,17 +16,23 @@ class ProductAnalysis(models.Model):
 
     def _propagate_base_process(self):
         """After the in-Odoo propagation runs, also refresh SITPRO's
-        `ficha_ruta_final.dbf` for the matching cdgart variants. Only that
-        DBF table is touched — the full export is not re-run.
+        `ficha_ruta_final.dbf` and the TEXPLUS route tables across every
+        empresa that has the article registered. Best-effort — neither
+        external system failure can roll back the Odoo write.
         """
         super()._propagate_base_process()
         try:
             self._sync_ficha_ruta_final_dbf()
         except Exception:
-            # The DBF update is best-effort. We never want a SITPRO problem
-            # to roll back the Odoo write.
             _logger.exception(
                 "product.analysis %s: fallo al refrescar ficha_ruta_final.dbf",
+                self.display_name,
+            )
+        try:
+            self._sync_texplus_routes()
+        except Exception:
+            _logger.exception(
+                "product.analysis %s: fallo al refrescar rutas TEXPLUS",
                 self.display_name,
             )
 
@@ -92,6 +98,64 @@ class ProductAnalysis(models.Model):
             _logger.warning(
                 "product.analysis %s: ninguna ficha SITPRO encontrada para product_code=%s "
                 "(probados: %s)",
+                self.display_name, self.product_code,
+                [f"{p}{self.product_code}" for p in _SITPRO_PREFIXES],
+            )
+
+    def _sync_texplus_routes(self):
+        """For each (S, P) variant of `product_code`, refresh the TEXPLUS
+        route definition across every empresa that has the article. Only
+        the route tables are touched (Texplus_Ruta_Proceso, PROCES, Rutas,
+        Ruta_ENBT, ARTLIN.ProCod, SERPAU) — the rest of the article's data
+        is left untouched.
+        """
+        self.ensure_one()
+        if not self.product_code:
+            return
+        base_name = self.mrp_base_process_id.name or ''
+        if not base_name:
+            _logger.info(
+                "product.analysis %s: sin base process, salto sync TEXPLUS",
+                self.display_name,
+            )
+            return
+
+        helper = self.technical_sheet_ids[:1]
+        if not helper:
+            helper = self.env['technical.sheet'].new({'company_id': self.company_id.id})
+
+        _logger.info(
+            "product.analysis %s: refrescando rutas TEXPLUS (base=%s)",
+            self.display_name, base_name,
+        )
+        matched_any = False
+        for prefix in _SITPRO_PREFIXES:
+            cdgart = f"{prefix}{self.product_code}"
+            try:
+                pairs = helper._sync_texplus_routes_by_cdgart(
+                    cdgart, self.routing_ids, base_name,
+                )
+            except Exception:
+                _logger.exception(
+                    "product.analysis %s: fallo TEXPLUS cdgart=%s",
+                    self.display_name, cdgart,
+                )
+                continue
+            if pairs:
+                matched_any = True
+                _logger.info(
+                    "product.analysis %s: TEXPLUS actualizado cdgart=%s empresas=%s",
+                    self.display_name, cdgart, pairs,
+                )
+            else:
+                _logger.info(
+                    "product.analysis %s: TEXPLUS no tiene cdgart=%s (saltado)",
+                    self.display_name, cdgart,
+                )
+        if not matched_any:
+            _logger.warning(
+                "product.analysis %s: ningun articulo TEXPLUS encontrado "
+                "para product_code=%s (probados: %s)",
                 self.display_name, self.product_code,
                 [f"{p}{self.product_code}" for p in _SITPRO_PREFIXES],
             )

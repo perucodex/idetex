@@ -1051,6 +1051,140 @@ class TechnicalSheet(models.Model):
                 })
         return fichas
 
+    # ---- TEXPLUS partial sync (route + SERPAU, all empresas) --------------
+
+    def _sync_texplus_routes_by_cdgart(self, cdgart, route_lines, base_name):
+        """Refresh the TEXPLUS route definition for `cdgart` across EVERY
+        empresa that has the article registered in ARTICU.
+
+        Updates the following tables for each (EmprCod, CliCod) where the
+        article exists:
+          - PROCES / Rutas / Ruta_ENBT (route headers, keyed by EmprCod+ProCod)
+          - ARTLIN.ProCod (article -> route binding)
+          - SERPAU (article-route-phase associations)
+        Plus once globally:
+          - Texplus_Ruta_Proceso (route definition — no EmprCod column)
+
+        Returns a list of (EmprCod, CliCod) pairs that were updated. Empty
+        when the article is unknown to TEXPLUS or any operation lacks a
+        valid `fas_code`.
+        """
+        article_code = _clean_text(cdgart)
+        route_code = _clean_text(base_name)
+        if not article_code or not route_code:
+            return []
+        if len(route_code) > 8:
+            _logger.warning(
+                "TEXPLUS sync: route_code=%r excede 8 chars, salto", route_code,
+            )
+            return []
+
+        # Validate every operation has a usable fas_code BEFORE touching the DB.
+        phases = []  # list of (fas_code, op_name)
+        for rl in route_lines.sorted(key=lambda r: (r.sequence, r.id)):
+            if not rl.operation_id:
+                continue
+            fas_code = _clean_text(rl.operation_id.fas_code)
+            if not fas_code:
+                _logger.warning(
+                    "TEXPLUS sync: operacion %s sin fas_code, salto cdgart=%s",
+                    rl.operation_id.display_name, article_code,
+                )
+                return []
+            if len(fas_code) > 8:
+                _logger.warning(
+                    "TEXPLUS sync: fas_code %r excede 8 chars (op %s), salto",
+                    fas_code, rl.operation_id.display_name,
+                )
+                return []
+            phases.append((fas_code, rl.operation_id.name))
+
+        op_names = [name for _, name in phases]
+        short_desc = ', '.join(op_names)[:40]
+        long_desc = ', '.join(op_names)[:100]
+
+        conn = None
+        cursor = None
+        updated = []
+        try:
+            conn = self._get_texplus_sql_connection()
+            cursor = conn.cursor()
+            self._configure_texplus_cursor(cursor)
+
+            # Discover all (EmprCod, CliCod) tuples where this article lives.
+            cursor.execute(
+                'SELECT DISTINCT EmprCod, CliCod FROM dbo.ARTICU WHERE ArtCod = ?',
+                article_code,
+            )
+            pairs = [(row[0], row[1]) for row in cursor.fetchall()]
+            if not pairs:
+                return []
+
+            # Per-empresa: route headers, ARTLIN binding, SERPAU rows.
+            for empr_cod, cli_cod in pairs:
+                header_keys = {'EmprCod': empr_cod, 'ProCod': route_code}
+                header_values = {
+                    'EmprCod': empr_cod,
+                    'ProCod': route_code,
+                    'ProDsc': _dbf_char(short_desc, max_len=40),
+                    'ProUltLin': 0,
+                    'ProDsc2': _dbf_char(long_desc, max_len=100),
+                }
+                for table_name in TEXPLUS_ROUTE_TABLES:
+                    self._upsert_texplus_record(
+                        cursor, table_name, header_keys, header_values,
+                    )
+
+                cursor.execute(
+                    'UPDATE dbo.ARTLIN SET ProCod = ? '
+                    'WHERE EmprCod = ? AND CliCod = ? AND ArtCod = ?',
+                    route_code, empr_cod, cli_cod, article_code,
+                )
+
+                # Drop every SERPAU row for this article (any ProCod), then
+                # reinsert clean for the new route — easier than tracking the
+                # previous route_code separately.
+                cursor.execute(
+                    'DELETE FROM dbo.SERPAU '
+                    'WHERE EmprCod = ? AND CliCod = ? AND ArtCod = ?',
+                    empr_cod, cli_cod, article_code,
+                )
+                for fas_code, _name in phases:
+                    cursor.execute(
+                        'INSERT INTO dbo.SERPAU '
+                        '(EmprCod, CliCod, ArtCod, ProCod, FasCod) '
+                        'VALUES (?, ?, ?, ?, ?)',
+                        empr_cod, cli_cod, article_code, route_code, fas_code,
+                    )
+                updated.append((empr_cod, cli_cod))
+
+            # Route definition (Texplus_Ruta_Proceso) is shared across
+            # empresas, so we rewrite it once at the end.
+            cursor.execute(
+                'DELETE FROM dbo.Texplus_Ruta_Proceso WHERE Cod_Ruta = ?',
+                route_code,
+            )
+            for index, (fas_code, name) in enumerate(phases, start=1):
+                cursor.execute(
+                    'INSERT INTO dbo.Texplus_Ruta_Proceso '
+                    '(Cod_Ruta, Orden, Proceso, Dsc_Proceso) '
+                    'VALUES (?, ?, ?, ?)',
+                    route_code, index * 100, fas_code,
+                    _dbf_char(name, max_len=28),
+                )
+
+            conn.commit()
+        except Exception:
+            if conn:
+                conn.rollback()
+            raise
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+        return updated
+
     def _table_path(self, filename):
         return self._get_company_dbf_root() / filename
 
