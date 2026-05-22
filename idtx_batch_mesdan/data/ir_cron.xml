@@ -9,15 +9,4 @@
         <field name="interval_type">hours</field>
         <field name="active" eval="True"/>
     </record>
-
-    <record id="cron_clean_mesdan_burst_db" model="ir.cron">
-        <field name="name">Mesdan: purgar burst.db (HMI cap 101 tests)</field>
-        <field name="model_id" ref="idtx_batch_control.model_control_pedido_line"/>
-        <field name="state">code</field>
-        <field name="code">model.cron_clean_mesdan_burst_db()</field>
-        <field name="interval_number">1</field>
-        <field name="interval_type">days</field>
-        <field name="nextcall" eval="(DateTime.now().replace(hour=3, minute=0, second=0, microsecond=0) + relativedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')"/>
-        <field name="active" eval="True"/>
-    </record>
 </odoo>

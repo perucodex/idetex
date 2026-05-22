@@ -4,10 +4,7 @@ import logging
 import os
 import re
 import socket
-import sqlite3
-import tempfile
 import time
-from ftplib import FTP
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
@@ -23,17 +20,10 @@ MESDAN_REPORTS_DIR = "/mnt/nas_mesdan_reports/MESDAN"
 # Carpetas hijas con formato YY_MM_DD (creadas por el HMI cada día).
 _FOLDER_RE = re.compile(r"^\d{2}_\d{2}_\d{2}$")
 
-# --- Mesdan host connection (for burst.db maintenance only) -----------------
-# The HMI keeps an SQLite DB at /mnt/Part2/burst.db that caps at 101 tests
-# (hardcoded in the HMI binary). When full it refuses to save. We log in as
-# root via Telnet + Mesdan-user via FTP to prune the oldest entries nightly.
+# --- Mesdan host connection (used by mount reconcile) ---------------------
+# We log in as root via Telnet to repair the NFS bind mount if it goes down.
 MESDAN_HOST = "172.16.64.100"
 MESDAN_ROOT_PWD_B64 = "b2JhZg=="  # 'obaf'
-MESDAN_FTP_USER = "Mesdan"
-MESDAN_FTP_PWD_B64 = "TWVzZGFu"   # 'Mesdan'
-MESDAN_DB_PATH = "/mnt/Part2/burst.db"
-MESDAN_DB_KEEP = 30               # how many recent tests to retain
-MESDAN_DB_BACKUPS_KEEP = 7        # rotate daily backups, keep one week
 
 
 def _batch_from_filename(name):
@@ -152,7 +142,16 @@ class ControlPedidoLine(models.Model):
         Idempotent: only downloads/attaches files that aren't already present
         as an ir.attachment for the same partida. The NAS keeps the long-term
         archive — we never delete anything from it.
+
+        Self-healing: before reading, reconciles the Mesdan-side bind mount.
+        If the bind is down, the HMI may have been writing PDFs to local ext4
+        instead of the NAS — we migrate them and restore the bind.
         """
+        try:
+            self._reconcile_mesdan_mounts()
+        except Exception:
+            _logger.exception("Mesdan cron: mount reconcile failed (continuando igual)")
+
         if not os.path.isdir(MESDAN_REPORTS_DIR):
             _logger.warning(
                 "Mesdan cron: %s no accesible (NFS no montado?), salgo",
@@ -214,108 +213,80 @@ class ControlPedidoLine(models.Model):
             candidates.append(f"C{batch_key}")
         return self.search([('batch', 'in', candidates)], limit=1)
 
-    # ---- HMI internal SQLite maintenance (cron) ---------------------------
+    # ---- mount self-healing -----------------------------------------------
 
     @api.model
-    def cron_clean_mesdan_burst_db(self):
-        """Prune the HMI's burst.db to keep only the MESDAN_DB_KEEP most
-        recent tests. The HMI caps the database at 101 entries; without this
-        the operator has to manually press "Erase All" on the touchscreen.
+    def _reconcile_mesdan_mounts(self):
+        """Ensure the Mesdan's /mnt/Part2/Reports is bound to the NAS NFS.
 
-        Safe because:
-        - The actual measurement PDFs are mirrored on the NAS already, so
-          deleting metadata is non-destructive (the truth is in the PDFs).
-        - We back up burst.db with a timestamp before swapping, rotating
-          backups (keep MESDAN_DB_BACKUPS_KEEP newest).
-        - Designed to run nightly when the HMI is idle.
+        Why: the bind has been known to disappear (e.g. after lazy umount +
+        HMI restart). When it does, the HMI keeps writing PDFs to local ext4
+        — those files never reach the NAS. This function detects the gap,
+        migrates stranded local files to the NAS, and re-establishes the
+        bind so future writes go directly to the share.
+
+        Safe to call at any time. Idempotent.
         """
         try:
             tn = _mesdan_telnet_login()
         except Exception as exc:
-            _logger.warning("Mesdan DB cleanup: telnet login failed (%s)", exc)
+            _logger.warning("Mesdan reconcile: telnet login failed (%s)", exc)
             return False
         try:
-            # 1. Stage burst.db where the FTP user can read it (the FTP root
-            #    chroots to /home/Mesdan -> /mnt/Part2/Reports -> NFS).
-            _mesdan_tcmd(tn, f"cp {MESDAN_DB_PATH} /mnt/Part2/Reports/_burst_in.db", w=15)
-
-            # 2. Pull via FTP and immediately delete the staging file.
-            ftp = FTP(MESDAN_HOST, timeout=60)
-            ftp.login(MESDAN_FTP_USER, base64.b64decode(MESDAN_FTP_PWD_B64).decode())
-            ftp.cwd("/mnt/Part2/Reports")
-            with tempfile.NamedTemporaryFile(prefix="burst.", suffix=".db", delete=False) as tf:
-                local_db = tf.name
-            with open(local_db, "wb") as f:
-                ftp.retrbinary("RETR _burst_in.db", f.write)
-            try:
-                ftp.delete("_burst_in.db")
-            except Exception:
-                _logger.info("Mesdan DB cleanup: no se pudo borrar _burst_in.db del FTP")
-
-            # 3. Prune locally with sqlite3.
-            con = sqlite3.connect(local_db)
-            try:
-                cur = con.cursor()
-                total = cur.execute("SELECT COUNT(*) FROM table_tests").fetchone()[0]
-                if total <= MESDAN_DB_KEEP:
-                    _logger.info("Mesdan DB cleanup: %s tests <= %s, nada que hacer",
-                                 total, MESDAN_DB_KEEP)
-                    ftp.quit()
-                    return True
-                oldest = [r[0] for r in cur.execute(
-                    "SELECT test_code_all FROM table_tests "
-                    "ORDER BY test_date_time ASC LIMIT ?",
-                    (total - MESDAN_DB_KEEP,)
-                )]
-                # FK chain: samples -> parProva -> tests (ON DELETE RESTRICT).
-                ph = ",".join(["?"] * len(oldest))
-                cur.execute(f"DELETE FROM table_samples WHERE test_code_all IN ({ph})", oldest)
-                cur.execute(f"DELETE FROM table_parProva WHERE test_code_all IN ({ph})", oldest)
-                cur.execute(f"DELETE FROM table_tests WHERE test_code_all IN ({ph})", oldest)
-                con.commit()
-                cur.execute("VACUUM")
-                _logger.info("Mesdan DB cleanup: %s -> %s tests (purged %s)",
-                             total, MESDAN_DB_KEEP, len(oldest))
-            finally:
-                con.close()
-
-            # 4. Push back: STOR pruned file, then cp into place. Use `cp`
-            #    (not `mv`) so the inode is preserved — the HMI keeps many
-            #    open fds to burst.db that share the same inode, so an
-            #    in-place rewrite is friendlier than a rename.
-            ts = time.strftime("%Y%m%d_%H%M%S")
-            _mesdan_tcmd(tn, f"cp {MESDAN_DB_PATH} {MESDAN_DB_PATH}.backup.{ts}", w=10)
-
-            with open(local_db, "rb") as f:
-                ftp.storbinary("STOR _burst_new.db", f)
-            ftp.quit()
-
-            out = _mesdan_tcmd(tn,
-                f"cp /mnt/Part2/Reports/_burst_new.db {MESDAN_DB_PATH} "
-                f"&& rm /mnt/Part2/Reports/_burst_new.db && sync && echo SWAPPED_OK",
-                w=15,
+            mounts = _mesdan_tcmd(tn, "mount")
+            nfs_up = ":/odoo on /mnt/Part2/.nfs_odoo" in mounts
+            bind_up = ":/odoo/MESDAN on /mnt/Part2/Reports" in mounts
+            if nfs_up and bind_up:
+                return True
+            _logger.warning(
+                "Mesdan reconcile: NFS=%s bind=%s — restaurando", nfs_up, bind_up,
             )
-            if "SWAPPED_OK" not in out:
-                _logger.warning("Mesdan DB cleanup: swap output: %s", out[:300])
-            os.unlink(local_db)
 
-            # 5. Rotate old backups, keep MESDAN_DB_BACKUPS_KEEP newest.
-            list_out = _mesdan_tcmd(tn,
-                "ls -1 /mnt/Part2/burst.db.backup.* 2>/dev/null | sort", w=3
+            # If bind is down, /mnt/Part2/Reports is the local ext4 dir.
+            # Any HMI-written PDFs there are stranded.
+            stranded_count = 0
+            if not bind_up:
+                out = _mesdan_tcmd(tn, "find /mnt/Part2/Reports -type f 2>/dev/null | wc -l")
+                try:
+                    stranded_count = int(out.splitlines()[-1].strip())
+                except Exception:
+                    stranded_count = 0
+                if stranded_count:
+                    _logger.info("Mesdan reconcile: %s archivos locales a migrar", stranded_count)
+                    # Ensure the helper NFS mount is up first.
+                    if not nfs_up:
+                        _mesdan_tcmd(tn,
+                            "mkdir -p /mnt/Part2/.nfs_odoo && "
+                            "mount -t nfs -o rw,nolock,soft,timeo=30,retrans=3 "
+                            "172.16.64.6:/odoo /mnt/Part2/.nfs_odoo",
+                            w=20,
+                        )
+                    # Copy local content into the NFS subdir (cp -r, sin -p,
+                    # para evitar chown a root mientras estamos squashed).
+                    _mesdan_tcmd(tn,
+                        "mkdir -p /mnt/Part2/.nfs_odoo/MESDAN && "
+                        "cp -r /mnt/Part2/Reports/. /mnt/Part2/.nfs_odoo/MESDAN/ "
+                        "&& echo COPY_OK || echo COPY_FAIL",
+                        w=180,
+                    )
+                    # Wipe local Reports content (still ext4, bind is down).
+                    _mesdan_tcmd(tn, "rm -rf /mnt/Part2/Reports/* /mnt/Part2/Reports/.[!.]*", w=30)
+
+            # Establish (or re-establish) NFS + bind via the init script.
+            _mesdan_tcmd(tn, "/etc/init.d/nfs-reports start", w=30)
+
+            mounts2 = _mesdan_tcmd(tn, "mount")
+            ok = ":/odoo/MESDAN on /mnt/Part2/Reports" in mounts2
+            _logger.info(
+                "Mesdan reconcile: post-recover bind=%s (migrated=%s archivos)",
+                ok, stranded_count,
             )
-            backups = [ln.strip() for ln in list_out.splitlines()
-                       if ln.startswith("/mnt/Part2/burst.db.backup.")]
-            if len(backups) > MESDAN_DB_BACKUPS_KEEP:
-                to_delete = backups[: len(backups) - MESDAN_DB_BACKUPS_KEEP]
-                _mesdan_tcmd(tn, "rm -f " + " ".join(to_delete), w=10)
-                _logger.info("Mesdan DB cleanup: removed %s old backups", len(to_delete))
+            return ok
         finally:
             try: tn.write(b"exit\r\n")
             except Exception: pass
             try: tn.close()
             except Exception: pass
-        return True
-
 
 # ---- telnet helpers (module-level) ---------------------------------------
 # stdlib `telnetlib` was deprecated in Python 3.11 and removed in 3.13. We
