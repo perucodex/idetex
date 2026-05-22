@@ -163,6 +163,8 @@ class TechnicalRouteLine(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
+        if self.env.context.get('skip_route_line_chatter'):
+            return records
         for record in records:
             if record.technical_id:
                 record.technical_id.message_post(
@@ -171,6 +173,8 @@ class TechnicalRouteLine(models.Model):
         return records
 
     def write(self, vals):
+        if self.env.context.get('skip_route_line_chatter'):
+            return super().write(vals)
         tracked_fields = {'operation_id', 'technical_id'}
         before_by_id = {}
         if tracked_fields.intersection(vals):
@@ -205,6 +209,8 @@ class TechnicalRouteLine(models.Model):
         return result
 
     def unlink(self):
+        if self.env.context.get('skip_route_line_chatter'):
+            return super().unlink()
         messages = [
             (
                 record.technical_id,
@@ -233,6 +239,8 @@ class RouteLineParameter(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
+        if self.env.context.get('skip_route_line_chatter'):
+            return records
         for record in records:
             sheet = record.technical_route_id.technical_id
             if not sheet:
@@ -246,6 +254,8 @@ class RouteLineParameter(models.Model):
         return records
 
     def write(self, vals):
+        if self.env.context.get('skip_route_line_chatter'):
+            return super().write(vals)
         tracked_fields = {'name', 'value', 'is_observation'}
         before_by_id = {}
         if tracked_fields.intersection(vals):
@@ -292,6 +302,8 @@ class RouteLineParameter(models.Model):
         return result
 
     def unlink(self):
+        if self.env.context.get('skip_route_line_chatter'):
+            return super().unlink()
         messages = [
             (
                 record.technical_route_id.technical_id,

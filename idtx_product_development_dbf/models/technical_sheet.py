@@ -995,6 +995,62 @@ class TechnicalSheet(models.Model):
             else:
                 self._delete_by_ficha(table_name, ficha)
 
+    # ---- lookup / partial-sync helpers (used by route-only refresh) -------
+
+    def _find_fichas_by_cdgart(self, cdgart):
+        """Return every FICHA in tinto_cab_ruta whose CDGART matches `cdgart`.
+
+        A single CDGART can appear in multiple fichas (one per production
+        order, customer, etc.), so callers that need to refresh "the route
+        of a product" must process every match.
+        """
+        cdgart = _clean_text(cdgart)
+        if not cdgart:
+            return []
+        out = []
+        table = self._open_table('tinto_cab_ruta.dbf')
+        try:
+            for record in table:
+                if dbf.is_deleted(record):
+                    continue
+                # CDGART is a CHAR(16) column padded with spaces. The dbf
+                # library usually trims them but normalize both sides to
+                # stay safe regardless of build/locale.
+                if _clean_text(record['CDGART']) == cdgart:
+                    ficha = _clean_text(record['FICHA'])
+                    if ficha:
+                        out.append(ficha)
+        finally:
+            table.close()
+        return out
+
+    def _sync_ficha_ruta_final_by_cdgart(self, cdgart, route_lines, base_name):
+        """Refresh `ficha_ruta_final.dbf` (and only that table) for *every*
+        SITPRO ficha that points to `cdgart`. Returns the list of fichas
+        that were updated (empty if no SITPRO record matched).
+
+        `route_lines` is any recordset whose lines expose `sequence` and
+        `operation_id` (e.g. analysis.routing.line or technical.route.line).
+        """
+        fichas = self._find_fichas_by_cdgart(cdgart)
+        if not fichas:
+            return []
+        ordered = route_lines.sorted(key=lambda r: (r.sequence, r.id))
+        for ficha in fichas:
+            self._delete_by_ficha('ficha_ruta_final.dbf', ficha)
+            for index, route_line in enumerate(ordered, start=1):
+                if not route_line.operation_id:
+                    continue
+                self._append_record('ficha_ruta_final.dbf', {
+                    'FICHA': ficha,
+                    'IT': index * 100,
+                    'FASCOD': base_name or '',
+                    'FASDSC': '',
+                    'FASE': _phase_code(route_line.operation_id.name),
+                    'FASECOM': route_line.operation_id.name,
+                })
+        return fichas
+
     def _table_path(self, filename):
         return self._get_company_dbf_root() / filename
 

@@ -59,7 +59,7 @@ class ProductAnalysis(models.Model):
     # technical_sheet_id = fields.Many2one('technical.sheet', string='Technical Sheet')
     technical_sheet_count = fields.Integer(string='Technical Sheet Count', compute='_get_technical_sheets')
     technical_sheet_ids = fields.One2many('technical.sheet', 'analysis_id', string='Technical Sheet')
-    mrp_base_process_id = fields.Many2one('mrp.base.process', string='Base Process')
+    mrp_base_process_id = fields.Many2one('mrp.base.process', string='Base Process', tracking=True)
     # Precio de tejido por producto
     currency_id = fields.Many2one('res.currency', string='Currency', default=lambda self: self.env.ref('base.USD'))
     weaving_price = fields.Monetary('Weaving Price')
@@ -92,6 +92,9 @@ class ProductAnalysis(models.Model):
 
     @api.onchange('mrp_base_process_id')
     def _onchange_mrp_base_process_id(self):
+        # UI-only feedback: refresh the routing lines as the user changes
+        # the base process. The full propagation to technical sheets and
+        # BoMs happens in write() so it also fires for programmatic writes.
         if not self.mrp_base_process_id:
             self.routing_ids = [Command.clear()]
             return
@@ -99,6 +102,7 @@ class ProductAnalysis(models.Model):
         commands += [
             Command.create({
                 'operation_id': line.operation_id.id,
+                'sequence': line.sequence,
             })
             for line in self.mrp_base_process_id.process_ids
         ]
@@ -150,6 +154,112 @@ class ProductAnalysis(models.Model):
                     'product.analysis', sequence_date=seq_date) or _('New')
             vals['density_stability_twisting_id'] = self.env['density.stability.twisting'].create({}).id
         return super().create(vals_list)
+
+    def write(self, vals):
+        # Propagate base process changes to technical sheets and their BoMs.
+        # Captured BEFORE super() so we can compare old vs new value.
+        if 'mrp_base_process_id' in vals:
+            new_bp_id = vals.get('mrp_base_process_id') or False
+            changed = [
+                r for r in self
+                if (r.mrp_base_process_id.id or False) != new_bp_id
+            ]
+        else:
+            changed = []
+        res = super().write(vals)
+        for rec in changed:
+            rec._propagate_base_process()
+        return res
+
+    def _propagate_base_process(self):
+        """Refresh the routing lines, the technical sheets and the BoMs that
+        depend on this analysis. Run when `mrp_base_process_id` is set,
+        cleared, or replaced. Parameters configured by the operator on the
+        technical route lines are intentionally reset — they were attached
+        to operations that may not belong to the new base process.
+
+        Per-line chatter from `technical.route.line` / `route.line.parameter`
+        is suppressed via the `skip_route_line_chatter` context flag and
+        replaced by a single summary message on each affected sheet.
+        """
+        self.ensure_one()
+        base = self.mrp_base_process_id
+        new_lines = list(base.process_ids.sorted(key=lambda p: p.sequence)) if base else []
+
+        ctx_self = self.with_context(skip_route_line_chatter=True)
+
+        # 1. Analysis routing lines.
+        ctx_self.routing_ids.unlink()
+        if new_lines:
+            ctx_self.routing_ids = [
+                Command.create({
+                    'operation_id': p.operation_id.id,
+                    'sequence': p.sequence,
+                })
+                for p in new_lines
+            ]
+
+        # 2. Each technical sheet's route_line_ids + BoM operations.
+        for sheet in ctx_self.technical_sheet_ids:
+            sheet.route_line_ids.unlink()
+            if new_lines:
+                sheet.route_line_ids = [
+                    Command.create({
+                        'sequence': p.sequence,
+                        'operation_id': p.operation_id.id,
+                        'line_parameter_ids': [
+                            Command.create({'name': param.name})
+                            for param in p.operation_id.parameter_ids
+                        ],
+                    })
+                    for p in new_lines
+                ]
+            if sheet.bom_id:
+                self._refresh_bom_operations(sheet)
+
+            # Single summary message per sheet (chatter remains traceable).
+            new_name = base.name if base else _('(sin ruta)')
+            # Post on the user-facing record (without our suppress context).
+            sheet.sudo().message_post(
+                body=_("Ruta cambiada desde el análisis a: %s") % new_name
+            )
+
+    def _refresh_bom_operations(self, sheet):
+        """Rebuild `operation_ids` of the BoM attached to a technical sheet.
+        Bom lines that pointed at the old weaving operation are re-bound to
+        the new weaving operation (if there is one) so the manufacturing
+        consumption stays correct.
+        """
+        bom = sheet.bom_id
+        if not bom:
+            return
+        # Snapshot bom_lines previously pinned to a weaving op.
+        weaving_lines = bom.bom_line_ids.filtered(
+            lambda l: l.operation_id
+            and l.operation_id.operation_id
+            and l.operation_id.operation_id.operation_type == 'weaving'
+        )
+
+        bom.operation_ids.unlink()
+        ordered = sheet.route_line_ids.sorted(key=lambda r: r.sequence)
+        bom.operation_ids = [
+            Command.create({
+                'name': r.operation_id.name,
+                'operation_id': r.operation_id.id,
+                'workcenter_id': r.workcenter_id.id,
+            })
+            for r in ordered
+        ]
+
+        new_weaving = bom.operation_ids.filtered(
+            lambda o: o.operation_id and o.operation_id.operation_type == 'weaving'
+        )
+        if new_weaving and weaving_lines:
+            weaving_lines.write({'operation_id': new_weaving[0].id})
+        elif weaving_lines:
+            # No weaving op in the new routing — clear the dangling reference
+            # rather than letting it point to a deleted record.
+            weaving_lines.write({'operation_id': False})
         
     def action_product(self):
         if not self.weaving_data_ids and not self.env.context.get('by_pass_error'):
