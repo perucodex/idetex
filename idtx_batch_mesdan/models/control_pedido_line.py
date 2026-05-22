@@ -3,8 +3,8 @@ import base64
 import logging
 import os
 import re
+import socket
 import sqlite3
-import telnetlib
 import tempfile
 import time
 from ftplib import FTP
@@ -318,10 +318,107 @@ class ControlPedidoLine(models.Model):
 
 
 # ---- telnet helpers (module-level) ---------------------------------------
+# stdlib `telnetlib` was deprecated in Python 3.11 and removed in 3.13. We
+# only need a tiny subset of the protocol (line-based shell over TCP with
+# IAC option refusal), so this minimal socket wrapper replaces it without
+# pulling in a third-party dependency.
+
+_IAC = 0xFF
+_DONT, _DO, _WONT, _WILL = 0xFE, 0xFD, 0xFC, 0xFB
+_SB, _SE = 0xFA, 0xF0
+
+
+class _MesdanTelnet:
+    """Subset of telnetlib.Telnet sufficient for the Mesdan getty."""
+
+    def __init__(self, host, port=23, timeout=10):
+        self.sock = socket.create_connection((host, port), timeout=timeout)
+        self._buf = b""
+
+    def _handle_iac(self, data):
+        """Strip IAC negotiations, refusing every option (WONT/DONT)."""
+        out = bytearray()
+        replies = bytearray()
+        i = 0
+        while i < len(data):
+            b = data[i]
+            if b != _IAC:
+                out.append(b)
+                i += 1
+                continue
+            if i + 1 >= len(data):
+                break
+            cmd = data[i + 1]
+            if cmd in (_DO, _DONT, _WILL, _WONT):
+                if i + 2 >= len(data):
+                    break
+                opt = data[i + 2]
+                if cmd == _DO:
+                    replies.extend(bytes([_IAC, _WONT, opt]))
+                elif cmd == _WILL:
+                    replies.extend(bytes([_IAC, _DONT, opt]))
+                i += 3
+            elif cmd == _SB:
+                j = i + 2
+                while j + 1 < len(data):
+                    if data[j] == _IAC and data[j + 1] == _SE:
+                        break
+                    j += 1
+                i = j + 2
+            else:
+                i += 2
+        if replies:
+            try:
+                self.sock.sendall(bytes(replies))
+            except OSError:
+                pass
+        return bytes(out)
+
+    def _drain(self, timeout):
+        self.sock.settimeout(timeout)
+        try:
+            chunk = self.sock.recv(65536)
+        except (socket.timeout, BlockingIOError):
+            return b""
+        if not chunk:
+            return b""
+        return self._handle_iac(chunk)
+
+    def read_until(self, marker, timeout=10):
+        deadline = time.time() + timeout
+        while marker not in self._buf and time.time() < deadline:
+            chunk = self._drain(0.5)
+            if chunk:
+                self._buf += chunk
+        if marker in self._buf:
+            idx = self._buf.index(marker) + len(marker)
+            out, self._buf = self._buf[:idx], self._buf[idx:]
+            return out
+        out, self._buf = self._buf, b""
+        return out
+
+    def read_very_eager(self):
+        chunk = self._drain(0.05)
+        if chunk:
+            self._buf += chunk
+        out, self._buf = self._buf, b""
+        return out
+
+    def write(self, data):
+        if bytes([_IAC]) in data:
+            data = data.replace(bytes([_IAC]), bytes([_IAC, _IAC]))
+        self.sock.sendall(data)
+
+    def close(self):
+        try:
+            self.sock.close()
+        except OSError:
+            pass
+
 
 def _mesdan_telnet_login():
     pwd = base64.b64decode(MESDAN_ROOT_PWD_B64).decode("utf-8")
-    tn = telnetlib.Telnet(MESDAN_HOST, 23, timeout=15)
+    tn = _MesdanTelnet(MESDAN_HOST, 23, timeout=15)
     tn.read_until(b"login:", 5)
     tn.write(b"root\r\n")
     tn.read_until(b"assword:", 5)
