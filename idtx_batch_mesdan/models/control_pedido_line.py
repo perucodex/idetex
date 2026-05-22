@@ -57,27 +57,14 @@ def _list_date_folders(root):
 class ControlPedidoLine(models.Model):
     _inherit = "control.pedido.line"
 
-    report_pdf_attached = fields.Boolean(compute='_compute_report_pdf_attached')
-
-    def _compute_report_pdf_attached(self):
-        Attachment = self.env['ir.attachment']
-        for rec in self:
-            if not rec.id:
-                rec.report_pdf_attached = False
-                continue
-            rec.report_pdf_attached = bool(Attachment.search_count([
-                ('res_model', '=', rec._name),
-                ('res_id', '=', rec.id),
-                ('name', 'like', 'Rep_%'),
-                ('mimetype', '=', 'application/pdf'),
-            ], limit=1))
-
     # ---- single-line fetch (manual button) ---------------------------------
 
-    def _find_report_pdf(self, batch):
-        """Locate the most recent PDF for `batch` in the NFS mirror.
+    def _find_report_pdfs(self, batch):
+        """Locate every PDF for `batch` in the NFS mirror.
 
-        Returns (filename, folder, content_bytes) or raises UserError.
+        Yields (filename, folder, content_bytes) tuples. A partida can have
+        more than one PDF (multiple samples, manual retries, etc.) — all are
+        returned.
         """
         if not os.path.isdir(MESDAN_REPORTS_DIR):
             raise UserError(_(
@@ -92,29 +79,36 @@ class ControlPedidoLine(models.Model):
                 names = os.listdir(folder_path)
             except OSError:
                 continue
-            candidates = [
-                name for name in names
-                if name.lower().endswith(".pdf")
-                and (f"_C{clean_batch}_" in name or f"_{clean_batch}_" in name)
-            ]
-            if candidates:
-                filename = sorted(candidates)[-1]
-                with open(os.path.join(folder_path, filename), 'rb') as fh:
-                    content = fh.read()
-                return filename, folder, content
-
-        raise UserError(_(
-            "No se encontró un PDF para la partida %s en %s."
-        ) % (batch, MESDAN_REPORTS_DIR))
+            for name in sorted(names):
+                if not name.lower().endswith(".pdf"):
+                    continue
+                if not (f"_C{clean_batch}_" in name or f"_{clean_batch}_" in name):
+                    continue
+                with open(os.path.join(folder_path, name), 'rb') as fh:
+                    yield name, folder, fh.read()
 
     def action_fetch_report_pdf(self):
-        """Manual button on the line view. Surfaces the latest PDF for this
-        partida into Odoo as an ir.attachment."""
+        """Manual button on the line view. Attaches every PDF that matches
+        this partida (skipping ones already present)."""
         self.ensure_one()
         if not self.batch:
             raise UserError(_("Esta línea no tiene partida."))
-        filename, folder, content = self._find_report_pdf(self.batch)
-        self._attach_report_pdf(filename, content, folder)
+        Attachment = self.env['ir.attachment']
+        attached = skipped = 0
+        for filename, folder, content in self._find_report_pdfs(self.batch):
+            if Attachment.search_count([
+                ('res_model', '=', self._name),
+                ('res_id', '=', self.id),
+                ('name', '=', filename),
+            ], limit=1):
+                skipped += 1
+                continue
+            self._attach_report_pdf(filename, content, folder)
+            attached += 1
+        if not attached and not skipped:
+            raise UserError(_(
+                "No se encontró ningún PDF para la partida %s."
+            ) % self.batch)
         return True
 
     def _attach_report_pdf(self, filename, content, folder):
