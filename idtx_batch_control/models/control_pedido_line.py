@@ -39,7 +39,7 @@ class ControlPedidoLine(models.Model):
     )
     # Adicionales para control con sitpro reprocesos
     area_num_days = fields.Integer('Area Num Days', compute='_compute_area_num_days', store=True)
-    num_days = fields.Integer('Number of Days', compute='_compute_num_days', store=True)
+    num_days = fields.Integer('Number of Days', related='pedido_id.num_days', store=True)
     # Filled from SQL Server ctrl_info during sync: motivo/area of the most
     # recent open REPROCESO/REPOSICION record whose `correlvou` matches `batch`.
     report_date = fields.Datetime('Fecha Informe')
@@ -51,16 +51,6 @@ class ControlPedidoLine(models.Model):
         ('active', 'Active'),
         ('completed', 'Completed'),
     ], string='State', default='active')
-
-    @api.depends('pedido_id.fecoc')
-    def _compute_num_days(self):
-        today = fields.Date.context_today(self)
-        for rec in self:
-            if not rec.pedido_id.fecoc:
-                rec.num_days = 0
-                continue
-            current = rec.pedido_id.fecoc
-            rec.num_days = (today - current).days
 
     def _auto_init(self):
         # Backfill NULL state to 'active' on module upgrades — idempotent

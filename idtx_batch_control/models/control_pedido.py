@@ -106,6 +106,8 @@ class ControlPedido(models.Model):
 
     fecha = fields.Date(string="Order Date")
     fecoc = fields.Date(string="Customer Order Date")
+    fecgvtas = fields.Date(string="Fecha Gerencia Ventas")
+    feccc = fields.Date(string="Fecha Aprobación")
     numordped = fields.Char(string="Order Number", required=True, index=True)
     customer = fields.Char('Customer')
     # salesman = fields.Char('Salesman')
@@ -128,15 +130,18 @@ class ControlPedido(models.Model):
 
     _product_code_unique = models.Constraint('unique(numordped)', "Ya existe un pedido con ese Número de Orden!")
 
-    @api.depends('fecoc')
+    @api.depends('feccc', 'fecgvtas', 'fecoc')
     def _compute_num_days(self):
+        # Base date fallback: feccc (aprobacion) -> fecgvtas (gerencia ventas)
+        # -> fecoc (oc cliente). El conteo excluye domingos.
         today = fields.Date.context_today(self)
         for rec in self:
-            if not rec.fecoc:
+            base = rec.feccc or rec.fecgvtas or rec.fecoc
+            if not base:
                 rec.num_days = 0
                 continue
             days = 0
-            current = rec.fecoc
+            current = base
             while current <= today:
                 if current.weekday() != 6:
                     days += 1
@@ -227,70 +232,42 @@ class ControlPedido(models.Model):
         nums = []
         nums_seen = set()
         nums_to_settle = []
+        # Lectura exhaustiva del DBF: TODOS los pedidos (activos e inactivos)
+        # se procesan en cada sync para refrescar sus datos. Antes solo se
+        # procesaban activos y los inactivos quedaban congelados, lo que
+        # causaba que correcciones en SITPRO (fechas, customer, kilos, etc.)
+        # no se reflejaran en Odoo.
         for rec in _iter_dbf("/mnt/fox/sit06/dbf/vta_cab_pedido.dbf"):
             fecha = rec["FECHA"]
             if not fecha or fecha < datetime.date(2025, 6, 30):
                 continue
-            if not _safe_bool(rec["ACTIVO"]):
-                num = _safe_str(rec["NUMORDPED"])
-                if num:
-                    nums_to_settle.append(num)
-                continue
-            # if _safe_str(rec["TIPOVENTA"][:10]) != "VENTA DE T":
-            #     continue
             num = _safe_str(rec["NUMORDPED"])
             if not num:
                 continue
+            is_active = _safe_bool(rec["ACTIVO"])
+            if not is_active:
+                nums_to_settle.append(num)
             if num not in nums_seen:
                 nums_seen.add(num)
                 nums.append(num)
             cab_by_num[num] = {
                 "fecha": _safe_date(rec["FECHA"]),
                 "fecoc": _safe_date(rec["FECOC"]),
+                "fecgvtas": _safe_date(rec["FECGVTAS"]),
+                "feccc": _safe_date(rec["FECCC"]),
                 "customer": _safe_str(rec["RAZSOC"]),
-                # "salesman": _safe_str(rec["USUARIO"]),
-                # "cdgven": _safe_str(rec["CDGVEN"]),
                 "user_id": self.env['res.users'].search([('vendor_code_sitpro', '=', _safe_str(rec["CDGVEN"]))], limit=1).id,
                 "tipoventa": _safe_str(rec["TIPOVENTA"]),
                 "total_weight": _safe_float(rec["TOTKIL"]),
-                "is_active": _safe_bool(rec["ACTIVO"]),
+                "is_active": is_active,
             }
-            # if num.strip() == '00434-26':
-            # import logging
-            # logging.getLogger(__name__).info(f"Debug sync: {num}")
-        # Cierre suave: pedidos que estaban activos en Odoo y acaban de
-        # cerrarse en SITPRO (ACTIVO=False en DBF) se sincronizan UNA ULTIMA
-        # VEZ antes de marcarlos inactivos. Asi su estado final (areas,
-        # procesos, fechas) queda congelado limpio. Sin esto, se quedaban con
-        # el estado de la corrida anterior - tipico caso: area=ACABADO cuando
-        # ya tenian CALIDAD como next process.
-        if nums_to_settle:
-            recently_closed = self.search([
-                ('numordped', 'in', list(set(nums_to_settle))),
-                ('is_active', '=', True),
-            ])
-            for rec in recently_closed:
-                num = rec.numordped
-                if num and num not in nums_seen:
-                    nums_seen.add(num)
-                    nums.append(num)
-                    cab_by_num[num] = {
-                        'fecha': rec.fecha,
-                        'fecoc': rec.fecoc,
-                        'customer': rec.customer or '',
-                        'user_id': rec.user_id.id if rec.user_id else False,
-                        'tipoventa': rec.tipoventa or '',
-                        'total_weight': rec.total_weight or 0.0,
-                        'is_active': False,  # queda inactivo despues del refresh
-                    }
 
         if not nums:
             return {"created": 0, "updated": 0}
 
-        settle_chunk = 2000
-        for i in range(0, len(nums_to_settle), settle_chunk):
-            settle_batch = nums_to_settle[i:i + settle_chunk]
-            self.search([("numordped", "in", settle_batch)]).write({"is_active": False})
+        # is_active de pedidos inactivos ya viene en cab_by_num y se
+        # aplica en pedido.write(vals) mas abajo, asi que no necesitamos
+        # un bulk-write separado.
         nums_set = set(nums)
         produced_by_num = _sum_kneto_by_pedido("/mnt/fox/sit06/dbf/tej_produccion.dbf", nums_set)
         existing = self.browse()
@@ -464,6 +441,9 @@ class ControlPedido(models.Model):
                     'start_date': vals_line.get('start_date'),
                     'end_date': vals_line.get('end_date'),
                     'barcodreo': vals_line.get('barcodreo'),
+                    'description': vals_line.get('description'),
+                    'colorcode': vals_line.get('colorcode'),
+                    'colorname': vals_line.get('colorname'),
                 }
                 # Keep existing rows but normalize all of them to newest data/barcodreo.
                 existing_lines.write(write_vals)
@@ -809,6 +789,11 @@ class ControlPedido(models.Model):
                 'start_date': vals_line.get('start_date'),
                 'end_date': vals_line.get('end_date'),
                 'barcodreo': vals_line.get('barcodreo'),
+                'description': vals_line.get('description'),
+                'colorcode': vals_line.get('colorcode'),
+                'colorname': vals_line.get('colorname'),
+                'product_id': vals_line.get('product_id'),
+                'lab_dev_line_id': vals_line.get('lab_dev_line_id'),
             }
             existing_lines.write(write_vals)
             updated += len(existing_lines)

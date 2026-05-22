@@ -6,7 +6,9 @@
         <field name="arch" type="xml">
             <list decoration-danger="area == 'AREA NO CONOCIDA'" create="0">
                 <field name="fecha"/>
-                <field name="fecoc"/>
+                <field name="fecoc" optional="hide"/>
+                <field name="fecgvtas" optional="hide"/>
+                <field name="feccc"/>
                 <field name="numordped"/>
                 <field name="customer" optional="hide"/>
                 <field name="user_id" optional="hide"/>
@@ -38,6 +40,8 @@
                         <group>
                             <field name="fecha" readonly="1"/>
                             <field name="fecoc" readonly="1"/>
+                            <field name="fecgvtas" readonly="1"/>
+                            <field name="feccc" readonly="1"/>
                             <field name="customer" readonly="1"/>
                             <field name="user_id" readonly="1"/>
                             <field name="tipoventa" readonly="1"/>
