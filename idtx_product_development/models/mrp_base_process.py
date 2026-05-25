@@ -355,7 +355,12 @@ class MrpBaseProcess(models.Model):
         return self.env['mrp.workcenter'].sudo().create(values)
 
     def _get_or_create_operation(self, phase_code, phase_name, operation_cache):
-        clean_code = (phase_code or '').strip()
+        # TEXPLUS treats FasCod as case-insensitive in its native queries
+        # (default Latin1 CI collation), so we normalize to upper-case on
+        # the Odoo side. Otherwise a stray lowercase row in PROLIN — e.g.
+        # FasCod='calidad' instead of 'CALIDAD' — makes Odoo create a
+        # duplicate operation that the dedup cannot collapse.
+        clean_code = (phase_code or '').strip().upper()
         clean_name = (phase_name or clean_code or '').strip()
         cache_key = clean_code or clean_name
         if cache_key in operation_cache:
@@ -364,15 +369,17 @@ class MrpBaseProcess(models.Model):
         operation_model = self.env['mrp.routing.workcenter.operation'].sudo()
         operation = operation_model.browse()
 
-        # 1. Match by fas_code. When multiple candidates exist (legacy dups),
-        #    prefer the one whose name also matches; otherwise pick the
-        #    OLDEST id deterministically so subsequent runs never create a
-        #    new sibling.
+        # 1. Match by fas_code (case-insensitive). When multiple candidates
+        #    exist (legacy dups), prefer the one whose name also matches;
+        #    otherwise pick the OLDEST id deterministically so subsequent
+        #    runs never create a new sibling.
         if clean_code:
-            candidates = operation_model.search([('fas_code', '=', clean_code)])
+            # `=ilike` does an exact case-insensitive comparison in Odoo's
+            # domain language (no % wildcards added).
+            candidates = operation_model.search([('fas_code', '=ilike', clean_code)])
             if candidates:
                 matching_name = candidates.filtered(
-                    lambda op: (op.name or '').strip() == clean_name
+                    lambda op: (op.name or '').strip().upper() == clean_name.upper()
                 )
                 operation = (matching_name or candidates).sorted('id')[:1]
                 if len(candidates) > 1:
@@ -384,17 +391,17 @@ class MrpBaseProcess(models.Model):
 
         # 2. Fall back to name lookup only when no fas_code match was found.
         #    Important: only reuse a same-name operation when its fas_code
-        #    is empty or matches `clean_code`. TEXPLUS can have several
-        #    distinct phases that share a description (e.g. FasCod=TAM and
-        #    FasCod=TAMB both named "TAMBLEADO") — those MUST stay as
-        #    separate Odoo operations so the historical data in BARFAS /
-        #    BARCAD / PROLIN keeps a correct reference.
+        #    is empty or matches `clean_code` (case-insensitive). TEXPLUS
+        #    can have several distinct phases that share a description
+        #    (e.g. FasCod=TAM and FasCod=TAMB both named "TAMBLEADO") —
+        #    those MUST stay as separate Odoo operations so the historical
+        #    data in BARFAS / BARCAD / PROLIN keeps a correct reference.
         if not operation and clean_name:
-            by_name = operation_model.search([('name', '=', clean_name)], order='id')
+            by_name = operation_model.search([('name', '=ilike', clean_name)], order='id')
             compatible = by_name.filtered(
                 lambda op: not clean_code
                 or not op.fas_code
-                or (op.fas_code or '').strip() == clean_code
+                or (op.fas_code or '').strip().upper() == clean_code
             )
             if compatible:
                 operation = compatible[:1]
@@ -925,11 +932,15 @@ class MrpBaseProcess(models.Model):
             env['mrp.base.process'].action_dedupe_operations()
         """
         cr = self.env.cr
+        # Group case-insensitively so e.g. fas_code='CALIDAD' and 'calidad'
+        # collapse into a single bucket (matches how TEXPLUS treats them).
         cr.execute("""
-            SELECT name, fas_code, array_agg(id ORDER BY id) AS ids
+            SELECT upper(trim(name)) AS uname,
+                   upper(trim(fas_code)) AS ufas_code,
+                   array_agg(id ORDER BY id) AS ids
             FROM mrp_routing_workcenter_operation
             WHERE fas_code IS NOT NULL
-            GROUP BY name, fas_code
+            GROUP BY upper(trim(name)), upper(trim(fas_code))
             HAVING COUNT(*) > 1
         """)
         groups = cr.fetchall()
