@@ -220,6 +220,119 @@ class TexplusMachine(models.Model):
                 conn.close()
 
     @api.model
+    def action_sync_machines_from_texplus(self):
+        """Sincroniza el catalogo MAQUIN desde TEXPLUS, infiriendo la
+        jerarquia general/specific por **prefijo de codigo** porque TEXPLUS
+        no formaliza la relacion padre-hijo (`MaqCodFor` esta vacio en
+        general). Reglas:
+
+        - Una maquina es "general" si:
+            a) `MaqTip='G'` en MAQUIN, O
+            b) Tiene "hijos" por prefijo (otra maquina cuyo codigo empieza
+               con el suyo), O
+            c) Aparece en `FASPRO.MaqCod` (alguna fase la usa como maquina).
+        - El padre (general_machine_id) es el match de prefijo MAS LARGO
+          (excluyendo el propio codigo) que sea general.
+
+        Idempotente. Llamar desde shell:
+            env['texplus.machine'].action_sync_machines_from_texplus()
+        """
+        from .mrp_base_process import TEXPLUS_EMPRCOD
+
+        # 1. Leer MAQUIN y FASPRO de TEXPLUS.
+        machines = {}   # code -> {'name', 'tip'}
+        faspro_codes = set()
+        conn = None
+        cursor = None
+        try:
+            conn = self._get_texplus_sql_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT LTRIM(RTRIM(MaqCod)) AS code, "
+                "       LTRIM(RTRIM(MaqDsc)) AS name, "
+                "       LTRIM(RTRIM(MaqTip)) AS tip "
+                "FROM dbo.MAQUIN WITH (NOLOCK) WHERE EmprCod = ?",
+                TEXPLUS_EMPRCOD,
+            )
+            for row in cursor.fetchall():
+                code = (row[0] or '').strip()
+                if code:
+                    machines[code] = {
+                        'name': (row[1] or '').strip(),
+                        'tip': (row[2] or '').strip(),
+                    }
+            cursor.execute(
+                "SELECT DISTINCT LTRIM(RTRIM(MaqCod)) "
+                "FROM dbo.FASPRO WITH (NOLOCK) "
+                "WHERE EmprCod = ? AND MaqCod IS NOT NULL "
+                "  AND LTRIM(RTRIM(MaqCod)) <> ''",
+                TEXPLUS_EMPRCOD,
+            )
+            faspro_codes = {(r[0] or '').strip() for r in cursor.fetchall()}
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+        if not machines:
+            _logger.warning('texplus.machine sync: MAQUIN vacio, abortando')
+            return False
+
+        all_codes = set(machines)
+
+        # 2. Calcular is_general: G, o tiene hijos por prefijo, o esta en FASPRO.
+        is_general_set = set()
+        for code, info in machines.items():
+            if info['tip'] == 'G':
+                is_general_set.add(code)
+                continue
+            if code in faspro_codes:
+                is_general_set.add(code)
+                continue
+            # Tiene hijos por prefijo?
+            for other in all_codes:
+                if other != code and other.startswith(code):
+                    is_general_set.add(code)
+                    break
+
+        # 3. Calcular el padre de cada specific: match de prefijo MAS LARGO
+        #    que sea general (excluyendo el propio codigo).
+        parents = {}  # code -> parent_code
+        for code in all_codes:
+            if code in is_general_set:
+                continue  # los generales no tienen padre (top-level)
+            best = None
+            for other in is_general_set:
+                if other == code:
+                    continue
+                if code.startswith(other):
+                    if best is None or len(other) > len(best):
+                        best = other
+            if best:
+                parents[code] = best
+
+        # 4. Construir entries (code, name, is_general, parent_code).
+        entries = []
+        for code, info in machines.items():
+            entries.append((
+                code,
+                info['name'],
+                code in is_general_set,
+                parents.get(code, ''),
+            ))
+
+        _logger.info(
+            'texplus.machine sync: %s maquinas TEXPLUS, %s generales (incluye %s por uso en FASPRO), %s con padre',
+            len(entries),
+            len(is_general_set),
+            sum(1 for c in is_general_set if machines[c]['tip'] != 'G'),
+            len(parents),
+        )
+
+        return self._apply_machine_catalog(entries)
+
+    @api.model
     def _apply_machine_catalog(self, entries):
         """Upsert idempotente del catalogo MAQUIN.
 
@@ -369,6 +482,109 @@ class TexplusMachine(models.Model):
             sum(len(ids) for ids in pairs_per_operation.values()),
         )
         return True
+
+    @api.model
+    def action_sync_maqfas_from_texplus(self):
+        """Lee TEXPLUS.MAQFAS y popula specific_machine_ids en Odoo.
+
+        Hace MERGE (no reemplazo): solo agrega maquinas que falten, nunca
+        quita las que el usuario haya asignado a mano. Idempotente.
+
+        Devuelve un dict con contadores para diagnostico.
+
+        Uso desde el shell:
+            env['texplus.machine'].action_sync_maqfas_from_texplus()
+            env.cr.commit()
+        """
+        from .mrp_base_process import TEXPLUS_EMPRCOD
+
+        pairs = []
+        conn = None
+        cursor = None
+        try:
+            conn = self._get_texplus_sql_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT LTRIM(RTRIM(MaqCod)), LTRIM(RTRIM(MaqFCod)) "
+                "FROM dbo.MAQFAS WITH (NOLOCK) WHERE EmprCod = ?",
+                TEXPLUS_EMPRCOD,
+            )
+            pairs = [
+                ((row[0] or '').strip(), (row[1] or '').strip())
+                for row in cursor.fetchall()
+            ]
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+        if not pairs:
+            _logger.warning('texplus.machine: MAQFAS vacio en TEXPLUS, nada que sincronizar')
+            return {'pairs': 0, 'operations_updated': 0, 'additions': 0}
+
+        machines_by_code = {
+            (m.code or '').strip().upper(): m
+            for m in self.sudo().search([])
+        }
+        Operation = self.env['mrp.routing.workcenter.operation'].sudo()
+        operations_by_fas = {
+            (op.fas_code or '').strip().upper(): op
+            for op in Operation.search([('fas_code', '!=', False)])
+        }
+
+        wanted_per_operation = {}  # operation_id -> set(machine_id)
+        missing_machines = set()
+        missing_phases = set()
+        for maq_code, fas_code in pairs:
+            if not maq_code or not fas_code:
+                continue
+            machine = machines_by_code.get(maq_code.upper())
+            operation = operations_by_fas.get(fas_code.upper())
+            if not machine:
+                missing_machines.add(maq_code)
+                continue
+            if not operation:
+                missing_phases.add(fas_code)
+                continue
+            wanted_per_operation.setdefault(operation.id, set()).add(machine.id)
+
+        operations_updated = 0
+        total_additions = 0
+        for operation_id, wanted_ids in wanted_per_operation.items():
+            operation = Operation.browse(operation_id)
+            current_ids = set(operation.specific_machine_ids.ids)
+            to_add = wanted_ids - current_ids
+            if not to_add:
+                continue
+            # (4, id) = link existing record, MERGE en lugar de reemplazar.
+            operation.with_context(skip_texplus_sync=True).write({
+                'specific_machine_ids': [(4, mid) for mid in to_add],
+            })
+            operations_updated += 1
+            total_additions += len(to_add)
+
+        if missing_machines:
+            _logger.warning(
+                'texplus.machine sync MAQFAS: %s maquinas no existen en Odoo: %s',
+                len(missing_machines), ', '.join(sorted(missing_machines))[:500],
+            )
+        if missing_phases:
+            _logger.warning(
+                'texplus.machine sync MAQFAS: %s fases no existen en Odoo: %s',
+                len(missing_phases), ', '.join(sorted(missing_phases))[:500],
+            )
+        _logger.info(
+            'texplus.machine sync MAQFAS: %s pares procesados, %s operaciones actualizadas, %s asignaciones agregadas',
+            len(pairs), operations_updated, total_additions,
+        )
+        return {
+            'pairs': len(pairs),
+            'operations_updated': operations_updated,
+            'additions': total_additions,
+            'missing_machines': sorted(missing_machines),
+            'missing_phases': sorted(missing_phases),
+        }
 
     @api.model
     def _apply_general_machine_from_faspro(self, pairs):

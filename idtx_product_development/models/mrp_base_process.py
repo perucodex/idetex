@@ -329,7 +329,33 @@ class MrpBaseProcess(models.Model):
         cursor.execute('SET LOCK_TIMEOUT 5000')
         cursor.execute('SET DEADLOCK_PRIORITY LOW')
 
+    # Mapa AREA (TEXPLUS estatus_reproceso) -> mrp.workcenter.operation_type
+    # Solo cubre las areas con un operation_type tipificado. Las que no
+    # esten aqui usan operation_type=False (workcenter generico).
+    _OPERATION_TYPE_BY_AREA = {
+        'TEJEDURIA': 'weaving',
+        'TINTORERIA': 'dyeing',
+        'ESTAMPADO': 'printing',
+        'CONTROL DE CALIDAD': 'quality',
+        'ACABADO': 'finishing',
+    }
+
     def _infer_workcenter_values(self, phase_name, phase_code):
+        """Resuelve (workcenter_name, operation_type) para una fase nueva.
+
+        Fuente autoritativa: TEXPLUS.estatus_reproceso (columna `area`
+        indexada por `fase`=FasCod). Si TEXPLUS no responde o la fase no
+        existe alli, caemos al matching por palabras clave (utilidad
+        principal: bootstrap cuando SQL Server no es alcanzable). Si
+        tampoco hay match -> UserError: NUNCA creamos un workcenter
+        'TEXPLUS' generico como fallback (eso ensucia el catalogo y
+        obliga al usuario a limpiar a mano).
+        """
+        clean_code = (phase_code or '').strip().upper()
+        area = self._lookup_area_in_estatus_reproceso(clean_code) if clean_code else None
+        if area:
+            return area, self._OPERATION_TYPE_BY_AREA.get(area, False)
+
         normalized = ' '.join(filter(None, (_normalize_text(phase_code), _normalize_text(phase_name))))
         if any(token in normalized for token in ('TEJID', 'URDIM', 'TRAMA', 'CRUDO')):
             return 'TEJEDURIA', 'weaving'
@@ -341,7 +367,62 @@ class MrpBaseProcess(models.Model):
             return 'CONTROL DE CALIDAD', 'quality'
         if any(token in normalized for token in ('ACAB', 'SECAD', 'SANFO', 'COMPACT', 'PRESEC', 'TERMO', 'RAMA', 'ESMERIL', 'PERCHA', 'TUND', 'ABIERTO')):
             return 'ACABADO', 'finishing'
-        return 'TEXPLUS', False
+        raise UserError(_(
+            'No se puede determinar el centro de trabajo (area) para la '
+            'fase "%(name)s" (codigo %(code)s). No aparece en '
+            'estatus_reproceso de TEXPLUS ni coincide con ninguna palabra '
+            'clave conocida. Registra el area en TEXPLUS antes de '
+            'reintentar la sincronizacion.',
+            name=phase_name or '?', code=phase_code or '?',
+        ))
+
+    @api.model
+    def _lookup_area_in_estatus_reproceso(self, fas_code):
+        """Devuelve el `area` para un `fase` en estatus_reproceso, o None.
+
+        Cacheado por fas_code dentro del mismo request (env.context['_estatus_reproceso_cache'])
+        para evitar abrir conexion SQL Server por cada fase nueva en sincronizaciones
+        masivas. Si SQL Server no es alcanzable devolvemos None (degrada al matching
+        por palabras clave) — no propagamos la excepcion porque la sincronizacion
+        debe ser tolerante a indisponibilidad temporal del ERP externo.
+        """
+        fas_code = (fas_code or '').strip().upper()
+        if not fas_code:
+            return None
+        cache = self.env.context.get('_estatus_reproceso_cache')
+        if cache is None:
+            cache = {}
+            # No podemos mutar env.context directamente; lo dejamos como
+            # cache local a este browse — para usos masivos, el caller
+            # debe inyectarlo via with_context.
+        if fas_code in cache:
+            return cache[fas_code] or None
+
+        conn = None
+        cursor = None
+        try:
+            conn = self._get_texplus_sql_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT LTRIM(RTRIM(area)) FROM dbo.estatus_reproceso "
+                "WITH (NOLOCK) WHERE fase = ?",
+                fas_code,
+            )
+            row = cursor.fetchone()
+            area = (row[0].strip() if row and row[0] else None)
+            cache[fas_code] = area or ''
+            return area or None
+        except Exception:
+            _logger.warning(
+                'mrp.base.process: estatus_reproceso no consultable para fas_code=%s',
+                fas_code, exc_info=True,
+            )
+            return None
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
 
     def _get_or_create_workcenter(self, name, operation_type):
         workcenter = self.env['mrp.workcenter'].sudo().search([('name', '=', name)], limit=1)
