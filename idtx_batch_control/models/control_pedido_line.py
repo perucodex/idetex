@@ -103,16 +103,19 @@ class ControlPedidoLine(models.Model):
         for rec in records_with_data:
             procs = rec.proceso_ids.sorted(key=lambda p: p.barOrdLin or 0)
 
-            # Override: CONTROL DE CALIDAD is the last phase of the route
-            # and we have a ctrl_info report — count from that date.
-            last_proc = procs[-1] if procs else None
-            last_proc_area = area_by_fas.get(last_proc.fas_code) if last_proc else None
-            calidad_is_last = last_proc_area == 'CONTROL DE CALIDAD'
-            if (
-                calidad_is_last
-                and rec.report_date
-                and rec.area in ('CONTROL DE CALIDAD', 'TERMINADO')
-            ):
+            # Override: la partida paso por CONTROL DE CALIDAD (cualquier
+            # posicion de la ruta, no solo la ultima) y tenemos un informe
+            # en ctrl_info -> contamos desde la fecha del informe. Esto
+            # captura tanto las partidas terminadas como las que entran a
+            # un reproceso despues de QC: una vez reportada en calidad, el
+            # reloj arranca ahi y los reprocesos posteriores acumulan dias
+            # contra ese momento.
+            has_finished_calidad = any(
+                area_by_fas.get(p.fas_code) == 'CONTROL DE CALIDAD'
+                and p.barFasDTF
+                for p in procs
+            )
+            if has_finished_calidad and rec.report_date:
                 rec.change_date = rec.report_date
                 rec.area_num_days = max(0, (now - rec.report_date).days)
                 continue
