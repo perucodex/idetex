@@ -363,14 +363,44 @@ class MrpBaseProcess(models.Model):
 
         operation_model = self.env['mrp.routing.workcenter.operation'].sudo()
         operation = operation_model.browse()
+
+        # 1. Match by fas_code. When multiple candidates exist (legacy dups),
+        #    prefer the one whose name also matches; otherwise pick the
+        #    OLDEST id deterministically so subsequent runs never create a
+        #    new sibling.
         if clean_code:
-            operation = operation_model.search([('fas_code', '=', clean_code)], limit=1)
+            candidates = operation_model.search([('fas_code', '=', clean_code)])
+            if candidates:
+                matching_name = candidates.filtered(
+                    lambda op: (op.name or '').strip() == clean_name
+                )
+                operation = (matching_name or candidates).sorted('id')[:1]
+                if len(candidates) > 1:
+                    _logger.warning(
+                        '_get_or_create_operation: %s operaciones con fas_code=%s '
+                        '(ids=%s) — usando id=%s. Deduplica para evitar este aviso.',
+                        len(candidates), clean_code, candidates.ids, operation.id,
+                    )
+
+        # 2. Fall back to name lookup only when no fas_code match was found.
         if not operation and clean_name:
-            by_name = operation_model.search([('name', '=', clean_name)], limit=1)
-            if by_name and (not clean_code or not by_name.fas_code or by_name.fas_code.strip() == clean_code):
-                if clean_code and not by_name.fas_code:
-                    by_name.fas_code = clean_code
-                operation = by_name
+            by_name = operation_model.search([('name', '=', clean_name)], order='id')
+            if by_name:
+                compatible = by_name.filtered(
+                    lambda op: not clean_code
+                    or not op.fas_code
+                    or (op.fas_code or '').strip() == clean_code
+                )
+                operation = (compatible or by_name)[:1]
+                if clean_code and not operation.fas_code:
+                    operation.fas_code = clean_code
+                if len(by_name) > 1:
+                    _logger.warning(
+                        '_get_or_create_operation: %s operaciones con name=%s '
+                        '(ids=%s) — usando id=%s.',
+                        len(by_name), clean_name, by_name.ids, operation.id,
+                    )
+
         if not operation:
             workcenter_name, operation_type = self._infer_workcenter_values(clean_name, clean_code)
             workcenter = self._get_or_create_workcenter(workcenter_name, operation_type)
@@ -703,6 +733,71 @@ class MrpBaseProcess(models.Model):
                 cursor.close()
             if conn:
                 conn.close()
+
+    @api.model
+    def action_dedupe_operations(self):
+        """One-shot helper to merge duplicate `mrp.routing.workcenter.operation`
+        rows that share the same (name, fas_code). The OLDEST id wins; every
+        FK pointing to a sibling is repointed to the keeper before the
+        sibling is unlinked.
+
+        Run from the Odoo shell when needed:
+            env['mrp.base.process'].action_dedupe_operations()
+        """
+        cr = self.env.cr
+        cr.execute("""
+            SELECT name, fas_code, array_agg(id ORDER BY id) AS ids
+            FROM mrp_routing_workcenter_operation
+            WHERE fas_code IS NOT NULL
+            GROUP BY name, fas_code
+            HAVING COUNT(*) > 1
+        """)
+        groups = cr.fetchall()
+        if not groups:
+            _logger.info('action_dedupe_operations: no duplicates found')
+            return {'merged': 0}
+
+        # All tables that reference mrp_routing_workcenter_operation.id.
+        # Discovered via pg_constraint instead of hardcoding so future
+        # additions don't silently break the cleanup.
+        cr.execute("""
+            SELECT c.conrelid::regclass AS table_name,
+                   a.attname AS column_name
+            FROM pg_constraint c
+            JOIN pg_attribute a
+              ON a.attrelid = c.conrelid AND a.attnum = ANY(c.conkey)
+            WHERE c.confrelid = 'mrp_routing_workcenter_operation'::regclass
+              AND c.contype = 'f'
+        """)
+        fk_refs = cr.fetchall()
+        _logger.info(
+            'action_dedupe_operations: %s tablas referencian mrp_routing_workcenter_operation: %s',
+            len(fk_refs),
+            ', '.join('%s.%s' % (t, c) for t, c in fk_refs),
+        )
+
+        Operation = self.env['mrp.routing.workcenter.operation'].sudo()
+        merged = 0
+        for name, fas_code, ids in groups:
+            keeper_id, *dup_ids = ids
+            _logger.info(
+                'action_dedupe_operations: name=%r fas_code=%r keeper=%s dups=%s',
+                name, fas_code, keeper_id, dup_ids,
+            )
+            for table_name, column_name in fk_refs:
+                cr.execute(
+                    f'UPDATE {table_name} SET {column_name} = %s '
+                    f'WHERE {column_name} = ANY(%s)',
+                    (keeper_id, list(dup_ids)),
+                )
+            # Use the ORM so cascading specific_machine_ids etc. behaves.
+            Operation.browse(dup_ids).with_context(
+                skip_texplus_sync=True,
+                skip_texplus_faspro_delete=True,
+            ).unlink()
+            merged += len(dup_ids)
+        _logger.info('action_dedupe_operations: removed %s duplicates', merged)
+        return {'merged': merged}
 
     def cron_sync_from_texplus(self):
         rows = self.sudo()._fetch_texplus_process_rows()

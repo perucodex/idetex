@@ -1079,8 +1079,14 @@ class TechnicalSheet(models.Model):
             )
             return []
 
-        # Validate every operation has a usable fas_code BEFORE touching the DB.
+        # Validate every operation has a usable fas_code AND a general
+        # machine BEFORE touching the DB. The machine constraint is critical:
+        # SERPAU + ARTLIN need it for production to register. We raise
+        # UserError so the caller sees the issue (the write override on
+        # product.analysis is the first line of defense and should have
+        # caught this; this branch is just a safety net).
         phases = []  # list of (fas_code, op_name)
+        missing_machine = []
         for rl in route_lines.sorted(key=lambda r: (r.sequence, r.id)):
             if not rl.operation_id:
                 continue
@@ -1097,7 +1103,18 @@ class TechnicalSheet(models.Model):
                     fas_code, rl.operation_id.display_name,
                 )
                 return []
+            if not rl.operation_id.general_machine_id:
+                missing_machine.append(rl.operation_id)
+                continue
             phases.append((fas_code, rl.operation_id.name))
+
+        if missing_machine:
+            names = '\n'.join('- %s (fas_code=%s)' % (op.name, op.fas_code or '-')
+                              for op in missing_machine)
+            raise UserError(_(
+                "No se puede actualizar TEXPLUS para %s: las siguientes "
+                "operaciones no tienen Maquina General asignada.\n%s"
+            ) % (article_code, names))
 
         op_names = [name for _, name in phases]
         short_desc = ', '.join(op_names)[:40]

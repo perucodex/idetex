@@ -229,18 +229,32 @@ class MrpRoutingWorkcenterOperation(models.Model):
                 if sync_faspro:
                     # MaqCod solo de la maquina general TEXPLUS. No usar
                     # workcenter_id.name (es el AREA, no un codigo de maquina).
+                    # IMPORTANTE: solo escribimos MaqCod cuando Odoo conoce
+                    # la maquina general. Si Odoo no la tiene asignada, no
+                    # tocamos FASPRO.MaqCod — asi preservamos asignaciones
+                    # hechas manualmente en TEXPLUS por el usuario y evitamos
+                    # que el cron_sync_from_texplus las borre al recrear una
+                    # fase. Si quieres limpiar la maquina explicitamente,
+                    # hazlo desde Odoo seteando otra general_machine_id.
                     if operation.general_machine_id and operation.general_machine_id.code:
                         general_code = _fit_char(operation.general_machine_id.code, 6)
+                        cursor.execute(
+                            "UPDATE dbo.FASPRO SET FasDsc = ?, MaqCod = ? "
+                            "WHERE EmprCod = ? AND FasCod = ?",
+                            _fit_char(operation.name, 28),
+                            general_code,
+                            TEXPLUS_EMPRCOD,
+                            phase_code,
+                        )
                     else:
-                        general_code = None
-                    cursor.execute(
-                        "UPDATE dbo.FASPRO SET FasDsc = ?, MaqCod = ? "
-                        "WHERE EmprCod = ? AND FasCod = ?",
-                        _fit_char(operation.name, 28),
-                        general_code,
-                        TEXPLUS_EMPRCOD,
-                        phase_code,
-                    )
+                        # Solo refresca la descripcion; NO toca MaqCod.
+                        cursor.execute(
+                            "UPDATE dbo.FASPRO SET FasDsc = ? "
+                            "WHERE EmprCod = ? AND FasCod = ?",
+                            _fit_char(operation.name, 28),
+                            TEXPLUS_EMPRCOD,
+                            phase_code,
+                        )
 
                 if sync_maqfas:
                     self._sync_maqfas_for_operation(cursor, operation, phase_code)

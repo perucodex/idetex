@@ -160,6 +160,10 @@ class ProductAnalysis(models.Model):
         # Captured BEFORE super() so we can compare old vs new value.
         if 'mrp_base_process_id' in vals:
             new_bp_id = vals.get('mrp_base_process_id') or False
+            # Hard validation: every operation of the new base process MUST
+            # have a general TEXPLUS machine assigned. Otherwise production
+            # can't proceed downstream, so we block the write entirely.
+            self._check_base_process_has_machines(new_bp_id)
             changed = [
                 r for r in self
                 if (r.mrp_base_process_id.id or False) != new_bp_id
@@ -170,6 +174,34 @@ class ProductAnalysis(models.Model):
         for rec in changed:
             rec._propagate_base_process()
         return res
+
+    @api.model
+    def _check_base_process_has_machines(self, base_process_id):
+        """Raise UserError unless every operation in the given base process
+        has `general_machine_id` set. Called from write() so it aborts the
+        whole save before any propagation runs. No-op when clearing the
+        base process (None/False).
+        """
+        if not base_process_id:
+            return
+        base = self.env['mrp.base.process'].browse(base_process_id)
+        missing = base.process_ids.filtered(
+            lambda l: l.operation_id and not l.operation_id.general_machine_id
+        )
+        if missing:
+            ops_text = '\n'.join(
+                '- %s (fas_code=%s)' % (
+                    line.operation_id.name or '?',
+                    line.operation_id.fas_code or '-',
+                )
+                for line in missing
+            )
+            raise UserError(_(
+                "No se puede asignar la ruta '%s' al analisis: las siguientes "
+                "operaciones no tienen Maquina General (TEXPLUS) asignada. "
+                "Sin maquina la fase no puede registrarse en produccion.\n\n%s\n\n"
+                "Configura la maquina general en cada operacion antes de continuar."
+            ) % (base.name, ops_text))
 
     def _propagate_base_process(self):
         """Refresh the routing lines, the technical sheets and the BoMs that
