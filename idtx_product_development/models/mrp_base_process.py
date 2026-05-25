@@ -552,30 +552,6 @@ class MrpBaseProcess(models.Model):
 
     def _replace_texplus_process_lines(self, cursor, process_code):
         process_code = (process_code or '').strip()
-
-        # Diff: figure out which FasCods are about to be REMOVED from this
-        # route (i.e. exist in PROLIN today but won't after the rewrite).
-        # We block the removal if any of them already has production data
-        # so historical (ProCod, FasCod) references aren't orphaned.
-        cursor.execute(
-            'SELECT LTRIM(RTRIM(FasCod)) FROM dbo.PROLIN WITH (NOLOCK) '
-            'WHERE EmprCod = ? AND ProCod = ?',
-            TEXPLUS_EMPRCOD, process_code,
-        )
-        old_fas_codes = {row[0].upper() for row in cursor.fetchall() if row[0]}
-
-        new_fas_codes = set()
-        for line in self.process_ids:
-            operation = line.operation_id
-            if _is_tejido_crudo(operation):
-                continue
-            if operation and operation.fas_code:
-                new_fas_codes.add(operation.fas_code.strip().upper())
-
-        removed = old_fas_codes - new_fas_codes
-        if removed:
-            self._check_phase_removable_in_texplus(cursor, process_code, removed)
-
         cursor.execute(
             'DELETE FROM dbo.PROLIN WHERE EmprCod = ? AND ProCod = ?',
             TEXPLUS_EMPRCOD,
@@ -611,67 +587,6 @@ class MrpBaseProcess(models.Model):
                 },
             )
         return max_line
-
-    # Tables to consult before allowing a FasCod to leave a PROLIN entry.
-    # The key is the table name; the value is the SQL fragment matching
-    # (EmprCod, ProCod, FasCod). All listed tables have BOTH ProCod and
-    # FasCod columns (discovered via INFORMATION_SCHEMA), so the check
-    # is precise: it blocks only when a row exists for THIS specific
-    # combination, not generic uses of the phase elsewhere.
-    TEXPLUS_PHASE_USAGE_TABLES = (
-        ('BARFAS',  'production phase records'),
-        ('SERPAU',  'article-route-phase per customer'),
-        ('SERPAR',  'article-route-phase variants'),
-        ('ARTFOR',  'article formula'),
-        ('DISFAS',  'disposition phases'),
-    )
-
-    def _check_phase_removable_in_texplus(self, cursor, process_code, fas_codes):
-        """Raise UserError if any of `fas_codes` is in use under
-        `process_code` in production-related TEXPLUS tables.
-
-        Only blocks for the exact (EmprCod, ProCod, FasCod) combination,
-        so a phase still used in OTHER routes is not blocked here — only
-        the entry being orphaned from THIS route.
-        """
-        if not fas_codes:
-            return
-        codes = sorted(fas_codes)
-        placeholders = ', '.join(['?'] * len(codes))
-        usage = []
-        for table_name, description in self.TEXPLUS_PHASE_USAGE_TABLES:
-            try:
-                cursor.execute(
-                    f"SELECT LTRIM(RTRIM(FasCod)), COUNT(*) "
-                    f"FROM dbo.{table_name} WITH (NOLOCK) "
-                    f"WHERE EmprCod = ? AND ProCod = ? "
-                    f"  AND LTRIM(RTRIM(FasCod)) COLLATE Latin1_General_CI_AS "
-                    f"      IN ({placeholders}) "
-                    f"GROUP BY FasCod",
-                    TEXPLUS_EMPRCOD, process_code, *codes,
-                )
-                for code, count in cursor.fetchall():
-                    if count:
-                        usage.append((table_name, description, code, count))
-            except Exception as error:
-                _logger.warning(
-                    'TEXPLUS phase removal check: error consultando %s (%s)',
-                    table_name, error,
-                )
-
-        if not usage:
-            return
-
-        details = '\n'.join(
-            '- %s (%s): fase %s con %s registro(s)' % (table, desc, code, count)
-            for table, desc, code, count in usage
-        )
-        raise UserError(_(
-            "No se pueden quitar fases de la ruta '%s' porque ya tienen "
-            "registros asociados en TEXPLUS:\n\n%s\n\n"
-            "Si necesitas reemplazar la ruta, primero limpia o reasigna los "
-            "registros mencionados, o mantén esa fase dentro de la ruta."
-        ) % (process_code, details))
 
     def _delete_from_texplus(self, process_codes):
         codes = [(code or '').strip() for code in process_codes if (code or '').strip()]
@@ -842,6 +757,37 @@ class MrpBaseProcess(models.Model):
                 cursor.close()
             if conn:
                 conn.close()
+
+    @api.model
+    def action_fill_specifics_from_general(self):
+        """Para cada operacion con `general_machine_id`, agrega a sus
+        `specific_machine_ids` todas las especificas que pertenecen a esa
+        general. Idempotente: solo agrega lo que falta. La sincronizacion
+        a MAQFAS se dispara automaticamente porque el write toca
+        `specific_machine_ids`.
+
+        Run from the shell:
+            env['mrp.base.process'].action_fill_specifics_from_general()
+        """
+        Operation = self.env['mrp.routing.workcenter.operation'].sudo()
+        ops = Operation.search([('general_machine_id', '!=', False)])
+        if not ops:
+            return {'updated': 0}
+        changed = ops._ensure_specific_machines_from_general()
+        # Force one MAQFAS sync per affected op so MAQFAS catches up with
+        # the new combinations. The write triggered by
+        # _ensure_specific_machines_from_general uses skip_texplus_sync=True
+        # to avoid one MAQFAS hit per op; we batch it here at the end.
+        sync_targets = ops.filtered(
+            lambda r: (r.name or '').strip() and not _is_tejido_crudo(r)
+        )
+        if sync_targets:
+            sync_targets._sync_to_texplus(sync_faspro=False, sync_maqfas=True)
+        _logger.info(
+            'action_fill_specifics_from_general: %s operaciones revisadas '
+            '(cambios=%s)', len(ops), changed,
+        )
+        return {'updated': len(ops), 'changed': bool(changed)}
 
     @api.model
     def action_backfill_general_machine_from_faspro(self):

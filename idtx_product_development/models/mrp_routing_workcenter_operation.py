@@ -81,14 +81,83 @@ class MrpRoutingWorkcenterOperation(models.Model):
 
     @api.onchange('general_machine_id')
     def _onchange_general_machine_id(self):
+        Machine = self.env['texplus.machine']
         for record in self:
             if not record.general_machine_id:
                 continue
+            # Drop specifics that don't belong to this general.
             invalid = record.specific_machine_ids.filtered(
                 lambda m: m.general_machine_id != record.general_machine_id
             )
             if invalid:
                 record.specific_machine_ids = record.specific_machine_ids - invalid
+            # Add every specific of this general — MAQFAS should know every
+            # (specific, fas) combination by default. The user can manually
+            # remove unwanted entries afterwards.
+            specifics = Machine.search([
+                ('is_general', '=', False),
+                ('general_machine_id', '=', record.general_machine_id.id),
+            ])
+            missing = specifics - record.specific_machine_ids
+            if missing:
+                record.specific_machine_ids = record.specific_machine_ids | missing
+
+    def _ensure_specific_machines_from_general(self):
+        """Add every specific machine that belongs to the operation's
+        `general_machine_id`. Does NOT remove machines that may already
+        be linked but belong to a different general — use
+        `_resync_specifics_with_general` for the full cascade.
+
+        Returns True if anything was added, False otherwise.
+        """
+        Machine = self.env['texplus.machine'].sudo()
+        changed = False
+        for op in self:
+            if not op.general_machine_id:
+                continue
+            specifics = Machine.search([
+                ('is_general', '=', False),
+                ('general_machine_id', '=', op.general_machine_id.id),
+            ])
+            if not specifics:
+                continue
+            existing = op.specific_machine_ids
+            missing = specifics - existing
+            if missing:
+                op.with_context(skip_texplus_sync=True).write({
+                    'specific_machine_ids': [(4, m.id) for m in missing],
+                })
+                changed = True
+        return changed
+
+    def _resync_specifics_with_general(self):
+        """Replace `specific_machine_ids` with EXACTLY the specifics that
+        belong to `general_machine_id`. Used when the general changes —
+        drops machines tied to the previous general (cascade out) and
+        adds the new general's specifics (cascade in) in one write.
+
+        When `general_machine_id` is empty, clears `specific_machine_ids`.
+        Returns True if the resulting set differs from the original.
+        """
+        Machine = self.env['texplus.machine'].sudo()
+        changed = False
+        for op in self:
+            if op.general_machine_id:
+                specifics = Machine.search([
+                    ('is_general', '=', False),
+                    ('general_machine_id', '=', op.general_machine_id.id),
+                ])
+                target_ids = set(specifics.ids)
+            else:
+                target_ids = set()
+            current_ids = set(op.specific_machine_ids.ids)
+            if target_ids == current_ids:
+                continue
+            op.with_context(skip_texplus_sync=True).write({
+                'specific_machine_ids': [(6, 0, list(target_ids))],
+            })
+            changed = True
+        return changed
 
     @api.onchange('specific_machine_ids')
     def _onchange_specific_machine_ids_set_general(self):
@@ -185,15 +254,37 @@ class MrpRoutingWorkcenterOperation(models.Model):
                 lambda r: (r.name or '').strip() and not _is_tejido_crudo(r)
             )
             if sync_targets:
+                # Auto-fill specifics from the general BEFORE syncing so
+                # MAQFAS gets the full set in one shot.
+                sync_targets._ensure_specific_machines_from_general()
                 sync_targets._sync_to_texplus(sync_faspro=True, sync_maqfas=True)
         return records
 
     def write(self, vals):
+        # Snapshot the previous general_machine_id BEFORE super so we can
+        # tell which records actually changed it. Needed for the cascade
+        # that replaces specific_machine_ids on a general swap.
+        general_swapped = self.browse()
+        if 'general_machine_id' in vals:
+            new_general_id = vals.get('general_machine_id') or False
+            general_swapped = self.filtered(
+                lambda r: (r.general_machine_id.id or False) != new_general_id
+            )
+
         result = super().write(vals)
         if self.env.context.get('skip_texplus_sync'):
             return result
+
         sync_faspro = bool({'name', 'general_machine_id'} & set(vals))
         sync_maqfas = 'specific_machine_ids' in vals
+
+        # General changed → replace specifics with the new general's set
+        # (cascade out + cascade in in a single write). MAQFAS sync picks
+        # up the diff automatically.
+        if general_swapped:
+            if general_swapped._resync_specifics_with_general():
+                sync_maqfas = True
+
         if sync_faspro or sync_maqfas:
             self._sync_to_texplus(sync_faspro=sync_faspro, sync_maqfas=sync_maqfas)
         return result
