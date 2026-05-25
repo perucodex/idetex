@@ -439,7 +439,9 @@ class MrpBaseProcess(models.Model):
                     'sequence': line.sequence,
                     'operation_id': line.operation_id.id,
                 }))
-            record.with_context(skip_texplus_sync=True).write({'process_ids': commands})
+            record.with_context(
+                skip_texplus_sync=True, skip_composition_check=True,
+            ).write({'process_ids': commands})
 
     def _rename_texplus_process(self, cursor, old_code, new_code):
         old_code = (old_code or '').strip()
@@ -888,12 +890,18 @@ class MrpBaseProcess(models.Model):
             for process in self.sudo().search([('name', 'in', list(grouped_rows))])
         }
 
+        # The cron just mirrors what TEXPLUS already has. Two distinct
+        # TEXPLUS processes can share the same exact phase list (legitimately,
+        # for naming convenience). Skipping the local composition check lets
+        # the cron import them faithfully without exploding.
+        cron_ctx = {'skip_texplus_sync': True, 'skip_composition_check': True}
+
         created_processes = 0
         updated_processes = 0
         for process_code, process_rows in grouped_rows.items():
             base_process = existing_processes.get(process_code)
             if not base_process:
-                base_process = self.with_context(skip_texplus_sync=True).sudo().create({'name': process_code})
+                base_process = self.with_context(**cron_ctx).sudo().create({'name': process_code})
                 existing_processes[process_code] = base_process
                 created_processes += 1
 
@@ -928,7 +936,7 @@ class MrpBaseProcess(models.Model):
 
             current_keys = [(line.sequence, line.operation_id.id) for line in base_process.process_ids.sorted('sequence') if line.operation_id]
             if current_keys != desired_keys:
-                base_process.with_context(skip_texplus_sync=True).write({'process_ids': commands})
+                base_process.with_context(**cron_ctx).write({'process_ids': commands})
                 updated_processes += 1
 
         _logger.info(
