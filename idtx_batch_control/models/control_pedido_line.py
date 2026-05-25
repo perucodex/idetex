@@ -67,7 +67,7 @@ class ControlPedidoLine(models.Model):
     def action_set_active(self):
         self.write({'state': 'active'})
 
-    @api.depends('area', 'proceso_ids.barFasDTI', 'proceso_ids.barFasDTF', 'proceso_ids.fas_code')
+    @api.depends('area', 'proceso_ids.barFasDTI', 'proceso_ids.barFasDTF', 'proceso_ids.fas_code', 'report_date')
     def _compute_area_num_days(self):
         # The current area is derived (in SQL) from estatus_reproceso(fase=FasCod).
         # To know how long this line has been in `area`, we resolve the area of
@@ -76,6 +76,11 @@ class ControlPedidoLine(models.Model):
         # area. That boundary process tells us when the line entered its
         # current area: `change_date` = its date, `area_num_days` = days since
         # the first process of the current-area run.
+        #
+        # Special case: when CONTROL DE CALIDAD is the last phase of the
+        # route AND the line has a ctrl_info `report_date`, we count days
+        # from that report date instead — it's the moment the partida was
+        # officially reported in QC and is more meaningful for follow-up.
         for rec in self:
             rec.area_num_days = 0
             rec.change_date = False
@@ -96,11 +101,27 @@ class ControlPedidoLine(models.Model):
 
         now = fields.Datetime.now()
         for rec in records_with_data:
-            # Walk only over FINISHED processes (those with barFasDTF). Starting
-            # from the latest one, walk back through the consecutive same-area
-            # run. The first different-area process gives us change_date — the
-            # moment the line entered its current area.
             procs = rec.proceso_ids.sorted(key=lambda p: p.barOrdLin or 0)
+
+            # Override: CONTROL DE CALIDAD is the last phase of the route
+            # and we have a ctrl_info report — count from that date.
+            last_proc = procs[-1] if procs else None
+            last_proc_area = area_by_fas.get(last_proc.fas_code) if last_proc else None
+            calidad_is_last = last_proc_area == 'CONTROL DE CALIDAD'
+            if (
+                calidad_is_last
+                and rec.report_date
+                and rec.area in ('CONTROL DE CALIDAD', 'TERMINADO')
+            ):
+                rec.change_date = rec.report_date
+                rec.area_num_days = max(0, (now - rec.report_date).days)
+                continue
+
+            # Default: walk only over FINISHED processes (those with
+            # barFasDTF). Starting from the latest one, walk back through
+            # the consecutive same-area run. The first different-area
+            # process gives us change_date — the moment the line entered
+            # its current area.
             current_area = rec.area
             earliest_start = False
             for proc in reversed(procs):
