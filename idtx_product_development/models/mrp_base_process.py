@@ -757,11 +757,13 @@ class MrpBaseProcess(models.Model):
             _logger.info('action_dedupe_operations: no duplicates found')
             return {'merged': 0}
 
-        # All tables that reference mrp_routing_workcenter_operation.id.
+        # All tables that reference mrp_routing_workcenter_operation.id, plus
+        # which of their columns are part of a UNIQUE / PRIMARY KEY (M2M-like
+        # relation tables typically have a composite PK on both FK columns).
         # Discovered via pg_constraint instead of hardcoding so future
         # additions don't silently break the cleanup.
         cr.execute("""
-            SELECT c.conrelid::regclass AS table_name,
+            SELECT c.conrelid::regclass::text AS table_name,
                    a.attname AS column_name
             FROM pg_constraint c
             JOIN pg_attribute a
@@ -785,10 +787,8 @@ class MrpBaseProcess(models.Model):
                 name, fas_code, keeper_id, dup_ids,
             )
             for table_name, column_name in fk_refs:
-                cr.execute(
-                    f'UPDATE {table_name} SET {column_name} = %s '
-                    f'WHERE {column_name} = ANY(%s)',
-                    (keeper_id, list(dup_ids)),
+                self._repoint_or_merge_fk(
+                    table_name, column_name, keeper_id, dup_ids,
                 )
             # Use the ORM so cascading specific_machine_ids etc. behaves.
             Operation.browse(dup_ids).with_context(
@@ -798,6 +798,76 @@ class MrpBaseProcess(models.Model):
             merged += len(dup_ids)
         _logger.info('action_dedupe_operations: removed %s duplicates', merged)
         return {'merged': merged}
+
+    def _repoint_or_merge_fk(self, table_name, column_name, keeper_id, dup_ids):
+        """Move every row of `table_name.column_name` pointing to one of
+        `dup_ids` so it points to `keeper_id` instead.
+
+        If the table has a UNIQUE/PRIMARY KEY constraint that includes
+        `column_name` (typical of M2M relation tables), a plain UPDATE would
+        violate it. In that case we INSERT the equivalent (keeper_id, ...)
+        rows skipping conflicts via ON CONFLICT DO NOTHING and then DELETE
+        the duplicates. Otherwise a single UPDATE suffices.
+        """
+        cr = self.env.cr
+        # Detect unique/primary constraints that include this column.
+        cr.execute(
+            """
+            SELECT c.conname,
+                   array_agg(a.attname ORDER BY a.attnum) AS cols
+            FROM pg_constraint c
+            JOIN pg_attribute a
+              ON a.attrelid = c.conrelid AND a.attnum = ANY(c.conkey)
+            WHERE c.conrelid = %s::regclass
+              AND c.contype IN ('p', 'u')
+            GROUP BY c.conname
+            HAVING %s = ANY(array_agg(a.attname))
+            """,
+            (table_name, column_name),
+        )
+        unique_groups = cr.fetchall()
+
+        if not unique_groups:
+            cr.execute(
+                f'UPDATE {table_name} SET {column_name} = %s '
+                f'WHERE {column_name} = ANY(%s)',
+                (keeper_id, list(dup_ids)),
+            )
+            return
+
+        # Discover every column of the table so we can build a generic
+        # INSERT SELECT that copies all other fields verbatim. Exclude
+        # `id` so PostgreSQL assigns fresh values; otherwise we'd conflict
+        # with the source rows still in place.
+        cr.execute(
+            """
+            SELECT attname FROM pg_attribute
+            WHERE attrelid = %s::regclass
+              AND attnum > 0
+              AND NOT attisdropped
+              AND attname <> 'id'
+            ORDER BY attnum
+            """,
+            (table_name,),
+        )
+        all_cols = [row[0] for row in cr.fetchall()]
+        select_parts = [
+            '%s' if col == column_name else col
+            for col in all_cols
+        ]
+        column_list = ', '.join(all_cols)
+        select_list = ', '.join(select_parts)
+        cr.execute(
+            f'INSERT INTO {table_name} ({column_list}) '
+            f'SELECT {select_list} FROM {table_name} '
+            f'WHERE {column_name} = ANY(%s) '
+            f'ON CONFLICT DO NOTHING',
+            (keeper_id, list(dup_ids)),
+        )
+        cr.execute(
+            f'DELETE FROM {table_name} WHERE {column_name} = ANY(%s)',
+            (list(dup_ids),),
+        )
 
     def cron_sync_from_texplus(self):
         rows = self.sudo()._fetch_texplus_process_rows()
