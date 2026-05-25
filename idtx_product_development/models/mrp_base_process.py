@@ -383,23 +383,38 @@ class MrpBaseProcess(models.Model):
                     )
 
         # 2. Fall back to name lookup only when no fas_code match was found.
+        #    Important: only reuse a same-name operation when its fas_code
+        #    is empty or matches `clean_code`. TEXPLUS can have several
+        #    distinct phases that share a description (e.g. FasCod=TAM and
+        #    FasCod=TAMB both named "TAMBLEADO") — those MUST stay as
+        #    separate Odoo operations so the historical data in BARFAS /
+        #    BARCAD / PROLIN keeps a correct reference.
         if not operation and clean_name:
             by_name = operation_model.search([('name', '=', clean_name)], order='id')
-            if by_name:
-                compatible = by_name.filtered(
-                    lambda op: not clean_code
-                    or not op.fas_code
-                    or (op.fas_code or '').strip() == clean_code
-                )
-                operation = (compatible or by_name)[:1]
+            compatible = by_name.filtered(
+                lambda op: not clean_code
+                or not op.fas_code
+                or (op.fas_code or '').strip() == clean_code
+            )
+            if compatible:
+                operation = compatible[:1]
                 if clean_code and not operation.fas_code:
                     operation.fas_code = clean_code
-                if len(by_name) > 1:
+                if len(compatible) > 1:
                     _logger.warning(
-                        '_get_or_create_operation: %s operaciones con name=%s '
-                        '(ids=%s) — usando id=%s.',
-                        len(by_name), clean_name, by_name.ids, operation.id,
+                        '_get_or_create_operation: %s operaciones compatibles '
+                        'con name=%s fas_code=%s (ids=%s) — usando id=%s.',
+                        len(compatible), clean_name, clean_code,
+                        compatible.ids, operation.id,
                     )
+            elif by_name:
+                # Same name but incompatible fas_codes → distinct phase in
+                # TEXPLUS. Fall through to create a brand-new Odoo op.
+                _logger.info(
+                    '_get_or_create_operation: name=%s ya existe con '
+                    'fas_code=%s, creando nueva op para fas_code=%s',
+                    clean_name, by_name.mapped('fas_code'), clean_code,
+                )
 
         if not operation:
             workcenter_name, operation_type = self._infer_workcenter_values(clean_name, clean_code)
@@ -735,6 +750,92 @@ class MrpBaseProcess(models.Model):
                 cursor.close()
             if conn:
                 conn.close()
+
+    @api.model
+    def action_import_missing_phases_from_faspro(self):
+        """Scan TEXPLUS.FASPRO and create an Odoo operation for every
+        FasCod that doesn't have a matching `mrp.routing.workcenter.operation`
+        yet. Useful right after fixing the lookup logic, to backfill phases
+        that previously collapsed into the wrong op (e.g. TAMB sharing the
+        same description as TAM).
+
+        Run from the shell:
+            env['mrp.base.process'].action_import_missing_phases_from_faspro()
+        """
+        conn = None
+        cursor = None
+        try:
+            conn = self._get_texplus_sql_connection()
+            cursor = conn.cursor()
+            self._configure_texplus_cursor(cursor)
+            cursor.execute(
+                "SELECT LTRIM(RTRIM(FasCod)) AS fas_code, "
+                "       LTRIM(RTRIM(FasDsc)) AS fas_dsc, "
+                "       LTRIM(RTRIM(MaqCod)) AS maq_cod "
+                "FROM dbo.FASPRO WITH (NOLOCK) "
+                "WHERE EmprCod = ? AND FasCod IS NOT NULL AND LEN(LTRIM(RTRIM(FasCod))) > 0",
+                TEXPLUS_EMPRCOD,
+            )
+            faspro_rows = [
+                (row[0], row[1] or row[0], row[2] or '')
+                for row in cursor.fetchall()
+                if row[0]
+            ]
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+        if not faspro_rows:
+            _logger.info('action_import_missing_phases_from_faspro: FASPRO vacio')
+            return {'imported': 0}
+
+        Operation = self.env['mrp.routing.workcenter.operation'].sudo()
+        existing_codes = {
+            (op.fas_code or '').strip().upper()
+            for op in Operation.search([('fas_code', '!=', False)])
+        }
+        Machine = self.env['texplus.machine'].sudo()
+
+        operation_cache = {}
+        imported = 0
+        for fas_code, fas_dsc, maq_cod in faspro_rows:
+            if fas_code.upper() in existing_codes:
+                continue
+            # Use _get_or_create_operation so the workcenter inference and
+            # caching stay consistent with the regular cron path.
+            operation = self._get_or_create_operation(fas_code, fas_dsc, operation_cache)
+            if not operation:
+                continue
+            # If FASPRO had a MaqCod and we know that machine, link it as
+            # the general TEXPLUS machine. (Avoid overwriting if the op
+            # already had one from a previous run.)
+            if maq_cod and not operation.general_machine_id:
+                machine = Machine.search([
+                    ('code', '=', maq_cod),
+                    ('is_general', '=', True),
+                ], limit=1)
+                if not machine:
+                    specific = Machine.search([('code', '=', maq_cod)], limit=1)
+                    if specific:
+                        machine = specific.general_machine_id
+                if machine:
+                    operation.with_context(skip_texplus_sync=True).write({
+                        'general_machine_id': machine.id,
+                    })
+            imported += 1
+            _logger.info(
+                'action_import_missing_phases_from_faspro: importado fas_code=%s name=%s maq=%s',
+                fas_code, fas_dsc, maq_cod or '(NULL)',
+            )
+
+        _logger.info(
+            'action_import_missing_phases_from_faspro: %s fases importadas '
+            '(FASPRO total %s)',
+            imported, len(faspro_rows),
+        )
+        return {'imported': imported}
 
     @api.model
     def action_dedupe_operations(self):
