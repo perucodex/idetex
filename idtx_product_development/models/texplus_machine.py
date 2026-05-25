@@ -244,8 +244,9 @@ class TexplusMachine(models.Model):
         faspro_codes = set()
         conn = None
         cursor = None
+        base_process = self.env['mrp.base.process'].sudo()
         try:
-            conn = self._get_texplus_sql_connection()
+            conn = base_process._get_texplus_sql_connection()
             cursor = conn.cursor()
             cursor.execute(
                 "SELECT LTRIM(RTRIM(MaqCod)) AS code, "
@@ -501,8 +502,9 @@ class TexplusMachine(models.Model):
         pairs = []
         conn = None
         cursor = None
+        base_process = self.env['mrp.base.process'].sudo()
         try:
-            conn = self._get_texplus_sql_connection()
+            conn = base_process._get_texplus_sql_connection()
             cursor = conn.cursor()
             cursor.execute(
                 "SELECT LTRIM(RTRIM(MaqCod)), LTRIM(RTRIM(MaqFCod)) "
