@@ -752,6 +752,83 @@ class MrpBaseProcess(models.Model):
                 conn.close()
 
     @api.model
+    def action_backfill_general_machine_from_faspro(self):
+        """For every Odoo operation whose `general_machine_id` is empty,
+        look up TEXPLUS.FASPRO.MaqCod for the matching FasCod and copy the
+        machine into Odoo. Skips operations that already have a machine
+        (so manual assignments are preserved).
+
+        Run from the shell:
+            env['mrp.base.process'].action_backfill_general_machine_from_faspro()
+        """
+        Operation = self.env['mrp.routing.workcenter.operation'].sudo()
+        ops_to_fix = Operation.search([
+            ('fas_code', '!=', False),
+            ('general_machine_id', '=', False),
+        ])
+        if not ops_to_fix:
+            _logger.info('backfill_general_machine: no Odoo ops need updating')
+            return {'updated': 0}
+
+        fas_codes = [(op.fas_code or '').strip() for op in ops_to_fix]
+        fas_codes = [code for code in fas_codes if code]
+
+        conn = None
+        cursor = None
+        try:
+            conn = self._get_texplus_sql_connection()
+            cursor = conn.cursor()
+            self._configure_texplus_cursor(cursor)
+            placeholders = ', '.join(['?'] * len(fas_codes))
+            cursor.execute(
+                f"SELECT LTRIM(RTRIM(FasCod)), LTRIM(RTRIM(ISNULL(MaqCod, ''))) "
+                f"FROM dbo.FASPRO WITH (NOLOCK) "
+                f"WHERE EmprCod = ? AND LTRIM(RTRIM(FasCod)) IN ({placeholders})",
+                TEXPLUS_EMPRCOD, *fas_codes,
+            )
+            maq_by_fas = {row[0]: row[1] for row in cursor.fetchall() if row[1]}
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+        if not maq_by_fas:
+            _logger.info('backfill_general_machine: FASPRO no aporta MaqCod para las ops huerfanas')
+            return {'updated': 0}
+
+        Machine = self.env['texplus.machine'].sudo()
+        machine_by_code = {
+            (m.code or '').strip().upper(): m
+            for m in Machine.search([])
+        }
+        updated = 0
+        for op in ops_to_fix:
+            fas = (op.fas_code or '').strip()
+            maq_code = maq_by_fas.get(fas)
+            if not maq_code:
+                continue
+            machine = machine_by_code.get(maq_code.upper())
+            if not machine:
+                continue
+            target = machine if machine.is_general else machine.general_machine_id
+            if not target:
+                continue
+            op.with_context(skip_texplus_sync=True).write({
+                'general_machine_id': target.id,
+            })
+            updated += 1
+            _logger.info(
+                'backfill_general_machine: op id=%s fas=%s -> machine %s (id=%s)',
+                op.id, fas, target.code, target.id,
+            )
+        _logger.info(
+            'backfill_general_machine: %s operaciones actualizadas (%s candidatas)',
+            updated, len(ops_to_fix),
+        )
+        return {'updated': updated}
+
+    @api.model
     def action_import_missing_phases_from_faspro(self):
         """Scan TEXPLUS.FASPRO and create an Odoo operation for every
         FasCod that doesn't have a matching `mrp.routing.workcenter.operation`
