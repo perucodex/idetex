@@ -206,7 +206,7 @@
         <field name="res_model">control.pedido.line</field>
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_control_pedido_line_tree_non_compliant"/>
-        <field name="context">{"search_default_reproceso_reposicion": 1, "search_default_group_by_area": 1}</field>
+        <field name="context">{"search_default_reproceso": 1, "search_default_group_by_area": 1}</field>
     </record>
 
 </odoo>
