@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import datetime
 import logging
 
 from odoo import models, fields, api
@@ -158,11 +159,30 @@ class ControlPedidoLine(models.Model):
             candidates = [d for d in (walk_change_date, report_dt) if d]
             if candidates:
                 rec.change_date = max(candidates)
-                rec.area_num_days = max(0, (now - rec.change_date).days)
+                rec.area_num_days = self._count_days_excluding_sundays(rec.change_date, now)
             elif earliest_start:
                 # No hubo cambio de area: contamos desde la primera fase
                 # iniciada de la partida.
-                rec.area_num_days = max(0, (now - earliest_start).days)
+                rec.area_num_days = self._count_days_excluding_sundays(earliest_start, now)
+
+    @api.model
+    def _count_days_excluding_sundays(self, start_dt, end_dt):
+        """Cuenta dias calendario entre `start_dt` y `end_dt` saltando domingos.
+        Mismo criterio que `control.pedido._compute_num_days`."""
+        if not start_dt or not end_dt:
+            return 0
+        start_d = start_dt.date() if hasattr(start_dt, 'date') else start_dt
+        end_d = end_dt.date() if hasattr(end_dt, 'date') else end_dt
+        if end_d < start_d:
+            return 0
+        days = 0
+        current = start_d
+        # weekday(): Monday=0 ... Sunday=6
+        while current < end_d:
+            if current.weekday() != 6:
+                days += 1
+            current += datetime.timedelta(days=1)
+        return days
 
     @api.model
     def _fetch_areas_by_fas_code(self, fas_codes):
