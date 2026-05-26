@@ -163,7 +163,7 @@
                 <filter string="Completed" name="completed" domain="[('state', '=', 'completed')]"/>
                 <filter string="Reproceso" name="reproceso"
                         domain="[('motivo', '=', 'REPROCESO'), ('state', '=', 'active')]"/>
-                <filter string="Reposición" name="reposicion"
+                <filter string="Reposición" name="reposicion" 
                         domain="[('motivo', '=', 'REPOSICION'), ('state', '=', 'active')]"/>
                 <group>
                     <filter string="Pedido" name="group_by_pedido_id" domain="[]" context="{'group_by': 'pedido_id'}"/>
