@@ -500,8 +500,19 @@ class SaleOrderLine(models.Model):
                             )
                         qty = quantity
                         product_name = product.name
-                        price_dict.setdefault(product_name, {'label': product_name, 'price': 0.0})
+                        price_dict.setdefault(product_name, {
+                            'label': product_name,
+                            'price': 0.0,
+                            'cost_per_kilo': 0.0,
+                            'consumption_pct': 0.0,
+                        })
                         price_dict[product_name]['price'] += float_round(bom_line_price * qty, 2)
+                        price_dict[product_name]['consumption_pct'] += qty
+                        # Asumimos costo uniforme por producto en una misma
+                        # linea (varias bom_lines del mismo producto comparten
+                        # precio). Si en el futuro hay precios distintos por
+                        # bom_line, deberia ser un weighted avg.
+                        price_dict[product_name]['cost_per_kilo'] = float_round(bom_line_price, 4)
 
                     for value in price_dict.values():
                         value['is_thread'] = True
@@ -733,6 +744,22 @@ class SaleOrderLine(models.Model):
                 "active_id": self.id,
             },
         }
+
+    def action_duplicate_without_color(self):
+        """Duplica la linea actual dejando product_color_id vacio.
+
+        Util para repetir el mismo producto con otro color sin tener que
+        recrear toda la linea (cantidades, precios, etc.). Tenemos que
+        pasar `order_id` explicito porque Odoo lo marca como copy=False
+        en sale.order.line (las copias no caen a otra orden por default).
+        """
+        self.ensure_one()
+        self.copy(default={
+            'order_id': self.order_id.id,
+            'product_color_id': False,
+            'color_name': False,
+            'lab_dev_line_id': False,
+        })
 
     def _get_sale_order_line_multiline_description_sale(self):
         self.ensure_one()

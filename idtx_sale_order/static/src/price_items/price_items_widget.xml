@@ -14,14 +14,43 @@
             <h4>Edit prices</h4>
             <div style="max-height: 40vh; overflow-y: auto;">
                 <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th class="text-end">Cost/kg</th>
+                            <th class="text-end">%</th>
+                            <th class="text-end">Total</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         <tr t-foreach="items" t-as="item" t-key="item.key">
                             <td><t t-esc="item.label or item.key"/></td>
-                            <td class="text-end">
-                                <t t-if="['Weaving Loss', 'Production Loss', 'Financial Percentage', 'Incoterm'].includes(item.key)">
+                            <t t-if="item.meta and item.meta.is_thread">
+                                <!-- Hilo: cost/kg (editable) | % consumo (RO) | precio (RO) -->
+                                <td class="text-end">
+                                    <input type="text"
+                                        class="form-control form-control-sm w-auto text-end"
+                                        inputmode="decimal"
+                                        pattern="^[0-9]*\.?[0-9]+$"
+                                        title="Costo por kilo"
+                                        t-model="item.cost_per_kilo"
+                                        t-att-readonly="ui.readonly"
+                                        t-on-input="!ui.readonly and ((ev) => this.onCostPerKiloInput(ev, item))"/>
+                                </td>
+                                <td class="text-end text-muted">
+                                    <t t-esc="(item.consumption_pct * 100).toFixed(2)"/>%
+                                </td>
+                                <td class="text-end fw-semibold">
                                     <t t-esc="item.price.toFixed(2)"/>
-                                </t>
-                                <t t-else="">
+                                </td>
+                            </t>
+                            <t t-elif="['Weaving Loss', 'Production Loss', 'Financial Percentage', 'Incoterm'].includes(item.key)">
+                                <td colspan="3" class="text-end">
+                                    <t t-esc="item.price.toFixed(2)"/>
+                                </td>
+                            </t>
+                            <t t-else="">
+                                <td colspan="3" class="text-end">
                                     <input type="text"
                                         class="form-control form-control-sm w-auto text-end"
                                         inputmode="decimal"
@@ -29,14 +58,12 @@
                                         t-model="item.price"
                                         t-att-readonly="ui.readonly"
                                         t-on-input="!ui.readonly and ((ev) => this.onNumberInput(ev, item))"/>
-                                </t>
-                            </td>
+                                </td>
+                            </t>
                         </tr>
                         <tr class="fw-bold">
-                            <h4>
-                                <td>Total</td>
-                            </h4>
-                            <td class="text-end"><h4><t t-esc="total.toFixed(2)"/></h4></td>
+                            <td>Total</td>
+                            <td colspan="3" class="text-end"><h4><t t-esc="total.toFixed(2)"/></h4></td>
                         </tr>
                     </tbody>
                 </table>

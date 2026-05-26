@@ -34,6 +34,10 @@ class PriceItemsPopover extends Component {
                     key: k,               // fijo, inglés
                     price: round2(Number(v.price) || 0),
                     label: v.label,        // traducible
+                    // Para hilos: costo por kilo (editable) y % de consumo
+                    // (readonly). El price = cost_per_kilo * consumption_pct.
+                    cost_per_kilo: Number(v.cost_per_kilo) || 0,
+                    consumption_pct: Number(v.consumption_pct) || 0,
                     meta: v, // ← guarda todo
                 }))
             );
@@ -85,6 +89,23 @@ class PriceItemsPopover extends Component {
         val = val.replace(/[^0-9.]/g, "");
         val = val.replace(/^([^.]*\.)|\./g, (m, g1) => g1 || "");
         item.price = round2(parseFloat(val) || 0);
+        await this.recalculateDerivedItems();
+    }
+
+    async onCostPerKiloInput(ev, item) {
+        let val = ev.target.value;
+        val = val.replace(/,/g, "");
+        val = val.replace(/[^0-9.]/g, "");
+        val = val.replace(/^([^.]*\.)|\./g, (m, g1) => g1 || "");
+        const newCost = parseFloat(val) || 0;
+        item.cost_per_kilo = round2(newCost);
+        // Recalcular el precio del hilo: cost_per_kilo * % consumo.
+        item.price = round2(item.cost_per_kilo * (Number(item.consumption_pct) || 0));
+        // Reflejar el cambio tambien en meta para que se persista al guardar.
+        if (item.meta) {
+            item.meta.cost_per_kilo = item.cost_per_kilo;
+            item.meta.price = item.price;
+        }
         await this.recalculateDerivedItems();
     }
 
