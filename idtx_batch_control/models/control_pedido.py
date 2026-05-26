@@ -407,11 +407,24 @@ class ControlPedido(models.Model):
         line_cmds_by_pedido = {}
         procesos_a_crear = []
         process_vals_to_create = []
+        # Pre-cargar fas_code -> workcenter.name de Odoo para usar como area
+        # en lugar del area legacy de estatus_reproceso (mas granular).
+        next_fas_codes = {(_safe_str(r.get("Proceso_Siguiente")) or '').strip().upper() for r in rows}
+        next_fas_codes.discard('')
+        area_by_fas = {}
+        if next_fas_codes:
+            ops = self.env['mrp.routing.workcenter.operation'].sudo().search([
+                ('fas_code', 'in', list(next_fas_codes)),
+            ])
+            for op in ops:
+                if op.workcenter_id:
+                    area_by_fas[(op.fas_code or '').strip().upper()] = op.workcenter_id.name
+        Line = self.env["control.pedido.line"].with_context(_area_by_fas=area_by_fas)
         for dr in rows:
             num = _safe_str(dr.get("Pedido"))
             pedido = existing_map.get(num)
             if not pedido: continue
-            vals_line = self.env["control.pedido.line"]._vals_from_det_row(dr)
+            vals_line = Line._vals_from_det_row(dr)
             bc = _safe_str(dr.get("HojaDeRuta"))
             bcreo = _safe_float(dr.get("BarCodReo")) or ''
             bcpar = _safe_str(dr.get("BarCodPar")) or ''
@@ -801,7 +814,18 @@ class ControlPedido(models.Model):
                 latest_rows[key] = row
         rows = list(latest_rows.values())
 
-        Line = self.env['control.pedido.line']
+        # Pre-cargar fas_code -> workcenter.name de Odoo (idem sync_from_dbf).
+        next_fas_codes = {(_safe_str(r.get("Proceso_Siguiente")) or '').strip().upper() for r in rows}
+        next_fas_codes.discard('')
+        area_by_fas = {}
+        if next_fas_codes:
+            ops = self.env['mrp.routing.workcenter.operation'].sudo().search([
+                ('fas_code', 'in', list(next_fas_codes)),
+            ])
+            for op in ops:
+                if op.workcenter_id:
+                    area_by_fas[(op.fas_code or '').strip().upper()] = op.workcenter_id.name
+        Line = self.env['control.pedido.line'].with_context(_area_by_fas=area_by_fas)
         updated = 0
         for dr in rows:
             num = _safe_str(dr.get("Pedido"))

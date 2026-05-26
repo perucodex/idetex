@@ -194,7 +194,7 @@ class ControlPedidoLine(models.Model):
         end = _safe_date(dr.get("FechaFinal"), user_tz)
 
         if start and start.year <= 1753:
-            start = False 
+            start = False
         if end and end.year <= 1753:
             end = False
 
@@ -203,10 +203,20 @@ class ControlPedidoLine(models.Model):
 
         process = _safe_str(dr["Proceso_Ultimo"]) or 'SIN AVANCE'
         area = _safe_str(dr["Area"]) or 'VOUCHER'
+        next_process = _safe_str(dr.get("Proceso_Siguiente"))
+        # Override de area: si el caller paso un cache de fas_code -> workcenter.name
+        # de Odoo, usamos el workcenter de la operacion del SIGUIENTE proceso.
+        # Esto es mas granular que `estatus_reproceso` (ej: REPPRETA mapea a
+        # 'ACABADO' en TEXPLUS pero a 'PRE ACABADO' en el workcenter de Odoo).
+        # Fallback al area de TEXPLUS si no hay match.
+        area_cache = self.env.context.get('_area_by_fas')
+        if area_cache and next_process:
+            wc_name = area_cache.get(next_process.strip().upper())
+            if wc_name:
+                area = wc_name
         # TERMINADO solo si CALIDAD es la ULTIMA fase de la ruta (no hay
         # proceso siguiente planificado, ni siquiera reprocesos), y tiene
         # fecha de inicio y fin cerradas.
-        next_process = _safe_str(dr.get("Proceso_Siguiente"))
         if (process.strip().upper() == 'CONTROL DE CALIDAD'
                 and start and end
                 and not next_process):
