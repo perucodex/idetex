@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 
+import dbf
+
 from odoo import models
 
 _logger = logging.getLogger(__name__)
@@ -9,6 +11,73 @@ _logger = logging.getLogger(__name__)
 # Each Odoo analysis can correspond to up to three SITPRO products (one per
 # prefix), so the route refresh has to try all three.
 _SITPRO_PREFIXES = ('S', 'P')
+
+# sysproceso.dbf: cap del campo memo `proceso`. Si la concatenacion por ";"
+# de los nombres de fase excede este limite, abreviamos progresivamente.
+_SYSPROCESO_MEMO_MAX = 256
+_SYSPROCESO_SEPARATOR = ';'
+
+# Reemplazos de palabras comunes para acortar nombres de fase.
+_SYSPROCESO_WORD_REPLACEMENTS = (
+    (' CON ', ' C/'),
+    (' PARA ', ' P/'),
+    (' SOLO ', ' '),
+    (' Y ENGOME', ' Y ENG'),
+    (' CONTROL ', ' CTRL '),
+    ('PREPARADO', 'PREP'),
+    ('THERMOFIJADO', 'THERMO'),
+    ('EMPASTADO', 'EMPAS'),
+    ('HABILITADO', 'HAB'),
+    ('REPROCESO', 'REPRO'),
+    ('REPOSICION', 'REPOS'),
+    ('TERMOFIJAR', 'THERMO'),
+    ('TINTORERIA', 'TINTO'),
+    ('ESTAMPADO', 'ESTAMP'),
+    ('PERCHADORA', 'PERCH'),
+)
+
+
+def _abbreviate_process_name(name, max_word_len=None):
+    """Abrevia un nombre de proceso aplicando reemplazos comunes y, si se
+    pasa `max_word_len`, truncando cada palabra a esa longitud. Idempotente
+    cuando ya esta abreviado."""
+    if not name:
+        return ''
+    text = name.upper()
+    for old, new in _SYSPROCESO_WORD_REPLACEMENTS:
+        text = text.replace(old, new)
+    if max_word_len:
+        text = ' '.join(
+            w[:max_word_len] if len(w) > max_word_len else w
+            for w in text.split()
+        )
+    # Colapsa espacios
+    return ' '.join(text.split())
+
+
+def _build_sysproceso_memo(op_names, max_len=_SYSPROCESO_MEMO_MAX,
+                            separator=_SYSPROCESO_SEPARATOR):
+    """Construye el memo `proceso` cabiendo en `max_len`.
+
+    Estrategia progresiva: empieza con nombres tal cual y, si no caben, va
+    abreviando cada vez mas agresivamente (palabras comunes -> truncar
+    palabras a 8 / 6 / 5 / 4 chars). Como ultimo recurso trunca el string
+    final.
+    """
+    cleaned = [n for n in (n.strip() for n in op_names) if n]
+    if not cleaned:
+        return ''
+    # Pass 0: tal cual.
+    joined = separator.join(cleaned)
+    if len(joined) <= max_len:
+        return joined
+    # Pass 1..N: abreviaciones cada vez mas agresivas.
+    for word_len in (None, 8, 6, 5, 4):
+        abbreviated = [_abbreviate_process_name(n, word_len) for n in cleaned]
+        joined = separator.join(abbreviated)
+        if len(joined) <= max_len:
+            return joined
+    return joined[:max_len]
 
 
 class ProductAnalysis(models.Model):
@@ -29,12 +98,91 @@ class ProductAnalysis(models.Model):
                 self.display_name,
             )
         try:
+            self._sync_sysproceso_dbf()
+        except Exception:
+            _logger.exception(
+                "product.analysis %s: fallo al refrescar sysproceso.dbf",
+                self.display_name,
+            )
+        try:
             self._sync_texplus_routes()
         except Exception:
             _logger.exception(
                 "product.analysis %s: fallo al refrescar rutas TEXPLUS",
                 self.display_name,
             )
+
+    def _sync_sysproceso_dbf(self):
+        """Mantiene sysproceso.dbf alineado con la ruta del analisis.
+
+        sysproceso.dbf tiene dos campos:
+        - codigo: nombre de la ruta (mrp_base_process.name)
+        - proceso: memo con los nombres de las fases separados por ';',
+          tope 256 chars; si excede, se abrevia progresivamente.
+
+        Si ya existe una fila con el mismo codigo, solo actualiza `proceso`.
+        Sino la crea.
+        """
+        self.ensure_one()
+        base_name = (self.mrp_base_process_id.name or '').strip()
+        if not base_name:
+            _logger.info(
+                "product.analysis %s: sin base process, salto sync sysproceso",
+                self.display_name,
+            )
+            return
+        op_names = [
+            r.operation_id.name
+            for r in self.routing_ids.sorted(key=lambda r: (r.sequence, r.id))
+            if r.operation_id and r.operation_id.name
+        ]
+        if not op_names:
+            _logger.info(
+                "product.analysis %s: sin operaciones, salto sync sysproceso",
+                self.display_name,
+            )
+            return
+        memo = _build_sysproceso_memo(op_names)
+
+        helper = self.technical_sheet_ids[:1]
+        if not helper:
+            helper = self.env['technical.sheet'].new({'company_id': self.company_id.id})
+
+        try:
+            table = helper._open_table('sysproceso.dbf')
+        except Exception as exc:
+            _logger.warning(
+                "product.analysis %s: no se pudo abrir sysproceso.dbf (%s) — salto",
+                self.display_name, exc,
+            )
+            return
+        try:
+            target = base_name.upper()
+            updated = False
+            for record in table:
+                if dbf.is_deleted(record):
+                    continue
+                codigo = (record['CODIGO'] or '').strip().upper() if 'CODIGO' in table.field_names else ''
+                if codigo == target:
+                    with record as r:
+                        r.PROCESO = memo
+                    updated = True
+                    _logger.info(
+                        "product.analysis %s: sysproceso actualizado codigo=%s len=%s",
+                        self.display_name, base_name, len(memo),
+                    )
+                    break  # un solo registro por codigo
+            if not updated:
+                table.append(helper._filter_values_for_table(table, {
+                    'CODIGO': base_name,
+                    'PROCESO': memo,
+                }))
+                _logger.info(
+                    "product.analysis %s: sysproceso INSERT codigo=%s len=%s",
+                    self.display_name, base_name, len(memo),
+                )
+        finally:
+            table.close()
 
     def _sync_ficha_ruta_final_dbf(self):
         """For each (S, P) variant of `product_code`, find the matching
