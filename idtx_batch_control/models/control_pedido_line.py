@@ -104,48 +104,49 @@ class ControlPedidoLine(models.Model):
         for rec in records_with_data:
             procs = rec.proceso_ids.sorted(key=lambda p: p.barOrdLin or 0)
 
-            # Override: la partida paso por CONTROL DE CALIDAD (cualquier
-            # posicion de la ruta, no solo la ultima) y tenemos un informe
-            # en ctrl_info -> contamos desde la fecha del informe. Esto
-            # captura tanto las partidas terminadas como las que entran a
-            # un reproceso despues de QC: una vez reportada en calidad, el
-            # reloj arranca ahi y los reprocesos posteriores acumulan dias
-            # contra ese momento.
-            has_finished_calidad = any(
-                area_by_fas.get(p.fas_code) == 'CONTROL DE CALIDAD'
-                and p.barFasDTF
-                for p in procs
-            )
-            if has_finished_calidad and rec.report_date:
-                rec.change_date = rec.report_date
-                rec.area_num_days = max(0, (now - rec.report_date).days)
-                continue
-
-            # Default: walk only over FINISHED processes (those with
-            # barFasDTF). Starting from the latest one, walk back through
-            # the consecutive same-area run. The first different-area
-            # process gives us change_date — the moment the line entered
-            # its current area.
+            # Walk-back default: empezando por el proceso terminado mas
+            # reciente, retroceder mientras estemos en la misma area. El
+            # primer proceso de un area distinta marca cuando la linea
+            # entro a su area actual.
             current_area = rec.area
             earliest_start = False
+            walk_change_date = False
             for proc in reversed(procs):
                 if not proc.barFasDTF:
-                    # Not yet finished — ignore.
                     continue
                 proc_area = area_by_fas.get(proc.fas_code)
                 if proc_area and proc_area != current_area:
-                    # First different-area process walking backwards: this is
-                    # when the line moved into its current area.
-                    rec.change_date = proc.barFasDTF or proc.barFasDTI
+                    walk_change_date = proc.barFasDTF or proc.barFasDTI
                     break
                 if proc.barFasDTI:
                     earliest_start = proc.barFasDTI
 
-            # Days in the current area = from the area change until today.
-            # If the line never changed area, fall back to the first process.
-            reference_dt = rec.change_date or earliest_start
-            if reference_dt:
-                rec.area_num_days = max(0, (now - reference_dt).days)
+            # report_date solo cuenta si la ULTIMA fase terminada de la
+            # partida es CONTROL DE CALIDAD. Si despues de QC hubo otras
+            # fases finalizadas (reprocesos, retornos a tintoreria/acabado,
+            # etc.) el informe es viejo y el walk-back captura mejor el
+            # estado actual.
+            finished_procs = [p for p in procs if p.barFasDTF]
+            last_finished = finished_procs[-1] if finished_procs else None
+            calidad_is_last_finished = bool(
+                last_finished
+                and area_by_fas.get(last_finished.fas_code) == 'CONTROL DE CALIDAD'
+            )
+            report_dt = rec.report_date if (calidad_is_last_finished and rec.report_date) else False
+
+            # change_date = el evento MAS RECIENTE entre:
+            #   - el ultimo cambio de area (walk-back), y
+            #   - la fecha del informe de QC.
+            # Asi, si despues del QC la partida volvio a otra area y luego
+            # a la actual, ese ultimo cambio gana sobre el informe viejo.
+            candidates = [d for d in (walk_change_date, report_dt) if d]
+            if candidates:
+                rec.change_date = max(candidates)
+                rec.area_num_days = max(0, (now - rec.change_date).days)
+            elif earliest_start:
+                # No hubo cambio de area: contamos desde la primera fase
+                # iniciada de la partida.
+                rec.area_num_days = max(0, (now - earliest_start).days)
 
     @api.model
     def _fetch_areas_by_fas_code(self, fas_codes):
