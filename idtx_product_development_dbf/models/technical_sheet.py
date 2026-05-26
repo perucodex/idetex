@@ -1129,9 +1129,15 @@ class TechnicalSheet(models.Model):
             self._configure_texplus_cursor(cursor)
 
             # Discover all (EmprCod, CliCod) tuples where this article lives.
+            # Usamos ARTLIN (no ARTICU) porque ARTLIN es la tabla que vamos a
+            # actualizar y porque hay articulos registrados en ARTLIN sin
+            # contraparte en ARTICU (productos cuyo catalogo de descripcion
+            # nunca se cargo). Unionamos con ARTICU por seguridad.
             cursor.execute(
+                'SELECT DISTINCT EmprCod, CliCod FROM dbo.ARTLIN WHERE ArtCod = ? '
+                'UNION '
                 'SELECT DISTINCT EmprCod, CliCod FROM dbo.ARTICU WHERE ArtCod = ?',
-                article_code,
+                article_code, article_code,
             )
             pairs = [(row[0], row[1]) for row in cursor.fetchall()]
             if not pairs:
@@ -1160,13 +1166,20 @@ class TechnicalSheet(models.Model):
 
                 # Drop every SERPAU row for this article (any ProCod), then
                 # reinsert clean for the new route — easier than tracking the
-                # previous route_code separately.
+                # previous route_code separately. Dedupe phases por FasCod:
+                # rutas pueden tener una fase repetida (ej. dos 'CONTROL PESO')
+                # y la unique index ISERPA en SERPAU no acepta duplicados
+                # del mismo FasCod para el mismo (Emp, Cli, Art, Pro).
                 cursor.execute(
                     'DELETE FROM dbo.SERPAU '
                     'WHERE EmprCod = ? AND CliCod = ? AND ArtCod = ?',
                     empr_cod, cli_cod, article_code,
                 )
+                seen_fas = set()
                 for fas_code, _name in phases:
+                    if fas_code in seen_fas:
+                        continue
+                    seen_fas.add(fas_code)
                     cursor.execute(
                         'INSERT INTO dbo.SERPAU '
                         '(EmprCod, CliCod, ArtCod, ProCod, FasCod) '
@@ -1175,20 +1188,26 @@ class TechnicalSheet(models.Model):
                     )
                 updated.append((empr_cod, cli_cod))
 
-            # Route definition (Texplus_Ruta_Proceso) is shared across
-            # empresas, so we rewrite it once at the end.
-            cursor.execute(
-                'DELETE FROM dbo.Texplus_Ruta_Proceso WHERE Cod_Ruta = ?',
-                route_code,
-            )
-            for index, (fas_code, name) in enumerate(phases, start=1):
+            # `Texplus_Ruta_Proceso` es una VIEW (PROLIN x FASPRO) — SQL Server
+            # no permite DELETE/INSERT sobre ella porque afecta multiples
+            # tablas base. Escribimos directamente en PROLIN por cada EmprCod
+            # unico encontrado, que es la tabla efectiva de la definicion de
+            # ruta. La descripcion (Dsc_Proceso) sale de FASPRO automaticamente
+            # cuando la view se consulta.
+            empresas = sorted({empr for empr, _cli in pairs})
+            for empr_cod in empresas:
                 cursor.execute(
-                    'INSERT INTO dbo.Texplus_Ruta_Proceso '
-                    '(Cod_Ruta, Orden, Proceso, Dsc_Proceso) '
-                    'VALUES (?, ?, ?, ?)',
-                    route_code, index * 100, fas_code,
-                    _dbf_char(name, max_len=28),
+                    'DELETE FROM dbo.PROLIN WHERE EmprCod = ? AND ProCod = ?',
+                    empr_cod, route_code,
                 )
+                for index, (fas_code, name) in enumerate(phases, start=1):
+                    cursor.execute(
+                        'INSERT INTO dbo.PROLIN '
+                        '(EmprCod, ProCod, ProNumLin, FasCod, Dtp_FasDsc) '
+                        'VALUES (?, ?, ?, ?, ?)',
+                        empr_cod, route_code, index * 100, fas_code,
+                        _dbf_char(name, max_len=28),
+                    )
 
             conn.commit()
         except Exception:
