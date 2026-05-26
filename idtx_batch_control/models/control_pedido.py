@@ -3,6 +3,7 @@ from dbf import Char
 import datetime
 import logging
 import pyodbc
+import pytz
 pyodbc.setDecimalSeparator(".")
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
@@ -693,6 +694,11 @@ class ControlPedido(models.Model):
                         """,
                         *batch_chunk, *route_chunk,
                     )
+                    # fecinfo viene de SQL Server como datetime NAIVE en hora
+                    # local de Peru. Si lo guardamos directo en Odoo (que
+                    # asume UTC), pierde 5h y el dia se desplaza. Lo
+                    # convertimos a UTC explicitamente.
+                    pe_tz = pytz.timezone('America/Lima')
                     for correlvouc, numot, motivo, motivo1, area1, fecha, kneto, obsctrl in cursor.fetchall():
                         key = (_safe_str(correlvouc).strip(), _safe_str(numot).strip())
                         if key in wanted and key not in out:  # first row per pair = newest
@@ -700,7 +706,7 @@ class ControlPedido(models.Model):
                                 'motivo': _safe_str(motivo) or False,
                                 'motivo1': _safe_str(motivo1),
                                 'area1': _safe_str(area1),
-                                'report_date': fecha or False,
+                                'report_date': _safe_date(fecha, pe_tz) or False,
                                 'to_reprocess': _safe_float(kneto),
                                 'obsctrl': (_safe_str(obsctrl) or '').strip() or False,
                             }
