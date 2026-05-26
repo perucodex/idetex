@@ -43,6 +43,7 @@ class ControlPedidoLine(models.Model):
     # Filled from SQL Server ctrl_info during sync: motivo/area of the most
     # recent open REPROCESO/REPOSICION record whose `correlvou` matches `batch`.
     report_date = fields.Datetime('Fecha Informe')
+    motivo = fields.Char('Motivo')
     obsctrl = fields.Text('Observaciones Informe')
     change_date = fields.Datetime('Fecha Cambio Area', compute='_compute_area_num_days', store=True)
     motivo1 = fields.Char('Motivo Reproceso')

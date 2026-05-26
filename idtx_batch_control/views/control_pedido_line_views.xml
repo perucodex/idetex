@@ -133,6 +133,7 @@
                         <page string="Informe" invisible="not report_date and not obsctrl">
                             <group>
                                 <field name="report_date" readonly="1"/>
+                                <field name="motivo" readonly="1" invisible="not motivo"/>
                                 <field name="area_num_days" readonly="1"/>
                                 <field name="motivo1" readonly="1" invisible="not motivo1"/>
                                 <field name="area1" readonly="1" invisible="not area1"/>
@@ -160,8 +161,10 @@
                 <field name="colorname"/>
                 <filter string="Active" name="active" domain="[('state', '=', 'active')]"/>
                 <filter string="Completed" name="completed" domain="[('state', '=', 'completed')]"/>
-                <filter string="Reproceso/Reposición" name="reproceso_reposicion"
-                        domain="[('motivo1', '!=', False), ('state', '=', 'active')]"/>
+                <filter string="Reproceso" name="reproceso"
+                        domain="[('motivo', '=', 'REPROCESO'), ('state', '=', 'active')]"/>
+                <filter string="Reposición" name="reposicion"
+                        domain="[('motivo', '=', 'REPOSICION'), ('state', '=', 'active')]"/>
                 <group>
                     <filter string="Pedido" name="group_by_pedido_id" domain="[]" context="{'group_by': 'pedido_id'}"/>
                     <filter string="Producto" name="group_by_codpro" domain="[]" context="{'group_by': 'codpro'}"/>

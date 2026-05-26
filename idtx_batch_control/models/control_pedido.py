@@ -615,11 +615,13 @@ class ControlPedido(models.Model):
                 (info or {}).get('report_date') or False,
                 (info or {}).get('to_reprocess') or 0.0,
                 (info or {}).get('obsctrl') or False,
+                (info or {}).get('motivo') or False,
             )
             by_vals[key] = by_vals.get(key, Line) | line
-        for (motivo, area, report_date, to_reprocess, obsctrl), recs in by_vals.items():
+        for (motivo1, area, report_date, to_reprocess, obsctrl, motivo), recs in by_vals.items():
             recs.write({
-                'motivo1': motivo,
+                'motivo': motivo,
+                'motivo1': motivo1,
                 'area1': area,
                 'report_date': report_date,
                 'to_reprocess': to_reprocess,
@@ -663,7 +665,7 @@ class ControlPedido(models.Model):
                     r_placeholders = ",".join(["?"] * len(route_chunk))
                     cursor.execute(
                         f"""
-                        SELECT correlvouc, numot, motivo1, area1, FECHA, kneto, obsctrl
+                        SELECT correlvouc, numot, motivo, motivo1, area1, FECHA, kneto, obsctrl
                         FROM ctrl_info WITH (NOLOCK)
                         WHERE YEAR(FECHA) > 2023
                           AND ACTIVO = 0
@@ -674,10 +676,11 @@ class ControlPedido(models.Model):
                         """,
                         *batch_chunk, *route_chunk,
                     )
-                    for correlvouc, numot, motivo1, area1, fecha, kneto, obsctrl in cursor.fetchall():
+                    for correlvouc, numot, motivo, motivo1, area1, fecha, kneto, obsctrl in cursor.fetchall():
                         key = (_safe_str(correlvouc).strip(), _safe_str(numot).strip())
                         if key in wanted and key not in out:  # first row per pair = newest
                             out[key] = {
+                                'motivo': _safe_str(motivo) or False,
                                 'motivo1': _safe_str(motivo1),
                                 'area1': _safe_str(area1),
                                 'report_date': fecha or False,
