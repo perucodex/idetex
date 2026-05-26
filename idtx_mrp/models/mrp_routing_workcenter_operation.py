@@ -27,7 +27,7 @@ class MrpRoutingWorkcenterOperation(models.Model):
     _description = 'Workcenter Operation'
 
     name = fields.Char('Name', required=True)
-    fas_code = fields.Char('Código MSSQL', help="Código correspondiente en la tabla FASPRO de MSSQL")
+    fas_code = fields.Char('Código MSSQL', help="Código correspondiente en la tabla FASPRO de MSSQL", copy=False)
     workcenter_id = fields.Many2one('mrp.workcenter', 'Work Center', required=True, check_company=True)
     company_id = fields.Many2one(
         'res.company',

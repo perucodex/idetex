@@ -275,7 +275,11 @@ class MrpRoutingWorkcenterOperation(models.Model):
         if self.env.context.get('skip_texplus_sync'):
             return result
 
-        sync_faspro = bool({'name', 'general_machine_id'} & set(vals))
+        # fas_code se incluye porque setearlo a un valor nuevo (p.ej. tras
+        # duplicar y renombrar) debe disparar la creacion en FASPRO via
+        # _ensure_texplus_phase_exists. Sin esto, la nueva fase Odoo nunca
+        # llega a TEXPLUS.
+        sync_faspro = bool({'name', 'general_machine_id', 'fas_code'} & set(vals))
         sync_maqfas = 'specific_machine_ids' in vals
 
         # General changed → replace specifics with the new general's set
