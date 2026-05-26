@@ -5,6 +5,48 @@ class AccountMoveLine(models.Model):
 
     lot_id = fields.Many2one('stock.lot', string='Lot', compute='_compute_lot_id', store=False)
 
+    # Lista de stock.lot consolidados en esta línea de factura.
+    # Se llena al crear la factura desde el POS cuando agrupamos N rollos del mismo
+    # producto/color en una sola línea de factura (_prepare_invoice_lines).
+    # Si está vacío (factura no-POS o no agrupada) el PDF usa el lot_id computado.
+    idtx_grouped_lot_ids = fields.Many2many(
+        'stock.lot',
+        'idtx_account_move_line_lot_rel',
+        'move_line_id',
+        'lot_id',
+        string='Rollos agrupados',
+        help='Lista de rollos (stock.lot) consolidados en esta línea cuando la factura '
+             'fue agrupada por producto + color. Si vacío, se usa lot_id computado.'
+    )
+
+    def idtx_get_lot_display(self):
+        """
+        Texto a mostrar en la columna "Lote" del PDF.
+        - 1 lote → 'C123-456'
+        - 2 a 9 lotes → 'C123-456, C123-457, C123-458'
+        - 10+ lotes → 'N rollos' (compacto para que la fila no crezca)
+        - Sin lotes → fallback al lot_id computado (factura no agrupada)
+        """
+        self.ensure_one()
+        lots = self.idtx_grouped_lot_ids
+        if not lots:
+            return self.lot_id.name if self.lot_id else ''
+        if len(lots) >= 10:
+            return f"{len(lots)} rollos"
+        return ", ".join(lots.mapped('name'))
+
+    def idtx_get_color_code(self):
+        """ Código de color del grupo (todos los rollos comparten color por diseño). """
+        self.ensure_one()
+        lot = self.idtx_grouped_lot_ids[:1] or self.lot_id
+        return lot.color_code if lot else ''
+
+    def idtx_get_color_name(self):
+        """ Nombre de color del grupo. """
+        self.ensure_one()
+        lot = self.idtx_grouped_lot_ids[:1] or self.lot_id
+        return lot.color_name if lot else ''
+
     @api.depends('product_id', 'quantity', 'move_id.invoice_line_ids')
     def _compute_lot_id(self):
         """

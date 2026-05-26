@@ -2,29 +2,28 @@
 <odoo>
 
     <template id="report_invoice_document_inherit_lot" inherit_id="account.report_invoice_document">
-        <!-- Agregamos columna de lote en el header -->
+        <!-- Condición de visibilidad de las columnas Lote/Color:
+             - is_company_produce: la compañía es de producción textil (Idetex)
+             - is_sale_document(): SOLO documentos de venta a cliente (factura / boleta / nota de crédito).
+               Excluye facturas de proveedor (in_invoice / in_refund) donde estos datos no aplican.
+             - any(weaving): al menos una línea es de producto textil (tejido).
+             Definimos la condición como variable t-set para evitar duplicarla en cada th/td. -->
         <xpath expr="//thead/tr/th[@name='th_description']" position="after">
-            <th t-if="o.company_id.is_company_produce and any(l.product_id.product_tmpl_id.is_weaving for l in o.invoice_line_ids)" name="th_lot" class="text-start">
-                <span>Lot</span>
-            </th>
-            <th t-if="o.company_id.is_company_produce and any(l.product_id.product_tmpl_id.is_weaving for l in o.invoice_line_ids)" name="th_color_code" class="text-start">
-                <span>Color Code</span>
-            </th>
-            <th t-if="o.company_id.is_company_produce and any(l.product_id.product_tmpl_id.is_weaving for l in o.invoice_line_ids)" name="th_color_name" class="text-start">
+            <t t-set="show_lot_cols" t-value="o.company_id.is_company_produce and o.is_sale_document() and any(l.product_id.product_tmpl_id.is_weaving for l in o.invoice_line_ids)"/>
+            <!-- Columnas LOT y COLOR CODE removidas por requerimiento.
+                 Solo se muestra Color Name (más legible para el cliente).
+                 La info técnica (lotes, código de color) se conserva en account.move.line
+                 (campos idtx_grouped_lot_ids, idtx_get_color_code) para trazabilidad interna. -->
+            <th t-if="show_lot_cols" name="th_color_name" class="text-start">
                 <span>Color Name</span>
             </th>
         </xpath>
 
-        <!-- Agregamos celda de lote en cada línea de producto -->
+        <!-- Celda Color Name por línea -->
         <xpath expr="//td[@name='account_invoice_line_name']" position="after">
-            <td t-if="o.company_id.is_company_produce and any(l.product_id.product_tmpl_id.is_weaving for l in o.invoice_line_ids)" name="td_lot" class="text-start">
-                <span t-if="line.lot_id" t-esc="line.lot_id.name"/>
-            </td>
-            <td t-if="o.company_id.is_company_produce and any(l.product_id.product_tmpl_id.is_weaving for l in o.invoice_line_ids)" name="td_color_code" class="text-start">
-                <span t-if="line.lot_id" t-esc="line.lot_id.color_code"/>
-            </td>
-            <td t-if="o.company_id.is_company_produce and any(l.product_id.product_tmpl_id.is_weaving for l in o.invoice_line_ids)" name="td_color_name" class="text-start">
-                <span t-if="line.lot_id" t-esc="line.lot_id.color_name"/>
+            <t t-set="show_lot_cols" t-value="o.company_id.is_company_produce and o.is_sale_document() and any(l.product_id.product_tmpl_id.is_weaving for l in o.invoice_line_ids)"/>
+            <td t-if="show_lot_cols" name="td_color_name" class="text-start">
+                <span t-esc="line.idtx_get_color_name()"/>
             </td>
         </xpath>
     </template>

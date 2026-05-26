@@ -19,6 +19,7 @@
         'point_of_sale',         # El módulo base del PdV
         'idtx_pos_report_stock', # El reporte técnico de stock
         'idtx_pos_lot_color',    # Gestión de colores y lotes
+        'idtx_lot_report_invoice', # Campo idtx_grouped_lot_ids en account.move.line + PDF
     ],
     
     # Archivos de datos que se cargan al instalar el módulo (Seguridad, XMLs de servidor)
@@ -31,7 +32,14 @@
     # Activos de la interfaz (JavaScript, CSS, Plantillas XML)
     'assets': {
         'point_of_sale._assets_pos': [
-            # Cargamos todos los archivos JS, SCSS y XML dentro de static/src/app/
+            # Insertamos el patch JUSTO ANTES del archivo de pos_settle_due que provoca
+            # el conflicto. Así el monkey-patch del registry queda activo en el momento
+            # exacto en que pos_settle_due intenta su registración duplicada.
+            # No usamos 'prepend' porque eso colocaría el archivo antes del preamble del
+            # module loader (rompe odoo.define).
+            ('before', 'pos_settle_due/static/src/app/views/view_dialogs/select_create_dialog.js',
+                       'idtx_pos_sale_idetex/static/src/_compat/dialogs_registry_idempotent.js'),
+            # Resto de la aplicación POS
             'idtx_pos_sale_idetex/static/src/app/**/*',
         ],
     },
