@@ -650,10 +650,10 @@ class ControlPedido(models.Model):
 
         `pairs` is an iterable of (batch, route) tuples. SQL columns:
         correlvouc (joins to batch), numot (joins to route), motivo1, area1,
-        FECHA, ACTIVO, kneto.
-        Filters: YEAR(FECHA) > 2023, ACTIVO = 0, motivo IN (REPROCESO, REPOSICION).
+        fecinfo (fecha del informe), ACTIVO, kneto.
+        Filters: YEAR(fecinfo) > 2023, ACTIVO = 0, motivo IN (REPROCESO, REPOSICION).
         When several reports match the same (partida, ruta) the most recent
-        FECHA wins.
+        fecinfo wins.
         """
         pairs = [(b, r) for b, r in pairs if b and r]
         if not pairs:
@@ -682,14 +682,14 @@ class ControlPedido(models.Model):
                     r_placeholders = ",".join(["?"] * len(route_chunk))
                     cursor.execute(
                         f"""
-                        SELECT correlvouc, numot, motivo, motivo1, area1, FECHA, kneto, obsctrl
+                        SELECT correlvouc, numot, motivo, motivo1, area1, fecinfo, kneto, obsctrl
                         FROM ctrl_info WITH (NOLOCK)
-                        WHERE YEAR(FECHA) > 2023
+                        WHERE YEAR(fecinfo) > 2023
                           AND ACTIVO = 0
                           AND motivo IN ('REPROCESO', 'REPOSICION')
                           AND LTRIM(RTRIM(correlvouc)) IN ({b_placeholders})
                           AND LTRIM(RTRIM(numot)) IN ({r_placeholders})
-                        ORDER BY correlvouc, numot, FECHA DESC
+                        ORDER BY correlvouc, numot, fecinfo DESC
                         """,
                         *batch_chunk, *route_chunk,
                     )
