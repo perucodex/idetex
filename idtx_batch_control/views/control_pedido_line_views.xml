@@ -89,9 +89,6 @@
                             <field name="product_id" readonly="1" invisible="not product_id"/>
                             <field name="process" readonly="1"/>
                             <field name="area" readonly="1"/>
-                            <field name="area_num_days" readonly="1"/>
-                            <field name="motivo1" readonly="1" invisible="not motivo1"/>
-                            <field name="area1" readonly="1" invisible="not area1"/>
                         </group>
                         <group>
                             <field name="rollos" readonly="1"/>
@@ -106,14 +103,6 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Informe" invisible="not report_date and not obsctrl">
-                            <group>
-                                <field name="report_date" readonly="1"/>
-                                <field name="obsctrl" readonly="1" nolabel="1"
-                                       widget="text"
-                                       placeholder="Sin observaciones registradas en ctrl_info"/>
-                            </group>
-                        </page>
                         <page string="Procesos">
                             <field name="proceso_ids">
                                 <list delete="0" edit="0">
@@ -140,6 +129,15 @@
                                             invisible="state != 'in_progress'" title="finalizar" groups="mrp.group_mrp_manager"/>
                                 </list>
                             </field>
+                        </page>
+                        <page string="Informe" invisible="not report_date and not obsctrl">
+                            <group>
+                                <field name="report_date" readonly="1"/>
+                                <field name="area_num_days" readonly="1"/>
+                                <field name="motivo1" readonly="1" invisible="not motivo1"/>
+                                <field name="area1" readonly="1" invisible="not area1"/>
+                            </group>
+                            <field name="obsctrl" readonly="1" nolabel="1" widget="text" placeholder="Sin observaciones registradas en ctrl_info"/>
                         </page>
                     </notebook>
                 </sheet>
