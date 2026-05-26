@@ -84,9 +84,9 @@
                             <page name="weaving_data_page" string="Weaving Data">
                                 <field name="weaving_data_ids"/>
                             </page>
-                            <page name="routing_page" string="Routing" readonly="state != 'test'">
+                            <page name="routing_page" string="Routing">
                                 <group string="Routing Template">
-                                    <field name="mrp_base_process_id" readonly="state != 'test'"/>
+                                    <field name="mrp_base_process_id"/>
                                 </group>
                                 <field name="routing_ids" readonly="state != 'test'">
                                     <list editable="bottom">
