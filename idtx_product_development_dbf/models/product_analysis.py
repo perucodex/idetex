@@ -149,10 +149,10 @@ class ProductAnalysis(models.Model):
             helper = self.env['technical.sheet'].new({'company_id': self.company_id.id})
 
         try:
-            table = helper._open_table('sysproceso.dbf')
+            table = helper._open_table('sys_proceso.dbf')
         except Exception as exc:
             _logger.warning(
-                "product.analysis %s: no se pudo abrir sysproceso.dbf (%s) — salto",
+                "product.analysis %s: no se pudo abrir sys_proceso.dbf (%s) — salto",
                 self.display_name, exc,
             )
             return
