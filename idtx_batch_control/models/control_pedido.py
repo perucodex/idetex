@@ -584,14 +584,16 @@ class ControlPedido(models.Model):
                 (info or {}).get('area1') or False,
                 (info or {}).get('report_date') or False,
                 (info or {}).get('to_reprocess') or 0.0,
+                (info or {}).get('obsctrl') or False,
             )
             by_vals[key] = by_vals.get(key, Line) | line
-        for (motivo, area, report_date, to_reprocess), recs in by_vals.items():
+        for (motivo, area, report_date, to_reprocess, obsctrl), recs in by_vals.items():
             recs.write({
                 'motivo1': motivo,
                 'area1': area,
                 'report_date': report_date,
                 'to_reprocess': to_reprocess,
+                'obsctrl': obsctrl,
             })
 
     def _fetch_ctrl_info_reprocesos(self, pairs):
@@ -631,7 +633,7 @@ class ControlPedido(models.Model):
                     r_placeholders = ",".join(["?"] * len(route_chunk))
                     cursor.execute(
                         f"""
-                        SELECT correlvouc, numot, motivo1, area1, FECHA, kneto
+                        SELECT correlvouc, numot, motivo1, area1, FECHA, kneto, obsctrl
                         FROM ctrl_info WITH (NOLOCK)
                         WHERE YEAR(FECHA) > 2023
                           AND ACTIVO = 0
@@ -642,7 +644,7 @@ class ControlPedido(models.Model):
                         """,
                         *batch_chunk, *route_chunk,
                     )
-                    for correlvouc, numot, motivo1, area1, fecha, kneto in cursor.fetchall():
+                    for correlvouc, numot, motivo1, area1, fecha, kneto, obsctrl in cursor.fetchall():
                         key = (_safe_str(correlvouc).strip(), _safe_str(numot).strip())
                         if key in wanted and key not in out:  # first row per pair = newest
                             out[key] = {
@@ -650,6 +652,7 @@ class ControlPedido(models.Model):
                                 'area1': _safe_str(area1),
                                 'report_date': fecha or False,
                                 'to_reprocess': _safe_float(kneto),
+                                'obsctrl': (_safe_str(obsctrl) or '').strip() or False,
                             }
         finally:
             conn.close()

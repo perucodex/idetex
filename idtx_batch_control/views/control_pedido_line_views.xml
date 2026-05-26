@@ -106,6 +106,14 @@
                         </group>
                     </group>
                     <notebook>
+                        <page string="Informe" invisible="not report_date and not obsctrl">
+                            <group>
+                                <field name="report_date" readonly="1"/>
+                                <field name="obsctrl" readonly="1" nolabel="1"
+                                       widget="text"
+                                       placeholder="Sin observaciones registradas en ctrl_info"/>
+                            </group>
+                        </page>
                         <page string="Procesos">
                             <field name="proceso_ids">
                                 <list delete="0" edit="0">
