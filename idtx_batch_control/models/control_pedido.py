@@ -548,11 +548,41 @@ class ControlPedido(models.Model):
                 if new_id and ev.pedido_line_id.id != new_id:
                     ev.pedido_line_id = new_id
 
+        # Las zombies sin keeper aun pueden tener tono evals u otros FKs
+        # apuntando a ellas (eval.group.line.pedido_line_id_fkey). No las
+        # borramos: preservar data > exactitud del catalogo. Las con keeper
+        # ya tienen sus evals reasignadas y deberian poder borrarse.
+        zombies_with_keeper = zombies.filtered(lambda z: z.id in keeper_by_zombie)
+        zombies_without_keeper = zombies - zombies_with_keeper
+
         _logger.info(
-            "sync_from_dbf: cleanup zombie lines = %s (re-asignadas %s evaluaciones de tono)",
-            len(zombies), len(keeper_by_zombie),
+            "sync_from_dbf: cleanup zombie lines = %s (con keeper = %s, sin keeper = %s)",
+            len(zombies), len(zombies_with_keeper), len(zombies_without_keeper),
         )
-        zombies.unlink()
+        if zombies_without_keeper:
+            _logger.warning(
+                "sync_from_dbf: %s zombies sin keeper se preservan para no romper FKs externas (ids=%s, batches=%s)",
+                len(zombies_without_keeper),
+                zombies_without_keeper.ids[:20],
+                zombies_without_keeper.mapped('batch')[:20],
+            )
+
+        if not zombies_with_keeper:
+            return
+        # Un fallo aqui (p.ej. otra FK no contemplada) no debe abortar el
+        # sync entero — el cleanup es cosmetico, el sync real (fases,
+        # ctrl_info) es prioritario. Usamos savepoint para que un rollback
+        # NO descarte el resto del trabajo de sync_from_dbf.
+        try:
+            with self.env.cr.savepoint(flush=False):
+                zombies_with_keeper.unlink()
+        except Exception:
+            _logger.warning(
+                "sync_from_dbf: unlink de %s zombies con keeper fallo, "
+                "se omite el cleanup en esta corrida (ids=%s)",
+                len(zombies_with_keeper), zombies_with_keeper.ids[:20],
+                exc_info=True,
+            )
 
     def _sync_ctrl_info_reprocesos(self, pedidos):
         """Pull motivo/area from SQL Server `ctrl_info` and apply to lines.
