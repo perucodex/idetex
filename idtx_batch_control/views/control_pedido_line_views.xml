@@ -40,6 +40,7 @@
                 <field name="change_date"/>
                 <field name="area_num_days"/>
                 <field name="area"/>
+                <field name="next_process"/>
                 <field name="state" widget="badge" decoration-success="state == 'active'" decoration-danger="state == 'completed'"/>
             </list>
         </field>

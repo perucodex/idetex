@@ -22,6 +22,13 @@ class ControlPedidoLine(models.Model):
     barcodreo = fields.Char('Reprocess')
     batch = fields.Char('Batch')
     process = fields.Char(string="Next Process")
+    next_process = fields.Char(
+        string="Siguiente Proceso",
+        compute='_compute_next_process',
+        store=True,
+        help="Primer proceso de la partida cuyo barFasDTF (fecha fin) este vacio. "
+             "Puede tener barFasDTI iniciado pero sin terminar.",
+    )
     area = fields.Char('Area')
     rollos = fields.Integer('Rolls')
     kilograms = fields.Float('Kilograms')
@@ -68,6 +75,14 @@ class ControlPedidoLine(models.Model):
 
     def action_set_active(self):
         self.write({'state': 'active'})
+
+    @api.depends('proceso_ids.barFasDTF', 'proceso_ids.barOrdLin', 'proceso_ids.fasCod')
+    def _compute_next_process(self):
+        for rec in self:
+            pending = rec.proceso_ids.filtered(lambda p: not p.barFasDTF).sorted(
+                key=lambda p: p.barOrdLin or 0
+            )
+            rec.next_process = pending[0].fasCod if pending else False
 
     @api.depends('area', 'proceso_ids.barFasDTI', 'proceso_ids.barFasDTF', 'proceso_ids.fas_code', 'report_date')
     def _compute_area_num_days(self):

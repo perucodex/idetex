@@ -203,9 +203,13 @@ class ControlPedido(models.Model):
             self.is_active = new_active
             # Propagar al estado de las lineas:
             # - Liquidacion (is_active False -> state='se'): lineas a 'completed'.
-            # - Reversion (is_active True): lineas vuelven a 'active'.
+            # - Reversion (is_active True): lineas vuelven a 'active' y
+            #   forzamos recompute de los campos derivados (area_num_days,
+            #   change_date) porque sus @api.depends no escuchan a `state`.
             line_state = 'active' if new_active else 'completed'
             self.line_ids.write({'state': line_state})
+            if new_active and self.line_ids:
+                self.line_ids._compute_area_num_days()
         return res
 
     def _get_sql_connection(self):
