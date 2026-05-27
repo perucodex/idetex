@@ -104,6 +104,7 @@
                 <filter name="not_done" string="En proceso" domain="[('state', 'in', ['on', 'de'])]"/>
                 <filter name="done" string="Terminado" domain="[('state', '=', 'do')]"/>
                 <group>
+                    <filter name="group_by_customer" string="Cliente" domain="[]" context="{'group_by': 'customer'}"/>
                     <filter name="group_by_wish_date" string="Fecha Deseada" domain="[]" context="{'group_by': 'wish_date:day'}"/>
                 </group>
             </search>
