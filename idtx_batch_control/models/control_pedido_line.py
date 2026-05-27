@@ -61,6 +61,27 @@ class ControlPedidoLine(models.Model):
         ('active', 'Active'),
         ('completed', 'Completed'),
     ], string='State', default='active')
+    wish_date = fields.Date('Fecha Deseada',
+        help="Fecha objetivo de entrega de esta partida. Hereda del "
+             "control.pedido al crearse pero se puede modificar por linea.")
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        # Default wish_date desde el pedido padre cuando no se especifica.
+        pedido_cache = {}
+        for vals in vals_list:
+            if vals.get('wish_date'):
+                continue
+            pedido_id = vals.get('pedido_id')
+            if not pedido_id:
+                continue
+            wd = pedido_cache.get(pedido_id)
+            if wd is None:
+                wd = self.env['control.pedido'].browse(pedido_id).wish_date or False
+                pedido_cache[pedido_id] = wd
+            if wd:
+                vals['wish_date'] = wd
+        return super().create(vals_list)
 
     def _auto_init(self):
         # Backfill NULL state to 'active' on module upgrades — idempotent

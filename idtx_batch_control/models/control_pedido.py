@@ -117,6 +117,10 @@ class ControlPedido(models.Model):
     tipoventa = fields.Char(string="Type of Sale")
     total_weight = fields.Float('Total Weight')
     produced_weight = fields.Float('Produced Weight')
+    wish_date = fields.Date('Fecha Deseada',
+        help="Fecha objetivo para la entrega del pedido. Al modificarla se "
+             "propaga a todas las partidas hijas (las modificaciones manuales "
+             "previas en las lineas se sobrescriben).")
     line_ids = fields.One2many("control.pedido.line", "pedido_id", string="Detail")
     process = fields.Char('Process', compute='_compute_process', store=True)
     area = fields.Char('Area', compute='_compute_process', store=True)
@@ -196,6 +200,50 @@ class ControlPedido(models.Model):
             else:
                 rec.process = 'SIN AVANCE'
                 rec.area = 'AREA NO CONOCIDA'
+
+    _WISH_DATE_OFFSET_DAYS = 45
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        # Default wish_date = fecoc + 45 dias si no se especifico.
+        for vals in vals_list:
+            if not vals.get('wish_date') and vals.get('fecoc'):
+                fecoc = vals['fecoc']
+                if isinstance(fecoc, str):
+                    fecoc = fields.Date.from_string(fecoc)
+                if fecoc:
+                    vals['wish_date'] = fecoc + datetime.timedelta(days=self._WISH_DATE_OFFSET_DAYS)
+        return super().create(vals_list)
+
+    def write(self, vals):
+        # Si llega fecoc y no llega wish_date explicito, calculamos el
+        # default (fecoc + 45) SOLO para los pedidos que aun no tienen
+        # wish_date seteado (no pisamos ediciones manuales del usuario).
+        auto_wish_by_id = {}
+        if 'fecoc' in vals and 'wish_date' not in vals:
+            fecoc = vals.get('fecoc')
+            if isinstance(fecoc, str):
+                fecoc = fields.Date.from_string(fecoc)
+            if fecoc:
+                default_wish = fecoc + datetime.timedelta(days=self._WISH_DATE_OFFSET_DAYS)
+                for rec in self:
+                    if not rec.wish_date:
+                        auto_wish_by_id[rec.id] = default_wish
+
+        # Si wish_date cambia explicitamente, propagar el nuevo valor a
+        # todas las lineas. Las modificaciones manuales previas en partidas
+        # se pierden — semantica del "default propagable" pedido -> partida.
+        propagate_wish = 'wish_date' in vals
+        res = super().write(vals)
+        if propagate_wish:
+            new_date = vals.get('wish_date') or False
+            for rec in self:
+                if rec.line_ids:
+                    rec.line_ids.write({'wish_date': new_date})
+        # Aplicar el default calculado a los registros que correspondan.
+        for pid, wd in auto_wish_by_id.items():
+            self.browse(pid).write({'wish_date': wd})
+        return res
 
     def settle_order(self):
         res = _settle_order_dbf("/mnt/fox/sit06/dbf/vta_cab_pedido.dbf", self.numordped, not self.is_active)

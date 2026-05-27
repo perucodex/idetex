@@ -19,6 +19,7 @@
                 <field name="kilograms" sum="Total"/>
                 <field name="start_date"/>
                 <field name="end_date"/>
+                <field name="wish_date" optional="hide"/>
                 <field name="state" widget="badge" decoration-success="state == 'active'" decoration-danger="state == 'completed'"/>
             </list>
         </field>
@@ -97,6 +98,7 @@
                             <field name="kilograms" readonly="1"/>
                             <field name="start_date" readonly="1"/>
                             <field name="end_date" readonly="1"/>
+                            <field name="wish_date"/>
                             <field name="colorcode" readonly="1" invisible="lab_dev_line_id"/>
                             <field name="colorname" readonly="1" invisible="lab_dev_line_id"/>
                             <!-- <field name="lab_dev_line_id" readonly="1" invisible="not lab_dev_line_id"/> -->
@@ -161,6 +163,7 @@
                 <field name="description"/>
                 <field name="colorcode"/>
                 <field name="colorname"/>
+                <field name="wish_date"/>
                 <filter string="Active" name="active" domain="[('state', '=', 'active')]"/>
                 <filter string="Completed" name="completed" domain="[('state', '=', 'completed')]"/>
                 <filter string="Reproceso" name="reproceso"
@@ -173,6 +176,7 @@
                     <filter string="Descripción" name="group_by_description" domain="[]" context="{'group_by': 'description'}"/>
                     <filter string="Batch" name="group_by_batch" domain="[]" context="{'group_by': 'batch'}"/>
                     <filter string="Area" name="group_by_area" domain="[]" context="{'group_by': 'area'}"/>
+                    <filter string="Fecha Deseada" name="group_by_wish_date" domain="[]" context="{'group_by': 'wish_date:day'}"/>
                 </group>
             </search>
         </field>

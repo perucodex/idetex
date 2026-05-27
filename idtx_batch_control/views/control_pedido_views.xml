@@ -16,6 +16,7 @@
                 <field name="num_days"/>
                 <field name="area"/>
                 <field name="process"/>
+                <field name="wish_date" optional="hide"/>
                 <field name="state" widget="badge" decoration-danger="state == 'de'" decoration-info="state == 'on'" decoration-success="state == 'do'"/>
             </list>
         </field>
@@ -50,6 +51,7 @@
                             <field name="num_days"/>
                             <field name="process"/>
                             <field name="area"/>
+                            <field name="wish_date"/>
                             <div class="oe_button_box" name="button_box">
 
                             <!-- <button type="object" class="oe_stat_button" icon="fa-balance-scale">
@@ -98,8 +100,12 @@
             <search>
                 <field name="numordped"/>
                 <field name="customer"/>
+                <field name="wish_date"/>
                 <filter name="not_done" string="En proceso" domain="[('state', 'in', ['on', 'de'])]"/>
                 <filter name="done" string="Terminado" domain="[('state', '=', 'do')]"/>
+                <group>
+                    <filter name="group_by_wish_date" string="Fecha Deseada" domain="[]" context="{'group_by': 'wish_date:day'}"/>
+                </group>
             </search>
         </field>
     </record>
