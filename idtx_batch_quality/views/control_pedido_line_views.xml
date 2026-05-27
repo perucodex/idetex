@@ -77,7 +77,7 @@
                     </field>
                 </page>
 
-                <page string="Laboratorio">
+                <page string="Laboratorio" invisible="not has_laboratorio_records">
                     <field name="laboratorio_record_ids" nolabel="1" context="{'default_pedido_line_id': id}" mode="list,form">
                         <list>
                             <field name="eval_number" string="Nro Evaluacion"/>

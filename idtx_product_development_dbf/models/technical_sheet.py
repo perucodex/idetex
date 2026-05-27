@@ -746,11 +746,52 @@ class TechnicalSheet(models.Model):
         """
         return self.fabric_composition_id.tipart_cod or 1
 
+    # Defaults que TEXPLUS inicializa al crear un articulo desde su UI.
+    # NULL en estas columnas hace que la validacion "fuera del rango" mate
+    # la generacion de vouchers/disposiciones. Solo se aplican en INSERT
+    # (NO se pisa el valor que TEXPLUS pudiera tener seteado a mano).
+    _TEXPLUS_ARTICU_INSERT_DEFAULTS = {
+        # Flags Y/N + caracteres de control que TEXPLUS valida.
+        # Defaults derivados de la distribucion observada en articulos
+        # nativos (>99% de los casos):
+        'ArtEncOri': 'N',  # Encolar Orillos
+        'ArtCorOri': 'N',  # Cortar Orillos
+        'ArtEti': 'N',     # Etiqueta
+        'ArtUnd': '*',     # Marker (activo)
+        'ArtBlo': '*',     # Marker (no bloqueado)
+        # Contadores
+        'ULinRec': 0,
+        'ArtNumTex1': 0,
+        'ArtNumTex2': 0,
+        'ULinPre': 0,
+        'ArtAcaAnh': 0,
+        'ArtLotPza': 0,
+        'ArtAcaFor': 0,
+        'Mat_UltL': 0,
+        'UltLinFT': 0,
+        # Decimales (precios / cantidades)
+        'ArtCosBase': 0,
+        'ArtPreCap': 0,
+        'ArtPrMEst': 0,
+        'ArtPreEst': 0,
+        'ArtCruMts': 0,
+        'ArtCruKgs': 0,
+        'ArtLotMts': 0,
+        'ArtLotKgs': 0,
+        'ArtValMtr': 0,
+        'ArtFacTor': 0,
+        'CapKgs1': 0, 'CapKgs2': 0, 'CapKgs3': 0, 'CapKgs4': 0, 'CapKgs5': 0,
+        'CapKgs6': 0, 'CapKgs7': 0, 'CapKgs8': 0, 'CapKgs9': 0, 'CapKgs10': 0,
+        # Fecha min sentinel de SQL Server
+        'ArtPreUlAc': '1753-01-01',
+    }
+
     def _upsert_texplus_articu(self, cursor, article_code, client_code, notes):
         finish_width = _texplus_int(self.width or self.finish_width)
         finished_weight = _texplus_int(self.density or self.finish_density)
         technical_date = self.technical_date or self.analysis_id.analysis_date or fields.Date.context_today(self)
-        values = {
+        # Campos que Odoo controla y se actualizan en cada sync.
+        managed_values = {
             'EmprCod': TEXPLUS_EMPRCOD,
             'CliCod': client_code,
             'ArtCod': article_code,
@@ -771,7 +812,26 @@ class TechnicalSheet(models.Model):
             'CliCod': client_code,
             'ArtCod': article_code,
         }
-        self._upsert_texplus_record(cursor, 'ARTICU', key_values, values)
+
+        # Detectamos si la fila ya existe ANTES del upsert para saber si
+        # debemos incluir los defaults (solo aplican en INSERT).
+        cursor.execute(
+            "SELECT 1 FROM dbo.ARTICU WITH (NOLOCK) "
+            "WHERE EmprCod = ? AND CliCod = ? AND ArtCod = ?",
+            TEXPLUS_EMPRCOD, client_code, article_code,
+        )
+        row_exists = cursor.fetchone() is not None
+
+        if row_exists:
+            # UPDATE: solo campos gestionados. NO tocamos defaults para no
+            # pisar valores que TEXPLUS pudo haber llenado manualmente
+            # (ej. ArtCosBase = precio base).
+            self._upsert_texplus_record(cursor, 'ARTICU', key_values, managed_values)
+        else:
+            # INSERT: mezclar managed + defaults para que TEXPLUS no rechace
+            # vouchers por NULL "fuera del rango".
+            values = {**self._TEXPLUS_ARTICU_INSERT_DEFAULTS, **managed_values}
+            self._upsert_texplus_record(cursor, 'ARTICU', key_values, values)
 
     def _upsert_texplus_artlin(self, cursor, article_code, client_code):
         values = {

@@ -13,6 +13,7 @@
                 <field name="description"/>
                 <field name="num_days"/>
                 <field name="process"/>
+                <field name="next_process"/>
                 <field name="area"/>
                 <field name="rollos"/>
                 <field name="kilograms" sum="Total"/>
