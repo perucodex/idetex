@@ -1,0 +1,274 @@
+.o_qb_root {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 28px 32px;
+    background: #f0f2f5;
+    height: 100%;
+    overflow: auto;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    box-sizing: border-box;
+
+    > * {
+        flex-shrink: 0;
+    }
+}
+
+// ── Splash de carga ──────────────────────────────────────────────────
+.o_qb_splash {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 0;
+}
+
+// ── Cabecera de la página ────────────────────────────────────────────
+.o_qb_header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+.o_qb_title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1a1d23;
+    margin: 0 0 4px;
+    letter-spacing: -.3px;
+}
+
+.o_qb_subtitle {
+    font-size: .875rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+// ── Tarjetas ─────────────────────────────────────────────────────────
+.o_qb_card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .07), 0 4px 16px rgba(0, 0, 0, .04);
+    overflow: hidden;
+}
+
+.o_qb_card_header {
+    padding: 14px 20px;
+    font-size: .875rem;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 1px solid #eaecef;
+    background: #fafbfc;
+    letter-spacing: .1px;
+}
+
+// ── Tabla dinámica ───────────────────────────────────────────────────
+.o_qb_table_wrap {
+    overflow-x: auto;
+    padding: 0;
+}
+
+.o_qb_table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .9rem;
+
+    // ── Cabeceras ──
+    .o_qb_th_label {
+        background: #1a2e55;
+        color: #fff;
+        padding: 14px 20px;
+        text-align: center;
+        font-weight: 600;
+        font-size: .9rem;
+        white-space: nowrap;
+        min-width: 180px;
+        border: 1px solid #243a6a;
+    }
+
+    .o_qb_th_month {
+        background: #1a2e55;
+        color: #fff;
+        padding: 12px 16px;
+        text-align: center;
+        font-weight: 600;
+        font-size: .9rem;
+        white-space: nowrap;
+        border: 1px solid #243a6a;
+    }
+
+    .o_qb_th_total_header {
+        background: #1a2e55;
+        color: #fff;
+        padding: 12px 16px;
+        text-align: center;
+        font-weight: 600;
+        font-size: .9rem;
+        white-space: nowrap;
+        border: 1px solid #243a6a;
+    }
+
+    .o_qb_th_sub {
+        background: #1a2e55;
+        color: #cdd8f0;
+        padding: 9px 14px;
+        text-align: center;
+        font-weight: 500;
+        font-size: .8rem;
+        border: 1px solid #243a6a;
+    }
+
+    .o_qb_pct_col {
+        border-right: 1px solid #243a6a !important;
+    }
+
+    .o_qb_total_sub {
+        background: #152449 !important;
+    }
+
+    // ── Filas de datos ──
+    .o_qb_tr_result {
+        background: #fff;
+
+        &:hover td {
+            background: #f5f7fc;
+        }
+    }
+
+    .o_qb_td_label {
+        padding: 13px 20px;
+        font-weight: 400;
+        font-size: .95rem;
+        color: #1a1d23;
+        white-space: nowrap;
+        border: 1px solid #d0d7e6;
+    }
+
+    .o_qb_td_count {
+        padding: 13px 16px;
+        text-align: center;
+        font-weight: 400;
+        font-size: .95rem;
+        color: #1a1d23;
+        border: 1px solid #d0d7e6;
+        white-space: nowrap;
+    }
+
+    .o_qb_td_pct {
+        padding: 13px 16px;
+        text-align: center;
+        font-size: .95rem;
+        border: 1px solid #d0d7e6;
+        white-space: nowrap;
+    }
+
+    .o_qb_td_pct_red {
+        color: #c0392b;
+        font-weight: 600;
+    }
+
+    // Columna de total por fila
+    .o_qb_td_row_total {
+        background: #f0f4fb;
+        font-weight: 600;
+        border-left: 2px solid #b0bcd8;
+        color: #1a1d23;
+    }
+
+    // ── Pie de tabla ──
+    .o_qb_tfoot {
+        .o_qb_td_total_label {
+            background: #dce8fa;
+            color: #1a2e55;
+            padding: 13px 20px;
+            font-weight: 700;
+            font-size: .95rem;
+            border: 1px solid #b8cce8;
+        }
+
+        .o_qb_td_foot_count {
+            background: #dce8fa;
+            color: #1a2e55;
+            font-weight: 700;
+            font-size: 1rem;
+            padding: 13px 16px;
+            text-align: center;
+            border: 1px solid #b8cce8;
+        }
+
+        .o_qb_td_grand {
+            background: #c8ddf7 !important;
+            border-left: 2px solid #90b8e0;
+        }
+    }
+}
+
+// ── Separador de sección ─────────────────────────────────────────────
+.o_qb_section_divider {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    color: #495057;
+    padding: 4px 0 0;
+
+    &::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: #dee2e6;
+    }
+}
+
+// ── Leyenda recetas ───────────────────────────────────────────────────
+.o_qb_receta_legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 28px;
+    padding: 10px 16px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+    font-size: .8rem;
+    color: #495057;
+}
+
+.o_qb_legend_item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.o_qb_legend_dot {
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+// ── Badge en cabecera de tarjeta ──────────────────────────────────────
+.o_qb_card_badge {
+    font-size: .72rem;
+    font-weight: 500;
+    color: #6c757d;
+    background: #e9ecef;
+    border-radius: 20px;
+    padding: 1px 8px;
+    vertical-align: middle;
+}
+
+// ── Gráfico de barras ────────────────────────────────────────────────
+.o_qb_chart_wrap {
+    padding: 16px 20px 20px;
+    position: relative;
+    height: 320px;
+
+    canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
+}

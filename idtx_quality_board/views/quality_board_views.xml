@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Acción cliente OWL — Tono Tintorería (tono=tacho) -->
+        <record id="action_calidad_tintoreria_board" model="ir.actions.client">
+            <field name="name">Tono Tintorería</field>
+            <field name="tag">idtx_quality.tono_board</field>
+            <field name="context">{"tono": "tacho"}</field>
+        </record>
+
+        <!-- Acción cliente OWL — Tono Acabado (tono=acabado) -->
+        <record id="action_calidad_acabado_board" model="ir.actions.client">
+            <field name="name">Tono Acabado</field>
+            <field name="tag">idtx_quality.tono_board</field>
+            <field name="context">{"tono": "acabado"}</field>
+        </record>
+
+        <!-- Menú padre "Calidad" en la app Tableros + dos hijos -->
+        <menuitem
+            id="menu_calidad_root"
+            name="Calidad"
+            parent="spreadsheet_dashboard.spreadsheet_dashboard_menu_root"
+            sequence="50"
+            groups="quality.group_quality_manager"/>
+
+        <menuitem
+            id="menu_calidad_tintoreria"
+            name="Tono Tintorería"
+            parent="menu_calidad_root"
+            action="action_calidad_tintoreria_board"
+            sequence="10"
+            groups="quality.group_quality_manager"/>
+
+        <menuitem
+            id="menu_calidad_acabado"
+            name="Tono Acabado"
+            parent="menu_calidad_root"
+            action="action_calidad_acabado_board"
+            sequence="20"
+            groups="quality.group_quality_manager"/>
+    </data>
+</odoo>
