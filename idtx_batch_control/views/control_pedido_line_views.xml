@@ -176,6 +176,7 @@
                     <filter string="Descripción" name="group_by_description" domain="[]" context="{'group_by': 'description'}"/>
                     <filter string="Batch" name="group_by_batch" domain="[]" context="{'group_by': 'batch'}"/>
                     <filter string="Area" name="group_by_area" domain="[]" context="{'group_by': 'area'}"/>
+                    <filter string="Area Responsable" name="group_by_area1" domain="[]" context="{'group_by': 'area1'}"/>
                     <filter string="Fecha Deseada" name="group_by_wish_date" domain="[]" context="{'group_by': 'wish_date:day'}"/>
                 </group>
             </search>

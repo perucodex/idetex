@@ -24,7 +24,11 @@ from .mrp_base_process import (
     _fit_char,
     _is_tejido_crudo,
     _is_texplus_lock_error,
+    _texplus_writes_enabled,
 )
+
+import logging
+_logger = logging.getLogger(__name__)
 
 
 class MrpRoutingWorkcenterOperation(models.Model):
@@ -304,6 +308,12 @@ class MrpRoutingWorkcenterOperation(models.Model):
         operations = self.filtered(lambda op: not _is_tejido_crudo(op) and (op.name or '').strip())
         if not operations:
             return
+        if not _texplus_writes_enabled():
+            _logger.info(
+                'texplus writes disabled (texplus_write_enabled=False): skipping '
+                'FASPRO/MAQFAS sync for %s operation(s)', len(operations),
+            )
+            return
 
         base_process = self.env['mrp.base.process'].sudo()
 
@@ -427,6 +437,14 @@ class MrpRoutingWorkcenterOperation(models.Model):
                 'No se puede eliminar las siguientes fases porque estan en uso '
                 'en procesos base de Odoo:\n%s' % details
             )
+
+        # Modo lectura TEXPLUS: no chequeamos PROLIN ni borramos FASPRO/MAQFAS.
+        if not _texplus_writes_enabled():
+            _logger.info(
+                'texplus writes disabled (texplus_write_enabled=False): skipping '
+                'FASPRO/MAQFAS delete for %s operation(s)', len(self),
+            )
+            return super().unlink()
 
         conn = None
         cursor = None

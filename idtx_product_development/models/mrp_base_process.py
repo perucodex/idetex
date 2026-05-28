@@ -5,12 +5,32 @@ from collections import defaultdict
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
+from odoo.tools import config
 
 
 _logger = logging.getLogger(__name__)
 TEXPLUS_EMPRCOD = '001'
 FASPRO_CODE_MAX_LEN = 8
 PROCES_CODE_MAX_LEN = 8
+
+
+def _texplus_writes_enabled():
+    """Devuelve True si esta instancia de Odoo puede ESCRIBIR en TEXPLUS.
+
+    Las lecturas (SELECT) siempre siguen habilitadas para que la sincro-
+    nizacion TEXPLUS -> Odoo siga funcionando. Esta bandera apaga solo
+    los INSERT/UPDATE/DELETE para evitar que un Odoo de desarrollo o
+    staging corrompa el TEXPLUS de produccion (ambos suelen apuntar al
+    mismo servidor SQL).
+
+    Configuracion en odoo.conf:
+        texplus_write_enabled = False   (apagado, modo lectura)
+        texplus_write_enabled = True    (default, escritura habilitada)
+    """
+    val = config.get('texplus_write_enabled', True)
+    if isinstance(val, str):
+        return val.strip().lower() in ('1', 'true', 'yes', 'on')
+    return bool(val)
 
 
 def _texplus_process_code(name):
@@ -673,6 +693,12 @@ class MrpBaseProcess(models.Model):
         codes = [(code or '').strip() for code in process_codes if (code or '').strip()]
         if not codes:
             return
+        if not _texplus_writes_enabled():
+            _logger.info(
+                'texplus writes disabled (texplus_write_enabled=False): skipping '
+                'DELETE PROCES/PROLIN for %s', ', '.join(codes),
+            )
+            return
         conn = None
         cursor = None
         try:
@@ -747,6 +773,12 @@ class MrpBaseProcess(models.Model):
             lambda r: (r.name or '').strip() and (r.name or '').strip() != self._SITPRO_PLACEHOLDER_NAME
         )
         if not syncable:
+            return
+        if not _texplus_writes_enabled():
+            _logger.info(
+                'texplus writes disabled (texplus_write_enabled=False): skipping '
+                'PROCES/PROLIN sync for %s record(s)', len(syncable),
+            )
             return
         conn = None
         cursor = None

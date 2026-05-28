@@ -7,6 +7,10 @@ import pytz
 pyodbc.setDecimalSeparator(".")
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
+from odoo.addons.idtx_mrp.models.mrp_routing_workcenter_operation import (
+    _ReadOnlyTexplusConnection,
+    _texplus_writes_enabled,
+)
 import dbf
 
 from .utils import _safe_str, _safe_float, _safe_date, _safe_bool
@@ -141,7 +145,7 @@ class ControlPedido(models.Model):
         # -> fecoc (oc cliente). El conteo excluye domingos.
         today = fields.Date.context_today(self)
         for rec in self:
-            base = rec.feccc or rec.fecgvtas or rec.fecoc
+            base = rec.fecha or rec.fecoc or rec.feccc or rec.fecgvtas
             if not base:
                 rec.num_days = 0
                 continue
@@ -266,9 +270,11 @@ class ControlPedido(models.Model):
             conn = pyodbc.connect(
                 "DSN=ENBTEX1_DSN;PORT=1433;UID=sistemas;PWD=idtE#21@IRdc95;TDS_Version=7.3;"
             )
-            return conn
         except Exception as e:
             raise UserError(f"No se pudo conectar a SQL Server: {e}")
+        if not _texplus_writes_enabled():
+            return _ReadOnlyTexplusConnection(conn)
+        return conn
 
     def _get_sitpro_connection(self):
         try:

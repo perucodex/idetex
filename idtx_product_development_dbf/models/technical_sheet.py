@@ -10,6 +10,10 @@ import pyodbc
 from odoo import _, fields, models, api
 from odoo.exceptions import UserError
 from odoo.tools import sql
+from odoo.addons.idtx_mrp.models.mrp_routing_workcenter_operation import (
+    _ReadOnlyTexplusConnection,
+    _texplus_writes_enabled,
+)
 
 pyodbc.setDecimalSeparator('.')
 
@@ -571,9 +575,11 @@ class TechnicalSheet(models.Model):
                 timeout=5,
             )
             connection.timeout = 10
-            return connection
         except Exception as error:
             raise UserError(_('No se pudo conectar a TEXPLUS SQL Server: %s') % error) from error
+        if not _texplus_writes_enabled():
+            return _ReadOnlyTexplusConnection(connection)
+        return connection
 
     def _export_to_texplus_sql(self, article_code, partner, notes):
         self.ensure_one()

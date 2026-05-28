@@ -8,6 +8,10 @@ pyodbc.setDecimalSeparator(".")
 from odoo import models, fields, api, _
 from odoo.fields import Command
 from odoo.exceptions import UserError
+from odoo.addons.idtx_mrp.models.mrp_routing_workcenter_operation import (
+    _ReadOnlyTexplusConnection,
+    _texplus_writes_enabled,
+)
 
 import logging
 _logger = logging.getLogger(__name__)
@@ -254,9 +258,11 @@ class ProductAnalysis(models.Model):
                 "PWD=idtE#21@IRdc95;"
                 "TDS_Version=7.3;"
             )
-            return conn
         except Exception as e:
             raise UserError(f"No se pudo conectar a TEXPLUS SQL Server: {e}")
+        if not _texplus_writes_enabled():
+            return _ReadOnlyTexplusConnection(conn)
+        return conn
 
     def _texplus_uom(self, value):
         return {

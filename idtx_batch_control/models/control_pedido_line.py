@@ -55,7 +55,7 @@ class ControlPedidoLine(models.Model):
     obsctrl = fields.Text('Observaciones Informe')
     change_date = fields.Datetime('Fecha Cambio Area', compute='_compute_area_num_days', store=True)
     motivo1 = fields.Char('Motivo Reproceso')
-    area1 = fields.Char('Área Reproceso')
+    area1 = fields.Char('Área Responsable')
     to_reprocess = fields.Float('To Reprocess')
     state = fields.Selection([
         ('active', 'Active'),
