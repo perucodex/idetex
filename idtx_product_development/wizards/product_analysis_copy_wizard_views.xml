@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_analysis_copy_wizard_form" model="ir.ui.view">
+        <field name="name">product.analysis.copy.wizard.form</field>
+        <field name="model">product.analysis.copy.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Duplicar Analisis">
+                <sheet>
+                    <group>
+                        <field name="source_id" readonly="1"/>
+                    </group>
+                    <separator string="Weaving Data a copiar"/>
+                    <p class="text-muted">
+                        Marca/desmarca los Weaving Data que quieres copiar al nuevo
+                        analisis. Cada uno se copia como registro NUEVO (no link).
+                        Las fibras anidadas se copian tambien.
+                    </p>
+                    <field name="weaving_data_ids" nolabel="1"
+                           options="{'no_create': True, 'no_create_edit': True}">
+                        <list create="false" delete="false" edit="false">
+                            <field name="partner_id"/>
+                            <field name="stylo"/>
+                            <field name="notes" optional="show"/>
+                            <field name="technical_sheet_id" optional="show"/>
+                        </list>
+                    </field>
+                </sheet>
+                <footer>
+                    <button string="Duplicar"
+                            name="action_copy"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action standalone (sin binding) que el copy() override usa para
+         abrir el wizard. NO aparece en el cog menu para evitar UX
+         duplicada — la entrada "Duplicar" estandar del engranaje ya
+         lo dispara via override de product.analysis.copy(). -->
+    <record id="action_product_analysis_copy_wizard" model="ir.actions.act_window">
+        <field name="name">Duplicar Analisis</field>
+        <field name="res_model">product.analysis.copy.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>
