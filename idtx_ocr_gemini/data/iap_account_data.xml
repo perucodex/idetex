@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Stub iap.account para que extract.mixin._upload_to_extract
+             no aborte por falta de cuenta IAP. Reusa el iap.service que
+             account_invoice_extract crea (technical_name='invoice_ocr'). -->
+        <record id="iap_account_ocr_gemini" model="iap.account">
+            <field name="name">Gemini OCR (cloud)</field>
+            <field name="service_id" ref="iap_extract.iap_service_ocr"/>
+            <field name="account_token">gemini-dummy-token</field>
+        </record>
+    </data>
+</odoo>

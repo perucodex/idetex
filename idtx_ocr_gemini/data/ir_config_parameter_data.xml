@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- API key de Google Gemini. OBTENER en https://aistudio.google.com
+             -> Get API key. NO commitear este archivo con la key real:
+             en produccion cambia el value via Settings > Technical >
+             Parameters. -->
+        <record id="idtx_ocr_gemini_api_key" model="ir.config_parameter">
+            <field name="key">idtx_ocr_gemini.api_key</field>
+            <field name="value">PON TU API_KEY AQUI</field>
+        </record>
+        <!-- Modelo Gemini. gemini-2.5-flash es el recomendado para
+             extraccion estructurada (rapido, free-tier-friendly).
+             Alternativas:
+               - gemini-2.5-flash-lite (mas barato, menos preciso)
+               - gemini-2.5-pro (mejor calidad, mas tokens) -->
+        <record id="idtx_ocr_gemini_model" model="ir.config_parameter">
+            <field name="key">idtx_ocr_gemini.model</field>
+            <field name="value">gemini-2.5-flash</field>
+        </record>
+        <!-- Numero maximo de paginas a procesar por documento. Gemini
+             acepta hasta 1000 paginas inline, pero limitamos para
+             controlar tokens. -->
+        <record id="idtx_ocr_gemini_max_pages" model="ir.config_parameter">
+            <field name="key">idtx_ocr_gemini.max_pages</field>
+            <field name="value">20</field>
+        </record>
+        <!-- Timeout HTTP en segundos -->
+        <record id="idtx_ocr_gemini_timeout" model="ir.config_parameter">
+            <field name="key">idtx_ocr_gemini.timeout</field>
+            <field name="value">120</field>
+        </record>
+    </data>
+</odoo>

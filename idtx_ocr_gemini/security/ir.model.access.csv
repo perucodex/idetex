@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_idtx_ocr_gemini_pdf_wizard_user,idtx_ocr_gemini_pdf_wizard_user,model_idtx_ocr_gemini_pdf_password_wizard,account.group_account_invoice,1,1,1,1
+access_idtx_ocr_gemini_pdf_wizard_manager,idtx_ocr_gemini_pdf_wizard_manager,model_idtx_ocr_gemini_pdf_password_wizard,account.group_account_manager,1,1,1,1
