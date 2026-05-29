@@ -59,6 +59,7 @@ y ficha técnica
         'views/res_config_settings_views.xml',
         'views/technical_sheet_views.xml',
         'wizards/split_roll_views.xml',
+        'wizards/product_analysis_copy_wizard_views.xml',
         'views/dev_menu.xml',
         'views/texplus_machine_views.xml',
         'data/texplus_machine_data.xml',
@@ -69,6 +70,7 @@ y ficha técnica
     'assets': {
         'web.assets_backend': [
             'idtx_product_development/static/src/ligament_widget/**/*',
+            'idtx_product_development/static/src/js/product_analysis_duplicate.js',
         ],
     },
 

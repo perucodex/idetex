@@ -22,3 +22,4 @@ access_split_roll,split_roll,model_split_roll,base.group_user,1,1,1,1
 access_density_stability_twisting,density_stability_twisting,model_density_stability_twisting,base.group_user,1,1,1,1
 access_texplus_machine_user,texplus.machine.user,model_texplus_machine,base.group_user,1,0,0,0
 access_texplus_machine_manager,texplus.machine.manager,model_texplus_machine,idtx_product_development.group_module_product_development_manager,1,1,1,1
+access_product_analysis_copy_wizard,product_analysis_copy_wizard,model_product_analysis_copy_wizard,base.group_user,1,1,1,1
