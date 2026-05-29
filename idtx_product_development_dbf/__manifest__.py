@@ -20,6 +20,7 @@ de FoxPro usadas por SITPRO/Tintoreria.
         'data/cron.xml',
         'views/res_config_settings_views.xml',
         'views/technical_sheet_views.xml',
+        'views/mrp_base_process_views.xml',
     ],
     'assets': {
         'web.assets_backend': [
