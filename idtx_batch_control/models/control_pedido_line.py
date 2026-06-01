@@ -134,9 +134,22 @@ class ControlPedidoLine(models.Model):
             for p in r.proceso_ids
             if p.fas_code
         }
+        # Resolver el area de cada proceso con el MISMO criterio que `rec.area`:
+        # primero el workcenter de Odoo (mas granular, ej: REPPRETA -> 'PRE
+        # ACABADO'), y solo como respaldo el area legacy de estatus_reproceso
+        # (donde REPPRETA -> 'ACABADO'). Si se usara solo estatus_reproceso, el
+        # walk-back no detectaria el cambio de area en procesos como REPPRETA y
+        # tomaria una fecha de un proceso anterior (ej: CONTROL DE CALIDAD).
+        area_by_wc = self._fetch_areas_by_workcenter(fas_codes)
         area_by_fas = self._fetch_areas_by_fas_code(fas_codes)
-        if not area_by_fas:
+        if not area_by_wc and not area_by_fas:
             return
+
+        def _resolve_area(fas_code):
+            if not fas_code:
+                return False
+            key = fas_code.strip().upper()
+            return area_by_wc.get(key) or area_by_fas.get(fas_code)
 
         now = fields.Datetime.now()
         for rec in records_with_data:
@@ -152,7 +165,7 @@ class ControlPedidoLine(models.Model):
             for proc in reversed(procs):
                 if not proc.barFasDTF:
                     continue
-                proc_area = area_by_fas.get(proc.fas_code)
+                proc_area = _resolve_area(proc.fas_code)
                 if proc_area and proc_area != current_area:
                     walk_change_date = proc.barFasDTF or proc.barFasDTI
                     break
@@ -168,7 +181,7 @@ class ControlPedidoLine(models.Model):
             last_finished = finished_procs[-1] if finished_procs else None
             calidad_is_last_finished = bool(
                 last_finished
-                and area_by_fas.get(last_finished.fas_code) == 'CONTROL DE CALIDAD'
+                and _resolve_area(last_finished.fas_code) == 'CONTROL DE CALIDAD'
             )
             report_dt = rec.report_date if (calidad_is_last_finished and rec.report_date) else False
 
@@ -204,6 +217,30 @@ class ControlPedidoLine(models.Model):
                 days += 1
             current += datetime.timedelta(days=1)
         return days
+
+    @api.model
+    def _fetch_areas_by_workcenter(self, fas_codes):
+        """Return {FAS_CODE_UPPER: workcenter.name} for the given fas_codes.
+
+        Usa el mismo mapeo de Odoo (`mrp.routing.workcenter.operation` ->
+        `workcenter_id.name`) con el que `_vals_from_det_row` calcula el `area`
+        de la partida. Es mas granular que `estatus_reproceso` (ej: REPPRETA
+        cae en 'PRE ACABADO' aqui, pero en 'ACABADO' en TEXPLUS), asi que el
+        walk-back de `_compute_area_num_days` debe usar este primero para que
+        el area de cada proceso sea consistente con el area actual de la linea.
+        """
+        codes = {(fc or '').strip().upper() for fc in fas_codes if fc}
+        codes.discard('')
+        if not codes:
+            return {}
+        out = {}
+        ops = self.env['mrp.routing.workcenter.operation'].sudo().search([
+            ('fas_code', 'in', list(codes)),
+        ])
+        for op in ops:
+            if op.workcenter_id and op.fas_code:
+                out[op.fas_code.strip().upper()] = op.workcenter_id.name
+        return out
 
     @api.model
     def _fetch_areas_by_fas_code(self, fas_codes):
