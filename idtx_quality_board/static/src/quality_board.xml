@@ -109,6 +109,10 @@
                 <div class="o_qb_chart_wrap">
                     <canvas t-ref="barChart"/>
                 </div>
+                <div class="o_qb_chart_hint">
+                    <i class="fa fa-mouse-pointer me-1"/>
+                    Haz clic en una barra para ver los registros correspondientes
+                </div>
             </div>
 
             <!-- ── Sección Recetas (Tintorería y Acabado) ───────── -->
@@ -217,6 +221,10 @@
                     <div class="o_qb_chart_wrap">
                         <canvas t-ref="barChartReceta"/>
                     </div>
+                    <div class="o_qb_chart_hint">
+                        <i class="fa fa-mouse-pointer me-1"/>
+                        Haz clic en una barra para ver los registros correspondientes
+                    </div>
                 </div>
 
             </t>
@@ -307,6 +315,10 @@
                     </div>
                     <div class="o_qb_chart_wrap">
                         <canvas t-ref="barChartMotivo"/>
+                    </div>
+                    <div class="o_qb_chart_hint">
+                        <i class="fa fa-mouse-pointer me-1"/>
+                        Haz clic en una barra para ver los registros correspondientes
                     </div>
                 </div>
 

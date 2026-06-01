@@ -71,6 +71,7 @@ export class QualityTonoBoard extends Component {
 
     setup() {
         this.orm = useService("orm");
+        this.action = useService("action");
         this.chartRef = useRef("barChart");
         this.chartRecetaRef = useRef("barChartReceta");
         this.chartMotivoRef = useRef("barChartMotivo");
@@ -100,6 +101,10 @@ export class QualityTonoBoard extends Component {
             motivoGrandTotal: 0,
             loading: true,
             error: null,
+            // Mapas de IDs para drill-down al hacer clic en barras
+            idsByResultadoMonth: {},
+            idsByRecetaMonth: {},
+            idsByMotivoMonth: {},
         });
 
         this._chart = null;
@@ -129,7 +134,7 @@ export class QualityTonoBoard extends Component {
 
     async _loadData() {
         try {
-            const fields = ["fecha_eval", "resultado"];
+            const fields = ["id", "fecha_eval", "resultado"];
             if (this.tono === "tacho" || this.tono === "acabado") {
                 fields.push("receta_tono", "receta");
             }
@@ -154,6 +159,10 @@ export class QualityTonoBoard extends Component {
         const raw = {};
         const rawReceta = {};
         const rawMotivo = {};
+        // Mapas de IDs para drill-down: { categoria: { "YYYY-MM": [id, ...] } }
+        const rawIds = {};
+        const rawRecetaIds = {};
+        const rawMotivoIds = {};
 
         for (const r of records) {
             if (!r.fecha_eval) continue;
@@ -167,19 +176,35 @@ export class QualityTonoBoard extends Component {
             if (!raw[key]) raw[key] = {};
             raw[key][res] = (raw[key][res] || 0) + 1;
 
+            // Acumular IDs por resultado y mes
+            if (!rawIds[res]) rawIds[res] = {};
+            if (!rawIds[res][key]) rawIds[res][key] = [];
+            rawIds[res][key].push(r.id);
+
             if (this.tono === "tacho" || this.tono === "acabado") {
                 if (!rawReceta[key]) rawReceta[key] = {};
                 const tipo = (r.receta_tono && r.receta && r.receta_tono === r.receta)
                     ? "receta_correcta"
                     : "cambio_receta";
                 rawReceta[key][tipo] = (rawReceta[key][tipo] || 0) + 1;
+
+                // Acumular IDs por tipo de receta y mes
+                if (!rawRecetaIds[tipo]) rawRecetaIds[tipo] = {};
+                if (!rawRecetaIds[tipo][key]) rawRecetaIds[tipo][key] = [];
+                rawRecetaIds[tipo][key].push(r.id);
             }
 
             if (this.tono === "acabado") {
                 if (!rawMotivo[key]) rawMotivo[key] = {};
-                if (r.motivo_tono)      rawMotivo[key].motivo_tono      = (rawMotivo[key].motivo_tono      || 0) + 1;
-                if (r.motivo_tacto)     rawMotivo[key].motivo_tacto     = (rawMotivo[key].motivo_tacto     || 0) + 1;
-                if (r.motivo_apariencia) rawMotivo[key].motivo_apariencia = (rawMotivo[key].motivo_apariencia || 0) + 1;
+                for (const mt of ["motivo_tono", "motivo_tacto", "motivo_apariencia"]) {
+                    if (r[mt]) {
+                        rawMotivo[key][mt] = (rawMotivo[key][mt] || 0) + 1;
+                        // Acumular IDs por motivo y mes
+                        if (!rawMotivoIds[mt]) rawMotivoIds[mt] = {};
+                        if (!rawMotivoIds[mt][key]) rawMotivoIds[mt][key] = [];
+                        rawMotivoIds[mt][key].push(r.id);
+                    }
+                }
             }
         }
 
@@ -210,6 +235,7 @@ export class QualityTonoBoard extends Component {
         this.state.matrix = matrixFinal;
         this.state.totals = totals;
         this.state.grandTotal = grandTotal;
+        this.state.idsByResultadoMonth = rawIds;
 
         // ── Matriz receta (tacho y acabado) ──
         if (this.tono === "tacho" || this.tono === "acabado") {
@@ -236,6 +262,7 @@ export class QualityTonoBoard extends Component {
             this.state.recetaMatrix = recetaMatrixFinal;
             this.state.recetaTotals = recetaTotals;
             this.state.recetaGrandTotal = recetaGrandTotal;
+            this.state.idsByRecetaMonth = rawRecetaIds;
         }
 
         // ── Matriz motivos (solo acabado) ──
@@ -263,6 +290,7 @@ export class QualityTonoBoard extends Component {
             this.state.motivoMatrix = motivoMatrixFinal;
             this.state.motivoTotals = motivoTotals;
             this.state.motivoGrandTotal = motivoGrandTotal;
+            this.state.idsByMotivoMonth = rawMotivoIds;
         }
     }
 
@@ -319,6 +347,53 @@ export class QualityTonoBoard extends Component {
         return Math.round((this.getMotivoRowTotal(tipo) / this.state.motivoGrandTotal) * 100);
     }
 
+    // ── Drill-down: navegar a la lista filtrada por IDs ──
+    _openDrillDown(name, ids) {
+        if (!ids || !ids.length) return;
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name,
+            res_model: "control.tono.eval.log",
+            view_mode: "list,form",
+            views: [[false, "list"], [false, "form"]],
+            domain: [["id", "in", ids]],
+            target: "current",
+        });
+    }
+
+    _onChartResultadoClick(event, elements) {
+        if (!elements || !elements.length) return;
+        const el = elements[0];
+        const resultado = this.resultados[el.datasetIndex];
+        const monthKey = this.state.months[el.index];
+        if (!resultado || !monthKey) return;
+        const ids = this.state.idsByResultadoMonth[resultado]?.[monthKey] || [];
+        const name = `${RESULTADO_CONFIG[resultado].label} — ${this.formatMonth(monthKey)}`;
+        this._openDrillDown(name, ids);
+    }
+
+    _onChartRecetaClick(event, elements) {
+        if (!elements || !elements.length) return;
+        const el = elements[0];
+        const tipo = this.recetaTipos[el.datasetIndex];
+        const monthKey = this.state.months[el.index];
+        if (!tipo || !monthKey) return;
+        const ids = this.state.idsByRecetaMonth[tipo]?.[monthKey] || [];
+        const name = `${RECETA_CONFIG[tipo].label} — ${this.formatMonth(monthKey)}`;
+        this._openDrillDown(name, ids);
+    }
+
+    _onChartMotivoClick(event, elements) {
+        if (!elements || !elements.length) return;
+        const el = elements[0];
+        const tipo = this.motivoTipos[el.datasetIndex];
+        const monthKey = this.state.months[el.index];
+        if (!tipo || !monthKey) return;
+        const ids = this.state.idsByMotivoMonth[tipo]?.[monthKey] || [];
+        const name = `${MOTIVO_CONFIG[tipo].label} — ${this.formatMonth(monthKey)}`;
+        this._openDrillDown(name, ids);
+    }
+
     // ── Charts ──
     _renderChart() {
         const canvas = this.chartRef.el;
@@ -342,13 +417,22 @@ export class QualityTonoBoard extends Component {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                onClick: (event, elements) => this._onChartResultadoClick(event, elements),
+                onHover: (event, elements) => {
+                    if (event.native && event.native.target) {
+                        event.native.target.style.cursor = elements.length ? "pointer" : "default";
+                    }
+                },
                 plugins: {
                     legend: {
                         position: "top",
                         labels: { boxWidth: 14, padding: 20, font: { size: 13, weight: "500" } },
                     },
                     tooltip: {
-                        callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}` },
+                        callbacks: {
+                            label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}`,
+                            afterLabel: (ctx) => ctx.parsed.y > 0 ? "  → Clic para ver registros" : "",
+                        },
                     },
                 },
                 scales: {
@@ -385,13 +469,22 @@ export class QualityTonoBoard extends Component {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                onClick: (event, elements) => this._onChartRecetaClick(event, elements),
+                onHover: (event, elements) => {
+                    if (event.native && event.native.target) {
+                        event.native.target.style.cursor = elements.length ? "pointer" : "default";
+                    }
+                },
                 plugins: {
                     legend: {
                         position: "top",
                         labels: { boxWidth: 14, padding: 20, font: { size: 13, weight: "500" } },
                     },
                     tooltip: {
-                        callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}` },
+                        callbacks: {
+                            label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}`,
+                            afterLabel: (ctx) => ctx.parsed.y > 0 ? "  → Clic para ver registros" : "",
+                        },
                     },
                 },
                 scales: {
@@ -405,6 +498,7 @@ export class QualityTonoBoard extends Component {
             },
         });
     }
+
     _renderMotivoChart() {
         const canvas = this.chartMotivoRef.el;
         if (!canvas) return;
@@ -427,13 +521,22 @@ export class QualityTonoBoard extends Component {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                onClick: (event, elements) => this._onChartMotivoClick(event, elements),
+                onHover: (event, elements) => {
+                    if (event.native && event.native.target) {
+                        event.native.target.style.cursor = elements.length ? "pointer" : "default";
+                    }
+                },
                 plugins: {
                     legend: {
                         position: "top",
                         labels: { boxWidth: 14, padding: 20, font: { size: 13, weight: "500" } },
                     },
                     tooltip: {
-                        callbacks: { label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}` },
+                        callbacks: {
+                            label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}`,
+                            afterLabel: (ctx) => ctx.parsed.y > 0 ? "  → Clic para ver registros" : "",
+                        },
                     },
                 },
                 scales: {

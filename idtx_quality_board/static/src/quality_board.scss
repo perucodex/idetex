@@ -272,3 +272,22 @@
         height: 100% !important;
     }
 }
+
+// ── Hint interactivo bajo cada gráfico ──────────────────────────────
+.o_qb_chart_hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 6px 16px 10px;
+    font-size: .72rem;
+    font-style: italic;
+    color: #adb5bd;
+    border-top: 1px dashed #eaecef;
+    background: #fafbfc;
+
+    .fa {
+        font-size: .68rem;
+        color: #ced4da;
+    }
+}
