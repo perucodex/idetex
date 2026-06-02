@@ -3,7 +3,7 @@ import logging
 
 import dbf
 
-from odoo import models
+from odoo import api, models
 
 _logger = logging.getLogger(__name__)
 
@@ -90,27 +90,39 @@ class ProductAnalysis(models.Model):
         external system failure can roll back the Odoo write.
         """
         super()._propagate_base_process()
-        try:
-            self._sync_ficha_ruta_final_dbf()
-        except Exception:
-            _logger.exception(
-                "product.analysis %s: fallo al refrescar ficha_ruta_final.dbf",
-                self.display_name,
-            )
-        try:
-            self._sync_sysproceso_dbf()
-        except Exception:
-            _logger.exception(
-                "product.analysis %s: fallo al refrescar sysproceso.dbf",
-                self.display_name,
-            )
-        try:
-            self._sync_texplus_routes()
-        except Exception:
-            _logger.exception(
-                "product.analysis %s: fallo al refrescar rutas TEXPLUS",
-                self.display_name,
-            )
+        self._sync_routes_external()
+
+    def _sync_routes_external(self):
+        """Empuja SOLO la ruta a los sistemas externos (SITPRO
+        ficha_ruta_final + sysproceso, y rutas TEXPLUS por empresa) sin tocar
+        nada en Odoo. Best-effort: ningun fallo externo bloquea la edicion.
+
+        Se llama tanto desde `_propagate_base_process` (cambio de ruta base)
+        como desde la edicion directa de `routing_ids` del analisis."""
+        if self.env.context.get('skip_route_propagation'):
+            return
+        for analysis in self:
+            try:
+                analysis._sync_ficha_ruta_final_dbf()
+            except Exception:
+                _logger.exception(
+                    "product.analysis %s: fallo al refrescar ficha_ruta_final.dbf",
+                    analysis.display_name,
+                )
+            try:
+                analysis._sync_sysproceso_dbf()
+            except Exception:
+                _logger.exception(
+                    "product.analysis %s: fallo al refrescar sysproceso.dbf",
+                    analysis.display_name,
+                )
+            try:
+                analysis._sync_texplus_routes()
+            except Exception:
+                _logger.exception(
+                    "product.analysis %s: fallo al refrescar rutas TEXPLUS",
+                    analysis.display_name,
+                )
 
     def _sync_sysproceso_dbf(self):
         """Mantiene sysproceso.dbf alineado con la ruta del analisis.
@@ -131,10 +143,14 @@ class ProductAnalysis(models.Model):
                 self.display_name,
             )
             return
+        # Excluir la fase de tejido crudo (fas_code 'TEJIDOC'): no forma parte
+        # de la ruta en SITPRO/TEXPLUS. Se filtra por fas_code, no por
+        # operation_type, porque otras operaciones de tejeduria si van.
         op_names = [
             r.operation_id.name
             for r in self.routing_ids.sorted(key=lambda r: (r.sequence, r.id))
             if r.operation_id and r.operation_id.name
+            and (r.operation_id.fas_code or '').strip().upper() != 'TEJIDOC'
         ]
         if not op_names:
             _logger.info(
@@ -307,3 +323,32 @@ class ProductAnalysis(models.Model):
                 self.display_name, self.product_code,
                 [f"{p}{self.product_code}" for p in _SITPRO_PREFIXES],
             )
+
+
+class AnalysisRoutingLine(models.Model):
+    _inherit = 'analysis.routing.line'
+
+    # Editar directamente la ruta del analisis (agregar/editar/quitar fase)
+    # empuja SOLO la ruta a TEXPLUS/SITPRO, sin tocar nada en Odoo ni marcar
+    # ninguna ficha como exportada. Guardado con `skip_route_propagation` para
+    # no duplicar cuando la reescritura viene de _propagate_base_process.
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        if not self.env.context.get('skip_route_propagation'):
+            records.mapped('analysis_id').sudo()._sync_routes_external()
+        return records
+
+    def write(self, vals):
+        analyses = self.mapped('analysis_id')
+        result = super().write(vals)
+        if not self.env.context.get('skip_route_propagation'):
+            (analyses | self.mapped('analysis_id')).sudo()._sync_routes_external()
+        return result
+
+    def unlink(self):
+        analyses = self.mapped('analysis_id')
+        result = super().unlink()
+        if not self.env.context.get('skip_route_propagation'):
+            analyses.sudo()._sync_routes_external()
+        return result

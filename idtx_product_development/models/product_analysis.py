@@ -170,7 +170,12 @@ class ProductAnalysis(models.Model):
             ]
         else:
             changed = []
-        res = super().write(vals)
+        # Si vamos a propagar por cambio de ruta base, evitamos que la
+        # reescritura de routing_ids (que el onchange incluye en el mismo save)
+        # dispare ademas el cascade por linea: _propagate_base_process ya
+        # refresca fichas, LdM y TEXPLUS una sola vez.
+        target = self.with_context(skip_route_propagation=True) if changed else self
+        res = super(ProductAnalysis, target).write(vals)
         for rec in changed:
             rec._propagate_base_process()
         return res
@@ -218,7 +223,11 @@ class ProductAnalysis(models.Model):
         base = self.mrp_base_process_id
         new_lines = list(base.process_ids.sorted(key=lambda p: p.sequence)) if base else []
 
-        ctx_self = self.with_context(skip_route_line_chatter=True)
+        # skip_route_line_chatter: evita chatter por linea (un solo resumen).
+        # skip_route_propagation: evita que la reescritura de routing_ids /
+        # route_line_ids re-dispare el sync externo a TEXPLUS por linea; el
+        # sync de la ruta corre una sola vez al final de la propagacion.
+        ctx_self = self.with_context(skip_route_line_chatter=True, skip_route_propagation=True)
 
         # 1. Analysis routing lines.
         ctx_self.routing_ids.unlink()
@@ -292,7 +301,41 @@ class ProductAnalysis(models.Model):
             # No weaving op in the new routing — clear the dangling reference
             # rather than letting it point to a deleted record.
             weaving_lines.write({'operation_id': False})
-        
+
+    def _apply_routing_to_sheets(self):
+        """Refresca las rutas (route_line_ids) de las fichas tecnicas y sus LdM
+        para reflejar la ruta ACTUAL del analisis (routing_ids).
+
+        A diferencia de `_propagate_base_process`, NO reconstruye routing_ids
+        desde la ruta base: copia la ruta vigente del analisis. Se usa cuando
+        se editan o se re-aplican las lineas de routing_ids del analisis
+        (incluido re-seleccionar la misma ruta base, donde el valor de
+        mrp_base_process_id no cambia pero las fases si). No marca nada como
+        exportado.
+        """
+        if self.env.context.get('skip_route_propagation'):
+            return
+        for analysis in self:
+            ordered = analysis.routing_ids.sorted(key=lambda r: r.sequence)
+            for sheet in analysis.technical_sheet_ids:
+                sheet_ctx = sheet.with_context(
+                    skip_route_line_chatter=True, skip_route_propagation=True)
+                sheet_ctx.route_line_ids.unlink()
+                if ordered:
+                    sheet_ctx.route_line_ids = [
+                        Command.create({
+                            'sequence': r.sequence,
+                            'operation_id': r.operation_id.id,
+                            'line_parameter_ids': [
+                                Command.create({'name': param.name})
+                                for param in r.operation_id.parameter_ids
+                            ],
+                        })
+                        for r in ordered if r.operation_id
+                    ]
+                if sheet.bom_id:
+                    analysis._refresh_bom_operations(sheet)
+
     def action_product(self):
         if not self.weaving_data_ids and not self.env.context.get('by_pass_error'):
             raise UserError(_('Please add at least one weaving data to generate the product!'))
@@ -623,3 +666,28 @@ class AnalysisRouteLine(models.Model):
             other_weaving = line.analysis_id.routing_ids.filtered(lambda l: l.id != line.id and l.operation_id and l.operation_id.operation_type == 'weaving')
             if other_weaving:
                 raise UserError(_('Only one weaving operation is allowed'))
+
+    # Editar las lineas de la ruta del analisis (agregar/editar/quitar fase, o
+    # re-aplicar la misma ruta base) refresca las fichas tecnicas y sus LdM.
+    # skip_route_propagation evita el doble cuando la reescritura proviene de
+    # _propagate_base_process.
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        if not self.env.context.get('skip_route_propagation'):
+            records.mapped('analysis_id')._apply_routing_to_sheets()
+        return records
+
+    def write(self, vals):
+        analyses = self.mapped('analysis_id')
+        result = super().write(vals)
+        if not self.env.context.get('skip_route_propagation'):
+            (analyses | self.mapped('analysis_id'))._apply_routing_to_sheets()
+        return result
+
+    def unlink(self):
+        analyses = self.mapped('analysis_id')
+        result = super().unlink()
+        if not self.env.context.get('skip_route_propagation'):
+            analyses._apply_routing_to_sheets()
+        return result

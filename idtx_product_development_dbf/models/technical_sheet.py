@@ -179,6 +179,23 @@ def _is_memo_field(field_type):
         return field_type.upper() == 'M'
     return field_type == ord('M')
 
+# Fases (fas_code MSSQL) que NUNCA deben escribirse en una ruta de TEXPLUS ni
+# de SITPRO. Se filtra por fas_code y NO por operation_type='weaving': hay
+# operaciones del centro de tejeduria (ABIERTO CRUDO, LIJADORA CRUDO,
+# ESMERILADO CRUDO, etc.) que SI van a TEXPLUS. Solo el tejido crudo se excluye.
+_TEXPLUS_EXCLUDED_FAS_CODES = {'TEJIDOC'}
+
+def _is_excluded_from_texplus(operation):
+    """True si la operacion (su fas_code) no debe entrar a rutas de
+    TEXPLUS/SITPRO. `operation` es una mrp.routing.workcenter.operation."""
+    return bool(operation) and _clean_text(operation.fas_code).upper() in _TEXPLUS_EXCLUDED_FAS_CODES
+
+def _route_lines_for_texplus(route_lines):
+    """Devuelve las lineas de ruta excluyendo las fases de tejido. `route_lines`
+    puede ser technical.route.line o analysis.routing.line; ambas exponen
+    `operation_id` (-> fas_code)."""
+    return route_lines.filtered(lambda rl: not _is_excluded_from_texplus(rl.operation_id))
+
 class TechnicalSheet(models.Model):
     _inherit = 'technical.sheet'
 
@@ -392,6 +409,74 @@ class TechnicalSheet(models.Model):
                 })
                 raise UserError(_('No se pudo exportar la ficha tecnica a DBF: %s') % message) from error
         return True
+
+    def _sync_route_to_texplus(self):
+        """Empuja SOLO la ruta de la ficha a TEXPLUS/SITPRO (cabeceras de ruta
+        PROCES/PROLIN, fases por articulo SERPAU y ficha_ruta_final de SITPRO),
+        SIN exportar lo demas (ARTICU, datos de proceso, fibras) y SIN marcar
+        la ficha como exportada ni cambiar nada en Odoo.
+
+        Se dispara al editar `route_line_ids`. Solo actua sobre fichas ya
+        exportadas (con `sitpro_sheet`): para una ficha nueva, el primer
+        'Export DBF' hace el alta completa; despues las ediciones de ruta se
+        sincronizan solas. Best-effort: ningun fallo externo bloquea la edicion.
+        """
+        if self.env.context.get('skip_route_propagation'):
+            return
+        for sheet in self:
+            ficha = _clean_text(sheet.sitpro_sheet)
+            if not ficha:
+                continue  # ficha nunca exportada: no crear ruta en TEXPLUS aun
+            analysis = sheet.analysis_id
+            if not analysis or not analysis.mrp_base_process_id:
+                continue
+            try:
+                route_code = sheet._get_texplus_route_code()
+                route_desc = sheet._get_texplus_route_description()
+                cdgart = sheet._get_cdgart()
+            except Exception:
+                _logger.exception(
+                    "technical.sheet %s: ruta TEXPLUS no sincronizada (datos incompletos)",
+                    sheet.display_name)
+                continue
+            # Cabeceras de ruta (PROCES/Rutas/Ruta_ENBT) + PROLIN.
+            try:
+                err = sheet._export_texplus_route_data(route_code, route_desc)
+                if err:
+                    _logger.warning("technical.sheet %s: cabeceras ruta TEXPLUS: %s",
+                                    sheet.display_name, err)
+            except Exception:
+                _logger.exception("technical.sheet %s: fallo cabeceras ruta TEXPLUS",
+                                  sheet.display_name)
+            # Fases del articulo (SERPAU).
+            try:
+                err = sheet._export_texplus_article_processes(cdgart, route_code)
+                if err:
+                    _logger.warning("technical.sheet %s: SERPAU TEXPLUS: %s",
+                                    sheet.display_name, err)
+            except Exception:
+                _logger.exception("technical.sheet %s: fallo SERPAU TEXPLUS",
+                                  sheet.display_name)
+            # Ruta SITPRO (ficha_ruta_final.dbf).
+            try:
+                base_name = analysis.mrp_base_process_id.name or ''
+                sheet._delete_by_ficha('ficha_ruta_final.dbf', ficha)
+                ordered = _route_lines_for_texplus(sheet.route_line_ids).sorted(
+                    key=lambda line: (line.sequence, line.id))
+                for index, route_line in enumerate(ordered, start=1):
+                    if not route_line.operation_id:
+                        continue
+                    sheet._append_record('ficha_ruta_final.dbf', {
+                        'FICHA': ficha,
+                        'IT': index * 100,
+                        'FASCOD': base_name,
+                        'FASDSC': '',
+                        'FASE': _phase_code(route_line.operation_id.name),
+                        'FASECOM': route_line.operation_id.name,
+                    })
+            except Exception:
+                _logger.exception("technical.sheet %s: fallo ficha_ruta_final SITPRO",
+                                  sheet.display_name)
 
     def _export_to_foxpro_dbf(self):
         self.ensure_one()
@@ -721,7 +806,7 @@ class TechnicalSheet(models.Model):
     def _get_texplus_route_description(self):
         operations = [
             _clean_text(line.operation_id.name)
-            for line in self.route_line_ids.sorted(key=lambda line: (line.sequence, line.id))
+            for line in _route_lines_for_texplus(self.route_line_ids).sorted(key=lambda line: (line.sequence, line.id))
             if _clean_text(line.operation_id.name)
         ]
         short_description = ', '.join(operations)[:40]
@@ -876,7 +961,7 @@ class TechnicalSheet(models.Model):
 
     def _replace_texplus_route_processes(self, cursor, route_code):
         cursor.execute('DELETE FROM dbo.Texplus_Ruta_Proceso WHERE Cod_Ruta = ?', route_code)
-        for index, route_line in enumerate(self.route_line_ids.sorted(key=lambda line: (line.sequence, line.id)), start=1):
+        for index, route_line in enumerate(_route_lines_for_texplus(self.route_line_ids).sorted(key=lambda line: (line.sequence, line.id)), start=1):
             cursor.execute(
                 """
                 INSERT INTO dbo.Texplus_Ruta_Proceso (Cod_Ruta, Orden, Proceso, Dsc_Proceso)
@@ -896,7 +981,7 @@ class TechnicalSheet(models.Model):
             article_code,
             route_code,
         )
-        for route_line in self.route_line_ids.sorted(key=lambda line: (line.sequence, line.id)):
+        for route_line in _route_lines_for_texplus(self.route_line_ids).sorted(key=lambda line: (line.sequence, line.id)):
             cursor.execute(
                 """
                 INSERT INTO dbo.SERPAU (EmprCod, CliCod, ArtCod, ProCod, FasCod)
@@ -1153,7 +1238,8 @@ class TechnicalSheet(models.Model):
         fichas = self._find_fichas_by_cdgart(cdgart)
         if not fichas:
             return []
-        ordered = route_lines.sorted(key=lambda r: (r.sequence, r.id))
+        # Excluir fases de tejido: no van en la ruta de SITPRO.
+        ordered = _route_lines_for_texplus(route_lines).sorted(key=lambda r: (r.sequence, r.id))
         for ficha in fichas:
             self._delete_by_ficha('ficha_ruta_final.dbf', ficha)
             for index, route_line in enumerate(ordered, start=1):
@@ -1205,7 +1291,9 @@ class TechnicalSheet(models.Model):
         # caught this; this branch is just a safety net).
         phases = []  # list of (fas_code, op_name)
         missing_machine = []
-        for rl in route_lines.sorted(key=lambda r: (r.sequence, r.id)):
+        # Excluir fases de tejido: TEXPLUS no maneja el tejido, esas fases
+        # nunca deben entrar a PROLIN/SERPAU.
+        for rl in _route_lines_for_texplus(route_lines).sorted(key=lambda r: (r.sequence, r.id)):
             if not rl.operation_id:
                 continue
             fas_code = _clean_text(rl.operation_id.fas_code)
@@ -1525,3 +1613,32 @@ class TechnicalSheet(models.Model):
         if python_type is str and field_name in PADR_FIELDS:
             return _dbf_padr(value, size)
         return _clean_text(value)
+
+
+class TechnicalRouteLine(models.Model):
+    _inherit = 'technical.route.line'
+
+    # Editar la ruta de una ficha (agregar/editar/quitar fase) empuja SOLO la
+    # ruta a TEXPLUS/SITPRO, sin marcar la ficha como exportada ni cambiar nada
+    # en Odoo. Guardado con `skip_route_propagation` para no duplicar cuando la
+    # reescritura viene de _propagate_base_process.
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        if not self.env.context.get('skip_route_propagation'):
+            records.mapped('technical_id').sudo()._sync_route_to_texplus()
+        return records
+
+    def write(self, vals):
+        sheets = self.mapped('technical_id')
+        result = super().write(vals)
+        if not self.env.context.get('skip_route_propagation'):
+            (sheets | self.mapped('technical_id')).sudo()._sync_route_to_texplus()
+        return result
+
+    def unlink(self):
+        sheets = self.mapped('technical_id')
+        result = super().unlink()
+        if not self.env.context.get('skip_route_propagation'):
+            sheets.sudo()._sync_route_to_texplus()
+        return result

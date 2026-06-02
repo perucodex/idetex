@@ -817,10 +817,32 @@ class MrpBaseProcess(models.Model):
 
     def write(self, vals):
         old_names = {record.id: (record.name or '').strip() for record in self}
-        result = super(MrpBaseProcess, self.with_context(skip_texplus_sync=True)).write(vals)
+        # `skip_route_propagation` evita que las lineas (creadas/editadas via los
+        # comandos de process_ids) propaguen una por una; el padre propaga una
+        # sola vez despues del super().
+        result = super(
+            MrpBaseProcess,
+            self.with_context(skip_texplus_sync=True, skip_route_propagation=True),
+        ).write(vals)
         if not self.env.context.get('skip_texplus_sync'):
             self.sudo()._sync_to_texplus(old_names=old_names)
+        if 'process_ids' in vals:
+            self._propagate_route_to_analyses()
         return result
+
+    def _propagate_route_to_analyses(self):
+        """Propaga la ruta a los analisis que la usan y, en cascada, a sus
+        fichas tecnicas (route_line_ids) y LdM (mrp.bom operations).
+
+        Se dispara cuando cambian las lineas de la ruta base (agregar/editar/
+        quitar una fase), no solo al reasignar la ruta a un analisis. Reusa
+        `product.analysis._propagate_base_process`, que reescribe routing_ids,
+        las rutas de cada ficha tecnica y refresca el BoM."""
+        if self.env.context.get('skip_route_propagation'):
+            return
+        for base in self:
+            for analysis in base.product_analysis_ids:
+                analysis._propagate_base_process()
 
     def unlink(self):
         # Excluir placeholder de la propagacion a TEXPLUS (no existe alla).
@@ -1227,7 +1249,8 @@ class MrpBaseProcess(models.Model):
         # TEXPLUS processes can share the same exact phase list (legitimately,
         # for naming convenience). Skipping the local composition check lets
         # the cron import them faithfully without exploding.
-        cron_ctx = {'skip_texplus_sync': True, 'skip_composition_check': True}
+        cron_ctx = {'skip_texplus_sync': True, 'skip_composition_check': True,
+                    'skip_route_propagation': True}
 
         created_processes = 0
         updated_processes = 0
@@ -1304,15 +1327,21 @@ class MrpBaseProcessLine(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         records = super(MrpBaseProcessLine, self.with_context(skip_texplus_sync=True)).create(vals_list)
+        bases = records.mapped('mrp_base_process_id').sudo()
         if not self.env.context.get('skip_texplus_sync'):
-            records.mapped('mrp_base_process_id').sudo()._sync_to_texplus()
+            bases._sync_to_texplus()
+        if not self.env.context.get('skip_route_propagation'):
+            bases._propagate_route_to_analyses()
         return records
 
     def write(self, vals):
         base_processes = self.mapped('mrp_base_process_id').sudo()
         result = super(MrpBaseProcessLine, self.with_context(skip_texplus_sync=True)).write(vals)
+        bases = base_processes | self.mapped('mrp_base_process_id').sudo()
         if not self.env.context.get('skip_texplus_sync'):
-            (base_processes | self.mapped('mrp_base_process_id').sudo())._sync_to_texplus()
+            bases._sync_to_texplus()
+        if not self.env.context.get('skip_route_propagation'):
+            bases._propagate_route_to_analyses()
         return result
 
     def unlink(self):
@@ -1320,4 +1349,6 @@ class MrpBaseProcessLine(models.Model):
         result = super(MrpBaseProcessLine, self.with_context(skip_texplus_sync=True)).unlink()
         if not self.env.context.get('skip_texplus_sync'):
             base_processes._sync_to_texplus()
+        if not self.env.context.get('skip_route_propagation'):
+            base_processes._propagate_route_to_analyses()
         return result
