@@ -9,4 +9,14 @@
         <field name="interval_type">days</field>
         <field name="nextcall" eval="(DateTime.now() + timedelta(minutes=5)).strftime('%Y-%m-%d %H:%M:%S')"/>
     </record>
+
+    <record id="ir_cron_sync_spinning_from_sitpro" model="ir.cron">
+        <field name="name">SITPRO: Sincronizar datos de hilado de productos</field>
+        <field name="model_id" ref="product.model_product_template"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_sync_spinning_from_sitpro()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="nextcall" eval="(DateTime.now() + timedelta(minutes=10)).strftime('%Y-%m-%d %H:%M:%S')"/>
+    </record>
 </odoo>

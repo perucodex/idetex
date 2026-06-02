@@ -15,6 +15,22 @@
                         <field name="technical_sheet_count" widget="statinfo" string="Technical Sheets"/>
                 </button>
             </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page name="spinning_data" string="Datos de Hilado" invisible="not is_thread">
+                    <field name="is_thread" invisible="1"/>
+                    <group>
+                        <group string="Hilado (SITPRO)">
+                            <field name="spinning_process_code"/>
+                            <field name="spinning_process"/>
+                            <field name="spinning_line"/>
+                        </group>
+                    </group>
+                    <p class="text-muted">
+                        Estos datos se sincronizan automáticamente desde SITPRO (tabla
+                        codigohilocrud) según el código del producto.
+                    </p>
+                </page>
+            </xpath>
         </field>
     </record>
 

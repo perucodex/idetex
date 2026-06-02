@@ -8,6 +8,13 @@ class ProductTemplate(models.Model):
     is_thread = fields.Boolean('is_thread', compute='_compute_product_category', store=True)
     analysis_id = fields.Many2one('product.analysis', string='Analysis')
     technical_sheet_count = fields.Integer(string="Technical Sheet Count", compute='_get_technical_sheets')
+    # Datos de hilado (Ficha Tecnica de Tejido). Se sincronizan desde SITPRO
+    # (codigohilocrud -> hil_proceso / hil_linea) por el cron del modulo
+    # idtx_product_development_dbf, segun el default_code del producto. Solo
+    # aplican a productos is_thread.
+    spinning_process_code = fields.Char('Cod. Proceso', help="Codigo de proceso de hilado (ej. 'P'), columna 'Cod P' de la ficha.")
+    spinning_process = fields.Char('Proceso Hilado', help="Nombre del proceso de hilado (ej. 'PEINADO'), desde SITPRO.")
+    spinning_line = fields.Char('Línea de Hilado', help="Linea de hilado (ej. 'LINEA DE ANILLOS'), desde SITPRO.")
 
     @api.onchange('categ_id')
     def _onchange_categ_id(self):

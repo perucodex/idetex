@@ -971,6 +971,58 @@ class TechnicalSheet(models.Model):
             if conn:
                 conn.close()
 
+    def _get_yarn_process_data_bulk(self, yarn_codes):
+        """Igual que `_get_yarn_process_data` pero para muchos codigos a la vez.
+
+        Devuelve {codigo: {'codpro','proceso','linea'}} para los codigos que
+        existan en SITPRO (codigohilocrud -> hil_proceso / hil_linea). Los
+        codigos sin coincidencia simplemente no aparecen en el dict. Lo usa el
+        cron de sincronizacion de product.template."""
+        codes = list({_clean_text(c) for c in yarn_codes if _clean_text(c)})
+        out = {}
+        if not codes:
+            return out
+        conn = None
+        cursor = None
+        try:
+            conn = self._get_sql_connection()
+            cursor = conn.cursor()
+            chunk = 900
+            for i in range(0, len(codes), chunk):
+                batch = codes[i:i + chunk]
+                placeholders = ', '.join('?' for _c in batch)
+                cursor.execute(
+                    f"""
+                    SELECT c.codigo AS codigo,
+                           c.proceso AS codpro,
+                           hp.proceso AS proceso,
+                           hl.linea AS linea
+                    FROM codigohilocrud c
+                    INNER JOIN hil_proceso hp ON c.proceso = hp.cdgproceso
+                    INNER JOIN hil_linea hl ON c.linea = hl.cdglinea
+                    WHERE c.codigo IN ({placeholders})
+                    """,
+                    *batch,
+                )
+                for row in cursor.fetchall():
+                    out[_clean_text(row.codigo)] = {
+                        'codpro': _clean_text(row.codpro),
+                        'proceso': _clean_text(row.proceso),
+                        'linea': _clean_text(row.linea),
+                    }
+        except UserError:
+            raise
+        except Exception as error:
+            raise UserError(
+                _('No se pudo obtener proceso y linea de hilos desde SQL Server: %s') % error
+            ) from error
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+        return out
+
     def _insert_sitpro_hojacorr(self):
         """Append a new correlative row to the hojacorr.dbf table.
 

@@ -547,6 +547,10 @@ class AnalysisFiber(models.Model):
     product_template_id = fields.Many2one('product.template', string='Thread', domain=lambda self: [('categ_id', 'in', self.env.company.thread_category_ids.ids)], ondelete='restrict')
     ligament_id = fields.Many2one('ligament.type', string='Ligament')
     percentage = fields.Float('Percentage', compute='_compute_percentage')
+    # N° Cabo de la Ficha Tecnica de Tejido (por receta). Los datos de hilado
+    # (Cod P / Proceso / Linea) viven ahora en el producto hilo
+    # (product.template) y se sincronizan desde SITPRO por cron.
+    cabo_number = fields.Integer('N° Cabo')
     line_ids = fields.One2many('analysis.fiber.line', 'analysis_fiber_id', string='Lines')
 
     @api.depends('line_ids')

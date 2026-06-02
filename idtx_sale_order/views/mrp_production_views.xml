@@ -110,7 +110,7 @@
             </field>
         </record>
 
-        <record id="mrp_production_tree_view_sale_readonly" model="ir.ui.view">
+        <!-- <record id="mrp_production_tree_view_sale_readonly" model="ir.ui.view">
             <field name="name">mrp.production.tree.sale.readonly</field>
             <field name="model">mrp.production</field>
             <field name="inherit_id" ref="idtx_sale_order.mrp_production_sale_order_tree_view"/>
@@ -121,7 +121,7 @@
                     <attribute name="edit">0</attribute>
                 </xpath>
             </field>
-        </record>
+        </record> -->
 
         <record id="mrp_production_workorder_tree_view_sale_readonly" model="ir.ui.view">
             <field name="name">mrp.production.work.order.list.sale.readonly</field>

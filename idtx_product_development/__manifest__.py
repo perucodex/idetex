@@ -42,6 +42,7 @@ y ficha técnica
         'security/ir.model.access.csv',
         'report/report_product_analysis.xml',
         'report/report_technical_sheet.xml',
+        'report/report_technical_sheet_weaving.xml',
         'report/report_mrp_base_process.xml',
         'report/ir_actions_report.xml',
         'views/configurate_svg_example.xml',

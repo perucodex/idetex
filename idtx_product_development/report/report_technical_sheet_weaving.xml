@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+  <!-- ========================================================= -->
+  <!-- Ficha Tecnica de Tejido (formato escaneado SITPRO)        -->
+  <!-- ========================================================= -->
+  <template id="report_technical_sheet_weaving_document">
+    <t t-call="web.basic_layout">
+      <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)"/>
+      <!-- Linea de weaving ligada a esta ficha (de ahi salen las fibras/hilos) -->
+      <t t-set="weaving" t-value="doc.analysis_id.weaving_data_ids.filtered(lambda w: w.technical_sheet_id == doc)[:1]"/>
+      <t t-if="not weaving" t-set="weaving" t-value="doc.analysis_id.weaving_data_ids[:1]"/>
+      <t t-set="fibers" t-value="weaving.fiber_ids.sorted(key=lambda f: (f.sequence, f.id))"/>
+      <t t-set="weave_labels" t-value="{'open': 'ABIERTO', 'tubu': 'TUBULAR', 'rect': 'RECTILÍNEO', 'othe': 'OTRO'}"/>
+
+      <div class="page" style="font-family: Arial, sans-serif; color: #000; font-size: 12px;">
+        <style>
+          /* Solo .ftt lleva bordes (cuadros reales). La maquetacion usa divs. */
+          .ftt { border-collapse: collapse; width: 100%; }
+          .ftt td, .ftt th { border: 1px solid #000; padding: 3px 5px; vertical-align: middle; font-size: 12px; }
+          .ftt-title { font-size: 18px; font-weight: bold; text-align: center; line-height: 1.2; }
+          .ftt-sec { font-weight: bold; font-size: 12px; padding: 3px 0; }
+          .ftt-hd th { font-weight: bold; }
+          .ftt-lbl { font-weight: bold; }
+          .sample-lbl { color: #9a9a9a; font-size: 10px; }
+          .clearfix::after { content: ""; display: block; clear: both; }
+        </style>
+
+        <!-- ============ Cabecera (sin recuadro) ============ -->
+        <div class="clearfix" style="margin-bottom:8px;">
+          <!-- Caja Estilo / Intensidad: flotada a la derecha -->
+          <table class="ftt" style="width:32%; float:right;">
+            <tr><td class="text-center ftt-lbl">Estilo / Intensidad</td></tr>
+            <tr><td class="text-center" style="height:24px; font-weight:bold;"><t t-esc="doc.stylo"/></td></tr>
+          </table>
+          <div class="ftt-title">Ficha Tecnica de Tejido</div>
+          <div class="ftt-title" style="font-size:23px;"><t t-esc="doc.name"/></div>
+        </div>
+
+        <!-- ============ Nombre / Tela (sin recuadro) ============ -->
+        <div style="margin-bottom:6px;">
+          <div style="margin-bottom:2px;">
+            <span class="ftt-lbl" style="display:inline-block; width:140px;">Nombre o Razón Social</span>
+            <span><t t-esc="doc.partner_id.name"/></span>
+          </div>
+          <div>
+            <span class="ftt-lbl" style="display:inline-block; width:140px; vertical-align:top;">Tela</span>
+            <span style="display:inline-block; vertical-align:top;">
+              <span><t t-esc="doc.product_id.default_code"/></span><br/>
+              <span><t t-esc="doc.description or doc.product_id.name"/></span>
+            </span>
+          </div>
+        </div>
+
+        <!-- ============ Tabla de articulos (hilos) ============ -->
+        <table class="ftt" style="margin-bottom:10px;">
+          <thead>
+            <tr class="text-center">
+              <th style="width:4%; border:0; font-weight:bold; padding-bottom:3px;">Id</th>
+              <th style="width:7%; border:0; font-weight:bold; padding-bottom:3px;">N° Cabos</th>
+              <th style="width:11%; border:0; font-weight:bold; padding-bottom:3px;">Codigo</th>
+              <th style="width:27%; border:0; font-weight:bold; padding-bottom:3px;">Hilado</th>
+              <th style="width:6%; border:0; font-weight:bold; padding-bottom:3px;">Cod P</th>
+              <th style="width:11%; border:0; font-weight:bold; padding-bottom:3px;">Proceso</th>
+              <th style="width:13%; border:0; font-weight:bold; padding-bottom:3px;">Linea</th>
+              <th style="width:6%; border:0; font-weight:bold; padding-bottom:3px;">%</th>
+              <th style="width:9%; border:0; font-weight:bold; padding-bottom:3px;">Ligamento</th>
+              <th style="width:6%; border:0; font-weight:bold; padding-bottom:3px;">L. M</th>
+            </tr>
+          </thead>
+          <tbody>
+            <t t-foreach="fibers" t-as="f">
+              <tr style="height:20px;">
+                <td class="text-center"><t t-esc="f_index + 1"/></td>
+                <td class="text-center"><t t-esc="f.cabo_number or ''"/></td>
+                <td><t t-esc="f.product_template_id.default_code"/></td>
+                <td><t t-esc="f.product_template_id.name"/></td>
+                <td class="text-center"><t t-esc="f.product_template_id.spinning_process_code"/></td>
+                <td><t t-esc="f.product_template_id.spinning_process"/></td>
+                <td><t t-esc="f.product_template_id.spinning_line"/></td>
+                <td class="text-end"><t t-esc="'{:.2f}'.format(f.percentage * 100)"/></td>
+                <td><t t-esc="f.ligament_id.name"/></td>
+                <td class="text-end"><t t-esc="'{:.2f}'.format(f.length)"/></td>
+              </tr>
+            </t>
+          </tbody>
+        </table>
+
+        <!-- ============ Datos de Crudo / Acabados / Maquina ============ -->
+        <div class="clearfix">
+          <!-- Datos de Crudo -->
+          <div style="float:left; width:22%; padding-right:8px;">
+            <div class="ftt-sec">Datos de Crudo</div>
+            <table class="ftt text-center">
+              <tr class="ftt-hd"><th>Ancho</th><th>Densidad</th></tr>
+              <tr style="height:20px;">
+                <td><t t-esc="'{:.2f}'.format(doc.raw_width)"/></td>
+                <td><t t-esc="'{:.2f}'.format(doc.raw_density)"/></td>
+              </tr>
+            </table>
+          </div>
+          <!-- Datos de Acabados -->
+          <div style="float:left; width:30%; padding-right:8px;">
+            <div class="ftt-sec">Datos de Acabados</div>
+            <table class="ftt text-center">
+              <tr class="ftt-hd"><th>Ancho</th><th>Densidad</th><th>Rendimiento</th></tr>
+              <tr style="height:20px;">
+                <td><t t-esc="'{:.2f}'.format(doc.finish_width)"/></td>
+                <td><t t-esc="'{:.2f}'.format(doc.finish_density)"/></td>
+                <td><t t-esc="'{:.2f}'.format(doc.finish_yield)"/></td>
+              </tr>
+            </table>
+          </div>
+          <!-- Datos de Maquina -->
+          <div style="float:left; width:48%;">
+            <div class="ftt-sec">Datos de Maquina</div>
+            <table class="ftt text-center">
+              <tr class="ftt-hd">
+                <th>Maquina</th><th>GG</th><th>N° Agujas</th><th>Diametro</th><th>N° Alim.</th><th>Tip Tej</th><th>N° Máq</th>
+              </tr>
+              <tr style="height:20px;">
+                <td/>
+                <td><t t-esc="doc.gauge_id.code"/></td>
+                <td><t t-esc="doc.analysis_id.needles or ''"/></td>
+                <td><t t-esc="doc.analysis_id.diameter or ''"/></td>
+                <td><t t-esc="doc.analysis_id.feeders or ''"/></td>
+                <td><t t-esc="weave_labels.get(doc.weave_type, '')"/></td>
+                <td/>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- ============ Observaciones + cuadro para muestra de tela ============ -->
+        <div class="clearfix" style="margin-top:10px;">
+          <div style="float:left; width:58%; padding-right:8px;">
+            <div class="ftt-sec">Observaciones</div>
+            <table class="ftt">
+              <tr>
+                <td style="height:250px; vertical-align:top; white-space:pre-wrap; font-weight:bold;"><t t-esc="doc.notes"/></td>
+              </tr>
+            </table>
+          </div>
+          <div style="float:left; width:42%;">
+            <div class="ftt-sec">&#160;</div>
+            <!-- Cuadro para pegar la muestra de tela -->
+            <table class="ftt">
+              <tr>
+                <td style="height:250px; vertical-align:top; text-align:center;">
+                  <span class="sample-lbl">Muestra de Tela</span>
+                </td>
+              </tr>
+            </table>
+            <!-- Firma debajo del cuadro de muestra -->
+            <div style="text-align:right; margin-top:8px;">
+              <span class="ftt-lbl"><t t-esc="doc.user_id.name"/></span>
+              <span style="margin-left:18px;"><t t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %I:%M:%S %p')"/></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </t>
+  </template>
+
+  <template id="report_technical_sheet_weaving">
+    <t t-call="web.html_container">
+      <t t-foreach="docs" t-as="doc">
+        <t t-call="idtx_product_development.report_technical_sheet_weaving_document" t-lang="doc.partner_id.lang"/>
+      </t>
+    </t>
+  </template>
+
+</odoo>

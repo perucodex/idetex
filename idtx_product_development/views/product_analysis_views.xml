@@ -209,6 +209,7 @@
                                         <field name="weight"/>
                                         <field name="thread_title"/>
                                         <field name="product_template_id"/>
+                                        <field name="cabo_number"/>
                                         <field name="ligament_id"/>
                                         <field name="percentage" widget="percentage"/>
                                     </list>
@@ -249,6 +250,7 @@
                                 <field name="thread_title"/>
                                 <field name="product_template_id" options="{'no_create': True, 'no_open': True}" required="1"/>
                                 <field name="ligament_id"/>
+                                <field name="cabo_number"/>
                             </group>
                         </group>
                         <notebook>
@@ -276,6 +278,7 @@
                     <field name="weight"/>
                     <field name="thread_title"/>
                     <field name="product_template_id"/>
+                    <field name="cabo_number"/>
                     <field name="ligament_id"/>
                     <field name="percentage" widget="percentage"/>
                 </list>
