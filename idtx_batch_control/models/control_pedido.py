@@ -388,6 +388,7 @@ class ControlPedido(models.Model):
                        CASE WHEN bf_last.BarFasDTF > '1753-01-01' AND bf_next.FasCod IS NOT NULL
                             THEN sp_next.area ELSE sp.area END AS Area,
                        bf_last.BarFasDTI AS FechaInicio, bf_last.BarFasDTF AS FechaFinal,
+                       bf_last.BarOrdLin AS UltOrden,
                        bf_next.FasCod AS Proceso_Siguiente
                 FROM PedidoHDR h JOIN Kilos k ON k.BarCod = h.BarCod AND k.BarCodReo = h.BarCodReo AND k.Kilos > 0 AND k.Rollos > 0
                 OUTER APPLY (
@@ -479,6 +480,30 @@ class ControlPedido(models.Model):
                 if op.workcenter_id:
                     area_by_fas[(op.fas_code or '').strip().upper()] = op.workcenter_id.name
         Line = self.env["control.pedido.line"].with_context(_area_by_fas=area_by_fas)
+        # Particiones (BarCodPar) de una misma partida colapsan en la misma
+        # linea Odoo (route, batch, codpro). Representamos la partida por la
+        # particion MENOS avanzada (menor UltOrden = ultima fase iniciada mas
+        # atras): la partida no esta lista hasta que TODAS sus particiones
+        # terminen. Sin esto ganaba la particion grabada de ultimo (no
+        # determinista), y una sub-partida adelantada ocultaba el atraso real.
+        def _line_key_of(dr):
+            return (
+                _safe_str(dr.get("HojaDeRuta")),
+                _safe_str(dr.get("Partida")) or '',
+                _safe_str(dr.get("BarSer"))[1:] or '',
+            )
+        def _progress_of(dr):
+            v = dr.get("UltOrden")
+            return int(v) if v is not None else 0
+        _rep_by_key = {}
+        for _dr in rows:
+            _k = _line_key_of(_dr)
+            _cur = _rep_by_key.get(_k)
+            # Empate: gana el primero (BarCodPar en blanco ordena antes que 'A',
+            # i.e. la particion principal).
+            if _cur is None or _progress_of(_dr) < _progress_of(_cur):
+                _rep_by_key[_k] = _dr
+        rows = list(_rep_by_key.values())
         for dr in rows:
             num = _safe_str(dr.get("Pedido"))
             pedido = existing_map.get(num)
@@ -826,6 +851,7 @@ class ControlPedido(models.Model):
                        CASE WHEN bf_last.BarFasDTF > '1753-01-01' AND bf_next.FasCod IS NOT NULL
                             THEN sp_next.area ELSE sp.area END AS Area,
                        bf_last.BarFasDTI AS FechaInicio, bf_last.BarFasDTF AS FechaFinal,
+                       bf_last.BarOrdLin AS UltOrden,
                        bf_next.FasCod AS Proceso_Siguiente
                 FROM PedidoHDR h JOIN Kilos k ON k.BarCod = h.BarCod AND k.BarCodReo = h.BarCodReo AND k.Kilos > 0 AND k.Rollos > 0
                 OUTER APPLY (
