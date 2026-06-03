@@ -12,7 +12,10 @@ class ProductAnalysis(models.Model):
     name = fields.Char('Name', required=True, copy=False, readonly=False, default=lambda self: _('New'))
     analysis_date = fields.Date('Analysis Date', required=True, default=lambda self: fields.Date.context_today(self))
     partner_id = fields.Many2one('res.partner', string='Customer', ondelete='restrict')
-    product_description = fields.Char('Product Description')
+    product_description = fields.Char(
+        'Product Description', size=26,
+        help="Máximo 26 caracteres: es el largo de ArtDsc en TEXPLUS "
+             "(char(26)). Más allá de 26 se truncaría al exportar.")
     ficha = fields.Char('Ficha')
     codpro = fields.Char('CodigoProductoBD')
     gauge_id = fields.Many2one('product.gauge', string='Gauge')
