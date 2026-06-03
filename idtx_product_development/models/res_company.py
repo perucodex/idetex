@@ -3,8 +3,16 @@ from odoo import fields, models, api
 class ResCompany(models.Model):
     _inherit = 'res.company'
 
-    weaving_category_ids = fields.One2many('product.category', 'weaving_company_categ_id', string='Weaving Categories')
-    thread_category_ids = fields.One2many('product.category', 'thread_company_categ_id', string='Thread Categories')
+    # Many2many: una misma categoria puede ser de tejido/hilado en VARIAS
+    # companias (p. ej. idetex y fullpima a la vez). Antes eran One2many
+    # (Many2one en product.category), por eso una categoria solo podia estar
+    # en una compania. La migracion copia el dato anterior.
+    weaving_category_ids = fields.Many2many(
+        'product.category', relation='company_weaving_category_rel',
+        column1='company_id', column2='category_id', string='Weaving Categories')
+    thread_category_ids = fields.Many2many(
+        'product.category', relation='company_thread_category_rel',
+        column1='company_id', column2='category_id', string='Thread Categories')
 
     def write(self, vals):
         res = super().write(vals)

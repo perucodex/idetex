@@ -24,18 +24,32 @@
             <field name="group_ids" eval="[Command.link(ref('group_module_laboratory_manager'))]"/>
         </record>
         
-        <!-- Reglas para multi-company -->
+    </data>
+
+    <!-- Reglas multi-company: LECTURA GLOBAL (sin restriccion de compania) y
+         ESCRITURA solo de la compania duena. perm_read=False => no restringe
+         lecturas. Fuera del bloque noupdate para que el upgrade re-aplique. -->
+    <data>
         <record id="lab_dev_company_rule" model="ir.rule">
-            <field name="name">LabDev multi-company</field>
+            <field name="name">LabDev: escritura por compania (lectura global)</field>
             <field name="model_id" ref="model_lab_dev"/>
-            <field name="domain_force">[('company_id', 'parent_of', company_ids)]</field>
+            <field name="global" eval="True"/>
+            <field name="perm_read" eval="False"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
         </record>
 
         <record id="color_recipe_company_rule" model="ir.rule">
-            <field name="name">Color Recipe multi-company</field>
+            <field name="name">Color Recipe: escritura por compania (lectura global)</field>
             <field name="model_id" ref="model_color_recipe"/>
-            <field name="domain_force">[('company_id', 'parent_of', company_ids)]</field>
+            <field name="global" eval="True"/>
+            <field name="perm_read" eval="False"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
         </record>
-
     </data>
 </odoo>

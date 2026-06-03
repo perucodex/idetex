@@ -28,18 +28,55 @@
             <field name="group_ids" eval="[Command.link(ref('group_module_product_development_manager'))]"/>
         </record>
 
-        <!-- Reglas para multi-company -->
-        <!-- <record id="product_analysis_company_rule" model="ir.rule">
-            <field name="name">Product Analysis multi-company</field>
+    </data>
+
+    <!-- Reglas multi-company: LECTURA GLOBAL (sin restriccion de compania) y
+         ESCRITURA solo de la compania duena. Asi los usuarios de Ventas
+         (idetex) pueden leer los datos de produccion (fullpima) en las
+         cotizaciones, pero solo la compania duena puede editarlos.
+         perm_read=False => la regla no restringe lecturas (quedan abiertas).
+         Fuera del bloque noupdate a proposito: el upgrade del modulo re-aplica
+         estos valores aunque la regla ya exista. -->
+    <data>
+        <record id="product_analysis_company_rule" model="ir.rule">
+            <field name="name">Product Analysis: escritura por compania (lectura global)</field>
             <field name="model_id" ref="model_product_analysis"/>
-            <field name="domain_force">[('company_id', 'parent_of', company_ids)]</field>
+            <field name="global" eval="True"/>
+            <field name="perm_read" eval="False"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
         </record>
 
         <record id="technical_sheet_company_rule" model="ir.rule">
-            <field name="name">Technical Sheet multi-company</field>
+            <field name="name">Technical Sheet: escritura por compania (lectura global)</field>
             <field name="model_id" ref="model_technical_sheet"/>
-            <field name="domain_force">[('company_id', 'parent_of', company_ids)]</field>
-        </record> -->
+            <field name="global" eval="True"/>
+            <field name="perm_read" eval="False"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
 
+        <!-- Modelos estandar de mrp: quitamos la restriccion de compania SOLO
+             en lectura (perm_read=False), conservando su dominio para
+             escritura/creacion/borrado. -->
+        <record id="mrp.mrp_bom_rule" model="ir.rule">
+            <field name="perm_read" eval="False"/>
+        </record>
+        <record id="mrp.mrp_bom_line_rule" model="ir.rule">
+            <field name="perm_read" eval="False"/>
+        </record>
+        <record id="mrp.mrp_workcenter_rule" model="ir.rule">
+            <field name="perm_read" eval="False"/>
+        </record>
+        <record id="mrp.mrp_routing_workcenter_rule" model="ir.rule">
+            <field name="perm_read" eval="False"/>
+        </record>
+        <record id="mrp.mrp_bom_byproduct_rule" model="ir.rule">
+            <field name="perm_read" eval="False"/>
+        </record>
     </data>
 </odoo>

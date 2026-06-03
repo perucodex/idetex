@@ -69,17 +69,20 @@ class SaleOrderLine(models.Model):
     )
     def _compute_has_weaving_operation(self):
         for line in self:
-            if not line.bom_id:
+            # Lectura con sudo: referencia operaciones/rutas de produccion que
+            # el comercial puede no tener permiso de leer (grupo Fabricacion).
+            sline = line.sudo()
+            if not sline.bom_id:
                 line.has_weaving_operation = any(
                     op.operation_type == "weaving"
-                    for op in line.product_template_id.analysis_id.routing_ids.mapped('operation_id')
-                ) if line.product_template_id else False
-            elif line.order_id.is_quote:
-                line.has_weaving_operation = any(op.operation_id.operation_type == "weaving" for op in line.operation_ids)
+                    for op in sline.product_template_id.analysis_id.routing_ids.mapped('operation_id')
+                ) if sline.product_template_id else False
+            elif sline.order_id.is_quote:
+                line.has_weaving_operation = any(op.operation_id.operation_type == "weaving" for op in sline.operation_ids)
             else:
                 line.has_weaving_operation = any(
                     op.operation_id.operation_type == "weaving"
-                    for op in line.bom_id.operation_ids
+                    for op in sline.bom_id.operation_ids
                 )
     
     @api.onchange('printing_design_id')
@@ -125,28 +128,35 @@ class SaleOrderLine(models.Model):
     )
     def _compute_is_lab_color(self):
         for line in self:
-            line.is_lab_color = any(op.operation_id.gives_color for op in line.bom_id.operation_ids) if line.bom_id else False
+            sline = line.sudo()
+            line.is_lab_color = any(op.operation_id.gives_color for op in sline.bom_id.operation_ids) if sline.bom_id else False
 
     @api.depends('bom_id')
     def _compute_available_operations(self):
         for record in self:
+            srecord = record.sudo()
             operations = self.env['mrp.routing.workcenter']
-            if record.bom_id:
-                operations = record.bom_id.operation_ids.filtered(lambda o: o.operation_id.unit_price > 0 or o.operation_id.type_prices == 'col' and sum(o.operation_id.product_color_price_ids.mapped('unit_price')) > 0 or o.operation_id.type_prices == 'col' and o.operation_id.per_title and sum(o.operation_id.product_color_price_ids.color_title_price_ids.mapped('unit_price')) > 0 or o.operation_id.operation_type == 'weaving').ids
+            if srecord.bom_id:
+                operations = srecord.bom_id.operation_ids.filtered(lambda o: o.operation_id.unit_price > 0 or o.operation_id.type_prices == 'col' and sum(o.operation_id.product_color_price_ids.mapped('unit_price')) > 0 or o.operation_id.type_prices == 'col' and o.operation_id.per_title and sum(o.operation_id.product_color_price_ids.color_title_price_ids.mapped('unit_price')) > 0 or o.operation_id.operation_type == 'weaving').ids
             record.available_operation_ids = operations
     
     @api.depends('bom_id')
     def _compute_is_printing(self):
         for rec in self:
-            rec.is_printing = bool(any(p.operation_type == 'printing' for p in rec.bom_id.operation_ids.mapped('operation_id')))
+            srec = rec.sudo()
+            rec.is_printing = bool(any(p.operation_type == 'printing' for p in srec.bom_id.operation_ids.mapped('operation_id')))
 
     @api.onchange('bom_id','product_color_id')
     def _onchange_bom_id(self):
         for rec in self:
+            # Lectura con sudo del BoM/operaciones (datos de produccion) para
+            # que el comercial sin grupo de Fabricacion pueda seleccionar la
+            # LdM y se calculen las operaciones con precio sin AccessError.
+            srec = rec.sudo()
             rec.operation_ids = [Command.clear()]
-            rec.operation_ids = rec.bom_id.operation_ids.filtered(lambda o: o.operation_id.unit_price > 0 or o.operation_id.type_prices == 'col' and sum(o.operation_id.product_color_price_ids.mapped('unit_price')) > 0 or o.operation_id.type_prices == 'col' and o.operation_id.per_title and sum(o.operation_id.product_color_price_ids.color_title_price_ids.mapped('unit_price')) > 0 or o.operation_id.operation_type == 'weaving').sorted(key=lambda r: r.sequence)
-            rec.weaving_loss = rec.bom_id.technical_sheet_id.scrap or 0.01
-            rec.production_loss = rec.bom_id.technical_sheet_id.prod_scrap or 0.09
+            rec.operation_ids = srec.bom_id.operation_ids.filtered(lambda o: o.operation_id.unit_price > 0 or o.operation_id.type_prices == 'col' and sum(o.operation_id.product_color_price_ids.mapped('unit_price')) > 0 or o.operation_id.type_prices == 'col' and o.operation_id.per_title and sum(o.operation_id.product_color_price_ids.color_title_price_ids.mapped('unit_price')) > 0 or o.operation_id.operation_type == 'weaving').sorted(key=lambda r: r.sequence)
+            rec.weaving_loss = srec.bom_id.technical_sheet_id.scrap or 0.01
+            rec.production_loss = srec.bom_id.technical_sheet_id.prod_scrap or 0.09
             rec.production_id.bom_id = rec.bom_id
 
     def js_compute_price_unit(self):
@@ -358,8 +368,16 @@ class SaleOrderLine(models.Model):
     def get_weaving_price_unit(self):
         """
         Calcula el precio unitario para productos de tejido.
+
+        El calculo referencia datos de produccion (BoM, operaciones, analisis,
+        lista de precios, compania) que pueden pertenecer a otra compania
+        (p. ej. fullpima) o requerir el grupo de Fabricacion. El comercial NO
+        necesita acceso directo a esos modelos para cotizar: el computo corre
+        en el servidor. Por eso leemos/computamos con sudo. La escritura de
+        price_items/price_unit es sobre la propia linea (que el usuario posee).
         """
         self.ensure_one()
+        self = self.sudo()
         if self.order_id.is_quote:
             price_dict = self._load_price_items_dict(self.price_items)
 
@@ -380,6 +398,12 @@ class SaleOrderLine(models.Model):
             bom_id = self.bom_id or self.env['mrp.bom']
             weaving = self.has_weaving_operation #any(operation.operation_id.operation_type == 'weaving' for operation in self.operation_ids)
             thread_total = 0
+            # Categorias de hilado: configuradas en la compania del pedido
+            # (idetex, donde se cotiza). Usamos la compania del pedido para
+            # reconocer los componentes de hilado de la LdM (determinista,
+            # evita que env.company derive bajo sudo).
+            thread_company = self.order_id.company_id or self.env.company
+            thread_categs = thread_company.thread_category_ids
 
             def _compute_thread_signature():
                 signature = []
@@ -389,7 +413,7 @@ class SaleOrderLine(models.Model):
                 # Si es que el producto tiene LdM entonces se obtienen las fibras
                 # de lo contrario pasamos a las fibras del análisis del producto
                 if bom_id:
-                    bom_lines = bom_id.bom_line_ids.filtered(lambda l: l.product_tmpl_id.categ_id in self.env.company.thread_category_ids)
+                    bom_lines = bom_id.bom_line_ids.filtered(lambda l: l.product_tmpl_id.categ_id in thread_categs)
                 else:
                     bom_lines = self.product_template_id.analysis_id.weaving_data_ids.mapped('fiber_ids')
                 for bom_line in bom_lines:
@@ -460,7 +484,7 @@ class SaleOrderLine(models.Model):
             if not price_dict:
                 if weaving and self.order_id.sale_type == 'sale':
                     if bom_id:
-                        bom_lines = bom_id.bom_line_ids.filtered(lambda l: l.product_tmpl_id.categ_id in self.env.company.thread_category_ids)
+                        bom_lines = bom_id.bom_line_ids.filtered(lambda l: l.product_tmpl_id.categ_id in thread_categs)
                     else:
                         bom_lines = self.product_template_id.analysis_id.weaving_data_ids.mapped('fiber_ids')
                     for bom_line in bom_lines:
