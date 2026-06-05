@@ -13,6 +13,13 @@ class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
     product_color_id = fields.Many2one('product.color', string='Color')
+    # Rangos/intensidades configurados en el color, para filtrar lab_dev_line_id.
+    product_color_range_ids = fields.Many2many(
+        'color.range', related='product_color_id.color_range_ids',
+        string='Color Ranges (from color)')
+    product_color_intensity_ids = fields.Many2many(
+        'color.intensity', related='product_color_id.color_intensity_ids',
+        string='Color Intensities (from color)')
     is_lab_color = fields.Boolean(compute='_compute_is_lab_color', store=True)
     color_name = fields.Char('Color Name')
     # weaving_warning = fields.Text('weaving_warning')
@@ -55,6 +62,9 @@ class SaleOrderLine(models.Model):
     is_rect = fields.Boolean(related='product_id.product_tmpl_id.is_rect')
     size_qty_ids = fields.One2many('sale.order.line.size', 'line_id', string='Size / Qty')
     has_weaving_operation = fields.Boolean(compute="_compute_has_weaving_operation", store=True)
+    # Línea marcada como "complemento" (solo cotizaciones). Se pinta en gris
+    # como una sección y hereda el color de la línea anterior.
+    is_complement = fields.Boolean(string='Es complemento', default=False, copy=True)
 
     @api.depends(
         'order_id.is_quote',
@@ -197,6 +207,39 @@ class SaleOrderLine(models.Model):
                         raise UserError(_('Cannot quote the same color twice.'))
             rec.price_items = '{}'
         # self._compute_price_unit()
+
+    @api.onchange('is_complement')
+    def _onchange_is_complement_color(self):
+        """Al marcar la línea como complemento, hereda el product_color_id y
+        el color_name de la línea anterior (la inmediatamente superior que sea
+        un producto)."""
+        for rec in self:
+            if not rec.is_complement:
+                continue
+            order = rec.order_id
+            if not order:
+                continue
+            # Recorremos en el orden natural del recordset (orden mostrado).
+            # No reordenamos por `sequence`: la línea recién creada aún no
+            # tiene un sequence mayor y quedaría mal posicionada.
+            previous = None
+            for line in order.order_line:
+                if line == rec:
+                    break
+                if not line.display_type:
+                    previous = line
+            if not previous:
+                raise UserError(_(
+                    "No se puede agregar un complemento: no hay una línea de "
+                    "producto anterior de la cual heredar el color."))
+            if not previous.color_name:
+                raise UserError(_(
+                    "No se puede agregar un complemento: la línea anterior no "
+                    "tiene Nombre de color (color_name)."))
+            if previous.product_color_id and not rec.product_color_id:
+                rec.product_color_id = previous.product_color_id
+            if not rec.color_name:
+                rec.color_name = previous.color_name
 
     @api.onchange('lab_dev_line_id')
     def _onchange_lab_dev_line_id(self):

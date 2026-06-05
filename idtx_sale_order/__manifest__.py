@@ -66,6 +66,8 @@ Gestiona la carga de precios y productos en tus cotizaciones
         'web.assets_backend': [
             'idtx_sale_order/static/src/price_items/**/*',
             'idtx_sale_order/static/src/printing_design_status/**/*',
+            'idtx_sale_order/static/src/complement_line/**/*',
+            'idtx_sale_order/static/src/lab_color_name/**/*',
         ],
         'web.report_assets_pdf': [
             'idtx_sale_order/static/src/css/ir_actions_report_templates.css',

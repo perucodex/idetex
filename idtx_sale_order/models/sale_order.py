@@ -55,6 +55,31 @@ class SaleOrder(models.Model):
     # Ordenes no cerradas
     unclosed = fields.Boolean('Unclosed', compute='_compute_unclosed', store=True)
 
+    @api.onchange('order_line')
+    def _onchange_order_line_sync_complements(self):
+        """Mantiene sincronizados color_name, product_color_id y
+        lab_dev_line_id de las líneas complemento con la línea de producto
+        inmediatamente anterior. Al cambiar esos campos en una línea, los
+        complementos de abajo se actualizan. Debe vivir en el pedido (no en la
+        línea), porque un onchange a nivel de línea no puede modificar líneas
+        hermanas."""
+        for order in self:
+            previous = None
+            for line in order.order_line:
+                if line.display_type:
+                    previous = None
+                    continue
+                if line.is_complement:
+                    if previous is not None:
+                        if previous.color_name and line.color_name != previous.color_name:
+                            line.color_name = previous.color_name
+                        if line.product_color_id != previous.product_color_id:
+                            line.product_color_id = previous.product_color_id
+                        if line.lab_dev_line_id != previous.lab_dev_line_id:
+                            line.lab_dev_line_id = previous.lab_dev_line_id
+                else:
+                    previous = line
+
     @api.depends('order_line.qty_delivered', 'order_line.product_uom_qty')
     def _compute_unclosed(self):
         for rec in self:
@@ -337,24 +362,55 @@ class SaleOrder(models.Model):
         if any(not line.color_name for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.is_lab_color)):
             raise UserError(_('Can\'t create Lab Dev some lines have no color name.'))
         today = fields.Date.context_today(self)
-        data = {
+        lab_dev = self.env['lab.dev'].create({
             'lab_dev_date': today,
             'sale_order_id': self.id,
             'partner_id': self.partner_id.id,
-            'lab_dev_line_ids': [Command.create({
-                 'product_id': line.product_template_id.id,
-                 'color_name': line.color_name.upper(),
-                 'sale_order_line_id': line.id,
-            }) for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.is_lab_color and not l.lab_dev_line_id)]
-        }
-        lab_dev = self.env['lab.dev'].create(data)
+        })
         self.lab_dev_ids = self.lab_dev_ids | lab_dev
-        # for ld_line in lab_dev.lab_dev_line_ids:
-        #     if ld_line.sale_order_line_id:
-        #         ld_line.sale_order_line_id.lab_dev_line_id = ld_line.id
-        for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.is_lab_color and not l.lab_dev_line_id):
-            line.color_name = line.color_name.upper()
-            line.lab_dev_line_id = lab_dev.lab_dev_line_ids.filtered(lambda l: l.color_name == line.color_name and l.product_id == line.product_template_id)
+
+        # Agrupa cada línea de producto (base) con los complementos que la
+        # siguen. Solo la base genera una línea de Lab Dev; su product_ids
+        # reúne el producto de la base y el de sus complementos. Los
+        # complementos no crean su propia línea: comparten la de la base.
+        def _process(base, complements):
+            if base is None:
+                return
+            if base.product_template_id.is_weaving and base.is_lab_color and not base.lab_dev_line_id:
+                products = base.product_template_id
+                for comp in complements:
+                    products |= comp.product_template_id
+                base.color_name = base.color_name.upper()
+                base.lab_dev_line_id = self.env['lab.dev.line'].create({
+                    'lab_dev_id': lab_dev.id,
+                    'product_ids': [Command.set(products.ids)],
+                    'color_name': base.color_name,
+                    'sale_order_line_id': base.id,
+                })
+            # Propaga el lab_dev_line_id de la base (nuevo o ya existente) a sus
+            # complementos e incluye el producto del complemento en el m2m.
+            if base.lab_dev_line_id:
+                for comp in complements:
+                    if not comp.lab_dev_line_id:
+                        comp.lab_dev_line_id = base.lab_dev_line_id
+                    if base.color_name:
+                        comp.color_name = base.color_name
+                    if comp.product_template_id and comp.product_template_id not in base.lab_dev_line_id.product_ids:
+                        base.lab_dev_line_id.product_ids = [Command.link(comp.product_template_id.id)]
+
+        base_line, base_complements = None, []
+        for line in self.order_line:
+            if line.display_type:
+                _process(base_line, base_complements)
+                base_line, base_complements = None, []
+                continue
+            if line.is_complement:
+                base_complements.append(line)
+            else:
+                _process(base_line, base_complements)
+                base_line, base_complements = line, []
+        _process(base_line, base_complements)
+
         self.open_labdev()
     
     def open_labdev(self):

@@ -5,19 +5,37 @@
             <field name="name">product.color.tree</field>
             <field name="model">product.color</field>
             <field name="arch" type="xml">
-                <list string="Product Color" editable="top">
+                <list string="Product Color">
                     <field name="name"/>
                     <!-- <field name="is_lab_color"/> -->
+                    <field name="color_range_ids" widget="many2many_tags" optional="show"/>
+                    <field name="color_intensity_ids" widget="many2many_tags" optional="show"/>
                     <field name="company_id" groups="base.group_multi_company" optional="hide" readonly="1"/>
                 </list>
+            </field>
+        </record>
+
+        <record id="product_color_form_view" model="ir.ui.view">
+            <field name="name">product.color.form</field>
+            <field name="model">product.color</field>
+            <field name="arch" type="xml">
+                <form string="Product Color">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="color_range_ids" widget="many2many_tags" options="{'no_create_edit': True}"/>
+                            <field name="color_intensity_ids" widget="many2many_tags" options="{'no_create_edit': True}"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </sheet>
+                </form>
             </field>
         </record>
 
         <record id="product_color_action" model="ir.actions.act_window">
             <field name="name">Product Color</field>
             <field name="res_model">product.color</field>
-            <field name="view_mode">list</field>
-            <field name="view_id" ref="product_color_tree_view"/>
+            <field name="view_mode">list,form</field>
             <field name="help" type="html">
               <p class="o_view_nocontent_smiling_face">
                 Create a new product color

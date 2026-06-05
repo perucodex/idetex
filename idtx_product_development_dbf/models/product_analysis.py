@@ -7,10 +7,11 @@ from odoo import api, models
 
 _logger = logging.getLogger(__name__)
 
-# The SITPRO product code is built as `<prefix><analysis.product_code>`.
-# Each Odoo analysis can correspond to up to three SITPRO products (one per
-# prefix), so the route refresh has to try all three.
-_SITPRO_PREFIXES = ('S', 'P')
+# The SITPRO/TEXPLUS product code is built as `<prefix><analysis.product_code>`.
+# Each Odoo analysis can correspond to up to three articulos (one per prefix:
+# M, P, S — los mismos prefijos validos que valida _normalize_export_prefix),
+# so the route refresh has to try all three.
+_SITPRO_PREFIXES = ('M', 'P', 'S')
 
 # sysproceso.dbf: cap del campo memo `proceso`. Si la concatenacion por ";"
 # de los nombres de fase excede este limite, abreviamos progresivamente.

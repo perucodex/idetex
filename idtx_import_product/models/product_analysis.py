@@ -250,13 +250,13 @@ class ProductAnalysis(models.Model):
             raise UserError(f"No se pudo conectar a SQL Server: {e}")
 
     def update_lab_dev_line_product_from_sitpro(self):
-        """Rellena lab.dev.line.product_id a partir de SITPRO.
+        """Rellena lab.dev.line.product_ids a partir de SITPRO.
 
         Por cada registro de lab_colores02 se arma el color_code
         (gt + cb + ints + corr a 4 dígitos) y se obtiene el cdgart asociado
         (vía vta_det_pedido). El producto se busca por default_code = cdgart
         SIN el primer carácter. Solo se escriben las líneas que aún no
-        tienen product_id. Devuelve el número de líneas actualizadas.
+        tienen producto. Devuelve el número de líneas actualizadas.
         """
         LabLine = self.env['lab.dev.line']
         Product = self.env['product.template']
@@ -339,10 +339,10 @@ class ProductAnalysis(models.Model):
             for product in Product.search([('default_code', 'in', product_codes)])
         }
 
-        # Líneas existentes por color_code (en lote), solo las que NO tienen product_id
+        # Líneas existentes por color_code (en lote), solo las que NO tienen producto
         lines_by_code = {}
         for line in LabLine.search([('color_code', 'in', list(code_map.keys())),
-                                    ('product_id', '=', False)]):
+                                    ('product_ids', '=', False)]):
             key = (line.color_code or '').strip().upper()
             lines_by_code.setdefault(key, LabLine)
             lines_by_code[key] |= line
@@ -357,7 +357,7 @@ class ProductAnalysis(models.Model):
             if not product:
                 missing_product.add(product_code)
                 continue
-            lines.write({'product_id': product.id})
+            lines.write({'product_ids': [Command.set(product.ids)]})
             updated += len(lines)
 
         _logger.info(
@@ -1774,7 +1774,7 @@ class ProductAnalysis(models.Model):
                 if existing_line:
                     recipe = existing_line.color_recipe_ids.filtered(lambda rec: not rec.color_recipe_process_ids)[:1]
                     existing_line.write({
-                        'product_id': product.id if product else False,
+                        'product_ids': [Command.set(product.ids)],
                     })
                     if not recipe and not existing_line.color_recipe_ids:
                         existing_line.color_recipe_ids = [Command.create({
@@ -1789,7 +1789,7 @@ class ProductAnalysis(models.Model):
                     lab_dev = _get_or_create_lab_dev(ld_name, partner, fields.Date.context_today(self))
                     new_line = self.env['lab.dev.line'].create({
                         'lab_dev_id': lab_dev.id,
-                        'product_id': product.id if product else False,
+                        'product_ids': [Command.set(product.ids)],
                         'color_name': desc or color_code,
                         'color_code': color_code,
                         'color_process_type_id': process.id if process else False,

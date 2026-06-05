@@ -9,7 +9,7 @@ class ColorRecipe(models.Model):
     name = fields.Char('Name', copy=False, default=lambda self: _('New'))
     lab_dev_line_id = fields.Many2one('lab.dev.line', string='Lab Dev Line', ondelete='cascade')
     lab_dev_id = fields.Many2one(related='lab_dev_line_id.lab_dev_id')
-    product_id = fields.Many2one(related='lab_dev_line_id.product_id')
+    product_ids = fields.Many2many(related='lab_dev_line_id.product_ids')
     color_code = fields.Char(related='lab_dev_line_id.color_code')
     color_name = fields.Char(related='lab_dev_line_id.color_name')
     partner_id = fields.Many2one(related='lab_dev_id.partner_id')

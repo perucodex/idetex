@@ -198,7 +198,9 @@ class LabDevLine(models.Model):
     _rec_name = 'color_name'
 
     lab_dev_id = fields.Many2one('lab.dev', string='Lab Dev', ondelete='cascade')
-    product_id = fields.Many2one('product.template','Product', ondelete='restrict')
+    product_ids = fields.Many2many(
+        'product.template', 'lab_dev_line_product_template_rel',
+        'lab_dev_line_id', 'product_template_id', string='Products')
     color_name = fields.Char('Color Name')
     color_code = fields.Char('Color Code')
     color = fields.Char('Color')

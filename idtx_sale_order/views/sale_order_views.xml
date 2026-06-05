@@ -96,14 +96,15 @@
                         title="Duplicar linea sin color"
                         column_invisible="not parent.is_company_produce"/>
                 <field name="available_operation_ids" column_invisible="1"/>
-                <field name="product_color_id" options="{'no_create': True}" required="is_weaving and not color_name and not parent.has_order_lab_dev" readonly="not is_weaving" column_invisible="not parent.is_company_produce"/>
+                <field name="product_color_id" options="{'no_create': True}" required="is_weaving and not color_name and not parent.has_order_lab_dev" readonly="not is_weaving or is_complement" column_invisible="not parent.is_company_produce" force_save="1"/>
                  <!-- column_invisible="not parent.is_quote"/> -->
                 <field name="has_approved_lab_line" column_invisible="1"/>
                 <field name="diff_days" column_invisible="1"/>
                 <field name="is_lab_color" column_invisible="1"/>
-                <field name="color_name" required="is_weaving and not lab_dev_line_id and parent.is_company_produce and is_lab_color" readonly="not is_weaving or not is_lab_color or lab_dev_line_id" column_invisible="parent.is_quote or not parent.is_company_produce or not parent.has_pending_labdev_lines" force_save="1"/>
-                <field name="color_name" readonly="1" column_invisible="parent.is_quote or not parent.is_company_produce or parent.has_pending_labdev_lines" widget="badge" decoration-success="has_approved_lab_line" decoration-danger="not has_approved_lab_line" force_save="1"/>
-                <field name="lab_dev_line_id" required="is_weaving and parent.is_company_produce and not parent.is_quote and is_lab_color and parent.has_order_lab_dev" readonly="not is_weaving or not is_lab_color" column_invisible="parent.is_quote or not parent.is_company_produce" options="{'no_create': True}" domain="[('product_id', '=', product_template_id)]"/>
+                <field name="color_name" widget="lab_color_name" required="is_weaving and not lab_dev_line_id and parent.is_company_produce and is_lab_color" readonly="not is_weaving or not is_lab_color or lab_dev_line_id or is_complement" column_invisible="parent.is_quote or not parent.is_company_produce" force_save="1"/>
+                <field name="product_color_range_ids" column_invisible="1"/>
+                <field name="product_color_intensity_ids" column_invisible="1"/>
+                <field name="lab_dev_line_id" required="is_weaving and parent.is_company_produce and not parent.is_quote and is_lab_color and parent.has_order_lab_dev" readonly="not is_weaving or not is_lab_color or is_complement" column_invisible="parent.is_quote or not parent.is_company_produce" options="{'no_create': True}" domain="[('color_range_id', 'in', product_color_range_ids), ('color_intensity_id', 'in', product_color_intensity_ids)]" force_save="1"/>
                 <field name="is_printing" column_invisible="1"/>
                 <field name="printing_design_id" options="{'no_create': True}" required="is_printing" readonly="not is_printing" column_invisible="parent.is_quote or not parent.is_company_produce" optional="hide" domain="[('partner_id','=', order_partner_id),('state','!=','draft')]"/>
                 <field name="printing_design_preview_image" column_invisible="1"/>
@@ -116,7 +117,17 @@
                 <field name="min_qty" readonly="not is_weaving" optional="hide" column_invisible="not parent.is_quote or not parent.is_company_produce"/>
                 <field name="dis_app" column_invisible="1"/>
                 <field name="is_rect" column_invisible="1"/>
+                <field name="is_complement" column_invisible="1"/>
                 <button name="action_open_size_qty_wizard" type="object" icon="fa-sort-amount-desc" class="btn-link" title="Edit Sizes Qty Rectilinear" invisible="not is_rect or parent.is_quote"/>
+            </xpath>
+
+            <!-- Botón "Agregar un complemento": entre "Agregar un producto" y
+                 "Agregar una sección", solo en ventas (is_quote = False). -->
+            <xpath expr="//notebook/page/field[@name='order_line']/list/control/create[@name='add_product_control']" position="after">
+                <create name="add_complement_control"
+                        string="Agregar un complemento"
+                        context="{'default_is_complement': True}"
+                        invisible="parent.is_quote"/>
             </xpath>
 
             <xpath expr="//notebook/page/field[@name='order_line']/list/field[@name='price_unit']" position="after">
