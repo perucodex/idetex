@@ -249,6 +249,120 @@ class ProductAnalysis(models.Model):
         except Exception as e:
             raise UserError(f"No se pudo conectar a SQL Server: {e}")
 
+    def update_lab_dev_line_product_from_sitpro(self):
+        """Rellena lab.dev.line.product_id a partir de SITPRO.
+
+        Por cada registro de lab_colores02 se arma el color_code
+        (gt + cb + ints + corr a 4 dígitos) y se obtiene el cdgart asociado
+        (vía vta_det_pedido). El producto se busca por default_code = cdgart
+        SIN el primer carácter. Solo se escriben las líneas que aún no
+        tienen product_id. Devuelve el número de líneas actualizadas.
+        """
+        LabLine = self.env['lab.dev.line']
+        Product = self.env['product.template']
+
+        conn = None
+        cursor = None
+        try:
+            conn = self._get_sql_connection()
+            cursor = conn.cursor()
+            query = """
+                SELECT
+                    lc.gt,
+                    lc.cb,
+                    lc.ints,
+                    lc.corr,
+                    vl.cdgart
+                FROM lab_colores02 lc
+                CROSS APPLY (
+                    SELECT TOP 1 vl2.cdgart
+                    FROM vta_det_pedido vl2
+                    WHERE vl2.cdgcol =
+                        LTRIM(RTRIM(ISNULL(lc.gt,''))) +
+                        LTRIM(RTRIM(ISNULL(lc.cb,''))) +
+                        LTRIM(RTRIM(ISNULL(lc.ints,''))) +
+                        RIGHT('0000' + CAST(CAST(lc.corr AS INT) AS VARCHAR(10)), 4)
+                    AND LTRIM(RTRIM(vl2.cdgart)) <> ''
+                ) vl
+                WHERE lc.gt IS NOT NULL
+                AND lc.cb IS NOT NULL
+                AND lc.ints IS NOT NULL
+                AND lc.corr IS NOT NULL
+                AND LTRIM(RTRIM(lc.gt)) <> ''
+                AND LTRIM(RTRIM(lc.cb)) <> ''
+                AND LTRIM(RTRIM(lc.ints)) <> ''
+                AND LTRIM(RTRIM(lc.corr)) <> '';
+            """
+            cursor.execute(query)
+            columns = [col[0].lower() for col in cursor.description]
+            rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        finally:
+            if cursor is not None:
+                try:
+                    cursor.close()
+                except Exception:
+                    pass
+            if conn is not None:
+                try:
+                    conn.close()
+                except Exception:
+                    pass
+
+        # color_code (mayúsculas) -> product_code (cdgart sin el primer carácter)
+        code_map = {}
+        for row in rows:
+            gt = (row.get('gt') or '').strip()
+            cb = (row.get('cb') or '').strip()
+            ints = (row.get('ints') or '').strip()
+            corr_raw = (row.get('corr') or '').strip()
+            cdgart = (row.get('cdgart') or '').strip()
+            if not (gt and cb and ints and corr_raw and cdgart):
+                continue
+            corr = str(a_int(corr_raw)).zfill(4) if a_int(corr_raw) else corr_raw.zfill(4)
+            color_code = f"{gt}{cb}{ints}{corr}".upper()
+            product_code = cdgart[1:].strip()  # cdgart menos el primer carácter
+            if product_code:
+                code_map[color_code] = product_code
+
+        if not code_map:
+            _logger.info("update_lab_dev_line_product_from_sitpro: sin datos en lab_colores02")
+            return 0
+
+        # Productos por default_code (en lote)
+        product_codes = list({code for code in code_map.values()})
+        product_by_code = {
+            product.default_code: product
+            for product in Product.search([('default_code', 'in', product_codes)])
+        }
+
+        # Líneas existentes por color_code (en lote), solo las que NO tienen product_id
+        lines_by_code = {}
+        for line in LabLine.search([('color_code', 'in', list(code_map.keys())),
+                                    ('product_id', '=', False)]):
+            key = (line.color_code or '').strip().upper()
+            lines_by_code.setdefault(key, LabLine)
+            lines_by_code[key] |= line
+
+        updated = 0
+        missing_product = set()
+        for color_code, product_code in code_map.items():
+            lines = lines_by_code.get(color_code)
+            if not lines:
+                continue
+            product = product_by_code.get(product_code)
+            if not product:
+                missing_product.add(product_code)
+                continue
+            lines.write({'product_id': product.id})
+            updated += len(lines)
+
+        _logger.info(
+            "update_lab_dev_line_product_from_sitpro: %s líneas actualizadas; "
+            "%s códigos de producto sin coincidencia (%s)",
+            updated, len(missing_product), ', '.join(sorted(missing_product)[:20]),
+        )
+        return updated
+
     def _get_texplus_sql_connection(self):
         try:
             conn = pyodbc.connect(
