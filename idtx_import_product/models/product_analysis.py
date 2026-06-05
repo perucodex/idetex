@@ -309,13 +309,17 @@ class ProductAnalysis(models.Model):
                     pass
 
         # color_code (mayúsculas) -> product_code (cdgart sin el primer carácter)
+        def _s(value):
+            # pyodbc puede devolver Decimal/int/etc.; normalizamos a texto.
+            return '' if value is None else str(value).strip()
+
         code_map = {}
         for row in rows:
-            gt = (row.get('gt') or '').strip()
-            cb = (row.get('cb') or '').strip()
-            ints = (row.get('ints') or '').strip()
-            corr_raw = (row.get('corr') or '').strip()
-            cdgart = (row.get('cdgart') or '').strip()
+            gt = _s(row.get('gt'))
+            cb = _s(row.get('cb'))
+            ints = _s(row.get('ints'))
+            corr_raw = _s(row.get('corr'))
+            cdgart = _s(row.get('cdgart'))
             if not (gt and cb and ints and corr_raw and cdgart):
                 continue
             corr = str(a_int(corr_raw)).zfill(4) if a_int(corr_raw) else corr_raw.zfill(4)
