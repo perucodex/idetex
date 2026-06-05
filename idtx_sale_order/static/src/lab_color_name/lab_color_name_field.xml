@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="idtx_sale_order.LabColorNameField">
+        <t t-if="hasLabDev">
+            <span t-if="value" class="badge rounded-pill" t-att-class="badgeClass" t-esc="value"/>
+        </t>
+        <CharField t-else="" t-props="props"/>
+    </t>
+
+</templates>

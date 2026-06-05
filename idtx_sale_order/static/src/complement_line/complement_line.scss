@@ -1,0 +1,11 @@
+// Fondo gris para las líneas "complemento", replicando el tono que usa
+// una sección de pedido (ver account: section_and_note_backend.scss).
+.o_section_and_note_list_view tr.o_data_row.o_is_complement_line {
+    --table-bg-type: #{rgba($body-emphasis-color, .06)};
+    // En las filas con raya (zebra striping), Bootstrap pone
+    // --table-bg-type: var(--table-striped-bg) en las celdas, lo que pisaría
+    // el color. Igualamos la raya al gris para que todas queden iguales.
+    --table-striped-bg: var(--table-bg-type);
+    --table-hover-bg: #{rgba($body-emphasis-color, .08)};
+    --ListRenderer-data-row-focused-striped-bg: var(--table-bg-type);
+}
