@@ -48,7 +48,16 @@ class ColorRecipe(models.Model):
     ], string='State', default='test', tracking=True)
     observations = fields.Text('Observaciones')
     mixing_group_ids = fields.One2many('color.recipe.mixing.group', 'color_recipe_id', string='Grupos de Mezcla')
-    
+
+    @api.onchange('lab_dev_line_id', 'product_ids')
+    def _onchange_default_single_product(self):
+        """Si la línea de Lab Dev tiene un único producto, la receta lo toma
+        por defecto. Si tiene varios, se deja en blanco para que el usuario
+        elija. No sobreescribe una selección previa del usuario."""
+        for rec in self:
+            if not rec.product_id and len(rec.product_ids) == 1:
+                rec.product_id = rec.product_ids
+
     #=== CRUD METHODS ===#
 
     @api.model_create_multi
@@ -63,6 +72,13 @@ class ColorRecipe(models.Model):
                 lab_dev = self.env['lab.dev.line'].browse(vals['lab_dev_line_id']).lab_dev_id
                 if lab_dev.company_id:
                     vals['company_id'] = lab_dev.company_id.id
+
+            # Si la línea de Lab Dev tiene un único producto, la receta lo toma
+            # por defecto (con varios, se deja en blanco para que el usuario elija).
+            if vals.get('lab_dev_line_id') and not vals.get('product_id'):
+                products = self.env['lab.dev.line'].browse(vals['lab_dev_line_id']).product_ids
+                if len(products) == 1:
+                    vals['product_id'] = products.id
 
             if vals.get('name', _("New")) == _("New"):
                 seq_date = fields.Datetime.context_timestamp(

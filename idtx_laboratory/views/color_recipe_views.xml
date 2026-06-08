@@ -22,7 +22,7 @@
                             <group>
                                 <field name="recipe_date" readonly="state == 'approved'"/>
                                 <field name="product_ids" invisible="1"/>
-                                <field name="product_id" domain="[('id', 'in', product_ids)]" readonly="state == 'approved'" required="1"/>
+                                <field name="product_id" domain="[('id', 'in', product_ids)]" readonly="state == 'approved'" required="1" options="{'no_create': True}"/>
                                 <field name="color_name"/>
                                 <field name="recipe_color_code"/>
                                 <field name="colorfastness_washing_id"/>
@@ -166,7 +166,7 @@
             <field name="arch" type="xml">
                 <search string="Color Recipe">
                     <field name="name"/>
-                    <field name="product_id"/>
+                    <field name="product_id" options="{'no_create': True}"/>
                     <field name="color_name"/>
                     <field name="recipe_color_code"/>
                     <filter name="approved" string="Approved" domain="[('state', '=', 'approved')]"/>

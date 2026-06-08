@@ -336,20 +336,20 @@ class AnalysisRoutingLine(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
-        if not self.env.context.get('skip_route_propagation'):
+        if self.env.context.get('texplus_sync'):
             records.mapped('analysis_id').sudo()._sync_routes_external()
         return records
 
     def write(self, vals):
         analyses = self.mapped('analysis_id')
         result = super().write(vals)
-        if not self.env.context.get('skip_route_propagation'):
+        if self.env.context.get('texplus_sync'):
             (analyses | self.mapped('analysis_id')).sudo()._sync_routes_external()
         return result
 
     def unlink(self):
         analyses = self.mapped('analysis_id')
         result = super().unlink()
-        if not self.env.context.get('skip_route_propagation'):
+        if self.env.context.get('texplus_sync'):
             analyses.sudo()._sync_routes_external()
         return result

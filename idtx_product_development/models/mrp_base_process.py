@@ -327,6 +327,34 @@ class MrpBaseProcess(models.Model):
         self.ensure_one()
         return self.product_ids._get_records_action(name=_('Productos'))
 
+    def action_sync_texplus(self):
+        """Sincroniza manualmente la ruta a TEXPLUS, una sola vez y de forma
+        secuencial. La sincronizacion automatica al guardar fue desactivada
+        (se gatilla solo con el contexto `texplus_sync`) porque guardados
+        seguidos (alta + mover la fase) disparaban N pushes lentos por
+        articulo que se solapaban y duplicaban filas en PROLIN. Con este boton
+        el guardado queda local/rapido y la sincronizacion corre una vez al
+        terminar de editar.
+
+        - Cabeceras PROCES/PROLIN de la ruta (`_sync_to_texplus`).
+        - Por cada articulo de la ruta: SERPAU/ARTLIN + ruta (`_sync_route_to_texplus`).
+        """
+        for base in self:
+            base.sudo().with_context(texplus_sync=True)._sync_to_texplus()
+            sheets = base.product_analysis_ids.technical_sheet_ids
+            if sheets:
+                sheets.sudo().with_context(texplus_sync=True)._sync_route_to_texplus()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('TEXPLUS'),
+                'message': _('Sincronizacion a TEXPLUS completada.'),
+                'type': 'success',
+                'sticky': False,
+            },
+        }
+
     def _upsert_texplus_record(self, cursor, table_name, key_values, values):
         update_values = {field_name: value for field_name, value in values.items() if field_name not in key_values}
         where_clause = ' AND '.join(f'[{field_name}] = {_sql_value(field_value)}' for field_name, field_value in key_values.items())
@@ -811,7 +839,7 @@ class MrpBaseProcess(models.Model):
     def create(self, vals_list):
         records = super(MrpBaseProcess, self.with_context(skip_texplus_sync=True)).create(vals_list)
         records._ensure_weaving_first_line()
-        if not self.env.context.get('skip_texplus_sync'):
+        if self.env.context.get('texplus_sync'):
             records.sudo()._sync_to_texplus()
         return records
 
@@ -824,7 +852,7 @@ class MrpBaseProcess(models.Model):
             MrpBaseProcess,
             self.with_context(skip_texplus_sync=True, skip_route_propagation=True),
         ).write(vals)
-        if not self.env.context.get('skip_texplus_sync'):
+        if self.env.context.get('texplus_sync'):
             self.sudo()._sync_to_texplus(old_names=old_names)
         if 'process_ids' in vals:
             self._propagate_route_to_analyses()
@@ -1328,7 +1356,7 @@ class MrpBaseProcessLine(models.Model):
     def create(self, vals_list):
         records = super(MrpBaseProcessLine, self.with_context(skip_texplus_sync=True)).create(vals_list)
         bases = records.mapped('mrp_base_process_id').sudo()
-        if not self.env.context.get('skip_texplus_sync'):
+        if self.env.context.get('texplus_sync'):
             bases._sync_to_texplus()
         if not self.env.context.get('skip_route_propagation'):
             bases._propagate_route_to_analyses()
@@ -1338,7 +1366,7 @@ class MrpBaseProcessLine(models.Model):
         base_processes = self.mapped('mrp_base_process_id').sudo()
         result = super(MrpBaseProcessLine, self.with_context(skip_texplus_sync=True)).write(vals)
         bases = base_processes | self.mapped('mrp_base_process_id').sudo()
-        if not self.env.context.get('skip_texplus_sync'):
+        if self.env.context.get('texplus_sync'):
             bases._sync_to_texplus()
         if not self.env.context.get('skip_route_propagation'):
             bases._propagate_route_to_analyses()
@@ -1347,7 +1375,7 @@ class MrpBaseProcessLine(models.Model):
     def unlink(self):
         base_processes = self.mapped('mrp_base_process_id').sudo()
         result = super(MrpBaseProcessLine, self.with_context(skip_texplus_sync=True)).unlink()
-        if not self.env.context.get('skip_texplus_sync'):
+        if self.env.context.get('texplus_sync'):
             base_processes._sync_to_texplus()
         if not self.env.context.get('skip_route_propagation'):
             base_processes._propagate_route_to_analyses()
