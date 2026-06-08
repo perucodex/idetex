@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import re
 import unicodedata
 from pathlib import Path
@@ -16,6 +17,8 @@ from odoo.addons.idtx_mrp.models.mrp_routing_workcenter_operation import (
 )
 
 pyodbc.setDecimalSeparator('.')
+
+_logger = logging.getLogger(__name__)
 
 PADR_FIELDS = {'FICHA', 'CDGCLIE', 'RUC'}
 TEXPLUS_EMPRCOD = '001'
