@@ -26,6 +26,14 @@
                                 </div>
                             </div>
                         </setting>
+                        <setting id="default_production_company" string="Empresa Productiva" company_dependent="1" help="Empresa encargada de fabricar. Los Lab Dev, recetas y órdenes de producción se crean en esta empresa en lugar de la empresa que realiza la venta.">
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label string="Empresa Productiva" for="production_company_id" class="col-lg-3 o_light_label"/>
+                                    <field name="production_company_id" options="{'no_create': True}"/>
+                                </div>
+                            </div>
+                        </setting>
                     </block>
                 </block>
             </field>

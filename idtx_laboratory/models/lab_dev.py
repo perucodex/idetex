@@ -221,10 +221,6 @@ class LabDevLine(models.Model):
     esm = fields.Boolean('Esm')
     per = fields.Boolean('Per')
     oxi = fields.Boolean('Oxi')
-    weaving_type = fields.Selection([
-        ('abierto', 'ABIERTO'),
-        ('tubular', 'TUBULAR')
-    ], string='Tipo Tej.', default='abierto')
     available_product_ids = fields.Many2many(
         'product.template',
         compute='_compute_available_products',
@@ -269,7 +265,7 @@ class LabDevLine(models.Model):
                 products = record.sale_order_id.order_line.mapped('product_template_id').filtered(lambda p: p.is_weaving).ids
             record.available_product_ids = products
     
-    @api.onchange('color_process_type_id','color_range_id','color_intensity_id','color_recipe_ids')
+    @api.onchange('color_process_type_id','color_range_id','color_intensity_id')
     def _onchange_color_code(self):
         for rec in self:
             # Verifica que los tres campos requeridos estén presentes
@@ -278,9 +274,11 @@ class LabDevLine(models.Model):
                         (rec.color_range_id.code or '') + \
                         (rec.color_intensity_id.code or '')
 
-                # Busca los registros existentes con ese mismo prefijo
+                # Busca los registros existentes con ese mismo prefijo,
+                # excluyendo esta misma línea para no auto-incrementar el código.
                 last_line = self.env['lab.dev.line'].search(
-                    [('color_code', '=like', f'{prefix}%')],
+                    [('color_code', '=like', f'{prefix}%'),
+                     ('id', '!=', rec._origin.id)],
                     order='color_code desc',
                     limit=1
                 )

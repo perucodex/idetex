@@ -219,16 +219,18 @@ class SaleOrder(models.Model):
         self._validate_sale_confirmation_requirements()
         res = super(SaleOrder, self).action_confirm()
         for rec in self:
+            production_company = rec.company_id._get_production_company()
             for line in rec.order_line:
                 if line.product_uom_qty and line.product_id.is_weaving and line.bom_id:
                     # production_state = line.bom_id.technical_sheet_id.production_state
-                    production_env = self.env['mrp.production'].sudo().with_company(rec.company_id)
+                    production_env = self.env['mrp.production'].sudo().with_company(production_company)
                     prd = production_env.create({
                         'product_tmpl_id': line.product_id.product_tmpl_id.id,
                         'product_qty': line.product_uom_qty,
                         'bom_id': line.bom_id.id,
                         'sale_order_line_id': line.id,
                         'sale_type': rec.sale_type,
+                        'company_id': production_company.id,
                     })
                     line.sudo().production_id = prd.id
                     self.production_ids = [(4, prd.id)]
@@ -362,54 +364,42 @@ class SaleOrder(models.Model):
         if any(not line.color_name for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.is_lab_color)):
             raise UserError(_('Can\'t create Lab Dev some lines have no color name.'))
         today = fields.Date.context_today(self)
-        lab_dev = self.env['lab.dev'].create({
+        production_company = self.company_id._get_production_company()
+        lab_dev = self.env['lab.dev'].with_company(production_company).create({
             'lab_dev_date': today,
             'sale_order_id': self.id,
             'partner_id': self.partner_id.id,
+            'company_id': production_company.id,
         })
         self.lab_dev_ids = self.lab_dev_ids | lab_dev
 
-        # Agrupa cada línea de producto (base) con los complementos que la
-        # siguen. Solo la base genera una línea de Lab Dev; su product_ids
-        # reúne el producto de la base y el de sus complementos. Los
-        # complementos no crean su propia línea: comparten la de la base.
-        def _process(base, complements):
-            if base is None:
-                return
-            if base.product_template_id.is_weaving and base.is_lab_color and not base.lab_dev_line_id:
-                products = base.product_template_id
-                for comp in complements:
-                    products |= comp.product_template_id
-                base.color_name = base.color_name.upper()
-                base.lab_dev_line_id = self.env['lab.dev.line'].create({
-                    'lab_dev_id': lab_dev.id,
-                    'product_ids': [Command.set(products.ids)],
-                    'color_name': base.color_name,
-                    'sale_order_line_id': base.id,
-                })
-            # Propaga el lab_dev_line_id de la base (nuevo o ya existente) a sus
-            # complementos e incluye el producto del complemento en el m2m.
-            if base.lab_dev_line_id:
-                for comp in complements:
-                    if not comp.lab_dev_line_id:
-                        comp.lab_dev_line_id = base.lab_dev_line_id
-                    if base.color_name:
-                        comp.color_name = base.color_name
-                    if comp.product_template_id and comp.product_template_id not in base.lab_dev_line_id.product_ids:
-                        base.lab_dev_line_id.product_ids = [Command.link(comp.product_template_id.id)]
-
-        base_line, base_complements = None, []
-        for line in self.order_line:
-            if line.display_type:
-                _process(base_line, base_complements)
-                base_line, base_complements = None, []
+        # Se crea UNA línea de Lab Dev por cada color_name pendiente. Su
+        # product_ids reúne TODOS los productos de las líneas de la orden con
+        # ese color (base + complementos). Todas esas líneas comparten la
+        # misma línea de Lab Dev (los complementos no crean una propia).
+        pending = self.order_line.filtered(
+            lambda l: l.product_template_id.is_weaving and l.is_lab_color and not l.lab_dev_line_id
+        )
+        seen = set()
+        for color_name in pending.mapped('color_name'):
+            if color_name in seen:
                 continue
-            if line.is_complement:
-                base_complements.append(line)
-            else:
-                _process(base_line, base_complements)
-                base_line, base_complements = line, []
-        _process(base_line, base_complements)
+            seen.add(color_name)
+            color_lines = self.order_line.filtered(
+                lambda l: not l.display_type and l.color_name == color_name
+            )
+            pending_color_lines = color_lines.filtered(lambda l: not l.lab_dev_line_id)
+            products = color_lines.mapped('product_template_id')
+            ld_line = self.env['lab.dev.line'].create({
+                'lab_dev_id': lab_dev.id,
+                'product_ids': [Command.set(products.ids)],
+                'color_name': (color_name or '').upper(),
+                'sale_order_line_id': pending_color_lines[:1].id,
+            })
+            pending_color_lines.write({
+                'color_name': (color_name or '').upper(),
+                'lab_dev_line_id': ld_line.id,
+            })
 
         self.open_labdev()
     

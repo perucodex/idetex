@@ -53,14 +53,18 @@ class MrpProduction(models.Model):
             # Si viene de venta, requiere tener lab_dev_line para trabajar con receta.
             rec.need_recipe = bool((not rec.sale_order_line_id) or rec.sale_order_line_id.lab_dev_line_id)
 
-    @api.depends('manual_recipe', 'manual_color_recipe_id', 'sale_order_line_id', 'sale_order_line_id.lab_dev_line_id', 'sale_order_line_id.lab_dev_line_id.color_recipe_ids.state')
+    @api.depends('manual_recipe', 'manual_color_recipe_id', 'product_tmpl_id', 'sale_order_line_id', 'sale_order_line_id.lab_dev_line_id', 'sale_order_line_id.lab_dev_line_id.color_recipe_ids.state', 'sale_order_line_id.lab_dev_line_id.color_recipe_ids.product_id')
     def _compute_color_recipe(self):
         for rec in self:
             if rec.manual_recipe:
                 color_recipe_id = rec.manual_color_recipe_id
             else:
                 if rec.sale_order_line_id:
-                    color_recipe_id = rec.sale_order_line_id.lab_dev_line_id.color_recipe_ids.filtered(lambda l: l.state == 'approved')
+                    # La línea de lab dev puede tener una receta aprobada por
+                    # producto: se identifica la que coincide con el producto
+                    # a fabricar de la orden de producción.
+                    color_recipe_id = rec.sale_order_line_id.lab_dev_line_id.color_recipe_ids.filtered(
+                        lambda l: l.state == 'approved' and l.product_id == rec.product_tmpl_id)[:1]
                 else:
                     color_recipe_id = False
             rec.color_recipe_id = color_recipe_id
@@ -80,5 +84,8 @@ class MrpProduction(models.Model):
     
     def action_manual(self):
         self.manual_recipe = not self.manual_recipe
-        if not self.manual_recipe and self.sale_order_line_id.lab_dev_line_id.color_recipe_ids.filtered(lambda l: l.state == 'approved'):
-            self.color_recipe_id = self.sale_order_line_id.lab_dev_line_id.color_recipe_ids.filtered(lambda l: l.state == 'approved')
+        if not self.manual_recipe:
+            approved = self.sale_order_line_id.lab_dev_line_id.color_recipe_ids.filtered(
+                lambda l: l.state == 'approved' and l.product_id == self.product_tmpl_id)
+            if approved:
+                self.color_recipe_id = approved[:1]

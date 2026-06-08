@@ -251,7 +251,8 @@ class SaleOrderLine(models.Model):
             if rec.lab_dev_line_id and rec.lab_dev_line_id.state == 'approved' and rec.production_id:
                 if any(wo.state == 'progress' for wo in rec.production_id.workorder_ids.filtered(lambda wo: wo.mrwo_id.use_lab_recipe)):
                     raise UserError(_('Cannot change recipe because there are workorders in progress using the lab recipe.'))
-                rec.production_id.color_recipe_id = rec.lab_dev_line_id.color_recipe_ids.filtered(lambda cr: cr.state == 'approved')
+                rec.production_id.color_recipe_id = rec.lab_dev_line_id.color_recipe_ids.filtered(
+                    lambda cr: cr.state == 'approved' and cr.product_id == rec.production_id.product_tmpl_id)[:1]
 
     @api.onchange('product_id')
     def _onchange_product_id(self):

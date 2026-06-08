@@ -49,19 +49,21 @@
                     </thead>
                     <tbody>
                         <t t-foreach="doc.lab_dev_line_ids" t-as="line">
-                            <tr style="height: 25px;">
-                                <td style="border: 1px solid black;"><t t-esc="line.product_id.default_code or ''"/></td>
-                                <td style="border: 1px solid black;"><t t-esc="line.product_id.name or ''"/></td>
-                                <td style="border: 1px solid black;"><t t-esc="line.color_name or ''"/></td>
-                                <td style="border: 1px solid black; text-align: center;"><t t-if="line.ant">X</t></td>
-                                <td style="border: 1px solid black; text-align: center;"><t t-if="line.esm">X</t></td>
-                                <td style="border: 1px solid black; text-align: center;"><t t-if="line.per">X</t></td>
-                                <td style="border: 1px solid black; text-align: center;"><t t-if="line.oxi">X</t></td>
-                                <td style="border: 1px solid black; text-align: center;"><t t-esc="dict(line._fields['weaving_type'].selection).get(line.weaving_type, '')"/></td>
-                            </tr>
+                            <t t-foreach="line.product_ids" t-as="product">
+                                <tr style="height: 25px;">
+                                    <td style="border: 1px solid black;"><t t-esc="product.default_code or ''"/></td>
+                                    <td style="border: 1px solid black;"><t t-esc="product.name or ''"/></td>
+                                    <td style="border: 1px solid black;"><t t-esc="line.color_name or ''"/></td>
+                                    <td style="border: 1px solid black; text-align: center;"><t t-if="line.ant">X</t></td>
+                                    <td style="border: 1px solid black; text-align: center;"><t t-if="line.esm">X</t></td>
+                                    <td style="border: 1px solid black; text-align: center;"><t t-if="line.per">X</t></td>
+                                    <td style="border: 1px solid black; text-align: center;"><t t-if="line.oxi">X</t></td>
+                                    <td style="border: 1px solid black; text-align: center;"><t t-esc="dict(product.analysis_id._fields['weave_type'].selection).get(product.analysis_id.weave_type, '')"/></td>
+                                </tr>
+                            </t>
                         </t>
                         <!-- Fill empty rows if needed to match image style -->
-                        <t t-foreach="range(max(0, 15 - len(doc.lab_dev_line_ids)))" t-as="i">
+                        <t t-foreach="range(max(0, 15 - sum(len(l.product_ids) for l in doc.lab_dev_line_ids)))" t-as="i">
                             <tr style="height: 25px;">
                                 <td style="border: 1px solid black;"></td>
                                 <td style="border: 1px solid black;"></td>
