@@ -612,6 +612,41 @@ class MrpBaseProcess(models.Model):
             old_code,
         )
 
+    # Flags S/N de FASPRO que dependen del TIPO de fase (tenido, acabado, etc.).
+    # Para una fase nueva NO se hardcodean: se copian del valor mayoritario entre
+    # las fases de la MISMA maquina general (MaqCod), con fallback a la mayoria
+    # global del FASPRO. Asi una fase nueva nace con los mismos flags que sus
+    # hermanas en TEXPLUS (Odoo forzaba valores fijos que rompian produccion:
+    # p.ej. FasCon='N' cuando 414/434 fases lo tienen en 'S').
+    _FASPRO_FLAG_COLS = ('FasActTin', 'FasCon', 'FasConPla', 'FasCc', 'FasAcab',
+                         'FasFormul', 'FasEstamp')
+    _FASPRO_FLAG_GLOBAL_DEFAULT = {
+        'FasActTin': 'N', 'FasCon': 'S', 'FasConPla': 'N', 'FasCc': 'N',
+        'FasAcab': 'N', 'FasFormul': 'N', 'FasEstamp': 'N',
+    }
+
+    def _faspro_sibling_flags(self, cursor, maqcod):
+        """Devuelve los flags S/N para una fase nueva, tomados del valor
+        mayoritario entre las fases existentes de la misma maquina (MaqCod).
+        Si la maquina no tiene fases previas, usa la mayoria global."""
+        flags = {}
+        maqcod = (maqcod or '').strip()
+        for col in self._FASPRO_FLAG_COLS:
+            value = None
+            if maqcod:
+                cursor.execute(
+                    f"SELECT TOP 1 LTRIM(RTRIM({col})) AS v "
+                    f"FROM dbo.FASPRO WITH (NOLOCK) "
+                    f"WHERE EmprCod = ? AND LTRIM(RTRIM(MaqCod)) = ? "
+                    f"AND LTRIM(RTRIM({col})) IN ('S', 'N') "
+                    f"GROUP BY LTRIM(RTRIM({col})) ORDER BY COUNT(*) DESC",
+                    TEXPLUS_EMPRCOD, maqcod)
+                row = cursor.fetchone()
+                if row and row[0] in ('S', 'N'):
+                    value = row[0]
+            flags[col] = value or self._FASPRO_FLAG_GLOBAL_DEFAULT[col]
+        return flags
+
     def _ensure_texplus_phase_exists(self, cursor, operation):
         if not operation or _is_tejido_crudo(operation):
             return None
@@ -636,6 +671,8 @@ class MrpBaseProcess(models.Model):
         workcenter_code = None
         if operation.general_machine_id and operation.general_machine_id.code:
             workcenter_code = _fit_char(operation.general_machine_id.code, 6)
+        # Flags S/N copiados de fases hermanas (misma maquina) en vez de fijos.
+        flags = self._faspro_sibling_flags(cursor, workcenter_code)
         self._upsert_texplus_record(
             cursor,
             'FASPRO',
@@ -653,15 +690,15 @@ class MrpBaseProcess(models.Model):
                 'FasPrePie': 0,
                 'FasVelPro': 1.00,
                 'FasNumPas': 1,
-                'FasActTin': 'S',
-                'FasCon': 'N',
+                'FasActTin': flags['FasActTin'],
+                'FasCon': flags['FasCon'],
                 'FasUltLin': 0,
-                'FasFormul': 'N',
-                'FasConPla': 'S',
-                'FasEstamp': 'N',
-                'FasCc': 'N',
+                'FasFormul': flags['FasFormul'],
+                'FasConPla': flags['FasConPla'],
+                'FasEstamp': flags['FasEstamp'],
+                'FasCc': flags['FasCc'],
                 'FasValMtr': 0,
-                'FasAcab': 'N',
+                'FasAcab': flags['FasAcab'],
                 'FasPreMc': 0,
                 'FasProcTb': '',
                 'FasGral': 'N',

@@ -437,6 +437,15 @@ class TechnicalSheet(models.Model):
                 route_code = sheet._get_texplus_route_code()
                 route_desc = sheet._get_texplus_route_description()
                 cdgart = sheet._get_cdgart()
+            except UserError as exc:
+                # Caso esperado: ficha sin prefijo de export valido (M/P/S) u
+                # otro dato de configuracion faltante. No es un fallo del sync:
+                # simplemente esa ficha aun no esta lista para TEXPLUS. Se omite
+                # con un aviso breve (sin traceback) para no inundar el log.
+                _logger.info(
+                    "technical.sheet %s: ruta TEXPLUS omitida (%s)",
+                    sheet.display_name, exc)
+                continue
             except Exception:
                 _logger.exception(
                     "technical.sheet %s: ruta TEXPLUS no sincronizada (datos incompletos)",
