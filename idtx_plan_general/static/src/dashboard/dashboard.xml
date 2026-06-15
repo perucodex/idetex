@@ -1,0 +1,604 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+<t t-name="idtx_plan_general.Dashboard">
+<div class="pg-dashboard">
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         HEADER
+    ══════════════════════════════════════════════════════════════════ -->
+    <div class="pg-header">
+        <div class="pg-header-left">
+
+            <!-- Botón volver -->
+            <button class="pg-btn-back" t-on-click="onBack" title="Volver">
+                <i class="fa fa-arrow-left"/>
+            </button>
+
+            <div class="pg-header-icon">
+                <i class="fa fa-calendar-check-o"/>
+            </div>
+            <div>
+                <h1 class="pg-title">Plan General de Producción</h1>
+                <p class="pg-subtitle">
+                    <i class="fa fa-clock-o"/>&#160;Actualizado:&#160;
+                    <span t-if="state.lastUpdate">
+                        <t t-esc="fmtDate(state.lastUpdate)"/>&#160;—&#160;<t t-esc="fmtTime(state.lastUpdate)"/>
+                    </span>
+                    <span t-else="">cargando...</span>
+                    <span class="pg-subtitle-sep">·</span>
+                    <i class="fa fa-database"/>&#160;<t t-esc="state.pedidos.all_count"/> pedidos totales
+                </p>
+            </div>
+        </div>
+        <div class="pg-header-right">
+            <button t-att-class="state.loading ? 'pg-btn-refresh pg-btn-refresh--loading' : 'pg-btn-refresh'"
+                    t-on-click="onRefresh">
+                <i class="fa fa-refresh"/>
+                <span>Actualizar</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         BARRA DE NAVEGACIÓN
+    ══════════════════════════════════════════════════════════════════ -->
+    <nav class="pg-nav">
+        <t t-foreach="navTabs" t-as="tab" t-key="tab.key">
+            <button
+                t-att-class="state.activeTab === tab.key ? 'pg-nav-item pg-nav-item--active' : 'pg-nav-item'"
+                t-att-data-tab="tab.key"
+                t-on-click="onNavClick">
+                <i t-att-class="'fa ' + tab.icon"/>
+                <span t-esc="tab.label"/>
+            </button>
+        </t>
+    </nav>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         CONTENIDO — DASHBOARD
+    ══════════════════════════════════════════════════════════════════ -->
+    <t t-if="state.activeTab === 'dashboard'">
+
+        <!-- KPI ROW — 8 tarjetas -->
+        <div class="pg-kpi-row">
+
+            <div class="pg-kpi-card pg-kpi-info">
+                <div class="pg-kpi-icon"><i class="fa fa-list-alt"/></div>
+                <div class="pg-kpi-body">
+                    <div class="pg-kpi-value" t-esc="state.pedidos.total_activos"/>
+                    <div class="pg-kpi-label">Pedidos Activos</div>
+                    <div class="pg-kpi-sub"><span t-esc="state.pedidos.done"/> finalizados · <span t-esc="state.pedidos.settled"/> liquidados</div>
+                </div>
+            </div>
+
+            <div class="pg-kpi-card pg-kpi-success">
+                <div class="pg-kpi-icon"><i class="fa fa-check-circle"/></div>
+                <div class="pg-kpi-body">
+                    <div class="pg-kpi-value" t-esc="state.pedidos.on_time"/>
+                    <div class="pg-kpi-label">A Tiempo</div>
+                    <div class="pg-kpi-sub"><span t-esc="pctOnTime"/>% del total activo</div>
+                </div>
+            </div>
+
+            <div class="pg-kpi-card pg-kpi-danger">
+                <div class="pg-kpi-icon"><i class="fa fa-exclamation-triangle"/></div>
+                <div class="pg-kpi-body">
+                    <div class="pg-kpi-value" t-esc="state.pedidos.delayed"/>
+                    <div class="pg-kpi-label">Retrasados</div>
+                    <div class="pg-kpi-sub"><span t-esc="pctDelayed"/>% del total activo</div>
+                </div>
+            </div>
+
+            <div class="pg-kpi-card pg-kpi-neutral">
+                <div class="pg-kpi-icon"><i class="fa fa-cubes"/></div>
+                <div class="pg-kpi-body">
+                    <div class="pg-kpi-value" t-esc="state.partidas.total_activas"/>
+                    <div class="pg-kpi-label">Partidas Activas</div>
+                    <div class="pg-kpi-sub">en producción</div>
+                </div>
+            </div>
+
+            <div class="pg-kpi-card pg-kpi-warning">
+                <div class="pg-kpi-icon"><i class="fa fa-balance-scale"/></div>
+                <div class="pg-kpi-body">
+                    <div class="pg-kpi-value" t-esc="fmtKilos(state.pedidos.kilos_total)"/>
+                    <div class="pg-kpi-label">Kilos en Proceso</div>
+                    <div class="pg-kpi-sub"><span t-esc="fmtKilos(state.pedidos.kilos_done)"/> finalizados</div>
+                </div>
+            </div>
+
+            <div class="pg-kpi-card pg-kpi-alert">
+                <div class="pg-kpi-icon"><i class="fa fa-pause-circle"/></div>
+                <div class="pg-kpi-body">
+                    <div class="pg-kpi-value" t-esc="state.partidas.sin_avance"/>
+                    <div class="pg-kpi-label">Sin Avance</div>
+                    <div class="pg-kpi-sub">partidas sin proceso</div>
+                </div>
+            </div>
+
+            <div class="pg-kpi-card pg-kpi-teal">
+                <div class="pg-kpi-icon"><i class="fa fa-users"/></div>
+                <div class="pg-kpi-body">
+                    <div class="pg-kpi-value" t-esc="state.pedidos.total_clientes"/>
+                    <div class="pg-kpi-label">Clientes Activos</div>
+                    <div class="pg-kpi-sub"><span t-esc="state.pedidos.clientes_retrasados"/> con retrasos</div>
+                </div>
+            </div>
+
+            <div class="pg-kpi-card pg-kpi-rose">
+                <div class="pg-kpi-icon"><i class="fa fa-hourglass-half"/></div>
+                <div class="pg-kpi-body">
+                    <div class="pg-kpi-value"><t t-esc="state.pedidos.avg_delay"/>d</div>
+                    <div class="pg-kpi-label">Prom. Retraso</div>
+                    <div class="pg-kpi-sub">días promedio retrasados</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SECCIÓN: ESTADO GENERAL -->
+        <div class="pg-section-title"><i class="fa fa-pie-chart"/> Estado General de Pedidos</div>
+
+        <div class="pg-charts-row">
+
+            <div class="pg-card pg-chart-card">
+                <div class="pg-card-header">
+                    <i class="fa fa-circle-o-notch pg-card-icon"/>
+                    <span>Activos por Estado</span>
+                </div>
+                <div class="pg-chart-wrap">
+                    <canvas t-ref="chartDonut"/>
+                </div>
+            </div>
+
+            <div class="pg-card pg-chart-card">
+                <div class="pg-card-header">
+                    <i class="fa fa-bullseye pg-card-icon pg-card-icon--teal"/>
+                    <span>Distribución Histórica</span>
+                </div>
+                <div class="pg-chart-wrap">
+                    <canvas t-ref="chartEstados"/>
+                </div>
+            </div>
+
+            <div class="pg-card pg-chart-card pg-chart-card--wide">
+                <div class="pg-card-header">
+                    <i class="fa fa-bar-chart pg-card-icon"/>
+                    <span>Kilos por Área</span>
+                </div>
+                <div class="pg-chart-wrap">
+                    <canvas t-ref="chartBar"/>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SECCIÓN: CLIENTES & PROCESOS -->
+        <div class="pg-section-title"><i class="fa fa-users"/> Clientes &amp; Procesos</div>
+
+        <div class="pg-charts-row-2">
+
+            <div class="pg-card pg-chart-card">
+                <div class="pg-card-header">
+                    <i class="fa fa-user-circle pg-card-icon pg-card-icon--info"/>
+                    <span>Top Clientes por Kilos</span>
+                    <span class="pg-badge" t-esc="state.pedidos.total_clientes"/>
+                </div>
+                <div class="pg-chart-wrap pg-chart-wrap--tall">
+                    <canvas t-ref="chartClientes"/>
+                </div>
+            </div>
+
+            <div class="pg-card pg-chart-card">
+                <div class="pg-card-header">
+                    <i class="fa fa-cogs pg-card-icon pg-card-icon--purple"/>
+                    <span>Partidas por Proceso</span>
+                </div>
+                <div class="pg-chart-wrap pg-chart-wrap--tall">
+                    <canvas t-ref="chartProceso"/>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SECCIÓN: ALERTAS -->
+        <div class="pg-section-title"><i class="fa fa-warning pg-section-icon--danger"/> Alertas &amp; Seguimiento</div>
+
+        <div class="pg-charts-row-3">
+
+            <div class="pg-card pg-chart-card">
+                <div class="pg-card-header">
+                    <i class="fa fa-hourglass-half pg-card-icon pg-card-icon--danger"/>
+                    <span>Top Retrasados (días)</span>
+                </div>
+                <div class="pg-chart-wrap pg-chart-wrap--tall">
+                    <canvas t-ref="chartHBar"/>
+                </div>
+            </div>
+
+            <div class="pg-card pg-table-card">
+                <div class="pg-card-header">
+                    <i class="fa fa-calendar pg-card-icon pg-card-icon--warning"/>
+                    <span>Próximos a Vencer <small>(7 días)</small></span>
+                    <span class="pg-badge" t-esc="state.pedidos.proximos_vencer.length"/>
+                </div>
+                <div class="pg-table-wrap">
+                    <table class="pg-table" t-if="state.pedidos.proximos_vencer.length">
+                        <thead>
+                            <tr>
+                                <th>Pedido</th>
+                                <th>Cliente</th>
+                                <th>F. Deseada</th>
+                                <th>Días</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="state.pedidos.proximos_vencer" t-as="row" t-key="row.num">
+                                <tr t-att-class="row.state === 'de' ? 'pg-row-danger' : 'pg-row-ok'">
+                                    <td class="pg-mono"><t t-esc="row.num"/></td>
+                                    <td class="pg-truncate"><t t-esc="row.customer"/></td>
+                                    <td><t t-esc="fmtDate(row.wish_date)"/></td>
+                                    <td>
+                                        <span t-att-class="row.days === 0 ? 'pg-days-badge danger' : row.days === 1 ? 'pg-days-badge warn' : 'pg-days-badge'">
+                                            <t t-esc="row.days"/>d
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span t-att-class="row.state === 'de' ? 'pg-state-badge pg-state-de' : 'pg-state-badge pg-state-on'">
+                                            <t t-esc="stateLabelOf(row.state)"/>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    <div class="pg-empty" t-else="">
+                        <i class="fa fa-check-circle"/> Sin pedidos próximos a vencer en 7 días
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SECCIÓN: DISTRIBUCIÓN DETALLADA -->
+        <div class="pg-section-title"><i class="fa fa-table"/> Distribución Detallada</div>
+
+        <div class="pg-bottom-row">
+
+            <div class="pg-card pg-table-card">
+                <div class="pg-card-header">
+                    <i class="fa fa-trophy pg-card-icon pg-card-icon--warning"/>
+                    <span>Top Clientes</span>
+                    <span class="pg-badge" t-esc="state.pedidos.top_clientes.length"/>
+                </div>
+                <div class="pg-table-wrap">
+                    <table class="pg-table" t-if="clientesWithPct.length">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Cliente</th>
+                                <th>Pedidos</th>
+                                <th>Kilos</th>
+                                <th>Retraso</th>
+                                <th class="pg-th-progress">% Kilos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="clientesWithPct" t-as="row" t-key="row.customer">
+                                <tr t-att-class="row.delayed > 0 ? 'pg-row-warn' : ''">
+                                    <td class="pg-num pg-muted"><t t-esc="row_index + 1"/></td>
+                                    <td class="pg-truncate">
+                                        <span class="pg-area-dot" t-att-style="'background:' + row.color"/>
+                                        <t t-esc="row.customer"/>
+                                    </td>
+                                    <td class="pg-num"><t t-esc="row.count"/></td>
+                                    <td class="pg-num"><t t-esc="fmtKilos(row.kilos)"/></td>
+                                    <td class="pg-num">
+                                        <span t-if="row.delayed > 0" class="pg-days-badge danger">
+                                            <t t-esc="row.delayed"/>
+                                        </span>
+                                        <span t-else="" class="pg-days-badge ok">0</span>
+                                    </td>
+                                    <td>
+                                        <div class="pg-progress-bar">
+                                            <div class="pg-progress-fill" t-att-style="'width:' + row.pct + '%;background:' + row.color"/>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    <div class="pg-empty" t-else="">
+                        <i class="fa fa-spin fa-spinner"/> Cargando datos...
+                    </div>
+                </div>
+            </div>
+
+            <div class="pg-card pg-table-card">
+                <div class="pg-card-header">
+                    <i class="fa fa-sitemap pg-card-icon"/>
+                    <span>Distribución por Área</span>
+                </div>
+                <div class="pg-table-wrap">
+                    <table class="pg-table" t-if="areasWithPct.length">
+                        <thead>
+                            <tr>
+                                <th>Área</th>
+                                <th>Partidas</th>
+                                <th>Kilos</th>
+                                <th class="pg-th-progress">Distribución</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="areasWithPct" t-as="row" t-key="row.area">
+                                <tr>
+                                    <td>
+                                        <span class="pg-area-dot" t-att-style="'background:' + row.color"/>
+                                        <t t-esc="row.area"/>
+                                    </td>
+                                    <td class="pg-num"><t t-esc="row.count"/></td>
+                                    <td class="pg-num"><t t-esc="fmtKilos(row.kilos)"/></td>
+                                    <td>
+                                        <div class="pg-progress-bar">
+                                            <div class="pg-progress-fill" t-att-style="'width:' + row.pct + '%;background:' + row.color"/>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                    <div class="pg-empty" t-else="">
+                        <i class="fa fa-spin fa-spinner"/> Cargando datos...
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </t><!-- /dashboard -->
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         CONTENIDO — TABLAS (vacío por ahora)
+    ══════════════════════════════════════════════════════════════════ -->
+    <t t-elif="state.activeTab === 'tablas'">
+        <div class="pg-coming-soon">
+            <div class="pg-coming-soon-icon"><i class="fa fa-table"/></div>
+            <h2 class="pg-coming-soon-title">Tablas</h2>
+            <p class="pg-coming-soon-sub">Esta sección está en desarrollo. Pronto podrás consultar todas las tablas de producción.</p>
+            <div class="pg-coming-soon-badge">Próximamente</div>
+        </div>
+    </t>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         CONTENIDO — PROGRAMACIÓN
+    ══════════════════════════════════════════════════════════════════ -->
+    <t t-elif="state.activeTab === 'programacion'">
+
+        <!-- Sub-navegación de áreas -->
+        <div class="pg-sub-nav">
+            <t t-foreach="programacionAreas" t-as="area" t-key="area.key">
+                <button
+                    t-att-class="state.activeProgramacion === area.key ? 'pg-sub-nav-item pg-sub-nav-item--active' : 'pg-sub-nav-item'"
+                    t-att-data-area="area.key"
+                    t-on-click="onProgramacionAreaClick">
+                    <i t-att-class="'fa ' + area.icon"/>
+                    <span t-esc="area.label"/>
+                </button>
+            </t>
+        </div>
+
+        <!-- Cuadrícula de máquinas -->
+        <div class="pg-maq-wrap">
+
+            <!-- Cargando -->
+            <div class="pg-coming-soon" t-if="state.maquinasLoading">
+                <i class="fa fa-spin fa-circle-o-notch" style="font-size:32px;color:var(--pg-accent)"/>
+                <span style="color:var(--pg-text-muted);font-size:13px;margin-top:12px">Cargando máquinas...</span>
+            </div>
+
+            <!-- Sin máquinas registradas -->
+            <div class="pg-coming-soon" t-elif="!state.maquinas.length">
+                <div class="pg-coming-soon-icon">
+                    <i t-att-class="'fa ' + currentAreaConfig.icon"/>
+                </div>
+                <h2 class="pg-coming-soon-title">Sin máquinas registradas</h2>
+                <p class="pg-coming-soon-sub">
+                    No hay máquinas asignadas a este departamento.
+                    Regístralas en Mantenimiento → Máquinas y Herramientas
+                    con el departamento correspondiente.
+                </p>
+            </div>
+
+            <!-- Grid -->
+            <t t-else="">
+                <!-- Barra superior: total + leyenda -->
+                <div class="pg-grid-toolbar">
+                    <div class="pg-grid-info">
+                        <i t-att-class="'fa ' + currentAreaConfig.icon"
+                           t-att-style="'color:' + currentAreaConfig.color"/>
+                        <span><strong><t t-esc="state.maquinas.length"/> máquinas</strong></span>
+                    </div>
+                    <div class="pg-grid-legend">
+                        <span class="pg-legend-item pg-legend-ok">
+                            <span class="pg-legend-dot"/>Operativa
+                        </span>
+                        <span class="pg-legend-item pg-legend-oos">
+                            <span class="pg-legend-dot"/>Fuera de servicio
+                        </span>
+                        <span class="pg-legend-item pg-legend-off">
+                            <span class="pg-legend-dot"/>Inactiva
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Cuadrícula -->
+                <div class="pg-grid-scroll">
+                    <div class="pg-machine-grid">
+                        <t t-foreach="gridSlots" t-as="slot" t-key="slot.index">
+
+                            <!-- Slot ocupado -->
+                            <div t-if="slot.machine"
+                                 class="pg-machine-slot pg-machine-slot--filled"
+                                 t-att-data-slot="slot.index"
+                                 t-att-data-machine-id="slot.machine.id"
+                                 draggable="true"
+                                 t-on-dragstart="onMachineDragStart"
+                                 t-on-dragend="onMachineDragEnd"
+                                 t-on-dragover="onSlotDragOver"
+                                 t-on-dragleave="onSlotDragLeave"
+                                 t-on-drop="onSlotDrop"
+                                 t-att-title="slot.machine.name + (slot.machine.code ? ' · ' + slot.machine.code : '') + (slot.machine.model ? '\nModelo: ' + slot.machine.model : '')">
+
+                                <!-- Badge número -->
+                                <span class="pg-machine-badge"><t t-esc="slot.machine.id"/></span>
+
+                                <!-- Icono área -->
+                                <div class="pg-machine-icon-wrap"
+                                     t-att-class="slot.machine.oos ? 'pg-machine-icon-wrap--oos' : slot.machine.enabled ? 'pg-machine-icon-wrap--ok' : 'pg-machine-icon-wrap--off'"
+                                     t-att-style="slot.machine.oos || !slot.machine.enabled ? '' : 'background:' + currentAreaConfig.color + '28;border-color:' + currentAreaConfig.color + '66;color:' + currentAreaConfig.color">
+                                    <i t-att-class="'fa fa-2x ' + currentAreaConfig.icon"/>
+                                    <div class="pg-machine-subicon">
+                                        <i t-if="slot.machine.oos" class="fa fa-times"/>
+                                        <i t-elif="!slot.machine.enabled" class="fa fa-minus"/>
+                                        <i t-else="" class="fa fa-check"/>
+                                    </div>
+                                </div>
+
+                                <!-- Nombre corto -->
+                                <span class="pg-machine-name">
+                                    <t t-esc="slot.machine.code || slot.machine.name.slice(0,8)"/>
+                                </span>
+
+                            </div>
+
+                            <!-- Slot vacío -->
+                            <div t-else=""
+                                 class="pg-machine-slot pg-machine-slot--empty"
+                                 t-att-data-slot="slot.index"
+                                 t-on-dragover="onSlotDragOver"
+                                 t-on-dragleave="onSlotDragLeave"
+                                 t-on-drop="onSlotDrop"/>
+
+                        </t>
+                    </div>
+                </div>
+            </t>
+
+        </div>
+
+    </t>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         CONTENIDO — PLANNING (Gantt)
+    ══════════════════════════════════════════════════════════════════ -->
+    <t t-elif="state.activeTab === 'planning'">
+        <div class="pg-gantt-wrap">
+
+            <!-- Toolbar -->
+            <div class="pg-gantt-toolbar">
+
+                <!-- Zoom (Día / Semana / Mes) -->
+                <div class="pg-gantt-zoom">
+                    <button
+                        t-att-class="state.ganttZoom === 'day'   ? 'pg-gz pg-gz--active' : 'pg-gz'"
+                        data-zoom="day" t-on-click="onGanttZoom">Día</button>
+                    <button
+                        t-att-class="state.ganttZoom === 'week'  ? 'pg-gz pg-gz--active' : 'pg-gz'"
+                        data-zoom="week" t-on-click="onGanttZoom">Semana</button>
+                    <button
+                        t-att-class="state.ganttZoom === 'month' ? 'pg-gz pg-gz--active' : 'pg-gz'"
+                        data-zoom="month" t-on-click="onGanttZoom">Mes</button>
+                </div>
+
+                <!-- Navegación temporal -->
+                <div class="pg-gantt-nav">
+                    <button class="pg-gantt-nav-btn" t-on-click="onGanttPrev">
+                        <i class="fa fa-chevron-left"/>&#160;<t t-esc="ganttNavLabel"/>
+                    </button>
+                    <button class="pg-gantt-nav-btn pg-gantt-nav-btn--today" t-on-click="onGanttToday">
+                        <i class="fa fa-crosshairs"/>&#160;Hoy
+                    </button>
+                    <button class="pg-gantt-nav-btn" t-on-click="onGanttNext">
+                        <t t-esc="ganttNavLabel"/>&#160;<i class="fa fa-chevron-right"/>
+                    </button>
+                </div>
+
+                <!-- Filtros de estado -->
+                <div class="pg-gantt-state-filters">
+                    <button
+                        t-att-class="state.ganttStates.on ? 'pg-gsf pg-gsf--on pg-gsf--active' : 'pg-gsf pg-gsf--on'"
+                        data-state="on" t-on-click="onGanttToggleState">
+                        <i class="fa fa-circle"/>&#160;A Tiempo
+                    </button>
+                    <button
+                        t-att-class="state.ganttStates.de ? 'pg-gsf pg-gsf--de pg-gsf--active' : 'pg-gsf pg-gsf--de'"
+                        data-state="de" t-on-click="onGanttToggleState">
+                        <i class="fa fa-circle"/>&#160;Retrasados
+                    </button>
+                    <button
+                        t-att-class="state.ganttStates.do ? 'pg-gsf pg-gsf--do pg-gsf--active' : 'pg-gsf pg-gsf--do'"
+                        data-state="do" t-on-click="onGanttToggleState">
+                        <i class="fa fa-circle"/>&#160;Terminados
+                    </button>
+                </div>
+
+                <!-- Filtros de área -->
+                <div class="pg-gantt-area-filters">
+                    <button
+                        t-att-class="state.ganttArea === 'todas' ? 'pg-gaf pg-gaf--active' : 'pg-gaf'"
+                        data-area="todas" t-on-click="onGanttAreaFilter">
+                        Todas
+                    </button>
+                    <t t-foreach="programacionAreas" t-as="ga" t-key="ga.key">
+                        <button
+                            t-att-class="state.ganttArea === ga.key ? 'pg-gaf pg-gaf--active' : 'pg-gaf'"
+                            t-att-data-area="ga.key"
+                            t-on-click="onGanttAreaFilter">
+                            <t t-esc="ga.label"/>
+                        </button>
+                    </t>
+                </div>
+
+            </div>
+
+            <!-- Board (construido programáticamente) -->
+            <div class="pg-gantt-board-wrap" t-ref="ganttBoard">
+                <div class="pg-coming-soon" t-if="state.ganttLoading">
+                    <i class="fa fa-spin fa-circle-o-notch" style="font-size:32px;color:var(--pg-accent)"/>
+                    <span style="color:var(--pg-text-muted);font-size:13px">Cargando planning...</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Tooltip global (fixed, fuera del scroll) -->
+        <div id="pg-gantt-tooltip" class="pg-gantt-tip" style="display:none"/>
+
+    </t>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         CONTENIDO — CONFIGURACIÓN (vacío por ahora)
+    ══════════════════════════════════════════════════════════════════ -->
+    <t t-elif="state.activeTab === 'configuracion'">
+        <div class="pg-coming-soon">
+            <div class="pg-coming-soon-icon"><i class="fa fa-cog"/></div>
+            <h2 class="pg-coming-soon-title">Configuración</h2>
+            <p class="pg-coming-soon-sub">Aquí podrás configurar los parámetros del Plan General de Producción.</p>
+            <div class="pg-coming-soon-badge">Próximamente</div>
+        </div>
+    </t>
+
+    <!-- Loading overlay -->
+    <div class="pg-loading-overlay" t-if="state.loading">
+        <div class="pg-spinner-wrap">
+            <i class="fa fa-spin fa-circle-o-notch pg-spinner-icon"/>
+            <span class="pg-spinner-text">Cargando datos...</span>
+        </div>
+    </div>
+
+</div>
+</t>
+
+</templates>

@@ -6,6 +6,7 @@ class MrpWorkcenter(models.Model):
     _inherit = 'mrp.workcenter'
     
     operation_type = fields.Selection([
+        ('spinning', 'Hilado'),
         ('weaving', 'Weaving'),
         ('dyeing', 'Dyeing'),
         ('printing', 'Printing'),

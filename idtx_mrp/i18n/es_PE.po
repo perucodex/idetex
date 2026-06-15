@@ -971,6 +971,11 @@ msgid "Unit"
 msgstr "Unidad"
 
 #. module: idtx_mrp
+#: model:ir.model.fields.selection,name:idtx_mrp.selection__mrp_workcenter__operation_type__spinning
+msgid "Hilado"
+msgstr "Hilado"
+
+#. module: idtx_mrp
 #: model:ir.model.fields.selection,name:idtx_mrp.selection__mrp_workcenter__operation_type__weaving
 msgid "Weaving"
 msgstr "Tejido"

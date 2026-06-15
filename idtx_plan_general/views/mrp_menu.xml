@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="action_plan_general" model="ir.actions.client">
+            <field name="name">Plan General</field>
+            <field name="tag">idtx_plan_general.dashboard</field>
+        </record>
+
+        <!-- App raíz — sin parent = aplicación independiente en el home menu -->
+        <menuitem id="menu_plan_general_app"
+                  name="Plan General"
+                  web_icon="idtx_plan_general,static/description/icon.svg"
+                  sequence="55"/>
+
+        <menuitem id="menu_plan_general_dashboard"
+                  name="Dashboard"
+                  parent="menu_plan_general_app"
+                  action="action_plan_general"
+                  sequence="10"/>
+
+    </data>
+</odoo>
