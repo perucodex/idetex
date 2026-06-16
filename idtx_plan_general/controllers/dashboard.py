@@ -8,7 +8,7 @@ class PlanGeneralDashboard(http.Controller):
 
     @http.route(
         "/idtx_plan_general/dashboard_data",
-        type="json",
+        type="jsonrpc",
         auth="user",
         methods=["POST"],
     )
@@ -180,7 +180,7 @@ class PlanGeneralDashboard(http.Controller):
 
     @http.route(
         "/idtx_plan_general/programacion_data",
-        type="json",
+        type="jsonrpc",
         auth="user",
         methods=["POST"],
     )
@@ -255,7 +255,7 @@ class PlanGeneralDashboard(http.Controller):
 
     @http.route(
         "/idtx_plan_general/save_machine_position",
-        type="json",
+        type="jsonrpc",
         auth="user",
         methods=["POST"],
     )
@@ -275,7 +275,7 @@ class PlanGeneralDashboard(http.Controller):
 
     @http.route(
         "/idtx_plan_general/planning_data",
-        type="json",
+        type="jsonrpc",
         auth="user",
         methods=["POST"],
     )

@@ -32,8 +32,8 @@ const STATE_COLORS = {
 };
 
 const CHART_DEFAULTS = {
-    color: "#94a3b8",
-    gridColor: "rgba(255,255,255,0.06)",
+    color: "#64748b",
+    gridColor: "rgba(0,0,0,0.06)",
     font: { size: 11, family: "'Inter','Roboto',system-ui,sans-serif" },
 };
 
@@ -677,7 +677,7 @@ export class PlanGeneralDashboard extends Component {
                 datasets: [{
                     data: raw.map((d) => d.value),
                     backgroundColor: raw.map((d) => d.color),
-                    borderColor: "#0d1117",
+                    borderColor: "#ffffff",
                     borderWidth: 3,
                     hoverOffset: 8,
                 }],
@@ -780,7 +780,7 @@ export class PlanGeneralDashboard extends Component {
                 },
                 scales: {
                     x: { ticks: { color: CHART_DEFAULTS.color, font: CHART_DEFAULTS.font }, grid: { color: CHART_DEFAULTS.gridColor } },
-                    y: { ticks: { color: "#e6eefb",            font: CHART_DEFAULTS.font }, grid: { color: "rgba(255,255,255,0.04)" } },
+                    y: { ticks: { color: "#1e293b",            font: CHART_DEFAULTS.font }, grid: { color: "rgba(0,0,0,0.04)" } },
                 },
             },
         });
@@ -847,8 +847,8 @@ export class PlanGeneralDashboard extends Component {
                         grid: { color: CHART_DEFAULTS.gridColor },
                     },
                     y: {
-                        ticks: { color: "#e6eefb", font: { size: 10 } },
-                        grid: { color: "rgba(255,255,255,0.04)" },
+                        ticks: { color: "#1e293b", font: { size: 10 } },
+                        grid: { color: "rgba(0,0,0,0.04)" },
                     },
                     yRight: {
                         position: "right",
@@ -946,7 +946,7 @@ export class PlanGeneralDashboard extends Component {
                 scales: {
                     r: {
                         ticks: { color: CHART_DEFAULTS.color, font: { size: 9 }, backdropColor: "transparent" },
-                        grid:  { color: "rgba(255,255,255,0.06)" },
+                        grid:  { color: CHART_DEFAULTS.gridColor },
                         pointLabels: { color: CHART_DEFAULTS.color },
                     },
                 },
