@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        Horarios de trabajo (resource.calendar) según legislación peruana:
+        jornada máxima 8 horas diarias y 48 horas semanales (Const. art. 25).
+        El refrigerio (lunch, 1 h) NO computa como hora de trabajo.
+        Se asignan al contrato del trabajador (resource_calendar_id) y son la
+        base para HE, tardanzas y la generación de work entries.
+    -->
+    <data noupdate="1">
+
+        <!-- ===== Jornada Completa 48h: Lun-Sáb, 8h/día (típica de obreros) ===== -->
+        <record id="calendar_pe_48h_lun_sab" model="resource.calendar">
+            <field name="name">Perú - Jornada Completa 48h (Lun-Sáb, 8h)</field>
+            <field name="hours_per_day">8.0</field>
+            <field name="tz">America/Lima</field>
+            <field name="attendance_ids" eval="[
+                (5, 0, 0),
+                (0, 0, {'name': 'Lunes Mañana',    'dayofweek': '0', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning'}),
+                (0, 0, {'name': 'Lunes Refrigerio','dayofweek': '0', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch'}),
+                (0, 0, {'name': 'Lunes Tarde',     'dayofweek': '0', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon'}),
+                (0, 0, {'name': 'Martes Mañana',    'dayofweek': '1', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning'}),
+                (0, 0, {'name': 'Martes Refrigerio','dayofweek': '1', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch'}),
+                (0, 0, {'name': 'Martes Tarde',     'dayofweek': '1', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon'}),
+                (0, 0, {'name': 'Miércoles Mañana',    'dayofweek': '2', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning'}),
+                (0, 0, {'name': 'Miércoles Refrigerio','dayofweek': '2', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch'}),
+                (0, 0, {'name': 'Miércoles Tarde',     'dayofweek': '2', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon'}),
+                (0, 0, {'name': 'Jueves Mañana',    'dayofweek': '3', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning'}),
+                (0, 0, {'name': 'Jueves Refrigerio','dayofweek': '3', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch'}),
+                (0, 0, {'name': 'Jueves Tarde',     'dayofweek': '3', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon'}),
+                (0, 0, {'name': 'Viernes Mañana',    'dayofweek': '4', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning'}),
+                (0, 0, {'name': 'Viernes Refrigerio','dayofweek': '4', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch'}),
+                (0, 0, {'name': 'Viernes Tarde',     'dayofweek': '4', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon'}),
+                (0, 0, {'name': 'Sábado Mañana',    'dayofweek': '5', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning'}),
+                (0, 0, {'name': 'Sábado Refrigerio','dayofweek': '5', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch'}),
+                (0, 0, {'name': 'Sábado Tarde',     'dayofweek': '5', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon'}),
+            ]"/>
+        </record>
+
+        <!-- ===== 40h: Lun-Vie, 8h/día (común para empleados, sábado libre) ===== -->
+        <record id="calendar_pe_40h_lun_vie" model="resource.calendar">
+            <field name="name">Perú - 40h (Lun-Vie, 8h)</field>
+            <field name="hours_per_day">8.0</field>
+            <field name="tz">America/Lima</field>
+            <field name="attendance_ids" eval="[
+                (5, 0, 0),
+                (0, 0, {'name': 'Lunes Mañana',    'dayofweek': '0', 'hour_from': 8.0,  'hour_to': 13.0, 'day_period': 'morning'}),
+                (0, 0, {'name': 'Lunes Refrigerio','dayofweek': '0', 'hour_from': 13.0, 'hour_to': 14.0, 'day_period': 'lunch'}),
+                (0, 0, {'name': 'Lunes Tarde',     'dayofweek': '0', 'hour_from': 14.0, 'hour_to': 17.0, 'day_period': 'afternoon'}),
+                (0, 0, {'name': 'Martes Mañana',    'dayofweek': '1', 'hour_from': 8.0,  'hour_to': 13.0, 'day_period': 'morning'}),
+                (0, 0, {'name': 'Martes Refrigerio','dayofweek': '1', 'hour_from': 13.0, 'hour_to': 14.0, 'day_period': 'lunch'}),
+                (0, 0, {'name': 'Martes Tarde',     'dayofweek': '1', 'hour_from': 14.0, 'hour_to': 17.0, 'day_period': 'afternoon'}),
+                (0, 0, {'name': 'Miércoles Mañana',    'dayofweek': '2', 'hour_from': 8.0,  'hour_to': 13.0, 'day_period': 'morning'}),
+                (0, 0, {'name': 'Miércoles Refrigerio','dayofweek': '2', 'hour_from': 13.0, 'hour_to': 14.0, 'day_period': 'lunch'}),
+                (0, 0, {'name': 'Miércoles Tarde',     'dayofweek': '2', 'hour_from': 14.0, 'hour_to': 17.0, 'day_period': 'afternoon'}),
+                (0, 0, {'name': 'Jueves Mañana',    'dayofweek': '3', 'hour_from': 8.0,  'hour_to': 13.0, 'day_period': 'morning'}),
+                (0, 0, {'name': 'Jueves Refrigerio','dayofweek': '3', 'hour_from': 13.0, 'hour_to': 14.0, 'day_period': 'lunch'}),
+                (0, 0, {'name': 'Jueves Tarde',     'dayofweek': '3', 'hour_from': 14.0, 'hour_to': 17.0, 'day_period': 'afternoon'}),
+                (0, 0, {'name': 'Viernes Mañana',    'dayofweek': '4', 'hour_from': 8.0,  'hour_to': 13.0, 'day_period': 'morning'}),
+                (0, 0, {'name': 'Viernes Refrigerio','dayofweek': '4', 'hour_from': 13.0, 'hour_to': 14.0, 'day_period': 'lunch'}),
+                (0, 0, {'name': 'Viernes Tarde',     'dayofweek': '4', 'hour_from': 14.0, 'hour_to': 17.0, 'day_period': 'afternoon'}),
+            ]"/>
+        </record>
+
+        <!-- ===== Rotativo 2 semanas: semana DÍA (07:00-16:00) / semana NOCHE
+             (19:00-04:00 del día siguiente). Lun-Sáb, 8h + 1h refrigerio.
+             week_type '0' = semana día, '1' = semana noche. El turno noche se
+             modela partido en la medianoche (19:00-24:00 + 00:00-04:00); el motor
+             de planilla reconstruye la sesión y calcula HE/nocturna por turno.
+             Para equipos en fase opuesta, duplicar este calendario intercambiando
+             los week_type. ===== -->
+        <record id="calendar_pe_rotativo" model="resource.calendar">
+            <field name="name">Perú - Rotativo Día/Noche (2 semanas)</field>
+            <field name="hours_per_day">8.0</field>
+            <field name="tz">America/Lima</field>
+            <field name="two_weeks_calendar" eval="True"/>
+            <field name="attendance_ids" eval="[
+                (5, 0, 0),
+                (0, 0, {'name': 'Día Mañana',     'dayofweek': '0', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning',   'week_type': '0'}),
+                (0, 0, {'name': 'Día Refrigerio', 'dayofweek': '0', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch',     'week_type': '0'}),
+                (0, 0, {'name': 'Día Tarde',      'dayofweek': '0', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon', 'week_type': '0'}),
+                (0, 0, {'name': 'Día Mañana',     'dayofweek': '1', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning',   'week_type': '0'}),
+                (0, 0, {'name': 'Día Refrigerio', 'dayofweek': '1', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch',     'week_type': '0'}),
+                (0, 0, {'name': 'Día Tarde',      'dayofweek': '1', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon', 'week_type': '0'}),
+                (0, 0, {'name': 'Día Mañana',     'dayofweek': '2', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning',   'week_type': '0'}),
+                (0, 0, {'name': 'Día Refrigerio', 'dayofweek': '2', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch',     'week_type': '0'}),
+                (0, 0, {'name': 'Día Tarde',      'dayofweek': '2', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon', 'week_type': '0'}),
+                (0, 0, {'name': 'Día Mañana',     'dayofweek': '3', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning',   'week_type': '0'}),
+                (0, 0, {'name': 'Día Refrigerio', 'dayofweek': '3', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch',     'week_type': '0'}),
+                (0, 0, {'name': 'Día Tarde',      'dayofweek': '3', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon', 'week_type': '0'}),
+                (0, 0, {'name': 'Día Mañana',     'dayofweek': '4', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning',   'week_type': '0'}),
+                (0, 0, {'name': 'Día Refrigerio', 'dayofweek': '4', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch',     'week_type': '0'}),
+                (0, 0, {'name': 'Día Tarde',      'dayofweek': '4', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon', 'week_type': '0'}),
+                (0, 0, {'name': 'Día Mañana',     'dayofweek': '5', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning',   'week_type': '0'}),
+                (0, 0, {'name': 'Día Refrigerio', 'dayofweek': '5', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch',     'week_type': '0'}),
+                (0, 0, {'name': 'Día Tarde',      'dayofweek': '5', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon', 'week_type': '0'}),
+                (0, 0, {'name': 'Noche',          'dayofweek': '0', 'hour_from': 19.0, 'hour_to': 24.0, 'day_period': 'afternoon', 'week_type': '1'}),
+                (0, 0, {'name': 'Noche Refrigerio','dayofweek': '0', 'hour_from': 0.0,  'hour_to': 1.0,  'day_period': 'lunch',     'week_type': '1'}),
+                (0, 0, {'name': 'Noche Madrugada','dayofweek': '0', 'hour_from': 1.0,  'hour_to': 4.0,  'day_period': 'morning',   'week_type': '1'}),
+                (0, 0, {'name': 'Noche',          'dayofweek': '1', 'hour_from': 19.0, 'hour_to': 24.0, 'day_period': 'afternoon', 'week_type': '1'}),
+                (0, 0, {'name': 'Noche Refrigerio','dayofweek': '1', 'hour_from': 0.0,  'hour_to': 1.0,  'day_period': 'lunch',     'week_type': '1'}),
+                (0, 0, {'name': 'Noche Madrugada','dayofweek': '1', 'hour_from': 1.0,  'hour_to': 4.0,  'day_period': 'morning',   'week_type': '1'}),
+                (0, 0, {'name': 'Noche',          'dayofweek': '2', 'hour_from': 19.0, 'hour_to': 24.0, 'day_period': 'afternoon', 'week_type': '1'}),
+                (0, 0, {'name': 'Noche Refrigerio','dayofweek': '2', 'hour_from': 0.0,  'hour_to': 1.0,  'day_period': 'lunch',     'week_type': '1'}),
+                (0, 0, {'name': 'Noche Madrugada','dayofweek': '2', 'hour_from': 1.0,  'hour_to': 4.0,  'day_period': 'morning',   'week_type': '1'}),
+                (0, 0, {'name': 'Noche',          'dayofweek': '3', 'hour_from': 19.0, 'hour_to': 24.0, 'day_period': 'afternoon', 'week_type': '1'}),
+                (0, 0, {'name': 'Noche Refrigerio','dayofweek': '3', 'hour_from': 0.0,  'hour_to': 1.0,  'day_period': 'lunch',     'week_type': '1'}),
+                (0, 0, {'name': 'Noche Madrugada','dayofweek': '3', 'hour_from': 1.0,  'hour_to': 4.0,  'day_period': 'morning',   'week_type': '1'}),
+                (0, 0, {'name': 'Noche',          'dayofweek': '4', 'hour_from': 19.0, 'hour_to': 24.0, 'day_period': 'afternoon', 'week_type': '1'}),
+                (0, 0, {'name': 'Noche Refrigerio','dayofweek': '4', 'hour_from': 0.0,  'hour_to': 1.0,  'day_period': 'lunch',     'week_type': '1'}),
+                (0, 0, {'name': 'Noche Madrugada','dayofweek': '4', 'hour_from': 1.0,  'hour_to': 4.0,  'day_period': 'morning',   'week_type': '1'}),
+                (0, 0, {'name': 'Noche',          'dayofweek': '5', 'hour_from': 19.0, 'hour_to': 24.0, 'day_period': 'afternoon', 'week_type': '1'}),
+                (0, 0, {'name': 'Noche Refrigerio','dayofweek': '5', 'hour_from': 0.0,  'hour_to': 1.0,  'day_period': 'lunch',     'week_type': '1'}),
+                (0, 0, {'name': 'Noche Madrugada','dayofweek': '5', 'hour_from': 1.0,  'hour_to': 4.0,  'day_period': 'morning',   'week_type': '1'}),
+            ]"/>
+        </record>
+
+        <!-- ===== Día FIJO 07:00-16:00 (Lun-Sáb, 8h+1h refrigerio) para los
+             trabajadores que NO rotan. ===== -->
+        <record id="calendar_pe_dia_07_16" model="resource.calendar">
+            <field name="name">Perú - Día Fijo (07:00-16:00, Lun-Sáb)</field>
+            <field name="hours_per_day">8.0</field>
+            <field name="tz">America/Lima</field>
+            <field name="attendance_ids" eval="[
+                (5, 0, 0),
+                (0, 0, {'name': 'Mañana',     'dayofweek': '0', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning'}),
+                (0, 0, {'name': 'Refrigerio', 'dayofweek': '0', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch'}),
+                (0, 0, {'name': 'Tarde',      'dayofweek': '0', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon'}),
+                (0, 0, {'name': 'Mañana',     'dayofweek': '1', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning'}),
+                (0, 0, {'name': 'Refrigerio', 'dayofweek': '1', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch'}),
+                (0, 0, {'name': 'Tarde',      'dayofweek': '1', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon'}),
+                (0, 0, {'name': 'Mañana',     'dayofweek': '2', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning'}),
+                (0, 0, {'name': 'Refrigerio', 'dayofweek': '2', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch'}),
+                (0, 0, {'name': 'Tarde',      'dayofweek': '2', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon'}),
+                (0, 0, {'name': 'Mañana',     'dayofweek': '3', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning'}),
+                (0, 0, {'name': 'Refrigerio', 'dayofweek': '3', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch'}),
+                (0, 0, {'name': 'Tarde',      'dayofweek': '3', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon'}),
+                (0, 0, {'name': 'Mañana',     'dayofweek': '4', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning'}),
+                (0, 0, {'name': 'Refrigerio', 'dayofweek': '4', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch'}),
+                (0, 0, {'name': 'Tarde',      'dayofweek': '4', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon'}),
+                (0, 0, {'name': 'Mañana',     'dayofweek': '5', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning'}),
+                (0, 0, {'name': 'Refrigerio', 'dayofweek': '5', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch'}),
+                (0, 0, {'name': 'Tarde',      'dayofweek': '5', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon'}),
+            ]"/>
+        </record>
+
+        <!-- ===== Rotativo INVERSO (fase opuesta): semana NOCHE en week_type '0'
+             y semana DÍA en week_type '1'. Para el equipo que arranca en la fase
+             contraria al calendar_pe_rotativo. ===== -->
+        <record id="calendar_pe_rotativo_inv" model="resource.calendar">
+            <field name="name">Perú - Rotativo Día/Noche INVERSO (2 semanas)</field>
+            <field name="hours_per_day">8.0</field>
+            <field name="tz">America/Lima</field>
+            <field name="two_weeks_calendar" eval="True"/>
+            <field name="attendance_ids" eval="[
+                (5, 0, 0),
+                (0, 0, {'name': 'Noche',          'dayofweek': '0', 'hour_from': 19.0, 'hour_to': 24.0, 'day_period': 'afternoon', 'week_type': '0'}),
+                (0, 0, {'name': 'Noche Refrigerio','dayofweek': '0', 'hour_from': 0.0,  'hour_to': 1.0,  'day_period': 'lunch',     'week_type': '0'}),
+                (0, 0, {'name': 'Noche Madrugada','dayofweek': '0', 'hour_from': 1.0,  'hour_to': 4.0,  'day_period': 'morning',   'week_type': '0'}),
+                (0, 0, {'name': 'Noche',          'dayofweek': '1', 'hour_from': 19.0, 'hour_to': 24.0, 'day_period': 'afternoon', 'week_type': '0'}),
+                (0, 0, {'name': 'Noche Refrigerio','dayofweek': '1', 'hour_from': 0.0,  'hour_to': 1.0,  'day_period': 'lunch',     'week_type': '0'}),
+                (0, 0, {'name': 'Noche Madrugada','dayofweek': '1', 'hour_from': 1.0,  'hour_to': 4.0,  'day_period': 'morning',   'week_type': '0'}),
+                (0, 0, {'name': 'Noche',          'dayofweek': '2', 'hour_from': 19.0, 'hour_to': 24.0, 'day_period': 'afternoon', 'week_type': '0'}),
+                (0, 0, {'name': 'Noche Refrigerio','dayofweek': '2', 'hour_from': 0.0,  'hour_to': 1.0,  'day_period': 'lunch',     'week_type': '0'}),
+                (0, 0, {'name': 'Noche Madrugada','dayofweek': '2', 'hour_from': 1.0,  'hour_to': 4.0,  'day_period': 'morning',   'week_type': '0'}),
+                (0, 0, {'name': 'Noche',          'dayofweek': '3', 'hour_from': 19.0, 'hour_to': 24.0, 'day_period': 'afternoon', 'week_type': '0'}),
+                (0, 0, {'name': 'Noche Refrigerio','dayofweek': '3', 'hour_from': 0.0,  'hour_to': 1.0,  'day_period': 'lunch',     'week_type': '0'}),
+                (0, 0, {'name': 'Noche Madrugada','dayofweek': '3', 'hour_from': 1.0,  'hour_to': 4.0,  'day_period': 'morning',   'week_type': '0'}),
+                (0, 0, {'name': 'Noche',          'dayofweek': '4', 'hour_from': 19.0, 'hour_to': 24.0, 'day_period': 'afternoon', 'week_type': '0'}),
+                (0, 0, {'name': 'Noche Refrigerio','dayofweek': '4', 'hour_from': 0.0,  'hour_to': 1.0,  'day_period': 'lunch',     'week_type': '0'}),
+                (0, 0, {'name': 'Noche Madrugada','dayofweek': '4', 'hour_from': 1.0,  'hour_to': 4.0,  'day_period': 'morning',   'week_type': '0'}),
+                (0, 0, {'name': 'Noche',          'dayofweek': '5', 'hour_from': 19.0, 'hour_to': 24.0, 'day_period': 'afternoon', 'week_type': '0'}),
+                (0, 0, {'name': 'Noche Refrigerio','dayofweek': '5', 'hour_from': 0.0,  'hour_to': 1.0,  'day_period': 'lunch',     'week_type': '0'}),
+                (0, 0, {'name': 'Noche Madrugada','dayofweek': '5', 'hour_from': 1.0,  'hour_to': 4.0,  'day_period': 'morning',   'week_type': '0'}),
+                (0, 0, {'name': 'Día Mañana',     'dayofweek': '0', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning',   'week_type': '1'}),
+                (0, 0, {'name': 'Día Refrigerio', 'dayofweek': '0', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch',     'week_type': '1'}),
+                (0, 0, {'name': 'Día Tarde',      'dayofweek': '0', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon', 'week_type': '1'}),
+                (0, 0, {'name': 'Día Mañana',     'dayofweek': '1', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning',   'week_type': '1'}),
+                (0, 0, {'name': 'Día Refrigerio', 'dayofweek': '1', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch',     'week_type': '1'}),
+                (0, 0, {'name': 'Día Tarde',      'dayofweek': '1', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon', 'week_type': '1'}),
+                (0, 0, {'name': 'Día Mañana',     'dayofweek': '2', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning',   'week_type': '1'}),
+                (0, 0, {'name': 'Día Refrigerio', 'dayofweek': '2', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch',     'week_type': '1'}),
+                (0, 0, {'name': 'Día Tarde',      'dayofweek': '2', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon', 'week_type': '1'}),
+                (0, 0, {'name': 'Día Mañana',     'dayofweek': '3', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning',   'week_type': '1'}),
+                (0, 0, {'name': 'Día Refrigerio', 'dayofweek': '3', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch',     'week_type': '1'}),
+                (0, 0, {'name': 'Día Tarde',      'dayofweek': '3', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon', 'week_type': '1'}),
+                (0, 0, {'name': 'Día Mañana',     'dayofweek': '4', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning',   'week_type': '1'}),
+                (0, 0, {'name': 'Día Refrigerio', 'dayofweek': '4', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch',     'week_type': '1'}),
+                (0, 0, {'name': 'Día Tarde',      'dayofweek': '4', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon', 'week_type': '1'}),
+                (0, 0, {'name': 'Día Mañana',     'dayofweek': '5', 'hour_from': 7.0,  'hour_to': 12.0, 'day_period': 'morning',   'week_type': '1'}),
+                (0, 0, {'name': 'Día Refrigerio', 'dayofweek': '5', 'hour_from': 12.0, 'hour_to': 13.0, 'day_period': 'lunch',     'week_type': '1'}),
+                (0, 0, {'name': 'Día Tarde',      'dayofweek': '5', 'hour_from': 13.0, 'hour_to': 16.0, 'day_period': 'afternoon', 'week_type': '1'}),
+            ]"/>
+        </record>
+
+    </data>
+</odoo>

@@ -11,9 +11,20 @@
                     <div colspan="2" class="col-lg-6 w-100 mt-4 mb-3 o_horizontal_separator text-uppercase fw-bolder small d-flex">
                         <span>Peruvian Localization</span>
                     </div>
-                    <field name="pension_system"/>
-                    <field name="afp_id" invisible="pension_system != 'afp'"/>
-                    <field name="commission_type" invisible="pension_system != 'afp'"/>
+                    <field name="l10n_pe_is_pensioner"/>
+                    <field name="pension_system" invisible="l10n_pe_is_pensioner"/>
+                    <field name="afp_id" invisible="l10n_pe_is_pensioner or pension_system != 'afp'"/>
+                    <field name="commission_type" invisible="l10n_pe_is_pensioner or pension_system != 'afp'"/>
+                    <field name="l10n_pe_cuspp" invisible="l10n_pe_is_pensioner or pension_system != 'afp'"/>
+                    <field name="l10n_pe_family_allowance_right"/>
+                    <field name="l10n_pe_has_eps"/>
+                    <field name="l10n_pe_disability"/>
+                    <field name="l10n_pe_worker_code"/>
+                    <field name="l10n_pe_cost_center"/>
+                    <field name="l10n_pe_service_unit"/>
+                    <field name="l10n_pe_labor_regime"/>
+                    <field name="l10n_pe_worker_type"/>
+                    <field name="l10n_pe_sueldo_pactado"/>
                 </group>
             </group>
         </field>

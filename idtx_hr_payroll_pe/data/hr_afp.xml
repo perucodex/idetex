@@ -9,7 +9,7 @@
             <field name="commission_balance">0.0125</field>
             <field name="commission_flow">0.0147</field>
             <field name="insurance_rate">0.0137</field>
-            <field name="max_insurable">12178.56</field>
+            <field name="max_insurable">12598.91</field>
         </record>
 
         <!-- AFP Integra -->
@@ -19,7 +19,7 @@
             <field name="commission_balance">0.0078</field>
             <field name="commission_flow">0.0155</field>
             <field name="insurance_rate">0.0137</field>
-            <field name="max_insurable">12178.56</field>
+            <field name="max_insurable">12598.91</field>
         </record>
 
         <!-- AFP Prima -->
@@ -29,7 +29,7 @@
             <field name="commission_balance">0.0125</field>
             <field name="commission_flow">0.0160</field>
             <field name="insurance_rate">0.0137</field>
-            <field name="max_insurable">12178.56</field>
+            <field name="max_insurable">12598.91</field>
         </record>
     
         <!-- AFP Profuturo -->
@@ -39,7 +39,7 @@
             <field name="commission_balance">0.0068</field>
             <field name="commission_flow">0.0169</field>
             <field name="insurance_rate">0.0137</field>
-            <field name="max_insurable">12178.56</field>
+            <field name="max_insurable">12598.91</field>
         </record>
 
     </data>

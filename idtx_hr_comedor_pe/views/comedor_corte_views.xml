@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="comedor_corte_view_list" model="ir.ui.view">
+        <field name="name">l10n.pe.comedor.corte.list</field>
+        <field name="model">l10n.pe.comedor.corte</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="has_previous" column_invisible="1"/>
+                <field name="date_from" readonly="has_previous"/>
+                <field name="date_to" options="{'warn_future': true}"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="comedor_corte_view_form" model="ir.ui.view">
+        <field name="name">l10n.pe.comedor.corte.form</field>
+        <field name="model">l10n.pe.comedor.corte</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <field name="has_previous" invisible="1"/>
+                    <group>
+                        <field name="date_from" readonly="has_previous"/>
+                        <field name="date_to" options="{'warn_future': true}"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                    </group>
+                    <div class="text-muted">
+                        La fecha "Desde" se autocompleta con el día siguiente al fin del
+                        corte anterior (solo lectura); así no quedan huecos. La "Hasta" la
+                        define usted. La planilla usa estas fechas para consultar el
+                        consumo del comedor.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="comedor_corte_action" model="ir.actions.act_window">
+        <field name="name">Cortes de Comedor</field>
+        <field name="res_model">l10n.pe.comedor.corte</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_comedor_corte"
+              name="Cortes de Comedor"
+              parent="idtx_hr_payroll_pe.hr_payroll_pe_menu"
+              action="comedor_corte_action"
+              sequence="30"/>
+
+</odoo>

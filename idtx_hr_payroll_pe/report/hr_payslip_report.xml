@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Paperformat A4 compacto: 2 copias (empresa/trabajador) en UNA hoja -->
+    <record id="paperformat_payslip_pe" model="report.paperformat">
+        <field name="name">Boleta PE A4 compacta</field>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">20</field>
+        <field name="margin_bottom">5</field>
+        <field name="margin_left">6</field>
+        <field name="margin_right">6</field>
+        <field name="header_spacing">0</field>
+        <field name="header_line" eval="False"/>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_payslip_pe" model="ir.actions.report">
+        <field name="name">Boleta de Pago (PE)</field>
+        <field name="model">hr.payslip</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">idtx_hr_payroll_pe.report_payslip_pe</field>
+        <field name="report_file">idtx_hr_payroll_pe.report_payslip_pe</field>
+        <field name="paperformat_id" ref="paperformat_payslip_pe"/>
+        <field name="binding_model_id" ref="hr_payroll.model_hr_payslip"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Boleta - %s' % (object.employee_id.name or '')</field>
+    </record>
+
+    <!-- ====== UNA COPIA DE LA BOLETA (formato FULL PIMA) ====== -->
+    <template id="report_payslip_pe_copy">
+        <t t-set="cur" t-value="o.company_id.currency_id"/>
+        <t t-set="meses" t-value="['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE']"/>
+        <t t-set="periodo" t-value="(meses[o.date_to.month - 1] + '-' + str(o.date_to.year)) if o.date_to else ''"/>
+
+        <!-- Conjuntos de líneas. Faltas (FALTA_PE) y Tardanza (TARD_PE) son de
+             categoría BASIC (negativas, reducen la base afecta) pero se MUESTRAN
+             en la columna de DESCUENTOS, no en ingresos. -->
+        <t t-set="ingresos" t-value="o.line_ids.filtered(lambda l: l.category_id.code in ('BASIC','ALW','INAF','GRAT','CTS','VAC') and l.code not in ('FALTA_PE', 'TARD_PE') and l.total != 0)"/>
+        <t t-set="descuentos" t-value="o.line_ids.filtered(lambda l: (l.category_id.code == 'DED' or l.code in ('FALTA_PE', 'TARD_PE')) and l.total != 0)"/>
+        <t t-set="aportes" t-value="o.line_ids.filtered(lambda l: l.category_id.code == 'COMP' and l.total != 0)"/>
+        <t t-set="net_line" t-value="o.line_ids.filtered(lambda l: l.category_id.code == 'NET')[:1]"/>
+        <t t-set="total_ing" t-value="sum(ingresos.mapped('total'))"/>
+        <t t-set="total_desc" t-value="sum(descuentos.mapped('total'))"/>
+        <t t-set="total_apo" t-value="sum(aportes.mapped('total'))"/>
+        <t t-set="neto" t-value="net_line.total if net_line else (total_ing + total_desc)"/>
+
+        <!-- Resumen de días / horas -->
+        <t t-set="dias_pag" t-value="sum(o.worked_days_line_ids.filtered(lambda w: w.is_paid).mapped('number_of_days'))"/>
+        <t t-set="dias_nopag" t-value="sum(o.worked_days_line_ids.filtered(lambda w: not w.is_paid).mapped('number_of_days'))"/>
+        <t t-set="horas_ord" t-value="sum(o.worked_days_line_ids.filtered(lambda w: w.is_paid).mapped('number_of_hours'))"/>
+        <t t-set="horas_ext" t-value="sum(o.line_ids.filtered(lambda l: l.code in ('HE25_PE','HE35_PE')).mapped('quantity'))"/>
+        <!-- Unidad (D/H) por código para la columna cantidad de ingresos -->
+        <t t-set="unidad" t-value="{'SUELDO_PE':'D','FALTA_PE':'D','VACA_PE':'D','LICGOCE_PE':'D','DOMINICAL_PE':'D','HE25_PE':'H','HE35_PE':'H','NOCT_PE':'H','TARD_PE':'H','PERM_PE':'H'}"/>
+
+        <div class="boleta" style="font-size:10px; line-height:1.45; font-family:DejaVu Sans, sans-serif;">
+            <!-- Cabecera 3 columnas -->
+            <table style="width:100%; border:0;">
+                <tr>
+                    <td style="width:33%; vertical-align:top;">
+                        <strong t-field="o.company_id.name"/><br/>
+                        RUC: <span t-field="o.company_id.vat"/>
+                    </td>
+                    <td style="width:34%; text-align:center; vertical-align:top;">
+                        <strong>BOLETA DE PAGO <span t-out="periodo"/></strong><br/>
+                        D.S. Nº 017-2001-TR DEL 07-06-01<br/>
+                        De <span t-field="o.date_from"/> al <span t-field="o.date_to"/>
+                    </td>
+                    <td style="width:33%; text-align:right; vertical-align:top;">
+                        Nº <span t-out="o.id"/><br/>
+                        CÓDIGO: <span t-out="o.employee_id.l10n_pe_worker_code or o.employee_id.identification_id or ''"/>
+                    </td>
+                </tr>
+            </table>
+            <hr style="margin:2px 0; border-top:1px solid #000;"/>
+
+            <table style="width:100%; border:0;">
+                <tr>
+                    <td><strong>DATOS DEL TRABAJADOR</strong></td>
+                    <td style="text-align:right;"><strong>PERIODO DE PAGO: <span t-out="periodo"/></strong></td>
+                </tr>
+            </table>
+            <hr style="margin:2px 0; border-top:1px solid #000;"/>
+
+            <!-- Bloque de datos del trabajador -->
+            <table style="width:100%; border:0;">
+                <tr>
+                    <td colspan="2" style="width:50%;">
+                        <strong>Apellidos y Nombres: </strong>
+                        <span t-out="(o.employee_id.name or '').upper()"/>
+                    </td>
+                    <td colspan="2"><strong>C.Costo: </strong><span t-out="o.employee_id.l10n_pe_cost_center or ''"/></td>
+                </tr>
+                <tr>
+                    <td>Documento: DNI <span t-out="o.employee_id.identification_id or ''"/></td>
+                    <td>Categoría: <span t-field="o.version_id.l10n_pe_worker_type"/></td>
+                    <td>Básico: <span t-out="o.version_id.wage" t-options='{"widget": "monetary", "display_currency": cur}'/></td>
+                    <td>Período vacac:</td>
+                </tr>
+                <tr>
+                    <td>Reg. Pens.:
+                        <span t-if="o.employee_id.pension_system == 'afp'">AFP <span t-out="o.employee_id.afp_id.name or ''"/></span>
+                        <span t-else="">ONP</span>
+                    </td>
+                    <td>Cargo: <span t-out="o.employee_id.job_id.name or ''"/></td>
+                    <td>Días Efec.: <span t-out="dias_pag" t-options='{"widget": "float", "precision": 2}'/></td>
+                    <td>Días no Lab.: <span t-out="dias_nopag" t-options='{"widget": "float", "precision": 2}'/></td>
+                </tr>
+                <tr>
+                    <td>CUSPP: <span t-out="o.employee_id.l10n_pe_cuspp or ''"/></td>
+                    <td>Unid.Servicios: <span t-out="o.employee_id.l10n_pe_service_unit or ''"/></td>
+                    <td>Hor. Ord.: <span t-out="horas_ord" t-options='{"widget": "float", "precision": 2}'/></td>
+                    <td>Hor. Ext.: <span t-out="horas_ext" t-options='{"widget": "float", "precision": 2}'/></td>
+                </tr>
+                <tr>
+                    <td>Fec. Ing.: <span t-field="o.version_id.contract_date_start"/></td>
+                    <td>Fec. Cese: <span t-out="o.version_id.contract_date_end or ''"/></td>
+                    <td>Área: <span t-out="o.employee_id.department_id.name or ''"/></td>
+                    <td>Reg. Laboral: <span t-field="o.version_id.l10n_pe_labor_regime"/></td>
+                </tr>
+                <tr>
+                    <td colspan="2">Mot. Cese:</td>
+                    <td colspan="2">Situación Especial: NINGUNA</td>
+                </tr>
+            </table>
+            <hr style="margin:2px 0; border-top:1px solid #000;"/>
+
+            <!-- Tres columnas: Ingresos / Descuentos / Aportaciones -->
+            <table style="width:100%; border:0; vertical-align:top;">
+                <tr style="vertical-align:top;">
+                    <!-- INGRESOS -->
+                    <td style="width:38%; vertical-align:top;">
+                        <table style="width:100%; border:0;">
+                            <tr class="hdr">
+                                <th colspan="3" style="text-align:left;">INGRESOS</th>
+                                <th style="text-align:right;">S/</th>
+                            </tr>
+                            <tr t-foreach="ingresos" t-as="line">
+                                <td style="text-align:right; width:18%;">
+                                    <span t-if="line.code in unidad" t-out="line.quantity" t-options='{"widget": "float", "precision": 2}'/>
+                                </td>
+                                <td style="width:8%;"><span t-out="unidad.get(line.code, '')"/></td>
+                                <td><span t-out="line.name"/></td>
+                                <td style="text-align:right;"><span t-out="line.total" t-options='{"widget": "monetary", "display_currency": cur}'/></td>
+                            </tr>
+                        </table>
+                    </td>
+                    <!-- DESCUENTOS -->
+                    <td style="width:31%; vertical-align:top;">
+                        <table style="width:100%; border:0;">
+                            <tr class="hdr">
+                                <th colspan="3" style="text-align:left;">DESCUENTOS</th>
+                                <th style="text-align:right;">S/</th>
+                            </tr>
+                            <tr t-foreach="descuentos" t-as="line">
+                                <td style="text-align:right; width:16%;">
+                                    <span t-if="line.code in unidad" t-out="line.quantity" t-options='{"widget": "float", "precision": 2}'/>
+                                </td>
+                                <td style="width:6%;"><span t-out="unidad.get(line.code, '')"/></td>
+                                <td><span t-out="line.name"/></td>
+                                <td style="text-align:right;"><span t-out="abs(line.total)" t-options='{"widget": "monetary", "display_currency": cur}'/></td>
+                            </tr>
+                        </table>
+                    </td>
+                    <!-- APORTACIONES DEL EMPLEADOR -->
+                    <td style="width:31%; vertical-align:top;">
+                        <table style="width:100%; border:0;">
+                            <tr class="hdr">
+                                <th style="text-align:left;">APORTAC. EMPLEADOR</th>
+                                <th style="text-align:right;">S/</th>
+                            </tr>
+                            <tr t-foreach="aportes" t-as="line">
+                                <td><span t-out="line.name"/></td>
+                                <td style="text-align:right;"><span t-out="line.total" t-options='{"widget": "monetary", "display_currency": cur}'/></td>
+                            </tr>
+                            <tr style="font-weight:bold;">
+                                <td>Total Aportes</td>
+                                <td style="text-align:right;"><span t-out="total_apo" t-options='{"widget": "monetary", "display_currency": cur}'/></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+            <hr style="margin:2px 0; border-top:1px solid #000;"/>
+
+            <!-- Totales -->
+            <table style="width:100%; border:0; font-weight:bold;">
+                <tr>
+                    <td style="width:38%;">Total Ingresos: <span t-out="total_ing" t-options='{"widget": "monetary", "display_currency": cur}'/></td>
+                    <td style="width:31%;">Total Descuentos: <span t-out="-total_desc" t-options='{"widget": "monetary", "display_currency": cur}'/></td>
+                    <td style="width:31%;">Neto a pagar: <span t-out="neto" t-options='{"widget": "monetary", "display_currency": cur}'/></td>
+                </tr>
+            </table>
+            <hr style="margin:2px 0; border-top:1px solid #000;"/>
+
+            <div style="margin-top:2px;">FECHA DE PAGO: ____/____/______</div>
+            <div>OBSERVACIONES:</div>
+
+            <!-- Firmas -->
+            <table style="width:100%; border:0; margin-top:42px; text-align:center;">
+                <tr>
+                    <td style="width:50%;">_______________________________<br/>Firma Empresa</td>
+                    <td style="width:50%;">_______________________________<br/>Firma Trabajador</td>
+                </tr>
+            </table>
+        </div>
+    </template>
+
+    <!-- ====== DOCUMENTO: dos copias por hoja (empresa / trabajador) ====== -->
+    <template id="report_payslip_pe_document">
+        <t t-set="o" t-value="o.with_context(lang=o.employee_id.lang or 'es_PE')"/>
+        <style>
+            .boleta table { border-collapse: separate; border-spacing: 0; width: 100%; border: 0; }
+            .boleta td, .boleta th { padding: 1px 3px; vertical-align: top; border: 0; }
+            .boleta tr.hdr td, .boleta tr.hdr th { border-bottom: 1px solid #000; }
+            .boleta hr { border: 0; border-top: 1px solid #000; margin: 3px 0; }
+        </style>
+        <div class="page">
+            <t t-call="idtx_hr_payroll_pe.report_payslip_pe_copy"/>
+            <hr style="margin:2cm 0; border:0; border-top:1px dashed #999;"/>
+            <t t-call="idtx_hr_payroll_pe.report_payslip_pe_copy"/>
+        </div>
+    </template>
+
+    <template id="report_payslip_pe">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <div class="article"
+                     t-att-data-oe-model="o and o._name"
+                     t-att-data-oe-id="o and o.id"
+                     t-att-data-oe-lang="o.employee_id.lang or 'es_PE'">
+                    <t t-call="idtx_hr_payroll_pe.report_payslip_pe_document"/>
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

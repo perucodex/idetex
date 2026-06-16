@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        F5b - VACACIONES y LIQUIDACIÓN DE CESE (estructuras propias).
+          * Vacaciones: remuneración vacacional (por días, vía input) y venta de
+            vacaciones (máx. 15 días).
+          * Liquidación de cese: grati trunca + bonif. Ley 30334 trunca + CTS
+            trunca + vacaciones truncas, computadas hasta la fecha de cese
+            (payslip.date_to).
+        Base = remuneración computable pe_rem_computable().
+        Pendiente (refinamiento): récords vacacionales completos NO gozados (1
+        remuneración c/u) + indemnización vacacional (triple); indemnización por
+        despido arbitrario; promedio de variables y descuento por faltas.
+    -->
+    <data noupdate="0">
+
+        <!-- ============ INPUTS de Vacaciones ============ -->
+        <record id="input_type_dias_vac" model="hr.payslip.input.type">
+            <field name="name">Días de Vacaciones</field>
+            <field name="code">DIAS_VAC</field>
+            <field name="is_quantity" eval="True"/>
+        </record>
+        <record id="input_type_dias_venta_vac" model="hr.payslip.input.type">
+            <field name="name">Días de Vacaciones Vendidos</field>
+            <field name="code">DIAS_VENTA_VAC</field>
+            <field name="is_quantity" eval="True"/>
+        </record>
+
+        <!-- ============ ESTRUCTURAS ============ -->
+        <record id="struct_vac_pe" model="hr.payroll.structure">
+            <field name="name">Vacaciones - Perú (Régimen General)</field>
+            <field name="code">VAC_PE</field>
+            <field name="type_id" ref="hr.structure_type_employee"/>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="struct_liq_pe" model="hr.payroll.structure">
+            <field name="name">Liquidación de Cese - Perú (Régimen General)</field>
+            <field name="code">LIQ_PE</field>
+            <field name="type_id" ref="hr.structure_type_employee"/>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+
+        <!-- vincular inputs a la estructura de vacaciones -->
+        <record id="input_type_dias_vac" model="hr.payslip.input.type">
+            <field name="struct_ids" eval="[(4, ref('idtx_hr_payroll_pe.struct_vac_pe'))]"/>
+        </record>
+        <record id="input_type_dias_venta_vac" model="hr.payslip.input.type">
+            <field name="struct_ids" eval="[(4, ref('idtx_hr_payroll_pe.struct_vac_pe'))]"/>
+        </record>
+
+        <!-- ============ VACACIONES ============ -->
+        <record id="rule_vac_remun" model="hr.salary.rule">
+            <field name="name">Remuneración Vacacional</field>
+            <field name="code">VAC_REMUN</field>
+            <field name="sequence">10</field>
+            <field name="category_id" ref="VAC"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_vac_pe"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+dias = inputs['DIAS_VAC'].amount if 'DIAS_VAC' in inputs else 0.0
+rem = pe_rem_computable()
+result = (rem / 30.0) * dias
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_vac_venta" model="hr.salary.rule">
+            <field name="name">Venta de Vacaciones</field>
+            <field name="code">VAC_VENTA</field>
+            <field name="sequence">20</field>
+            <field name="category_id" ref="VAC"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_vac_pe"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+dias = inputs['DIAS_VENTA_VAC'].amount if 'DIAS_VENTA_VAC' in inputs else 0.0
+if dias &gt; 15:
+    dias = 15  # máximo legal de venta: 15 de los 30 días
+rem = pe_rem_computable()
+result = (rem / 30.0) * dias
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_vac_net" model="hr.salary.rule">
+            <field name="name">Neto Vacaciones</field>
+            <field name="code">NET</field>
+            <field name="sequence">1000</field>
+            <field name="category_id" ref="hr_payroll.NET"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_vac_pe"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = categories['VAC']
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- ============ LIQUIDACIÓN DE CESE (cómputo hasta payslip.date_to) ============ -->
+
+        <!-- Gratificación trunca: semestre en curso hasta el cese -->
+        <record id="rule_liq_grati_trunca" model="hr.salary.rule">
+            <field name="name">Gratificación Trunca</field>
+            <field name="code">GRATI_TRUNCA</field>
+            <field name="sequence">10</field>
+            <field name="category_id" ref="GRAT"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_liq_pe"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+rem = pe_rem_computable()
+d = payslip.date_to
+sem_start = date(d.year, 7, 1) if d.month &gt;= 7 else date(d.year, 1, 1)
+ini = version.contract_date_start or sem_start
+if ini &lt; sem_start:
+    ini = sem_start
+rd = relativedelta(d + relativedelta(days=1), ini)
+meses = rd.years * 12 + rd.months
+dias = rd.days
+if meses &gt;= 6:
+    meses = 6
+    dias = 0
+sexto = rem / 6.0
+result = (sexto * meses + (sexto / 30.0) * dias) * pe_benefit_factor()
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Bonificación Extraordinaria Ley 30334 sobre grati trunca -->
+        <record id="rule_liq_bonif_trunca" model="hr.salary.rule">
+            <field name="name">Bonificación Extraordinaria Trunca (Ley 30334)</field>
+            <field name="code">BONIF_TRUNCA</field>
+            <field name="sequence">20</field>
+            <field name="category_id" ref="hr_payroll.ALW"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_liq_pe"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+grati = categories['GRAT']
+rate = 0.0675 if employee.l10n_pe_has_eps else 0.09
+result = grati * rate
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- CTS trunca: desde el último corte de depósito hasta el cese -->
+        <record id="rule_liq_cts_trunca" model="hr.salary.rule">
+            <field name="name">CTS Trunca</field>
+            <field name="code">CTS_TRUNCA</field>
+            <field name="sequence">30</field>
+            <field name="category_id" ref="CTS"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_liq_pe"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+rem = pe_rem_computable()
+rem_cts = rem + rem / 6.0
+d = payslip.date_to
+if d.month &gt;= 11:
+    per_start = date(d.year, 11, 1)
+elif d.month &gt;= 5:
+    per_start = date(d.year, 5, 1)
+else:
+    per_start = date(d.year - 1, 11, 1)
+ini = version.contract_date_start or per_start
+if ini &lt; per_start:
+    ini = per_start
+rd = relativedelta(d + relativedelta(days=1), ini)
+meses = rd.years * 12 + rd.months
+dias = rd.days
+result = ((rem_cts / 12.0) * meses + (rem_cts / 360.0) * dias) * pe_benefit_factor()
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Vacaciones truncas: récord en curso (no gozado) proporcional -->
+        <record id="rule_liq_vac_truncas" model="hr.salary.rule">
+            <field name="name">Vacaciones Truncas</field>
+            <field name="code">VAC_TRUNCAS</field>
+            <field name="sequence">40</field>
+            <field name="category_id" ref="VAC"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_liq_pe"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+rem = pe_rem_computable()
+d = payslip.date_to
+start = version.contract_date_start or d
+# última fecha de aniversario &lt;= cese (inicio del récord en curso)
+years = relativedelta(d, start).years
+aniv = start + relativedelta(years=years)
+if aniv &gt; d:
+    aniv = start + relativedelta(years=max(0, years - 1))
+rd = relativedelta(d + relativedelta(days=1), aniv)
+meses = rd.years * 12 + rd.months
+dias = rd.days
+if meses &gt;= 12:
+    meses = 12
+    dias = 0
+# Factor por régimen: MYPE = 15 días/año (½ de los 30 del régimen general).
+result = ((rem / 12.0) * meses + (rem / 360.0) * dias) * pe_benefit_factor()
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Neto Liquidación -->
+        <record id="rule_liq_net" model="hr.salary.rule">
+            <field name="name">Neto Liquidación</field>
+            <field name="code">NET</field>
+            <field name="sequence">1000</field>
+            <field name="category_id" ref="hr_payroll.NET"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_liq_pe"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = categories['GRAT'] + categories['ALW'] + categories['CTS'] + categories['VAC']
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

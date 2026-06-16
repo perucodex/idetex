@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        Parámetros legales de la planilla peruana CON VIGENCIA POR FECHA.
+        Usan el framework nativo de Odoo (hr.rule.parameter / hr.rule.parameter.value).
+        En las reglas y métodos se leen con rule_parameter('codigo') tomando el
+        valor vigente a la fecha del recibo.
+
+        ⚠️ VALORES A CONFIRMAR/ACTUALIZAR por el cliente (cambian por año/trimestre):
+           - RMV, RMA (tope prima AFP) y UIT del año en curso.
+        Para actualizar: agregar un nuevo hr.rule.parameter.value con su date_from;
+        NO se borra el anterior (queda el histórico para recalcular periodos pasados).
+    -->
+    <data noupdate="1">
+
+        <!-- ============ RMV: Remuneración Mínima Vital ============ -->
+        <record id="rp_rmv" model="hr.rule.parameter">
+            <field name="name">PE - Remuneración Mínima Vital (RMV)</field>
+            <field name="code">l10n_pe_rmv</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_rmv_v2022" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_rmv"/>
+            <field name="date_from">2022-05-01</field>
+            <field name="parameter_value">1025.0</field>
+        </record>
+        <record id="rp_rmv_v2025" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_rmv"/>
+            <field name="date_from">2025-01-01</field>
+            <field name="parameter_value">1130.0</field>
+        </record>
+
+        <!-- ============ UIT: Unidad Impositiva Tributaria ============ -->
+        <record id="rp_uit" model="hr.rule.parameter">
+            <field name="name">PE - UIT (Unidad Impositiva Tributaria)</field>
+            <field name="code">l10n_pe_uit</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_uit_v2023" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_uit"/>
+            <field name="date_from">2023-01-01</field>
+            <field name="parameter_value">4950.0</field>
+        </record>
+        <record id="rp_uit_v2024" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_uit"/>
+            <field name="date_from">2024-01-01</field>
+            <field name="parameter_value">5150.0</field>
+        </record>
+        <record id="rp_uit_v2025" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_uit"/>
+            <field name="date_from">2025-01-01</field>
+            <field name="parameter_value">5350.0</field>
+        </record>
+
+        <!-- ============ RMA: Remuneración Máxima Asegurable (tope SOLO de la prima de seguro AFP) ============ -->
+        <!-- ⚠️ Se actualiza TRIMESTRALMENTE por la SBS. Confirmar el valor vigente. -->
+        <record id="rp_afp_rma" model="hr.rule.parameter">
+            <field name="name">PE - Remuneración Máxima Asegurable AFP (tope prima seguro)</field>
+            <field name="code">l10n_pe_afp_rma</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_afp_rma_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_afp_rma"/>
+            <field name="date_from">2025-01-01</field>
+            <field name="parameter_value">12598.91</field>
+        </record>
+
+        <!-- ============ Asignación Familiar (% de la RMV) ============ -->
+        <record id="rp_asig_fam_pct" model="hr.rule.parameter">
+            <field name="name">PE - Asignación Familiar (% de RMV)</field>
+            <field name="code">l10n_pe_asig_fam_pct</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_asig_fam_pct_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_asig_fam_pct"/>
+            <field name="date_from">2010-01-01</field>
+            <field name="parameter_value">0.10</field>
+        </record>
+
+        <!-- ============ ONP (SNP) ============ -->
+        <record id="rp_onp" model="hr.rule.parameter">
+            <field name="name">PE - Tasa ONP / SNP</field>
+            <field name="code">l10n_pe_onp_rate</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_onp_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_onp"/>
+            <field name="date_from">2010-01-01</field>
+            <field name="parameter_value">0.13</field>
+        </record>
+
+        <!-- ============ AFP - aporte obligatorio al fondo ============ -->
+        <record id="rp_afp_aporte" model="hr.rule.parameter">
+            <field name="name">PE - AFP aporte obligatorio (fondo)</field>
+            <field name="code">l10n_pe_afp_aporte</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_afp_aporte_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_afp_aporte"/>
+            <field name="date_from">2010-01-01</field>
+            <field name="parameter_value">0.10</field>
+        </record>
+
+        <!-- ============ EsSalud ============ -->
+        <record id="rp_essalud" model="hr.rule.parameter">
+            <field name="name">PE - EsSalud (% empleador, régimen general)</field>
+            <field name="code">l10n_pe_essalud_rate</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_essalud_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_essalud"/>
+            <field name="date_from">2010-01-01</field>
+            <field name="parameter_value">0.09</field>
+        </record>
+
+        <!-- EsSalud Agrario (Ley 31110, tasa diferenciada en transición). Confirmar por año. -->
+        <record id="rp_essalud_agrario" model="hr.rule.parameter">
+            <field name="name">PE - EsSalud Agrario (Ley 31110)</field>
+            <field name="code">l10n_pe_essalud_agrario_rate</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_essalud_agrario_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_essalud_agrario"/>
+            <field name="date_from">2021-01-01</field>
+            <field name="parameter_value">0.06</field>
+        </record>
+        <!-- Ley 31110: tasa definitiva homologada al régimen general (9%) desde 2028. -->
+        <record id="rp_essalud_agrario_v2028" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_essalud_agrario"/>
+            <field name="date_from">2028-01-01</field>
+            <field name="parameter_value">0.09</field>
+        </record>
+
+        <!-- ============ SENATI ============ -->
+        <record id="rp_senati" model="hr.rule.parameter">
+            <field name="name">PE - SENATI (% empleador, actividad industrial)</field>
+            <field name="code">l10n_pe_senati_rate</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_senati_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_senati"/>
+            <field name="date_from">2010-01-01</field>
+            <field name="parameter_value">0.0075</field>
+        </record>
+
+        <!-- ============ SIS - aporte fijo del empleador (MYPE Micro) ============ -->
+        <!-- ⚠️ Monto fijo mensual por trabajador. Confirmar valor vigente. -->
+        <record id="rp_sis_aporte" model="hr.rule.parameter">
+            <field name="name">PE - SIS aporte empleador (MYPE Micro)</field>
+            <field name="code">l10n_pe_sis_aporte</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_sis_aporte_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_sis_aporte"/>
+            <field name="date_from">2021-01-01</field>
+            <field name="parameter_value">15.0</field>
+        </record>
+
+        <!-- ============ Renta de 5ta categoría ============ -->
+        <!-- Deducción fija de 7 UIT sobre la renta bruta anual proyectada. -->
+        <record id="rp_5ta_deduccion_uit" model="hr.rule.parameter">
+            <field name="name">PE - Renta 5ta: deducción en UIT (7 UIT)</field>
+            <field name="code">l10n_pe_5ta_deduccion_uit</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_5ta_deduccion_uit_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_5ta_deduccion_uit"/>
+            <field name="date_from">2010-01-01</field>
+            <field name="parameter_value">7.0</field>
+        </record>
+
+        <!-- Tramos progresivos: lista de (límite_superior_en_UIT, tasa). El último cubre el resto. -->
+        <record id="rp_5ta_tramos" model="hr.rule.parameter">
+            <field name="name">PE - Renta 5ta: tramos progresivos [(límite_UIT, tasa)]</field>
+            <field name="code">l10n_pe_5ta_tramos</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_5ta_tramos_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_5ta_tramos"/>
+            <field name="date_from">2015-01-01</field>
+            <field name="parameter_value">[(5.0, 0.08), (20.0, 0.14), (35.0, 0.17), (45.0, 0.20), (999999.0, 0.30)]</field>
+        </record>
+
+        <!-- ============ HORAS EXTRA: política configurable ============ -->
+        <!-- Tope de horas extra por día (en bloques de hora completa). -->
+        <record id="rp_he_max_dia" model="hr.rule.parameter">
+            <field name="name">PE - Horas Extra: tope por día (horas)</field>
+            <field name="code">l10n_pe_he_max_dia</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_he_max_dia_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_he_max_dia"/>
+            <field name="date_from">2020-01-01</field>
+            <field name="parameter_value">3</field>
+        </record>
+
+        <!-- Tolerancia (minutos): una hora extra casi cumplida se computa completa.
+             Ej.: con 15, salir 18:55 cuando el tramo termina 19:00 cuenta la hora
+             completa; salir 16:10 (solo 10 min) no genera hora extra. -->
+        <record id="rp_he_grace_min" model="hr.rule.parameter">
+            <field name="name">PE - Horas Extra: tolerancia para completar la hora (min)</field>
+            <field name="code">l10n_pe_he_grace_min</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_he_grace_min_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_he_grace_min"/>
+            <field name="date_from">2020-01-01</field>
+            <field name="parameter_value">15</field>
+        </record>
+
+        <!-- % de las horas extra al 25% que se reclasifican como "Condición de
+             Trabajo" (inafecto, calculado solo sobre el básico). 0 = no aplica. -->
+        <record id="rp_he25_condicion_pct" model="hr.rule.parameter">
+            <field name="name">PE - HE 25%: % reclasificado a Condición de Trabajo</field>
+            <field name="code">l10n_pe_he25_condicion_pct</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_he25_condicion_pct_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_he25_condicion_pct"/>
+            <field name="date_from">2020-01-01</field>
+            <field name="parameter_value">0.5</field>
+        </record>
+
+        <!-- ============ Prestación Alimentaria (vales) automática ============ -->
+        <!-- Monto de prestación alimentaria que se otorga (y se descuenta, neto 0). -->
+        <record id="rp_pres_alim_monto" model="hr.rule.parameter">
+            <field name="name">PE - Prestación Alimentaria: monto (S/)</field>
+            <field name="code">l10n_pe_pres_alim_monto</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_pres_alim_monto_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_pres_alim_monto"/>
+            <field name="date_from">2020-01-01</field>
+            <field name="parameter_value">200</field>
+        </record>
+
+        <!-- Antigüedad mínima (meses cumplidos) para otorgar la prestación. -->
+        <record id="rp_pres_alim_meses" model="hr.rule.parameter">
+            <field name="name">PE - Prestación Alimentaria: antigüedad mínima (meses)</field>
+            <field name="code">l10n_pe_pres_alim_meses</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_pres_alim_meses_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_pres_alim_meses"/>
+            <field name="date_from">2020-01-01</field>
+            <field name="parameter_value">3</field>
+        </record>
+
+        <!-- Tolerancia de tardanza (minutos). Si la tardanza del día supera esta
+             tolerancia, se descuenta COMPLETA desde la hora de ingreso; si no, 0.
+             Ej.: con 5, llegar 7:05 no descuenta; 7:06 descuenta 6 minutos. -->
+        <record id="rp_tardanza_tolerancia_min" model="hr.rule.parameter">
+            <field name="name">PE - Tardanza: tolerancia (min)</field>
+            <field name="code">l10n_pe_tardanza_tolerancia_min</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_tardanza_tolerancia_min_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_tardanza_tolerancia_min"/>
+            <field name="date_from">2020-01-01</field>
+            <field name="parameter_value">5</field>
+        </record>
+
+        <!-- ============ Horarios de turno (para HE/tardanza/nocturna) ============ -->
+        <!-- Horas en formato decimal local. La salida de noche &gt; 24 indica que
+             cae al día siguiente (28 = 04:00). El turno (día/noche) de cada día
+             lo decide la Programación de Turnos del supervisor, no el calendario. -->
+        <record id="rp_turno_dia_ini" model="hr.rule.parameter">
+            <field name="name">PE - Turno Día: hora de entrada</field>
+            <field name="code">l10n_pe_turno_dia_ini</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_turno_dia_ini_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_turno_dia_ini"/>
+            <field name="date_from">2020-01-01</field>
+            <field name="parameter_value">7.0</field>
+        </record>
+        <record id="rp_turno_dia_fin" model="hr.rule.parameter">
+            <field name="name">PE - Turno Día: hora de salida</field>
+            <field name="code">l10n_pe_turno_dia_fin</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_turno_dia_fin_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_turno_dia_fin"/>
+            <field name="date_from">2020-01-01</field>
+            <field name="parameter_value">16.0</field>
+        </record>
+        <record id="rp_turno_noche_ini" model="hr.rule.parameter">
+            <field name="name">PE - Turno Noche: hora de entrada</field>
+            <field name="code">l10n_pe_turno_noche_ini</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_turno_noche_ini_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_turno_noche_ini"/>
+            <field name="date_from">2020-01-01</field>
+            <field name="parameter_value">19.0</field>
+        </record>
+        <record id="rp_turno_noche_fin" model="hr.rule.parameter">
+            <field name="name">PE - Turno Noche: hora de salida (&gt;24 = día siguiente)</field>
+            <field name="code">l10n_pe_turno_noche_fin</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_turno_noche_fin_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_turno_noche_fin"/>
+            <field name="date_from">2020-01-01</field>
+            <field name="parameter_value">28.0</field>
+        </record>
+
+        <!-- Adelanto de quincena: monto que se descuenta a TODOS los trabajadores
+             por defecto (puede sobreescribirse por trabajador con el input ADEL_QUINC). -->
+        <record id="rp_adelanto_quincena" model="hr.rule.parameter">
+            <field name="name">PE - Adelanto de Quincena: monto (S/)</field>
+            <field name="code">l10n_pe_adelanto_quincena</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_adelanto_quincena_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_adelanto_quincena"/>
+            <field name="date_from">2020-01-01</field>
+            <field name="parameter_value">500</field>
+        </record>
+
+    </data>
+</odoo>

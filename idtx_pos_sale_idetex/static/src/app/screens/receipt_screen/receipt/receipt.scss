@@ -1,5 +1,19 @@
 /* Estilos para Recibo A4 en POS Idetex */
 
+/* Ocultar el QR de factura electronica PE (SUNAT) y su "Resumen" (la cadena de
+   datos del QR, ilegible para el cliente) que inserta l10n_pe_edi_pos, dejando
+   visible solo "Amount in Word" (importe en letras). El QR + Resumen viven en el
+   mismo div flex que contiene la imagen #pe_edi_data_qr, asi que ocultamos ese
+   contenedor con :has(); "Amount in Word" es un div hermano y se conserva.
+   El QR estandar del portal (#posqrcode) ya queda oculto via el d-none aplicado
+   a su div en order_receipt_patch.xml. Se hace por CSS (no por herencia de
+   plantilla) para no romper el ancla de l10n_pe_edi_pos y ser independiente del
+   orden de carga de modulos. */
+.pos-receipt .d-flex:has(> div > #pe_edi_data_qr),
+.pos-receipt #pe_edi_data_qr {
+    display: none !important;
+}
+
 /* Expandir el contenedor de vista previa en la pantalla para acomodar el A4 */
 .pos-receipt-container {
     flex-grow: 1 !important;

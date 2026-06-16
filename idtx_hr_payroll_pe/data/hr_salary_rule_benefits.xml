@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        BENEFICIOS SOCIALES como ESTRUCTURAS PROPIAS (se corren en su periodo):
+          - Gratificación (julio / diciembre) + Bonificación Extraordinaria Ley 30334.
+          - CTS (depósito mayo / noviembre).
+        Base = remuneración computable (helper pe_rem_computable()).
+        El semestre/periodo se deduce de la fecha del recibo. La proración usa
+        meses completos + días (mes comercial de 30 días), tope 6 meses.
+        Pendiente (refinamiento): descuento por faltas injustificadas y promedio
+        de remuneraciones variables.
+    -->
+    <data noupdate="0">
+
+        <!-- ============ ESTRUCTURAS ============ -->
+        <record id="struct_grati_pe" model="hr.payroll.structure">
+            <field name="name">Gratificación - Perú (Régimen General)</field>
+            <field name="code">GRATI_PE</field>
+            <field name="type_id" ref="hr.structure_type_employee"/>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+
+        <record id="struct_cts_pe" model="hr.payroll.structure">
+            <field name="name">CTS - Perú (Régimen General)</field>
+            <field name="code">CTS_PE</field>
+            <field name="type_id" ref="hr.structure_type_employee"/>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+
+        <!-- ============ GRATIFICACIÓN ============ -->
+        <record id="rule_grati" model="hr.salary.rule">
+            <field name="name">Gratificación</field>
+            <field name="code">GRATI</field>
+            <field name="sequence">10</field>
+            <field name="category_id" ref="GRAT"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_grati_pe"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+rem = pe_rem_computable()
+d = payslip.date_to
+# Semestre: pago en julio cubre ene-jun; pago en diciembre cubre jul-dic.
+if d.month &gt;= 7:
+    sem_start = date(d.year, 7, 1)
+    next_start = date(d.year + 1, 1, 1)
+else:
+    sem_start = date(d.year, 1, 1)
+    next_start = date(d.year, 7, 1)
+ini = version.contract_date_start or sem_start
+if ini &lt; sem_start:
+    ini = sem_start
+rd = relativedelta(next_start, ini)
+meses = rd.years * 12 + rd.months
+dias = rd.days
+if meses &gt;= 6:
+    meses = 6
+    dias = 0
+sexto = rem / 6.0
+# Factor por régimen: MYPE pequeña = ½ gratificación; micro = sin gratificación.
+result = (sexto * meses + (sexto / 30.0) * dias) * pe_benefit_factor()
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Bonificación Extraordinaria Ley 30334 (9% EsSalud, 6.75% si EPS) -->
+        <record id="rule_grati_bonif" model="hr.salary.rule">
+            <field name="name">Bonificación Extraordinaria (Ley 30334)</field>
+            <field name="code">BONIF_EXTRA</field>
+            <field name="sequence">20</field>
+            <field name="category_id" ref="hr_payroll.ALW"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_grati_pe"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+grati = categories['GRAT']
+# La grati no está afecta a EsSalud; ese 9% (o 6.75% si EPS) se entrega al
+# trabajador como bonificación extraordinaria (Ley 30334).
+rate = 0.0675 if employee.l10n_pe_has_eps else 0.09
+result = grati * rate
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Neto Gratificación -->
+        <record id="rule_grati_net" model="hr.salary.rule">
+            <field name="name">Neto Gratificación</field>
+            <field name="code">NET</field>
+            <field name="sequence">1000</field>
+            <field name="category_id" ref="hr_payroll.NET"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_grati_pe"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = categories['GRAT'] + categories['ALW']
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- ============ CTS ============ -->
+        <record id="rule_cts" model="hr.salary.rule">
+            <field name="name">CTS (Depósito)</field>
+            <field name="code">CTS</field>
+            <field name="sequence">10</field>
+            <field name="category_id" ref="CTS"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_cts_pe"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+rem = pe_rem_computable()
+# Remuneración computable CTS = remuneración + 1/6 de la última gratificación
+# (aprox. rem/6 cuando la grati equivale a una remuneración).
+rem_cts = rem + rem / 6.0
+d = payslip.date_to
+# Periodo: depósito de mayo cubre nov(año previo)-abr; depósito de noviembre
+# cubre may-oct.
+if d.month &lt;= 5:
+    per_start = date(d.year - 1, 11, 1)
+    next_start = date(d.year, 5, 1)
+else:
+    per_start = date(d.year, 5, 1)
+    next_start = date(d.year, 11, 1)
+ini = version.contract_date_start or per_start
+if ini &lt; per_start:
+    ini = per_start
+rd = relativedelta(next_start, ini)
+meses = rd.years * 12 + rd.months
+dias = rd.days
+if meses &gt;= 6:
+    meses = 6
+    dias = 0
+# Factor por régimen: MYPE pequeña = ½ CTS; micro = sin CTS.
+result = ((rem_cts / 12.0) * meses + (rem_cts / 360.0) * dias) * pe_benefit_factor()
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Neto CTS (es un depósito, no afecto a aportes ni a 5ta) -->
+        <record id="rule_cts_net" model="hr.salary.rule">
+            <field name="name">Neto CTS (Depósito)</field>
+            <field name="code">NET</field>
+            <field name="sequence">1000</field>
+            <field name="category_id" ref="hr_payroll.NET"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_cts_pe"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = categories['CTS']
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_comedor_corte_user,comedor_corte_user,model_l10n_pe_comedor_corte,base.group_user,1,0,0,0
+access_comedor_corte_attn_mgr,comedor_corte_attn_mgr,model_l10n_pe_comedor_corte,hr_attendance.group_hr_attendance_manager,1,1,1,1
+access_comedor_corte_payroll,comedor_corte_payroll,model_l10n_pe_comedor_corte,hr_payroll.group_hr_payroll_manager,1,1,1,1

@@ -1,0 +1,717 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        OBRERO MENSUAL (PERÚ) - RÉGIMEN GENERAL  (formato FULL PIMA SAC)
+        Pago mensual: Sueldo = jornal (wage/30) × días remunerados; el descanso
+        semanal va implícito en los días (no hay línea de dominical). El textil
+        es un obrero cuyo contrato tiene l10n_pe_labor_regime == 'textil' (ahí se
+        activa la prima textil 10%).
+
+        Modelo de asistencia HÍBRIDO: faltas/licencias por work entries
+        (worked_days.is_paid); horas extra y nocturnas por biométrico / input.
+
+        Categorías:
+          - BASIC/ALW = remuneración AFECTA a aportes (base imponible).
+          - INAF      = ingresos inafectos (condición de trabajo, movilidad,
+                        prestación alimentaria): entran a ingresos y al neto,
+                        NO a la base de aportes ni a 5ta.
+          - GRAT/CTS/VAC = beneficios (estructuras compartidas; aquí vacías).
+
+        Valor hora (HE / nocturna) = wage/30/horas_jornada (sobre el básico,
+        como en las boletas de la empresa).
+    -->
+    <data noupdate="0">
+
+        <!-- ============ INGRESOS AFECTOS ============ -->
+
+        <!-- Sueldo: jornal × días remunerados (mes comercial 30 d) -->
+        <record id="rule_pe_basico" model="hr.salary.rule">
+            <field name="name">Sueldo</field>
+            <field name="code">SUELDO_PE</field>
+            <field name="sequence">10</field>
+            <field name="category_id" ref="hr_payroll.BASIC"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+ini = version.contract_date_start or payslip.date_from
+ini = max(ini, payslip.date_from)
+fin = payslip.date_to
+if version.contract_date_end and version.contract_date_end &lt; fin:
+    fin = version.contract_date_end
+dias_periodo = (payslip.date_to - payslip.date_from).days + 1
+dias_activo = ((fin - ini).days + 1) if fin &gt;= ini else 0
+dias = 30 if dias_activo &gt;= dias_periodo else dias_activo
+# Vacaciones gozadas y licencia con goce se pagan en líneas aparte: se
+# descuentan de los días del sueldo para no pagarlos dos veces.
+dias_vac = worked_days['VAC'].number_of_days if 'VAC' in worked_days else 0.0
+dias_lic = worked_days['LIC_CG'].number_of_days if 'LIC_CG' in worked_days else 0.0
+# El sueldo muestra los días completos MENOS lo pagado aparte (vacaciones /
+# licencia con goce). Las inasistencias NO se restan aquí: salen como rubro
+# "Faltas" (regla FALTA_PE), que igual reduce la base afecta.
+dias = max(dias - dias_vac - dias_lic, 0.0)
+result = (version.wage or 0.0) / 30.0
+result_qty = dias
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Faltas: días no trabajados que se descuentan. Incluye las
+             INASISTENCIAS del biométrico (día laborable sin marcación, sin
+             licencia, sin feriado, no domingo) + las licencias SIN goce (work
+             entries no pagados). Categoría BASIC: reduce la base afecta a
+             aportes (ONP/AFP/EsSalud) porque esos días no son remuneración. En
+             la BOLETA se muestra en la columna de DESCUENTOS. -->
+        <record id="rule_pe_faltas" model="hr.salary.rule">
+            <field name="name">Faltas</field>
+            <field name="code">FALTA_PE</field>
+            <field name="sequence">11</field>
+            <field name="category_id" ref="hr_payroll.BASIC"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+faltas_bio = faltas or 0.0
+faltas_we = sum(wd.number_of_days for wd in worked_days.values() if not wd.is_paid)
+result = (faltas_bio + faltas_we) &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+faltas_bio = faltas or 0.0
+faltas_we = sum(wd.number_of_days for wd in worked_days.values() if not wd.is_paid)
+result = -((version.wage or 0.0) / 30.0)
+result_qty = faltas_bio + faltas_we
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Vacaciones gozadas en el periodo (remuneración vacacional, afecta) -->
+        <record id="rule_pe_vacaciones" model="hr.salary.rule">
+            <field name="name">Vacaciones</field>
+            <field name="code">VACA_PE</field>
+            <field name="sequence">12</field>
+            <field name="category_id" ref="hr_payroll.BASIC"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = 'VAC' in worked_days and worked_days['VAC'].number_of_days &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+# Remuneración vacacional diaria = promedio 6 meses de (sueldo + HE25 + HE35 +
+# nocturna + prima textil) / 30. El input VAC_DIARIO (monto diario manual) tiene
+# prioridad, para meses sin 6 meses previos (p. ej. el más antiguo cargado).
+manual = inputs['VAC_DIARIO'].amount if 'VAC_DIARIO' in inputs else 0.0
+result = manual if manual else pe_rem_vacacional() / 30.0
+result_qty = worked_days['VAC'].number_of_days
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Licencia con goce de haber (remunerada, afecta) -->
+        <record id="rule_pe_lic_goce" model="hr.salary.rule">
+            <field name="name">Licencia con Goce</field>
+            <field name="code">LICGOCE_PE</field>
+            <field name="sequence">13</field>
+            <field name="category_id" ref="hr_payroll.BASIC"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = 'LIC_CG' in worked_days and worked_days['LIC_CG'].number_of_days &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = (version.wage or 0.0) / 30.0
+result_qty = worked_days['LIC_CG'].number_of_days
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Dominical trabajado: domingo (descanso semanal) con marcación se
+             paga al DOBLE del jornal (D.Leg. 713: retribución + 100% sobretasa).
+             El domingo NO se descuenta del sueldo; este es un pago adicional. -->
+        <record id="rule_pe_dominical" model="hr.salary.rule">
+            <field name="name">Dominical Trabajado</field>
+            <field name="code">DOMINICAL_PE</field>
+            <field name="sequence">14</field>
+            <field name="category_id" ref="hr_payroll.BASIC"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = (domingos_trabajados or 0) &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+# Cada domingo trabajado se paga al doble del jornal: (sueldo/30) * 2.
+result = (version.wage or 0.0) / 30.0 * 2.0
+result_qty = domingos_trabajados
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Asignación Familiar (10% RMV fijo si tiene derecho) -->
+        <record id="rule_pe_asig_fam" model="hr.salary.rule">
+            <field name="name">Asignación Familiar</field>
+            <field name="code">ASIGFAM_PE</field>
+            <field name="sequence">20</field>
+            <field name="category_id" ref="hr_payroll.ALW"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = bool(employee.l10n_pe_family_allowance_right)
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+rmv = rule_parameter('l10n_pe_rmv') or 0.0
+pct = rule_parameter('l10n_pe_asig_fam_pct') or 0.10
+result = rmv * pct
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Horas Extra 25% (biométrico) -->
+        <record id="rule_pe_he_25" model="hr.salary.rule">
+            <field name="name">Hora Extra 25%</field>
+            <field name="code">HE25_PE</field>
+            <field name="sequence">21</field>
+            <field name="category_id" ref="hr_payroll.ALW"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = he25 &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+# Parte de la HE 25% puede reclasificarse a "Condición de Trabajo" (inafecto).
+# Aquí se paga solo la fracción que queda como HE afecta (sobre básico + asig).
+pct = rule_parameter('l10n_pe_he25_condicion_pct') or 0.0
+valor_hora = pe_rem_computable() / 30.0 / (horas_jornada or 8.0)
+extra = inputs['HE25_HRS'].amount if 'HE25_HRS' in inputs else 0.0
+result = valor_hora * 1.25
+result_qty = he25 * (1.0 - pct) + extra
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Horas Extra 35% (biométrico) -->
+        <record id="rule_pe_he_35" model="hr.salary.rule">
+            <field name="name">Hora Extra 35%</field>
+            <field name="code">HE35_PE</field>
+            <field name="sequence">22</field>
+            <field name="category_id" ref="hr_payroll.ALW"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = he35 &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+valor_hora = pe_rem_computable() / 30.0 / (horas_jornada or 8.0)
+extra = inputs['HE35_HRS'].amount if 'HE35_HRS' in inputs else 0.0
+result = valor_hora * 1.35
+result_qty = he35 + extra
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Bonificación Nocturna: básico × 35% / 30 × días nocturnos. Los días
+             nocturnos vienen de la Programación de Turnos del supervisor
+             (dias_nocturnos). Sobre el básico (sin asignación familiar).
+             El input DIAS_NOCT, si se carga, tiene prioridad. -->
+        <record id="rule_pe_nocturna" model="hr.salary.rule">
+            <field name="name">Bonificación Nocturna</field>
+            <field name="code">NOCT_PE</field>
+            <field name="sequence">23</field>
+            <field name="category_id" ref="hr_payroll.ALW"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+manual = inputs['HORAS_NOCT'].amount if 'HORAS_NOCT' in inputs else 0.0
+result = (manual &gt; 0) or (noche_horas &gt; 0)
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+# Bonificación nocturna POR HORAS: 35% del valor-hora (básico/30/8) por cada
+# hora nocturna. El input DIAS_NOCT (= horas nocturnas, p. ej. del tareo) tiene
+# prioridad; si no, las horas calculadas por el motor.
+manual = inputs['HORAS_NOCT'].amount if 'HORAS_NOCT' in inputs else 0.0
+horas = manual if manual else noche_horas
+result = (version.wage or 0.0) * 0.35 / 30.0 / 8.0
+result_qty = horas
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Prima Textil 10% (solo régimen textil). Base: TODA la remuneración
+             afecta = básico + asig. familiar + horas extra + nocturna
+             (categories BASIC + ALW), como en las boletas de la empresa. Va en
+             seq 24 (después de asig/HE/nocturna y antes de los aportes). -->
+        <record id="rule_pe_prim_tex" model="hr.salary.rule">
+            <field name="name">Prima Textil 10%</field>
+            <field name="code">PRIMTEX_PE</field>
+            <field name="sequence">24</field>
+            <field name="category_id" ref="hr_payroll.ALW"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = version.l10n_pe_labor_regime == 'textil'
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+# Prima textil = 10% de la remuneración afecta, EXCLUYENDO las vacaciones
+# (no producen prima textil).
+result = (categories['BASIC'] + categories['ALW'] - result_rules['VACA_PE']['total']) * 0.10
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- ============ INGRESOS INAFECTOS (no a la base de aportes) ============ -->
+
+        <!-- Condición de Trabajo (input) -->
+        <record id="rule_pe_cond_trab" model="hr.salary.rule">
+            <field name="name">Condición de Trabajo</field>
+            <field name="code">CONDTRAB_PE</field>
+            <field name="sequence">40</field>
+            <field name="category_id" ref="INAF"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+pct = rule_parameter('l10n_pe_he25_condicion_pct') or 0.0
+manual = inputs['COND_TRAB'].amount if 'COND_TRAB' in inputs else 0.0
+result = (manual != 0) or (he25 &gt; 0 and pct &gt; 0)
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+# Condición de Trabajo (inafecto): input manual + el % de la HE 25%
+# reclasificado, calculado SOLO sobre el salario base (sin asignación familiar).
+pct = rule_parameter('l10n_pe_he25_condicion_pct') or 0.0
+manual = inputs['COND_TRAB'].amount if 'COND_TRAB' in inputs else 0.0
+valor_hora_base = (version.wage or 0.0) / 30.0 / (horas_jornada or 8.0)
+result = manual + (he25 * pct) * valor_hora_base * 1.25
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Movilidad: variable de cierre del "sueldo pactado" (neto), o input.
+             Va DESPUÉS de la pensión (ONP/AFP, seq 100-103) porque el pactado se
+             calcula descontando la pensión; el comedor se lee del input
+             DSCT_COMEDOR (lo setea el módulo de comedor antes del cálculo). -->
+        <record id="rule_pe_movilidad" model="hr.salary.rule">
+            <field name="name">Movilidad</field>
+            <field name="code">MOVIL_PE</field>
+            <field name="sequence">110</field>
+            <field name="category_id" ref="INAF"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+manual = inputs['MOVILIDAD'].amount if 'MOVILIDAD' in inputs else 0.0
+result = (manual != 0) or ((version.l10n_pe_sueldo_pactado or 0.0) &gt; 0)
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+# Movilidad: si hay input manual, se respeta. Si hay "sueldo pactado" (neto),
+# la movilidad es la variable de cierre para que:
+#   (core - pensión - comedor) + movilidad = pactado
+# donde core = todos los ingresos hasta Condición de Trabajo (sueldo, asig, HE,
+# nocturna, prima, condición = BASIC+ALW+INAF, antes de movilidad/prestación),
+# pensión = ONP o AFP (aporte+comisión+seguro), comedor = descuento de comedor.
+manual = inputs['MOVILIDAD'].amount if 'MOVILIDAD' in inputs else 0.0
+pactado = version.l10n_pe_sueldo_pactado or 0.0
+if manual:
+    result = manual
+elif pactado &gt; 0:
+    core = categories['BASIC'] + categories['ALW'] + categories['INAF']
+    pension = -(result_rules['ONP_PE']['total'] + result_rules['AFPAP_PE']['total']
+                + result_rules['AFPCOM_PE']['total'] + result_rules['AFPSEG_PE']['total'])
+    comedor = inputs['DSCT_COMEDOR'].amount if 'DSCT_COMEDOR' in inputs else 0.0
+    result = max(0.0, pactado - (core - pension - comedor))
+else:
+    result = 0.0
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Prestación Alimentaria - vales (ingreso inafecto; se descuenta igual) -->
+        <record id="rule_pe_pres_alim" model="hr.salary.rule">
+            <field name="name">Prestación Alimentaria</field>
+            <field name="code">PRESALIM_PE</field>
+            <field name="sequence">111</field>
+            <field name="category_id" ref="INAF"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+manual = inputs['PRES_ALIM'].amount if 'PRES_ALIM' in inputs else 0.0
+result = (manual != 0) or (pe_prestacion_alimentaria() &gt; 0)
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+# Prestación alimentaria (vales, inafecta). Input manual con prioridad; si no
+# hay, se otorga el monto automático cuando el trabajador cumple la antigüedad.
+manual = inputs['PRES_ALIM'].amount if 'PRES_ALIM' in inputs else 0.0
+result = manual if manual else pe_prestacion_alimentaria()
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- ============ DESCUENTOS POR ASISTENCIA (en base al sueldo) ============ -->
+
+        <!-- Tardanza: por minuto, con tolerancia (ver _pe_compute_attendance_data).
+             Se valoriza sobre el básico (sin asignación familiar). NO afecta HE. -->
+        <record id="rule_pe_tardanza" model="hr.salary.rule">
+            <field name="name">Tardanza</field>
+            <field name="code">TARD_PE</field>
+            <field name="sequence">90</field>
+            <field name="category_id" ref="hr_payroll.BASIC"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = tardanza_horas &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+valor_hora = (version.wage or 0.0) / 30.0 / (horas_jornada or 8.0)
+result = -valor_hora
+result_qty = tardanza_horas
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Permiso por hora NO pagado (input PERM_HORAS), sobre el básico.
+             No afecta las horas extra (éstas se miden desde el fin del horario). -->
+        <record id="rule_pe_permiso_hora" model="hr.salary.rule">
+            <field name="name">Permiso por Hora</field>
+            <field name="code">PERM_PE</field>
+            <field name="sequence">91</field>
+            <field name="category_id" ref="hr_payroll.BASIC"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = 'PERM_HORAS' in inputs and inputs['PERM_HORAS'].amount &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+horas = inputs['PERM_HORAS'].amount
+valor_hora = (version.wage or 0.0) / 30.0 / (horas_jornada or 8.0)
+result = -valor_hora
+result_qty = horas
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- ============ APORTES DEL TRABAJADOR (descuentos) ============ -->
+
+        <record id="rule_pe_onp" model="hr.salary.rule">
+            <field name="name">ONP (SNP)</field>
+            <field name="code">ONP_PE</field>
+            <field name="sequence">100</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = employee.pension_system == 'onp' and not employee.l10n_pe_is_pensioner
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+rate = rule_parameter('l10n_pe_onp_rate') or 0.13
+result = -(base * rate)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_pe_afp_oblig" model="hr.salary.rule">
+            <field name="name">AFP Aporte 10%</field>
+            <field name="code">AFPAP_PE</field>
+            <field name="sequence">101</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = employee.pension_system == 'afp' and bool(employee.afp_id) and not employee.l10n_pe_is_pensioner
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+rate = employee.afp_id.afp_contribution or (rule_parameter('l10n_pe_afp_aporte') or 0.10)
+result = -(base * rate)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_pe_afp_commission" model="hr.salary.rule">
+            <field name="name">AFP Comisión</field>
+            <field name="code">AFPCOM_PE</field>
+            <field name="sequence">102</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = employee.pension_system == 'afp' and bool(employee.afp_id) and not employee.l10n_pe_is_pensioner and employee.commission_type == 'flow'
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+result = -(base * (employee.afp_id.commission_flow or 0.0))
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_pe_afp_insurance" model="hr.salary.rule">
+            <field name="name">AFP Seguro (ISS)</field>
+            <field name="code">AFPSEG_PE</field>
+            <field name="sequence">103</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = employee.pension_system == 'afp' and bool(employee.afp_id) and not employee.l10n_pe_is_pensioner
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+rma = rule_parameter('l10n_pe_afp_rma') or employee.afp_id.max_insurable or 0.0
+if rma and base &gt; rma:
+    base = rma
+result = -(base * (employee.afp_id.insurance_rate or 0.0))
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Renta de 5ta categoría (mensual) -->
+        <record id="rule_pe_renta5ta" model="hr.salary.rule">
+            <field name="name">Renta de 5ta Categoría</field>
+            <field name="code">RENTA5TA_PE</field>
+            <field name="sequence">150</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = pe_5ta_retencion() &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = -pe_5ta_retencion()
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Adelanto de Quincena: monto del parámetro para TODOS por defecto;
+             el input ADEL_QUINC (si se carga) lo sobreescribe por trabajador. -->
+        <record id="rule_pe_adel_quinc" model="hr.salary.rule">
+            <field name="name">Adelanto de Quincena</field>
+            <field name="code">ADELQUINC_PE</field>
+            <field name="sequence">160</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+manual = inputs['ADEL_QUINC'].amount if 'ADEL_QUINC' in inputs else 0.0
+auto = rule_parameter('l10n_pe_adelanto_quincena') or 0.0
+result = (manual != 0) or (auto &gt; 0)
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+manual = inputs['ADEL_QUINC'].amount if 'ADEL_QUINC' in inputs else 0.0
+auto = rule_parameter('l10n_pe_adelanto_quincena') or 0.0
+result = -abs(manual if manual else auto)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Descuento Comedor (input) -->
+        <record id="rule_pe_comedor" model="hr.salary.rule">
+            <field name="name">Descuento Comedor</field>
+            <field name="code">COMEDOR_PE</field>
+            <field name="sequence">161</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = 'DSCT_COMEDOR' in inputs and inputs['DSCT_COMEDOR'].amount != 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = -abs(inputs['DSCT_COMEDOR'].amount)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Prestación Alimentaria (descuento: se entrega en vales, neto 0 efectivo) -->
+        <record id="rule_pe_pres_alim_desc" model="hr.salary.rule">
+            <field name="name">Prestación Alimentaria</field>
+            <field name="code">PRESALIMD_PE</field>
+            <field name="sequence">162</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+manual = inputs['PRES_ALIM'].amount if 'PRES_ALIM' in inputs else 0.0
+result = (manual != 0) or (pe_prestacion_alimentaria() &gt; 0)
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+# Espejo del ingreso: el mismo monto se descuenta (se entrega en vales), neto 0.
+manual = inputs['PRES_ALIM'].amount if 'PRES_ALIM' in inputs else 0.0
+result = -abs(manual if manual else pe_prestacion_alimentaria())
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Otros Descuentos (input) -->
+        <record id="rule_pe_otros_desc" model="hr.salary.rule">
+            <field name="name">Otros Descuentos</field>
+            <field name="code">OTROSDESC_PE</field>
+            <field name="sequence">163</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = 'OTROS_DESC' in inputs and inputs['OTROS_DESC'].amount != 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = -abs(inputs['OTROS_DESC'].amount)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- ============ APORTES DEL EMPLEADOR ============ -->
+
+        <record id="rule_pe_essalud" model="hr.salary.rule">
+            <field name="name">EsSalud</field>
+            <field name="code">ESSALUD_PE</field>
+            <field name="sequence">200</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = pe_essalud_rate() &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+result = base * pe_essalud_rate() - pe_eps_credit(base)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_pe_credito_eps" model="hr.salary.rule">
+            <field name="name">Crédito EPS</field>
+            <field name="code">CREDEPS_PE</field>
+            <field name="sequence">201</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = employee.l10n_pe_has_eps and pe_eps_credit(categories['BASIC'] + categories['ALW']) &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = pe_eps_credit(categories['BASIC'] + categories['ALW'])
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_pe_sctr_salud" model="hr.salary.rule">
+            <field name="name">SCTR Salud</field>
+            <field name="code">SCTRSAL_PE</field>
+            <field name="sequence">202</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = payslip.company_id.l10n_pe_sctr_affiliated
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+result = base * (payslip.company_id.l10n_pe_sctr_salud_rate or 0.0)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_pe_sctr_pension" model="hr.salary.rule">
+            <field name="name">SCTR Pensión</field>
+            <field name="code">SCTRPEN_PE</field>
+            <field name="sequence">203</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = payslip.company_id.l10n_pe_sctr_affiliated
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+result = base * (payslip.company_id.l10n_pe_sctr_pension_rate or 0.0)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_pe_vida_ley" model="hr.salary.rule">
+            <field name="name">Vida Ley</field>
+            <field name="code">VIDALEY_PE</field>
+            <field name="sequence">204</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = bool(payslip.company_id.life_insurance_law)
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+result = base * (payslip.company_id.life_insurance_law or 0.0)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_pe_senati" model="hr.salary.rule">
+            <field name="name">SENATI</field>
+            <field name="code">SENATI_PE</field>
+            <field name="sequence">205</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = payslip.company_id.l10n_pe_senati_affiliated
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+result = base * (rule_parameter('l10n_pe_senati_rate') or 0.0075)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- ============ TOTALES ============ -->
+
+        <record id="rule_pe_gross" model="hr.salary.rule">
+            <field name="name">Total Ingresos</field>
+            <field name="code">GROSS</field>
+            <field name="sequence">300</field>
+            <field name="category_id" ref="hr_payroll.GROSS"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = categories['BASIC'] + categories['ALW'] + categories['INAF'] + categories['GRAT'] + categories['CTS'] + categories['VAC']
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_pe_net" model="hr.salary.rule">
+            <field name="name">Neto a Pagar</field>
+            <field name="code">NET</field>
+            <field name="sequence">1000</field>
+            <field name="category_id" ref="hr_payroll.NET"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = categories['BASIC'] + categories['ALW'] + categories['INAF'] + categories['GRAT'] + categories['CTS'] + categories['VAC'] + categories['DED']
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

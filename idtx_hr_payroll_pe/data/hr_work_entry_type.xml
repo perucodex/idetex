@@ -10,5 +10,29 @@
             <field name="is_leave">True</field>
         </record>
 
+        <!-- Ausencias NO remuneradas (reducen la remuneración y la base de aportes) -->
+        <record id="we_falta_injustificada" model="hr.work.entry.type">
+            <field name="name">Falta Injustificada</field>
+            <field name="display_code">FALTA</field>
+            <field name="code">FALTA_INJ</field>
+            <field name="is_leave">True</field>
+        </record>
+
+        <record id="we_licencia_sin_goce" model="hr.work.entry.type">
+            <field name="name">Licencia sin Goce de Haber</field>
+            <field name="display_code">LSG</field>
+            <field name="code">LIC_SG</field>
+            <field name="is_leave">True</field>
+        </record>
+
+        <!-- Licencia CON goce de haber (remunerada, afecta): no va en
+             unpaid_work_entry_type_ids, por lo que worked_days.is_paid = True. -->
+        <record id="we_licencia_con_goce" model="hr.work.entry.type">
+            <field name="name">Licencia con Goce de Haber</field>
+            <field name="display_code">LCG</field>
+            <field name="code">LIC_CG</field>
+            <field name="is_leave">True</field>
+        </record>
+
     </data>
 </odoo>

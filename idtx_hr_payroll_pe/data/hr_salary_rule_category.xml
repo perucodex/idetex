@@ -20,5 +20,13 @@
             <field name="code">VAC</field>
         </record>
 
+        <!-- Ingresos NO remunerativos (inafectos a aportes y 5ta): condición de
+             trabajo, movilidad supeditada a asistencia, prestación alimentaria.
+             Entran al total de ingresos pero NO a la base de aportes. -->
+        <record id="INAF" model="hr.salary.rule.category">
+            <field name="name">Ingresos Inafectos</field>
+            <field name="code">INAF</field>
+        </record>
+
     </data>
 </odoo>

@@ -24,19 +24,30 @@ Localización peruana para trabajar planillas de todo tipo
         'hr_payroll'
     ],
 
+    'post_init_hook': 'post_init_hook',
+
     # always loaded
     'data': [
+        'data/resource_calendar.xml',
+        'data/hr_rule_parameter.xml',
         'data/hr_afp.xml',
         'data/hr_payroll_structure_type.xml',
+        'data/hr_work_entry_type.xml',
+        'data/hr_leave_type.xml',
         'data/hr_payroll_structure.xml',
         'data/hr_payslip_input_type.xml',
         'data/hr_salary_rule_category.xml',
-        'data/hr_salary_rule_weekly_textil.xml',
-        'data/hr_work_entry_type.xml',
+        'data/hr_salary_rule_general.xml',
+        'data/hr_salary_rule_benefits.xml',
+        'data/hr_salary_rule_liquidation.xml',
+        'data/hr_salary_rule_obrero.xml',
+        'data/hr_salary_rule_agrario.xml',
         'security/ir.model.access.csv',
+        'report/hr_payslip_report.xml',
         'views/hr_afp_views.xml',
         'views/hr_contract_salary_views.xml',
         'views/res_config_settings_views.xml',
+        'views/payroll_export_views.xml',
     ],
 }
 

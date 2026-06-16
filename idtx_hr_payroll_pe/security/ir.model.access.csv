@@ -1,2 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_hr_afp,hr_afp,model_hr_afp,base.group_user,1,1,1,1
+access_hr_afp_read,hr_afp_read,model_hr_afp,base.group_user,1,0,0,0
+access_hr_afp_manage,hr_afp_manage,model_hr_afp,hr_payroll.group_hr_payroll_manager,1,1,1,1
+access_pe_payroll_export,pe_payroll_export,model_l10n_pe_payroll_export_wizard,hr_payroll.group_hr_payroll_user,1,1,1,1

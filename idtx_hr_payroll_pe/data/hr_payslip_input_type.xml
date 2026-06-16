@@ -55,6 +55,74 @@
             <field name="struct_ids" eval="[(4, ref('idtx_hr_payroll_pe.structure_pe_obrero_textil'))]"/>
         </record>
 
+        <!-- ===== Conceptos variables por mes (boleta FULL PIMA) ===== -->
+
+        <!-- Días nocturnos (override manual de la bonificación nocturna; normalmente
+             vienen de la Programación de Turnos del supervisor) -->
+        <!-- Vacacional diario manual (override para meses sin 6 meses previos) -->
+        <record id="input_type_vac_diario" model="hr.payslip.input.type">
+            <field name="name">Vacacional Diario (manual)</field>
+            <field name="code">VAC_DIARIO</field>
+            <field name="struct_ids" eval="[(4, ref('idtx_hr_payroll_pe.structure_pe_obrero_textil'))]"/>
+        </record>
+
+        <record id="input_type_horas_noct" model="hr.payslip.input.type">
+            <field name="name">Horas Nocturnas</field>
+            <field name="code">HORAS_NOCT</field>
+            <field name="is_quantity" eval="True"/>
+            <field name="struct_ids" eval="[(4, ref('idtx_hr_payroll_pe.structure_pe_obrero_textil'))]"/>
+        </record>
+
+        <!-- Condición de trabajo (monto, inafecto) -->
+        <record id="input_type_cond_trab" model="hr.payslip.input.type">
+            <field name="name">Condición de Trabajo</field>
+            <field name="code">COND_TRAB</field>
+            <field name="struct_ids" eval="[(4, ref('idtx_hr_payroll_pe.structure_pe_obrero_textil'))]"/>
+        </record>
+
+        <!-- Movilidad supeditada a asistencia (monto, inafecto) -->
+        <record id="input_type_movilidad" model="hr.payslip.input.type">
+            <field name="name">Movilidad</field>
+            <field name="code">MOVILIDAD</field>
+            <field name="struct_ids" eval="[(4, ref('idtx_hr_payroll_pe.structure_pe_obrero_textil'))]"/>
+        </record>
+
+        <!-- Prestación alimentaria - vales (monto, inafecto; se entrega y se
+             descuenta, neto 0 en efectivo) -->
+        <record id="input_type_pres_alim" model="hr.payslip.input.type">
+            <field name="name">Prestación Alimentaria</field>
+            <field name="code">PRES_ALIM</field>
+            <field name="struct_ids" eval="[(4, ref('idtx_hr_payroll_pe.structure_pe_obrero_textil'))]"/>
+        </record>
+
+        <!-- Adelanto de quincena (monto, descuento) -->
+        <record id="input_type_adel_quinc" model="hr.payslip.input.type">
+            <field name="name">Adelanto de Quincena</field>
+            <field name="code">ADEL_QUINC</field>
+            <field name="struct_ids" eval="[(4, ref('idtx_hr_payroll_pe.structure_pe_obrero_textil'))]"/>
+        </record>
+
+        <!-- Descuento de comedor (monto, descuento) -->
+        <record id="input_type_dsct_comedor" model="hr.payslip.input.type">
+            <field name="name">Descuento Comedor</field>
+            <field name="code">DSCT_COMEDOR</field>
+            <field name="struct_ids" eval="[(4, ref('idtx_hr_payroll_pe.structure_pe_obrero_textil'))]"/>
+        </record>
+
+        <!-- Otros descuentos (monto) -->
+        <record id="input_type_otros_desc" model="hr.payslip.input.type">
+            <field name="name">Otros Descuentos</field>
+            <field name="code">OTROS_DESC</field>
+            <field name="struct_ids" eval="[(4, ref('idtx_hr_payroll_pe.structure_pe_obrero_textil'))]"/>
+        </record>
+
+        <!-- Permiso por hora NO pagado (horas) -->
+        <record id="input_type_perm_horas" model="hr.payslip.input.type">
+            <field name="name">Permiso por Hora (no pagado)</field>
+            <field name="code">PERM_HORAS</field>
+            <field name="is_quantity" eval="True"/>
+            <field name="struct_ids" eval="[(4, ref('idtx_hr_payroll_pe.structure_pe_obrero_textil'))]"/>
+        </record>
 
     </data>
 </odoo>

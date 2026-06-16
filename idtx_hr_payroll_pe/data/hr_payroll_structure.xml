@@ -8,17 +8,37 @@
             <field name="code">PERU_GENERAL</field>
             <field name="type_id" ref="hr.structure_type_employee"/>
             <field name="country_id" ref="base.pe"/>
+            <!-- Ausencias no remuneradas: reducen la remuneración y la base de
+                 aportes (las usa la regla DESC_FALTAS vía worked_days.is_paid). -->
+            <field name="unpaid_work_entry_type_ids" eval="[(4, ref('idtx_hr_payroll_pe.we_falta_injustificada')), (4, ref('idtx_hr_payroll_pe.we_licencia_sin_goce')), (4, ref('hr_work_entry.work_entry_type_unpaid_leave'))]"/>
         </record>
 
-        <!-- Estructura de planilla semanal para obrero textil -->
+        <!-- Dejar el Régimen General como estructura por defecto del tipo
+             "Empleado" y el horario peruano (48h) como jornada por defecto,
+             para que la planilla quede lista al instalar. -->
+        <record id="hr.structure_type_employee" model="hr.payroll.structure.type">
+            <field name="default_struct_id" ref="hr_payroll_structure_peru_general"/>
+            <field name="default_resource_calendar_id" ref="calendar_pe_48h_lun_sab"/>
+        </record>
+
+        <!-- Estructura de planilla semanal para obrero del régimen general
+             (pago por jornal + dominical). Sirve a todo obrero; el textil es un
+             obrero cuyo contrato tiene l10n_pe_labor_regime == 'textil' (ahí se
+             activa la prima textil). El XML id se conserva por compatibilidad. -->
         <record id="structure_pe_obrero_textil" model="hr.payroll.structure">
-            <field name="name">Planilla Obrero Textil Semanal (Perú)</field>
+            <field name="name">Planilla Obrero Mensual (Perú)</field>
             <field name="type_id" ref="idtx_hr_payroll_pe.hr_structure_type_pe_obrero"/>
-            <!-- aquí luego agregaremos tipos de work entry no remunerados específicos si hace falta -->
-            <!-- <field name="unpaid_work_entry_type_ids" eval="[(4, ref('hr_work_entry.work_entry_type_unpaid_leave'))]"/> -->
+            <!-- Ausencias no remuneradas: reducen la remuneración y la base de
+                 aportes (las usan DESC_FALTAS_PE / DESDOMPROP_PE vía worked_days). -->
+            <field name="unpaid_work_entry_type_ids" eval="[(4, ref('idtx_hr_payroll_pe.we_falta_injustificada')), (4, ref('idtx_hr_payroll_pe.we_licencia_sin_goce')), (4, ref('hr_work_entry.work_entry_type_unpaid_leave'))]"/>
             <field name="country_id" ref="base.pe"/>
-            <!-- inicialmente sin reglas, se llenan por hr_salary_rule_data.xml -->
             <field name="rule_ids" eval="[]"/>
+        </record>
+
+        <!-- La planilla de obrero semanal es la estructura por defecto de su
+             tipo (se define aquí porque la estructura se crea después del tipo). -->
+        <record id="hr_structure_type_pe_obrero" model="hr.payroll.structure.type">
+            <field name="default_struct_id" ref="structure_pe_obrero_textil"/>
         </record>
 
     </data>

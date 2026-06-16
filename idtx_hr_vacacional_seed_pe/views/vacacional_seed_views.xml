@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- O2M en la ficha del empleado, junto a los campos de Localización PE.
+         Hereda la vista del core (donde ya existe l10n_pe_sueldo_pactado). -->
+    <record id="view_employee_form_vacacional_seed" model="ir.ui.view">
+        <field name="name">hr.employee.form.vacacional.seed</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="idtx_hr_payroll_pe.hr_contract_salary_view_employee_form"/>
+        <field name="arch" type="xml">
+            <field name="l10n_pe_sueldo_pactado" position="after">
+                <field name="l10n_pe_vacacional_seed_ids" colspan="2"
+                       string="Histórico variables (seed vacacional)">
+                    <list editable="bottom">
+                        <field name="period"/>
+                        <field name="amount"/>
+                        <field name="currency_id" column_invisible="1"/>
+                    </list>
+                    <form>
+                        <group>
+                            <field name="period"/>
+                            <field name="amount"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </form>
+                </field>
+            </field>
+        </field>
+    </record>
+
+</odoo>

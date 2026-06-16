@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        RÉGIMEN GENERAL (D.L. 728) - EMPLEADO MENSUAL
+        Base imponible (afecta a aportes) = categories['BASIC'] + categories['ALW'].
+        Los conceptos NO remunerativos (movilidad, refrigerio condición de trabajo,
+        etc.) deben ir en una categoría que NO sume a BASIC/ALW (se añadirá en fase
+        de conceptos). Todas las tasas/valores se leen con rule_parameter(...) del
+        parámetro vigente a la fecha del recibo.
+    -->
+    <data noupdate="0">
+
+        <!-- ============ INGRESOS ============ -->
+
+        <!-- Básico mensual (prorrateado por ingreso/cese dentro del periodo) -->
+        <record id="rule_gen_basico" model="hr.salary.rule">
+            <field name="name">Básico</field>
+            <field name="code">BASICO</field>
+            <field name="sequence">10</field>
+            <field name="category_id" ref="hr_payroll.BASIC"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.hr_payroll_structure_peru_general"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+wage = version.wage or 0.0
+# Días del periodo cubiertos por el contrato (maneja ingreso/cese a mitad de mes)
+ini = version.contract_date_start or payslip.date_from
+ini = max(ini, payslip.date_from)
+fin = payslip.date_to
+if version.contract_date_end and version.contract_date_end &lt; fin:
+    fin = version.contract_date_end
+dias_periodo = (payslip.date_to - payslip.date_from).days + 1
+dias_activo = ((fin - ini).days + 1) if fin &gt;= ini else 0
+# Mes comercial de 30 días (norma peruana)
+if dias_activo &gt;= dias_periodo:
+    result = wage
+else:
+    result = wage / 30.0 * dias_activo
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Asignación Familiar: monto fijo = 10% RMV (no se prorratea por faltas) -->
+        <record id="rule_gen_asig_fam" model="hr.salary.rule">
+            <field name="name">Asignación Familiar</field>
+            <field name="code">ASIG_FAM</field>
+            <field name="sequence">20</field>
+            <field name="category_id" ref="hr_payroll.ALW"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.hr_payroll_structure_peru_general"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = bool(employee.l10n_pe_family_allowance_right)
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+rmv = rule_parameter('l10n_pe_rmv') or 0.0
+pct = rule_parameter('l10n_pe_asig_fam_pct') or 0.10
+result = rmv * pct
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Descuento por inasistencias injustificadas (días no pagados de los
+             work entries). En categoría BASIC (negativo) para que reduzca la
+             base imponible de los aportes, como corresponde. Requiere que los
+             tipos de ausencia no remunerada estén en unpaid_work_entry_type_ids
+             de la estructura. -->
+        <record id="rule_gen_faltas" model="hr.salary.rule">
+            <field name="name">Descuento por Inasistencias</field>
+            <field name="code">DESC_FALTAS</field>
+            <field name="sequence">15</field>
+            <field name="category_id" ref="hr_payroll.BASIC"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.hr_payroll_structure_peru_general"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = sum(wd.number_of_days for wd in worked_days.values() if not wd.is_paid) &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+faltas = sum(wd.number_of_days for wd in worked_days.values() if not wd.is_paid)
+wage = version.wage or 0.0
+result = -(wage / 30.0) * faltas
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Horas Extra 25% (asistencia validada; primeras 2 horas/día) -->
+        <record id="rule_gen_he25" model="hr.salary.rule">
+            <field name="name">Horas Extra 25%</field>
+            <field name="code">HE25</field>
+            <field name="sequence">30</field>
+            <field name="category_id" ref="hr_payroll.ALW"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.hr_payroll_structure_peru_general"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = he25 &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+valor_hora = pe_rem_computable() / 30.0 / (horas_jornada or 8.0)
+result = he25 * valor_hora * 1.25
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Horas Extra 35% (asistencia validada; a partir de la 3ra hora/día) -->
+        <record id="rule_gen_he35" model="hr.salary.rule">
+            <field name="name">Horas Extra 35%</field>
+            <field name="code">HE35</field>
+            <field name="sequence">31</field>
+            <field name="category_id" ref="hr_payroll.ALW"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.hr_payroll_structure_peru_general"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = he35 &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+valor_hora = pe_rem_computable() / 30.0 / (horas_jornada or 8.0)
+result = he35 * valor_hora * 1.35
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- ============ APORTES DEL TRABAJADOR (descuentos) ============ -->
+
+        <!-- ONP / SNP 13% -->
+        <record id="rule_gen_onp" model="hr.salary.rule">
+            <field name="name">ONP (SNP)</field>
+            <field name="code">ONP</field>
+            <field name="sequence">100</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.hr_payroll_structure_peru_general"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = employee.pension_system == 'onp' and not employee.l10n_pe_is_pensioner
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+rate = rule_parameter('l10n_pe_onp_rate') or 0.13
+result = -(base * rate)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- AFP - Aporte obligatorio al fondo (SIN tope) -->
+        <record id="rule_gen_afp_aporte" model="hr.salary.rule">
+            <field name="name">AFP - Aporte Obligatorio</field>
+            <field name="code">AFP_APORTE</field>
+            <field name="sequence">101</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.hr_payroll_structure_peru_general"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = employee.pension_system == 'afp' and bool(employee.afp_id) and not employee.l10n_pe_is_pensioner
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+rate = employee.afp_id.afp_contribution or (rule_parameter('l10n_pe_afp_aporte') or 0.10)
+result = -(base * rate)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- AFP - Comisión (saldo / flujo / mixta) (SIN tope) -->
+        <record id="rule_gen_afp_comision" model="hr.salary.rule">
+            <field name="name">AFP - Comisión</field>
+            <field name="code">AFP_COMISION</field>
+            <field name="sequence">102</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.hr_payroll_structure_peru_general"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = employee.pension_system == 'afp' and bool(employee.afp_id) and not employee.l10n_pe_is_pensioner
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+afp = employee.afp_id
+# Solo la comisión SOBRE FLUJO se descuenta en planilla.
+# La comisión MIXTA va sobre el saldo del fondo (la cobra la AFP, no en
+# planilla) y su componente de flujo es 0% desde feb-2023 → descuento 0.
+if employee.commission_type == 'flow':
+    rate = afp.commission_flow or 0.0
+else:
+    rate = 0.0
+result = -(base * rate)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- AFP - Prima de Seguro (ÚNICO concepto topado por la RMA) -->
+        <record id="rule_gen_afp_seguro" model="hr.salary.rule">
+            <field name="name">AFP - Prima de Seguro</field>
+            <field name="code">AFP_SEGURO</field>
+            <field name="sequence">103</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.hr_payroll_structure_peru_general"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = employee.pension_system == 'afp' and bool(employee.afp_id) and not employee.l10n_pe_is_pensioner
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+# Tope: solo la prima de seguro se limita a la Remuneración Máxima Asegurable.
+rma = rule_parameter('l10n_pe_afp_rma') or 0.0
+if rma and base &gt; rma:
+    base = rma
+rate = employee.afp_id.insurance_rate or 0.0
+result = -(base * rate)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Renta de 5ta categoría (retención mensual SUNAT) -->
+        <record id="rule_gen_renta_5ta" model="hr.salary.rule">
+            <field name="name">Renta de 5ta Categoría</field>
+            <field name="code">RENTA5TA</field>
+            <field name="sequence">150</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.hr_payroll_structure_peru_general"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = pe_5ta_retencion() &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = -pe_5ta_retencion()
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- ============ APORTES DEL EMPLEADOR (no afectan el neto) ============ -->
+
+        <!-- EsSalud (9% general / tasa agraria / 0 en micro que usa SIS) -->
+        <record id="rule_gen_essalud" model="hr.salary.rule">
+            <field name="name">EsSalud</field>
+            <field name="code">ESSALUD</field>
+            <field name="sequence">200</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.hr_payroll_structure_peru_general"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = pe_essalud_rate() &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+# Si el trabajador está en EPS, parte del 9% se acredita a la EPS.
+result = base * pe_essalud_rate() - pe_eps_credit(base)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Crédito EPS (porción del aporte a EsSalud destinada a la EPS) -->
+        <record id="rule_gen_credito_eps" model="hr.salary.rule">
+            <field name="name">Crédito EPS</field>
+            <field name="code">CREDITO_EPS</field>
+            <field name="sequence">201</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.hr_payroll_structure_peru_general"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = employee.l10n_pe_has_eps and pe_eps_credit(categories['BASIC'] + categories['ALW']) &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = pe_eps_credit(categories['BASIC'] + categories['ALW'])
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- SIS (Seguro Integral de Salud) - aporte fijo del empleador en MYPE Micro -->
+        <record id="rule_gen_sis" model="hr.salary.rule">
+            <field name="name">SIS (MYPE Micro)</field>
+            <field name="code">SIS</field>
+            <field name="sequence">205</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.hr_payroll_structure_peru_general"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = version.l10n_pe_labor_regime == 'mype_micro'
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = rule_parameter('l10n_pe_sis_aporte') or 0.0
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Vida Ley (% por empresa) -->
+        <record id="rule_gen_vida_ley" model="hr.salary.rule">
+            <field name="name">Vida Ley</field>
+            <field name="code">VIDA_LEY</field>
+            <field name="sequence">201</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.hr_payroll_structure_peru_general"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = bool(payslip.company_id.life_insurance_law)
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+result = base * (payslip.company_id.life_insurance_law or 0.0)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- SCTR Salud (solo actividad de riesgo) -->
+        <record id="rule_gen_sctr_salud" model="hr.salary.rule">
+            <field name="name">SCTR Salud</field>
+            <field name="code">SCTR_SALUD</field>
+            <field name="sequence">202</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.hr_payroll_structure_peru_general"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = payslip.company_id.l10n_pe_sctr_affiliated
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+result = base * (payslip.company_id.l10n_pe_sctr_salud_rate or 0.0)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- SCTR Pensión (solo actividad de riesgo) -->
+        <record id="rule_gen_sctr_pension" model="hr.salary.rule">
+            <field name="name">SCTR Pensión</field>
+            <field name="code">SCTR_PENSION</field>
+            <field name="sequence">203</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.hr_payroll_structure_peru_general"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = payslip.company_id.l10n_pe_sctr_affiliated
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+result = base * (payslip.company_id.l10n_pe_sctr_pension_rate or 0.0)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- SENATI 0.75% (solo empresas industriales afiliadas) -->
+        <record id="rule_gen_senati" model="hr.salary.rule">
+            <field name="name">SENATI</field>
+            <field name="code">SENATI</field>
+            <field name="sequence">204</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.hr_payroll_structure_peru_general"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = payslip.company_id.l10n_pe_senati_affiliated
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+rate = rule_parameter('l10n_pe_senati_rate') or 0.0075
+result = base * rate
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- ============ TOTALES ============ -->
+
+        <!-- Total Ingresos (remuneración bruta afecta) -->
+        <record id="rule_gen_gross" model="hr.salary.rule">
+            <field name="name">Total Ingresos</field>
+            <field name="code">GROSS</field>
+            <field name="sequence">300</field>
+            <field name="category_id" ref="hr_payroll.GROSS"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.hr_payroll_structure_peru_general"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = categories['BASIC'] + categories['ALW']
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Neto a Pagar -->
+        <record id="rule_gen_net" model="hr.salary.rule">
+            <field name="name">Neto a Pagar</field>
+            <field name="code">NET</field>
+            <field name="sequence">1000</field>
+            <field name="category_id" ref="hr_payroll.NET"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.hr_payroll_structure_peru_general"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+# COMP (aportes del empleador) NO entra al neto del trabajador.
+result = categories['BASIC'] + categories['ALW'] + categories['DED']
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

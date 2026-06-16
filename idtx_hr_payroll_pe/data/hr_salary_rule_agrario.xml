@@ -1,0 +1,845 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        RÉGIMEN AGRARIO (Ley 31110) - REMUNERACIÓN INTEGRAL (mensual)
+        Modalidad opcional en la que la remuneración regular ya incorpora la
+        parte proporcional de gratificaciones y CTS ("todo incluido"); por eso
+        estos trabajadores NO reciben gratificación en jul/dic ni depósito de
+        CTS en may/nov por separado.
+
+        Decisiones confirmadas con el cliente:
+          - version.wage = remuneración BÁSICA; los proporcionales se suman encima
+            como conceptos separados (grati prop., bonif. Ley 30334 prop., CTS prop.).
+          - Los proporcionales de grati y CTS son INAFECTOS a los aportes
+            (ONP/AFP/EsSalud): la base imponible es solo BASIC + ALW (básico +
+            asig. familiar + horas extra). Por eso los proporcionales van en las
+            categorías GRAT/CTS (que no suman a la base de aportes) pero SÍ entran
+            al total de ingresos y al neto (se pagan en mano).
+          - EsSalud agrario (6% en transición, 9% desde 2028) se aplica solo con
+            poner l10n_pe_labor_regime == 'agrario' en el contrato (pe_essalud_rate).
+          - Vacaciones: se gozan 30 días (Ley 31110); su remuneración se paga en el
+            periodo de descanso, NO se prorratea en el jornal.
+
+        Factores (estándar reglamentario):
+          - Grati proporcional   = remuneración computable / 6   (2 gratis/año).
+          - Bonif. Extr. Ley 30334 = grati prop. × 9% (6.75% si EPS).
+          - CTS proporcional     = (rem + 1/6 grati) / 12 = rem × 7/72 ≈ 9.72%.
+
+        Pendiente: renta de 5ta para el integral requiere una proyección dedicada
+        (la estándar asume gratificaciones pagadas por separado); no se incluye aún.
+    -->
+    <data noupdate="0">
+
+        <!-- ============ ESTRUCTURA ============ -->
+        <record id="struct_pe_agrario_integral" model="hr.payroll.structure">
+            <field name="name">Planilla Agraria - Remuneración Integral (Perú)</field>
+            <field name="code">AGRO_INTEGRAL</field>
+            <field name="type_id" ref="hr.structure_type_employee"/>
+            <field name="country_id" ref="base.pe"/>
+            <field name="unpaid_work_entry_type_ids" eval="[(4, ref('idtx_hr_payroll_pe.we_falta_injustificada')), (4, ref('idtx_hr_payroll_pe.we_licencia_sin_goce')), (4, ref('hr_work_entry.work_entry_type_unpaid_leave'))]"/>
+        </record>
+
+        <!-- ============ INGRESOS AFECTOS (BASIC / ALW) ============ -->
+
+        <!-- Básico mensual (prorrateado por ingreso/cese, mes comercial 30 d) -->
+        <record id="rule_agro_basico" model="hr.salary.rule">
+            <field name="name">Básico</field>
+            <field name="code">BASICO_AGRO</field>
+            <field name="sequence">10</field>
+            <field name="category_id" ref="hr_payroll.BASIC"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+wage = version.wage or 0.0
+ini = version.contract_date_start or payslip.date_from
+ini = max(ini, payslip.date_from)
+fin = payslip.date_to
+if version.contract_date_end and version.contract_date_end &lt; fin:
+    fin = version.contract_date_end
+dias_periodo = (payslip.date_to - payslip.date_from).days + 1
+dias_activo = ((fin - ini).days + 1) if fin &gt;= ini else 0
+if dias_activo &gt;= dias_periodo:
+    result = wage
+else:
+    result = wage / 30.0 * dias_activo
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Descuento por inasistencias (faltas no remuneradas vía work entries) -->
+        <record id="rule_agro_faltas" model="hr.salary.rule">
+            <field name="name">Descuento por Inasistencias</field>
+            <field name="code">DESC_FALTAS_AGRO</field>
+            <field name="sequence">12</field>
+            <field name="category_id" ref="hr_payroll.BASIC"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = sum(wd.number_of_days for wd in worked_days.values() if not wd.is_paid) &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+faltas = sum(wd.number_of_days for wd in worked_days.values() if not wd.is_paid)
+wage = version.wage or 0.0
+result = -(wage / 30.0) * faltas
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Asignación Familiar (10% RMV fijo si tiene derecho) -->
+        <record id="rule_agro_asig_fam" model="hr.salary.rule">
+            <field name="name">Asignación Familiar</field>
+            <field name="code">ASIG_FAM_AGRO</field>
+            <field name="sequence">20</field>
+            <field name="category_id" ref="hr_payroll.ALW"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = bool(employee.l10n_pe_family_allowance_right)
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+rmv = rule_parameter('l10n_pe_rmv') or 0.0
+pct = rule_parameter('l10n_pe_asig_fam_pct') or 0.10
+result = rmv * pct
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Horas Extra 25% / 35% (biométrico validado) -->
+        <record id="rule_agro_he25" model="hr.salary.rule">
+            <field name="name">Horas Extra 25%</field>
+            <field name="code">HE25_AGRO</field>
+            <field name="sequence">30</field>
+            <field name="category_id" ref="hr_payroll.ALW"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = he25 &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+valor_hora = pe_rem_computable() / 30.0 / (horas_jornada or 8.0)
+result = he25 * valor_hora * 1.25
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_agro_he35" model="hr.salary.rule">
+            <field name="name">Horas Extra 35%</field>
+            <field name="code">HE35_AGRO</field>
+            <field name="sequence">31</field>
+            <field name="category_id" ref="hr_payroll.ALW"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = he35 &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+valor_hora = pe_rem_computable() / 30.0 / (horas_jornada or 8.0)
+result = he35 * valor_hora * 1.35
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- ============ PROPORCIONALES INTEGRADOS (INAFECTOS a aportes) ============ -->
+        <!-- Base = remuneración computable del periodo = básico afecto (post-faltas)
+             + asignación familiar. No incluye horas extra (variable). -->
+
+        <!-- Gratificación proporcional = rem / 6 -->
+        <record id="rule_agro_grati_prop" model="hr.salary.rule">
+            <field name="name">Gratificación Proporcional (integrada)</field>
+            <field name="code">GRATI_PROP_AGRO</field>
+            <field name="sequence">50</field>
+            <field name="category_id" ref="GRAT"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+rem = categories['BASIC']
+if employee.l10n_pe_family_allowance_right:
+    rem += (rule_parameter('l10n_pe_rmv') or 0.0) * (rule_parameter('l10n_pe_asig_fam_pct') or 0.10)
+result = rem / 6.0
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Bonificación Extraordinaria Ley 30334 proporcional = grati prop. × 9%
+             (6.75% si el trabajador está en EPS) -->
+        <record id="rule_agro_bonif_prop" model="hr.salary.rule">
+            <field name="name">Bonif. Extraordinaria Ley 30334 (integrada)</field>
+            <field name="code">BONIF_PROP_AGRO</field>
+            <field name="sequence">51</field>
+            <field name="category_id" ref="GRAT"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+rem = categories['BASIC']
+if employee.l10n_pe_family_allowance_right:
+    rem += (rule_parameter('l10n_pe_rmv') or 0.0) * (rule_parameter('l10n_pe_asig_fam_pct') or 0.10)
+grati = rem / 6.0
+rate = 0.0675 if employee.l10n_pe_has_eps else 0.09
+result = grati * rate
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- CTS proporcional = (rem + 1/6 grati) / 12 = rem × 7/72 -->
+        <record id="rule_agro_cts_prop" model="hr.salary.rule">
+            <field name="name">CTS Proporcional (integrada)</field>
+            <field name="code">CTS_PROP_AGRO</field>
+            <field name="sequence">52</field>
+            <field name="category_id" ref="CTS"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+rem = categories['BASIC']
+if employee.l10n_pe_family_allowance_right:
+    rem += (rule_parameter('l10n_pe_rmv') or 0.0) * (rule_parameter('l10n_pe_asig_fam_pct') or 0.10)
+result = rem * 7.0 / 72.0
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- ============ APORTES DEL TRABAJADOR (sobre BASIC + ALW) ============ -->
+
+        <record id="rule_agro_onp" model="hr.salary.rule">
+            <field name="name">ONP (SNP)</field>
+            <field name="code">ONP_AGRO</field>
+            <field name="sequence">100</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = employee.pension_system == 'onp' and not employee.l10n_pe_is_pensioner
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+rate = rule_parameter('l10n_pe_onp_rate') or 0.13
+result = -(base * rate)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_agro_afp_oblig" model="hr.salary.rule">
+            <field name="name">AFP - Aporte Obligatorio</field>
+            <field name="code">AFP_OBLIG_AGRO</field>
+            <field name="sequence">101</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = employee.pension_system == 'afp' and bool(employee.afp_id) and not employee.l10n_pe_is_pensioner
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+rate = employee.afp_id.afp_contribution or (rule_parameter('l10n_pe_afp_aporte') or 0.10)
+result = -(base * rate)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_agro_afp_comision" model="hr.salary.rule">
+            <field name="name">AFP - Comisión</field>
+            <field name="code">AFP_COM_AGRO</field>
+            <field name="sequence">102</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = employee.pension_system == 'afp' and bool(employee.afp_id) and not employee.l10n_pe_is_pensioner
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+afp = employee.afp_id
+if employee.commission_type == 'flow':
+    rate = afp.commission_flow or 0.0
+else:
+    rate = 0.0
+result = -(base * rate)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_agro_afp_seguro" model="hr.salary.rule">
+            <field name="name">AFP - Prima de Seguro</field>
+            <field name="code">AFP_SEGURO_AGRO</field>
+            <field name="sequence">103</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = employee.pension_system == 'afp' and bool(employee.afp_id) and not employee.l10n_pe_is_pensioner
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+rma = rule_parameter('l10n_pe_afp_rma') or employee.afp_id.max_insurable or 0.0
+if rma and base &gt; rma:
+    base = rma
+rate = employee.afp_id.insurance_rate or 0.0
+result = -(base * rate)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- ============ APORTES DEL EMPLEADOR (COMP) ============ -->
+
+        <!-- EsSalud agrario (pe_essalud_rate aplica 6%/9% por el flag agrario) -->
+        <record id="rule_agro_essalud" model="hr.salary.rule">
+            <field name="name">EsSalud (Agrario)</field>
+            <field name="code">ESSALUD_AGRO</field>
+            <field name="sequence">200</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = pe_essalud_rate() &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+result = base * pe_essalud_rate() - pe_eps_credit(base)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_agro_credito_eps" model="hr.salary.rule">
+            <field name="name">Crédito EPS</field>
+            <field name="code">CREDITO_EPS_AGRO</field>
+            <field name="sequence">201</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = employee.l10n_pe_has_eps and pe_eps_credit(categories['BASIC'] + categories['ALW']) &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = pe_eps_credit(categories['BASIC'] + categories['ALW'])
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_agro_vida_ley" model="hr.salary.rule">
+            <field name="name">Vida Ley</field>
+            <field name="code">VIDALEY_AGRO</field>
+            <field name="sequence">202</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = bool(payslip.company_id.life_insurance_law)
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+result = base * (payslip.company_id.life_insurance_law or 0.0)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_agro_sctr_salud" model="hr.salary.rule">
+            <field name="name">SCTR Salud</field>
+            <field name="code">SCTRSALUD_AGRO</field>
+            <field name="sequence">203</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = payslip.company_id.l10n_pe_sctr_affiliated
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+result = base * (payslip.company_id.l10n_pe_sctr_salud_rate or 0.0)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_agro_sctr_pension" model="hr.salary.rule">
+            <field name="name">SCTR Pensión</field>
+            <field name="code">SCTRPENSION_AGRO</field>
+            <field name="sequence">204</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = payslip.company_id.l10n_pe_sctr_affiliated
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+result = base * (payslip.company_id.l10n_pe_sctr_pension_rate or 0.0)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- ============ TOTALES ============ -->
+
+        <!-- Total Ingresos = afectos (BASIC+ALW) + proporcionales en mano (GRAT+CTS) -->
+        <record id="rule_agro_gross" model="hr.salary.rule">
+            <field name="name">Total Ingresos</field>
+            <field name="code">GROSS</field>
+            <field name="sequence">300</field>
+            <field name="category_id" ref="hr_payroll.GROSS"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = categories['BASIC'] + categories['ALW'] + categories['GRAT'] + categories['CTS']
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Neto a Pagar (COMP no entra al neto) -->
+        <record id="rule_agro_net" model="hr.salary.rule">
+            <field name="name">Neto a Pagar</field>
+            <field name="code">NET</field>
+            <field name="sequence">1000</field>
+            <field name="category_id" ref="hr_payroll.NET"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = categories['BASIC'] + categories['ALW'] + categories['GRAT'] + categories['CTS'] + categories['DED']
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- ================================================================ -->
+        <!-- AGRARIO INTEGRAL - JORNALERO SEMANAL                              -->
+        <!-- Igual modelo integral, pero con remuneración de OBRERO: jornal ×  -->
+        <!-- días laborables + dominical (DSR). Los proporcionales de grati y  -->
+        <!-- CTS son 1/6 y 7/72 de la remuneración del PERIODO (incluye el     -->
+        <!-- dominical, que es remuneración computable), inafectos a aportes.  -->
+        <!-- ================================================================ -->
+
+        <record id="struct_pe_agrario_integral_sem" model="hr.payroll.structure">
+            <field name="name">Planilla Agraria Jornalero - Remuneración Integral (Perú)</field>
+            <field name="code">AGRO_INTEGRAL_SEM</field>
+            <field name="type_id" ref="idtx_hr_payroll_pe.hr_structure_type_pe_jornalero"/>
+            <field name="country_id" ref="base.pe"/>
+            <field name="unpaid_work_entry_type_ids" eval="[(4, ref('idtx_hr_payroll_pe.we_falta_injustificada')), (4, ref('idtx_hr_payroll_pe.we_licencia_sin_goce')), (4, ref('hr_work_entry.work_entry_type_unpaid_leave'))]"/>
+        </record>
+
+        <!-- Estructura por defecto del tipo jornalero semanal -->
+        <record id="hr_structure_type_pe_jornalero" model="hr.payroll.structure.type">
+            <field name="default_struct_id" ref="struct_pe_agrario_integral_sem"/>
+        </record>
+
+        <!-- ===== INGRESOS AFECTOS ===== -->
+
+        <!-- Básico: jornal × días laborables de la semana -->
+        <record id="rule_agro_sem_basico" model="hr.salary.rule">
+            <field name="name">Básico</field>
+            <field name="code">BASICO_AGRO_SEM</field>
+            <field name="sequence">10</field>
+            <field name="category_id" ref="hr_payroll.BASIC"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+daily = (version.wage / 30.0) if version and version.wage else 0.0
+result = daily * (dias_laborables or 0)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Dominical (DSR) = 1 jornal -->
+        <record id="rule_agro_sem_dominical" model="hr.salary.rule">
+            <field name="name">Dominical (DSR)</field>
+            <field name="code">DOM_AGRO_SEM</field>
+            <field name="sequence">11</field>
+            <field name="category_id" ref="hr_payroll.BASIC"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = (version.wage / 30.0) if version and version.wage else 0.0
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Descuento por inasistencias (work entries no remunerados) -->
+        <record id="rule_agro_sem_faltas" model="hr.salary.rule">
+            <field name="name">Descuento por Inasistencias</field>
+            <field name="code">DESC_FALTAS_AGRO_SEM</field>
+            <field name="sequence">12</field>
+            <field name="category_id" ref="hr_payroll.BASIC"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = sum(wd.number_of_days for wd in worked_days.values() if not wd.is_paid) &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+faltas_we = sum(wd.number_of_days for wd in worked_days.values() if not wd.is_paid)
+daily = (version.wage / 30.0) if version and version.wage else 0.0
+result = -(faltas_we * daily)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Descuento dominical proporcional por faltas -->
+        <record id="rule_agro_sem_dom_desc" model="hr.salary.rule">
+            <field name="name">Descuento Dominical Proporcional</field>
+            <field name="code">DESDOMPROP_AGRO_SEM</field>
+            <field name="sequence">13</field>
+            <field name="category_id" ref="hr_payroll.BASIC"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = sum(wd.number_of_days for wd in worked_days.values() if not wd.is_paid) &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+faltas_we = sum(wd.number_of_days for wd in worked_days.values() if not wd.is_paid)
+labor = dias_laborables or 0
+dias_trab = max(labor - faltas_we, 0)
+daily = (version.wage / 30.0) if version and version.wage else 0.0
+dom_real = (dias_trab / labor) * daily if labor else 0.0
+result = dom_real - daily
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Asignación Familiar prorrateada al periodo semanal -->
+        <record id="rule_agro_sem_asig_fam" model="hr.salary.rule">
+            <field name="name">Asignación Familiar</field>
+            <field name="code">ASIG_FAM_AGRO_SEM</field>
+            <field name="sequence">20</field>
+            <field name="category_id" ref="hr_payroll.ALW"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = bool(employee.l10n_pe_family_allowance_right)
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+rmv = rule_parameter('l10n_pe_rmv') or 0.0
+pct = rule_parameter('l10n_pe_asig_fam_pct') or 0.10
+dias_periodo = (payslip.date_to - payslip.date_from).days + 1
+result = (rmv * pct) * dias_periodo / 30.0
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- Horas Extra 25% / 35% -->
+        <record id="rule_agro_sem_he25" model="hr.salary.rule">
+            <field name="name">Horas Extra 25%</field>
+            <field name="code">HE25_AGRO_SEM</field>
+            <field name="sequence">30</field>
+            <field name="category_id" ref="hr_payroll.ALW"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = he25 &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+valor_hora = pe_rem_computable() / 30.0 / (horas_jornada or 8.0)
+result = he25 * valor_hora * 1.25
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_agro_sem_he35" model="hr.salary.rule">
+            <field name="name">Horas Extra 35%</field>
+            <field name="code">HE35_AGRO_SEM</field>
+            <field name="sequence">31</field>
+            <field name="category_id" ref="hr_payroll.ALW"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = he35 &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+valor_hora = pe_rem_computable() / 30.0 / (horas_jornada or 8.0)
+result = he35 * valor_hora * 1.35
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- ===== PROPORCIONALES INTEGRADOS (INAFECTOS) =====
+             rem del periodo = categories['BASIC'] (básico + dominical − faltas −
+             desc. dominical) + asignación familiar. -->
+
+        <record id="rule_agro_sem_grati_prop" model="hr.salary.rule">
+            <field name="name">Gratificación Proporcional (integrada)</field>
+            <field name="code">GRATI_PROP_AGRO_SEM</field>
+            <field name="sequence">50</field>
+            <field name="category_id" ref="GRAT"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+rem = categories['BASIC']
+if employee.l10n_pe_family_allowance_right:
+    rmv = rule_parameter('l10n_pe_rmv') or 0.0
+    pct = rule_parameter('l10n_pe_asig_fam_pct') or 0.10
+    dias_periodo = (payslip.date_to - payslip.date_from).days + 1
+    rem += (rmv * pct) * dias_periodo / 30.0
+result = rem / 6.0
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_agro_sem_bonif_prop" model="hr.salary.rule">
+            <field name="name">Bonif. Extraordinaria Ley 30334 (integrada)</field>
+            <field name="code">BONIF_PROP_AGRO_SEM</field>
+            <field name="sequence">51</field>
+            <field name="category_id" ref="GRAT"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+rem = categories['BASIC']
+if employee.l10n_pe_family_allowance_right:
+    rmv = rule_parameter('l10n_pe_rmv') or 0.0
+    pct = rule_parameter('l10n_pe_asig_fam_pct') or 0.10
+    dias_periodo = (payslip.date_to - payslip.date_from).days + 1
+    rem += (rmv * pct) * dias_periodo / 30.0
+grati = rem / 6.0
+rate = 0.0675 if employee.l10n_pe_has_eps else 0.09
+result = grati * rate
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_agro_sem_cts_prop" model="hr.salary.rule">
+            <field name="name">CTS Proporcional (integrada)</field>
+            <field name="code">CTS_PROP_AGRO_SEM</field>
+            <field name="sequence">52</field>
+            <field name="category_id" ref="CTS"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+rem = categories['BASIC']
+if employee.l10n_pe_family_allowance_right:
+    rmv = rule_parameter('l10n_pe_rmv') or 0.0
+    pct = rule_parameter('l10n_pe_asig_fam_pct') or 0.10
+    dias_periodo = (payslip.date_to - payslip.date_from).days + 1
+    rem += (rmv * pct) * dias_periodo / 30.0
+result = rem * 7.0 / 72.0
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- ===== APORTES DEL TRABAJADOR (sobre BASIC + ALW) ===== -->
+
+        <record id="rule_agro_sem_onp" model="hr.salary.rule">
+            <field name="name">ONP (SNP)</field>
+            <field name="code">ONP_AGRO_SEM</field>
+            <field name="sequence">100</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = employee.pension_system == 'onp' and not employee.l10n_pe_is_pensioner
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+rate = rule_parameter('l10n_pe_onp_rate') or 0.13
+result = -(base * rate)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_agro_sem_afp_oblig" model="hr.salary.rule">
+            <field name="name">AFP - Aporte Obligatorio</field>
+            <field name="code">AFP_OBLIG_AGRO_SEM</field>
+            <field name="sequence">101</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = employee.pension_system == 'afp' and bool(employee.afp_id) and not employee.l10n_pe_is_pensioner
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+rate = employee.afp_id.afp_contribution or (rule_parameter('l10n_pe_afp_aporte') or 0.10)
+result = -(base * rate)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_agro_sem_afp_comision" model="hr.salary.rule">
+            <field name="name">AFP - Comisión</field>
+            <field name="code">AFP_COM_AGRO_SEM</field>
+            <field name="sequence">102</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = employee.pension_system == 'afp' and bool(employee.afp_id) and not employee.l10n_pe_is_pensioner
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+afp = employee.afp_id
+if employee.commission_type == 'flow':
+    rate = afp.commission_flow or 0.0
+else:
+    rate = 0.0
+result = -(base * rate)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_agro_sem_afp_seguro" model="hr.salary.rule">
+            <field name="name">AFP - Prima de Seguro</field>
+            <field name="code">AFP_SEGURO_AGRO_SEM</field>
+            <field name="sequence">103</field>
+            <field name="category_id" ref="hr_payroll.DED"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = employee.pension_system == 'afp' and bool(employee.afp_id) and not employee.l10n_pe_is_pensioner
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+rma = rule_parameter('l10n_pe_afp_rma') or employee.afp_id.max_insurable or 0.0
+if rma and base &gt; rma:
+    base = rma
+rate = employee.afp_id.insurance_rate or 0.0
+result = -(base * rate)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- ===== APORTES DEL EMPLEADOR ===== -->
+
+        <record id="rule_agro_sem_essalud" model="hr.salary.rule">
+            <field name="name">EsSalud (Agrario)</field>
+            <field name="code">ESSALUD_AGRO_SEM</field>
+            <field name="sequence">200</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = pe_essalud_rate() &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+result = base * pe_essalud_rate() - pe_eps_credit(base)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_agro_sem_credito_eps" model="hr.salary.rule">
+            <field name="name">Crédito EPS</field>
+            <field name="code">CREDITO_EPS_AGRO_SEM</field>
+            <field name="sequence">201</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = employee.l10n_pe_has_eps and pe_eps_credit(categories['BASIC'] + categories['ALW']) &gt; 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = pe_eps_credit(categories['BASIC'] + categories['ALW'])
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_agro_sem_vida_ley" model="hr.salary.rule">
+            <field name="name">Vida Ley</field>
+            <field name="code">VIDALEY_AGRO_SEM</field>
+            <field name="sequence">202</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = bool(payslip.company_id.life_insurance_law)
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+result = base * (payslip.company_id.life_insurance_law or 0.0)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_agro_sem_sctr_salud" model="hr.salary.rule">
+            <field name="name">SCTR Salud</field>
+            <field name="code">SCTRSALUD_AGRO_SEM</field>
+            <field name="sequence">203</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = payslip.company_id.l10n_pe_sctr_affiliated
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+result = base * (payslip.company_id.l10n_pe_sctr_salud_rate or 0.0)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_agro_sem_sctr_pension" model="hr.salary.rule">
+            <field name="name">SCTR Pensión</field>
+            <field name="code">SCTRPENSION_AGRO_SEM</field>
+            <field name="sequence">204</field>
+            <field name="category_id" ref="hr_payroll.COMP"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = payslip.company_id.l10n_pe_sctr_affiliated
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+base = categories['BASIC'] + categories['ALW']
+result = base * (payslip.company_id.l10n_pe_sctr_pension_rate or 0.0)
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <!-- ===== TOTALES ===== -->
+
+        <record id="rule_agro_sem_gross" model="hr.salary.rule">
+            <field name="name">Total Ingresos</field>
+            <field name="code">GROSS</field>
+            <field name="sequence">300</field>
+            <field name="category_id" ref="hr_payroll.GROSS"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = categories['BASIC'] + categories['ALW'] + categories['GRAT'] + categories['CTS']
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+        <record id="rule_agro_sem_net" model="hr.salary.rule">
+            <field name="name">Neto a Pagar</field>
+            <field name="code">NET</field>
+            <field name="sequence">1000</field>
+            <field name="category_id" ref="hr_payroll.NET"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = categories['BASIC'] + categories['ALW'] + categories['GRAT'] + categories['CTS'] + categories['DED']
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

@@ -26,19 +26,46 @@ MESDAN_HOST = "172.16.64.100"
 MESDAN_ROOT_PWD_B64 = "b2JhZg=="  # 'obaf'
 
 
+# La partida es un prefijo 'C'/'c' opcional seguido de dígitos. El HMI a veces
+# añade texto después (p. ej. 'c381803secado'); ese sufijo se descarta.
+_PARTIDA_RE = re.compile(r"^[Cc]?\d+")
+
+
+def _normalize_partida(raw):
+    """Extrae la clave de partida de un token: 'C' opcional + dígitos,
+    descartando cualquier texto posterior y normalizando la C a mayúscula.
+
+        '378863'        -> '378863'
+        'C378863'       -> 'C378863'
+        'c381803secado' -> 'C381803'
+
+    Devuelve None si el token no contiene una partida.
+    """
+    if not raw:
+        return None
+    m = _PARTIDA_RE.match(raw)
+    if not m:
+        return None
+    key = m.group(0)
+    if key[0] in "Cc":
+        key = "C" + key[1:]
+    return key
+
+
 def _batch_from_filename(name):
     """Return the partida key extracted from a Mesdan PDF filename, or None.
 
     Examples:
-        Rep_None_378863_D000100_T0000.pdf -> '378863'
-        Rep_X_C378863_...pdf              -> 'C378863'
+        Rep_None_378863_D000100_T0000.pdf        -> '378863'
+        Rep_X_C378863_...pdf                     -> 'C378863'
+        Rep_None_c381803secado_D260616_T1113.pdf -> 'C381803'
     """
     if not name.lower().endswith(".pdf"):
         return None
     parts = name.split("_")
     if len(parts) < 4:
         return None
-    return parts[2] or None
+    return _normalize_partida(parts[2])
 
 
 def _list_date_folders(root):
@@ -72,7 +99,9 @@ class ControlPedidoLine(models.Model):
                 "Verifica que el NFS del NAS esté montado."
             ) % MESDAN_REPORTS_DIR)
 
-        clean_batch = batch[1:] if batch.startswith('C') else batch
+        target = re.sub(r"\D", "", batch or "")  # solo los dígitos de la partida
+        if not target:
+            return
         for folder in _list_date_folders(MESDAN_REPORTS_DIR):
             folder_path = os.path.join(MESDAN_REPORTS_DIR, folder)
             try:
@@ -80,9 +109,8 @@ class ControlPedidoLine(models.Model):
             except OSError:
                 continue
             for name in sorted(names):
-                if not name.lower().endswith(".pdf"):
-                    continue
-                if not (f"_C{clean_batch}_" in name or f"_{clean_batch}_" in name):
+                key = _batch_from_filename(name)
+                if not key or re.sub(r"\D", "", key) != target:
                     continue
                 with open(os.path.join(folder_path, name), 'rb') as fh:
                     yield name, folder, fh.read()

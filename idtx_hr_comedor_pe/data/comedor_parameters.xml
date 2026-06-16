@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Subsidio de la empresa por cada consumo de item 2 o 3 (se RESTA del
+             descuento). CONFIGURAR el monto real. -->
+        <record id="rp_comedor_subsidio" model="hr.rule.parameter">
+            <field name="name">PE - Comedor: subsidio por consumo (item 2/3)</field>
+            <field name="code">l10n_pe_comedor_subsidio</field>
+            <field name="country_id" ref="base.pe"/>
+        </record>
+        <record id="rp_comedor_subsidio_v" model="hr.rule.parameter.value">
+            <field name="rule_parameter_id" ref="rp_comedor_subsidio"/>
+            <field name="date_from">2020-01-01</field>
+            <field name="parameter_value">10.0</field>
+        </record>
+
+    </data>
+</odoo>

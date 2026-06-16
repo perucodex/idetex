@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Tipo de ausencia VACACIONES, mapeado al work entry 'VAC' que usan las
+         reglas de planilla (SUELDO_PE resta los días gozados y VACA_PE los paga).
+         requires_allocation = False para poder registrar sin asignar saldo
+         previo; si se quiere controlar los 30 días/año, ponerlo en True y usar
+         Asignaciones. -->
+    <record id="leave_type_vacaciones_pe" model="hr.leave.type">
+        <field name="name">Vacaciones</field>
+        <field name="work_entry_type_id" ref="work_entry_type_vac"/>
+        <field name="requires_allocation" eval="False"/>
+        <field name="request_unit">day</field>
+        <field name="leave_validation_type">hr</field>
+        <field name="time_type">leave</field>
+        <field name="color">2</field>
+    </record>
+
+</odoo>

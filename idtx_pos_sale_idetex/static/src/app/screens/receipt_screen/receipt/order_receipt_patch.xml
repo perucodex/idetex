@@ -8,9 +8,14 @@
         </xpath>
 
 
-        <!-- [FIX Odoo 19] 1. Eliminar bloque QR y datos de factura del ticket -->
-        <xpath expr="//div[@t-if='order.company.point_of_sale_use_ticket_qr_code and order.finalized']" position="replace">
-            <div class="d-none" />
+        <!-- [FIX Odoo 19] 1. Ocultar bloque QR estandar del ticket SIN eliminar el
+             div: l10n_pe_edi_pos (factura electronica PE) usa este mismo div como
+             ancla para insertar su QR/resumen SUNAT (position="before"). Si lo
+             borramos con "replace", esa herencia falla ("cannot be located") y
+             revienta el recibo al facturar. Por eso lo ocultamos con d-none,
+             conservando el elemento (y su t-if intacto) como ancla. -->
+        <xpath expr="//div[@t-if='order.company.point_of_sale_use_ticket_qr_code and order.finalized']" position="attributes">
+            <attribute name="class" add="d-none" separator=" "/>
         </xpath>
 
         <!-- [FIX Odoo 19] 2. Quitar el pie de página "Powered by Odoo" - Ajustado XPath -->

@@ -15,8 +15,8 @@
                     <group>
                         <group>
                             <field name="afp_contribution" widget="percentage"/>
-                            <field name="commission_balance" widget="percentage"/>
                             <field name="commission_flow" widget="percentage"/>
+                            <field name="commission_balance" widget="percentage"/>
                         </group>
                         <group>
                             <field name="insurance_rate" widget="percentage"/>
@@ -49,10 +49,22 @@
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="hr_afp_view_list"/>
     </record>
-    
+
+    <!-- Parámetros legales con vigencia (RMV, UIT, RMA, tasas, tope de HE,
+         tolerancia, tramos de 5ta, etc.). NO están hardcodeados: aquí se
+         editan y se versionan por fecha (agregar un valor con nueva date_from). -->
+    <record id="hr_rule_parameter_pe_action" model="ir.actions.act_window">
+        <field name="name">Parámetros Legales (PE)</field>
+        <field name="res_model">hr.rule.parameter</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('country_id.code', '=', 'PE')]</field>
+        <field name="context">{}</field>
+    </record>
+
     <!-- Menu de localización -->
     <menuitem id="hr_payroll_pe_menu" name="Localization PE" parent="hr_work_entry_enterprise.menu_hr_payroll_configuration" sequence="200">
         <menuitem id="hr_afp_menu" name="AFP" action="hr_afp_action" sequence="10"/>
+        <menuitem id="hr_rule_parameter_pe_menu" name="Parámetros Legales" action="hr_rule_parameter_pe_action" sequence="20"/>
     </menuitem>
 
 </odoo>
