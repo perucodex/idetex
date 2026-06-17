@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+<t t-name="idtx_plan_general_alpha.DashboardAlpha">
+<div class="pad">
+    <div class="pad__scroll" t-ref="scroll">
+
+        <!-- ── Loading ──────────────────────────────────────────────────── -->
+        <t t-if="state.loading">
+            <div class="pad__state">
+                <span class="pad__spinner"><i class="fa fa-circle-o-notch fa-spin"/></span>
+                <p>Cargando dashboard…</p>
+            </div>
+        </t>
+
+        <!-- ── Error ────────────────────────────────────────────────────── -->
+        <t t-elif="state.error">
+            <div class="pad__state pad__state--error">
+                <i class="fa fa-exclamation-triangle fa-2x"/>
+                <p t-esc="state.error"/>
+            </div>
+        </t>
+
+        <!-- ── Contenido ────────────────────────────────────────────────── -->
+        <t t-else="">
+
+            <!-- Header -->
+            <header class="pad__header">
+                <div class="pad__header-left">
+                    <div class="pad__header-icon">
+                        <i class="fa fa-bar-chart"/>
+                    </div>
+                    <div>
+                        <h1 class="pad__header-title">Dashboard de Planeamiento</h1>
+                        <p class="pad__header-sub">Producción Textil · IDETEX S.A.C.</p>
+                    </div>
+                </div>
+                <div class="pad__header-right">
+                    <span class="pad__badge pad__badge--live">
+                        <i class="fa fa-circle"/> En vivo
+                    </span>
+                </div>
+            </header>
+
+            <!-- ── KPIs ─────────────────────────────────────────────────── -->
+            <section class="pad__kpis">
+                <t t-foreach="kpis" t-as="k" t-key="k.lbl">
+                    <div class="pad__kpi" t-attf-style="--c:#{k.c};--bg:#{k.bg};--bgdk:#{k.bgdk}">
+                        <div class="pad__kpi-left">
+                            <span class="pad__kpi-lbl" t-esc="k.lbl"/>
+                            <span class="pad__kpi-num"
+                                  t-att-data-cnt="k.raw"
+                                  t-att-data-kg="k.isKg ? '1' : '0'"
+                                  t-esc="k.fmt(k.raw)"/>
+                            <span t-if="k.sub" class="pad__kpi-sub" t-esc="k.sub"/>
+                        </div>
+                        <div class="pad__kpi-ico">
+                            <i t-attf-class="fa #{k.icon}"/>
+                        </div>
+                    </div>
+                </t>
+            </section>
+
+            <!-- ── KPIs Máquinas TEXPLUS (si disponible) ─────────────────── -->
+            <t t-if="kpiMaquinas">
+                <section class="pad__kpis pad__kpis--maq">
+                    <div class="pad__kpi pad__kpi--maq" style="--c:#3b82f6;--bg:#eff6ff;--bgdk:#1e3a5f">
+                        <div class="pad__kpi-left">
+                            <span class="pad__kpi-lbl">Cargas Hoy (TEXPLUS)</span>
+                            <span class="pad__kpi-num" t-esc="kpiMaquinas.totalHoy.toLocaleString('es-PE')"/>
+                            <span class="pad__kpi-sub">cargas procesadas hoy</span>
+                        </div>
+                        <div class="pad__kpi-ico"><i class="fa fa-industry"/></div>
+                    </div>
+                    <div class="pad__kpi pad__kpi--maq" style="--c:#14b8a6;--bg:#f0fdfa;--bgdk:#134e4a">
+                        <div class="pad__kpi-left">
+                            <span class="pad__kpi-lbl">Cargas Esta Semana</span>
+                            <span class="pad__kpi-num" t-esc="kpiMaquinas.totalSem.toLocaleString('es-PE')"/>
+                            <span class="pad__kpi-sub">últimos 7 días</span>
+                        </div>
+                        <div class="pad__kpi-ico"><i class="fa fa-calendar-check-o"/></div>
+                    </div>
+                    <div class="pad__kpi pad__kpi--maq" style="--c:#f59e0b;--bg:#fffbeb;--bgdk:#451a03">
+                        <div class="pad__kpi-left">
+                            <span class="pad__kpi-lbl">Máquinas Activas Hoy</span>
+                            <span class="pad__kpi-num" t-esc="kpiMaquinas.actHoy.toLocaleString('es-PE')"/>
+                            <span class="pad__kpi-sub">de <t t-esc="state.data.maquinas.top_maquinas.length"/> en seguimiento</span>
+                        </div>
+                        <div class="pad__kpi-ico"><i class="fa fa-cog"/></div>
+                    </div>
+                </section>
+            </t>
+
+            <!-- ── Sección 1: Visión General ────────────────────────────── -->
+            <section class="pad__section">
+                <h2 class="pad__section-title">Visión General</h2>
+                <div class="pad__grid pad__grid--dgt">
+
+                    <div class="pad__card">
+                        <div class="pad__card-hd">
+                            <i class="fa fa-pie-chart pad__ic--indigo"/>
+                            Estado de Pedidos
+                        </div>
+                        <div class="pad__chart" style="height:280px">
+                            <div t-ref="c1"/>
+                        </div>
+                    </div>
+
+                    <div class="pad__card">
+                        <div class="pad__card-hd">
+                            <i class="fa fa-tachometer pad__ic--green"/>
+                            % Cumplimiento
+                        </div>
+                        <div class="pad__chart" style="height:280px">
+                            <div t-ref="c2"/>
+                        </div>
+                    </div>
+
+                    <div class="pad__card">
+                        <div class="pad__card-hd">
+                            <i class="fa fa-area-chart pad__ic--blue"/>
+                            Tendencia Mensual (últimos 6 meses)
+                        </div>
+                        <div class="pad__chart" style="height:280px">
+                            <div t-ref="c3"/>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ── Sección 2: Análisis de Pedidos ───────────────────────── -->
+            <section class="pad__section">
+                <h2 class="pad__section-title">Análisis de Pedidos</h2>
+                <div class="pad__grid pad__grid--1-1">
+
+                    <div class="pad__card">
+                        <div class="pad__card-hd">
+                            <i class="fa fa-users pad__ic--cyan"/>
+                            Top Clientes por Kg
+                        </div>
+                        <div class="pad__chart" style="height:320px">
+                            <div t-ref="c4"/>
+                        </div>
+                    </div>
+
+                    <div class="pad__card">
+                        <div class="pad__card-hd">
+                            <i class="fa fa-exclamation-triangle pad__ic--red"/>
+                            Pedidos Más Retrasados
+                            <span class="pad__pill pad__pill--warn">Ref. 30d</span>
+                        </div>
+                        <div class="pad__chart" style="height:320px">
+                            <div t-ref="c5"/>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ── Sección 3: Producción por Área y Proceso ─────────────── -->
+            <section class="pad__section">
+                <h2 class="pad__section-title">Producción por Área y Proceso</h2>
+                <div class="pad__grid pad__grid--1-1">
+
+                    <div class="pad__card">
+                        <div class="pad__card-hd">
+                            <i class="fa fa-building pad__ic--amber"/>
+                            Partidas por Área (kg)
+                        </div>
+                        <div class="pad__chart" style="height:280px">
+                            <div t-ref="c6"/>
+                        </div>
+                    </div>
+
+                    <div class="pad__card">
+                        <div class="pad__card-hd">
+                            <i class="fa fa-cogs pad__ic--indigo"/>
+                            Partidas por Proceso
+                        </div>
+                        <div class="pad__chart" style="height:340px">
+                            <div t-ref="c7"/>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ── Sección 4: Actividad de Máquinas (TEXPLUS) ───────────── -->
+            <t t-if="state.data.maquinas and state.data.maquinas.disponible">
+                <section class="pad__section">
+                    <h2 class="pad__section-title">
+                        Actividad de Máquinas · TEXPLUS
+                        <span class="pad__pill pad__pill--live">En tiempo real</span>
+                    </h2>
+                    <div class="pad__grid pad__grid--1-1">
+
+                        <div class="pad__card">
+                            <div class="pad__card-hd">
+                                <i class="fa fa-industry pad__ic--blue"/>
+                                Máquinas más Activas Hoy
+                            </div>
+                            <div class="pad__chart" style="height:380px">
+                                <div t-ref="c9"/>
+                            </div>
+                            <!-- Leyenda de tipos -->
+                            <div class="pad__maq-legend">
+                                <span class="pad__maq-badge" style="--mc:#3b82f6">Tintorería</span>
+                                <span class="pad__maq-badge" style="--mc:#14b8a6">Acabados</span>
+                                <span class="pad__maq-badge" style="--mc:#f59e0b">Preparado</span>
+                                <span class="pad__maq-badge" style="--mc:#ec4899">Estampado</span>
+                            </div>
+                        </div>
+
+                        <div class="pad__card">
+                            <div class="pad__card-hd">
+                                <i class="fa fa-line-chart pad__ic--teal"/>
+                                Tendencia de Cargas por Área (últimos 7 días)
+                            </div>
+                            <div class="pad__chart" style="height:380px">
+                                <div t-ref="c10"/>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+            </t>
+
+            <!-- ── Sección 5: Cronograma Semanal ────────────────────────── -->
+            <section class="pad__section">
+                <h2 class="pad__section-title">Cronograma de Vencimientos</h2>
+                <div class="pad__grid pad__grid--full">
+                    <div class="pad__card">
+                        <div class="pad__card-hd">
+                            <i class="fa fa-calendar pad__ic--indigo"/>
+                            Pedidos que Vencen por Semana (próximas 4 semanas)
+                        </div>
+                        <div class="pad__chart" style="height:210px">
+                            <div t-ref="c8"/>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── Sección 6: Tabla próximos a vencer ───────────────────── -->
+            <section class="pad__section">
+                <h2 class="pad__section-title">Próximos a Vencer (14 días)</h2>
+                <div class="pad__card">
+                    <div class="pad__card-hd">
+                        <i class="fa fa-calendar-times-o pad__ic--amber"/>
+                        Pedidos Urgentes
+                        <span class="pad__pill">
+                            <t t-esc="state.data.pedidos.proximos_vencer.length"/> pedidos
+                        </span>
+                    </div>
+
+                    <t t-if="state.data.pedidos.proximos_vencer.length">
+                        <div class="pad__table-wrap">
+                            <table class="pad__table">
+                                <thead>
+                                    <tr>
+                                        <th>N° Pedido</th>
+                                        <th>Cliente</th>
+                                        <th style="text-align:center">Días restantes</th>
+                                        <th style="text-align:center">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.data.pedidos.proximos_vencer"
+                                       t-as="p" t-key="p.num">
+                                        <tr t-attf-class="#{p.days_left &lt;= 2 ? 'tr--urgent' : p.days_left &lt;= 7 ? 'tr--warn' : ''}">
+                                            <td><span class="pad__num" t-esc="p.num"/></td>
+                                            <td t-esc="p.customer"/>
+                                            <td style="text-align:center">
+                                                <span t-attf-class="pad__chip #{p.days_left &lt;= 2 ? 'chip--red' : p.days_left &lt;= 7 ? 'chip--amber' : 'chip--green'}">
+                                                    <t t-esc="p.days_left"/> días
+                                                </span>
+                                            </td>
+                                            <td style="text-align:center">
+                                                <span t-attf-class="pad__chip #{p.state === 'de' ? 'chip--red' : 'chip--green'}">
+                                                    <t t-if="p.state === 'on'">A Tiempo</t>
+                                                    <t t-else="">Demorado</t>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <div class="pad__empty">
+                            <i class="fa fa-check-circle-o fa-lg"/>
+                            <span>Sin pedidos próximos a vencer en los próximos 14 días.</span>
+                        </div>
+                    </t>
+                </div>
+            </section>
+
+        </t><!-- /else data loaded -->
+    </div><!-- /scroll -->
+</div><!-- /pad -->
+</t>
+
+</templates>

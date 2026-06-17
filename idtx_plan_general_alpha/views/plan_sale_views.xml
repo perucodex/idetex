@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- SEARCH: pedidos de venta para planeamiento -->
+    <record id="plan_alpha_sale_search" model="ir.ui.view">
+        <field name="name">plan.alpha.sale.search</field>
+        <field name="model">sale.order</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Pedidos">
+                <field name="name" string="Referencia"/>
+                <field name="partner_id" string="Cliente"/>
+                <field name="user_id" string="Vendedor"/>
+                <separator/>
+                <filter name="filter_draft"  string="Presupuesto"
+                        domain="[('state','=','draft')]"/>
+                <filter name="filter_sent"   string="Enviado"
+                        domain="[('state','=','sent')]"/>
+                <filter name="filter_sale"   string="Pedido confirmado"
+                        domain="[('state','=','sale')]"/>
+                <filter name="filter_done"   string="Cerrado"
+                        domain="[('state','=','done')]"/>
+                <separator/>
+                <filter name="filter_my_orders" string="Mis pedidos"
+                        domain="[('user_id','=',uid)]"/>
+                <filter name="filter_late"   string="Atrasados"
+                        domain="[('commitment_date','&lt;', context_today().strftime('%Y-%m-%d')),('state','=','sale')]"/>
+                <separator/>
+                <group>
+                    <filter name="group_partner"    string="Cliente"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_state"      string="Estado"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_user"       string="Vendedor"
+                            context="{'group_by': 'user_id'}"/>
+                    <filter name="group_commitment" string="Fecha de entrega"
+                            context="{'group_by': 'commitment_date:week'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- LIST: pedidos relevantes para produccion -->
+    <record id="plan_alpha_sale_list" model="ir.ui.view">
+        <field name="name">plan.alpha.sale.list</field>
+        <field name="model">sale.order</field>
+        <field name="arch" type="xml">
+            <list string="Pedidos de Venta"
+                  decoration-info="state == 'draft'"
+                  decoration-warning="state == 'sent'"
+                  decoration-success="state == 'sale'"
+                  sample="1">
+                <field name="name" decoration-bf="1"/>
+                <field name="partner_id"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="date_order" string="Fecha pedido" optional="show"/>
+                <field name="commitment_date" string="Entrega comprometida" optional="show"/>
+                <field name="amount_total" string="Total" widget="monetary" optional="show"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="activity_ids" widget="list_activity" optional="show"/>
+                <field name="state"
+                       widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-warning="state == 'sent'"
+                       decoration-success="state == 'sale'"
+                       decoration-muted="state == 'done'"
+                       decoration-danger="state == 'cancel'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- KANBAN: pedidos por estado -->
+    <record id="plan_alpha_sale_kanban" model="ir.ui.view">
+        <field name="name">plan.alpha.sale.kanban</field>
+        <field name="model">sale.order</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" sample="1">
+                <progressbar field="activity_state"
+                             colors='{"planned": "success", "today": "warning", "overdue": "danger"}'/>
+                <field name="name"/>
+                <field name="state"/>
+                <field name="partner_id"/>
+                <field name="commitment_date"/>
+                <field name="amount_total"/>
+                <field name="currency_id"/>
+                <field name="user_id"/>
+                <field name="activity_ids"/>
+                <field name="activity_state"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="o_kanban_record_top mb-0">
+                            <div class="o_kanban_record_headings">
+                                <strong class="o_kanban_record_title">
+                                    <field name="name"/>
+                                </strong>
+                            </div>
+                            <field name="activity_ids" widget="kanban_activity" class="ms-1"/>
+                        </div>
+                        <div class="o_kanban_record_body">
+                            <field name="partner_id"/>
+                        </div>
+                        <div class="o_kanban_record_bottom">
+                            <div class="oe_kanban_bottom_left text-muted small">
+                                <i class="fa fa-truck me-1" title="Entrega"/>
+                                <field name="commitment_date" widget="date"/>
+                            </div>
+                            <div class="oe_kanban_bottom_right">
+                                <field name="amount_total" widget="monetary"/>
+                                <field name="currency_id" invisible="1"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ACTION: Pedidos de Venta -->
+    <record id="action_plan_alpha_sales" model="ir.actions.act_window">
+        <field name="name">Pedidos de Venta</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">list,kanban,form,activity</field>
+        <field name="search_view_id" ref="plan_alpha_sale_search"/>
+        <field name="context">{'search_default_filter_sale': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Sin pedidos de venta activos.
+            </p>
+            <p>
+                Los pedidos confirmados con produccion asociada
+                apareceran aqui para su seguimiento.
+            </p>
+        </field>
+    </record>
+
+</odoo>
