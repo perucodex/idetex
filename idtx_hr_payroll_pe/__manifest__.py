@@ -33,7 +33,6 @@ Localización peruana para trabajar planillas de todo tipo
         'data/hr_afp.xml',
         'data/hr_payroll_structure_type.xml',
         'data/hr_work_entry_type.xml',
-        'data/hr_leave_type.xml',
         'data/hr_payroll_structure.xml',
         'data/hr_payslip_input_type.xml',
         'data/hr_salary_rule_category.xml',

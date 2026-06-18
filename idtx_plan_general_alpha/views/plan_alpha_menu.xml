@@ -36,6 +36,12 @@
               action="action_plan_alpha_partidas_lista"
               sequence="22"/>
 
+    <menuitem id="menu_plan_alpha_tablas_plan_beta"
+              name="Plan Beta"
+              parent="menu_plan_alpha_tablas"
+              action="action_plan_beta_lista"
+              sequence="23"/>
+
     <!-- ============================================================
          3. PROGRAMACION
     ============================================================ -->

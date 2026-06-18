@@ -49,6 +49,7 @@ sobre los modelos existentes de Control de Pedidos, MRP y Ventas.
         'security/ir.model.access.csv',
         'views/plan_dashboard_views.xml',
         'views/plan_tablas_views.xml',
+        'views/plan_beta_views.xml',
         'views/plan_production_views.xml',
         'views/plan_workorder_views.xml',
         'views/plan_sale_views.xml',

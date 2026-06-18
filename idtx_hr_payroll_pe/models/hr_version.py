@@ -11,16 +11,6 @@ class HrVersion(models.Model):
     """
     _inherit = 'hr.version'
 
-    # En esta planilla las HE/nocturna NO se calculan con el motor de horas
-    # extra de asistencia de Odoo (hr.attendance.overtime), sino con nuestro
-    # propio _pe_compute_attendance_data() a partir de la programación de
-    # turnos. El "ruleset_id" por defecto activa el overtime de Odoo, que
-    # además crashea con asistencias nocturnas que cruzan medianoche (genera
-    # 2 overtime lines solapadas → "Expected singleton"). Lo dejamos en False
-    # por defecto para no activar ese mecanismo (las marcaciones nocturnas se
-    # conservan intactas; sólo se desactiva el cálculo automático de Odoo).
-    ruleset_id = fields.Many2one(default=False)
-
     l10n_pe_labor_regime = fields.Selection(
         selection=[
             ('general', 'Régimen General (D.L. 728)'),
