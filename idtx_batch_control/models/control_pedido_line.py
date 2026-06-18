@@ -8,6 +8,23 @@ from .utils import _safe_date, _safe_str, _safe_float
 
 _logger = logging.getLogger(__name__)
 
+# Canonicaliza grafías inconsistentes del área que llegan de TEXPLUS
+# (estatus_reproceso.area) o del nombre del workcenter de Odoo. La clave se
+# busca normalizada (mayúsculas, espacios colapsados); el valor es la forma
+# canónica que usa el resto del módulo (p. ej. FIRST_AREA en control_pedido.py).
+# Ej.: 'PRETINTORERIA' (sin espacio, fases ESMCRU*) -> 'PRE TINTORERIA'.
+_AREA_CANON = {
+    'PRETINTORERIA': 'PRE TINTORERIA',
+}
+
+
+def _canonical_area(area):
+    if not area:
+        return area
+    key = ' '.join(str(area).split()).upper()
+    return _AREA_CANON.get(key, area)
+
+
 class ControlPedidoLine(models.Model):
     _name = "control.pedido.line"
     _description = "Control Pedido (Detalle)"
@@ -239,7 +256,7 @@ class ControlPedidoLine(models.Model):
         ])
         for op in ops:
             if op.workcenter_id and op.fas_code:
-                out[op.fas_code.strip().upper()] = op.workcenter_id.name
+                out[op.fas_code.strip().upper()] = _canonical_area(op.workcenter_id.name)
         return out
 
     @api.model
@@ -272,7 +289,7 @@ class ControlPedidoLine(models.Model):
                     *batch,
                 )
                 for fase, area in cursor.fetchall():
-                    out[_safe_str(fase)] = _safe_str(area)
+                    out[_safe_str(fase)] = _canonical_area(_safe_str(area))
         except Exception:
             _logger.warning("control.pedido.line: failed to fetch estatus_reproceso", exc_info=True)
             return {}
@@ -314,6 +331,8 @@ class ControlPedidoLine(models.Model):
                 and start and end
                 and not next_process):
             area = 'TERMINADO'
+
+        area = _canonical_area(area)
 
         return {
             "route": _safe_str(dr["HojaDeRuta"]),
