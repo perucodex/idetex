@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="thread_code_view_form" model="ir.ui.view">
+        <field name="name">idtx.thread.code.form</field>
+        <field name="model">idtx.thread.code</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_create_product" type="object" string="Crear Producto"
+                            class="oe_highlight" invisible="state != 'draft'"
+                            confirm="¿Crear el producto de este hilado?"/>
+                    <button name="action_return" type="object" string="Revertir"
+                            invisible="state != 'created'"
+                            confirm="¿Borrar el producto y volver a borrador?"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div name="button_box" class="oe_button_box">
+                        <button name="action_open_product" type="object" class="oe_stat_button"
+                                icon="fa-cube" invisible="not product_id">
+                            <field name="product_count" widget="statinfo" string="Producto"/>
+                        </button>
+                    </div>
+                    <field name="product_id" invisible="1"/>
+                    <div class="oe_title">
+                        <label for="codigo" string="Código"/>
+                        <h1><field name="codigo" placeholder="(se genera de los atributos)"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="user_is_thread_manager" invisible="1"/>
+                            <field name="descripcion" readonly="state == 'created' and not user_is_thread_manager"/>
+                            <!-- <field name="descrip2" readonly="state == 'created'"/>
+                            <field name="thread_desarrollo" readonly="state == 'created'"/>
+                        </group>
+                        <group> -->
+                            <field name="thread_titulo_id" options="{'no_create': True}" readonly="state == 'created'"/>
+                            <field name="thread_cabos_id" options="{'no_create': True}" readonly="state == 'created'"/>
+                            <field name="thread_proceso_id" options="{'no_create': True}" readonly="state == 'created'"/>
+                            <field name="thread_composicion_id" options="{'no_create': True}" readonly="state == 'created'"/>
+                            <field name="thread_linea_id" options="{'no_create': True}" readonly="state == 'created'"/>
+                            <field name="thread_diseno_id" options="{'no_create': True}" readonly="state == 'created'"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="thread_code_view_list" model="ir.ui.view">
+        <field name="name">idtx.thread.code.list</field>
+        <field name="model">idtx.thread.code</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="codigo"/>
+                <field name="descripcion"/>
+                <field name="thread_titulo_id"/>
+                <field name="thread_cabos_id"/>
+                <field name="thread_proceso_id"/>
+                <field name="thread_composicion_id"/>
+                <field name="thread_linea_id"/>
+                <field name="thread_diseno_id"/>
+                <field name="state" widget="badge" decoration-success="state == 'created'"/>
+                <!-- <field name="product_id"/> -->
+            </list>
+        </field>
+    </record>
+
+    <record id="thread_code_action" model="ir.actions.act_window">
+        <field name="name">Hilado</field>
+        <field name="res_model">idtx.thread.code</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Crea un nuevo código de hilado</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_thread_code" name="Hilado"
+        parent="idtx_product_development.dev_operations_menu"
+        action="thread_code_action" sequence="30"/>
+
+</odoo>

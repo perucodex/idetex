@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ===== Vistas lista de los 6 catálogos (muestran Código + Descripción) ===== -->
+    <record id="product_thread_titulo_view_list" model="ir.ui.view">
+        <field name="name">product.thread.titulo.list</field>
+        <field name="model">product.thread.titulo</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code"/>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+    <record id="product_thread_cabos_view_list" model="ir.ui.view">
+        <field name="name">product.thread.cabos.list</field>
+        <field name="model">product.thread.cabos</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code"/>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+    <record id="product_thread_proceso_view_list" model="ir.ui.view">
+        <field name="name">product.thread.proceso.list</field>
+        <field name="model">product.thread.proceso</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code"/>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+    <record id="product_thread_composicion_view_list" model="ir.ui.view">
+        <field name="name">product.thread.composicion.list</field>
+        <field name="model">product.thread.composicion</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code"/>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+    <record id="product_thread_linea_view_list" model="ir.ui.view">
+        <field name="name">product.thread.linea.list</field>
+        <field name="model">product.thread.linea</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code"/>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+    <record id="product_thread_diseno_view_list" model="ir.ui.view">
+        <field name="name">product.thread.diseno.list</field>
+        <field name="model">product.thread.diseno</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code"/>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ===== Acciones de los 6 catálogos dedicados ===== -->
+    <record id="product_thread_titulo_action" model="ir.actions.act_window">
+        <field name="name">Título</field>
+        <field name="res_model">product.thread.titulo</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="product_thread_cabos_action" model="ir.actions.act_window">
+        <field name="name">Cabos</field>
+        <field name="res_model">product.thread.cabos</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="product_thread_proceso_action" model="ir.actions.act_window">
+        <field name="name">Proceso</field>
+        <field name="res_model">product.thread.proceso</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="product_thread_composicion_action" model="ir.actions.act_window">
+        <field name="name">Composición</field>
+        <field name="res_model">product.thread.composicion</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="product_thread_linea_action" model="ir.actions.act_window">
+        <field name="name">Línea</field>
+        <field name="res_model">product.thread.linea</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="product_thread_diseno_action" model="ir.actions.act_window">
+        <field name="name">Diseño</field>
+        <field name="res_model">product.thread.diseno</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ===== Acción servidor: sincronizar los 6 desde SITPRO ===== -->
+    <record id="action_sync_thread_catalogs_sitpro" model="ir.actions.server">
+        <field name="name">Sincronizar desde SITPRO</field>
+        <field name="model_id" ref="model_product_thread_titulo"/>
+        <field name="state">code</field>
+        <field name="code">action = env['product.thread.titulo'].action_sync_all_from_sitpro()</field>
+    </record>
+
+    <!-- ===== Submenú "Hilado" dentro de Configuration ===== -->
+    <menuitem id="menu_thread_catalog_config" name="Hilado"
+        parent="idtx_product_development.dev_settings_menu" sequence="50"/>
+
+    <menuitem id="menu_thread_titulo" name="Título"
+        parent="menu_thread_catalog_config" action="product_thread_titulo_action" sequence="10"/>
+    <menuitem id="menu_thread_cabos" name="Cabos"
+        parent="menu_thread_catalog_config" action="product_thread_cabos_action" sequence="20"/>
+    <menuitem id="menu_thread_proceso" name="Proceso"
+        parent="menu_thread_catalog_config" action="product_thread_proceso_action" sequence="30"/>
+    <menuitem id="menu_thread_composicion" name="Composición"
+        parent="menu_thread_catalog_config" action="product_thread_composicion_action" sequence="40"/>
+    <menuitem id="menu_thread_linea" name="Línea"
+        parent="menu_thread_catalog_config" action="product_thread_linea_action" sequence="50"/>
+    <menuitem id="menu_thread_diseno" name="Diseño"
+        parent="menu_thread_catalog_config" action="product_thread_diseno_action" sequence="60"/>
+    <menuitem id="menu_thread_sync_sitpro" name="↻ Sincronizar desde SITPRO"
+        parent="menu_thread_catalog_config" action="action_sync_thread_catalogs_sitpro" sequence="90"/>
+
+</odoo>

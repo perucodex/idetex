@@ -1,0 +1,15 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_thread_titulo_user,thread.titulo user,model_product_thread_titulo,base.group_user,1,0,0,0
+access_thread_titulo_mgr,thread.titulo mgr,model_product_thread_titulo,idtx_product_development.group_module_product_development_manager,1,1,1,1
+access_thread_cabos_user,thread.cabos user,model_product_thread_cabos,base.group_user,1,0,0,0
+access_thread_cabos_mgr,thread.cabos mgr,model_product_thread_cabos,idtx_product_development.group_module_product_development_manager,1,1,1,1
+access_thread_proceso_user,thread.proceso user,model_product_thread_proceso,base.group_user,1,0,0,0
+access_thread_proceso_mgr,thread.proceso mgr,model_product_thread_proceso,idtx_product_development.group_module_product_development_manager,1,1,1,1
+access_thread_composicion_user,thread.composicion user,model_product_thread_composicion,base.group_user,1,0,0,0
+access_thread_composicion_mgr,thread.composicion mgr,model_product_thread_composicion,idtx_product_development.group_module_product_development_manager,1,1,1,1
+access_thread_linea_user,thread.linea user,model_product_thread_linea,base.group_user,1,0,0,0
+access_thread_linea_mgr,thread.linea mgr,model_product_thread_linea,idtx_product_development.group_module_product_development_manager,1,1,1,1
+access_thread_diseno_user,thread.diseno user,model_product_thread_diseno,base.group_user,1,0,0,0
+access_thread_diseno_mgr,thread.diseno mgr,model_product_thread_diseno,idtx_product_development.group_module_product_development_manager,1,1,1,1
+access_thread_code_user,thread.code user,model_idtx_thread_code,idtx_product_development.group_module_product_development_user,1,0,0,0
+access_thread_code_mgr,thread.code mgr,model_idtx_thread_code,idtx_product_development.group_module_product_development_manager,1,1,1,1

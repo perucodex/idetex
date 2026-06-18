@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Rellena las columnas Cod.Proceso / Proceso / Línea de la tabla de fibras
+         del reporte de ficha de tejido usando los campos nuevos del hilado
+         (el módulo base dejó las celdas vacías con su clase ancla). -->
+    <template id="report_technical_sheet_weaving_thread"
+              inherit_id="idtx_product_development.report_technical_sheet_weaving_document">
+        <xpath expr="//td[hasclass('o_yarn_codpro')]" position="replace">
+            <td class="text-center"><t t-esc="f.product_template_id.thread_proceso_id.code"/></td>
+        </xpath>
+        <xpath expr="//td[hasclass('o_yarn_proceso')]" position="replace">
+            <td><t t-esc="f.product_template_id.thread_proceso_id.name"/></td>
+        </xpath>
+        <xpath expr="//td[hasclass('o_yarn_linea')]" position="replace">
+            <td><t t-esc="f.product_template_id.thread_linea_id.name"/></td>
+        </xpath>
+    </template>
+
+</odoo>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="product_template_only_form_view_inherit_thread" model="ir.ui.view">
+        <field name="name">product.template.form.inherit.ld</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="priority">10</field>
+        <field name="arch" type="xml">
+            <field name="categ_id" position="attributes">
+                <attribute name="readonly">is_thread</attribute>
+            </field>
+            <field name="default_code" position="attributes">
+                <attribute name="readonly">is_thread</attribute>
+            </field>
+        </field>
+    </record>
+
+    <!-- Muestra los datos del hilado en la pestaña "Datos de Hilado" en SOLO
+         LECTURA. La edición se hace en el modelo Hilado (Operaciones ▸ Hilado);
+         aquí solo se visualizan. -->
+    <record id="product_template_form_thread_codigo" model="ir.ui.view">
+        <field name="name">product.template.form.thread.codigo</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="idtx_product_development.product_template_form_view_inherit_ld"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='spinning_data']" position="inside">
+                <group string="Maestro de Código (Hilado)">
+                    <group>
+                        <field name="thread_titulo_id" readonly="1"/>
+                        <field name="thread_cabos_id" readonly="1"/>
+                        <field name="thread_proceso_id" readonly="1"/>
+                        <field name="thread_composicion_id" readonly="1"/>
+                        <field name="thread_linea_id" readonly="1"/>
+                        <field name="thread_diseno_id" readonly="1"/>
+                        <field name="thread_desarrollo" readonly="1"/>
+                    </group>
+                </group>
+                <p class="text-muted">
+                    Estos datos provienen del Maestro de Código de Hilado
+                    (Operaciones ▸ Hilado) y no se editan desde el producto.
+                </p>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
