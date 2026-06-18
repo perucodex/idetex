@@ -26,6 +26,11 @@ Conecta con `idtx_hr_payroll_pe` mediante el hook `_pe_vacacional_seed_for_perio
         'security/ir.model.access.csv',
         'views/vacacional_seed_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'idtx_hr_vacacional_seed_pe/static/src/month_year_field.js',
+        ],
+    },
     'installable': True,
     'application': False,
     'auto_install': False,

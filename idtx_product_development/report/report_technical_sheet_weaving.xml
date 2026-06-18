@@ -75,9 +75,9 @@
                 <td class="text-center"><t t-esc="f.cabo_number or ''"/></td>
                 <td><t t-esc="f.product_template_id.default_code"/></td>
                 <td><t t-esc="f.product_template_id.name"/></td>
-                <td class="text-center"><t t-esc="f.product_template_id.spinning_process_code"/></td>
-                <td><t t-esc="f.product_template_id.spinning_process"/></td>
-                <td><t t-esc="f.product_template_id.spinning_line"/></td>
+                <td class="text-center o_yarn_codpro"/>
+                <td class="o_yarn_proceso"/>
+                <td class="o_yarn_linea"/>
                 <td class="text-end"><t t-esc="'{:.2f}'.format(f.percentage * 100)"/></td>
                 <td><t t-esc="f.ligament_id.name"/></td>
                 <td class="text-end"><t t-esc="'{:.2f}'.format(f.length)"/></td>

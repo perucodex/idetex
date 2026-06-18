@@ -570,20 +570,16 @@ class TechnicalSheet(models.Model):
         fibers = weaving_line.fiber_ids if weaving_line else self.env['analysis.fiber']
         if not fibers:
             raise UserError(_('La ficha tecnica no tiene fibras para exportar a tinto_prog.'))
-        yarn_process_cache = {}
         for item, fiber in enumerate(fibers.sorted(key=lambda line: (line.sequence, line.id)), start=1):
             if not fiber.product_template_id:
                 raise UserError(_('Existe una fibra sin hilo asociado en la ficha tecnica.'))
-            yarn_code = _clean_text(fiber.product_template_id.default_code)
-            if yarn_code not in yarn_process_cache:
-                yarn_process_cache[yarn_code] = self._get_yarn_process_data(yarn_code)
-            yarn_process = yarn_process_cache[yarn_code]
+            tmpl = fiber.product_template_id
             self._append_record('tinto_prog.dbf', {
                 'FICHA': ficha,
                 'FECHA': fecha,
                 'ITEM': item,
                 'LM': item,
-                'ARTICULO': fiber.product_template_id.name,
+                'ARTICULO': tmpl.name,
                 'COLOR': '',
                 'LOTE': '',
                 'PROVEEDOR': '',
@@ -591,13 +587,15 @@ class TechnicalSheet(models.Model):
                 'CON': '',
                 'KG': _dbf_number_text(fiber.weight, digits=6),
                 'PORCEN': _dbf_number_text(fiber.percentage * 100),
-                'CODIGO': fiber.product_template_id.default_code,
+                'CODIGO': tmpl.default_code,
                 'IT': None,
                 'LIGAMENTO': fiber.ligament_id.name,
                 'LM1': _dbf_number_text(fiber.length),
-                'CODPRO': yarn_process['codpro'],
-                'PROCESO': yarn_process['proceso'],
-                'LINEA': yarn_process['linea'],
+                # Proceso y línea ahora vienen de los campos del hilado
+                # (idtx_thread_codigo), no de una consulta en vivo a SITPRO.
+                'CODPRO': _clean_text(tmpl.thread_proceso_id.code),
+                'PROCESO': _clean_text(tmpl.thread_proceso_id.name),
+                'LINEA': _clean_text(tmpl.thread_linea_id.name),
             })
 
         texplus_warning = False
@@ -1024,101 +1022,6 @@ class TechnicalSheet(models.Model):
             f"INSERT INTO dbo.{table_name} ({', '.join(f'[{field_name}]' for field_name in insert_fields)}) VALUES ({placeholders})",
             *[values[field_name] for field_name in insert_fields],
         )
-
-    def _get_yarn_process_data(self, yarn_code):
-        yarn_code = _clean_text(yarn_code)
-        if not yarn_code:
-            return {'codpro': '', 'proceso': '', 'linea': ''}
-
-        conn = None
-        cursor = None
-        try:
-            conn = self._get_sql_connection()
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                SELECT TOP 1
-                    c.proceso AS codpro,
-                    hp.proceso AS proceso,
-                    hl.linea AS linea
-                FROM codigohilocrud c
-                INNER JOIN hil_proceso hp ON c.proceso = hp.cdgproceso
-                INNER JOIN hil_linea hl ON c.linea = hl.cdglinea
-                WHERE c.codigo = ?
-                """,
-                yarn_code,
-            )
-            row = cursor.fetchone()
-            if not row:
-                return {'codpro': '', 'proceso': '', 'linea': ''}
-            return {
-                'codpro': _clean_text(row.codpro),
-                'proceso': _clean_text(row.proceso),
-                'linea': _clean_text(row.linea),
-            }
-        except UserError:
-            raise
-        except Exception as error:
-            raise UserError(
-                _('No se pudo obtener proceso y linea del hilo %s desde SQL Server: %s') % (yarn_code, error)
-            ) from error
-        finally:
-            if cursor:
-                cursor.close()
-            if conn:
-                conn.close()
-
-    def _get_yarn_process_data_bulk(self, yarn_codes):
-        """Igual que `_get_yarn_process_data` pero para muchos codigos a la vez.
-
-        Devuelve {codigo: {'codpro','proceso','linea'}} para los codigos que
-        existan en SITPRO (codigohilocrud -> hil_proceso / hil_linea). Los
-        codigos sin coincidencia simplemente no aparecen en el dict. Lo usa el
-        cron de sincronizacion de product.template."""
-        codes = list({_clean_text(c) for c in yarn_codes if _clean_text(c)})
-        out = {}
-        if not codes:
-            return out
-        conn = None
-        cursor = None
-        try:
-            conn = self._get_sql_connection()
-            cursor = conn.cursor()
-            chunk = 900
-            for i in range(0, len(codes), chunk):
-                batch = codes[i:i + chunk]
-                placeholders = ', '.join('?' for _c in batch)
-                cursor.execute(
-                    f"""
-                    SELECT c.codigo AS codigo,
-                           c.proceso AS codpro,
-                           hp.proceso AS proceso,
-                           hl.linea AS linea
-                    FROM codigohilocrud c
-                    INNER JOIN hil_proceso hp ON c.proceso = hp.cdgproceso
-                    INNER JOIN hil_linea hl ON c.linea = hl.cdglinea
-                    WHERE c.codigo IN ({placeholders})
-                    """,
-                    *batch,
-                )
-                for row in cursor.fetchall():
-                    out[_clean_text(row.codigo)] = {
-                        'codpro': _clean_text(row.codpro),
-                        'proceso': _clean_text(row.proceso),
-                        'linea': _clean_text(row.linea),
-                    }
-        except UserError:
-            raise
-        except Exception as error:
-            raise UserError(
-                _('No se pudo obtener proceso y linea de hilos desde SQL Server: %s') % error
-            ) from error
-        finally:
-            if cursor:
-                cursor.close()
-            if conn:
-                conn.close()
-        return out
 
     def _insert_sitpro_hojacorr(self):
         """Append a new correlative row to the hojacorr.dbf table.

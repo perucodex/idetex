@@ -11,7 +11,7 @@ de FoxPro usadas por SITPRO/Tintoreria.
     'category': 'Produccion Textil',
     'version': '19.0.0.0',
     'license': 'LGPL-3',
-    'depends': ['idtx_product_development', 'idtx_import_product'],
+    'depends': ['idtx_product_development', 'idtx_import_product', 'idtx_thread_codigo'],
     'external_dependencies': {
         'python': ['dbf', 'pyodbc'],
     },

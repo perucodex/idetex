@@ -12,13 +12,13 @@
                 <field name="l10n_pe_vacacional_seed_ids" colspan="2"
                        string="Histórico variables (seed vacacional)">
                     <list editable="bottom">
-                        <field name="period"/>
+                        <field name="period" widget="month_year"/>
                         <field name="amount"/>
                         <field name="currency_id" column_invisible="1"/>
                     </list>
                     <form>
                         <group>
-                            <field name="period"/>
+                            <field name="period" widget="month_year"/>
                             <field name="amount"/>
                             <field name="currency_id" invisible="1"/>
                         </group>

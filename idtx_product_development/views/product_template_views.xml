@@ -18,17 +18,8 @@
             <xpath expr="//notebook" position="inside">
                 <page name="spinning_data" string="Datos de Hilado" invisible="not is_thread">
                     <field name="is_thread" invisible="1"/>
-                    <group>
-                        <group string="Hilado (SITPRO)">
-                            <field name="spinning_process_code"/>
-                            <field name="spinning_process"/>
-                            <field name="spinning_line"/>
-                        </group>
-                    </group>
-                    <p class="text-muted">
-                        Estos datos se sincronizan automáticamente desde SITPRO (tabla
-                        codigohilocrud) según el código del producto.
-                    </p>
+                    <!-- El contenido (atributos del hilado) lo agrega
+                         idtx_thread_codigo en solo lectura. -->
                 </page>
             </xpath>
         </field>
@@ -40,15 +31,15 @@
         <field name="inherit_id" ref="product.product_template_only_form_view"/>
         <field name="priority">10</field>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='categ_id']" position="attributes">
+            <field name="categ_id" position="attributes">
                 <attribute name="readonly">is_weaving</attribute>
-            </xpath>
-            <xpath expr="//field[@name='default_code']" position="attributes">
+            </field>
+            <field name="default_code" position="attributes">
                 <attribute name="readonly">is_weaving</attribute>
-            </xpath>
-            <xpath expr="//field[@name='barcode']" position="attributes">
+            </field>
+            <field name="barcode" position="attributes">
                 <attribute name="readonly">is_weaving</attribute>
-            </xpath>
+            </field>
             <field name="product_tooltip" position="after">
                 <field name="analysis_id" readonly="1" invisible="not analysis_id"/>
             </field>

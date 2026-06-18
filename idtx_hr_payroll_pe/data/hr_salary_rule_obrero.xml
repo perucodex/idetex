@@ -364,13 +364,18 @@ result = manual if manual else pe_prestacion_alimentaria()
             <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
             <field name="condition_select">python</field>
             <field name="condition_python">
-result = tardanza_horas &gt; 0
+manual = inputs['TARDANZA_HRS'].amount if 'TARDANZA_HRS' in inputs else 0.0
+result = tardanza_horas &gt; 0 or manual &gt; 0
             </field>
             <field name="amount_select">code</field>
             <field name="amount_python_compute">
+# Tardanza por minutos desde la marcación; si no hay marcación que la capte
+# (p. ej. tareo) se puede cargar manual con el input TARDANZA_HRS (horas).
+manual = inputs['TARDANZA_HRS'].amount if 'TARDANZA_HRS' in inputs else 0.0
+horas = manual if manual else tardanza_horas
 valor_hora = (version.wage or 0.0) / 30.0 / (horas_jornada or 8.0)
 result = -valor_hora
-result_qty = tardanza_horas
+result_qty = horas
             </field>
             <field name="appears_on_payslip" eval="True"/>
         </record>
