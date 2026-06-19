@@ -3,8 +3,6 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
-# Layout físico del piso TEJEDURIA — (serial_no, slot_index)
-# Patrón serpiente 24 columnas, distribución real de fábrica.
 _TEJEDURIA_FLOOR_LAYOUT = [
     # FILA 0: MAQ 1,2,3 | MAQ 11,12 | MAQ 58,59,64,65,70,71,76,77,82,83,88
     ('TEJ1',  0), ('TEJ2',  1), ('TEJ3',  2),
@@ -242,7 +240,7 @@ def _create_initial_equipment(env):
             vals['enabled'] = habilitado
             vals['oos'] = False
         if tiene_machine_state:
-            vals['machine_state'] = 'operativa' if habilitado else 'apagada'
+            vals['machine_state'] = 'operativa'
         try:
             Equipment.create(vals)
             creados += 1

@@ -97,17 +97,26 @@ export class MachineFloor extends Component {
 
     async _loadWorkcenters() {
         this.state.loading = true;
-        try {
-            const data = await rpc("/idtx_plan_alpha/workcenters", {});
-            this.state.workcenters = data.workcenters || [];
-            if (this.state.workcenters.length) {
-                await this._loadMachines(this.state.workcenters[0].name);
+        // Retry hasta 3 veces con espera creciente (resuelve race condition en tab duplicado)
+        for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+                if (attempt > 0) {
+                    await new Promise(r => setTimeout(r, attempt * 600));
+                }
+                const data = await rpc("/idtx_plan_alpha/workcenters", {});
+                this.state.workcenters = data.workcenters || [];
+                if (this.state.workcenters.length) {
+                    await this._loadMachines(this.state.workcenters[0].name);
+                }
+                break;
+            } catch (e) {
+                console.warn(`[MachineFloor] Intento ${attempt + 1} fallido:`, e);
+                if (attempt === 2) {
+                    console.error("[MachineFloor] Error cargando centros de trabajo tras 3 intentos.");
+                }
             }
-        } catch (e) {
-            console.error("[MachineFloor] Error cargando centros de trabajo:", e);
-        } finally {
-            this.state.loading = false;
         }
+        this.state.loading = false;
     }
 
     async _loadMachines(wcName) {
@@ -261,7 +270,9 @@ export class MachineFloor extends Component {
 
     async onSlotDrop(ev) {
         ev.preventDefault();
-        ev.currentTarget.classList.remove("mf-slot--over");
+        // Limpiar clases de arrastre ANTES de que OWL re-renderice el DOM
+        document.querySelectorAll(".mf-slot--dragging, .mf-slot--over")
+            .forEach(el => el.classList.remove("mf-slot--dragging", "mf-slot--over"));
 
         const targetSlot = parseInt(ev.currentTarget.dataset.slot);
         const dragId     = this._dragId;
