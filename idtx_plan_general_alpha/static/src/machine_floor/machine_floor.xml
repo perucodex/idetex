@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+<t t-name="idtx_plan_alpha.MachineFloor">
+<div class="mf-root">
+
+    <!-- ── HEADER ──────────────────────────────────────────────────────────── -->
+    <div class="mf-header" t-att-style="headerStyle">
+        <div class="mf-header-left">
+            <div class="mf-header-icon-wrap">
+                <i class="fa fa-industry"/>
+            </div>
+            <div class="mf-header-info">
+                <div class="mf-header-title">Pisos de Producción</div>
+                <div class="mf-header-sub" t-esc="state.activeWc or 'Cargando…'"/>
+            </div>
+        </div>
+        <div class="mf-header-stats" t-if="!state.loading and !state.wcLoading">
+            <div class="mf-stat mf-stat--operativa">
+                <span class="mf-stat-num" t-esc="stats.operativa"/>
+                <span class="mf-stat-lbl">Operativa</span>
+            </div>
+            <div class="mf-stat mf-stat--ejecutando">
+                <span class="mf-stat-num" t-esc="stats.ejecutando"/>
+                <span class="mf-stat-lbl">Ejecutando</span>
+            </div>
+            <div class="mf-stat mf-stat--malograda">
+                <span class="mf-stat-num" t-esc="stats.malograda"/>
+                <span class="mf-stat-lbl">Malograda</span>
+            </div>
+            <div class="mf-stat mf-stat--mantenimiento">
+                <span class="mf-stat-num" t-esc="stats.mantenimiento"/>
+                <span class="mf-stat-lbl">Mantenim.</span>
+            </div>
+            <div class="mf-stat mf-stat--apagada">
+                <span class="mf-stat-num" t-esc="stats.apagada"/>
+                <span class="mf-stat-lbl">Apagada</span>
+            </div>
+            <div class="mf-stat mf-stat--total">
+                <span class="mf-stat-num" t-esc="stats.total"/>
+                <span class="mf-stat-lbl">Total</span>
+            </div>
+        </div>
+        <button class="mf-btn-refresh" t-on-click="onRefresh" title="Actualizar">
+            <i class="fa fa-refresh"/>
+        </button>
+    </div>
+
+    <!-- ── INITIAL LOAD ─────────────────────────────────────────────────────── -->
+    <div class="mf-loading" t-if="state.loading">
+        <i class="fa fa-circle-o-notch fa-spin fa-2x"/>
+        <span>Cargando centros de trabajo…</span>
+    </div>
+
+    <t t-if="!state.loading">
+
+        <!-- ── WORKCENTER TABS ──────────────────────────────────────────────── -->
+        <div class="mf-wc-tabs">
+            <t t-foreach="state.workcenters" t-as="wc" t-key="wc.name">
+                <button class="mf-wc-tab"
+                        t-att-class="state.activeWc === wc.name ? 'mf-wc-tab--active' : ''"
+                        t-att-data-wc="wc.name"
+                        t-on-click="onWcTabClick">
+                    <i class="fa fa-th-large"/>
+                    <span t-esc="wc.name"/>
+                    <span class="mf-wc-badge" t-esc="wc.count"/>
+                </button>
+            </t>
+            <div class="mf-wc-tabs-spacer"/>
+        </div>
+
+        <!-- ── FILTER BAR ───────────────────────────────────────────────────── -->
+        <div class="mf-filters">
+            <div class="mf-filter-group">
+                <span class="mf-filter-lbl">Estado:</span>
+                <t t-foreach="statusFilters" t-as="f" t-key="f.key">
+                    <button class="mf-chip"
+                            t-att-class="state.filterStatus === f.key ? 'mf-chip--active' : ''"
+                            t-att-data-status="f.key"
+                            t-on-click="onFilterStatus"
+                            t-esc="f.label"/>
+                </t>
+            </div>
+            <div class="mf-filter-sep" t-if="machineTypes.length > 1"/>
+            <div class="mf-filter-group" t-if="machineTypes.length > 1">
+                <span class="mf-filter-lbl">Tipo:</span>
+                <button class="mf-chip"
+                        t-att-class="state.filterType === 'all' ? 'mf-chip--active' : ''"
+                        data-type="all"
+                        t-on-click="onFilterType">Todas</button>
+                <t t-foreach="machineTypes" t-as="mtype" t-key="mtype">
+                    <button class="mf-chip"
+                            t-att-class="state.filterType === mtype ? 'mf-chip--active' : ''"
+                            t-att-data-type="mtype"
+                            t-on-click="onFilterType"
+                            t-esc="mtype"/>
+                </t>
+            </div>
+            <button class="mf-btn-clear" t-if="isFiltered" t-on-click="onClearFilters">
+                <i class="fa fa-times"/> Limpiar
+                <span class="mf-filter-count">(<t t-esc="filteredMachines.length"/>/<t t-esc="stats.total"/>)</span>
+            </button>
+        </div>
+
+        <!-- ── WC LOADING ───────────────────────────────────────────────────── -->
+        <div class="mf-loading mf-loading--sm" t-if="state.wcLoading">
+            <i class="fa fa-circle-o-notch fa-spin"/>
+            <span>Cargando máquinas…</span>
+        </div>
+
+        <!-- ── COMPACT GRID (filter active) ─────────────────────────────────── -->
+        <div class="mf-compact-grid" t-elif="isFiltered">
+            <t t-foreach="filteredMachines" t-as="m" t-key="m.id">
+                <div class="mf-card"
+                     t-att-class="'mf-card--' + m.status"
+                     t-att-style="'--tc:' + m.tcfg.color"
+                     t-att-title="m.name + (m.model ? ' · ' + m.model : '')">
+                    <div class="mf-card-row1">
+                        <span class="mf-card-num">#<t t-esc="m.num"/></span>
+                        <span class="mf-card-dot" t-att-class="'mf-card-dot--' + m.status"/>
+                    </div>
+                    <div class="mf-card-ico">
+                        <i t-att-class="'fa ' + m.tcfg.icon"/>
+                    </div>
+                    <div class="mf-card-type" t-esc="m.type"/>
+                </div>
+            </t>
+            <div class="mf-empty" t-if="filteredMachines.length === 0">
+                <i class="fa fa-search"/>
+                <span>Sin resultados</span>
+            </div>
+        </div>
+
+        <!-- ── SLOT GRID (no filter — drag-and-drop) ────────────────────────── -->
+        <div class="mf-slot-grid" t-else="">
+            <div class="mf-dnd-hint">
+                <i class="fa fa-hand-grab-o"/>
+                Arrastra las tarjetas para reorganizar el piso
+            </div>
+            <div class="mf-grid-inner">
+                <t t-foreach="gridSlots" t-as="slot" t-key="slot.index">
+                    <div class="mf-slot"
+                         t-att-class="slot.machine ? 'mf-slot--filled' : 'mf-slot--empty'"
+                         t-att-data-slot="slot.index"
+                         t-on-dragover="onSlotDragOver"
+                         t-on-dragleave="onSlotDragLeave"
+                         t-on-drop="onSlotDrop">
+
+                        <!-- Machine card -->
+                        <div t-if="slot.machine"
+                             class="mf-card"
+                             t-att-class="'mf-card--' + slot.machine.status"
+                             t-att-style="'--tc:' + slot.machine.tcfg.color"
+                             draggable="true"
+                             t-att-data-machine-id="slot.machine.id"
+                             t-att-data-slot="slot.index"
+                             t-att-title="slot.machine.name + (slot.machine.model ? ' · ' + slot.machine.model : '')"
+                             t-on-dragstart="onMachineDragStart"
+                             t-on-dragend="onMachineDragEnd">
+
+                            <div class="mf-card-row1">
+                                <span class="mf-card-num">#<t t-esc="slot.machine.num"/></span>
+                                <span class="mf-card-dot"
+                                      t-att-class="'mf-card-dot--' + slot.machine.status"/>
+                            </div>
+                            <div class="mf-card-ico">
+                                <i t-att-class="'fa ' + slot.machine.tcfg.icon"/>
+                            </div>
+                            <div class="mf-card-type" t-esc="slot.machine.type"/>
+                        </div>
+
+                    </div>
+                </t>
+            </div>
+        </div>
+
+    </t>
+</div>
+</t>
+
+</templates>

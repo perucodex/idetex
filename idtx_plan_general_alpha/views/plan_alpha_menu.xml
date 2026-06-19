@@ -68,6 +68,12 @@
               action="action_plan_alpha_workorders"
               sequence="33"/>
 
+    <menuitem id="menu_plan_alpha_prog_floors"
+              name="Pisos de Máquinas"
+              parent="menu_plan_alpha_programacion"
+              action="action_plan_alpha_floors"
+              sequence="40"/>
+
     <!-- ============================================================
          4. PLANNING
     ============================================================ -->

@@ -15,8 +15,7 @@
                     <field name="manufacture_year"/>
                 </xpath>
                 <xpath expr="//field[@name='warranty_date']" position="after">
-                    <field name="enabled"/>
-                    <field name="oos"/>
+                    <field name="machine_state" widget="radio" string="Estado de Máquina"/>
                 </xpath>
             </field>
         </record>

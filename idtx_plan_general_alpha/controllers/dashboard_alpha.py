@@ -89,6 +89,164 @@ class PlanAlphaDashboard(http.Controller):
             return {"top_maquinas": [], "tendencia_maq": [], "disponible": False}
 
     @http.route(
+        "/idtx_plan_alpha/workcenters",
+        type="jsonrpc",
+        auth="user",
+        methods=["POST"],
+    )
+    def alpha_workcenters(self):
+        """Return all mrp.workcenter that have active equipment, with machine count."""
+        env = request.env
+        Equipment = env["maintenance.equipment"].sudo()
+        Workcenter = env["mrp.workcenter"].sudo()
+
+        if "workcenter_id" in Equipment._fields:
+            equipments = Equipment.search([("active", "=", True)])
+            wc_counts = {}
+            for eq in equipments:
+                if eq.workcenter_id:
+                    wc_counts[eq.workcenter_id.id] = wc_counts.get(eq.workcenter_id.id, 0) + 1
+            wcs = Workcenter.browse(list(wc_counts)).filtered(lambda w: w.active).sorted("name")
+            workcenters = [{"name": wc.name, "count": wc_counts.get(wc.id, 0)} for wc in wcs]
+        else:
+            # Fallback: fixed list
+            workcenters = [
+                {"name": "TINTORERIA", "count": 0},
+                {"name": "TEJEDURIA",  "count": 0},
+            ]
+        return {"workcenters": workcenters}
+
+    @http.route(
+        "/idtx_plan_alpha/floor_data",
+        type="jsonrpc",
+        auth="user",
+        methods=["POST"],
+    )
+    def floor_data(self, workcenter=None):
+        """Return machines for a workcenter with their grid slot positions."""
+        env = request.env
+        if not workcenter:
+            return {"machines": [], "workcenter": workcenter}
+
+        Equipment = env["maintenance.equipment"].sudo()
+        domain = [("active", "=", True)]
+
+        if "workcenter_id" in Equipment._fields:
+            wc = env["mrp.workcenter"].sudo().search([("name", "=", workcenter)], limit=1)
+            if wc:
+                domain.append(("workcenter_id", "=", wc.id))
+            else:
+                return {"machines": [], "workcenter": workcenter}
+        else:
+            KEYWORDS = {
+                "TEJEDURIA":  ["TEJED", "TEJID"],
+                "TINTORERIA": ["TINTOR", "TINTE"],
+            }
+            kws = KEYWORDS.get(workcenter.upper(), [])
+            if not kws:
+                return {"machines": [], "workcenter": workcenter}
+            Dept = env["hr.department"].sudo()
+            dept_ids = []
+            for kw in kws:
+                dept_ids += Dept.search([("name", "ilike", kw)]).ids
+            if not dept_ids:
+                return {"machines": [], "workcenter": workcenter}
+            domain.append(("department_id", "in", dept_ids))
+
+        equipments = Equipment.search(domain, order="name asc")
+
+        # ── Grid slot positions ──────────────────────────────────────────────
+        GRID_COLS_OLD = 20
+        GRID_COLS_NEW = 24
+
+        Layout = env["idtx.alpha.floor.layout"].sudo()
+        existing = Layout.search([("workcenter", "=", workcenter)])
+        layout_map = {l.equipment_id.id: l.slot_index for l in existing}
+        occupied = set(layout_map.values())
+
+        # One-time import from old idtx.machine.layout (if exists)
+        # Sort by old slot_index to preserve physical order, then assign
+        # sequential slots without gaps.
+        if not layout_map and "idtx.machine.layout" in env.registry.models:
+            OldLayout = env["idtx.machine.layout"].sudo()
+            area_kw = workcenter.lower()
+            old_records = OldLayout.search([("area", "ilike", area_kw)])
+            if old_records:
+                sorted_old = sorted(old_records, key=lambda r: r.slot_index or 0)
+                seq_slot = 0
+                to_create_from_old = []
+                for rec in sorted_old:
+                    eq_id = rec.equipment_id.id if rec.equipment_id else None
+                    if not eq_id or eq_id in layout_map:
+                        continue
+                    while seq_slot in occupied:
+                        seq_slot += 1
+                    layout_map[eq_id] = seq_slot
+                    occupied.add(seq_slot)
+                    to_create_from_old.append({
+                        "equipment_id": eq_id,
+                        "workcenter": workcenter,
+                        "slot_index": seq_slot,
+                    })
+                    seq_slot += 1
+                if to_create_from_old:
+                    Layout.create(to_create_from_old)
+
+        # Auto-assign sequential slots for machines that have no position yet
+        next_slot = 0
+        to_create = []
+        for eq in equipments:
+            if eq.id not in layout_map:
+                while next_slot in occupied:
+                    next_slot += 1
+                layout_map[eq.id] = next_slot
+                occupied.add(next_slot)
+                to_create.append({
+                    "equipment_id": eq.id,
+                    "workcenter": workcenter,
+                    "slot_index": next_slot,
+                })
+                next_slot += 1
+        if to_create:
+            Layout.create(to_create)
+
+        has_state = "machine_state" in Equipment._fields
+        machines = []
+        for eq in equipments:
+            machines.append({
+                "id":            eq.id,
+                "name":          eq.name or "",
+                "model":         eq.model or "",
+                "serial":        eq.serial_no or "",
+                "enabled":       bool(eq.enabled) if hasattr(eq, "enabled") else True,
+                "oos":           bool(eq.oos) if hasattr(eq, "oos") else False,
+                "machine_state": eq.machine_state if has_state else None,
+                "slot_index":    layout_map.get(eq.id, 0),
+            })
+        return {"machines": machines, "workcenter": workcenter}
+
+    @http.route(
+        "/idtx_plan_alpha/save_floor_position",
+        type="jsonrpc",
+        auth="user",
+        methods=["POST"],
+    )
+    def save_floor_position(self, equipment_id=None, workcenter=None, slot_index=None):
+        """Persist a machine's grid slot position."""
+        if not equipment_id or not workcenter or slot_index is None:
+            return {"ok": False}
+        env = request.env
+        Layout = env["idtx.alpha.floor.layout"].sudo()
+        existing = Layout.search(
+            [("equipment_id", "=", equipment_id), ("workcenter", "=", workcenter)], limit=1
+        )
+        if existing:
+            existing.slot_index = slot_index
+        else:
+            Layout.create({"equipment_id": equipment_id, "workcenter": workcenter, "slot_index": slot_index})
+        return {"ok": True}
+
+    @http.route(
         "/idtx_plan_alpha/dashboard_data",
         type="jsonrpc",
         auth="user",

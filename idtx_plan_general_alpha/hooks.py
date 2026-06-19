@@ -3,6 +3,49 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
+# Layout físico del piso TEJEDURIA — (serial_no, slot_index)
+# Patrón serpiente 24 columnas, distribución real de fábrica.
+_TEJEDURIA_FLOOR_LAYOUT = [
+    # FILA 0: MAQ 1,2,3 | MAQ 11,12 | MAQ 58,59,64,65,70,71,76,77,82,83,88
+    ('TEJ1',  0), ('TEJ2',  1), ('TEJ3',  2),
+    ('TEJ11', 6), ('TEJ12', 7),
+    ('TEJ58', 13), ('TEJ59', 14), ('TEJ64', 15), ('TEJ65', 16),
+    ('TEJ70', 17), ('TEJ71', 18), ('TEJ76', 19), ('TEJ77', 20),
+    ('TEJ82', 21), ('TEJ83', 22), ('TEJ88', 23),
+    # FILA 1 (serpiente): MAQ 6,5,4 | MAQ 14,15,16,17 | MAQ 57,60,63,66,69,72,75,78,81,84,87
+    ('TEJ6',  24), ('TEJ5',  25), ('TEJ4',  26),
+    ('TEJ14', 30), ('TEJ15', 31), ('TEJ16', 33), ('TEJ17', 34),
+    ('TEJ57', 37), ('TEJ60', 38), ('TEJ63', 39), ('TEJ66', 40),
+    ('TEJ69', 41), ('TEJ72', 42), ('TEJ75', 43), ('TEJ78', 44),
+    ('TEJ81', 45), ('TEJ84', 46), ('TEJ87', 47),
+    # FILA 2: MAQ 7,8,9 | MAQ 21,20,19,18 (inv) | MAQ 56,61,62,67,68,73,74,79,80,85,86
+    ('TEJ7',  48), ('TEJ8',  49), ('TEJ9',  50),
+    ('TEJ21', 54), ('TEJ20', 55), ('TEJ19', 57), ('TEJ18', 58),
+    ('TEJ56', 61), ('TEJ61', 62), ('TEJ62', 63), ('TEJ67', 64),
+    ('TEJ68', 65), ('TEJ73', 66), ('TEJ74', 67), ('TEJ79', 68),
+    ('TEJ80', 69), ('TEJ85', 70), ('TEJ86', 71),
+    # FILA 3: MAQ 10 | MAQ 22,23,24,25
+    ('TEJ10', 72),
+    ('TEJ22', 78), ('TEJ23', 79), ('TEJ24', 81), ('TEJ25', 82),
+    # FILA 4: MAQ 26 sola
+    ('TEJ26', 97),
+    # FILA 5: MAQ 27,28,29,30 | MAQ 31,32
+    ('TEJ27', 123), ('TEJ28', 124), ('TEJ29', 125), ('TEJ30', 126),
+    ('TEJ31', 128), ('TEJ32', 129),
+    # FILA 6 (serpiente): MAQ 38,37,36,35 | MAQ 34,33
+    ('TEJ38', 147), ('TEJ37', 148), ('TEJ36', 149), ('TEJ35', 150),
+    ('TEJ34', 152), ('TEJ33', 153),
+    # FILA 7: MAQ 39,40,41,42 | MAQ 43,44
+    ('TEJ39', 171), ('TEJ40', 172), ('TEJ41', 173), ('TEJ42', 174),
+    ('TEJ43', 176), ('TEJ44', 177),
+    # FILA 8 (serpiente): MAQ 50,49,48,47 | MAQ 46,45
+    ('TEJ50', 195), ('TEJ49', 196), ('TEJ48', 197), ('TEJ47', 198),
+    ('TEJ46', 200), ('TEJ45', 201),
+    # FILA 9: MAQ 51,52,53,54 | MAQ 55
+    ('TEJ51', 219), ('TEJ52', 220), ('TEJ53', 221), ('TEJ54', 222),
+    ('TEJ55', 224),
+]
+
 # (nombre, serial_no, modelo, departamento, centro_trabajo, habilitado)
 _EQUIPOS_INICIALES = [
     ('MAQ 38',                  '1',  'BRAZZOLI',             'Tintorería', 'TINTORERIA', True),
@@ -31,13 +74,12 @@ _EQUIPOS_INICIALES = [
     ('ABRIDORA N °2',           '24', 'ABRIDORA',             'Tintorería', 'TINTORERIA', False),
     ('HIDROEXTRACTORA CORINO',  '25', 'HIDROEXTRACTORA CORINO',  'Tintorería', 'TINTORERIA', False),
     ('HIDROEXTRACTORA BIANCO',  '26', 'HIDROEXTRACTORA BIANCO',  'Tintorería', 'TINTORERIA', False),
-    ('LISTADORA MAQ 1',         '27',     'BIOTEX',    'Tejeduría', 'TEJEDURIA', False),
-    ('LISTADORA MAQ 2',         '28',     'MAYER',     'Tejeduría', 'TEJEDURIA', False),
-    ('LISTADORA MAQ 3',         '29',     'MAYER',     'Tejeduría', 'TEJEDURIA', False),
-    ('LISTADORA MAQ 4',         '30',     'MAYER',     'Tejeduría', 'TEJEDURIA', False),
-    ('LISTADORA MAQ 5',         '31',     'MAYER',     'Tejeduría', 'TEJEDURIA', False),
-    ('LISTADORA MAQ 6',         '32',     'BIOTEX',    'Tejeduría', 'TEJEDURIA', False),
-    # --- Tejeduría — máquinas adicionales (num 7-88) ---
+    ('LISTADORA MAQ 1',         'TEJ1',     'BIOTEX',    'Tejeduría', 'TEJEDURIA', False),
+    ('LISTADORA MAQ 2',         'TEJ2',     'MAYER',     'Tejeduría', 'TEJEDURIA', False),
+    ('LISTADORA MAQ 3',         'TEJ3',     'MAYER',     'Tejeduría', 'TEJEDURIA', False),
+    ('LISTADORA MAQ 4',         'TEJ4',     'MAYER',     'Tejeduría', 'TEJEDURIA', False),
+    ('LISTADORA MAQ 5',         'TEJ5',     'MAYER',     'Tejeduría', 'TEJEDURIA', False),
+    ('LISTADORA MAQ 6',         'TEJ6',     'BIOTEX',    'Tejeduría', 'TEJEDURIA', False),
     ('LISTADORA MAQ 7',         'TEJ7',   'MAYER',     'Tejeduría', 'TEJEDURIA', False),
     ('LISTADORA MAQ 8',         'TEJ8',   'MAYER',     'Tejeduría', 'TEJEDURIA', False),
     ('LISTADORA MAQ 9',         'TEJ9',   'MAYER',     'Tejeduría', 'TEJEDURIA', False),
@@ -178,6 +220,8 @@ def _create_initial_equipment(env):
             _logger.warning('Plan General Alpha: no se pudieron crear centros de trabajo.', exc_info=True)
             tiene_workcenter = False
 
+    tiene_machine_state = 'machine_state' in fields_eq
+
     creados = omitidos = 0
     for nombre, serial_no, modelo, dept_nombre, wc_nombre, habilitado in _EQUIPOS_INICIALES:
         if Equipment.search([('serial_no', '=', serial_no)], limit=1):
@@ -197,6 +241,8 @@ def _create_initial_equipment(env):
         if tiene_idtx:
             vals['enabled'] = habilitado
             vals['oos'] = False
+        if tiene_machine_state:
+            vals['machine_state'] = 'operativa' if habilitado else 'apagada'
         try:
             Equipment.create(vals)
             creados += 1
@@ -205,6 +251,45 @@ def _create_initial_equipment(env):
 
     _logger.info(
         'Plan General Alpha: equipos iniciales — %d creados, %d ya existían.',
+        creados, omitidos,
+    )
+
+
+def _create_floor_layouts(env):
+    """Crea el layout físico del piso TEJEDURIA al instalar el módulo."""
+    if 'idtx.alpha.floor.layout' not in env.registry.models:
+        _logger.warning('Plan General Alpha: modelo idtx.alpha.floor.layout no disponible.')
+        return
+    Layout = env['idtx.alpha.floor.layout']
+    Equipment = env['maintenance.equipment']
+
+    creados = omitidos = 0
+    for serial_no, slot_index in _TEJEDURIA_FLOOR_LAYOUT:
+        eq = Equipment.search([('serial_no', '=', serial_no)], limit=1)
+        if not eq:
+            _logger.debug('Plan General Alpha: equipo %s no encontrado, omitiendo layout.', serial_no)
+            continue
+        existing = Layout.search([
+            ('equipment_id', '=', eq.id),
+            ('workcenter', '=', 'TEJEDURIA'),
+        ], limit=1)
+        if existing:
+            omitidos += 1
+            continue
+        try:
+            Layout.create({
+                'equipment_id': eq.id,
+                'workcenter': 'TEJEDURIA',
+                'slot_index': slot_index,
+            })
+            creados += 1
+        except Exception:
+            _logger.warning(
+                'Plan General Alpha: no se pudo crear layout para %s.', serial_no, exc_info=True
+            )
+
+    _logger.info(
+        'Plan General Alpha: floor layout TEJEDURIA — %d creados, %d ya existían.',
         creados, omitidos,
     )
 
@@ -239,3 +324,4 @@ def post_init_hook(env):
         _logger.exception('Plan General Alpha: error al configurar el dashboard board.')
 
     _create_initial_equipment(env)
+    _create_floor_layouts(env)
