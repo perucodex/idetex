@@ -96,7 +96,19 @@ class TechnicalSheet(models.Model):
                 vals['name'] = self.env['ir.sequence'].with_company(vals.get('company_id')).next_by_code(
                     'technical.sheet', sequence_date=seq_date) or _("New")
         return super().create(vals_list)
-    
+
+    def write(self, vals):
+        res = super().write(vals)
+        # Sincroniza notes con la(s) línea(s) analysis.weaving.data enlazada(s)
+        # (bidireccional con analysis.weaving.data.write). Flag anti-bucle.
+        if 'notes' in vals and not self.env.context.get('_syncing_notes'):
+            for rec in self:
+                lines = rec.analysis_id.weaving_data_ids.filtered(
+                    lambda w: w.technical_sheet_id == rec and w.notes != rec.notes)
+                if lines:
+                    lines.with_context(_syncing_notes=True).notes = rec.notes
+        return res
+
     def action_done(self):
         self.state = 'done'
         analysis_line = self.analysis_id.weaving_data_ids.filtered(lambda w: w.technical_sheet_id == self)

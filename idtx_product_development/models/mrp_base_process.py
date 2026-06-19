@@ -621,7 +621,7 @@ class MrpBaseProcess(models.Model):
     _FASPRO_FLAG_COLS = ('FasActTin', 'FasCon', 'FasConPla', 'FasCc', 'FasAcab',
                          'FasFormul', 'FasEstamp')
     _FASPRO_FLAG_GLOBAL_DEFAULT = {
-        'FasActTin': 'N', 'FasCon': 'S', 'FasConPla': 'N', 'FasCc': 'N',
+        'FasActTin': 'N', 'FasCon': 'S', 'FasConPla': 'S', 'FasCc': 'N',
         'FasAcab': 'N', 'FasFormul': 'N', 'FasEstamp': 'N',
     }
 

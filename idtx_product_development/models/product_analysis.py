@@ -11,7 +11,9 @@ class ProductAnalysis(models.Model):
 
     name = fields.Char('Name', required=True, copy=False, readonly=False, default=lambda self: _('New'))
     analysis_date = fields.Date('Analysis Date', required=True, default=lambda self: fields.Date.context_today(self))
-    partner_id = fields.Many2one('res.partner', string='Customer', ondelete='restrict')
+    partner_id = fields.Many2one(
+        'res.partner', string='Customer', ondelete='restrict',
+        domain="[('is_company', '=', True)]")
     product_description = fields.Char(
         'Product Description', size=26,
         help="Máximo 26 caracteres: es el largo de ArtDsc en TEXPLUS "
@@ -526,11 +528,24 @@ class AnalysisWeavingData(models.Model):
     _description = 'Analysis Weaving Data'
 
     analysis_id = fields.Many2one('product.analysis', string='Product Analysis', ondelete='restrict')
-    partner_id = fields.Many2one('res.partner', string='Customer', ondelete='restrict')
+    partner_id = fields.Many2one(
+        'res.partner', string='Customer', ondelete='restrict',
+        domain="[('is_company', '=', True)]")
     stylo = fields.Char('Stylo')
     fiber_ids = fields.One2many('analysis.fiber', 'weaving_data_id', string='Fibers')
     technical_sheet_id = fields.Many2one('technical.sheet', string='Technical Sheet', copy=False)
     notes = fields.Text('Weaving Notes')
+
+    def write(self, vals):
+        res = super().write(vals)
+        # Sincroniza notes con la ficha técnica enlazada (bidireccional con
+        # technical.sheet.write). El flag de contexto evita el bucle infinito.
+        if 'notes' in vals and not self.env.context.get('_syncing_notes'):
+            for rec in self:
+                sheet = rec.technical_sheet_id
+                if sheet and sheet.notes != rec.notes:
+                    sheet.with_context(_syncing_notes=True).notes = rec.notes
+        return res
 
     @api.onchange('analysis_id')
     def _onchange_analysis_id(self):

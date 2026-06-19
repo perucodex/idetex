@@ -508,7 +508,7 @@ class TechnicalSheet(models.Model):
         cdgart = self._get_cdgart()
         cdgclie = self._ensure_cliente(partner)
         weaving_line = analysis.weaving_data_ids.filtered(lambda line: line.technical_sheet_id == self)[:1]
-        notes = _clean_text(weaving_line.notes or self.notes or analysis.notes)
+        notes = _clean_text(self.notes or weaving_line.notes or analysis.notes)
         fecha = self.technical_date or analysis.analysis_date or fields.Date.context_today(self)
         process_table_values = self._collect_process_table_values(ficha, fecha)
 
