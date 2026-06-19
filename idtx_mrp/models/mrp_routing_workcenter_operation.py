@@ -163,6 +163,16 @@ class MrpRoutingWorkcenterOperation(models.Model):
     name = fields.Char('Name', required=True)
     fas_code = fields.Char('Código MSSQL', help="Código correspondiente en la tabla FASPRO de MSSQL", copy=False)
     workcenter_id = fields.Many2one('mrp.workcenter', 'Work Center', required=True, check_company=True)
+    # Fase padre para agrupar partidas. Auto-relación simple (sin nested-set):
+    # se PERMITE que una fase sea su propio padre (auto-padre) para que las
+    # partidas de una fase de nivel superior se agrupen bajo sí misma.
+    parent_operation_id = fields.Many2one(
+        'mrp.routing.workcenter.operation', string='Fase Padre',
+        index=True, ondelete='set null',
+        help="Fase padre para agrupar. Puede ser la misma fase (auto-padre).")
+    child_operation_ids = fields.One2many(
+        'mrp.routing.workcenter.operation', 'parent_operation_id',
+        string='Sub-fases')
     company_id = fields.Many2one(
         'res.company',
         string='Company',

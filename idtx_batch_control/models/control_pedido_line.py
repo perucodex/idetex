@@ -47,6 +47,13 @@ class ControlPedidoLine(models.Model):
         help="Primer proceso de la partida cuyo barFasDTF (fecha fin) este vacio. "
              "Puede tener barFasDTI iniciado pero sin terminar.",
     )
+    parent_operation_id = fields.Many2one(
+        'mrp.routing.workcenter.operation', string='Fase Padre',
+        compute='_compute_parent_operation_id', store=True,
+        help="Fase padre de la operación cuyo name coincide con el "
+             "'Siguiente Proceso' (next_process). Permite agrupar partidas por "
+             "fase padre en el reporte de Kilos por Fase.",
+    )
     area = fields.Char('Area')
     rollos = fields.Integer('Rolls')
     kilograms = fields.Float('Kilograms')
@@ -122,6 +129,28 @@ class ControlPedidoLine(models.Model):
                 key=lambda p: p.barOrdLin or 0
             )
             rec.next_process = pending[0].fasCod if pending else False
+
+    @api.depends('next_process')
+    def _compute_parent_operation_id(self):
+        # next_process guarda el NOMBRE de la fase (FasDsc), p.ej. "CONTROL DE
+        # CALIDAD", no el código. Por eso se machea contra operation.name (NO
+        # fas_code) y se toma su fase padre. Batched.
+        Op = self.env['mrp.routing.workcenter.operation']
+        names = {(r.next_process or '').strip().upper() for r in self if r.next_process}
+        names.discard('')
+        parent_by_name = {}
+        if names:
+            for op in Op.sudo().search([]):
+                key = (op.name or '').strip().upper()
+                if key not in names:
+                    continue
+                parent = op.parent_operation_id.id or False
+                # Si varias operaciones comparten nombre, prioriza una con padre.
+                if key not in parent_by_name or (not parent_by_name[key] and parent):
+                    parent_by_name[key] = parent
+        for rec in self:
+            key = (rec.next_process or '').strip().upper()
+            rec.parent_operation_id = parent_by_name.get(key, False)
 
     @api.depends('area', 'proceso_ids.barFasDTI', 'proceso_ids.barFasDTF', 'proceso_ids.fas_code', 'report_date')
     def _compute_area_num_days(self):

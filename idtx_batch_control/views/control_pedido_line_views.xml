@@ -53,6 +53,8 @@
         <field name="model">control.pedido.line</field>
         <field name="arch" type="xml">
             <list create="0" edit="0" delete="0" sample="1">
+                <field name="parent_operation_id" string="Fase Padre"/>
+                <field name="next_process" string="Sig. Proceso"/>
                 <field name="process" string="Fase"/>
                 <field name="area"/>
                 <field name="batch"/>
@@ -193,6 +195,7 @@
                     <filter string="Descripción" name="group_by_description" domain="[]" context="{'group_by': 'description'}"/>
                     <filter string="Batch" name="group_by_batch" domain="[]" context="{'group_by': 'batch'}"/>
                     <filter string="Fase" name="group_by_process" domain="[]" context="{'group_by': 'process'}"/>
+                    <filter string="Fase Padre" name="group_by_parent_operation" domain="[]" context="{'group_by': 'parent_operation_id'}"/>
                     <filter string="Area" name="group_by_area" domain="[]" context="{'group_by': 'area'}"/>
                     <filter string="Area Responsable" name="group_by_area1" domain="[]" context="{'group_by': 'area1'}"/>
                     <filter string="Fecha Deseada" name="group_by_wish_date" domain="[]" context="{'group_by': 'wish_date:day'}"/>
@@ -240,7 +243,7 @@
         <field name="res_model">control.pedido.line</field>
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_control_pedido_line_tree_by_fase"/>
-        <field name="context">{"search_default_active": 1, "search_default_group_by_next_process": 1}</field>
+        <field name="context">{"search_default_active": 1, "search_default_group_by_parent_operation": 1, "search_default_group_by_next_process": 2}</field>
     </record>
 
 </odoo>

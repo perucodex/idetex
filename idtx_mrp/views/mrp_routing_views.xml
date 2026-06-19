@@ -13,6 +13,7 @@
                                 <field name="name"/>
                                 <field name="workcenter_id"/>
                                 <field name="operation_type"/>
+                                <field name="parent_operation_id"/>
                             </group>
                             <group>
                                 <field name="company_id" readonly="1" groups="base.group_multi_company"/>
@@ -45,6 +46,7 @@
                     <field name="fas_code"/>
                     <field name="workcenter_id"/>
                     <field name="operation_type"/>
+                    <field name="parent_operation_id"/>
                     <field name="company_id" groups="base.group_multi_company" optional="hide"/>
                 </list>
             </field>
@@ -62,6 +64,7 @@
                     <group>
                         <filter string="Workcenter" name="group_by_workcenter" domain="[]" context="{'group_by': 'workcenter_id'}"/>
                         <filter string="Operation Type" name="group_by_operation_type" domain="[]" context="{'group_by': 'operation_type'}"/>
+                        <filter string="Fase Padre" name="group_by_parent_operation" domain="[]" context="{'group_by': 'parent_operation_id'}"/>
                     </group>
                 </search>
             </field>
