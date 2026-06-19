@@ -417,3 +417,38 @@ class ControlPedidoLine(models.Model):
                 active.action_finish()
             else:
                 rec.end_date = fields.Datetime.now()
+
+
+class MrpRoutingWorkcenterOperation(models.Model):
+    """Extensión de la operación: cuando cambia la jerarquía de fases
+    (parent_operation_id) o el name de una operación, recalcula el
+    `parent_operation_id` (computado) de las partidas cuyo `next_process` apunta
+    a esa operación. Sin esto, las partidas ya calculadas no reflejarían un
+    cambio de padre hecho después. (Va en este archivo y no en uno propio para
+    evitar problemas de import.)"""
+    _inherit = 'mrp.routing.workcenter.operation'
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        records._recompute_partidas_parent_operation()
+        return records
+
+    def write(self, vals):
+        res = super().write(vals)
+        if 'parent_operation_id' in vals or 'name' in vals:
+            self._recompute_partidas_parent_operation()
+        return res
+
+    def _recompute_partidas_parent_operation(self):
+        # Las partidas machean por NOMBRE de operación (next_process = FasDsc),
+        # no por fas_code.
+        names = [n for n in self.mapped('name') if n]
+        if not names:
+            return
+        lines = self.env['control.pedido.line'].sudo().search(
+            [('next_process', 'in', names)])
+        # Marcar next_process como modificado fuerza el recálculo de
+        # parent_operation_id (que depende de él).
+        if lines:
+            lines.modified(['next_process'])
