@@ -70,110 +70,110 @@ class ThreadCode(models.Model):
         for rec in self:
             rec.product_count = 1 if rec.product_id else 0
 
-    @api.model
-    def _import_clean_from_sitpro(self):
-        """Importación única (post_init / migración): crea un idtx.thread.code por
-        cada hilado de SITPRO.codigohilocrud cuyo código se REGENERA EXACTO desde
-        los catálogos. El código es titulo+cabo+proceso+linea+composicion+diseño;
-        composición se sabe por columna y el sobrante final del código es el
-        diseño (si es un código válido de hil_diseno). Se omiten las filas con
-        catálogo faltante o cuyo sobrante no es un diseño conocido (códigos
-        heredados, p. ej. con fibra).
+    # @api.model
+    # def _import_clean_from_sitpro(self):
+    #     """Importación única (post_init / migración): crea un idtx.thread.code por
+    #     cada hilado de SITPRO.codigohilocrud cuyo código se REGENERA EXACTO desde
+    #     los catálogos. El código es titulo+cabo+proceso+linea+composicion+diseño;
+    #     composición se sabe por columna y el sobrante final del código es el
+    #     diseño (si es un código válido de hil_diseno). Se omiten las filas con
+    #     catálogo faltante o cuyo sobrante no es un diseño conocido (códigos
+    #     heredados, p. ej. con fibra).
 
-        Enlaza al product.template por default_code si existe; si no, lo crea.
-        NO escribe en SITPRO (los datos ya están allí: se crea el product.template
-        directamente, sin pasar por action_create_product/_create_in_sitpro).
-        Idempotente: salta los códigos que ya tienen un idtx.thread.code.
-        Devuelve un dict de contadores."""
-        def code_map(model_name):
-            return {r.code: r.id for r in
-                    self.env[model_name].with_context(active_test=False).search([])}
-        m_tit = code_map('product.thread.titulo')
-        m_cab = code_map('product.thread.cabos')
-        m_pro = code_map('product.thread.proceso')
-        m_lin = code_map('product.thread.linea')
-        m_com = code_map('product.thread.composicion')
-        m_dis = code_map('product.thread.diseno')
+    #     Enlaza al product.template por default_code si existe; si no, lo crea.
+    #     NO escribe en SITPRO (los datos ya están allí: se crea el product.template
+    #     directamente, sin pasar por action_create_product/_create_in_sitpro).
+    #     Idempotente: salta los códigos que ya tienen un idtx.thread.code.
+    #     Devuelve un dict de contadores."""
+    #     def code_map(model_name):
+    #         return {r.code: r.id for r in
+    #                 self.env[model_name].with_context(active_test=False).search([])}
+    #     m_tit = code_map('product.thread.titulo')
+    #     m_cab = code_map('product.thread.cabos')
+    #     m_pro = code_map('product.thread.proceso')
+    #     m_lin = code_map('product.thread.linea')
+    #     m_com = code_map('product.thread.composicion')
+    #     m_dis = code_map('product.thread.diseno')
 
-        conn = self.env['mrp.routing.workcenter.operation']._get_texplus_sql_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT codigo, titulo, cabo, proceso, linea, composicion, descrip, "
-            "descrip2, desarrollo FROM SITPRO.dbo.codigohilocrud")
-        rows = cursor.fetchall()
-        try:
-            conn.close()
-        except Exception:
-            pass
+    #     conn = self.env['mrp.routing.workcenter.operation']._get_texplus_sql_connection()
+    #     cursor = conn.cursor()
+    #     cursor.execute(
+    #         "SELECT codigo, titulo, cabo, proceso, linea, composicion, descrip, "
+    #         "descrip2, desarrollo FROM SITPRO.dbo.codigohilocrud")
+    #     rows = cursor.fetchall()
+    #     try:
+    #         conn.close()
+    #     except Exception:
+    #         pass
 
-        existing = set(self.with_context(active_test=False).search([]).mapped('codigo'))
-        Product = self.env['product.template']
-        created = with_diseno = linked = created_prod = skipped_recon = skipped_cat = 0
-        seen = set()
-        for row in rows:
-            cod = (row.codigo or '').strip()
-            if not cod or cod in seen:
-                continue
-            seen.add(cod)
-            if cod in existing:
-                continue  # idempotente
-            t = (row.titulo or '').strip()
-            c = (row.cabo or '').strip()
-            p = (row.proceso or '').strip()
-            l = (row.linea or '').strip()
-            co = (row.composicion or '').strip()
-            # 1) catálogos obligatorios presentes (composición opcional, pero si
-            #    viene debe existir para que el código compute igual)
-            if not (t in m_tit and c in m_cab and p in m_pro and l in m_lin
-                    and (not co or co in m_com)):
-                skipped_cat += 1
-                continue
-            # 2) El código = titulo+cabo+proceso+linea+composicion + (diseño opc).
-            #    La composición la sabemos por columna; lo que sobra al final del
-            #    código es el diseño (debe ser un código válido de hil_diseno).
-            prefix = t + c + p + l + co
-            if not cod.startswith(prefix):
-                skipped_recon += 1
-                continue
-            diseno = cod[len(prefix):]
-            if diseno and diseno not in m_dis:
-                # El sobrante no es un diseño conocido (p. ej. códigos heredados
-                # que incluyen la fibra); no se puede representar, se omite.
-                skipped_recon += 1
-                continue
-            desc = (row.descrip or '').strip() or (row.descrip2 or '').strip() or cod
-            tc = self.create({
-                'descripcion': desc,
-                'thread_titulo_id': m_tit[t],
-                'thread_cabos_id': m_cab[c],
-                'thread_proceso_id': m_pro[p],
-                'thread_linea_id': m_lin[l],
-                'thread_composicion_id': m_com.get(co) if co else False,
-                'thread_diseno_id': m_dis[diseno] if diseno else False,
-                'thread_desarrollo': bool(row.desarrollo),
-            })
-            created += 1
-            if diseno:
-                with_diseno += 1
-            # Enlaza al producto existente o lo crea (sin escribir en SITPRO).
-            product = Product.search([('default_code', '=', cod)], limit=1)
-            if product:
-                linked += 1
-            else:
-                product = Product.create(tc._thread_product_vals())
-                created_prod += 1
-            tc.product_id = product.id
-            tc.state = 'created'
-        _logger.info(
-            "Importación hilados SITPRO: %s hilados creados (%s con diseño; %s "
-            "productos enlazados, %s productos creados); omitidos %s por código "
-            "no parseable, %s por catálogo faltante.",
-            created, with_diseno, linked, created_prod, skipped_recon, skipped_cat)
-        return {
-            'created': created, 'with_diseno': with_diseno, 'linked': linked,
-            'created_products': created_prod, 'skipped_unparseable': skipped_recon,
-            'skipped_catalog': skipped_cat,
-        }
+    #     existing = set(self.with_context(active_test=False).search([]).mapped('codigo'))
+    #     Product = self.env['product.template']
+    #     created = with_diseno = linked = created_prod = skipped_recon = skipped_cat = 0
+    #     seen = set()
+    #     for row in rows:
+    #         cod = (row.codigo or '').strip()
+    #         if not cod or cod in seen:
+    #             continue
+    #         seen.add(cod)
+    #         if cod in existing:
+    #             continue  # idempotente
+    #         t = (row.titulo or '').strip()
+    #         c = (row.cabo or '').strip()
+    #         p = (row.proceso or '').strip()
+    #         l = (row.linea or '').strip()
+    #         co = (row.composicion or '').strip()
+    #         # 1) catálogos obligatorios presentes (composición opcional, pero si
+    #         #    viene debe existir para que el código compute igual)
+    #         if not (t in m_tit and c in m_cab and p in m_pro and l in m_lin
+    #                 and (not co or co in m_com)):
+    #             skipped_cat += 1
+    #             continue
+    #         # 2) El código = titulo+cabo+proceso+linea+composicion + (diseño opc).
+    #         #    La composición la sabemos por columna; lo que sobra al final del
+    #         #    código es el diseño (debe ser un código válido de hil_diseno).
+    #         prefix = t + c + p + l + co
+    #         if not cod.startswith(prefix):
+    #             skipped_recon += 1
+    #             continue
+    #         diseno = cod[len(prefix):]
+    #         if diseno and diseno not in m_dis:
+    #             # El sobrante no es un diseño conocido (p. ej. códigos heredados
+    #             # que incluyen la fibra); no se puede representar, se omite.
+    #             skipped_recon += 1
+    #             continue
+    #         desc = (row.descrip or '').strip() or (row.descrip2 or '').strip() or cod
+    #         tc = self.create({
+    #             'descripcion': desc,
+    #             'thread_titulo_id': m_tit[t],
+    #             'thread_cabos_id': m_cab[c],
+    #             'thread_proceso_id': m_pro[p],
+    #             'thread_linea_id': m_lin[l],
+    #             'thread_composicion_id': m_com.get(co) if co else False,
+    #             'thread_diseno_id': m_dis[diseno] if diseno else False,
+    #             'thread_desarrollo': bool(row.desarrollo),
+    #         })
+    #         created += 1
+    #         if diseno:
+    #             with_diseno += 1
+    #         # Enlaza al producto existente o lo crea (sin escribir en SITPRO).
+    #         product = Product.search([('default_code', '=', cod)], limit=1)
+    #         if product:
+    #             linked += 1
+    #         else:
+    #             product = Product.create(tc._thread_product_vals())
+    #             created_prod += 1
+    #         tc.product_id = product.id
+    #         tc.state = 'created'
+    #     _logger.info(
+    #         "Importación hilados SITPRO: %s hilados creados (%s con diseño; %s "
+    #         "productos enlazados, %s productos creados); omitidos %s por código "
+    #         "no parseable, %s por catálogo faltante.",
+    #         created, with_diseno, linked, created_prod, skipped_recon, skipped_cat)
+    #     return {
+    #         'created': created, 'with_diseno': with_diseno, 'linked': linked,
+    #         'created_products': created_prod, 'skipped_unparseable': skipped_recon,
+    #         'skipped_catalog': skipped_cat,
+    #     }
 
     @api.onchange('thread_titulo_id', 'thread_cabos_id', 'thread_composicion_id', 'thread_proceso_id')
     def _onchange_suggest_descripcion(self):
@@ -328,6 +328,19 @@ class ThreadCode(models.Model):
                 cursor.close()
             if conn:
                 conn.close()
+
+    def action_return_open_wizard(self):
+        """Tras la 1ª confirmación del botón, abre el wizard de 2ª confirmación
+        (botón rojo, aviso de borrado definitivo) antes de revertir."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Revertir hilado'),
+            'res_model': 'idtx.thread.code.return.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_thread_code_id': self.id},
+        }
 
     def action_return(self):
         """Revierte: borra el producto creado y la fila en SITPRO (simétrico al

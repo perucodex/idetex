@@ -6,7 +6,12 @@
         <field name="name">product.thread.titulo.list</field>
         <field name="model">product.thread.titulo</field>
         <field name="arch" type="xml">
-            <list>
+            <list delete="0">
+                <header>
+                    <button name="action_open_delete_wizard" type="object" string="Eliminar"
+                            class="btn-danger"
+                            confirm="¿Eliminar el/los valor(es) de catálogo seleccionados?"/>
+                </header>
                 <field name="code"/>
                 <field name="name"/>
             </list>
@@ -16,7 +21,12 @@
         <field name="name">product.thread.cabos.list</field>
         <field name="model">product.thread.cabos</field>
         <field name="arch" type="xml">
-            <list>
+            <list delete="0">
+                <header>
+                    <button name="action_open_delete_wizard" type="object" string="Eliminar"
+                            class="btn-danger"
+                            confirm="¿Eliminar el/los valor(es) de catálogo seleccionados?"/>
+                </header>
                 <field name="code"/>
                 <field name="name"/>
             </list>
@@ -26,7 +36,12 @@
         <field name="name">product.thread.proceso.list</field>
         <field name="model">product.thread.proceso</field>
         <field name="arch" type="xml">
-            <list>
+            <list delete="0">
+                <header>
+                    <button name="action_open_delete_wizard" type="object" string="Eliminar"
+                            class="btn-danger"
+                            confirm="¿Eliminar el/los valor(es) de catálogo seleccionados?"/>
+                </header>
                 <field name="code"/>
                 <field name="name"/>
             </list>
@@ -36,7 +51,12 @@
         <field name="name">product.thread.composicion.list</field>
         <field name="model">product.thread.composicion</field>
         <field name="arch" type="xml">
-            <list>
+            <list delete="0">
+                <header>
+                    <button name="action_open_delete_wizard" type="object" string="Eliminar"
+                            class="btn-danger"
+                            confirm="¿Eliminar el/los valor(es) de catálogo seleccionados?"/>
+                </header>
                 <field name="code"/>
                 <field name="name"/>
             </list>
@@ -46,7 +66,12 @@
         <field name="name">product.thread.linea.list</field>
         <field name="model">product.thread.linea</field>
         <field name="arch" type="xml">
-            <list>
+            <list delete="0">
+                <header>
+                    <button name="action_open_delete_wizard" type="object" string="Eliminar"
+                            class="btn-danger"
+                            confirm="¿Eliminar el/los valor(es) de catálogo seleccionados?"/>
+                </header>
                 <field name="code"/>
                 <field name="name"/>
             </list>
@@ -56,10 +81,175 @@
         <field name="name">product.thread.diseno.list</field>
         <field name="model">product.thread.diseno</field>
         <field name="arch" type="xml">
-            <list>
+            <list delete="0">
+                <header>
+                    <button name="action_open_delete_wizard" type="object" string="Eliminar"
+                            class="btn-danger"
+                            confirm="¿Eliminar el/los valor(es) de catálogo seleccionados?"/>
+                </header>
                 <field name="code"/>
                 <field name="name"/>
             </list>
+        </field>
+    </record>
+
+    <!-- ===== Búsqueda: por código o descripción (la barra usa el _rec_name=name
+             si no hay search view; por eso hace falta declarar 'code') ===== -->
+    <record id="product_thread_titulo_view_search" model="ir.ui.view">
+        <field name="name">product.thread.titulo.search</field>
+        <field name="model">product.thread.titulo</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="code" string="Código / Descripción" filter_domain="['|', ('code', 'ilike', self), ('name', 'ilike', self)]"/>
+            </search>
+        </field>
+    </record>
+    <record id="product_thread_cabos_view_search" model="ir.ui.view">
+        <field name="name">product.thread.cabos.search</field>
+        <field name="model">product.thread.cabos</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="code" string="Código / Descripción" filter_domain="['|', ('code', 'ilike', self), ('name', 'ilike', self)]"/>
+            </search>
+        </field>
+    </record>
+    <record id="product_thread_proceso_view_search" model="ir.ui.view">
+        <field name="name">product.thread.proceso.search</field>
+        <field name="model">product.thread.proceso</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="code" string="Código / Descripción" filter_domain="['|', ('code', 'ilike', self), ('name', 'ilike', self)]"/>
+            </search>
+        </field>
+    </record>
+    <record id="product_thread_composicion_view_search" model="ir.ui.view">
+        <field name="name">product.thread.composicion.search</field>
+        <field name="model">product.thread.composicion</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="code" string="Código / Descripción" filter_domain="['|', ('code', 'ilike', self), ('name', 'ilike', self)]"/>
+            </search>
+        </field>
+    </record>
+    <record id="product_thread_linea_view_search" model="ir.ui.view">
+        <field name="name">product.thread.linea.search</field>
+        <field name="model">product.thread.linea</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="code" string="Código / Descripción" filter_domain="['|', ('code', 'ilike', self), ('name', 'ilike', self)]"/>
+            </search>
+        </field>
+    </record>
+    <record id="product_thread_diseno_view_search" model="ir.ui.view">
+        <field name="name">product.thread.diseno.search</field>
+        <field name="model">product.thread.diseno</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="code" string="Código / Descripción" filter_domain="['|', ('code', 'ilike', self), ('name', 'ilike', self)]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ===== Formularios (sin borrado nativo; botón Eliminar -> wizard) ===== -->
+    <record id="product_thread_titulo_view_form" model="ir.ui.view">
+        <field name="name">product.thread.titulo.form</field>
+        <field name="model">product.thread.titulo</field>
+        <field name="arch" type="xml">
+            <form string="Título" delete="0">
+                <header>
+                    <button name="action_open_delete_wizard" type="object" string="Eliminar"
+                            class="btn-danger" confirm="¿Eliminar este valor de catálogo?"/>
+                </header>
+                <sheet><group><field name="code"/><field name="name"/><field name="active"/></group></sheet>
+            </form>
+        </field>
+    </record>
+    <record id="product_thread_cabos_view_form" model="ir.ui.view">
+        <field name="name">product.thread.cabos.form</field>
+        <field name="model">product.thread.cabos</field>
+        <field name="arch" type="xml">
+            <form string="Cabos" delete="0">
+                <header>
+                    <button name="action_open_delete_wizard" type="object" string="Eliminar"
+                            class="btn-danger" confirm="¿Eliminar este valor de catálogo?"/>
+                </header>
+                <sheet><group><field name="code"/><field name="name"/><field name="active"/></group></sheet>
+            </form>
+        </field>
+    </record>
+    <record id="product_thread_proceso_view_form" model="ir.ui.view">
+        <field name="name">product.thread.proceso.form</field>
+        <field name="model">product.thread.proceso</field>
+        <field name="arch" type="xml">
+            <form string="Proceso" delete="0">
+                <header>
+                    <button name="action_open_delete_wizard" type="object" string="Eliminar"
+                            class="btn-danger" confirm="¿Eliminar este valor de catálogo?"/>
+                </header>
+                <sheet><group><field name="code"/><field name="name"/><field name="active"/></group></sheet>
+            </form>
+        </field>
+    </record>
+    <record id="product_thread_composicion_view_form" model="ir.ui.view">
+        <field name="name">product.thread.composicion.form</field>
+        <field name="model">product.thread.composicion</field>
+        <field name="arch" type="xml">
+            <form string="Composición" delete="0">
+                <header>
+                    <button name="action_open_delete_wizard" type="object" string="Eliminar"
+                            class="btn-danger" confirm="¿Eliminar este valor de catálogo?"/>
+                </header>
+                <sheet><group><field name="code"/><field name="name"/><field name="active"/></group></sheet>
+            </form>
+        </field>
+    </record>
+    <record id="product_thread_linea_view_form" model="ir.ui.view">
+        <field name="name">product.thread.linea.form</field>
+        <field name="model">product.thread.linea</field>
+        <field name="arch" type="xml">
+            <form string="Línea" delete="0">
+                <header>
+                    <button name="action_open_delete_wizard" type="object" string="Eliminar"
+                            class="btn-danger" confirm="¿Eliminar este valor de catálogo?"/>
+                </header>
+                <sheet><group><field name="code"/><field name="name"/><field name="active"/></group></sheet>
+            </form>
+        </field>
+    </record>
+    <record id="product_thread_diseno_view_form" model="ir.ui.view">
+        <field name="name">product.thread.diseno.form</field>
+        <field name="model">product.thread.diseno</field>
+        <field name="arch" type="xml">
+            <form string="Diseño" delete="0">
+                <header>
+                    <button name="action_open_delete_wizard" type="object" string="Eliminar"
+                            class="btn-danger" confirm="¿Eliminar este valor de catálogo?"/>
+                </header>
+                <sheet><group><field name="code"/><field name="name"/><field name="active"/></group></sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ===== 2ª confirmación de borrado: alerta roja + botón rojo ===== -->
+    <record id="thread_catalog_delete_wizard_form" model="ir.ui.view">
+        <field name="name">idtx.thread.catalog.delete.wizard.form</field>
+        <field name="model">idtx.thread.catalog.delete.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Confirmar borrado definitivo">
+                <field name="res_model" invisible="1"/>
+                <field name="res_ids" invisible="1"/>
+                <div class="alert alert-danger" role="alert">
+                    <strong>¡Atención!</strong> Vas a eliminar <field name="count" readonly="1" class="oe_inline"/>
+                    valor(es) de catálogo. Esta acción es <b>definitiva</b>: también se eliminarán
+                    de <b>SITPRO</b>. No se puede deshacer.
+                </div>
+                <p>¿Confirmas el borrado definitivo?</p>
+                <footer>
+                    <button name="action_confirm" type="object" string="Eliminar definitivamente"
+                            class="btn-danger"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
         </field>
     </record>
 

@@ -21,7 +21,7 @@ de product.template para los productos is_thread:
     'version': '19.0.1.3.0',
     'license': 'LGPL-3',
     'depends': ['idtx_product_development', 'mail'],
-    'post_init_hook': 'post_init_hook',
+    # 'post_init_hook': 'post_init_hook',
     'data': [
         'security/thread_groups.xml',
         'security/ir.model.access.csv',

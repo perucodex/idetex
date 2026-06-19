@@ -20,6 +20,8 @@ class ThreadCatalog(models.AbstractModel):
     _name = 'idtx.thread.catalog'
     _description = 'Catálogo de Hilado (base)'
     _order = 'code'
+    _rec_names_search = ['code', 'name']  # desplegables Many2one buscan por código/desc.
+    # (La barra de búsqueda de la lista usa la search view de thread_catalog_views.xml.)
 
     # Las subclases definen el origen en SITPRO:
     _sitpro_table = None       # p. ej. 'hil_titulo'
@@ -55,11 +57,65 @@ class ThreadCatalog(models.AbstractModel):
             self._sitpro_upsert(old_codes=old_codes)
         return res
 
+    def action_open_delete_wizard(self):
+        """Abre la 2ª confirmación (botón rojo, aviso de borrado definitivo +
+        SITPRO) para los registros seleccionados. La 1ª confirmación la da el
+        botón que llama aquí (atributo confirm)."""
+        if not self:
+            raise UserError(_("Selecciona al menos un registro para eliminar."))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Eliminar valor de catálogo'),
+            'res_model': 'idtx.thread.catalog.delete.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_res_model': self._name,
+                'default_res_ids': ','.join(str(i) for i in self.ids),
+                'default_count': len(self),
+            },
+        }
+
     def unlink(self):
-        # Prohíbe borrar valores en uso. NO se elimina en SITPRO (por diseño:
-        # los maestros solo crean y modifican allí, no borran).
+        # Prohíbe borrar valores en uso por productos/hilados.
         self._check_catalog_not_in_use()
-        return super().unlink()
+        # Captura (tabla, columna_código, código) ANTES del unlink para borrar
+        # también la fila en SITPRO (hil_*).
+        to_delete = [
+            (r._sitpro_table, r._sitpro_code_col, (r.code or '').strip())
+            for r in self
+            if r._sitpro_table and r._sitpro_code_col and (r.code or '').strip()
+        ]
+        res = super().unlink()
+        if to_delete:
+            self._sitpro_delete(to_delete)
+        return res
+
+    def _sitpro_delete(self, to_delete):
+        """Borra en SITPRO (hil_*) los catálogos eliminados en Odoo. Si falla
+        lanza UserError -> rollback de la transacción (revierte el unlink de
+        Odoo). Respeta texplus_write_enabled (en dev el DELETE se descarta)."""
+        conn = cursor = None
+        try:
+            conn = self.env['mrp.routing.workcenter.operation']._get_texplus_sql_connection()
+            cursor = conn.cursor()
+            for table, ccol, code in to_delete:
+                cursor.execute(
+                    "DELETE FROM SITPRO.dbo.%s WHERE [%s] = ?" % (table, ccol),
+                    code)
+            conn.commit()
+            _logger.info("SITPRO delete %s: %d registro(s)", self._name, len(to_delete))
+        except Exception as error:
+            if conn:
+                conn.rollback()
+            raise UserError(_(
+                "No se pudo eliminar el catálogo en SITPRO (%(t)s): %(e)s",
+                t=self._description, e=error)) from error
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
 
     def _check_catalog_not_in_use(self):
         """Lanza UserError si algún registro de otro modelo (productos, hilados,
