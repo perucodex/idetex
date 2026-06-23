@@ -68,19 +68,22 @@
                 <separator/>
                 <filter name="dispatched" string="Despachadas (archivadas)"
                         domain="[('active', '=', False)]"/>
-                <!-- Orden de los group-by: tipo -> cliente -> pedido (lo respeta
-                     el orden de declaración al activarse con search_default). -->
+                <!-- Orden por defecto: tipo -> cliente -> mes -> pedido.
+                     El orden lo fijan las prioridades numéricas de los
+                     search_default en la acción (1,2,3,4). -->
                 <group>
                     <filter name="group_type" string="Tipo Estampado"
                             domain="[]" context="{'group_by': 'printing_type'}"/>
                     <filter name="group_customer" string="Cliente"
                             domain="[]" context="{'group_by': 'customer'}"/>
+                    <filter name="group_month" string="Mes"
+                            domain="[]" context="{'group_by': 'order_date:month'}"/>
                     <filter name="group_pedido" string="Pedido"
                             domain="[]" context="{'group_by': 'numordped'}"/>
                     <filter name="group_product" string="Producto"
                             domain="[]" context="{'group_by': 'product_id'}"/>
-                    <filter name="group_date" string="Fecha Pedido"
-                            domain="[]" context="{'group_by': 'order_date'}"/>
+                    <filter name="group_date" string="Fecha Pedido (día)"
+                            domain="[]" context="{'group_by': 'order_date:day'}"/>
                 </group>
             </search>
         </field>
@@ -92,8 +95,9 @@
         <field name="view_mode">list,pivot</field>
         <field name="context">{
             'search_default_group_type': 1,
-            'search_default_group_customer': 1,
-            'search_default_group_pedido': 1,
+            'search_default_group_customer': 2,
+            'search_default_group_month': 3,
+            'search_default_group_pedido': 4,
         }</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
