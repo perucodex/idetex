@@ -27,6 +27,7 @@ class SaleOrder(models.Model):
     lab_dev_count = fields.Integer(string="Technical Sheet Count", compute='_compute_lab_dev_count')
     has_order_lab_dev = fields.Boolean('Has Order LabDev', compute='_compute_has_order_lab_dev')
     is_company_produce = fields.Boolean(related='company_id.is_company_produce')
+    has_weaving_line = fields.Boolean('Has Weaving Line', compute='_compute_has_weaving_line')
     need_labdev = fields.Boolean('Need LabDev?', compute='_compute_need_labdev', default=False)
     has_pending_labdev_lines = fields.Boolean('Has Pending LabDev Lines', compute='_compute_need_labdev', default=False)
     sale_approval_required = fields.Boolean('Sale Approval Required', compute='_compute_sale_approval_required')
@@ -117,6 +118,11 @@ class SaleOrder(models.Model):
     def _compute_sale_approval_required(self):
         for rec in self:
             rec.sale_approval_required = rec._requires_sale_approval_workflow()
+
+    @api.depends('order_line.product_template_id', 'order_line.product_template_id.is_weaving')
+    def _compute_has_weaving_line(self):
+        for rec in self:
+            rec.has_weaving_line = any(line.product_template_id.is_weaving for line in rec.order_line)
 
     def action_request_approval(self):
         self.state = 'for_app'
@@ -238,7 +244,7 @@ class SaleOrder(models.Model):
                     if prd.color_recipe_id:
                         prd.action_confirm()
                     prd.do_unreserve()
-            if not rec.company_id.is_company_produce:
+            if not rec.company_id.is_company_produce or not rec.has_weaving_line:
                 rec.is_quote = False
         return res
 

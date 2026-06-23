@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="print_reports_menu"
+              name="Reports"
+              parent="idtx_printing.print_menu"
+              sequence="50"/>
+
+    <menuitem id="print_kilos_menu"
+              name="Kilaje de Estampados"
+              parent="print_reports_menu"
+              action="action_printing_kilos"
+              sequence="10"/>
+
+</odoo>

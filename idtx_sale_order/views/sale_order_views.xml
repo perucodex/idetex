@@ -8,11 +8,11 @@
         <field name="arch" type="xml">
             <!-- Botón Confirm con id="action_confirm" -->
             <xpath expr="//button[@id='action_confirm']" position="attributes">
-                <attribute name="invisible">state != 'sent' or is_quote and is_company_produce</attribute>
+                <attribute name="invisible">state != 'sent' or is_quote and is_company_produce and has_weaving_line</attribute>
             </xpath>
             <!-- Botón Confirm sin id (el otro) -->
             <xpath expr="//button[@name='action_confirm'][@type='object'][not(@id)]" position="attributes">
-                <attribute name="invisible">state != 'draft' or is_quote and is_company_produce</attribute>
+                <attribute name="invisible">state != 'draft' or is_quote and is_company_produce and has_weaving_line</attribute>
             </xpath>
             <xpath expr="//button[@id='quotation_send_primary']" position="attributes">
                 <attribute name="invisible">state != 'draft' or need_approval and is_company_produce</attribute>
@@ -81,6 +81,7 @@
                     <button name="update_color_names" type="object" class="oe_link py-0 text-decoration-underline" string="Update name" invisible="not color_name_warning"/>
                 </div>
                 <field name="is_company_produce" invisible="1"/>
+                <field name="has_weaving_line" invisible="1"/>
                 <field name="need_approval" invisible="1"/>
                 <field name="sale_approval_required" invisible="1"/>
                 <field name="has_order_lab_dev" invisible="1"/>

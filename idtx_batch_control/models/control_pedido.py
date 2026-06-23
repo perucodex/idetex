@@ -580,7 +580,22 @@ class ControlPedido(models.Model):
             self.env['control.proceso.lines'].create(process_vals_to_create)
         self._sync_ctrl_info_reprocesos(list(existing_map.values()) + list(self.env['control.pedido'].browse(line_cmds_by_pedido.keys())))
         self._cleanup_zombie_lines(rows, existing_map)
+        # Punto de extensión: módulos como idtx_printing_dbf lo sobreescriben
+        # para enriquecer los pedidos sincronizados con datos derivados de
+        # SITPRO (p.ej. el kilaje de estampado). Un fallo aquí no debe abortar
+        # el sync principal de pedidos.
+        try:
+            self._sync_extra_data(nums)
+        except Exception:
+            _logger.exception("sync_from_dbf: fallo el hook _sync_extra_data")
         return {"created": created, "updated": updated}
+
+    def _sync_extra_data(self, nums):
+        """Hook llamado al final de sync_from_dbf con la lista de números de
+        pedido procesados (`nums`). No hace nada por defecto; los módulos que
+        derivan datos adicionales de SITPRO lo sobreescriben — ver
+        idtx_printing_dbf, que calcula el kilaje de estampado por pedido."""
+        return
 
     def _cleanup_zombie_lines(self, rows, existing_map):
         """Borra lineas Odoo cuya combinacion (pedido, route, batch) ya no

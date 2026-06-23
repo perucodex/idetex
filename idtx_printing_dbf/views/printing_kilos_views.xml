@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_printing_kilos_list" model="ir.ui.view">
+        <field name="name">printing.kilos.list</field>
+        <field name="model">printing.kilos</field>
+        <field name="arch" type="xml">
+            <!-- Editable + multi_edit: el usuario puede fijar el Tipo Estampado
+                 (incluso en varias líneas a la vez) y desactivar las despachadas. -->
+            <list string="Kilaje de Estampados" editable="bottom" multi_edit="1"
+                  create="0" import="0">
+                <header>
+                    <button name="action_sync_now" type="object"
+                            string="Actualizar desde SITPRO" class="btn-primary"/>
+                </header>
+                <field name="printing_type"/>
+                <field name="customer" readonly="1"/>
+                <field name="numordped" readonly="1"/>
+                <field name="pedido_id" optional="hide" readonly="1"/>
+                <field name="order_date" optional="hide" readonly="1"/>
+                <field name="product_id" optional="show" readonly="1"/>
+                <field name="codpro" optional="hide" readonly="1"/>
+                <field name="description" optional="show" readonly="1"/>
+                <field name="design_code" optional="show" readonly="1"/>
+                <field name="design_name" optional="hide" readonly="1"/>
+                <field name="colorname" optional="hide" readonly="1"/>
+                <field name="kilograms" sum="Total Kilos" readonly="1"/>
+                <field name="printing_type_manual" optional="hide" readonly="1"/>
+                <field name="active" widget="boolean_toggle" optional="show"/>
+                <button name="action_reset_printing_type" type="object"
+                        string="Recalcular tipo" icon="fa-refresh"
+                        invisible="not printing_type_manual"/>
+                <button name="action_open_pedido" type="object"
+                        string="Abrir pedido" icon="fa-external-link"
+                        invisible="not pedido_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_printing_kilos_pivot" model="ir.ui.view">
+        <field name="name">printing.kilos.pivot</field>
+        <field name="model">printing.kilos</field>
+        <field name="arch" type="xml">
+            <pivot string="Kilaje de Estampados">
+                <field name="printing_type" type="row"/>
+                <field name="customer" type="row"/>
+                <field name="kilograms" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_printing_kilos_search" model="ir.ui.view">
+        <field name="name">printing.kilos.search</field>
+        <field name="model">printing.kilos</field>
+        <field name="arch" type="xml">
+            <search string="Kilaje de Estampados">
+                <field name="numordped"/>
+                <field name="customer"/>
+                <field name="product_id"/>
+                <field name="design_code"/>
+                <field name="codpro"/>
+                <filter name="rotary" string="Rotativo"
+                        domain="[('printing_type', '=', 'rotary')]"/>
+                <filter name="digital" string="Digital"
+                        domain="[('printing_type', '=', 'digital')]"/>
+                <filter name="no_type" string="Sin Tipo"
+                        domain="[('printing_type', '=', False)]"/>
+                <separator/>
+                <filter name="dispatched" string="Despachadas (archivadas)"
+                        domain="[('active', '=', False)]"/>
+                <!-- Orden de los group-by: tipo -> cliente -> pedido (lo respeta
+                     el orden de declaración al activarse con search_default). -->
+                <group>
+                    <filter name="group_type" string="Tipo Estampado"
+                            domain="[]" context="{'group_by': 'printing_type'}"/>
+                    <filter name="group_customer" string="Cliente"
+                            domain="[]" context="{'group_by': 'customer'}"/>
+                    <filter name="group_pedido" string="Pedido"
+                            domain="[]" context="{'group_by': 'numordped'}"/>
+                    <filter name="group_product" string="Producto"
+                            domain="[]" context="{'group_by': 'product_id'}"/>
+                    <filter name="group_date" string="Fecha Pedido"
+                            domain="[]" context="{'group_by': 'order_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_printing_kilos" model="ir.actions.act_window">
+        <field name="name">Kilaje de Estampados</field>
+        <field name="res_model">printing.kilos</field>
+        <field name="view_mode">list,pivot</field>
+        <field name="context">{
+            'search_default_group_type': 1,
+            'search_default_group_customer': 1,
+            'search_default_group_pedido': 1,
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aún no hay datos de estampados.
+            </p>
+            <p>
+                Usa el botón <b>Actualizar desde SITPRO</b> o espera al cron de
+                Control de Pedidos. Las líneas despachadas se pueden archivar
+                (desmarcar <b>Activo</b>) para que dejen de aparecer.
+            </p>
+        </field>
+    </record>
+
+</odoo>
