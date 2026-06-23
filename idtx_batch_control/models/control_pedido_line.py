@@ -337,8 +337,20 @@ class ControlPedidoLine(models.Model):
         if end and end.year <= 1753:
             end = False
 
-        product = self.env['product.template'].search([('default_code', '=', _safe_str(dr["BarSer"])[1:])], limit=1)
-        lav_dev_line = self.env['lab.dev.line'].search([('color_code', '=', _safe_str(dr["ColorCode"]))], limit=1)
+        # Producto y lab.dev: usa mapas precargados del contexto si están
+        # disponibles (evita N+1 en el sync masivo); si no, cae al search.
+        codpro = (_safe_str(dr["BarSer"]) or '')[1:]
+        colorcode = _safe_str(dr["ColorCode"]) or ''
+        product_map = self.env.context.get('_product_by_code')
+        if product_map is not None:
+            product_id = product_map.get(codpro, False)
+        else:
+            product_id = self.env['product.template'].search([('default_code', '=', codpro)], limit=1).id or False
+        lab_map = self.env.context.get('_lab_by_color')
+        if lab_map is not None:
+            lab_dev_id = lab_map.get(colorcode, False)
+        else:
+            lab_dev_id = self.env['lab.dev.line'].search([('color_code', '=', colorcode)], limit=1).id or False
 
         process = _safe_str(dr["Proceso_Ultimo"]) or 'SIN AVANCE'
         area = _safe_str(dr["Area"]) or 'VOUCHER'
@@ -367,7 +379,7 @@ class ControlPedidoLine(models.Model):
             "route": _safe_str(dr["HojaDeRuta"]),
             "barcodreo": _safe_str(dr["BarCodReo"]) or '',
             "description": _safe_str(dr["BarSerDsc"]),
-            "codpro": _safe_str(dr["BarSer"])[1:] or '',
+            "codpro": codpro or '',
             "batch": _safe_str(dr["Partida"]) or '',
             "kilograms": _safe_float(dr["PesoTotal"]),
             "rollos": _safe_float(dr["Rollos"]),
@@ -377,8 +389,8 @@ class ControlPedidoLine(models.Model):
             "end_date": end,
             "colorcode": _safe_str(dr["ColorCode"]),
             "colorname": _safe_str(dr["ColorName"]),
-            "product_id": product.id if product else False,
-            "lab_dev_line_id": lav_dev_line.id if lav_dev_line else False,
+            "product_id": product_id,
+            "lab_dev_line_id": lab_dev_id,
         }
 
     def action_open_start_wizard(self):

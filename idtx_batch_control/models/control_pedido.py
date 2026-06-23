@@ -4,6 +4,7 @@ import datetime
 import logging
 import pyodbc
 import pytz
+import time
 pyodbc.setDecimalSeparator(".")
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
@@ -287,6 +288,7 @@ class ControlPedido(models.Model):
         
     @api.model
     def sync_from_dbf(self):
+        _sync_t0 = time.perf_counter()
         cab_by_num = {}
         nums = []
         nums_seen = set()
@@ -356,8 +358,14 @@ class ControlPedido(models.Model):
         #   Evita duplicar lineas zombies cuando la logica de codpro cambia.
         existing_lines_by_pedido = {}
         existing_by_route_batch = {}
+        procs_by_line = {}
         if pedidos:
-            for line in self.env["control.pedido.line"].search([("pedido_id", "in", pedidos.ids)]):
+            all_existing_lines = self.env["control.pedido.line"].search([("pedido_id", "in", pedidos.ids)])
+            # Prefetch de los campos que se leen dentro del loop. Sin esto, leer
+            # barcodreo por fila forzaria fetch -> flush -> recompute repetido de
+            # state/process del pedido (era O(K^2) por pedido).
+            all_existing_lines.fetch(['pedido_id', 'route', 'batch', 'codpro', 'barcodreo'])
+            for line in all_existing_lines:
                 pedido_id = line.pedido_id.id
                 existing_lines_by_pedido.setdefault(pedido_id, {})
                 existing_by_route_batch.setdefault(pedido_id, {})
@@ -367,6 +375,12 @@ class ControlPedido(models.Model):
                 existing_lines_by_pedido[pedido_id][full_key] |= line
                 existing_by_route_batch[pedido_id].setdefault(rb_key, self.env["control.pedido.line"])
                 existing_by_route_batch[pedido_id][rb_key] |= line
+            # Preload de procesos por linea (1 query) -> evita leer
+            # target_line.proceso_ids por fila (cada lectura forzaba flush).
+            all_procs = self.env['control.proceso.lines'].search([('pedido_line_id', 'in', all_existing_lines.ids)])
+            all_procs.fetch(['pedido_line_id', 'barOrdLin'])
+            for proc in all_procs:
+                procs_by_line.setdefault(proc.pedido_line_id.id, {})[proc.barOrdLin] = proc
         conn = self._get_sql_connection()
         try:
             cursor = conn.cursor()
@@ -504,6 +518,20 @@ class ControlPedido(models.Model):
             if _cur is None or _progress_of(_dr) < _progress_of(_cur):
                 _rep_by_key[_k] = _dr
         rows = list(_rep_by_key.values())
+        # Preload producto + lab.dev (elimina los 2 N+1 por fila de _vals_from_det_row).
+        codpros = {(_safe_str(dr.get("BarSer")) or '')[1:] for dr in rows}
+        codpros.discard('')
+        product_by_code = {}
+        if codpros:
+            for p in self.env['product.template'].sudo().search([('default_code', 'in', list(codpros))]):
+                product_by_code.setdefault(p.default_code, p.id)
+        colorcodes = {c for c in (_safe_str(dr.get("ColorCode")) for dr in rows) if c}
+        lab_by_color = {}
+        if colorcodes:
+            for lab in self.env['lab.dev.line'].sudo().search([('color_code', 'in', list(colorcodes))]):
+                lab_by_color.setdefault(lab.color_code, lab.id)
+        Line = Line.with_context(_product_by_code=product_by_code, _lab_by_color=lab_by_color)
+        zombie_proc_ids = []
         for dr in rows:
             num = _safe_str(dr.get("Pedido"))
             pedido = existing_map.get(num)
@@ -546,7 +574,7 @@ class ControlPedido(models.Model):
                 existing_lines.write(write_vals)
 
                 if "proceso_ids" in vals_line and vals_line["proceso_ids"]:
-                    existing_procs = {proc.barOrdLin: proc for proc in target_line.proceso_ids}
+                    existing_procs = procs_by_line.get(target_line.id, {})
                     new_ordlines = {cmd[2].get('barOrdLin') for cmd in vals_line["proceso_ids"]}
                     for cmd in vals_line["proceso_ids"]:
                         vals_proc = cmd[2].copy()
@@ -555,16 +583,18 @@ class ControlPedido(models.Model):
                         if proc_key in existing_procs: existing_procs[proc_key].write(vals_proc)
                         else: process_vals_to_create.append(vals_proc)
                     # Borrar procesos huerfanos: existen en Odoo pero ya no en
-                    # TEXPLUS para esta (BarCod, BarCodReo). Pasa cuando una
-                    # linea cambia de Reo y los procesos viejos quedan atados.
-                    zombie_procs = [proc for ord_lin, proc in existing_procs.items() if ord_lin not in new_ordlines]
-                    if zombie_procs:
-                        self.env['control.proceso.lines'].browse([p.id for p in zombie_procs]).unlink()
+                    # TEXPLUS para esta (BarCod, BarCodReo). Se acumulan y se
+                    # borran en lote al final (unlink por fila forzaba flush).
+                    zombie_proc_ids.extend(
+                        proc.id for ord_lin, proc in existing_procs.items()
+                        if ord_lin not in new_ordlines)
             else:
                 procesos_temp = vals_line.pop("proceso_ids", None)
                 line_cmds_by_pedido.setdefault(pedido.id, []).append((0, 0, vals_line))
                 if procesos_temp: procesos_a_crear.append((pedido.id, line_key, procesos_temp))
         for pid, cmds in line_cmds_by_pedido.items(): self.browse(pid).write({"line_ids": cmds})
+        if zombie_proc_ids:
+            self.env['control.proceso.lines'].browse(zombie_proc_ids).unlink()
         if procesos_a_crear:
             created_lines = self.env["control.pedido.line"].search([("pedido_id", "in", list(line_cmds_by_pedido.keys()))])
             created_lines_map = {(l.pedido_id.id, l.route, l.barcodreo, l.batch): l for l in created_lines}
@@ -578,6 +608,8 @@ class ControlPedido(models.Model):
                     process_vals_to_create.append(vals_proc)
         if process_vals_to_create:
             self.env['control.proceso.lines'].create(process_vals_to_create)
+        # Un solo flush -> recompute de state/process/etc. UNA vez (no por fila).
+        self.env.flush_all()
         self._sync_ctrl_info_reprocesos(list(existing_map.values()) + list(self.env['control.pedido'].browse(line_cmds_by_pedido.keys())))
         self._cleanup_zombie_lines(rows, existing_map)
         # Punto de extensión: módulos como idtx_printing_dbf lo sobreescriben
@@ -588,6 +620,8 @@ class ControlPedido(models.Model):
             self._sync_extra_data(nums)
         except Exception:
             _logger.exception("sync_from_dbf: fallo el hook _sync_extra_data")
+        _logger.info("sync_from_dbf: %s creados, %s actualizados en %.1fs",
+                     created, updated, time.perf_counter() - _sync_t0)
         return {"created": created, "updated": updated}
 
     def _sync_extra_data(self, nums):
