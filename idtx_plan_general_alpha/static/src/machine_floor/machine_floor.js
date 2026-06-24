@@ -83,10 +83,12 @@ export class MachineFloor extends Component {
             machines:   [],
             filterStatus: "all",
             filterType:   "all",
+            panel: { open: false, loading: false, machine: null, pedidos: [] },
         });
 
         this._dragId   = null;
         this._dragSlot = null;
+        this._dragged  = false;
 
         onWillStart(async () => {
             await this._loadWorkcenters();
@@ -253,6 +255,34 @@ export class MachineFloor extends Component {
         document.querySelectorAll(".mf-slot--dragging, .mf-slot--over")
             .forEach(el => el.classList.remove("mf-slot--dragging", "mf-slot--over"));
         this._dragId = this._dragSlot = null;
+        this._dragged = true;
+        setTimeout(() => { this._dragged = false; }, 200);
+    }
+
+    // ── Side panel ────────────────────────────────────────────────────────────
+
+    async onMachineCardClick(ev) {
+        if (this._dragged) return;
+        const machineId = parseInt(ev.currentTarget.dataset.machineId);
+        if (!machineId) return;
+        this.state.panel = { open: true, loading: true, machine: null, pedidos: [] };
+        try {
+            const data = await rpc("/idtx_plan_alpha/machine_detail", { equipment_id: machineId });
+            this.state.panel = { open: true, loading: false, machine: data.machine, pedidos: data.pedidos || [] };
+        } catch (e) {
+            console.error("[MachineFloor] Error cargando detalle:", e);
+            this.state.panel = { open: true, loading: false, machine: null, pedidos: [] };
+        }
+    }
+
+    onCloseSidePanel() {
+        this.state.panel = { ...this.state.panel, open: false };
+    }
+
+    panelStateLabel(s) {
+        return { operativa: "Operativa", ejecutando: "Ejecutando",
+                 malograda: "Malograda", mantenimiento: "Mantenimiento",
+                 apagada: "Apagada" }[s] || s || "—";
     }
 
     onSlotDragOver(ev) {

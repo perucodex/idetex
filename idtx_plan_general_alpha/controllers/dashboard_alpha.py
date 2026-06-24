@@ -226,6 +226,68 @@ class PlanAlphaDashboard(http.Controller):
         return {"machines": machines, "workcenter": workcenter}
 
     @http.route(
+        "/idtx_plan_alpha/machine_detail",
+        type="jsonrpc",
+        auth="user",
+        methods=["POST"],
+    )
+    def machine_detail(self, equipment_id=None):
+        """Devuelve datos completos de una máquina y sus pedidos activos en su workcenter."""
+        if not equipment_id:
+            return {"machine": None, "pedidos": []}
+        env = request.env
+        eq = env["maintenance.equipment"].sudo().browse(int(equipment_id))
+        if not eq.exists():
+            return {"machine": None, "pedidos": []}
+
+        fields_eq = eq._fields
+        machine = {
+            "id":          eq.id,
+            "name":        eq.name or "",
+            "model":       eq.model or "",
+            "serial":      eq.serial_no or "",
+            "machine_state": eq.machine_state if "machine_state" in fields_eq else None,
+            "enabled":     bool(eq.enabled) if "enabled" in fields_eq else True,
+            "workcenter":  eq.workcenter_id.name if "workcenter_id" in fields_eq and eq.workcenter_id else "",
+            "department":  eq.department_id.name if eq.department_id else "",
+            "technician":  eq.technician_user_id.name if eq.technician_user_id else "",
+            "category":    eq.category_id.name if eq.category_id else "",
+            "note":        (eq.note or "")[:300],
+            "purchase_date": str(eq.effective_date) if eq.effective_date else "",
+            "warranty_date": str(eq.warranty_date) if eq.warranty_date else "",
+            "capacity":    eq.capacity_power if "capacity_power" in fields_eq else "",
+            "year":        eq.manufacture_year if "manufacture_year" in fields_eq else "",
+        }
+
+        # Pedidos activos cuyo proceso o siguiente proceso apunta al workcenter de la máquina
+        pedidos = []
+        wc_name = machine["workcenter"]
+        if wc_name and "control.pedido.line" in env.registry.models:
+            try:
+                Line = env["control.pedido.line"].sudo()
+                lines = Line.search([
+                    ("state", "=", "active"),
+                    "|",
+                    ("area", "ilike", wc_name),
+                    ("process", "ilike", wc_name),
+                ], limit=30, order="wish_date asc")
+                for l in lines:
+                    pedidos.append({
+                        "id":         l.id,
+                        "batch":      l.batch or "",
+                        "process":    l.process or "",
+                        "customer":   (l.customer or "")[:30],
+                        "kilograms":  round(l.kilograms or 0, 1),
+                        "area":       l.area or "",
+                        "wish_date":  str(l.wish_date) if l.wish_date else "",
+                        "num_days":   l.num_days or 0,
+                    })
+            except Exception:
+                _logger.warning("machine_detail: error cargando pedidos", exc_info=True)
+
+        return {"machine": machine, "pedidos": pedidos}
+
+    @http.route(
         "/idtx_plan_alpha/save_floor_position",
         type="jsonrpc",
         auth="user",

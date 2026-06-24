@@ -106,6 +106,7 @@ export class DashboardAlpha extends Component {
                 this._countUp();
             }, 150);
         } catch (e) {
+            console.error("[Dashboard] Error:", e);
             this.state.error = "No se pudieron cargar los datos del dashboard.";
             this.state.loading = false;
         }

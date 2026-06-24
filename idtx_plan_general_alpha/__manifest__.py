@@ -35,6 +35,7 @@ sobre los modelos existentes de Control de Pedidos, MRP y Ventas.
 
     'assets': {
         'web.assets_backend': [
+            'idtx_plan_general_alpha/static/src/nav_overflow.scss',
             'idtx_plan_general_alpha/static/lib/apexcharts.min.js',
             'idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.scss',
             'idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.js',

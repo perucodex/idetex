@@ -114,7 +114,9 @@
                 <div class="mf-card"
                      t-att-class="'mf-card--' + m.status"
                      t-att-style="'--tc:' + m.tcfg.color"
-                     t-att-title="m.name + (m.model ? ' · ' + m.model : '')">
+                     t-att-title="m.name"
+                     t-att-data-machine-id="m.id"
+                     t-on-click="onMachineCardClick">
                     <div class="mf-card-row1">
                         <span class="mf-card-num">#<t t-esc="m.num"/></span>
                         <span class="mf-card-dot" t-att-class="'mf-card-dot--' + m.status"/>
@@ -135,7 +137,7 @@
         <div class="mf-slot-grid" t-else="">
             <div class="mf-dnd-hint">
                 <i class="fa fa-hand-grab-o"/>
-                Arrastra las tarjetas para reorganizar el piso
+                Arrastra las tarjetas para reorganizar · Haz clic para ver detalles
             </div>
             <div class="mf-grid-inner">
                 <t t-foreach="gridSlots" t-as="slot" t-key="slot.index">
@@ -154,9 +156,10 @@
                              draggable="true"
                              t-att-data-machine-id="slot.machine.id"
                              t-att-data-slot="slot.index"
-                             t-att-title="slot.machine.name + (slot.machine.model ? ' · ' + slot.machine.model : '')"
+                             t-att-title="slot.machine.name"
                              t-on-dragstart="onMachineDragStart"
-                             t-on-dragend="onMachineDragEnd">
+                             t-on-dragend="onMachineDragEnd"
+                             t-on-click="onMachineCardClick">
 
                             <div class="mf-card-row1">
                                 <span class="mf-card-num">#<t t-esc="slot.machine.num"/></span>
@@ -175,6 +178,138 @@
         </div>
 
     </t>
+
+    <!-- ── SIDE PANEL ───────────────────────────────────────────────────────── -->
+    <t t-if="state.panel.open">
+        <div class="mf-panel-overlay" t-on-click="onCloseSidePanel"/>
+        <div class="mf-panel">
+
+            <!-- Header del panel -->
+            <div class="mf-panel-header">
+                <div class="mf-panel-header-left">
+                    <i class="fa fa-cog mf-panel-header-icon"/>
+                    <span class="mf-panel-header-title">Detalle de Máquina</span>
+                </div>
+                <button class="mf-panel-close" t-on-click="onCloseSidePanel">
+                    <i class="fa fa-times"/>
+                </button>
+            </div>
+
+            <!-- Loading -->
+            <div class="mf-panel-loading" t-if="state.panel.loading">
+                <i class="fa fa-circle-o-notch fa-spin fa-2x"/>
+                <span>Cargando datos…</span>
+            </div>
+
+            <!-- Contenido -->
+            <div class="mf-panel-body" t-elif="state.panel.machine">
+                <t t-set="m" t-value="state.panel.machine"/>
+
+                <!-- Nombre y estado -->
+                <div class="mf-panel-hero">
+                    <div class="mf-panel-hero-name" t-esc="m.name"/>
+                    <div t-att-class="'mf-panel-status mf-panel-status--' + (m.machine_state or 'apagada')">
+                        <span class="mf-panel-status-dot"/>
+                        <span t-esc="panelStateLabel(m.machine_state)"/>
+                    </div>
+                </div>
+
+                <!-- Ficha técnica -->
+                <div class="mf-panel-section">
+                    <div class="mf-panel-section-title">
+                        <i class="fa fa-info-circle"/> Ficha Técnica
+                    </div>
+                    <div class="mf-panel-grid">
+                        <div class="mf-panel-field" t-if="m.model">
+                            <span class="mf-panel-field-lbl">Fabricante</span>
+                            <span class="mf-panel-field-val" t-esc="m.model"/>
+                        </div>
+                        <div class="mf-panel-field" t-if="m.serial">
+                            <span class="mf-panel-field-lbl">Serial / Código</span>
+                            <span class="mf-panel-field-val" t-esc="m.serial"/>
+                        </div>
+                        <div class="mf-panel-field" t-if="m.year">
+                            <span class="mf-panel-field-lbl">Año fabricación</span>
+                            <span class="mf-panel-field-val" t-esc="m.year"/>
+                        </div>
+                        <div class="mf-panel-field" t-if="m.capacity">
+                            <span class="mf-panel-field-lbl">Capacidad / Potencia</span>
+                            <span class="mf-panel-field-val" t-esc="m.capacity"/>
+                        </div>
+                        <div class="mf-panel-field" t-if="m.workcenter">
+                            <span class="mf-panel-field-lbl">Centro de trabajo</span>
+                            <span class="mf-panel-field-val" t-esc="m.workcenter"/>
+                        </div>
+                        <div class="mf-panel-field" t-if="m.department">
+                            <span class="mf-panel-field-lbl">Departamento</span>
+                            <span class="mf-panel-field-val" t-esc="m.department"/>
+                        </div>
+                        <div class="mf-panel-field" t-if="m.technician">
+                            <span class="mf-panel-field-lbl">Técnico responsable</span>
+                            <span class="mf-panel-field-val" t-esc="m.technician"/>
+                        </div>
+                        <div class="mf-panel-field" t-if="m.purchase_date">
+                            <span class="mf-panel-field-lbl">Fecha compra</span>
+                            <span class="mf-panel-field-val" t-esc="m.purchase_date"/>
+                        </div>
+                        <div class="mf-panel-field" t-if="m.warranty_date">
+                            <span class="mf-panel-field-lbl">Garantía hasta</span>
+                            <span class="mf-panel-field-val" t-esc="m.warranty_date"/>
+                        </div>
+                    </div>
+                    <div class="mf-panel-note" t-if="m.note">
+                        <i class="fa fa-sticky-note-o"/> <t t-esc="m.note"/>
+                    </div>
+                </div>
+
+                <!-- Pedidos asignados -->
+                <div class="mf-panel-section">
+                    <div class="mf-panel-section-title">
+                        <i class="fa fa-list-alt"/>
+                        Partidas activas en este piso
+                        <span class="mf-panel-badge" t-esc="state.panel.pedidos.length"/>
+                    </div>
+                    <div t-if="state.panel.pedidos.length === 0" class="mf-panel-empty">
+                        <i class="fa fa-inbox"/>
+                        <span>Sin partidas activas asignadas</span>
+                    </div>
+                    <div class="mf-panel-pedidos" t-else="">
+                        <t t-foreach="state.panel.pedidos" t-as="p" t-key="p.id">
+                            <div class="mf-panel-pedido" t-att-class="p.num_days > 30 ? 'mf-panel-pedido--delayed' : ''">
+                                <div class="mf-panel-pedido-top">
+                                    <span class="mf-panel-pedido-batch" t-esc="p.batch or '—'"/>
+                                    <span class="mf-panel-pedido-kg">
+                                        <i class="fa fa-balance-scale"/> <t t-esc="p.kilograms"/> kg
+                                    </span>
+                                </div>
+                                <div class="mf-panel-pedido-customer" t-esc="p.customer or '—'"/>
+                                <div class="mf-panel-pedido-meta">
+                                    <span t-if="p.process">
+                                        <i class="fa fa-cogs"/> <t t-esc="p.process"/>
+                                    </span>
+                                    <span t-if="p.wish_date">
+                                        <i class="fa fa-calendar"/>
+                                        <t t-esc="p.wish_date"/>
+                                        <span t-if="p.num_days > 0" class="mf-panel-pedido-delay">
+                                            +<t t-esc="p.num_days"/>d
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error -->
+            <div class="mf-panel-loading" t-elif="!state.panel.loading">
+                <i class="fa fa-exclamation-circle"/>
+                <span>No se pudo cargar el detalle</span>
+            </div>
+
+        </div>
+    </t>
+
 </div>
 </t>
 
