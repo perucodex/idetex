@@ -192,52 +192,105 @@ class PrintingKilos(models.Model):
 
     @api.model
     def _sync_from_sitpro(self):
-        """Reconstruye las líneas de estampado desde vta_det_pedido: conserva
-        las líneas cuyo producto tiene fase de estampado y guarda kilaje, color,
-        diseño y tipo (rotativo/digital). No pisa 'printing_type' editado a mano
-        ni 'active' (líneas despachadas/archivadas)."""
+        """Reconstruye las líneas de estampado desde vta_det_pedido. Una línea
+        es de estampado si su código de diseño (CODDISENO) la clasifica como
+        rotativo/digital O si su producto ya tiene una fase de estampado en la
+        ruta. Si el producto no existe en Odoo, se crea (esqueleto + análisis +
+        ficha) para poder incluir la línea con sus kilos. No pisa 'printing_type'
+        editado a mano ni 'active' (líneas despachadas/archivadas)."""
         code_to_product = self._printing_products_by_code()
-        if not code_to_product:
-            _logger.info("printing.kilos: no hay productos con fase de estampado")
-            return {'matched': 0}
 
         headers = self._read_cab_headers()
         if not headers:
             _logger.info("printing.kilos: sin cabeceras de pedido a procesar")
             return {'matched': 0}
 
-        vals_by_key = {}
+        # 1) Primer barrido: recolectar líneas de estampado (por diseño o por
+        #    ruta del producto existente) y la metadata por código de producto.
+        raw_lines = []
+        meta_by_code = {}     # codpro -> (cdgart, description, printing_type)
         for rec in _iter_dbf(_DET_PATH):
             num = _safe_str(rec['NUMORDPED'])
             if not num or num not in headers:
                 continue
             cdgart = _safe_str(rec['CDGART']) or ''
             codpro = cdgart[1:] if cdgart else ''
-            product = code_to_product.get(codpro)
-            if not product:
+            if not codpro:
+                continue
+            design_code = _safe_str(rec['CODDISENO']) or ''
+            description = _safe_str(rec['DESCRIP']) or ''
+            ptype = self._classify_printing_type(design_code, description)
+            if not (ptype or codpro in code_to_product):
                 continue
             item = int(_safe_float(rec['ITEM']))
             hdr = headers[num]
-            design_code = _safe_str(rec['CODDISENO']) or ''
-            description = _safe_str(rec['DESCRIP']) or ''
-            vals_by_key[(num, item)] = {
+            raw_lines.append({
                 'numordped': num,
                 'item': item,
                 'order_date': hdr['order_date'],
                 'customer': hdr['customer'],
                 'cdgart': cdgart,
                 'codpro': codpro,
-                'product_id': product.id,
                 'description': description,
                 'design_code': design_code,
                 'design_name': _safe_str(rec['DISENO']) or '',
                 'colorcode': _safe_str(rec['CDGCOL']) or '',
                 'colorname': _safe_str(rec['DESCOL']) or '',
                 'kilograms': _safe_float(rec['KILO']),
-                'printing_type': self._classify_printing_type(design_code, description),
-            }
+                'printing_type': ptype,
+            })
+            meta_by_code.setdefault(codpro, (cdgart, description, ptype))
 
-        # Enlazar cada línea con su control.pedido.
+        if not raw_lines:
+            _logger.info("printing.kilos: no se hallaron líneas de estampado")
+            return {'matched': 0}
+
+        # 2) Resolver productos (cache). Partimos de los que ya tienen ruta de
+        #    estampado; luego buscamos por default_code; y creamos los faltantes
+        #    como esqueleto (producto + análisis + ficha básica).
+        product_by_code = dict(code_to_product)
+        to_lookup = {c for c in meta_by_code if c not in product_by_code}
+        if to_lookup:
+            templates = self.env['product.template'].sudo().search(
+                [('default_code', 'in', list(to_lookup))])
+            for tmpl in templates:
+                dc = (tmpl.default_code or '').strip()
+                if dc and dc not in product_by_code:
+                    product_by_code[dc] = tmpl
+        missing = [c for c in to_lookup if c not in product_by_code]
+        created = 0
+        if missing:
+            Analysis = self.env['product.analysis'].sudo()
+            for codpro in missing:
+                cdgart, description, ptype = meta_by_code[codpro]
+                try:
+                    analysis = Analysis._create_skeleton_from_code(
+                        codpro, sitpro_code=cdgart, description=description,
+                        printing_type=ptype,
+                    )
+                except Exception:
+                    _logger.exception(
+                        "printing.kilos: fallo creando esqueleto para %s (cdgart=%s)",
+                        codpro, cdgart)
+                    continue
+                if analysis and analysis.product_id:
+                    product_by_code[codpro] = analysis.product_id
+                    created += 1
+            if created:
+                _logger.info(
+                    "printing.kilos: %s productos creados (esqueleto + ficha)", created)
+
+        # 3) Segundo barrido: construir vals para las líneas con producto resuelto.
+        vals_by_key = {}
+        for line in raw_lines:
+            product = product_by_code.get(line['codpro'])
+            if not product:
+                continue
+            vals = dict(line)
+            vals['product_id'] = product.id
+            vals_by_key[(line['numordped'], line['item'])] = vals
+
+        # 4) Enlazar cada línea con su control.pedido.
         nums = {v['numordped'] for v in vals_by_key.values()}
         pedido_by_num = {}
         if nums:
@@ -248,8 +301,10 @@ class PrintingKilos(models.Model):
             vals['pedido_id'] = pedido_by_num.get(vals['numordped'], False)
 
         self._upsert(vals_by_key)
-        _logger.info("printing.kilos: %s líneas de estampado sincronizadas", len(vals_by_key))
-        return {'matched': len(vals_by_key)}
+        _logger.info(
+            "printing.kilos: %s líneas de estampado sincronizadas (%s productos creados)",
+            len(vals_by_key), created)
+        return {'matched': len(vals_by_key), 'created': created}
 
     def _upsert(self, vals_by_key):
         """Crea/actualiza por (numordped, item) y borra las líneas que ya no

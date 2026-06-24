@@ -260,42 +260,35 @@ class ProductAnalysis(models.Model):
         """
         LabLine = self.env['lab.dev.line']
         Product = self.env['product.template']
+        t0 = time.perf_counter()
 
         conn = None
         cursor = None
         try:
             conn = self._get_sql_connection()
             cursor = conn.cursor()
-            query = """
-                SELECT
-                    lc.gt,
-                    lc.cb,
-                    lc.ints,
-                    lc.corr,
-                    vl.cdgart
-                FROM lab_colores02 lc
-                CROSS APPLY (
-                    SELECT TOP 1 vl2.cdgart
-                    FROM vta_det_pedido vl2
-                    WHERE vl2.cdgcol =
-                        LTRIM(RTRIM(ISNULL(lc.gt,''))) +
-                        LTRIM(RTRIM(ISNULL(lc.cb,''))) +
-                        LTRIM(RTRIM(ISNULL(lc.ints,''))) +
-                        RIGHT('0000' + CAST(CAST(lc.corr AS INT) AS VARCHAR(10)), 4)
-                    AND LTRIM(RTRIM(vl2.cdgart)) <> ''
-                ) vl
-                WHERE lc.gt IS NOT NULL
-                AND lc.cb IS NOT NULL
-                AND lc.ints IS NOT NULL
-                AND lc.corr IS NOT NULL
-                AND LTRIM(RTRIM(lc.gt)) <> ''
-                AND LTRIM(RTRIM(lc.cb)) <> ''
-                AND LTRIM(RTRIM(lc.ints)) <> ''
-                AND LTRIM(RTRIM(lc.corr)) <> '';
-            """
-            cursor.execute(query)
-            columns = [col[0].lower() for col in cursor.description]
-            rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
+            # 1) Filas de lab_colores02. Sin WHERE (corr es numérica y filtrar
+            #    con ISNULL fallaría); los vacíos/nulos se descartan en Python.
+            cursor.execute("SELECT lc.gt, lc.cb, lc.ints, lc.corr FROM lab_colores02 lc")
+            lab_rows = cursor.fetchall()
+            # 2) Mapa color -> articulo en UN solo escaneo agregado de
+            #    vta_det_pedido. Reemplaza el CROSS APPLY TOP 1 correlacionado
+            #    (que escaneaba la tabla por cada fila de lab_colores02, O(N*M)).
+            #    MIN(cdgart) hace la elección determinista (antes era arbitraria).
+            cursor.execute("""
+                SELECT LTRIM(RTRIM(cdgcol)) AS cdgcol,
+                       MIN(LTRIM(RTRIM(cdgart))) AS cdgart
+                FROM vta_det_pedido
+                WHERE LTRIM(RTRIM(cdgart)) <> ''
+                  AND LTRIM(RTRIM(cdgcol)) <> ''
+                GROUP BY LTRIM(RTRIM(cdgcol));
+            """)
+            cdgart_by_color = {}
+            for cdgcol, cdgart in cursor.fetchall():
+                key = ('' if cdgcol is None else str(cdgcol).strip()).upper()
+                art = '' if cdgart is None else str(cdgart).strip()
+                if key and art:
+                    cdgart_by_color[key] = art
         finally:
             if cursor is not None:
                 try:
@@ -307,6 +300,7 @@ class ProductAnalysis(models.Model):
                     conn.close()
                 except Exception:
                     pass
+        sql_dt = time.perf_counter() - t0
 
         # color_code (mayúsculas) -> product_code (cdgart sin el primer carácter)
         def _s(value):
@@ -314,56 +308,60 @@ class ProductAnalysis(models.Model):
             return '' if value is None else str(value).strip()
 
         code_map = {}
-        for row in rows:
-            gt = _s(row.get('gt'))
-            cb = _s(row.get('cb'))
-            ints = _s(row.get('ints'))
-            corr_raw = _s(row.get('corr'))
-            cdgart = _s(row.get('cdgart'))
-            if not (gt and cb and ints and corr_raw and cdgart):
+        for gt_raw, cb_raw, ints_raw, corr_raw_val in lab_rows:
+            gt = _s(gt_raw)
+            cb = _s(cb_raw)
+            ints = _s(ints_raw)
+            corr_raw = _s(corr_raw_val)
+            if not (gt and cb and ints and corr_raw):
                 continue
             corr = str(a_int(corr_raw)).zfill(4) if a_int(corr_raw) else corr_raw.zfill(4)
             color_code = f"{gt}{cb}{ints}{corr}".upper()
+            cdgart = cdgart_by_color.get(color_code)
+            if not cdgart:
+                continue
             product_code = cdgart[1:].strip()  # cdgart menos el primer carácter
             if product_code:
                 code_map[color_code] = product_code
 
         if not code_map:
-            _logger.info("update_lab_dev_line_product_from_sitpro: sin datos en lab_colores02")
+            _logger.info(
+                "update_lab_dev_line_product_from_sitpro: sin coincidencias (SQL %.1fs)", sql_dt)
             return 0
 
         # Productos por default_code (en lote)
-        product_codes = list({code for code in code_map.values()})
         product_by_code = {
             product.default_code: product
-            for product in Product.search([('default_code', 'in', product_codes)])
+            for product in Product.search([('default_code', 'in', list(set(code_map.values())))])
         }
 
-        # Líneas existentes por color_code (en lote), solo las que NO tienen producto
-        lines_by_code = {}
-        for line in LabLine.search([('color_code', 'in', list(code_map.keys())),
-                                    ('product_ids', '=', False)]):
-            key = (line.color_code or '').strip().upper()
-            lines_by_code.setdefault(key, LabLine)
-            lines_by_code[key] |= line
-
-        updated = 0
+        # Líneas sin producto, agrupadas por producto destino -> un write por producto
+        # (en vez de un write por color y de la unión O(n^2) de recordsets).
+        lines = LabLine.search([('color_code', 'in', list(code_map.keys())),
+                                ('product_ids', '=', False)])
+        line_ids_by_product = {}
         missing_product = set()
-        for color_code, product_code in code_map.items():
-            lines = lines_by_code.get(color_code)
-            if not lines:
+        for line in lines:
+            color_code = (line.color_code or '').strip().upper()
+            product_code = code_map.get(color_code)
+            if not product_code:
                 continue
             product = product_by_code.get(product_code)
             if not product:
                 missing_product.add(product_code)
                 continue
-            lines.write({'product_ids': [Command.set(product.ids)]})
-            updated += len(lines)
+            line_ids_by_product.setdefault(product.id, []).append(line.id)
+
+        updated = 0
+        for product_id, line_ids in line_ids_by_product.items():
+            LabLine.browse(line_ids).write({'product_ids': [Command.set([product_id])]})
+            updated += len(line_ids)
 
         _logger.info(
-            "update_lab_dev_line_product_from_sitpro: %s líneas actualizadas; "
+            "update_lab_dev_line_product_from_sitpro: %s líneas en %.1fs (SQL %.1fs); "
             "%s códigos de producto sin coincidencia (%s)",
-            updated, len(missing_product), ', '.join(sorted(missing_product)[:20]),
+            updated, time.perf_counter() - t0, sql_dt,
+            len(missing_product), ', '.join(sorted(missing_product)[:20]),
         )
         return updated
 
@@ -829,6 +827,115 @@ class ProductAnalysis(models.Model):
             created += 1
         return created
 
+    def _printing_skeleton_operation(self):
+        """Operacion de estampado para la ficha esqueleto. Prefiere la generica
+        'ESTAMPADO'; si no existe, la primera operacion printing con 'ESTAM'."""
+        Op = self.env['mrp.routing.workcenter.operation'].sudo()
+        op = Op.search([
+            ('workcenter_id.operation_type', '=', 'printing'),
+            ('name', '=', 'ESTAMPADO'),
+        ], limit=1)
+        if not op:
+            op = Op.search([
+                ('workcenter_id.operation_type', '=', 'printing'),
+                ('name', 'ilike', 'ESTAM'),
+            ], order='id', limit=1)
+        return op
+
+    def _create_skeleton_from_code(self, product_code, sitpro_code=None,
+                                   description=None, printing_type=None):
+        """Crea (idempotente) un product.analysis esqueleto + producto + ficha
+        tecnica basica para un articulo que aparece en pedidos pero NO existe en
+        Odoo (tipico de estampado sin ficha en SITPRO/TEXPLUS).
+
+        - Decodifica la metadata desde el codigo SITPRO (familia, titulo, fibra,
+          galga, densidad, ancho), igual que el import de esqueletos.
+        - Marca el analisis is_problem=True (revisar manualmente).
+        - Crea una ficha tecnica con ruta [TEJIDO CRUDO + ESTAMPADO] para que el
+          producto sea reconocido como de estampado en el reporte.
+        - Corre con skip_route_propagation=True: NO empuja a SITPRO/TEXPLUS (el
+          articulo no esta alli; empujar seria inutil y lento).
+
+        Devuelve el product.analysis (con product_id) o un recordset vacio si el
+        codigo no es decodificable.
+        """
+        Analysis = self.sudo().with_context(skip_route_propagation=True)
+        code = (product_code or '').strip()
+        if not code:
+            return Analysis.browse()
+        existing = Analysis.search([('product_code', '=', code)], limit=1)
+        if existing:
+            return existing
+        art_cod = (sitpro_code or '').strip() or ('P' + code)
+        if len(art_cod) < 16:
+            _logger.warning(
+                "skeleton: codigo SITPRO no decodificable (%r) para product_code=%s",
+                art_cod, code,
+            )
+            return Analysis.browse()
+
+        weaving = self.env['mrp.routing.workcenter.operation'].sudo().search(
+            [('name', '=', 'TEJIDO CRUDO')], limit=1)
+        placeholder = self.env['mrp.base.process'].sudo().search(
+            [('name', '=', '__SITPRO_PLACEHOLDER__')], limit=1)
+        if not placeholder:
+            placeholder = self.env['mrp.base.process'].sudo().with_context(
+                skip_route_propagation=True).create({
+                    'name': '__SITPRO_PLACEHOLDER__',
+                    'process_ids': (
+                        [Command.create({'operation_id': weaving.id})] if weaving else []
+                    ),
+                })
+
+        fam = self.env['product.family'].search([('code', '=', art_cod[1:3])], limit=1)
+        app = self.env['product.appearance'].search([('code', '=', art_cod[8:10])], limit=1)
+        fib = self.env['product.fiber'].search([('code', '=', art_cod[5:6])], limit=1)
+        tit = self.env['product.title'].search([('code', '=', art_cod[3:5])], limit=1)
+        gau = self.env['product.gauge'].search([('code', '=', art_cod[6:8])], limit=1)
+        codfam = 'rect' if art_cod[1:3] in ('CD', 'CO', 'CR', 'CT', 'CU', 'PO', 'PT', 'PU') else False
+        if not codfam:
+            codfam = 'othe' if art_cod[1:3] in ('BL', 'EN', 'PP', 'PR', 'TO', 'TP', 'TW') else False
+        analysis = Analysis.create({
+            'analysis_date': fields.Date.today(),
+            'product_description': (description or '').strip() or art_cod,
+            'product_family_id': fam.id or False,
+            'product_appearance_id': app.id or False,
+            'product_fiber_id': fib.id or False,
+            'product_title_id': tit.id or False,
+            'weave_type': codfam if codfam else 'open',
+            'gauge_id': gau.id or False,
+            'density': a_int(art_cod[13:16]) or 1,
+            'standard_width': a_float(art_cod[10:13]) or 1,
+            'product_code': code,
+            'is_problem': True,
+            'sitpro_code': art_cod,
+            'mrp_base_process_id': placeholder.id,
+        })
+        analysis._onchange_mrp_base_process_id()
+        if not analysis.product_id:
+            analysis.with_context(
+                by_pass_error=True, skip_route_propagation=True).action_product()
+
+        # Ficha tecnica basica con una operacion de estampado para que el
+        # producto sea reconocido como de estampado (deteccion por ruta).
+        printing_op = self._printing_skeleton_operation()
+        op_ids = analysis.routing_ids.sorted(key=lambda r: r.sequence).mapped('operation_id').ids
+        if printing_op and printing_op.id not in op_ids:
+            op_ids.append(printing_op.id)
+        self.env['technical.sheet'].sudo().with_context(skip_route_propagation=True).create({
+            'analysis_id': analysis.id,
+            'product_code': analysis.product_code,
+            'product_id': analysis.product_id.id,
+            'density': analysis.density,
+            'width': analysis.standard_width,
+            'gauge_id': analysis.gauge_id.id,
+            'route_line_ids': [
+                Command.create({'sequence': i, 'operation_id': op_id})
+                for i, op_id in enumerate(op_ids)
+            ],
+        })
+        return analysis
+
     def _get_texplus_route_map(self, product_codes):
         """Return {15-char product_code: route_code} from ARTLIN.
 
@@ -1166,6 +1273,51 @@ class ProductAnalysis(models.Model):
             weaving_process = self.env['mrp.routing.workcenter.operation'].search([('name','=','TEJIDO CRUDO')])
             if not weaving_process:
                 weaving_process = self.env['mrp.routing.workcenter.operation'].create({'name': 'TEJIDO CRUDO', 'workcenter_id': weaving_workcenter.id})
+
+            # --- Pre-carga de catálogos y registros para evitar N+1 en el loop ---
+            # (antes se hacían ~10 search por fila × decenas de miles de filas).
+            Family = self.env['product.family']
+            Appearance = self.env['product.appearance']
+            Fiber = self.env['product.fiber']
+            Title = self.env['product.title']
+            Gauge = self.env['product.gauge']
+            Ligament = self.env['ligament.type']
+            Partner = self.env['res.partner']
+            Product = self.env['product.template']
+            TSheet = self.env['technical.sheet']
+
+            fam_by_code = {f.code: f for f in Family.search([]) if f.code}
+            app_by_code = {a.code: a for a in Appearance.search([]) if a.code}
+            fib_by_code = {f.code: f for f in Fiber.search([]) if f.code}
+            tit_by_code = {t.code: t for t in Title.search([]) if t.code}
+            gau_by_code = {g.code: g for g in Gauge.search([]) if g.code}
+            ligament_by_name = {}
+            for lig in Ligament.search([]):
+                ligament_by_name.setdefault((lig.name or '').strip(), lig)
+            partner_by_vat = {}
+            for prt in Partner.search([('is_company', '=', True), ('vat', '!=', False)]):
+                partner_by_vat.setdefault((prt.vat or '').strip(), prt)
+
+            all_fichas = {r.ficha.strip() for r in cursor_result if r.ficha}
+            all_codes = {r.cdgart.strip()[1:] for r in cursor_result if r.cdgart}
+            all_codhils = {r.codigo.strip() for r in cursor_result
+                           if r.codigo and r.codigo.strip() not in ('0', '')}
+            tsheet_by_sitpro = {}
+            for chunk in self._iter_chunked(list(all_fichas), 2000):
+                for ts in TSheet.search([('sitpro_sheet', 'in', chunk)]):
+                    tsheet_by_sitpro.setdefault((ts.sitpro_sheet or '').strip(), ts)
+            analysis_by_code = {}
+            for chunk in self._iter_chunked(list(all_codes), 2000):
+                for an in self.search([('product_code', 'in', chunk)]):
+                    analysis_by_code.setdefault((an.product_code or '').strip(), an)
+            thread_by_code = {}
+            for chunk in self._iter_chunked(list(all_codhils), 2000):
+                for pt in Product.search([('default_code', 'in', chunk)]):
+                    thread_by_code.setdefault((pt.default_code or '').strip(), pt)
+            kgm_uom = self.env.ref('uom.product_uom_kgm')
+            thread_categ = self.env.company.thread_category_ids[:1]
+            ruc_it = self.env.ref('l10n_pe.it_RUC')
+
             progress = _ProgressLogger('SITPRO loop', total, every_n=100, every_seconds=10.0)
             for contador, row in enumerate(cursor_result, 1):
                 progress.tick(contador)
@@ -1173,32 +1325,33 @@ class ProductAnalysis(models.Model):
                 if code[1:] not in texplus_articles:
                     # Sin ruta activa en TEXPLUS -> no se importa (regla del usuario).
                     continue
-                seen_codes.add(code[1:])
-                existing_technical_sheet = self.env['technical.sheet'].search([('sitpro_sheet','=',row.ficha.strip())], limit=1)
-                product_analysis = self.search([('product_code','=', code[1:])], limit=1)
-                partner = self.env['res.partner'].search([('vat','=', row.ruc.strip()),('is_company','=', True)])
-                if len(partner) > 1:
-                    partner = partner[0]
+                code_key = code[1:]
+                seen_codes.add(code_key)
+                existing_technical_sheet = tsheet_by_sitpro.get(row.ficha.strip())
+                product_analysis = analysis_by_code.get(code_key)
+                ruc = row.ruc.strip()
+                partner = partner_by_vat.get(ruc)
                 if not partner:
-                    if len(row.ruc.strip()) == 11 and validar_ruc_peru(row.ruc.strip()):
-                        partner = self.env['res.partner'].create({
+                    if len(ruc) == 11 and validar_ruc_peru(ruc):
+                        partner = Partner.create({
                             'name': row.razsoc.strip(),
-                            'vat': row.ruc.strip(),
-                            'l10n_latam_identification_type_id': self.env.ref('l10n_pe.it_RUC').id,
+                            'vat': ruc,
+                            'l10n_latam_identification_type_id': ruc_it.id,
                             'is_company': True,
                         })
                     else:
-                        partner = self.env['res.partner'].create({
+                        partner = Partner.create({
                             'name': row.razsoc.strip(),
-                            'vat': row.ruc.strip(),
-                            # 'l10n_latam_identification_type_id': self.env.ref('l10n_pe.it_RUC').id,
+                            'vat': ruc,
                             'is_company': True,
                         })
-                fam = self.env['product.family'].search([('code','=', code[1:3])], limit=1)
-                app = self.env['product.appearance'].search([('code','=', code[8:10])], limit=1)
-                fib = self.env['product.fiber'].search([('code','=', code[5:6])], limit=1)
-                tit = self.env['product.title'].search([('code','=', code[3:5])], limit=1)
-                gau = self.env['product.gauge'].search([('code','=', code[6:8])], limit=1)
+                    if ruc:
+                        partner_by_vat[ruc] = partner
+                fam = fam_by_code.get(code[1:3], Family)
+                app = app_by_code.get(code[8:10], Appearance)
+                fib = fib_by_code.get(code[5:6], Fiber)
+                tit = tit_by_code.get(code[3:5], Title)
+                gau = gau_by_code.get(code[6:8], Gauge)
                 codfam = 'rect' if code[1:3] in ('CD','CO','CR','CT','CU','PO','PT','PU') else False
                 if not codfam:
                     codfam = 'othe' if code[1:3] in ('BL','EN','PP','PR','TO','TP','TW') else False
@@ -1239,6 +1392,7 @@ class ProductAnalysis(models.Model):
                         'mrp_base_process_id': base_process_id.id,
                     }
                     product_analysis = self.create(vals)
+                    analysis_by_code[code_key] = product_analysis
                     # Actualizamos el detalle de las rutas desde la base
                     product_analysis._onchange_mrp_base_process_id()
                 else:
@@ -1259,8 +1413,20 @@ class ProductAnalysis(models.Model):
                         (row.articulo or '').strip(), row.porcen,
                     )
                     continue
-                ligament = self.env['ligament.type'].search([('name','=',row.ligamento.strip())])
+                ligament = ligament_by_name.get(row.ligamento.strip(), Ligament)
                 codhil = row.codigo.strip() if row.codigo.strip() != '0' or row.codigo.strip() != '' else ''
+                thread_product_id = False
+                if codhil:
+                    thread_tmpl = thread_by_code.get(codhil)
+                    if not thread_tmpl:
+                        thread_tmpl = Product.create({
+                            'name': row.articulo.strip(),
+                            'default_code': codhil,
+                            'categ_id': thread_categ.id,
+                            'uom_id': kgm_uom.id,
+                        })
+                        thread_by_code[codhil] = thread_tmpl
+                    thread_product_id = thread_tmpl.id
                 if last_weaving_data_id and last_weaving_data_id.sitpro_sheet != row.ficha.strip():
                     last_product_analysis.weaving_data_ids = [Command.link(last_weaving_data_id.id)]
                     self.create_technical_sheet(last_weaving_data_id, last_product_analysis, last_row)
@@ -1270,7 +1436,7 @@ class ProductAnalysis(models.Model):
                         'fiber_ids': [Command.create({
                             'weight': a_float(row.porcen),
                             'ligament_id': ligament.id or False,
-                            'product_template_id': (self.env['product.template'].search([('default_code','=', codhil)]).id or self.env['product.template'].create({'name': row.articulo.strip(), 'default_code': codhil, 'categ_id': self.env.company.thread_category_ids[0].id, 'uom_id': self.env.ref('uom.product_uom_kgm').id}).id) if codhil else False,
+                            'product_template_id': thread_product_id,
                             'line_ids': [Command.create({
                                 'length': a_float(row.lm1),
                             })]
@@ -1286,7 +1452,7 @@ class ProductAnalysis(models.Model):
                         'fiber_ids': [Command.create({
                             'weight': a_float(row.porcen),
                             'ligament_id': ligament.id or False,
-                            'product_template_id': (self.env['product.template'].search([('default_code','=', codhil)]).id or self.env['product.template'].create({'name': row.articulo.strip(), 'default_code': codhil, 'categ_id': self.env.company.thread_category_ids[0].id, 'uom_id': self.env.ref('uom.product_uom_kgm').id}).id) if codhil else False,
+                            'product_template_id': thread_product_id,
                             'line_ids': [Command.create({
                                 'length': a_float(row.lm1),
                             })]

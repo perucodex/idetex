@@ -25,6 +25,7 @@ de idtx_batch_control (hook _sync_extra_data en control.pedido).
         'idtx_batch_control',
         'idtx_printing',
         'idtx_product_development',
+        'idtx_import_product',
     ],
 
     'data': [

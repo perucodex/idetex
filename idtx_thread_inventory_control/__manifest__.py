@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 {
-    "name": "Thread Lot Bag Control",
-    "summary": "Control bags, cones and cone weight by lot for thread products",
+    "name": "Thread Bag Control",
+    "summary": "Control individual de bolsas de hilo (peso neto, conos) por lote",
     "description": """
-Thread inventory control by lot.
-- Register bags received/sent/remaining by lot
-- Track cone quantity per bag
-- Track cone weight and total weight
-- Enabled only for products marked as is_thread
+Control de hilo a nivel de bolsa física.
+- Cada bolsa es una unidad con su correlativo único, lote, conos y PESO NETO propio.
+- Kg de un lote = suma de pesos netos de sus bolsas disponibles.
+- Importación del packing list (Excel) para dar de alta las bolsas.
+- Consumo en producción/transferencias eligiendo bolsas por correlativo.
+- Habilitado para productos marcados como is_thread.
     """,
     "author": "Codex Development",
     "website": "https://www.perucodex.com",
     "category": "Inventory",
-    "version": "19.0.1.0.0",
+    "version": "19.0.2.0.0",
     "license": "LGPL-3",
     "depends": [
         "mrp",
@@ -22,13 +23,10 @@ Thread inventory control by lot.
     ],
     "data": [
         "security/ir.model.access.csv",
-        "data/ir_sequence.xml",
-        "views/thread_lot_control_views.xml",
-        "views/stock_picking_views.xml",
-        "views/stock_lot_views.xml",
-        "views/mrp_production_thread_second_quality_wizard_views.xml",
-        "views/stock_move_import_packing_wizard_views.xml",
-        "views/stock_picking_import_packing_wizard_views.xml",
+        "views/thread_bag_views.xml",
+        "views/thread_bag_import_views.xml",
+        "views/thread_bag_consume_wizard_views.xml",
+        "views/stock_views.xml",
     ],
     "installable": True,
     "application": False,
