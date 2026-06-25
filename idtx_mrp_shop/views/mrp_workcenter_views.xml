@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mrp_workcenter_view_operator_dept" model="ir.ui.view">
+        <field name="name">mrp.workcenter.form.operator.department</field>
+        <field name="model">mrp.workcenter</field>
+        <field name="inherit_id" ref="mrp.mrp_workcenter_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='resource_calendar_id']" position="after">
+                <field name="operator_department_id"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_thread_bag_import_form" model="ir.ui.view">
+        <field name="name">thread.bag.import.form</field>
+        <field name="model">thread.bag.import</field>
+        <field name="arch" type="xml">
+            <form string="Importar Bolsas de Hilo">
+                <header>
+                    <button name="action_import" type="object" string="Importar y Recepcionar"
+                            class="btn-primary" invisible="state == 'done'"/>
+                    <button name="action_view_picking" type="object" string="Ver Recepción"
+                            class="btn-secondary" invisible="state != 'done' or not picking_id"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_bags" type="object" class="oe_stat_button"
+                                icon="fa-shopping-bag" invisible="state != 'done'">
+                            <field name="bag_count" widget="statinfo" string="Bolsas"/>
+                        </button>
+                        <button class="oe_stat_button" icon="fa-balance-scale" disabled="1">
+                            <field name="total_net" widget="statinfo" string="Kg"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="import_file" filename="filename"/>
+                            <field name="filename" invisible="1"/>
+                            <field name="picking_type_id" readonly="state == 'done'"/>
+                            <field name="default_location_id" readonly="state == 'done'"/>
+                        </group>
+                        <group>
+                            <field name="picking_id" readonly="1" invisible="not picking_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <separator string="Resultado" invisible="not log"/>
+                    <field name="log" readonly="1" invisible="not log"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_thread_bag_import_list" model="ir.ui.view">
+        <field name="name">thread.bag.import.list</field>
+        <field name="model">thread.bag.import</field>
+        <field name="arch" type="xml">
+            <list string="Importaciones">
+                <field name="create_date"/>
+                <field name="filename"/>
+                <field name="default_location_id"/>
+                <field name="bag_count"/>
+                <field name="total_net"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_thread_bag_import" model="ir.actions.act_window">
+        <field name="name">Importar Bolsas</field>
+        <field name="res_model">thread.bag.import</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_thread_bag_import" name="Importar Bolsas"
+              parent="menu_thread_root" action="action_thread_bag_import" sequence="20"/>
+</odoo>

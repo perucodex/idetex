@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Flags de ubicación de hilo -->
+    <record id="view_location_form_thread" model="ir.ui.view">
+        <field name="name">stock.location.form.thread</field>
+        <field name="model">stock.location</field>
+        <field name="inherit_id" ref="stock.view_location_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='additional_info']" position="inside">
+                <field name="is_thread_main_location"/>
+                <field name="is_thread_production_location"/>
+                <field name="is_thread_second_quality_location"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Lote: totales y bolsas de hilo -->
+    <record id="view_production_lot_form_thread" model="ir.ui.view">
+        <field name="name">stock.lot.form.thread</field>
+        <field name="model">stock.lot</field>
+        <field name="inherit_id" ref="stock.view_production_lot_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_thread_bags" type="object"
+                        class="oe_stat_button" icon="fa-shopping-bag"
+                        invisible="thread_bag_count == 0">
+                    <field name="thread_bag_count" widget="statinfo" string="Bolsas"/>
+                </button>
+                <button class="oe_stat_button" icon="fa-balance-scale" disabled="1"
+                        invisible="thread_bag_count == 0">
+                    <field name="thread_available_net" widget="statinfo" string="Kg"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- OF: botón "Bolsas" por componente de hilo -->
+    <record id="view_mrp_production_form_thread" model="ir.ui.view">
+        <field name="name">mrp.production.form.thread</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='move_raw_ids']/list" position="inside">
+                <field name="thread_is_thread" column_invisible="1"/>
+                <field name="thread_selected_bag_count" string="Bolsas hilo"
+                       column_invisible="not parent.id"
+                       readonly="1"/>
+                <button name="action_open_thread_bag_selector" type="object"
+                        string="Elegir bolsas" icon="fa-shopping-bag"
+                        invisible="not thread_is_thread or state in ('draft', 'done', 'cancel')"/>
+            </xpath>
+            <!-- Para hilo, la cantidad consumida la fijan las bolsas: solo lectura. -->
+            <xpath expr="//field[@name='move_raw_ids']/list/field[@name='quantity']" position="attributes">
+                <attribute name="readonly">thread_is_thread</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Transferencias: botón "Bolsas" por movimiento + smart button bolsas recibidas -->
+    <record id="view_picking_form_thread" model="ir.ui.view">
+        <field name="name">stock.picking.form.thread</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='move_ids']/list" position="inside">
+                <field name="thread_is_thread" column_invisible="1"/>
+                <button name="action_open_thread_bag_selector" type="object"
+                        string="Elegir bolsas" icon="fa-shopping-bag"
+                        invisible="not thread_is_thread or state in ('draft', 'done', 'cancel')"/>
+            </xpath>
+            <!-- Para hilo, cantidad y lotes los fijan las bolsas: solo lectura inline. -->
+            <xpath expr="//field[@name='move_ids']/list/field[@name='quantity']" position="attributes">
+                <attribute name="readonly">not is_quantity_done_editable or thread_is_thread</attribute>
+            </xpath>
+            <xpath expr="//field[@name='move_ids']/list/field[@name='lot_ids']" position="attributes">
+                <attribute name="readonly">thread_is_thread</attribute>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_thread_received_bags" type="object"
+                        class="oe_stat_button" icon="fa-shopping-bag"
+                        invisible="thread_received_bag_count == 0">
+                    <field name="thread_received_bag_count" widget="statinfo" string="Bolsas Recibidas"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Operaciones detalladas (picking y OF): detalle solo lectura para hilo -->
+    <record id="view_stock_move_operations_thread" model="ir.ui.view">
+        <field name="name">stock.move.operations.thread</field>
+        <field name="model">stock.move</field>
+        <field name="inherit_id" ref="stock.view_stock_move_operations"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='product_qty']" position="after">
+                <field name="thread_is_thread" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='move_line_ids']" position="attributes">
+                <attribute name="readonly">state == 'cancel' or (state == 'done' and is_locked) or not product_id or thread_is_thread</attribute>
+            </xpath>
+        </field>
+    </record>
+</odoo>

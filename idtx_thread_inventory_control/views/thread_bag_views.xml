@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- LIST -->
+    <record id="view_thread_bag_list" model="ir.ui.view">
+        <field name="name">thread.bag.list</field>
+        <field name="model">thread.bag</field>
+        <field name="arch" type="xml">
+            <list string="Bolsas de Hilo" sample="1">
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="lot_id"/>
+                <field name="cone_qty" sum="Conos"/>
+                <field name="net_weight" sum="Kg Netos"/>
+                <field name="avg_cone_weight" optional="hide"/>
+                <field name="gross_weight" optional="hide"/>
+                <field name="tare" optional="hide"/>
+                <field name="cone_color" optional="hide"/>
+                <field name="packaging_type" optional="hide"/>
+                <field name="location_id" optional="show"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'available'"
+                       decoration-warning="state == 'reserved'"
+                       decoration-muted="state == 'consumed'"/>
+                <field name="company_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- FORM -->
+    <record id="view_thread_bag_form" model="ir.ui.view">
+        <field name="name">thread.bag.form</field>
+        <field name="model">thread.bag</field>
+        <field name="arch" type="xml">
+            <form string="Bolsa de Hilo">
+                <header>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="available,reserved,consumed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Correlativo"/>
+                        <h1><field name="name" placeholder="Código de la bolsa"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="product_id"/>
+                            <field name="lot_id"
+                                   domain="[('product_id', '=', product_id)]"/>
+                            <field name="location_id"/>
+                            <field name="cone_qty"/>
+                        </group>
+                        <group>
+                            <field name="gross_weight"/>
+                            <field name="tare"/>
+                            <field name="net_weight"/>
+                            <field name="avg_cone_weight"/>
+                        </group>
+                    </group>
+                    <group string="Detalle">
+                        <group>
+                            <field name="cone_color"/>
+                            <field name="yarn_color"/>
+                            <field name="packaging_type"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="import_batch_id" readonly="1"/>
+                            <field name="production_id" readonly="1"/>
+                            <field name="picking_id" readonly="1"/>
+                            <field name="consumed_date" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- SEARCH -->
+    <record id="view_thread_bag_search" model="ir.ui.view">
+        <field name="name">thread.bag.search</field>
+        <field name="model">thread.bag</field>
+        <field name="arch" type="xml">
+            <search string="Bolsas de Hilo">
+                <field name="name" string="Correlativo"/>
+                <field name="product_id"/>
+                <field name="lot_id"/>
+                <field name="location_id"/>
+                <field name="cone_color"/>
+                <filter name="available" string="Disponibles" domain="[('state', '=', 'available')]"/>
+                <filter name="reserved" string="Reservadas" domain="[('state', '=', 'reserved')]"/>
+                <filter name="consumed" string="Consumidas" domain="[('state', '=', 'consumed')]"/>
+                <group>
+                    <filter name="group_product" string="Artículo" context="{'group_by': 'product_id'}"/>
+                    <filter name="group_lot" string="Lote" context="{'group_by': 'lot_id'}"/>
+                    <filter name="group_location" string="Ubicación" context="{'group_by': 'location_id'}"/>
+                    <filter name="group_state" string="Estado" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- PIVOT (kg y bolsas por lote/artículo) -->
+    <record id="view_thread_bag_pivot" model="ir.ui.view">
+        <field name="name">thread.bag.pivot</field>
+        <field name="model">thread.bag</field>
+        <field name="arch" type="xml">
+            <pivot string="Hilo por Lote">
+                <field name="product_id" type="row"/>
+                <field name="lot_id" type="row"/>
+                <field name="net_weight" type="measure"/>
+                <field name="cone_qty" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ACTION -->
+    <record id="action_thread_bag" model="ir.actions.act_window">
+        <field name="name">Bolsas de Hilo</field>
+        <field name="res_model">thread.bag</field>
+        <field name="view_mode">list,form,pivot</field>
+        <field name="search_view_id" ref="view_thread_bag_search"/>
+        <field name="context">{'search_default_available': 1, 'search_default_group_lot': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No hay bolsas de hilo registradas</p>
+            <p>Importe el packing list desde el menú "Importar Bolsas".</p>
+        </field>
+    </record>
+
+    <!-- MENUS -->
+    <menuitem id="menu_thread_root" name="Hilo" parent="stock.menu_stock_root"
+              sequence="90"/>
+    <menuitem id="menu_thread_bag" name="Bolsas de Hilo" parent="menu_thread_root"
+              action="action_thread_bag" sequence="10"/>
+</odoo>
