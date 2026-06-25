@@ -94,6 +94,12 @@
               action="action_plan_alpha_sales"
               sequence="42"/>
 
+    <menuitem id="menu_plan_alpha_plan_planner"
+              name="Planner"
+              parent="menu_plan_alpha_planning"
+              action="action_plan_alpha_planner"
+              sequence="43"/>
+
     <!-- ============================================================
          5. CONFIGURACION
     ============================================================ -->

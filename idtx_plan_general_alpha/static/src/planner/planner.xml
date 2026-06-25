@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+<t t-name="idtx_plan_general_alpha.Planner">
+<div class="plr">
+
+    <!-- ── Header ─────────────────────────────────────────────────────────── -->
+    <div class="plr__head">
+        <div class="plr__head-left">
+            <div>
+                <h1 class="plr__title">Planificación de Pedidos</h1>
+                <p class="plr__sub">Programa de producción textil · organizado por área</p>
+            </div>
+        </div>
+
+        <div class="plr__head-center">
+            <!-- Escala selectors -->
+            <div class="plr__control-group">
+                <span class="plr__control-label">ESCALA</span>
+                <div class="plr__buttons">
+                    <t t-foreach="zoomBtns" t-as="b" t-key="b.key">
+                        <button t-attf-style="border-color:#{b.bc}; background:#{b.bg}; color:#{b.fg};"
+                                t-on-click="b.onClick">
+                            <t t-esc="b.label"/>
+                        </button>
+                    </t>
+                </div>
+            </div>
+
+            <!-- Coloreado selectors -->
+            <div class="plr__control-group">
+                <span class="plr__control-label">VISTA</span>
+                <div class="plr__buttons">
+                    <t t-foreach="styleBtns" t-as="b" t-key="b.key">
+                        <button t-attf-style="border-color:#{b.bc}; background:#{b.bg}; color:#{b.fg};"
+                                t-on-click="b.onClick">
+                            <t t-esc="b.label"/>
+                        </button>
+                    </t>
+                </div>
+            </div>
+
+            <!-- Hoy button -->
+            <button class="plr__today-btn" t-on-click="goToday">
+                <span class="plr__today-dot"/> Hoy
+            </button>
+        </div>
+
+        <div class="plr__head-right">
+            <!-- Selector de Pedidos -->
+            <button class="plr__add-btn" t-on-click="openPicker">
+                <i class="fa fa-filter"/> Filtrar Pedidos
+                <span class="plr__add-badge" t-esc="selLabel"/>
+            </button>
+        </div>
+    </div>
+
+    <!-- ── State Legend ───────────────────────────────────────────────────── -->
+    <div class="plr__legend">
+        <div class="plr__legend-item">
+            <span class="plr__legend-color" style="background:#1f9d6b;"/>
+            <span class="plr__legend-text">Completado</span>
+        </div>
+        <div class="plr__legend-item">
+            <span class="plr__legend-color" style="background:#2f6fed;"/>
+            <span class="plr__legend-text">En proceso</span>
+        </div>
+        <div class="plr__legend-item">
+            <span class="plr__legend-color" style="background:#e0712f;"/>
+            <span class="plr__legend-text">Retrasado</span>
+        </div>
+        
+        <div class="plr__legend-hint">
+            Arrastra una barra para reprogramar · arrastra sus bordes para cambiar fechas
+        </div>
+
+        <div class="plr__legend-right" t-if="!st.loading">
+            <span class="plr__legend-count" t-esc="totalCount"/> partidas
+            <button class="plr__legend-clear" t-if="st.selIds &amp;&amp; st.selIds.length" t-on-click="clearSelection" title="Quitar selección">
+                <i class="fa fa-times-circle"/> Quitar selección
+            </button>
+        </div>
+    </div>
+
+    <!-- ── Loading ────────────────────────────────────────────────────────── -->
+    <t t-if="st.loading">
+        <div class="plr__state-msg">
+            <i class="fa fa-circle-o-notch fa-spin plr__spin"/>
+            <p>Cargando partidas seleccionadas…</p>
+        </div>
+    </t>
+
+    <!-- ── Error ──────────────────────────────────────────────────────────── -->
+    <t t-elif="st.error">
+        <div class="plr__state-msg plr__state-msg--err">
+            <i class="fa fa-exclamation-triangle fa-2x"/>
+            <p t-esc="st.error"/>
+            <button class="plr__add-btn" t-on-click="_load">Reintentar</button>
+        </div>
+    </t>
+
+    <!-- ── Empty state — no selection yet ──────────────────────────────────── -->
+    <t t-elif="!st.tasks.length">
+        <div class="plr__state-msg plr__state-msg--empty">
+            <i class="fa fa-calendar-o fa-3x" style="color:#cbd2dc; margin-bottom:16px;"/>
+            <p style="font-size:1.1rem; font-weight:600; color:#3a4252; margin-bottom:6px;">
+                No hay partidas en el planner
+            </p>
+            <p style="color:#6b7585; margin-bottom:20px;">
+                Usa el botón <strong>Filtrar Pedidos</strong> para seleccionar las partidas que deseas programar.
+            </p>
+            <button class="plr__add-btn" t-on-click="openPicker">
+                <i class="fa fa-filter"/> Filtrar Pedidos
+            </button>
+        </div>
+    </t>
+
+    <!-- ── Gantt View Grid ────────────────────────────────────────────────── -->
+    <t t-elif="st.tasks.length">
+        <div class="plr__body" t-ref="scrollRef">
+            <div class="plr__grid" t-attf-style="width:#{render.totalGridWidth}px;">
+
+                <!-- Vertical Grid Columns & Today Line -->
+                <div class="plr__grid-bg" t-attf-style="left:#{render.sidebarW}px; top:#{render.headerH}px;">
+                    <t t-foreach="render.weekendBands" t-as="wb" t-key="wb_index">
+                        <div class="plr__weekend-band" t-attf-style="left:#{wb.x}px; width:#{wb.w}px;"/>
+                    </t>
+                    <t t-foreach="render.gridLines" t-as="gl" t-key="gl_index">
+                        <div class="plr__grid-line" t-attf-style="left:#{gl.x}px; background:#{gl.color};"/>
+                    </t>
+                    <t t-if="render.todayInRange">
+                        <div class="plr__today-line" t-attf-style="left:#{render.todayX}px;"/>
+                        <div class="plr__today-badge" t-attf-style="left:#{render.todayX}px;">HOY</div>
+                    </t>
+                </div>
+
+                <!-- Sticky Timeline Header -->
+                <div class="plr__grid-header" t-attf-style="height:#{render.headerH}px;">
+                    <!-- Corner (Sticky Left) -->
+                    <div class="plr__corner" t-attf-style="width:#{render.sidebarW}px;">
+                        <span class="plr__corner-title">ÁREA / PARTIDA</span>
+                        <span class="plr__corner-sub" t-esc="render.rangeLabel"/>
+                    </div>
+                    <!-- Ticks Area -->
+                    <div class="plr__ticks" t-attf-style="width:#{render.totalWidth}px;">
+                        <!-- Top Ticks -->
+                        <t t-foreach="render.topTicks" t-as="tt" t-key="tt_index">
+                            <div class="plr__tick-top" t-attf-style="left:#{tt.x}px; width:#{tt.w}px;" t-esc="tt.label"/>
+                        </t>
+                        <!-- Bottom Ticks -->
+                        <t t-foreach="render.bottomTicks" t-as="bt" t-key="bt_index">
+                            <div class="plr__tick-bottom" t-attf-style="left:#{bt.x}px; width:#{bt.w}px; color:#{bt.color};" t-esc="bt.label"/>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- Rows List -->
+                <t t-foreach="render.rows" t-as="row" t-key="row_index">
+                    <!-- Row is Section -->
+                    <t t-if="row.isSection">
+                        <div class="plr__row plr__row--section" t-attf-style="height:#{row.h}px;">
+                            <div class="plr__row-sidebar plr__row-sidebar--section" t-attf-style="width:#{render.sidebarW}px; background:#{row.soft};">
+                                <span class="plr__section-dot" t-attf-style="background:#{row.color};"/>
+                                <span class="plr__section-name" t-esc="row.area"/>
+                                <span class="plr__section-badge" t-esc="row.count"/>
+                            </div>
+                            <div class="plr__row-grid" t-attf-style="width:#{render.totalWidth}px; background:#{row.soft};"/>
+                        </div>
+                    </t>
+                    
+                    <!-- Row is Task/Partida -->
+                    <t t-if="row.isTask">
+                        <div class="plr__row plr__row--task" t-att-data-row-id="row.id" t-attf-style="height:#{row.h}px;">
+                            <!-- Sidebar Info (Sticky Left) -->
+                            <div class="plr__row-sidebar plr__row-sidebar--task" t-attf-style="width:#{render.sidebarW}px;" t-on-click="() => this.openRecord(row)">
+                                <!-- Line 1: OP + Voucher (primary identifiers) -->
+                                <div class="plr__task-ids">
+                                    <t t-if="row.op">
+                                        <span class="plr__task-op">OP</span>
+                                        <span class="plr__task-opnum" t-attf-style="color:#{row.areaColor};" t-esc="row.op"/>
+                                    </t>
+                                    <t t-if="row.voucher">
+                                        <span class="plr__task-sep" t-if="row.op">·</span>
+                                        <span class="plr__task-voucher" t-attf-style="background:#{row.soft}; color:#{row.areaColor};" t-esc="row.voucher"/>
+                                    </t>
+                                </div>
+                                <!-- Line 2: Artículo (tela) + Color -->
+                                <div class="plr__task-fabric">
+                                    <span class="plr__task-articulo" t-esc="row.articulo"/>
+                                    <t t-if="row.color">
+                                        <span class="plr__task-colordot" t-attf-style="background:#{row.areaColor};"/>
+                                        <span class="plr__task-colorname" t-esc="row.color"/>
+                                    </t>
+                                </div>
+                                <!-- Line 3: Cliente + Estado -->
+                                <div class="plr__task-bottom">
+                                    <span class="plr__task-client" t-esc="row.client"/>
+                                    <span class="plr__task-status" t-attf-style="color:#{row.statusColor};">
+                                        <span class="plr__status-dot" t-attf-style="background:#{row.statusColor};"/>
+                                        <t t-esc="row.statusLabel"/>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Timeline Bar Area -->
+                            <div class="plr__row-grid" t-attf-style="width:#{render.totalWidth}px;">
+                                <!-- Gantt Bar -->
+                                <div class="plr__bar"
+                                     t-att-title="row.tip"
+                                     t-attf-style="top:#{row.barTop}px; left:#{row.x}px; width:#{row.w}px; height:#{row.barH}px; background:#{row.barBg};"
+                                     t-on-mousedown="(ev) => this.onBarMouseDown(row, 'move', ev)">
+                                    <div class="plr__bar-fill" t-attf-style="width:#{row.fillW}px; background:#{row.fillBg};"/>
+                                    <span class="plr__bar-label" t-attf-style="color:#{row.barTextColor};" t-esc="row.barLabel"/>
+                                    <!-- Resize Handles -->
+                                    <div class="plr__bar-handle plr__bar-handle--l" t-on-mousedown.stop="(ev) => this.onBarMouseDown(row, 'l', ev)"/>
+                                    <div class="plr__bar-handle plr__bar-handle--r" t-on-mousedown.stop="(ev) => this.onBarMouseDown(row, 'r', ev)"/>
+                                </div>
+                                <!-- Floating Date Label -->
+                                <span class="plr__bar-date" t-attf-style="top:#{row.dateTop}px; left:#{row.dateX}px;" t-esc="row.dateLabel"/>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+
+                <!-- Spacer at the bottom -->
+                <div class="plr__footer-spacer"/>
+            </div>
+        </div>
+    </t>
+
+    <!-- ── Picker Modal ─────────────────────────────────────────────────────── -->
+    <t t-if="st.picker.open">
+        <div class="plr__modal-backdrop" t-on-click="closePicker">
+            <div class="plr__modal" t-on-click.stop="() => {}"  >
+                <div class="plr__modal-header">
+                    <h3 class="plr__modal-title">Filtrar Lotes de Producción</h3>
+                    <button class="plr__modal-close" t-on-click="closePicker">
+                        <i class="fa fa-times"/>
+                    </button>
+                </div>
+                
+                <div class="plr__modal-body">
+                    <!-- Search bar -->
+                    <div class="plr__search-wrapper">
+                        <i class="fa fa-search plr__search-icon"/>
+                        <input
+                            type="text"
+                            class="plr__search-input"
+                            placeholder="Buscar por lote, cliente, área..."
+                            t-att-value="st.picker.search"
+                            t-on-input="(ev) => this.st.picker.search = ev.target.value"
+                            t-ref="pickerSearch"
+                            autofocus="autofocus"
+                        />
+                    </div>
+
+                    <!-- Records List -->
+                    <t t-if="st.picker.loading">
+                        <div class="plr__modal-loading">
+                            <i class="fa fa-circle-o-notch fa-spin plr__spin"/>
+                            <p>Cargando lotes…</p>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <div class="plr__modal-list">
+                            <t t-foreach="pickerFiltered" t-as="r" t-key="r.id">
+                                <label t-attf-class="plr__modal-item #{this.isPicked(r.id) ? 'plr__modal-item--checked' : ''}">
+                                    <input
+                                        type="checkbox"
+                                        t-att-checked="this.isPicked(r.id)"
+                                        t-on-change="() => this.togglePick(r.id)"
+                                        class="plr__checkbox"
+                                    />
+                                    <div class="plr__item-details">
+                                        <div class="plr__item-first">
+                                            <span class="plr__item-code" t-esc="r.numordped"/>
+                                            <span class="plr__item-area" t-esc="r.area"/>
+                                        </div>
+                                        <div class="plr__item-second">
+                                            <span class="plr__item-cust" t-esc="r.customer"/>
+                                            <span class="plr__item-date" t-if="r.fecha" t-esc="r.fecha.slice(0, 10)"/>
+                                        </div>
+                                    </div>
+                                </label>
+                            </t>
+                            <t t-if="pickerFiltered.length === 0">
+                                <div class="plr__modal-empty">
+                                    No se encontraron resultados para "<t t-esc="st.picker.search"/>"
+                                </div>
+                            </t>
+                        </div>
+                    </t>
+                </div>
+
+                <div class="plr__modal-footer">
+                    <button class="plr__btn plr__btn--sec" t-on-click="closePicker">Cancelar</button>
+                    <button class="plr__btn plr__btn--pri" t-on-click="applyPicker" t-att-disabled="st.picker.loading">Aplicar Filtro</button>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</div>
+</t>
+
+</templates>

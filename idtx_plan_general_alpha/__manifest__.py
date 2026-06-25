@@ -43,6 +43,9 @@ sobre los modelos existentes de Control de Pedidos, MRP y Ventas.
             'idtx_plan_general_alpha/static/src/machine_floor/machine_floor.scss',
             'idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml',
             'idtx_plan_general_alpha/static/src/machine_floor/machine_floor.js',
+            'idtx_plan_general_alpha/static/src/planner/planner.scss',
+            'idtx_plan_general_alpha/static/src/planner/planner.xml',
+            'idtx_plan_general_alpha/static/src/planner/planner.js',
         ],
         'web.assets_web_dark': [
             'idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.dark.scss',
@@ -59,6 +62,7 @@ sobre los modelos existentes de Control de Pedidos, MRP y Ventas.
         'views/plan_sale_views.xml',
         'views/plan_config_views.xml',
         'views/plan_floor_views.xml',
+        'views/plan_planner_views.xml',
         'views/plan_alpha_menu.xml',
     ],
 }
