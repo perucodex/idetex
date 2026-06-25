@@ -9,7 +9,7 @@ class StockPicking(models.Model):
         "thread.bag", "receipt_picking_id", string="Bolsas Recibidas",
     )
     thread_received_bag_count = fields.Integer(
-        compute="_compute_thread_received_bag_count", string="Bolsas Recibidas",
+        compute="_compute_thread_received_bag_count", string="N° Bolsas Recibidas",
     )
 
     def _compute_thread_received_bag_count(self):

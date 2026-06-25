@@ -215,7 +215,6 @@
                     <filter string="Siguiente Proceso" name="group_by_next_process" domain="[]" context="{'group_by': 'next_process'}"/>
                     <filter string="Operaciones Acabado" name="group_by_finishing_ops" domain="[]" context="{'group_by': 'finishing_ops_group'}"/>
                     <filter string="Mes Término Acabado" name="group_by_finishing_done_month" domain="[]" context="{'group_by': 'finishing_done_date:month'}"/>
-                    <filter string="Fecha Término Acabado" name="group_by_finishing_done_date" domain="[]" context="{'group_by': 'finishing_done_date:day'}"/>
                     <filter string="En Calidad" name="group_by_in_quality" domain="[]" context="{'group_by': 'is_in_quality'}"/>
                 </group>
             </search>
@@ -293,7 +292,7 @@
         <field name="res_model">control.pedido.line</field>
         <field name="view_mode">list,graph,pivot,form</field>
         <field name="search_view_id" ref="control_pedido_line_view_search"/>
-        <field name="context">{"search_default_acabado_terminado": 1, "search_default_group_by_finishing_done_month": 1, "search_default_group_by_finishing_done_date": 2}</field>
+        <field name="context">{"search_default_acabado_terminado": 1, "search_default_group_by_finishing_done_month": 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">Kilos de acabado terminado por mes y día de término</p>
         </field>
@@ -317,7 +316,7 @@
         <field name="res_model">control.pedido.line</field>
         <field name="view_mode">list,pivot,form</field>
         <field name="search_view_id" ref="control_pedido_line_view_search"/>
-        <field name="context">{"search_default_active": 1, "search_default_en_calidad": 1, "search_default_group_by_finishing_done_month": 1, "search_default_group_by_finishing_done_date": 2}</field>
+        <field name="context">{"search_default_active": 1, "search_default_en_calidad": 1, "search_default_group_by_finishing_done_month": 1}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">Kilos en control de calidad por mes y día de término de acabado</p>
         </field>
