@@ -102,6 +102,9 @@ class PrintingKilos(models.Model):
     def _classify_printing_type(self, design_code, description):
         """Rotativo/Digital a partir del código de diseño; respaldo en la
         descripción. Reglas:
+          - producto/descripción con 'EST R' (ESTAMPADO REACTIVO) -> rotativo
+            (prioritario: el reactivo es siempre rotativo, aunque falte o sea
+            ambiguo el código de diseño)
           - 1ª letra del código D (cubre DG/DI/DR) -> digital
           - 1ª letra del código M o E -> rotativo (E = fotograbado de cilindro)
           - si no, descripción con 'DIG' o 'DR' -> digital
@@ -109,12 +112,14 @@ class PrintingKilos(models.Model):
         Se toma la primera LETRA (saltando dígitos/puntuación inicial) porque
         algunos códigos llegan con basura al frente (p.ej. '\\x02M20-…', '/DG…')."""
         code = (design_code or '').strip().upper()
+        desc = (description or '').upper()
+        if 'EST R' in desc:
+            return 'rotary'
         first_letter = next((ch for ch in code if ch.isalpha()), '')
         if first_letter == 'D':
             return 'digital'
         if first_letter in ('M', 'E'):
             return 'rotary'
-        desc = (description or '').upper()
         if 'DIG' in desc or 'DR' in desc:
             return 'digital'
         return False

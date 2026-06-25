@@ -557,15 +557,21 @@ export class SelectBatchDialog extends ConfirmationDialog {
     // Loaders
     // =========================
     async _loadEmployees() {
-        const deptId = await this.ormService.searchRead(
-            "ir.model.data",
-            [["name", "=", "tintoreria"], ["module", "=", "idtx_mrp_shop"]],
-            ["res_id"]
-        ).then(data => data[0]?.res_id || false);
-
+        // El departamento de operarios se toma del centro de trabajo de la orden
+        // (que es por compañía), no de un External ID fijo. Así funciona en
+        // cualquier empresa: cada centro de trabajo apunta a su propio departamento.
+        const woId = this.state.workorderId;
+        if (!woId) {
+            return;
+        }
+        const wo = await this.ormService.read(
+            "mrp.workorder", [woId], ["operator_department_id"]
+        );
+        const dept = wo[0]?.operator_department_id;
+        const deptId = Array.isArray(dept) ? dept[0] : false;
         if (!deptId) {
             this.notification.add(
-                _t("Department 'Tintorería' not found. Please check the external ID."),
+                _t("El centro de trabajo de esta orden no tiene un 'Departamento de Operarios' configurado. Configúralo en el centro de trabajo."),
                 { type: "danger" }
             );
             return;
@@ -581,21 +587,25 @@ export class SelectBatchDialog extends ConfirmationDialog {
     }
 
     async _loadEquipments() {
-        const workcenterId = await this.ormService.searchRead(
-            "ir.model.data",
-            [["name", "=", "mrp_wc_2"], ["module", "=", "idtx_mrp"]],
-            ["res_id"]
-        ).then(data => data[0]?.res_id || false);
-
+        // El centro de trabajo se toma de la orden (por compañía), no de un
+        // External ID fijo. Los equipos se filtran por ese centro de trabajo.
+        const woId = this.state.workorderId;
+        if (!woId) {
+            return;
+        }
+        const wo = await this.ormService.read(
+            "mrp.workorder", [woId], ["workcenter_id"]
+        );
+        const wc = wo[0]?.workcenter_id;
+        const workcenterId = Array.isArray(wc) ? wc[0] : false;
         if (!workcenterId) {
             this.notification.add(
-                _t("Workcenter_id 'Tintorería' not found. Please check the external ID."),
+                _t("La orden no tiene un centro de trabajo asignado."),
                 { type: "danger" }
             );
             return;
         }
 
-        // ojo: tu domain tenía [['workcenter_id','in',workcenterId]] pero "in" espera lista
         this.equipments = await this.ormService.searchRead(
             "maintenance.equipment",
             [["workcenter_id", "=", workcenterId]],

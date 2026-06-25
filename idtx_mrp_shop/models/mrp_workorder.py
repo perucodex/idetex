@@ -5,6 +5,15 @@ import requests
 class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'
 
+    operator_department_id = fields.Many2one(
+        'hr.department',
+        string='Departamento de Operarios',
+        related='workcenter_id.operator_department_id',
+        readonly=True,
+        help='Departamento (por compañía) cuyos empleados pueden operar el centro '
+             'de trabajo de esta orden. Lo usa el shop floor para listar operarios.',
+    )
+
     def _sync_thread_consumption_from_rolls(self):
         """Rebuild thread component consumption from current workorder rolls.
 

@@ -17,6 +17,11 @@ _AREA_CANON = {
     'PRETINTORERIA': 'PRE TINTORERIA',
 }
 
+# Zona horaria de la planta. Las fechas de las fases (barFasDTF) se guardan en
+# UTC; para fechas de negocio (p. ej. el día de término del acabado) hay que
+# convertir a hora local de Perú antes de tomar el día.
+_PE_TZ = pytz.timezone('America/Lima')
+
 
 def _canonical_area(area):
     if not area:
@@ -88,6 +93,106 @@ class ControlPedidoLine(models.Model):
     wish_date = fields.Date('Fecha Deseada',
         help="Fecha objetivo de entrega de esta partida. Hereda del "
              "control.pedido al crearse pero se puede modificar por linea.")
+
+    # ------------------------------------------------------------------
+    # Métricas de Acabado (reporte pivot "Kilos de Acabado")
+    # El área de cada proceso se deriva: proceso.fas_code/fasCod ->
+    # mrp.routing.workcenter.operation -> workcenter.operation_type
+    # (acabado='finishing', control de calidad='quality').
+    # ------------------------------------------------------------------
+    finishing_ops_pending = fields.Integer(
+        string='Operaciones de Acabado Pendientes',
+        compute='_compute_finishing_metrics', store=True,
+        help="Cantidad de operaciones del área de ACABADO aún sin fecha de fin.")
+    finishing_ops_group = fields.Char(
+        string='Operaciones Acabado',
+        compute='_compute_finishing_metrics', store=True,
+        help="Etiqueta 'Operaciones N' = nº de operaciones de acabado pendientes. "
+             "Vacío si la partida no tiene operaciones de acabado pendientes.")
+    finishing_done_date = fields.Date(
+        string='Fecha Término Acabado',
+        compute='_compute_finishing_metrics', store=True,
+        help="Día de término del acabado: fecha fin de la última operación de "
+             "acabado, cuando ya no quedan operaciones de acabado pendientes.")
+    is_in_finishing = fields.Boolean(
+        string='En Acabado',
+        compute='_compute_finishing_metrics', store=True,
+        help="El ÁREA de la fase lista de la partida es ACABADO (campo `area`) y la "
+             "ruta aún no terminó. Solo estas partidas cuentan como 'en acabado'; las "
+             "que están en tintorería con acabado planificado más adelante (area != "
+             "ACABADO) NO, y las que ya cerraron su última fase tampoco.")
+    is_in_quality = fields.Boolean(
+        string='En Control de Calidad',
+        compute='_compute_finishing_metrics', store=True,
+        help="El ÁREA de la fase lista de la partida es CONTROL DE CALIDAD (campo `area`) "
+             "y la ruta aún no terminó (su última fase no está cerrada).")
+
+    @api.depends('area',
+                 'proceso_ids.barFasDTI', 'proceso_ids.barFasDTF', 'proceso_ids.barOrdLin',
+                 'proceso_ids.fas_code', 'proceso_ids.fasCod')
+    def _compute_finishing_metrics(self):
+        Op = self.env['mrp.routing.workcenter.operation'].sudo()
+        type_by_code, type_by_name = {}, {}
+        for op in Op.search([('operation_type', 'in', ('finishing', 'quality'))]):
+            if op.fas_code:
+                type_by_code[op.fas_code.strip().upper()] = op.operation_type
+            if op.name:
+                type_by_name.setdefault((op.name or '').strip().upper(), op.operation_type)
+
+        def op_type(proc):
+            code = (proc.fas_code or '').strip().upper()
+            if code and code in type_by_code:
+                return type_by_code[code]
+            return type_by_name.get((proc.fasCod or '').strip().upper())
+
+        for rec in self:
+            procs = rec.proceso_ids.sorted(key=lambda p: p.barOrdLin or 0)
+            finishing = [p for p in procs if op_type(p) == 'finishing']
+            # El conteo de operaciones de acabado pendientes arranca DESDE la
+            # última fase TERMINADA (mayor barOrdLin con fecha fin). Las
+            # operaciones de acabado anteriores a ese punto que quedaron sin
+            # cerrar ya fueron superadas por la ruta — p. ej. tras un reproceso
+            # la tela retrocede a tintorería y vuelve a avanzar, dejando atrás
+            # fases de acabado planificadas que nunca se ejecutaron — así que NO
+            # cuentan. Solo cuentan las de acabado pendientes posteriores a la
+            # última fase terminada.
+            finished_ords = [p.barOrdLin or 0 for p in procs if p.barFasDTF]
+            last_done_ord = max(finished_ords) if finished_ords else -1
+            pending_fin = [
+                p for p in finishing
+                if not p.barFasDTF and (p.barOrdLin or 0) > last_done_ord
+            ]
+            # La ruta ya terminó si su ÚLTIMA fase (mayor barOrdLin) tiene fecha
+            # de inicio Y fin. TEXPLUS permite cerrar fases fuera de orden, así
+            # que una partida puede tener fases de acabado anteriores sin cerrar
+            # mientras su última fase ya está finalizada: en ese caso la ruta
+            # terminó y NO está "en acabado".
+            last_proc = procs[-1] if procs else None
+            route_done = bool(last_proc and last_proc.barFasDTI and last_proc.barFasDTF)
+            # Pertenencia según el ÁREA de la fase lista (campo `area`, derivado
+            # del proceso siguiente), no de la primera fase pendiente: solo
+            # ACABADO cuenta como acabado. Las partidas en tintorería con acabado
+            # planificado más adelante tienen area != 'ACABADO' y NO aparecen.
+            rec.is_in_finishing = (rec.area == 'ACABADO') and not route_done
+            rec.is_in_quality = (rec.area == 'CONTROL DE CALIDAD') and not route_done
+            rec.finishing_ops_pending = len(pending_fin)
+            # Solo agrupa por "Operaciones N" si la partida está ACTUALMENTE en
+            # acabado (área ACABADO y ruta no terminada).
+            rec.finishing_ops_group = (
+                'Operaciones %d' % len(pending_fin)
+                if rec.is_in_finishing and pending_fin else False
+            )
+            done_date = False
+            if finishing and not pending_fin:
+                ends = [p.barFasDTF for p in finishing if p.barFasDTF]
+                if ends:
+                    # barFasDTF está en UTC: la fecha de término del acabado es
+                    # el DÍA LOCAL (Perú) en que se cerró la última operación de
+                    # acabado. Tomar .date() sobre el UTC adelantaba un día las
+                    # fases cerradas de noche (p. ej. 22-jun 20:24 Lima =
+                    # 23-jun 01:24 UTC).
+                    done_date = pytz.utc.localize(max(ends)).astimezone(_PE_TZ).date()
+            rec.finishing_done_date = done_date
 
     @api.model_create_multi
     def create(self, vals_list):

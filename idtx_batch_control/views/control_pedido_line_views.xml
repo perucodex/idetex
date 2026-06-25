@@ -187,8 +187,15 @@
                 <filter string="Completed" name="completed" domain="[('state', '=', 'completed')]"/>
                 <filter string="Reproceso" name="reproceso"
                         domain="[('motivo', '=', 'REPROCESO'), ('state', '=', 'active')]"/>
-                <filter string="Reposición" name="reposicion" 
+                <filter string="Reposición" name="reposicion"
                         domain="[('motivo', '=', 'REPOSICION'), ('state', '=', 'active')]"/>
+                <separator/>
+                <filter string="En Acabado" name="en_acabado"
+                        domain="[('is_in_finishing', '=', True), ('state', '=', 'active')]"/>
+                <filter string="Acabado Terminado" name="acabado_terminado"
+                        domain="[('finishing_done_date', '!=', False)]"/>
+                <filter string="En Control de Calidad" name="en_calidad"
+                        domain="[('is_in_quality', '=', True), ('state', '=', 'active')]"/>
                 <group>
                     <filter string="Pedido" name="group_by_pedido_id" domain="[]" context="{'group_by': 'pedido_id'}"/>
                     <filter string="Producto" name="group_by_codpro" domain="[]" context="{'group_by': 'codpro'}"/>
@@ -200,6 +207,10 @@
                     <filter string="Area Responsable" name="group_by_area1" domain="[]" context="{'group_by': 'area1'}"/>
                     <filter string="Fecha Deseada" name="group_by_wish_date" domain="[]" context="{'group_by': 'wish_date:day'}"/>
                     <filter string="Siguiente Proceso" name="group_by_next_process" domain="[]" context="{'group_by': 'next_process'}"/>
+                    <filter string="Operaciones Acabado" name="group_by_finishing_ops" domain="[]" context="{'group_by': 'finishing_ops_group'}"/>
+                    <filter string="Mes Término Acabado" name="group_by_finishing_done_month" domain="[]" context="{'group_by': 'finishing_done_date:month'}"/>
+                    <filter string="Fecha Término Acabado" name="group_by_finishing_done_date" domain="[]" context="{'group_by': 'finishing_done_date:day'}"/>
+                    <filter string="En Calidad" name="group_by_in_quality" domain="[]" context="{'group_by': 'is_in_quality'}"/>
                 </group>
             </search>
         </field>
@@ -244,6 +255,54 @@
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_control_pedido_line_tree_by_fase"/>
         <field name="context">{"search_default_active": 1, "search_default_group_by_parent_operation": 1, "search_default_group_by_next_process": 2}</field>
+    </record>
+
+    <!-- Reporte pivot: Kilos de Acabado -->
+    <record id="view_control_partida_finishing_pivot" model="ir.ui.view">
+        <field name="name">control.pedido.line.finishing.pivot</field>
+        <field name="model">control.pedido.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Kilos de Acabado" sample="1">
+                <field name="finishing_ops_group" type="row"/>
+                <field name="kilograms" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_control_partida_finishing_kilos" model="ir.actions.act_window">
+        <field name="name">Kilos de Acabado</field>
+        <field name="res_model">control.pedido.line</field>
+        <field name="view_mode">pivot,list,form</field>
+        <field name="search_view_id" ref="control_pedido_line_view_search"/>
+        <field name="context">{"search_default_active": 1, "search_default_en_acabado": 1, "search_default_group_by_finishing_ops": 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Kilos de acabado por operaciones pendientes, fecha de término y control de calidad</p>
+            <p>Agrupa por "Operaciones Acabado" (#pendientes), "Fecha Término Acabado" o filtra "En Control de Calidad". Medida: Kilogramos.</p>
+        </field>
+    </record>
+
+    <!-- Kilos de Acabado Terminado: ya finalizado, agrupado por Mes > Día de término -->
+    <record id="action_control_partida_acabado_terminado" model="ir.actions.act_window">
+        <field name="name">Kilos de Acabado Terminado</field>
+        <field name="res_model">control.pedido.line</field>
+        <field name="view_mode">list,pivot,form</field>
+        <field name="search_view_id" ref="control_pedido_line_view_search"/>
+        <field name="context">{"search_default_active": 1, "search_default_acabado_terminado": 1, "search_default_group_by_finishing_done_month": 1, "search_default_group_by_finishing_done_date": 2}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Kilos de acabado terminado por mes y día de término</p>
+        </field>
+    </record>
+
+    <!-- Kilos en Control de Calidad: agrupado por Mes > Día de término de acabado -->
+    <record id="action_control_partida_calidad_kilos" model="ir.actions.act_window">
+        <field name="name">Kilos de C. Calidad</field>
+        <field name="res_model">control.pedido.line</field>
+        <field name="view_mode">list,pivot,form</field>
+        <field name="search_view_id" ref="control_pedido_line_view_search"/>
+        <field name="context">{"search_default_active": 1, "search_default_en_calidad": 1, "search_default_group_by_finishing_done_month": 1, "search_default_group_by_finishing_done_date": 2}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Kilos en control de calidad por mes y día de término de acabado</p>
+        </field>
     </record>
 
 </odoo>

@@ -33,6 +33,7 @@ luego armar las partidas
         'views/maintenance_equipment_views.xml',
         'views/mrp_menu.xml',
         'views/mrp_workorder_batch_views.xml',
+        'views/mrp_workcenter_views.xml',
     ],
     
     'assets': {

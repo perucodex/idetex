@@ -36,4 +36,28 @@
               sequence="50"
               parent="menu_sitpro_texplus"
               action="action_control_partida_kilos_by_fase"/>
+
+    <!-- Submenú Acabado dentro de Sitpro & Texplus -->
+    <menuitem id="menu_acabado_root"
+              name="Acabado"
+              parent="menu_sitpro_texplus"
+              sequence="60"/>
+
+    <menuitem id="menu_control_partida_finishing_kilos"
+              name="Kilos de Acabado"
+              sequence="10"
+              parent="menu_acabado_root"
+              action="action_control_partida_finishing_kilos"/>
+
+    <menuitem id="menu_control_partida_acabado_terminado"
+              name="Kilos de Acabado Terminado"
+              sequence="20"
+              parent="menu_acabado_root"
+              action="action_control_partida_acabado_terminado"/>
+
+    <menuitem id="menu_control_partida_calidad_kilos"
+              name="Kilos de C. Calidad"
+              sequence="30"
+              parent="menu_acabado_root"
+              action="action_control_partida_calidad_kilos"/>
 </odoo>
