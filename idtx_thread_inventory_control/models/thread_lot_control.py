@@ -60,7 +60,7 @@ class ThreadLotControlLine(models.Model):
     lot_id = fields.Many2one('stock.lot', string='Lot', related='control_id.lot_id', store=True)
     product_id = fields.Many2one('product.product', string='Product', related='control_id.product_id', store=True)
     date = fields.Date(string='Date', related='control_id.date', store=True)
-    movement_type = fields.Selection(_MOVEMENT_TYPES, string='Tipo Movimiento', related='control_id.movement_type', store=True)
+    movement_type = fields.Selection(string='Tipo Movimiento', related='control_id.movement_type', store=True)
     source_location_id = fields.Many2one('stock.location', string='Source Location', related='control_id.source_location_id', store=True)
     dest_location_id   = fields.Many2one('stock.location', string='Destination Location', related='control_id.dest_location_id', store=True)
     bag_qty    = fields.Integer(string='Bag Qty', default=1)

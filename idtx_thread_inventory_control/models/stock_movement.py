@@ -25,7 +25,9 @@ class StockMoveLine(models.Model):
 class StockMove(models.Model):
     _inherit = 'stock.move'
 
-    thread_is_thread        = fields.Boolean(string='Es Hilo', default=False)
+    # thread_is_thread se define en stock_move.py como related a
+    # product_id.is_thread (store=True). Aquí estaba duplicado con un
+    # default=False redundante sobre un campo related — se eliminó.
     thread_control_generated = fields.Boolean(string='Control Generado', default=False)
 
 

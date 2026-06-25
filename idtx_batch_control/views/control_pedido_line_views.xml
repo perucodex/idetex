@@ -196,6 +196,12 @@
                         domain="[('finishing_done_date', '!=', False)]"/>
                 <filter string="En Control de Calidad" name="en_calidad"
                         domain="[('is_in_quality', '=', True), ('state', '=', 'active')]"/>
+                <separator/>
+                <filter string="Término: Mes Actual" name="done_this_month"
+                        domain="[('finishing_done_date', '&gt;=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d')),
+                                 ('finishing_done_date', '&lt;', (context_today() + relativedelta(months=1, day=1)).strftime('%Y-%m-%d'))]"/>
+                <filter string="Término: Últimos 3 Meses" name="done_last_3_months"
+                        domain="[('finishing_done_date', '&gt;=', (context_today() + relativedelta(months=-2, day=1)).strftime('%Y-%m-%d'))]"/>
                 <group>
                     <filter string="Pedido" name="group_by_pedido_id" domain="[]" context="{'group_by': 'pedido_id'}"/>
                     <filter string="Producto" name="group_by_codpro" domain="[]" context="{'group_by': 'codpro'}"/>
@@ -285,11 +291,23 @@
     <record id="action_control_partida_acabado_terminado" model="ir.actions.act_window">
         <field name="name">Kilos de Acabado Terminado</field>
         <field name="res_model">control.pedido.line</field>
-        <field name="view_mode">list,pivot,form</field>
+        <field name="view_mode">list,graph,pivot,form</field>
         <field name="search_view_id" ref="control_pedido_line_view_search"/>
-        <field name="context">{"search_default_active": 1, "search_default_acabado_terminado": 1, "search_default_group_by_finishing_done_month": 1, "search_default_group_by_finishing_done_date": 2}</field>
+        <field name="context">{"search_default_acabado_terminado": 1, "search_default_group_by_finishing_done_month": 1, "search_default_group_by_finishing_done_date": 2}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">Kilos de acabado terminado por mes y día de término</p>
+        </field>
+    </record>
+
+    <!-- Gráfico: Kilos de acabado terminado por día -->
+    <record id="view_control_partida_finishing_done_graph" model="ir.ui.view">
+        <field name="name">control.pedido.line.finishing.done.graph</field>
+        <field name="model">control.pedido.line</field>
+        <field name="arch" type="xml">
+            <graph string="Kilos de Acabado Terminado por Día" type="bar" sample="1">
+                <field name="finishing_done_date" interval="day"/>
+                <field name="kilograms" type="measure"/>
+            </graph>
         </field>
     </record>
 
