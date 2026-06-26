@@ -175,6 +175,18 @@ class ControlPedido(models.Model):
     plan_dye_progress = fields.Float(
         '% Avance Teñido', compute='_compute_plan_dye_progress', store=True, digits=(5, 2),
         help="Kilos teñidos / kilos de OP × 100, topado a 100%.")
+    plan_weave_progress = fields.Float(
+        '% Avance Tejido', compute='_compute_plan_weave_progress', store=True, digits=(5, 2),
+        help="Kilos tejidos (produced_weight = suma de KNETO de tej_produccion.dbf "
+             "por OP, vía NUMORDPED/OT) / kilos de OP × 100, topado a 100%.")
+    plan_kilos_thermo = fields.Float(
+        'Kilos Termofijados', compute='_compute_plan_kilos_thermo', store=True, digits=(12, 2),
+        help="Suma de kilos de las partidas de la OP cuya fase de termofijado ya "
+             "está terminada (con fecha de inicio y fin). Fase = nombre con "
+             "'THERMOFIJADO' (excluye 'PREPARADO PARA TERMOFIJAR' y reprocesos).")
+    plan_thermo_progress = fields.Float(
+        '% Avance Termofijado', compute='_compute_plan_thermo_progress', store=True, digits=(5, 2),
+        help="Kilos termofijados / kilos de OP × 100, topado a 100%.")
     plan_kilos_finished = fields.Float(
         'Kilos Acabados', compute='_compute_plan_kilos_finished', store=True, digits=(12, 2),
         help="Suma de kilos de las partidas de la OP cuyo acabado ya está "
@@ -183,6 +195,14 @@ class ControlPedido(models.Model):
     plan_finish_progress = fields.Float(
         '% Avance Acabado', compute='_compute_plan_finish_progress', store=True, digits=(5, 2),
         help="Kilos acabados / kilos de OP × 100, topado a 100%.")
+    plan_schedule_alert = fields.Selection(
+        [('danger', 'Atrasado'), ('warning', 'Por vencer')],
+        string='Alerta Cronograma', compute='_compute_plan_schedule_alert',
+        help="Comparando cada proceso (tejido, termofijado si hay, teñido, "
+             "acabado) con su fecha final: si hoy ya pasó la fecha final del "
+             "proceso y su avance es ≤80% → Atrasado (rojo); si el avance está "
+             "entre 80% y 100% → Por vencer (naranja). NO almacenado: se "
+             "recalcula con la fecha de hoy cada vez que se abre la vista.")
     state = fields.Selection([
         ('on', 'On Time'),
         ('de', 'Delayed'),
@@ -319,6 +339,51 @@ class ControlPedido(models.Model):
             else:
                 rec.plan_dye_progress = 0.0
 
+    @staticmethod
+    def _is_thermo_phase_name(fas_name):
+        """True si el nombre de fase corresponde a TERMOFIJADO real: contiene
+        'THERMOFIJADO'. Excluye naturalmente 'PREPARADO PARA TERMOFIJAR'
+        (preparación, sin H y termina en -AR) y reprocesos."""
+        return 'THERMOFIJADO' in (fas_name or '').upper()
+
+    @api.depends('line_ids.kilograms', 'line_ids.proceso_ids.fasCod',
+                 'line_ids.proceso_ids.barFasDTI', 'line_ids.proceso_ids.barFasDTF')
+    def _compute_plan_kilos_thermo(self):
+        """Suma de kilos de las partidas cuya fase de termofijado está terminada:
+        alguna fase (proceso) con 'THERMOFIJADO' en el nombre (fasCod) con fecha
+        de inicio (barFasDTI) y de fin (barFasDTF). Mismo esquema que teñido."""
+        for rec in self:
+            total = 0.0
+            for line in rec.line_ids:
+                if any(p.barFasDTI and p.barFasDTF
+                       and self._is_thermo_phase_name(p.fasCod)
+                       for p in line.proceso_ids):
+                    total += line.kilograms or 0.0
+            rec.plan_kilos_thermo = total
+
+    @api.depends('plan_kilos_thermo', 'plan_kilos_to_dye')
+    def _compute_plan_thermo_progress(self):
+        """Porcentaje de avance de termofijado = kilos termofijados / kilos de OP
+        × 100, topado a 100%."""
+        for rec in self:
+            if rec.plan_kilos_to_dye:
+                rec.plan_thermo_progress = min(
+                    rec.plan_kilos_thermo / rec.plan_kilos_to_dye * 100.0, 100.0)
+            else:
+                rec.plan_thermo_progress = 0.0
+
+    @api.depends('produced_weight', 'plan_kilos_to_dye')
+    def _compute_plan_weave_progress(self):
+        """Porcentaje de avance de tejido = kilos tejidos (produced_weight, de
+        tej_produccion.dbf) / kilos de OP × 100, topado a 100% (se teje algo de
+        más, así que el tejido puede superar lo pedido)."""
+        for rec in self:
+            if rec.plan_kilos_to_dye:
+                rec.plan_weave_progress = min(
+                    rec.produced_weight / rec.plan_kilos_to_dye * 100.0, 100.0)
+            else:
+                rec.plan_weave_progress = 0.0
+
     @api.depends('line_ids.kilograms', 'line_ids.finishing_done_date')
     def _compute_plan_kilos_finished(self):
         """Suma de kilos de las partidas cuyo acabado está terminado: la partida
@@ -340,6 +405,42 @@ class ControlPedido(models.Model):
                     rec.plan_kilos_finished / rec.plan_kilos_to_dye * 100.0, 100.0)
             else:
                 rec.plan_finish_progress = 0.0
+
+    @api.depends('plan_weaving_end', 'plan_weave_progress',
+                 'plan_has_thermo', 'plan_thermo_end', 'plan_thermo_progress',
+                 'plan_dyeing_end', 'plan_dye_progress',
+                 'plan_finishing_end', 'plan_finish_progress')
+    def _compute_plan_schedule_alert(self):
+        """Alerta de cronograma. Solo cuenta el ÚLTIMO proceso CON AVANCE (>0%)
+        en la cadena tejido → termofijado (si hay) → teñido → acabado: los
+        procesos anteriores sin terminar no importan (su 0% suele ser un hueco de
+        medición, p. ej. tejido/teñido en 0 pero acabado al 99%). Sobre ese
+        proceso, comparando con SU fecha final:
+          - hoy ya pasó la fecha y avance ≤ 80% → Atrasado (danger / rojo)
+          - hoy ya pasó la fecha y 80% < avance < 100% → Por vencer (warning)
+          - en otro caso → sin alerta.
+        Si ningún proceso tiene avance, se evalúa el tejido (primer proceso).
+        NO almacenado: depende de la fecha de hoy, se recalcula al leer."""
+        today = fields.Date.context_today(self)
+        for rec in self:
+            chain = [(rec.plan_weaving_end, rec.plan_weave_progress)]
+            if rec.plan_has_thermo:
+                chain.append((rec.plan_thermo_end, rec.plan_thermo_progress))
+            chain.append((rec.plan_dyeing_end, rec.plan_dye_progress))
+            chain.append((rec.plan_finishing_end, rec.plan_finish_progress))
+            # Último proceso con avance > 0; si ninguno, el primero (tejido).
+            current = chain[0]
+            for end_date, progress in chain:
+                if progress > 0:
+                    current = (end_date, progress)
+            end_date, progress = current
+            alert = False
+            if end_date and today > end_date:
+                if progress <= 80.0:
+                    alert = 'danger'
+                elif progress < 100.0:
+                    alert = 'warning'
+            rec.plan_schedule_alert = alert
 
     @api.depends('line_ids','num_days','is_active')
     def _compute_state(self):

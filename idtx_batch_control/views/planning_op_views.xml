@@ -4,15 +4,23 @@
         <field name="name">control.pedido.planning.list</field>
         <field name="model">control.pedido</field>
         <field name="arch" type="xml">
-            <list string="Planning por OP" create="0" edit="0">
+            <list string="Planning por OP" create="0" edit="0" default_order="feccc desc, numordped desc"
+                  decoration-danger="plan_schedule_alert == 'danger'"
+                  decoration-warning="plan_schedule_alert == 'warning'">
+                <field name="plan_schedule_alert" column_invisible="1"/>
                 <field name="numordped"/>
+                <field name="customer" optional="hide"/>
                 <field name="feccc"/>
                 <field name="plan_kilos_to_dye" string="Kilos de OP" sum="Total"/>
                 <field name="plan_weaving_start"/>
                 <field name="plan_weaving_end"/>
+                <field name="produced_weight" string="Kilos Tejidos" sum="Total"/>
+                <field name="plan_weave_progress" string="% Avance Tejido" widget="progressbar"/>
                 <!-- <field name="plan_has_thermo" widget="boolean_toggle"/> -->
                 <field name="plan_thermo_start"/>
                 <field name="plan_thermo_end"/>
+                <field name="plan_kilos_thermo" string="Kilos Termofijados" sum="Total" optional="show"/>
+                <field name="plan_thermo_progress" string="% Avance Termofijado" widget="progressbar" optional="show"/>
                 <field name="plan_dyeing_start"/>
                 <field name="plan_dyeing_end"/>
                 <field name="plan_kilos_dyed" string="Kilos Teñidos" sum="Total"/>
