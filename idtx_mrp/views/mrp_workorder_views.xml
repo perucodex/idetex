@@ -32,6 +32,9 @@
             </xpath>
             <xpath expr="//field[@name='qty_remaining']" position="after">
                 <field name="operation_type"/>
+                <field name="estimated_rate_kg_h" invisible="operation_type != 'weaving'"/>
+                <field name="estimated_roll_count" invisible="operation_type != 'weaving'"/>
+                <field name="weaving_estimate_warning" invisible="operation_type != 'weaving' or not weaving_estimate_warning"/>
             </xpath>
             <xpath expr="//field[@name='qty_produced']" position="attributes">
                 <attribute name="readonly">1</attribute>
@@ -43,6 +46,7 @@
                             <field name="name" readonly="1" force_save="1"/>
                             <field name="employee_ids" widget="many2many_tags"/>
                             <field name="equipment_ids" widget="many2many_tags" domain="[('workcenter_id','=',parent.workcenter_id)]"/>
+                            <field name="estimated_rate_kg_h" readonly="1"/>
                             <!-- <field name="option_line_ids" widget="many2many_tags" readonly="1" force_save="1"/> -->
                         </list>
                     </field>

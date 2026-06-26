@@ -16,6 +16,9 @@
                         <field name="equipment_ids" widget="many2many_tags" required="1" domain="[('workcenter_id','=',workcenter_id)]"/>
                         <field name="available_thread_product_ids" invisible="1"/>
                         <field name="notes"/>
+                        <field name="weight_per_rev_g" readonly="1"/>
+                        <field name="estimated_rate_kg_h" readonly="1"/>
+                        <field name="weaving_estimate_warning" readonly="1" invisible="not weaving_estimate_warning"/>
                     </group>
                     <separator string="Option Lines"/>
                     <field name="option_line_ids">

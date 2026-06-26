@@ -13,6 +13,8 @@
                 <xpath expr="//field[@name='serial_no']" position="after">
                     <field name="capacity_power"/>
                     <field name="manufacture_year"/>
+                    <field name="rpm"/>
+                    <field name="efficiency"/>
                 </xpath>
                 <xpath expr="//field[@name='warranty_date']" position="after">
                     <field name="machine_state" widget="radio" string="Estado de Máquina"/>

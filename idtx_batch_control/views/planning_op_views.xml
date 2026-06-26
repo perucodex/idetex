@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_planning_op_tree" model="ir.ui.view">
+        <field name="name">control.pedido.planning.list</field>
+        <field name="model">control.pedido</field>
+        <field name="arch" type="xml">
+            <list string="Planning por OP" create="0" edit="0">
+                <field name="numordped"/>
+                <field name="feccc"/>
+                <field name="plan_kilos_to_dye" string="Kilos de OP" sum="Total"/>
+                <field name="plan_weaving_start"/>
+                <field name="plan_weaving_end"/>
+                <field name="plan_has_thermo" widget="boolean_toggle"/>
+                <field name="plan_thermo_start"/>
+                <field name="plan_thermo_end"/>
+                <field name="plan_dyeing_start"/>
+                <field name="plan_dyeing_end"/>
+                <field name="plan_kilos_dyed" string="Kilos Teñidos" sum="Total"/>
+                <field name="plan_dye_progress" string="% Avance Teñido" widget="progressbar"/>
+                <field name="plan_finishing_start"/>
+                <field name="plan_finishing_end"/>
+                <field name="plan_kilos_finished" string="Kilos Acabados" sum="Total"/>
+                <field name="plan_finish_progress" string="% Avance Acabado" widget="progressbar"/>
+                <field name="state" widget="badge" optional="hide"
+                       decoration-danger="state == 'de'"
+                       decoration-info="state == 'on'"
+                       decoration-success="state == 'do'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_planning_op_search" model="ir.ui.view">
+        <field name="name">control.pedido.planning.search</field>
+        <field name="model">control.pedido</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="numordped"/>
+                <field name="customer"/>
+                <filter name="planning_pending" string="En proceso"
+                        domain="[('state', 'in', ['on', 'de'])]"/>
+                <filter name="planning_with_thermo" string="Con Termofijado"
+                        domain="[('plan_has_thermo', '=', True)]"/>
+                <filter name="planning_has_feccc" string="Con Fecha Aprobación"
+                        domain="[('feccc', '!=', False)]"/>
+                <group>
+                    <filter name="group_by_customer" string="Cliente" domain="[]"
+                            context="{'group_by': 'customer'}"/>
+                    <filter name="group_by_weaving_start" string="Inicio Tejido" domain="[]"
+                            context="{'group_by': 'plan_weaving_start:week'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_planning_op" model="ir.actions.act_window">
+        <field name="name">Planning por OP</field>
+        <field name="res_model">control.pedido</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_planning_op_tree"/>
+        <field name="search_view_id" ref="view_planning_op_search"/>
+        <field name="domain">[('state', '!=', 'se')]</field>
+        <field name="context">{"search_default_planning_pending": 1, "search_default_planning_has_feccc": 1}</field>
+    </record>
+</odoo>

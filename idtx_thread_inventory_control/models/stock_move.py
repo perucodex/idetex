@@ -11,6 +11,9 @@ class StockPicking(models.Model):
     thread_received_bag_count = fields.Integer(
         compute="_compute_thread_received_bag_count", string="N° Bolsas Recibidas",
     )
+    thread_liquidation_production_id = fields.Many2one(
+        "mrp.production", string="Orden de Producción (Liquidación)", index=True,
+    )
 
     def _compute_thread_received_bag_count(self):
         for picking in self:
@@ -45,6 +48,7 @@ class StockMove(models.Model):
     thread_selected_bag_count = fields.Integer(
         string="Bolsas Seleccionadas (n)", compute="_compute_thread_selected", store=True,
     )
+    thread_control_generated = fields.Boolean(string="Control Generado", default=False)
 
     @api.depends("thread_bag_ids", "thread_bag_ids.net_weight")
     def _compute_thread_selected(self):
@@ -160,3 +164,18 @@ class StockMove(models.Model):
                 # Salida (cliente / scrap / etc.).
                 bags.action_mark_consumed(picking=move.picking_id, location=dest)
         return done_moves
+
+
+class StockMoveLine(models.Model):
+    _inherit = "stock.move.line"
+
+    thread_bag_qty = fields.Integer(string="Bolsas", default=0)
+    thread_cone_qty = fields.Integer(string="Conos/Bolsa", default=0)
+    thread_cone_weight = fields.Float(string="Peso Cono (kg)", digits=(12, 4), default=0.0)
+    thread_total_cones = fields.Integer(
+        compute="_compute_thread_totals", string="Total Conos",
+    )
+
+    def _compute_thread_totals(self):
+        for rec in self:
+            rec.thread_total_cones = rec.thread_bag_qty * rec.thread_cone_qty

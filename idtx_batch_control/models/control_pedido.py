@@ -131,6 +131,58 @@ class ControlPedido(models.Model):
     area = fields.Char('Area', compute='_compute_process', store=True)
     is_active = fields.Boolean('is_active?')
     num_days = fields.Integer('Number of Days', compute='_compute_num_days', store=True)
+    # --- Planning por OP: fechas estimadas a partir de feccc (Fecha Aprobación) ---
+    plan_has_thermo = fields.Boolean(
+        'Tiene Termofijado', compute='_compute_plan_has_thermo', store=True,
+        help="Verdadero si algún producto del pedido tiene una fase cuyo nombre "
+             "contiene 'THERMO' en la ruta de su ficha técnica.")
+    plan_weaving_start = fields.Date(
+        'Inicio Tejido', compute='_compute_plan_dates', store=True,
+        help="Fecha Aprobación (feccc) + 2 días hábiles (excl. domingos).")
+    plan_weaving_end = fields.Date(
+        'Fin Tejido', compute='_compute_plan_dates', store=True,
+        help="Inicio de tejido + 7 días hábiles (excl. domingos).")
+    plan_thermo_start = fields.Date(
+        'Inicio Termofijado', compute='_compute_plan_dates', store=True,
+        help="Inicio de tejido + 2 días hábiles (excl. domingos). Solo si el "
+             "pedido tiene termofijado.")
+    plan_thermo_end = fields.Date(
+        'Fin Termofijado', compute='_compute_plan_dates', store=True,
+        help="Inicio de termofijado + 7 días hábiles (excl. domingos). Solo si "
+             "el pedido tiene termofijado.")
+    plan_dyeing_start = fields.Date(
+        'Inicio Teñido', compute='_compute_plan_dates', store=True,
+        help="Fin de tejido.")
+    plan_dyeing_end = fields.Date(
+        'Fin Teñido', compute='_compute_plan_dates', store=True,
+        help="Inicio de teñido + 14 días hábiles (excl. domingos).")
+    plan_finishing_start = fields.Date(
+        'Inicio Acabado', compute='_compute_plan_dates', store=True,
+        help="Fin de teñido.")
+    plan_finishing_end = fields.Date(
+        'Fin Acabado', compute='_compute_plan_dates', store=True,
+        help="Inicio de acabado + 14 días hábiles (excl. domingos).")
+    plan_kilos_to_dye = fields.Float(
+        'Kilos de OP', compute='_compute_plan_kilos_to_dye', store=True, digits=(12, 2),
+        help="Total de kilos pedidos de la OP (TOTKIL / total_weight): suma de "
+             "los kilos de todos los productos del pedido. Es el denominador del "
+             "% de avance de teñido y de acabado.")
+    plan_kilos_dyed = fields.Float(
+        'Kilos Teñidos', compute='_compute_plan_kilos_dyed', store=True, digits=(12, 2),
+        help="Suma de kilos de las partidas de la OP cuya fase de teñido ya está "
+             "terminada (con fecha de inicio y fin). Fase de teñido = nombre con "
+             "'TEÑIDO', excluyendo RETEÑIDO y SUAVIZADO EN MAQ TEÑIDO.")
+    plan_dye_progress = fields.Float(
+        '% Avance Teñido', compute='_compute_plan_dye_progress', store=True, digits=(5, 2),
+        help="Kilos teñidos / kilos de OP × 100, topado a 100%.")
+    plan_kilos_finished = fields.Float(
+        'Kilos Acabados', compute='_compute_plan_kilos_finished', store=True, digits=(12, 2),
+        help="Suma de kilos de las partidas de la OP cuyo acabado ya está "
+             "terminado (todas sus operaciones de acabado cerradas; campo "
+             "finishing_done_date de la partida).")
+    plan_finish_progress = fields.Float(
+        '% Avance Acabado', compute='_compute_plan_finish_progress', store=True, digits=(5, 2),
+        help="Kilos acabados / kilos de OP × 100, topado a 100%.")
     state = fields.Selection([
         ('on', 'On Time'),
         ('de', 'Delayed'),
@@ -157,6 +209,137 @@ class ControlPedido(models.Model):
                     days += 1
                 current += datetime.timedelta(days=1)
             rec.num_days = days
+
+    @api.depends('line_ids.product_id')
+    def _compute_plan_has_thermo(self):
+        """Verdadero si algún producto del pedido tiene una operación cuyo
+        nombre contiene 'THERMO' en la ruta de su ficha técnica. Se calcula en
+        lote: una sola consulta para el conjunto de productos con termofijado."""
+        thermo_ops = self.env['mrp.routing.workcenter.operation'].sudo().search(
+            [('name', 'ilike', 'THERMO')])
+        thermo_product_ids = set()
+        if thermo_ops:
+            route_lines = self.env['technical.route.line'].sudo().search(
+                [('operation_id', 'in', thermo_ops.ids)])
+            analyses = route_lines.mapped('technical_id.analysis_id')
+            if analyses:
+                products = self.env['product.template'].sudo().search(
+                    [('analysis_id', 'in', analyses.ids)])
+                thermo_product_ids = set(products.ids)
+        for rec in self:
+            rec.plan_has_thermo = bool(thermo_product_ids & set(rec.line_ids.product_id.ids))
+
+    @api.depends('feccc', 'plan_has_thermo')
+    def _compute_plan_dates(self):
+        """Fechas estimadas de planning desde feccc (Fecha Aprobación),
+        contando solo días hábiles (se EXCLUYEN los domingos): los offsets
+        +2/+7/+14 saltan domingos y ninguna fecha resultante cae en domingo.
+          - Tejido: inicio = feccc + 2; fin = inicio + 7.
+          - Termofijado (solo si plan_has_thermo): inicio = inicio tejido + 2;
+            fin = inicio + 7.
+          - Teñido: inicio = fin de tejido; fin = inicio + 14.
+          - Acabado: inicio = fin de teñido; fin = inicio + 14.
+        """
+        def add_days(start, n):
+            # Avanza n días saltando domingos (weekday() == 6). El resultado
+            # nunca cae en domingo (el último día contado es no-domingo).
+            d = start
+            added = 0
+            while added < n:
+                d += datetime.timedelta(days=1)
+                if d.weekday() != 6:
+                    added += 1
+            return d
+        for rec in self:
+            base = rec.feccc
+            if not base:
+                rec.plan_weaving_start = rec.plan_weaving_end = False
+                rec.plan_thermo_start = rec.plan_thermo_end = False
+                rec.plan_dyeing_start = rec.plan_dyeing_end = False
+                rec.plan_finishing_start = rec.plan_finishing_end = False
+                continue
+            weaving_start = add_days(base, 2)
+            weaving_end = add_days(weaving_start, 7)
+            rec.plan_weaving_start = weaving_start
+            rec.plan_weaving_end = weaving_end
+            if rec.plan_has_thermo:
+                thermo_start = add_days(weaving_start, 2)
+                rec.plan_thermo_start = thermo_start
+                rec.plan_thermo_end = add_days(thermo_start, 7)
+            else:
+                rec.plan_thermo_start = rec.plan_thermo_end = False
+            dyeing_start = weaving_end
+            dyeing_end = add_days(dyeing_start, 14)
+            rec.plan_dyeing_start = dyeing_start
+            rec.plan_dyeing_end = dyeing_end
+            rec.plan_finishing_start = dyeing_end
+            rec.plan_finishing_end = add_days(dyeing_end, 14)
+
+    @api.depends('total_weight')
+    def _compute_plan_kilos_to_dye(self):
+        """Kilos a teñir = total de kilos pedidos de la OP (TOTKIL =
+        total_weight, la suma de los kilos de todos los productos del pedido).
+        OJO: NO usar la suma de partidas (line_ids) — esas son la producción
+        real (parcial o con reprocesos) y no el total pedido."""
+        for rec in self:
+            rec.plan_kilos_to_dye = rec.total_weight
+
+    @staticmethod
+    def _is_dyeing_phase_name(fas_name):
+        """True si el nombre de fase corresponde a TEÑIDO real: contiene
+        'TEÑIDO' pero NO 'RETEÑIDO' (re-teñido/reproceso) ni 'SUAVIZADO'
+        (suavizado hecho en máquina de teñido, no es teñido)."""
+        name = (fas_name or '').upper()
+        return 'TEÑIDO' in name and 'RETEÑIDO' not in name and 'SUAVIZADO' not in name
+
+    @api.depends('line_ids.kilograms', 'line_ids.proceso_ids.fasCod',
+                 'line_ids.proceso_ids.barFasDTI', 'line_ids.proceso_ids.barFasDTF')
+    def _compute_plan_kilos_dyed(self):
+        """Suma de kilos de las partidas (líneas) cuya fase de teñido está
+        terminada: alguna fase (proceso) de teñido real (ver
+        `_is_dyeing_phase_name`) con fecha de inicio (barFasDTI) y de fin
+        (barFasDTF)."""
+        for rec in self:
+            total = 0.0
+            for line in rec.line_ids:
+                if any(p.barFasDTI and p.barFasDTF
+                       and self._is_dyeing_phase_name(p.fasCod)
+                       for p in line.proceso_ids):
+                    total += line.kilograms or 0.0
+            rec.plan_kilos_dyed = total
+
+    @api.depends('plan_kilos_dyed', 'plan_kilos_to_dye')
+    def _compute_plan_dye_progress(self):
+        """Porcentaje de avance de teñido = kilos teñidos / kilos de OP × 100,
+        topado a 100% (puede haber reprocesos donde lo teñido supera lo pedido)."""
+        for rec in self:
+            if rec.plan_kilos_to_dye:
+                rec.plan_dye_progress = min(
+                    rec.plan_kilos_dyed / rec.plan_kilos_to_dye * 100.0, 100.0)
+            else:
+                rec.plan_dye_progress = 0.0
+
+    @api.depends('line_ids.kilograms', 'line_ids.finishing_done_date')
+    def _compute_plan_kilos_finished(self):
+        """Suma de kilos de las partidas cuyo acabado está terminado: la partida
+        tiene finishing_done_date (todas sus operaciones de acabado cerradas)."""
+        for rec in self:
+            rec.plan_kilos_finished = sum(
+                line.kilograms or 0.0
+                for line in rec.line_ids
+                if line.finishing_done_date
+            )
+
+    @api.depends('plan_kilos_finished', 'plan_kilos_to_dye')
+    def _compute_plan_finish_progress(self):
+        """Porcentaje de avance de acabado = kilos acabados / kilos de OP × 100,
+        topado a 100%."""
+        for rec in self:
+            if rec.plan_kilos_to_dye:
+                rec.plan_finish_progress = min(
+                    rec.plan_kilos_finished / rec.plan_kilos_to_dye * 100.0, 100.0)
+            else:
+                rec.plan_finish_progress = 0.0
 
     @api.depends('line_ids','num_days','is_active')
     def _compute_state(self):

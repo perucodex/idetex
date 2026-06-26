@@ -16,7 +16,7 @@ de foxpro (dbf) SITPRO y conección con MSSql server para obtener data del TEXPL
     # Check https://github.com/odoo/odoo/blob/15.0/odoo/addons/base/data/ir_module_category_data.xml
     # for the full list
     'category': 'Uncategorized',
-    'version': '19.0.0.0',
+    'version': '19.0.0.4',
     'license': 'LGPL-3',
 
     # any module necessary for this one to work correctly
@@ -37,6 +37,7 @@ de foxpro (dbf) SITPRO y conección con MSSql server para obtener data del TEXPL
         'views/control_pedido_line_views.xml',
         'views/control_faspro_definition_views.xml',
         'views/control_pedido_views.xml',
+        'views/planning_op_views.xml',
         'views/menus.xml',
         'views/kiosk_templates.xml',
     ],

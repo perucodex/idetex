@@ -26,6 +26,7 @@ Módulo base para los desarrollos de producción para empresas textiles
             'portal',
             'mrp_workorder',
             'mrp_maintenance',
+            'idtx_maintenance',
         ],
 
     # always loaded

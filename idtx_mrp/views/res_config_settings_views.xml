@@ -20,6 +20,13 @@
                             </div>
                         </setting>
                     </block>
+                    <block title="Tejeduría" name="mrp_weaving_block">
+                        <setting id="mrp_weaving_setting"
+                                help="Parámetros para estimar el tiempo de las órdenes de trabajo de tejido (TEJIDO CRUDO).">
+                            <field name="weaving_weight_per_roll"/>
+                            <field name="weaving_default_efficiency"/>
+                        </setting>
+                    </block>
                 </xpath>
             </field>
         </record>

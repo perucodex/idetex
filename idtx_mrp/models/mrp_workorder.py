@@ -1,3 +1,6 @@
+import math
+import re
+
 from odoo import _, models, fields, api
 from odoo.exceptions import UserError
 
@@ -10,6 +13,119 @@ class MrpWorkorder(models.Model):
     batch_ids = fields.Many2many('mrp.workorder.batch', string='Batchs')
     equipment_ids = fields.Many2many('maintenance.equipment', string='Equipments')
     option_ids = fields.One2many('mrp.workorder.option', 'workorder_id', string='Options')
+
+    # --- Estimación de tiempo de tejido (TEJIDO CRUDO) ---
+    estimated_rate_kg_h = fields.Float(
+        'Producción Estimada (kg/h)', compute='_compute_weaving_aggregate',
+        digits=(16, 2),
+        help="Suma de la producción estimada de todas las máquinas de las opciones (corren en paralelo).")
+    estimated_roll_count = fields.Integer(
+        'Rollos Estimados', compute='_compute_weaving_aggregate',
+        help="Cantidad de rollos = techo(kg a producir / peso por rollo de la configuración).")
+    weaving_estimate_warning = fields.Char(
+        'Aviso de Estimación', compute='_compute_weaving_aggregate',
+        help="Motivo por el que no se pudo estimar la duración (datos faltantes).")
+
+    # ------------------------------------------------------------------
+    # Cálculo de tiempo de tejido de punto en máquinas circulares.
+    # Producción por CONSUMO DE HILO (no necesita pasadas/cm ni gramaje):
+    #   tex_fibra = cabos * 590.5 / Ne   (título Ne del maestro de hilados)
+    #   g/vuelta  = N(agujas) * F(alimentadores) * Σ_fibras(long_malla_mm * tex / 1e6)
+    #   kg/h (1 máq) = RPM * eficiencia * g/vuelta * 60 / 1000
+    #   tiempo(min)  = kg_totales / Σ(kg/h de cada máquina) * 60
+    # long_malla viene de la ficha técnica (analysis.fiber.length, mm); el
+    # título/cabos del hilo viene del producto de hilo (fiber.product_template_id,
+    # campos thread_titulo_id/thread_cabos_id de idtx_thread_codigo).
+    # weave_type (tubular/open) NO afecta el peso tejido por vuelta.
+    # Nota: se asume sistema Ne (algodón); hilos filamento (denier) no se cubren.
+    # ------------------------------------------------------------------
+    def _get_weaving_analysis(self):
+        """Ficha técnica (product.analysis) del producto de la OT, o recordset
+        vacío. Acceso defensivo: no rompe si idtx_product_development no está."""
+        self.ensure_one()
+        if 'product.analysis' not in self.env:
+            return None
+        Analysis = self.env['product.analysis']
+        tmpl = self.product_id.product_tmpl_id
+        if tmpl and 'analysis_id' in tmpl._fields and tmpl.analysis_id:
+            return tmpl.analysis_id
+        return Analysis.browse()
+
+    @api.model
+    def _first_int(self, value):
+        """Primer entero contenido en un texto ('030'->30, '30/1'->30)."""
+        if value is None:
+            return 0
+        m = re.search(r'\d+', str(value))
+        return int(m.group()) if m else 0
+
+    def _fiber_tex(self, fiber):
+        """Densidad lineal del hilo de la fibra en tex (g/1000 m).
+        Título (Ne, algodón) y cabos desde el producto de hilo: tex = cabos*590.5/Ne."""
+        tmpl = fiber.product_template_id
+        if not tmpl or 'thread_titulo_id' not in tmpl._fields:
+            return 0.0
+        titulo = tmpl.thread_titulo_id
+        ne = self._first_int(titulo.code or titulo.name) if titulo else 0
+        if ne <= 0:
+            return 0.0
+        plies = self._first_int(tmpl.thread_cabos_id.code) if tmpl.thread_cabos_id else 0
+        return (plies or 1) * 590.5 / ne
+
+    def _weaving_g_per_revolution(self, analysis):
+        """Gramos de tela tejidos por una vuelta completa de la máquina."""
+        if not analysis:
+            return 0.0
+        N = analysis.needles or 0
+        F = analysis.feeders or 0
+        if not (N and F):
+            return 0.0
+        wdata = analysis.weaving_data_ids[:1]
+        if not wdata:
+            return 0.0
+        g_per_loop = 0.0
+        for fiber in wdata.fiber_ids:
+            sl_mm = fiber.length or 0.0
+            tex = self._fiber_tex(fiber)
+            if sl_mm > 0 and tex > 0:
+                g_per_loop += sl_mm * tex / 1.0e6
+        return N * F * g_per_loop
+
+    @api.depends('operation_type', 'qty_production',
+                 'option_ids', 'option_ids.estimated_rate_kg_h',
+                 'option_ids.weaving_estimate_warning',
+                 'company_id.weaving_weight_per_roll')
+    def _compute_weaving_aggregate(self):
+        for wo in self:
+            wo.estimated_rate_kg_h = 0.0
+            wo.estimated_roll_count = 0
+            wo.weaving_estimate_warning = False
+            if wo.operation_type != 'weaving':
+                continue
+            wo.estimated_rate_kg_h = sum(wo.option_ids.mapped('estimated_rate_kg_h'))
+            company = wo.company_id or self.env.company
+            per_roll = company.weaving_weight_per_roll or 0.0
+            qty = wo.qty_production or 0.0
+            if per_roll > 0 and qty > 0:
+                wo.estimated_roll_count = int(math.ceil(qty / per_roll))
+            warnings = [w for w in wo.option_ids.mapped('weaving_estimate_warning') if w]
+            if not wo.option_ids:
+                wo.weaving_estimate_warning = _("Crea una opción con máquinas para estimar el tiempo.")
+            elif warnings:
+                wo.weaving_estimate_warning = warnings[0]
+
+    @api.depends('operation_id', 'workcenter_id', 'qty_producing', 'qty_production',
+                 'operation_type', 'option_ids', 'option_ids.estimated_rate_kg_h')
+    def _compute_duration_expected(self):
+        # Comportamiento estándar para todas (capacidad de la operación, etc.).
+        super()._compute_duration_expected()
+        # Para tejido, sobreescribimos con la estimación por producción cuando
+        # hay un ritmo calculable; si no, queda el valor estándar.
+        for wo in self.filtered(lambda w: w.operation_type == 'weaving' and w.state not in ('done', 'cancel')):
+            rate = sum(wo.option_ids.mapped('estimated_rate_kg_h'))
+            qty = wo.qty_production or 0.0
+            if rate > 0 and qty > 0:
+                wo.duration_expected = qty / rate * 60.0
 
     @api.onchange('mrwo_id')
     def _onchange_mrwo_id(self):
@@ -93,6 +209,60 @@ class MrpWorkorderOption(models.Model):
         compute='_compute_available_thread_products',
         string='Available Thread Products'
     )
+
+    # --- Estimación de tejido por opción ---
+    estimated_rate_kg_h = fields.Float(
+        'Producción Estimada (kg/h)', compute='_compute_weaving_estimate', digits=(16, 2),
+        help="Producción estimada de esta opción (suma de sus máquinas).")
+    weight_per_rev_g = fields.Float(
+        'Peso por Vuelta (g)', compute='_compute_weaving_estimate', digits=(16, 4),
+        help="Gramos de tela tejidos por una vuelta de la máquina, según la ficha técnica.")
+    weaving_estimate_warning = fields.Char(
+        'Aviso de Estimación', compute='_compute_weaving_estimate')
+
+    # Nota: NO se puede depender de `...product_tmpl_id.analysis_id` porque
+    # idtx_mrp carga antes que idtx_product_development (que define analysis_id).
+    # El campo es no-almacenado: se recalcula al leerlo, así que basta con
+    # depender del producto y de las máquinas/eficiencia.
+    @api.depends('equipment_ids', 'equipment_ids.rpm', 'equipment_ids.efficiency',
+                 'workorder_id.operation_type', 'workorder_id.product_id',
+                 'workorder_id.company_id.weaving_default_efficiency')
+    def _compute_weaving_estimate(self):
+        for opt in self:
+            opt.estimated_rate_kg_h = 0.0
+            opt.weight_per_rev_g = 0.0
+            opt.weaving_estimate_warning = False
+            wo = opt.workorder_id
+            if not wo or wo.operation_type != 'weaving':
+                continue
+            analysis = wo._get_weaving_analysis()
+            if not analysis:
+                opt.weaving_estimate_warning = _("Sin ficha técnica (análisis) en el producto.")
+                continue
+            g_rev = wo._weaving_g_per_revolution(analysis)
+            if g_rev <= 0:
+                opt.weaving_estimate_warning = _("Faltan agujas/alimentadores o datos de hilo en la ficha.")
+                continue
+            opt.weight_per_rev_g = g_rev
+            company = wo.company_id or self.env.company
+            default_eff = company.weaving_default_efficiency or 0.0
+            rate = 0.0
+            machine_without_rpm = False
+            for eq in opt.equipment_ids:
+                rpm = eq.rpm or 0.0
+                if rpm <= 0:
+                    machine_without_rpm = True
+                    continue
+                eff_pct = eq.efficiency if eq.efficiency > 0 else default_eff
+                eff = (eff_pct or 0.0) / 100.0
+                rate += rpm * eff * g_rev * 60.0 / 1000.0
+            opt.estimated_rate_kg_h = rate
+            if rate <= 0:
+                opt.weaving_estimate_warning = (
+                    _("Asigna máquinas con RPM configurado.") if opt.equipment_ids
+                    else _("Sin máquinas asignadas."))
+            elif machine_without_rpm:
+                opt.weaving_estimate_warning = _("Alguna máquina no tiene RPM; no se cuenta en el cálculo.")
 
     @api.model
     def default_get(self, fields):

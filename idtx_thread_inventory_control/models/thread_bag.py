@@ -169,40 +169,6 @@ class ThreadBag(models.Model):
         })
 
 
-class StockLot(models.Model):
-    _inherit = "stock.lot"
-
-    thread_bag_ids = fields.One2many("thread.bag", "lot_id", string="Bolsas de Hilo")
-    thread_bag_count = fields.Integer(
-        string="Bolsas Disponibles", compute="_compute_thread_totals",
-    )
-    thread_available_net = fields.Float(
-        string="Kg Disponibles", compute="_compute_thread_totals", digits=(16, 3),
-    )
-    thread_cone_count = fields.Integer(
-        string="Conos Disponibles", compute="_compute_thread_totals",
-    )
-
-    @api.depends("thread_bag_ids.state", "thread_bag_ids.net_weight", "thread_bag_ids.cone_qty")
-    def _compute_thread_totals(self):
-        for lot in self:
-            avail = lot.thread_bag_ids.filtered(lambda b: b.state == "available")
-            lot.thread_bag_count = len(avail)
-            lot.thread_available_net = sum(avail.mapped("net_weight"))
-            lot.thread_cone_count = sum(avail.mapped("cone_qty"))
-
-    def action_view_thread_bags(self):
-        self.ensure_one()
-        return {
-            "type": "ir.actions.act_window",
-            "name": _("Bolsas de %s") % self.name,
-            "res_model": "thread.bag",
-            "view_mode": "list,form",
-            "domain": [("lot_id", "=", self.id)],
-            "context": {"default_lot_id": self.id, "default_product_id": self.product_id.id},
-        }
-
-
 class ProductTemplate(models.Model):
     _inherit = "product.template"
 

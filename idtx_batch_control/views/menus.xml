@@ -13,10 +13,16 @@
               parent="menu_sitpro_texplus" 
               action="action_control_pedido"/>
 
-    <menuitem id="menu_control_partida" 
-              name="Partidas" 
-              sequence="20" 
-              parent="menu_sitpro_texplus" 
+    <menuitem id="menu_planning_op"
+              name="Planning por OP"
+              sequence="15"
+              parent="menu_sitpro_texplus"
+              action="action_planning_op"/>
+
+    <menuitem id="menu_control_partida"
+              name="Partidas"
+              sequence="20"
+              parent="menu_sitpro_texplus"
               action="action_control_partida"/>
 
     <menuitem id="menu_control_faspro_definition" 
