@@ -38,10 +38,12 @@
                 <field name="customer"/>
                 <filter name="planning_pending" string="En proceso"
                         domain="[('state', 'in', ['on', 'de'])]"/>
-                <filter name="planning_with_thermo" string="Con Termofijado"
-                        domain="[('plan_has_thermo', '=', True)]"/>
+                <separator/>
                 <filter name="planning_has_feccc" string="Con Fecha Aprobación"
                         domain="[('feccc', '!=', False)]"/>
+                <separator/>
+                <filter name="planning_with_thermo" string="Con Termofijado"
+                        domain="[('plan_has_thermo', '=', True)]"/>
                 <group>
                     <filter name="group_by_customer" string="Cliente" domain="[]"
                             context="{'group_by': 'customer'}"/>
