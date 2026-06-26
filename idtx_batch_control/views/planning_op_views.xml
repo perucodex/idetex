@@ -10,7 +10,7 @@
                 <field name="plan_kilos_to_dye" string="Kilos de OP" sum="Total"/>
                 <field name="plan_weaving_start"/>
                 <field name="plan_weaving_end"/>
-                <field name="plan_has_thermo" widget="boolean_toggle"/>
+                <!-- <field name="plan_has_thermo" widget="boolean_toggle"/> -->
                 <field name="plan_thermo_start"/>
                 <field name="plan_thermo_end"/>
                 <field name="plan_dyeing_start"/>
