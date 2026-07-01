@@ -107,7 +107,7 @@ class ControlPedido(models.Model):
     _name = "control.pedido"
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = "Control de Pedido"
-    _order = "num_days desc, state desc, fecoc desc, numordped desc"
+    _order = "fecoc desc, numordped desc, num_days desc, state desc"
     _rec_name = 'numordped'
 
     fecha = fields.Date(string="Order Date")
