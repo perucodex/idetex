@@ -150,6 +150,18 @@ export class PlannerView extends Component {
     async _load() {
         this.st.loading = true;
         this.st.error   = null;
+
+        // === VACIADO TEMPORAL =================================================
+        // El planner se alimentará desde otra fuente de datos. Mientras tanto no
+        // consultamos control.pedido(.line): dejamos las tareas vacías para que
+        // la vista cargue sin leer registros. La UI queda intacta.
+        // Para reconectar: borra este bloque hasta el `return`.
+        this.st.tasks     = [];
+        this._renderCache = null;
+        this.st.loading   = false;
+        return;
+        // === FIN VACIADO TEMPORAL (código original intacto debajo) ============
+
         try {
             const selIds = this.st.selIds || [];
             if (!selIds.length) {
@@ -601,6 +613,15 @@ export class PlannerView extends Component {
         this.st.picker.open    = true;
         this.st.picker.loading = true;
         this.st.picker.search  = '';
+
+        // === VACIADO TEMPORAL: modal sin registros (nueva fuente de datos).
+        // Para reconectar: borra este bloque hasta el `return`.
+        this.st.picker.records = [];
+        this.st.picker.checked = [];
+        this.st.picker.loading = false;
+        return;
+        // === FIN VACIADO TEMPORAL (código original intacto debajo) ============
+
         try {
             const records = await this.orm.searchRead(
                 'control.pedido.line',

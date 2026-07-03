@@ -315,6 +315,23 @@ class PlanAlphaDashboard(http.Controller):
         methods=["POST"],
     )
     def dashboard_data(self):
+        # === VACIADO TEMPORAL =================================================
+        # El dashboard se alimentará desde otra fuente de datos. Mientras tanto
+        # devolvemos un payload vacío bien formado (misma estructura que espera
+        # el front) para que la vista cargue sin error y muestre todo en cero.
+        # Para reconectar: borra este bloque hasta el `return` (inclusive).
+        return {
+            "pedidos": {
+                "total_activos": 0, "on_time": 0, "delayed": 0, "done": 0, "settled": 0,
+                "kilos_activos": 0.0, "kilos_done": 0.0, "proximos_7d": 0,
+                "estado_dist": [], "top_clientes": [], "top_delayed": [],
+                "proximos_vencer": [], "tendencia": [], "pct_on_time": 0.0,
+                "avg_delay": 0.0, "proximas_semanas": [],
+            },
+            "partidas": {"total_activas": 0, "por_area": [], "por_proceso": []},
+            "maquinas": {"top_maquinas": [], "tendencia_maq": [], "disponible": False},
+        }
+        # === FIN VACIADO TEMPORAL (código original intacto debajo) ============
         env = request.env
         today = datetime.date.today()
         in_7_days = today + datetime.timedelta(days=7)
