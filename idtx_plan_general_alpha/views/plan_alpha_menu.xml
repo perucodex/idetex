@@ -1,24 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- APP ROOT -->
     <menuitem id="menu_plan_alpha_app"
               name="Plan General Alpha"
               web_icon="idtx_plan_general_alpha,static/description/icon.svg"
               sequence="54"/>
 
-    <!-- ============================================================
-         1. DASHBOARD — un solo clic abre el board con los 4 graficos
-    ============================================================ -->
     <menuitem id="menu_plan_alpha_dashboard"
               name="Dashboard"
               parent="menu_plan_alpha_app"
               action="action_plan_alpha_dashboard_client"
               sequence="10"/>
 
-    <!-- ============================================================
-         2. TABLAS
-    ============================================================ -->
     <menuitem id="menu_plan_alpha_tablas"
               name="Tablas"
               parent="menu_plan_alpha_app"
@@ -42,9 +35,6 @@
               action="action_plan_beta_lista"
               sequence="23"/>
 
-    <!-- ============================================================
-         3. PROGRAMACION
-    ============================================================ -->
     <menuitem id="menu_plan_alpha_programacion"
               name="Programacion"
               parent="menu_plan_alpha_app"
@@ -74,9 +64,6 @@
               action="action_plan_alpha_floors"
               sequence="40"/>
 
-    <!-- ============================================================
-         4. PLANNING
-    ============================================================ -->
     <menuitem id="menu_plan_alpha_planning"
               name="Planning"
               parent="menu_plan_alpha_app"
@@ -100,9 +87,6 @@
               action="action_plan_alpha_planner"
               sequence="43"/>
 
-    <!-- ============================================================
-         5. CONFIGURACION
-    ============================================================ -->
     <menuitem id="menu_plan_alpha_config"
               name="Configuracion"
               parent="menu_plan_alpha_app"

@@ -115,10 +115,6 @@ export class PlannerView extends Component {
         this._renderCache    = null;
         this._renderCacheKey = null;
 
-        // Needed by goToday() and drag calculations
-        this.pxPerMs = 1;
-        this.rs      = 0;
-
         onWillStart(async () => { await this._load(); });
 
         onMounted(() => {
@@ -331,9 +327,6 @@ export class PlannerView extends Component {
         const totalWidth = (re - rs) * pxPerMs;
         const xOf = ms => (ms - rs) * pxPerMs;
 
-        // Store on instance for goToday() and drag calculations
-        this.pxPerMs = pxPerMs;
-        this.rs      = rs;
 
         // ── Tick & grid generation ─────────────────────────────────────────
         const topTicks    = [];
@@ -472,6 +465,10 @@ export class PlannerView extends Component {
             todayInRange: today >= rs && today <= re,
             rangeLabel: formatShort(rs) + '  →  ' + formatShort(re),
             rows,
+            // Geometry exposed so event handlers (goToday, drag) read the SAME
+            // values the view was rendered with — never instance side-effects,
+            // which don't survive OWL's render-proxy → raw-`this` boundary.
+            rs, pxPerMs,
         };
     }
 
@@ -493,6 +490,8 @@ export class PlannerView extends Component {
             startX: ev.clientX,
             os: row.start, oe: row.end,
             origBarX, origBarW,
+            // Capture the scale now; this.pxPerMs side-effect is unreliable.
+            pxPerMs: this.render.pxPerMs,
             deltaMs: 0,
         };
         document.body.style.cursor    = mode === 'move' ? 'grabbing' : 'ew-resize';
@@ -510,7 +509,7 @@ export class PlannerView extends Component {
 
             const d    = this.drag;
             const snap = this.st.zoom === 'horas' ? 3600000 : DAY_MS;
-            let dms    = (clientX - d.startX) / this.pxPerMs;
+            let dms    = (clientX - d.startX) / d.pxPerMs;
             dms        = Math.round(dms / snap) * snap;
             d.deltaMs  = dms;
 
@@ -520,7 +519,7 @@ export class PlannerView extends Component {
             const barEl  = rowEl && rowEl.querySelector('.plr__bar');
             if (!barEl) return;
 
-            const dpx = dms * this.pxPerMs;
+            const dpx = dms * d.pxPerMs;
             if (d.mode === 'move') {
                 barEl.style.left  = Math.round(d.origBarX + dpx) + 'px';
             } else if (d.mode === 'l') {
@@ -574,8 +573,17 @@ export class PlannerView extends Component {
     goToday() {
         const el = this.scrollRef.el;
         if (!el) return;
-        const x = (this.today - this.rs) * this.pxPerMs;
-        el.scrollLeft = Math.max(0, x - (el.clientWidth - 300) / 2);
+        // Read geometry from the render result (same numbers the view drew with),
+        // NOT from instance fields — those are written inside the render getter
+        // where `this` is OWL's reactive proxy and never reach this raw handler.
+        const r = this.render;
+        const sidebarW = r.sidebarW;
+        // Center the "today" marker inside the visible timeline area (right of
+        // the sticky sidebar). x is the marker offset within the timeline.
+        const x = (this.today - r.rs) * r.pxPerMs;
+        const target = x - (el.clientWidth - sidebarW) / 2;
+        const maxScroll = el.scrollWidth - el.clientWidth;
+        el.scrollLeft = Math.max(0, Math.min(target, maxScroll));
     }
 
     openRecord(row) {
@@ -633,6 +641,8 @@ export class PlannerView extends Component {
         lsSet(LS_KEY_SEL, checked);
         this.st.picker.open = false;
         await this._load();
+        // Re-center on today once the new tasks have rendered.
+        setTimeout(() => this.goToday(), 60);
     }
 
     async clearSelection() {
