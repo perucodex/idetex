@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="texplus_tipart_view_list" model="ir.ui.view">
+        <field name="name">texplus.tipart.list</field>
+        <field name="model">texplus.tipart</field>
+        <field name="arch" type="xml">
+            <list string="Composición TEXPLUS" editable="bottom">
+                <field name="tipart_cod" string="Código TIPART" readonly="1"/>
+                <field name="name" string="Composición" required="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="texplus_tipart_view_form" model="ir.ui.view">
+        <field name="name">texplus.tipart.form</field>
+        <field name="model">texplus.tipart</field>
+        <field name="arch" type="xml">
+            <form string="Composición TEXPLUS">
+                <sheet>
+                    <group>
+                        <field name="tipart_cod" string="Código TIPART" readonly="1"
+                               placeholder="Se asigna automáticamente"/>
+                        <field name="name" string="Composición" required="1"
+                               placeholder="Ej. 95% ALGODÓN 5% ELASTANO"/>
+                    </group>
+                    <p class="text-muted">
+                        Al guardar, la composición se crea o actualiza (upsert) en
+                        TEXPLUS (tabla TIPART). El código se asigna automáticamente
+                        para las nuevas. Máximo 30 caracteres en TEXPLUS.
+                    </p>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="texplus_tipart_view_search" model="ir.ui.view">
+        <field name="name">texplus.tipart.search</field>
+        <field name="model">texplus.tipart</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" string="Composición"/>
+                <field name="tipart_cod" string="Código TIPART"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="texplus_tipart_action" model="ir.actions.act_window">
+        <field name="name">Composición TEXPLUS</field>
+        <field name="res_model">texplus.tipart</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="texplus_tipart_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Crea una composición</p>
+            <p>Al guardar se sincroniza (upsert) con la tabla TIPART de TEXPLUS.</p>
+        </field>
+    </record>
+
+    <menuitem id="dev_texplus_tipart_menu"
+              name="Composición TEXPLUS"
+              parent="idtx_product_development.dev_settings_menu"
+              action="texplus_tipart_action"
+              sequence="25"/>
+
+</odoo>

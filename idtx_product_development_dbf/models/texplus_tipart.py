@@ -8,6 +8,7 @@ data/cron.xml) plus an on-demand manual refresh.
 import logging
 
 from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 from odoo.tools import SQL, sql
 
 _logger = logging.getLogger(__name__)
@@ -26,6 +27,95 @@ class TexplusTipart(models.Model):
         'unique(tipart_cod)',
         'El codigo TIPART debe ser unico.',
     )
+
+    # Longitudes de las columnas de descripcion en TEXPLUS (TIPART).
+    _TIPART_DSC_LEN = 30
+    _TIPART_DSC2_LEN = 80
+
+    # ------------------------------------------------------------------
+    #  PUSH / UPSERT hacia TEXPLUS al crear/editar una composicion en Odoo
+    # ------------------------------------------------------------------
+    @api.model_create_multi
+    def create(self, vals_list):
+        next_code = None
+        for vals in vals_list:
+            if not vals.get('tipart_cod'):
+                if next_code is None:
+                    next_code = self._next_tipart_cod()
+                vals['tipart_cod'] = next_code
+                next_code += 1
+        records = super().create(vals_list)
+        if not self.env.context.get('skip_texplus_push'):
+            records._push_to_texplus()
+        return records
+
+    def write(self, vals):
+        res = super().write(vals)
+        if (not self.env.context.get('skip_texplus_push')
+                and ({'name', 'tipart_cod'} & set(vals))):
+            self._push_to_texplus()
+        return res
+
+    @api.model
+    def _next_tipart_cod(self):
+        """Siguiente TipArtCod libre = max(TEXPLUS, Odoo) + 1 (TipArtCod es
+        smallint en TEXPLUS). Si TEXPLUS no responde, cae a max(Odoo)+1."""
+        odoo_max = max(self.sudo().search([]).mapped('tipart_cod') or [0])
+        texplus_max = 0
+        try:
+            conn = self.env['technical.sheet']._get_texplus_sql_connection()
+            try:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT MAX(TipArtCod) FROM TIPART WHERE EmprCod = ?",
+                    TEXPLUS_EMPRCOD,
+                )
+                row = cursor.fetchone()
+                if row and row[0] is not None:
+                    texplus_max = int(row[0])
+            finally:
+                conn.close()
+        except Exception:
+            _logger.warning(
+                "texplus.tipart: no se pudo leer MAX(TipArtCod) de TEXPLUS",
+                exc_info=True)
+        return max(odoo_max, texplus_max, 0) + 1
+
+    def _push_to_texplus(self):
+        """UPSERT de cada composicion hacia la tabla TIPART de TEXPLUS:
+        UPDATE de la descripcion si el TipArtCod ya existe, INSERT si no.
+        Respeta el guard `texplus_write_enabled` (en modo lectura no escribe).
+        Si TEXPLUS falla, lanza UserError (la transaccion de Odoo se revierte)."""
+        sheet = self.env['technical.sheet']
+        for rec in self:
+            if not rec.tipart_cod:
+                continue
+            name = (rec.name or '').strip()
+            conn = None
+            try:
+                conn = sheet._get_texplus_sql_connection()
+                cursor = conn.cursor()
+                sheet._configure_texplus_cursor(cursor)
+                key_values = {'EmprCod': TEXPLUS_EMPRCOD, 'TipArtCod': rec.tipart_cod}
+                values = {
+                    'EmprCod': TEXPLUS_EMPRCOD,
+                    'TipArtCod': rec.tipart_cod,
+                    'TipArtDsc': name[:self._TIPART_DSC_LEN],
+                    'TipArtDsc2': name[:self._TIPART_DSC2_LEN],
+                }
+                sheet._upsert_texplus_record(cursor, 'TIPART', key_values, values)
+                conn.commit()
+            except Exception as error:
+                if conn is not None:
+                    try:
+                        conn.rollback()
+                    except Exception:
+                        pass
+                raise UserError(
+                    _("No se pudo actualizar la composicion en TEXPLUS: %s") % error)
+            finally:
+                if conn is not None:
+                    conn.close()
 
     def _auto_init(self):
         self._sanitize_required_columns()
@@ -93,7 +183,7 @@ class TexplusTipart(models.Model):
         tipart = self.sudo().search([('tipart_cod', '=', 1)], limit=1)
         if tipart:
             return tipart
-        return self.sudo().create({
+        return self.sudo().with_context(skip_texplus_push=True).create({
             'tipart_cod': 1,
             'name': 'X DEFINIR',
         })
@@ -111,7 +201,7 @@ class TexplusTipart(models.Model):
         records = self.sudo().search([('tipart_cod', 'in', list(tipart_codes))])
         by_code = {record.tipart_cod: record for record in records}
         missing_codes = sorted(tipart_codes - set(by_code))
-        for record in self.sudo().create([
+        for record in self.sudo().with_context(skip_texplus_push=True).create([
             {'tipart_cod': code, 'name': 'TIPART %s' % code}
             for code in missing_codes
         ]):
@@ -133,7 +223,10 @@ class TexplusTipart(models.Model):
         finally:
             conn.close()
 
-        existing = {rec.tipart_cod: rec for rec in self.sudo().search([])}
+        existing = {
+            rec.tipart_cod: rec
+            for rec in self.sudo().with_context(skip_texplus_push=True).search([])
+        }
         to_create = []
         for cod, dsc in rows:
             if cod is None:
@@ -149,7 +242,7 @@ class TexplusTipart(models.Model):
             else:
                 to_create.append({'tipart_cod': cod, **vals})
         if to_create:
-            self.sudo().create(to_create)
+            self.sudo().with_context(skip_texplus_push=True).create(to_create)
 
     @api.model
     def _cron_sync_tipart(self):
