@@ -295,7 +295,7 @@
 
     <!-- ===== Submenú "Hilado" dentro de Configuration ===== -->
     <menuitem id="menu_thread_catalog_config" name="Hilado"
-        parent="idtx_product_development.dev_settings_menu" sequence="50"/>
+        parent="idtx_product_development.dev_settings_menu" sequence="50" groups="idtx_thread_codigo.group_thread_manager"/>
 
     <menuitem id="menu_thread_titulo" name="Título"
         parent="menu_thread_catalog_config" action="product_thread_titulo_action" sequence="10"/>

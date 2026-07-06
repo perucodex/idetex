@@ -89,15 +89,11 @@ class MrpRoutingWorkcenterOperation(models.Model):
         for record in self:
             if not record.general_machine_id:
                 continue
-            # Drop specifics that don't belong to this general.
-            invalid = record.specific_machine_ids.filtered(
-                lambda m: m.general_machine_id != record.general_machine_id
-            )
-            if invalid:
-                record.specific_machine_ids = record.specific_machine_ids - invalid
-            # Add every specific of this general — MAQFAS should know every
-            # (specific, fas) combination by default. The user can manually
-            # remove unwanted entries afterwards.
+            # ADITIVO: solo se AGREGAN las especificas de esta general que
+            # falten. NO se eliminan las maquinas ya asignadas: antes se
+            # borraban las que no pertenecian a esta general y eso vaciaba la
+            # curacion manual (y luego MAQFAS en TEXPLUS). El usuario puede
+            # quitar manualmente las que no quiera.
             specifics = Machine.search([
                 ('is_general', '=', False),
                 ('general_machine_id', '=', record.general_machine_id.id),
@@ -286,11 +282,16 @@ class MrpRoutingWorkcenterOperation(models.Model):
         sync_faspro = bool({'name', 'general_machine_id', 'fas_code'} & set(vals))
         sync_maqfas = 'specific_machine_ids' in vals
 
-        # General changed → replace specifics with the new general's set
-        # (cascade out + cascade in in a single write). MAQFAS sync picks
-        # up the diff automatically.
+        # General changed → ADD the new general's specifics (aditivo). NO se
+        # hace un REPLACE destructivo: el antiguo `_resync_specifics_with_general`
+        # vaciaba specific_machine_ids cuando la general no tenia especificas
+        # formales (is_general=False, general_machine_id=<general>), y ese
+        # conjunto vacio disparaba un DELETE masivo en MAQFAS que borraba la
+        # fase de TODAS las maquinas en TEXPLUS. Con el enfoque aditivo se
+        # preserva la curacion manual (maquinas de otra general, sin general,
+        # o la general misma usada como especifica).
         if general_swapped:
-            if general_swapped._resync_specifics_with_general():
+            if general_swapped._ensure_specific_machines_from_general():
                 sync_maqfas = True
 
         if sync_faspro or sync_maqfas:

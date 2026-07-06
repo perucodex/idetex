@@ -79,6 +79,7 @@
 
     <menuitem id="menu_thread_code" name="Hilado"
         parent="idtx_product_development.dev_operations_menu"
+        groups="idtx_thread_codigo.group_thread_manager"
         action="thread_code_action" sequence="30"/>
 
     <!-- 2ª confirmación de "Revertir": aviso de borrado definitivo + botón rojo -->
