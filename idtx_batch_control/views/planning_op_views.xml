@@ -131,5 +131,6 @@
         <field name="view_id" ref="view_fechas_op_tree"/>
         <field name="search_view_id" ref="view_fechas_op_search"/>
         <field name="domain">[('plan_active', '=', True)]</field>
+        <field name="context">{"search_default_group_by_user": 1}</field>
     </record>
 </odoo>
