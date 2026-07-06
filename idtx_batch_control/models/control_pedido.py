@@ -135,6 +135,10 @@ class ControlPedido(models.Model):
     # del Planning (vía el dominio de la acción) sin afectar ningún otro
     # reporte/vista ni el estado del pedido.
     plan_active = fields.Boolean('Activo en Planning', default=True, index=True, copy=False)
+    plan_days_oc_cc = fields.Integer(
+        'Días OC→Aprobación', compute='_compute_plan_days_oc_cc', store=True,
+        help="Días calendario desde fecoc (Fecha OC Cliente) hasta feccc "
+             "(Fecha Aprobación).")
     num_days = fields.Integer('Number of Days', compute='_compute_num_days', store=True)
     # --- Planning por OP: fechas estimadas a partir de feccc (Fecha Aprobación) ---
     plan_has_thermo = fields.Boolean(
@@ -565,6 +569,14 @@ class ControlPedido(models.Model):
         """Reactiva las OPs seleccionadas en el reporte 'Planning por OP'
         (plan_active=True)."""
         self.write({'plan_active': True})
+
+    @api.depends('fecoc', 'feccc')
+    def _compute_plan_days_oc_cc(self):
+        for rec in self:
+            if rec.fecoc and rec.feccc:
+                rec.plan_days_oc_cc = (rec.feccc - rec.fecoc).days
+            else:
+                rec.plan_days_oc_cc = 0
 
     def _get_sql_connection(self):
         try:

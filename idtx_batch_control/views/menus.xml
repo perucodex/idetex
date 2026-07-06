@@ -13,12 +13,6 @@
               parent="menu_sitpro_texplus" 
               action="action_control_pedido"/>
 
-    <menuitem id="menu_planning_op"
-              name="Planning por OP"
-              sequence="15"
-              parent="menu_sitpro_texplus"
-              action="action_planning_op"/>
-
     <menuitem id="menu_control_partida"
               name="Partidas"
               sequence="20"
@@ -37,10 +31,28 @@
               parent="menu_sitpro_texplus"
               action="action_control_partida_non_compliant"/>
 
+    <!-- Submenú Planning dentro de Sitpro & Texplus (antes de Acabado) -->
+    <menuitem id="menu_planning_root"
+              name="Planning"
+              parent="menu_sitpro_texplus"
+              sequence="55"/>
+
+    <menuitem id="menu_planning_op"
+              name="Planning por OP"
+              sequence="10"
+              parent="menu_planning_root"
+              action="action_planning_op"/>
+
+    <menuitem id="menu_fechas_op"
+              name="Fechas por OP"
+              sequence="20"
+              parent="menu_planning_root"
+              action="action_fechas_op"/>
+
     <menuitem id="menu_control_partida_kilos_by_fase"
               name="Kilos por Fase"
-              sequence="50"
-              parent="menu_sitpro_texplus"
+              sequence="30"
+              parent="menu_planning_root"
               action="action_control_partida_kilos_by_fase"/>
 
     <!-- Submenú Acabado dentro de Sitpro & Texplus -->

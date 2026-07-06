@@ -84,4 +84,52 @@
         <field name="domain">[('state', '!=', 'se'), ('tipoventa', '!=', 'PRODUCCION HILANDERIA')]</field>
         <field name="context">{"search_default_planning_pending": 1, "search_default_planning_has_feccc": 1, "search_default_planning_active": 1}</field>
     </record>
+
+    <!-- ================= Fechas por OP ================= -->
+    <record id="view_fechas_op_tree" model="ir.ui.view">
+        <field name="name">control.pedido.fechas.list</field>
+        <field name="model">control.pedido</field>
+        <field name="arch" type="xml">
+            <list string="Fechas por OP" create="0" edit="0"
+                  default_order="feccc desc, numordped desc">
+                <field name="fecha"/>
+                <field name="fecoc"/>
+                <field name="fecgvtas"/>
+                <field name="feccc"/>
+                <field name="numordped"/>
+                <field name="customer" string="Cliente"/>
+                <field name="plan_days_oc_cc" string="Días OC→Aprob."/>
+                <field name="user_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_fechas_op_search" model="ir.ui.view">
+        <field name="name">control.pedido.fechas.search</field>
+        <field name="model">control.pedido</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="numordped"/>
+                <field name="customer"/>
+                <field name="user_id"/>
+                <group>
+                    <filter name="group_by_customer" string="Cliente" domain="[]"
+                            context="{'group_by': 'customer'}"/>
+                    <filter name="group_by_user" string="Vendedor" domain="[]"
+                            context="{'group_by': 'user_id'}"/>
+                    <filter name="group_by_fecoc" string="Fecha OC" domain="[]"
+                            context="{'group_by': 'fecoc:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_fechas_op" model="ir.actions.act_window">
+        <field name="name">Fechas por OP</field>
+        <field name="res_model">control.pedido</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_fechas_op_tree"/>
+        <field name="search_view_id" ref="view_fechas_op_search"/>
+        <field name="domain">[('plan_active', '=', True)]</field>
+    </record>
 </odoo>
