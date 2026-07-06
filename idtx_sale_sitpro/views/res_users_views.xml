@@ -6,9 +6,13 @@
         <field name="model">res.users</field>
         <field name="inherit_id" ref="base.view_users_form"/>
         <field name="arch" type="xml">
-            <field name="partner_id" position="after">
+            <!-- OJO: NO usar `//field[@name='partner_id']`: el primer partner_id
+                 del form está dentro del banner de alerta "Puede archivar el
+                 contacto" (invisible salvo que el partner esté archivado), así
+                 que el campo quedaba oculto. Se ancla al `email` (visible). -->
+            <xpath expr="//field[@name='email']" position="after">
                 <field name="vendor_code_sitpro"/>
-            </field>
+            </xpath>
         </field>
     </record>
 
