@@ -177,7 +177,8 @@ result = rmv * pct
             <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
             <field name="condition_select">python</field>
             <field name="condition_python">
-result = he25 &gt; 0
+extra = inputs['HE25_HRS'].amount if 'HE25_HRS' in inputs else 0.0
+result = he25 &gt; 0 or extra &gt; 0
             </field>
             <field name="amount_select">code</field>
             <field name="amount_python_compute">
@@ -201,7 +202,8 @@ result_qty = he25 * (1.0 - pct) + extra
             <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
             <field name="condition_select">python</field>
             <field name="condition_python">
-result = he35 &gt; 0
+extra = inputs['HE35_HRS'].amount if 'HE35_HRS' in inputs else 0.0
+result = he35 &gt; 0 or extra &gt; 0
             </field>
             <field name="amount_select">code</field>
             <field name="amount_python_compute">
@@ -264,6 +266,26 @@ result = (categories['BASIC'] + categories['ALW'] - result_rules['VACA_PE']['tot
             <field name="appears_on_payslip" eval="True"/>
         </record>
 
+        <!-- Bonificación (ingreso AFECTO, monto manual desde el tareo). Va en
+             seq 25 (después de la prima textil, para no engrosar su base) y en
+             categoría ALW, por lo que SÍ entra a la base de aportes y al GROSS. -->
+        <record id="rule_pe_bonif" model="hr.salary.rule">
+            <field name="name">Bonificación</field>
+            <field name="code">BONIF_PE</field>
+            <field name="sequence">25</field>
+            <field name="category_id" ref="hr_payroll.ALW"/>
+            <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">
+result = 'BONIF' in inputs and inputs['BONIF'].amount != 0
+            </field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">
+result = inputs['BONIF'].amount
+            </field>
+            <field name="appears_on_payslip" eval="True"/>
+        </record>
+
         <!-- ============ INGRESOS INAFECTOS (no a la base de aportes) ============ -->
 
         <!-- Condición de Trabajo (input) -->
@@ -275,18 +297,16 @@ result = (categories['BASIC'] + categories['ALW'] - result_rules['VACA_PE']['tot
             <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
             <field name="condition_select">python</field>
             <field name="condition_python">
-pct = rule_parameter('l10n_pe_he25_condicion_pct') or 0.0
 manual = inputs['COND_TRAB'].amount if 'COND_TRAB' in inputs else 0.0
-result = (manual != 0) or (he25 &gt; 0 and pct &gt; 0)
+result = (manual != 0) or (result_rules['HE25_PE']['total'] &gt; 0)
             </field>
             <field name="amount_select">code</field>
             <field name="amount_python_compute">
-# Condición de Trabajo (inafecto): input manual + el % de la HE 25%
-# reclasificado, calculado SOLO sobre el salario base (sin asignación familiar).
-pct = rule_parameter('l10n_pe_he25_condicion_pct') or 0.0
+# Condición de Trabajo (inafecto) = MISMO MONTO que la Hora Extra 25%
+# (HE25_PE). Es una asignación no afecta que refleja la HE 25%. Puede
+# forzarse con el input manual COND_TRAB si alguna vez se requiere.
 manual = inputs['COND_TRAB'].amount if 'COND_TRAB' in inputs else 0.0
-valor_hora_base = (version.wage or 0.0) / 30.0 / (horas_jornada or 8.0)
-result = manual + (he25 * pct) * valor_hora_base * 1.25
+result = manual if manual else result_rules['HE25_PE']['total']
             </field>
             <field name="appears_on_payslip" eval="True"/>
         </record>

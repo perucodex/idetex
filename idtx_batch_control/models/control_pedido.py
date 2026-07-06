@@ -130,6 +130,11 @@ class ControlPedido(models.Model):
     process = fields.Char('Process', compute='_compute_process', store=True)
     area = fields.Char('Area', compute='_compute_process', store=True)
     is_active = fields.Boolean('is_active?')
+    # Desactivación SOLO para el reporte "Planning por OP". Es independiente de
+    # is_active/state y NO toca el DBF de SITPRO: plan_active=False oculta la OP
+    # del Planning (vía el dominio de la acción) sin afectar ningún otro
+    # reporte/vista ni el estado del pedido.
+    plan_active = fields.Boolean('Activo en Planning', default=True, index=True, copy=False)
     num_days = fields.Integer('Number of Days', compute='_compute_num_days', store=True)
     # --- Planning por OP: fechas estimadas a partir de feccc (Fecha Aprobación) ---
     plan_has_thermo = fields.Boolean(
@@ -549,6 +554,17 @@ class ControlPedido(models.Model):
             if new_active and self.line_ids:
                 self.line_ids._compute_area_num_days()
         return res
+
+    def action_plan_deactivate(self):
+        """Desactiva las OPs seleccionadas SOLO para el reporte 'Planning por
+        OP' (plan_active=False). NO toca is_active/state ni el DBF de SITPRO,
+        por lo que no afecta ningún otro reporte."""
+        self.write({'plan_active': False})
+
+    def action_plan_activate(self):
+        """Reactiva las OPs seleccionadas en el reporte 'Planning por OP'
+        (plan_active=True)."""
+        self.write({'plan_active': True})
 
     def _get_sql_connection(self):
         try:

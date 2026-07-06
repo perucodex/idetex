@@ -34,6 +34,8 @@ class HrEmployee(models.Model):
             )
             if result.status_code == 404:
                 raise UserError(_('DNI no encontrado.'))
+            if result.status_code == 429:
+                raise UserError(_('Too Many Requests.'))
             return result.json()
         except UserError:
             raise

@@ -124,5 +124,12 @@
             <field name="struct_ids" eval="[(4, ref('idtx_hr_payroll_pe.structure_pe_obrero_textil'))]"/>
         </record>
 
+        <!-- Bonificación (ingreso AFECTO, monto por trabajador desde el tareo) -->
+        <record id="input_type_bonif" model="hr.payslip.input.type">
+            <field name="name">Bonificación</field>
+            <field name="code">BONIF</field>
+            <field name="struct_ids" eval="[(4, ref('idtx_hr_payroll_pe.structure_pe_obrero_textil'))]"/>
+        </record>
+
     </data>
 </odoo>

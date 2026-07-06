@@ -7,6 +7,13 @@
             <list string="Planning por OP" create="0" edit="0" default_order="feccc desc, numordped desc"
                   decoration-danger="plan_schedule_alert == 'danger'"
                   decoration-warning="plan_schedule_alert == 'warning'">
+                <header>
+                    <button name="action_plan_deactivate" type="object"
+                            string="Desactivar del Planning"
+                            confirm="¿Desactivar del Planning las OPs seleccionadas? Solo afecta este reporte (no toca SITPRO ni el estado)."/>
+                    <button name="action_plan_activate" type="object"
+                            string="Reactivar en Planning"/>
+                </header>
                 <field name="plan_schedule_alert" column_invisible="1"/>
                 <field name="numordped"/>
                 <field name="customer" optional="hide"/>
@@ -29,6 +36,7 @@
                 <field name="plan_finishing_end"/>
                 <field name="plan_kilos_finished" string="Kilos Acabados" sum="Total"/>
                 <field name="plan_finish_progress" string="% Avance Acabado" widget="progressbar"/>
+                <field name="plan_active" widget="boolean_toggle" string="Activo Planning" optional="hide"/>
                 <field name="state" widget="badge" optional="hide"
                        decoration-danger="state == 'de'"
                        decoration-info="state == 'on'"
@@ -50,6 +58,11 @@
                 <filter name="planning_has_feccc" string="Con Fecha Aprobación"
                         domain="[('feccc', '!=', False)]"/>
                 <separator/>
+                <filter name="planning_active" string="Activas (Planning)"
+                        domain="[('plan_active', '=', True)]"/>
+                <filter name="planning_inactive" string="Desactivadas (Planning)"
+                        domain="[('plan_active', '=', False)]"/>
+                <separator/>
                 <filter name="planning_with_thermo" string="Con Termofijado"
                         domain="[('plan_has_thermo', '=', True)]"/>
                 <group>
@@ -69,6 +82,6 @@
         <field name="view_id" ref="view_planning_op_tree"/>
         <field name="search_view_id" ref="view_planning_op_search"/>
         <field name="domain">[('state', '!=', 'se'), ('tipoventa', '!=', 'PRODUCCION HILANDERIA')]</field>
-        <field name="context">{"search_default_planning_pending": 1, "search_default_planning_has_feccc": 1}</field>
+        <field name="context">{"search_default_planning_pending": 1, "search_default_planning_has_feccc": 1, "search_default_planning_active": 1}</field>
     </record>
 </odoo>

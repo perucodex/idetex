@@ -116,12 +116,14 @@ result = rmv * pct
             <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral"/>
             <field name="condition_select">python</field>
             <field name="condition_python">
-result = he25 &gt; 0
+extra = inputs['HE25_HRS'].amount if 'HE25_HRS' in inputs else 0.0
+result = he25 &gt; 0 or extra &gt; 0
             </field>
             <field name="amount_select">code</field>
             <field name="amount_python_compute">
 valor_hora = pe_rem_computable() / 30.0 / (horas_jornada or 8.0)
-result = he25 * valor_hora * 1.25
+extra = inputs['HE25_HRS'].amount if 'HE25_HRS' in inputs else 0.0
+result = (he25 + extra) * valor_hora * 1.25
             </field>
             <field name="appears_on_payslip" eval="True"/>
         </record>
@@ -134,12 +136,14 @@ result = he25 * valor_hora * 1.25
             <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral"/>
             <field name="condition_select">python</field>
             <field name="condition_python">
-result = he35 &gt; 0
+extra = inputs['HE35_HRS'].amount if 'HE35_HRS' in inputs else 0.0
+result = he35 &gt; 0 or extra &gt; 0
             </field>
             <field name="amount_select">code</field>
             <field name="amount_python_compute">
 valor_hora = pe_rem_computable() / 30.0 / (horas_jornada or 8.0)
-result = he35 * valor_hora * 1.35
+extra = inputs['HE35_HRS'].amount if 'HE35_HRS' in inputs else 0.0
+result = (he35 + extra) * valor_hora * 1.35
             </field>
             <field name="appears_on_payslip" eval="True"/>
         </record>
@@ -541,12 +545,14 @@ result = (rmv * pct) * dias_periodo / 30.0
             <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
             <field name="condition_select">python</field>
             <field name="condition_python">
-result = he25 &gt; 0
+extra = inputs['HE25_HRS'].amount if 'HE25_HRS' in inputs else 0.0
+result = he25 &gt; 0 or extra &gt; 0
             </field>
             <field name="amount_select">code</field>
             <field name="amount_python_compute">
 valor_hora = pe_rem_computable() / 30.0 / (horas_jornada or 8.0)
-result = he25 * valor_hora * 1.25
+extra = inputs['HE25_HRS'].amount if 'HE25_HRS' in inputs else 0.0
+result = (he25 + extra) * valor_hora * 1.25
             </field>
             <field name="appears_on_payslip" eval="True"/>
         </record>
@@ -559,12 +565,14 @@ result = he25 * valor_hora * 1.25
             <field name="struct_id" ref="idtx_hr_payroll_pe.struct_pe_agrario_integral_sem"/>
             <field name="condition_select">python</field>
             <field name="condition_python">
-result = he35 &gt; 0
+extra = inputs['HE35_HRS'].amount if 'HE35_HRS' in inputs else 0.0
+result = he35 &gt; 0 or extra &gt; 0
             </field>
             <field name="amount_select">code</field>
             <field name="amount_python_compute">
 valor_hora = pe_rem_computable() / 30.0 / (horas_jornada or 8.0)
-result = he35 * valor_hora * 1.35
+extra = inputs['HE35_HRS'].amount if 'HE35_HRS' in inputs else 0.0
+result = (he35 + extra) * valor_hora * 1.35
             </field>
             <field name="appears_on_payslip" eval="True"/>
         </record>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="hr_payslip_run_form_tareo_pe" model="ir.ui.view">
+        <field name="name">hr.payslip.run.form.tareo.pe</field>
+        <field name="model">hr.payslip.run</field>
+        <field name="inherit_id" ref="hr_payroll.hr_payslip_run_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form/group" position="after">
+                <group string="Tareo (Perú)" name="pe_tareo">
+                    <field name="l10n_pe_tareo_filename" invisible="1"/>
+                    <field name="l10n_pe_tareo_file" filename="l10n_pe_tareo_filename"
+                           string="Excel de Tareo"/>
+                    <div colspan="2">
+                        <button name="action_pe_download_tareo_template" type="object"
+                                string="Descargar plantilla" icon="fa-download"
+                                class="btn-link ps-0"/>
+                        <span class="text-muted">
+                            Sube el tareo por DNI; se rellenan Días trabajados y Entradas
+                            salariales al generar las boletas.
+                        </span>
+                    </div>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

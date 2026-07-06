@@ -1,4 +1,5 @@
-from odoo import models, fields, Command, api, _
+from odoo import models, fields, api, _
+from odoo.fields import Command
 from odoo.exceptions import UserError, AccessError
 from odoo.tools import html_escape
 from markupsafe import Markup
@@ -239,7 +240,7 @@ class SaleOrder(models.Model):
                         'company_id': production_company.id,
                     })
                     line.sudo().production_id = prd.id
-                    self.production_ids = [(4, prd.id)]
+                    self.sudo().production_ids = [(4, prd.id)]
                     # if prd.color_recipe_id and production_state and production_state != 'Sample':
                     if prd.color_recipe_id:
                         prd.action_confirm()
@@ -276,7 +277,10 @@ class SaleOrder(models.Model):
         for order in self:
             if not order.id:
                 continue
-            original_lab_devs = self.env['lab.dev'].search([('sale_order_id', '=', order.id)])
+            original_lab_devs = self.env['lab.dev'].search([
+                ('sale_order_id', '=', order.id),
+                ('state', '!=', 'cancel'),
+            ])
             missing = original_lab_devs - order.lab_dev_ids
             if missing:
                 super(SaleOrder, order.with_context(skip_original_labdev_guard=True)).write({
@@ -347,7 +351,10 @@ class SaleOrder(models.Model):
             # aunque temporalmente no aparezcan en las lineas.
             original_lab_devs = self.env['lab.dev']
             if order.id:
-                original_lab_devs = self.env['lab.dev'].search([('sale_order_id', '=', order.id)])
+                original_lab_devs = self.env['lab.dev'].search([
+                    ('sale_order_id', '=', order.id),
+                    ('state', '!=', 'cancel'),
+                ])
             line_lab_devs = order.order_line.mapped('lab_dev_line_id.lab_dev_id')
             # Recalcular desde fuentes reales para permitir quitar LD agregadas manualmente
             # que ya no esten vinculadas a lineas.
@@ -579,14 +586,15 @@ class SaleOrder(models.Model):
             if production.state not in ('draft','confirmed'):
                 state_label = dict(production._fields['state'].selection).get(production.state, production.state)
                 raise UserError(_('Can\'t cancel production in %s') %state_label)
-            production.action_cancel()
+            production.sudo().action_cancel()
         for labdev in self.lab_dev_ids.filtered(lambda ld: ld.sale_order_id == self):
             if labdev.state not in ('draft', 'cancel'):
                 state_label = dict(labdev._fields['state'].selection).get(labdev.state, labdev.state)
                 raise UserError(_('Can\'t cancel lab dev in %s') % state_label)
-            labdev.action_cancel()
+            labdev.sudo().action_cancel()
             for line in self.order_line.filtered(lambda l: l.lab_dev_line_id and l.lab_dev_line_id.lab_dev_id == labdev):
                 line.lab_dev_line_id = False
+        self.lab_dev_ids = self.lab_dev_ids.filtered(lambda ld: ld.state != 'cancel')
         return res
     
     @api.onchange('partner_id')

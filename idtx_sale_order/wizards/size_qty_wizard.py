@@ -7,6 +7,9 @@ class SizeQtyWizard(models.TransientModel):
     _description = "Wizard Size Qty Rectilinear"
 
     locked = fields.Boolean(readonly=True)
+    technical_sheet_id = fields.Many2one(
+        "technical.sheet", string="Ficha Técnica", readonly=True,
+        help="Ficha técnica del producto; sus tallas alimentan el selector.")
     line_ids = fields.One2many("size.qty.wizard.line", "wizard_id", string="Sizes")
 
     @api.model
@@ -17,12 +20,23 @@ class SizeQtyWizard(models.TransientModel):
         if active_model == "sale.order.line" and active_id:
             sol = self.env[active_model].browse(active_id)
             res["locked"] = bool(sol.order_id.locked)
+            # Ficha técnica de la LdM (BoM) elegida en ESTA línea: el producto
+            # puede tener varias fichas/LdM; las tallas deben venir de la ficha
+            # de la LdM seleccionada (no del análisis en general). Si esa ficha
+            # no tiene tallas cargadas, el selector queda vacío (correcto).
+            sheet = sol.bom_id.technical_sheet_id
+            res["technical_sheet_id"] = sheet.id
+            # Mapa talla(texto) -> línea de talla de la ficha, para pre-seleccionar
+            size_to_line = {}
+            for sl in sheet.size_chart_ids:
+                key = (sl.size or "").strip().upper()
+                if key and key not in size_to_line:
+                    size_to_line[key] = sl.id
             res["line_ids"] = [(0, 0, {
                 "sequence": l.sequence,
                 "size": l.size,
+                "size_line_id": size_to_line.get((l.size or "").strip().upper()),
                 "product_qty": l.product_qty,
-                # "length_cm": l.length_cm,
-                # "width_cm": l.width_cm,
             }) for l in sol.size_qty_ids]
         return res
 
@@ -53,7 +67,19 @@ class SizeQtyWizardLine(models.TransientModel):
     wizard_id = fields.Many2one("size.qty.wizard", required=True, ondelete="cascade")
     sequence = fields.Integer(default=10)
 
-    size = fields.Char(string='Size')
+    # Talla seleccionable desde la ficha técnica del producto (no texto libre).
+    size_line_id = fields.Many2one(
+        "technical.size.line", string="Talla",
+        domain="[('technical_id', '=', parent.technical_sheet_id)]")
+    # Texto de la talla (se autollena de la talla elegida); es lo que se guarda
+    # en sale.order.line.size al aplicar.
+    size = fields.Char(string="Size")
+    # "Tamaño" que se puso en la ficha técnica para esa talla.
+    length = fields.Float(related="size_line_id.length", string="Largo", readonly=True)
+    width = fields.Float(related="size_line_id.width", string="Ancho", readonly=True)
     product_qty = fields.Integer(string="Product Qty", required=True, default=0)
-    # length_cm = fields.Float(string="Largo (cm)")
-    # width_cm = fields.Float(string="Ancho (cm)")
+
+    @api.onchange("size_line_id")
+    def _onchange_size_line_id(self):
+        if self.size_line_id:
+            self.size = self.size_line_id.size
