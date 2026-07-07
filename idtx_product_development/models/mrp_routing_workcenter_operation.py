@@ -235,6 +235,25 @@ class MrpRoutingWorkcenterOperation(models.Model):
             phase_code = (operation.fas_code or '').strip()
             if not phase_code:
                 continue
+            # NO borrar FASPRO/MAQFAS de la fase si OTRA operación de Odoo (que
+            # NO se está eliminando) todavía usa el mismo fas_code: sería borrar
+            # las máquinas de una fase aún vigente (vaciado accidental).
+            others = self.sudo().search([
+                ('fas_code', '=', operation.fas_code),
+                ('id', 'not in', self.ids),
+            ], limit=1)
+            if others:
+                _logger.info(
+                    "MAQFAS/FASPRO: NO se borra la fase '%s' (op %s) porque otra "
+                    "operacion (%s) aun la usa.",
+                    phase_code, operation.id, others.id,
+                )
+                continue
+            _logger.info(
+                "MAQFAS/FASPRO: borrando la fase '%s' (op %s '%s') de TEXPLUS "
+                "por unlink de la operacion.",
+                phase_code, operation.id, operation.name,
+            )
             cursor.execute(
                 "DELETE FROM dbo.MAQFAS WHERE EmprCod = ? AND MaqFCod = ?",
                 TEXPLUS_EMPRCOD,
@@ -384,7 +403,15 @@ class MrpRoutingWorkcenterOperation(models.Model):
                 conn.close()
 
     def _sync_maqfas_for_operation(self, cursor, operation, phase_code):
-        """Diff y aplica los cambios de specific_machine_ids contra MAQFAS."""
+        """Diff y aplica los cambios de specific_machine_ids contra MAQFAS.
+
+        `desired` = UNIÓN de specific_machine_ids de TODAS las operaciones de
+        Odoo que comparten el mismo `fas_code` (varias operaciones pueden mapear
+        al MISMO MaqFCod de TEXPLUS). Antes se tomaba solo `operation`, así que
+        sincronizar una operación con menos (o CERO) máquinas BORRABA de MAQFAS
+        las que otra operación con el mismo fas_code había puesto → vaciado
+        accidental. Ver historial del bug de máquinas por fase.
+        """
         cursor.execute(
             "SELECT LTRIM(RTRIM(MaqCod)) FROM dbo.MAQFAS "
             "WHERE EmprCod = ? AND MaqFCod = ?",
@@ -392,18 +419,33 @@ class MrpRoutingWorkcenterOperation(models.Model):
             phase_code,
         )
         current_in_texplus = {row[0].upper() for row in cursor.fetchall() if row and row[0]}
-        desired = {
-            (machine.code or '').strip().upper(): machine
-            for machine in operation.specific_machine_ids
-            if (machine.code or '').strip()
-        }
+
+        # UNIÓN de las máquinas específicas de TODAS las operaciones con este
+        # fas_code (no solo la que dispara el sync).
+        siblings = self.sudo().search([('fas_code', '=', operation.fas_code)])
+        desired = {}
+        for sibling in siblings:
+            for machine in sibling.specific_machine_ids:
+                code = (machine.code or '').strip()
+                if code:
+                    desired[code.upper()] = machine
         desired_codes = set(desired)
 
+        # POLÍTICA (2026-07-07): el sync a MAQFAS es ADITIVO — SOLO inserta lo
+        # que falta, NUNCA borra. El borrado automático causaba vaciados
+        # accidentales de la fase por 3 vías: (a) operación con specifics vacío,
+        # (b) fas_code duplicado (una op vacía borraba lo de otra), (c) specifics
+        # de Odoo INCOMPLETOS vs máquinas gestionadas directo en TEXPLUS. Como
+        # Odoo no siempre tiene la lista completa, el borrado se hace MANUAL en
+        # TEXPLUS. Aquí solo se registra qué sobra (para referencia).
         to_delete = current_in_texplus - desired_codes
-        for code in to_delete:
-            cursor.execute(
-                "DELETE FROM dbo.MAQFAS WHERE EmprCod = ? AND MaqCod = ? AND MaqFCod = ?",
-                TEXPLUS_EMPRCOD, code, phase_code,
+        if to_delete:
+            _logger.info(
+                "MAQFAS: la fase '%s' tiene en TEXPLUS %s maquina(s) que NO estan "
+                "en ninguna operacion de Odoo: %s. NO se borran (borrado manual). "
+                "Disparado por op %s '%s'.",
+                phase_code, len(to_delete), sorted(to_delete),
+                operation.id, operation.name,
             )
 
         to_insert = desired_codes - current_in_texplus
