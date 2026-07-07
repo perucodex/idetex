@@ -13,7 +13,7 @@ Control de hilo a nivel de bolsa física.
     "author": "Codex Development",
     "website": "https://www.perucodex.com",
     "category": "Inventory",
-    "version": "19.0.2.0.0",
+    "version": "19.0.3.0.0",
     "license": "LGPL-3",
     "depends": [
         "mrp",
@@ -24,7 +24,6 @@ Control de hilo a nivel de bolsa física.
     "data": [
         "security/ir.model.access.csv",
         "views/thread_bag_views.xml",
-        "views/thread_bag_import_views.xml",
         "views/thread_bag_consume_wizard_views.xml",
         "views/stock_views.xml",
     ],

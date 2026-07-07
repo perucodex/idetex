@@ -58,9 +58,6 @@ class ThreadBagImport(models.Model):
         [("draft", "Borrador"), ("done", "Importado")], default="draft",
     )
     picking_id = fields.Many2one("stock.picking", string="Recepción", readonly=True, copy=False)
-    bag_ids = fields.One2many("thread.bag", "import_batch_id", string="Bolsas Creadas")
-    bag_count = fields.Integer(compute="_compute_stats", string="Bolsas")
-    total_net = fields.Float(compute="_compute_stats", string="Kg Totales", digits=(16, 3))
     log = fields.Text(string="Resultado", readonly=True)
 
     @api.model
@@ -91,12 +88,6 @@ class ThreadBagImport(models.Model):
         if wh and wh.in_type_id:
             self.picking_type_id = wh.in_type_id
 
-    @api.depends("bag_ids.net_weight")
-    def _compute_stats(self):
-        for rec in self:
-            rec.bag_count = len(rec.bag_ids)
-            rec.total_net = sum(rec.bag_ids.mapped("net_weight"))
-
     # ------------------------------------------------------------------
     def _find_header(self, ws):
         """Localiza la fila de encabezado y mapea columnas requeridas."""
@@ -111,11 +102,13 @@ class ThreadBagImport(models.Model):
                 return row_idx, cells
         return None, None
 
-    def _parse_rows(self, ws, header_row, cols):
+    def _parse_rows(self, ws, header_row, cols, create_lots=True):
         """Devuelve (bag_vals_list_parcial, missing_codes, skipped_dup, skipped_invalid).
 
         Cada elemento de bag_vals_list es un dict con los datos crudos + product/lot
-        resueltos; el move/picking se arma después.
+        resueltos; el move/picking se arma después. Con `create_lots=False` NO crea
+        el `stock.lot` (deja `lot`=False y solo el `lot_name` de texto) — para flujos
+        que difieren la creación de lotes/bolsas hasta validar la recepción.
         """
         c = cols
         Product = self.env["product.product"]
@@ -159,10 +152,10 @@ class ThreadBagImport(models.Model):
             if not product:
                 missing_codes[code] = missing_codes.get(code, 0) + 1
                 continue
-            lot = get_lot(product, lot_name)
+            lot = get_lot(product, lot_name) if create_lots else False
             rows.append({
                 "correl": correl, "product": product, "lot": lot,
-                "net": net,
+                "lot_name": lot_name, "net": net,
                 "gross": _to_float(row[c["k brutos"]]) if "k brutos" in c else 0.0,
                 "tare": _to_float(row[c["tara"]]) if "tara" in c else 0.0,
                 "cones": _to_int(row[c["conos"]]) if "conos" in c else 0,
@@ -290,7 +283,6 @@ class ThreadBagImport(models.Model):
                     "packaging_type": r["packaging"],
                     "yarn_color": r["yarn_color"],
                     "company_id": company.id,
-                    "import_batch_id": self.id,
                     "receipt_picking_id": picking.id,
                     "state": "available",
                 })
@@ -337,16 +329,6 @@ class ThreadBagImport(models.Model):
             "res_id": self.id,
             "view_mode": "form",
             "target": "current",
-        }
-
-    def action_view_bags(self):
-        self.ensure_one()
-        return {
-            "type": "ir.actions.act_window",
-            "name": _("Bolsas Importadas"),
-            "res_model": "thread.bag",
-            "view_mode": "list,form",
-            "domain": [("import_batch_id", "=", self.id)],
         }
 
     def action_view_picking(self):

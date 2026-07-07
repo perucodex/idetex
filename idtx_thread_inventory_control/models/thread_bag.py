@@ -75,15 +75,8 @@ class ThreadBag(models.Model):
     production_id = fields.Many2one(
         "mrp.production", string="Orden de Fabricación", copy=False, index=True,
     )
-    picking_id = fields.Many2one(
-        "stock.picking", string="Transferencia", copy=False, index=True,
-    )
     consumed_date = fields.Datetime(string="Fecha de Consumo", copy=False)
 
-    import_batch_id = fields.Many2one(
-        "thread.bag.import", string="Importación", copy=False, index=True,
-        ondelete="set null",
-    )
     receipt_picking_id = fields.Many2one(
         "stock.picking", string="Recepción", copy=False, index=True,
         ondelete="set null", help="Recepción que dio de alta esta bolsa.",
@@ -145,15 +138,13 @@ class ThreadBag(models.Model):
             })
         return lot
 
-    def action_mark_consumed(self, move_line=False, production=False, picking=False, location=False):
+    def action_mark_consumed(self, move_line=False, production=False, location=False):
         """Marca las bolsas como consumidas (uso interno al validar movimientos)."""
         vals = {"state": "consumed", "consumed_date": fields.Datetime.now()}
         if move_line:
             vals["consumed_move_line_id"] = move_line.id
         if production:
             vals["production_id"] = production.id
-        if picking:
-            vals["picking_id"] = picking.id
         if location:
             vals["location_id"] = location.id
         self.write(vals)
@@ -164,7 +155,6 @@ class ThreadBag(models.Model):
             "state": "available",
             "consumed_move_line_id": False,
             "production_id": False,
-            "picking_id": False,
             "consumed_date": False,
         })
 

@@ -27,6 +27,7 @@ class StockPicking(models.Model):
             "res_model": "thread.bag",
             "view_mode": "list,form",
             "domain": [("receipt_picking_id", "=", self.id)],
+            "context": {'search_default_available': True, 'search_default_group_lot': True},
         }
 
 
@@ -49,6 +50,11 @@ class StockMove(models.Model):
         string="Bolsas Seleccionadas (n)", compute="_compute_thread_selected", store=True,
     )
     thread_control_generated = fields.Boolean(string="Control Generado", default=False)
+    thread_pending_bag_data = fields.Json(
+        string="Packing de hilo pendiente", copy=False,
+        help="Datos por bolsa del packing importado en una RECEPCIÓN, a la espera "
+             "de validar: recién al validar se crean los lotes y las bolsas.",
+    )
 
     @api.depends("thread_bag_ids", "thread_bag_ids.net_weight")
     def _compute_thread_selected(self):
@@ -75,13 +81,16 @@ class StockMove(models.Model):
         self.ensure_one()
         if not self.product_id.is_thread:
             raise UserError(_("Este movimiento no es de un producto de hilo."))
+        # El wizard se crea en el SERVIDOR (no vía defaults) para poder
+        # rehidratar el packing persistido en el movimiento al reabrirlo.
+        wiz = self.env["thread.bag.consume.wizard"]._create_for_move(self)
         return {
             "type": "ir.actions.act_window",
             "name": _("Elegir bolsas de hilo"),
             "res_model": "thread.bag.consume.wizard",
+            "res_id": wiz.id,
             "view_mode": "form",
             "target": "new",
-            "context": {"default_move_id": self.id},
         }
 
     def _thread_apply_bag_selection(self, bags):
@@ -141,12 +150,112 @@ class StockMove(models.Model):
         # elegido (peso neto real de las bolsas) puede superar la demanda: es
         # sobre-entrega; el saldo se liquida después.
 
+    def _thread_apply_reception_lines(self, lines):
+        """Arma el detalle de una RECEPCIÓN de hilo a partir de las líneas del
+        packing importado (transitorias), SIN crear lotes ni bolsas todavía.
+
+        - Crea una línea de detalle por LOTE con la cantidad = suma de pesos netos,
+          poniendo el lote como TEXTO (`lot_name`); Odoo creará el lote al validar
+          (tipo de operación con `use_create_lots`).
+        - Guarda los datos por-bolsa en `move.thread_pending_bag_data`; recién al
+          VALIDAR se crean las `thread.bag` (ver `_action_done`).
+        - NO setea `thread_bag_ids` (para que al validar las bolsas no se marquen
+          consumidas). La demanda (`product_uom_qty`) queda intacta (= lo pedido).
+        """
+        self.ensure_one()
+        MoveLine = self.env["stock.move.line"]
+        product = self.product_id
+        tracked = product.tracking in ("lot", "serial")
+
+        # Datos por bolsa (para crear las bolsas al validar) + agregado por lote.
+        data = []
+        by_lot = {}
+        for ln in lines:
+            data.append({
+                "name": ln.name, "lot_name": ln.lot_name, "cone_qty": ln.cone_qty,
+                "net_weight": ln.net_weight, "gross_weight": ln.gross_weight,
+                "tare": ln.tare, "cone_color": ln.cone_color,
+                "packaging_type": ln.packaging_type, "yarn_color": ln.yarn_color,
+            })
+            key = ln.lot_name if tracked else False
+            by_lot[key] = by_lot.get(key, 0.0) + ln.net_weight
+
+        # Reconstruir las líneas de detalle (una por lote).
+        self.move_line_ids.filtered(lambda l: l.state not in ("done", "cancel")).unlink()
+        for lot_name, qty in by_lot.items():
+            MoveLine.create({
+                "move_id": self.id,
+                "product_id": product.id,
+                "product_uom_id": self.product_uom.id,
+                "lot_name": lot_name if tracked else False,
+                "quantity": qty,
+                "picked": True,
+                "location_id": self.location_id.id,
+                "location_dest_id": self.location_dest_id.id,
+                "company_id": self.company_id.id,
+            })
+
+        self.thread_pending_bag_data = data or False
+
+    def _thread_create_bags_from_pending(self):
+        """Crea las `thread.bag` del packing pendiente tras VALIDAR la recepción.
+
+        Se llama desde `_action_done` (ya con los lotes creados por Odoo a partir
+        de `lot_name`). Toma el lote de las líneas ya hechas (`move_line_ids`), o lo
+        busca/crea como respaldo, y da de alta una bolsa por fila guardada.
+        Idempotente: omite correlativos que ya existan.
+        """
+        self.ensure_one()
+        data = self.thread_pending_bag_data or []
+        if not data:
+            return
+        Bag = self.env["thread.bag"]
+        company = self.company_id
+        dest = self.location_dest_id
+        # Lote por nombre: Odoo ya lo asignó a las líneas al validar.
+        lot_by_name = {
+            ml.lot_id.name: ml.lot_id for ml in self.move_line_ids if ml.lot_id
+        }
+        existing = set(Bag.with_context(active_test=False).search([
+            ("name", "in", [r["name"] for r in data]),
+            ("company_id", "=", company.id),
+        ]).mapped("name"))
+        vals = []
+        for r in data:
+            if r["name"] in existing:
+                continue
+            lot = lot_by_name.get(r["lot_name"]) or Bag._get_or_create_lot(
+                self.product_id, r["lot_name"], company)
+            vals.append({
+                "name": r["name"],
+                "product_id": self.product_id.id,
+                "lot_id": lot.id,
+                "location_id": dest.id,
+                "cone_qty": r.get("cone_qty") or 1,
+                "gross_weight": r.get("gross_weight") or 0.0,
+                "tare": r.get("tare") or 0.0,
+                "net_weight": r.get("net_weight") or 0.0,
+                "cone_color": r.get("cone_color") or False,
+                "packaging_type": r.get("packaging_type") or False,
+                "yarn_color": r.get("yarn_color") or False,
+                "company_id": company.id,
+                "receipt_picking_id": self.picking_id.id,
+                "state": "available",
+            })
+        if vals:
+            Bag.create(vals)
+        self.thread_pending_bag_data = False
+
     # ------------------------------------------------------------------
     # Validación: consumir / reubicar bolsas
     # ------------------------------------------------------------------
     def _action_done(self, cancel_backorder=False):
         done_moves = super()._action_done(cancel_backorder=cancel_backorder)
         for move in done_moves:
+            # Recepción de hilo: crear ahora los lotes/bolsas del packing pendiente
+            # (los lotes ya los creó el core a partir de lot_name).
+            if move.thread_pending_bag_data:
+                move._thread_create_bags_from_pending()
             bags = move.thread_bag_ids
             if not bags:
                 continue
@@ -162,7 +271,7 @@ class StockMove(models.Model):
                             "consumed_move_line_id": False})
             else:
                 # Salida (cliente / scrap / etc.).
-                bags.action_mark_consumed(picking=move.picking_id, location=dest)
+                bags.action_mark_consumed(location=dest)
         return done_moves
 
 
