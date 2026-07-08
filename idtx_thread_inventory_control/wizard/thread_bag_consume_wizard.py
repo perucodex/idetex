@@ -69,23 +69,37 @@ class ThreadBagConsumeWizard(models.TransientModel):
         help="Escanea (o escribe) el código de la bolsa; se agrega automáticamente.",
     )
     is_reception = fields.Boolean(compute="_compute_is_reception")
+    is_done = fields.Boolean(
+        compute="_compute_is_done",
+        help="El movimiento ya está validado: el wizard es SOLO consulta.",
+    )
     import_file = fields.Binary(string="Packing de Hilo (Excel)")
     import_filename = fields.Char(string="Nombre de archivo")
 
     @staticmethod
     def _move_is_reception(move):
-        """La selección es una RECEPCIÓN (compra) y no un consumo/transferencia."""
+        """La selección es una RECEPCIÓN (las bolsas aún no existen en esta compañía).
+
+        Incluye la triangulación (dropship) y los tramos cuyo origen es TRÁNSITO
+        inter-compañía (p.ej. Full Pima recibiendo desde el tránsito lo que Idetex
+        compró con dropship): en ambos se importa el packing del proveedor.
+        """
         if not move:
             return False
         return (
-            move.location_id.usage == "supplier"
-            or move.picking_id.picking_type_id.code == "incoming"
+            move.location_id.usage in ("supplier", "transit")
+            or move.picking_id.picking_type_id.code in ("incoming", "dropship")
         )
 
     @api.depends("move_id")
     def _compute_is_reception(self):
         for wiz in self:
             wiz.is_reception = self._move_is_reception(wiz.move_id)
+
+    @api.depends("move_id.state")
+    def _compute_is_done(self):
+        for wiz in self:
+            wiz.is_done = wiz.move_id.state in ("done", "cancel")
 
     @api.onchange("scan_input")
     def _onchange_scan_input(self):
@@ -149,6 +163,21 @@ class ThreadBagConsumeWizard(models.TransientModel):
         wiz = self.create({"move_id": move.id})
         if self._move_is_reception(move):
             data = move.thread_pending_bag_data or []
+            if not data and move.state == "done":
+                # Recepción ya VALIDADA: el stash se convirtió en bolsas reales;
+                # el detalle para consulta sale de ellas. (En dropship validado el
+                # stash se conserva, así que entra por la rama de arriba.)
+                bags = self.env["thread.bag"].sudo().search([
+                    ("receipt_picking_id", "=", move.picking_id.id),
+                    ("product_id", "=", move.product_id.id),
+                ])
+                data = [{
+                    "name": b.name, "lot_name": b.lot_id.name,
+                    "cone_qty": b.cone_qty, "net_weight": b.net_weight,
+                    "gross_weight": b.gross_weight, "tare": b.tare,
+                    "cone_color": b.cone_color, "packaging_type": b.packaging_type,
+                    "yarn_color": b.yarn_color,
+                } for b in bags]
             if data:
                 self.env["thread.bag.consume.wizard.line"].create([{
                     "wizard_id": wiz.id,
@@ -220,6 +249,8 @@ class ThreadBagConsumeWizard(models.TransientModel):
         picking. Solo carga las filas del producto de esta línea (avisa de otros).
         """
         self.ensure_one()
+        if self.is_done:
+            raise UserError(_("El movimiento ya está validado; el detalle es solo consulta."))
         if not self.import_file:
             raise UserError(_("Suba el archivo Excel del packing."))
         product = self.move_id.product_id
@@ -245,9 +276,13 @@ class ThreadBagConsumeWizard(models.TransientModel):
             raise UserError(_(
                 "No se encontró una hoja con columnas Correl, Articulo, Lote y Kilos."))
 
-        # create_lots=False: parsea SIN crear lotes; devuelve lot_name (texto).
+        # create_lots=False: sin crear lotes (se crean al validar).
+        # check_existing=False: NO omitir correlativos ya existentes — aquí solo se
+        # arma el detalle; la deduplicación real (por compañía) ocurre al crear las
+        # bolsas en la validación. Antes esto dejaba el import en 0 líneas cuando
+        # los correlativos ya existían en OTRA operación/compañía.
         rows, missing_codes, skipped_dup, skipped_invalid = parser._parse_rows(
-            ws, header_row, cols, create_lots=False)
+            ws, header_row, cols, create_lots=False, check_existing=False)
         prod_rows = [r for r in rows if r["product"] == product]
 
         # Persistir las líneas (reemplazando las anteriores de este wizard).
@@ -303,6 +338,8 @@ class ThreadBagConsumeWizard(models.TransientModel):
 
     def action_confirm(self):
         self.ensure_one()
+        if self.is_done:
+            raise UserError(_("El movimiento ya está validado; el detalle es solo consulta."))
         if self.is_reception:
             # Recepción: arma el detalle con el lote como TEXTO y guarda los datos
             # por bolsa en el movimiento. Lotes y bolsas se crean al VALIDAR.

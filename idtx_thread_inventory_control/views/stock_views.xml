@@ -64,9 +64,10 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='move_ids']/list" position="inside">
                 <field name="thread_is_thread" column_invisible="1"/>
+                <!-- En 'done' se abre en modo CONSULTA (ver el detalle de bolsas). -->
                 <button name="action_open_thread_bag_selector" type="object"
                         string="Elegir bolsas" icon="fa-shopping-bag"
-                        invisible="not thread_is_thread or state in ('draft', 'done', 'cancel')"/>
+                        invisible="not thread_is_thread or state in ('draft', 'cancel')"/>
             </xpath>
             <!-- Para hilo, cantidad y lotes los fijan las bolsas: solo lectura inline. -->
             <xpath expr="//field[@name='move_ids']/list/field[@name='quantity']" position="attributes">

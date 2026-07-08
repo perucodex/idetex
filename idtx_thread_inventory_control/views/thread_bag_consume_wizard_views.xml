@@ -8,6 +8,7 @@
                 <field name="move_id" invisible="1"/>
                 <field name="allowed_bag_ids" invisible="1"/>
                 <field name="is_reception" invisible="1"/>
+                <field name="is_done" invisible="1"/>
                 <group>
                     <group>
                         <field name="product_id"/>
@@ -22,13 +23,13 @@
                     </group>
                 </group>
                 <!-- Consumo / transferencia: escanear el correlativo -->
-                <group invisible="is_reception">
+                <group invisible="is_reception or is_done">
                     <field name="scan_input" placeholder="Escanea aquí el correlativo de la bolsa…"
                            widget="char"/>
                 </group>
                 <!-- Recepción de compra: al SUBIR el packing (Excel) se llenan las
                      líneas de abajo. NO crea lotes ni bolsas; se crean al VALIDAR. -->
-                <group invisible="not is_reception" string="Packing de hilo (Excel)">
+                <group invisible="not is_reception or is_done" string="Packing de hilo (Excel)">
                     <field name="import_file" filename="import_filename" string="Archivo"/>
                     <field name="import_filename" invisible="1"/>
                     <button name="action_import_packing" type="object" string="Importar packing"
@@ -36,7 +37,7 @@
                 </group>
                 <!-- Consumo / transferencia: bolsas existentes -->
                 <separator string="Bolsas de la selección (agregar / quitar)" invisible="is_reception"/>
-                <field name="bag_ids" widget="many2many" invisible="is_reception"
+                <field name="bag_ids" widget="many2many" invisible="is_reception" readonly="is_done"
                        options="{'no_create': True, 'no_open': True}">
                     <list limit="1000">
                         <field name="name"/>
@@ -47,10 +48,13 @@
                         <field name="cone_color" optional="hide"/>
                     </list>
                 </field>
-                <!-- Recepción: líneas del packing (los lotes/bolsas se crean al validar) -->
+                <!-- Recepción: líneas del packing (los lotes/bolsas se crean al validar).
+                     Con el movimiento validado, es el detalle histórico (solo consulta). -->
                 <separator string="Bolsas del packing (los lotes y bolsas se crean al Validar)"
-                           invisible="not is_reception"/>
-                <field name="line_ids" invisible="not is_reception">
+                           invisible="not is_reception or is_done"/>
+                <separator string="Detalle de bolsas del packing (movimiento validado — solo consulta)"
+                           invisible="not is_reception or not is_done"/>
+                <field name="line_ids" invisible="not is_reception" readonly="is_done">
                     <list editable="bottom">
                         <field name="name"/>
                         <field name="lot_name"/>
@@ -65,10 +69,13 @@
                 </field>
                 <footer>
                     <button name="action_confirm" type="object" string="Confirmar selección"
-                            class="btn-primary"/>
+                            class="btn-primary" invisible="is_done"/>
                     <button name="action_clear_lines" type="object" string="Limpiar"
-                            class="btn-secondary" invisible="not is_reception"/>
-                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                            class="btn-secondary" invisible="not is_reception or is_done"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"
+                            invisible="is_done"/>
+                    <button string="Cerrar" class="btn-secondary" special="cancel"
+                            invisible="not is_done"/>
                 </footer>
             </form>
         </field>
