@@ -74,12 +74,17 @@ class ThreadBagConsumeWizard(models.TransientModel):
 
     @staticmethod
     def _move_is_reception(move):
-        """La selección es una RECEPCIÓN (compra) y no un consumo/transferencia."""
+        """La selección es una RECEPCIÓN (las bolsas aún no existen en esta compañía).
+
+        Incluye la triangulación (dropship) y los tramos cuyo origen es TRÁNSITO
+        inter-compañía (p.ej. Full Pima recibiendo desde el tránsito lo que Idetex
+        compró con dropship): en ambos se importa el packing del proveedor.
+        """
         if not move:
             return False
         return (
-            move.location_id.usage == "supplier"
-            or move.picking_id.picking_type_id.code == "incoming"
+            move.location_id.usage in ("supplier", "transit")
+            or move.picking_id.picking_type_id.code in ("incoming", "dropship")
         )
 
     @api.depends("move_id")
@@ -245,9 +250,13 @@ class ThreadBagConsumeWizard(models.TransientModel):
             raise UserError(_(
                 "No se encontró una hoja con columnas Correl, Articulo, Lote y Kilos."))
 
-        # create_lots=False: parsea SIN crear lotes; devuelve lot_name (texto).
+        # create_lots=False: sin crear lotes (se crean al validar).
+        # check_existing=False: NO omitir correlativos ya existentes — aquí solo se
+        # arma el detalle; la deduplicación real (por compañía) ocurre al crear las
+        # bolsas en la validación. Antes esto dejaba el import en 0 líneas cuando
+        # los correlativos ya existían en OTRA operación/compañía.
         rows, missing_codes, skipped_dup, skipped_invalid = parser._parse_rows(
-            ws, header_row, cols, create_lots=False)
+            ws, header_row, cols, create_lots=False, check_existing=False)
         prod_rows = [r for r in rows if r["product"] == product]
 
         # Persistir las líneas (reemplazando las anteriores de este wizard).

@@ -1,5 +1,9 @@
+import logging
+
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+
+_logger = logging.getLogger(__name__)
 
 
 class StockPicking(models.Model):
@@ -163,30 +167,51 @@ class StockMove(models.Model):
           consumidas). La demanda (`product_uom_qty`) queda intacta (= lo pedido).
         """
         self.ensure_one()
+        data = [{
+            "name": ln.name, "lot_name": ln.lot_name, "cone_qty": ln.cone_qty,
+            "net_weight": ln.net_weight, "gross_weight": ln.gross_weight,
+            "tare": ln.tare, "cone_color": ln.cone_color,
+            "packaging_type": ln.packaging_type, "yarn_color": ln.yarn_color,
+        } for ln in lines]
+        self._thread_apply_reception_data(data)
+
+    def _thread_apply_reception_data(self, data):
+        """Arma el detalle de una recepción de hilo desde los datos por-bolsa
+        (lista de dicts) y guarda el stash. Ver `_thread_apply_reception_lines`.
+        """
+        self.ensure_one()
+        if self.state in ("done", "cancel"):
+            raise UserError(_(
+                "El movimiento %s ya está %s; no se puede aplicar el packing.")
+                % (self.product_id.display_name, self.state))
         MoveLine = self.env["stock.move.line"]
         product = self.product_id
         tracked = product.tracking in ("lot", "serial")
 
-        # Datos por bolsa (para crear las bolsas al validar) + agregado por lote.
-        data = []
         by_lot = {}
-        for ln in lines:
-            data.append({
-                "name": ln.name, "lot_name": ln.lot_name, "cone_qty": ln.cone_qty,
-                "net_weight": ln.net_weight, "gross_weight": ln.gross_weight,
-                "tare": ln.tare, "cone_color": ln.cone_color,
-                "packaging_type": ln.packaging_type, "yarn_color": ln.yarn_color,
-            })
-            key = ln.lot_name if tracked else False
-            by_lot[key] = by_lot.get(key, 0.0) + ln.net_weight
+        for r in data:
+            key = r.get("lot_name") if tracked else False
+            by_lot[key] = by_lot.get(key, 0.0) + (r.get("net_weight") or 0.0)
 
-        # Reconstruir las líneas de detalle (una por lote).
+        # Reconstruir las líneas de detalle (una por lote). Si el lote YA existe
+        # (de esta compañía o compartido sin compañía) se REUSA vía lot_id — si
+        # solo se pusiera lot_name, el core intentaría crear un lote duplicado al
+        # validar y reventaría la restricción de unicidad (caso real: el tramo de
+        # la compañía receptora tras un dropship, con lotes ya creados).
+        Lot = self.env["stock.lot"]
         self.move_line_ids.filtered(lambda l: l.state not in ("done", "cancel")).unlink()
         for lot_name, qty in by_lot.items():
+            lot = Lot.search([
+                ("name", "=", lot_name),
+                ("product_id", "=", product.id),
+                "|", ("company_id", "=", False),
+                ("company_id", "=", self.company_id.id),
+            ], limit=1) if (tracked and lot_name) else Lot
             MoveLine.create({
                 "move_id": self.id,
                 "product_id": product.id,
                 "product_uom_id": self.product_uom.id,
+                "lot_id": lot.id if lot else False,
                 "lot_name": lot_name if tracked else False,
                 "quantity": qty,
                 "picked": True,
@@ -246,16 +271,114 @@ class StockMove(models.Model):
             Bag.create(vals)
         self.thread_pending_bag_data = False
 
+    def _thread_create_intercompany_receipt(self):
+        """DROPSHIP a otra compañía de la BD: crea su RECEPCIÓN pre-llenada.
+
+        Caso maquila (Idetex compra a Hilurin con entrega directa a Full Pima,
+        SIN venta Idetex→FP): al validar el DS se crea en la compañía receptora
+        una recepción (tránsito → su almacén) con el detalle por lote y el
+        packing por-bolsa ya cargados. La receptora solo VALIDA al llegar el
+        hilo → ahí nacen sus bolsas y su stock.
+        """
+        self.ensure_one()
+        # Destinatario REAL de la mercadería: la dirección de entrega de la OC
+        # (dest_address_id) o el partner del MOVE. OJO: el partner del PICKING
+        # dropship es el PROVEEDOR (p.ej. Hilurin) — usarlo crearía la recepción
+        # en la compañía equivocada.
+        partner = (self.purchase_line_id.order_id.dest_address_id
+                   or self.partner_id)
+        if not partner:
+            return
+        company = self.env["res.company"].sudo().search(
+            [("partner_id", "=", partner.commercial_partner_id.id)], limit=1)
+        if not company or company == self.company_id:
+            return
+        # Tipo de recepción de la receptora (config inter-compañía o su almacén).
+        ptype = company.sudo().intercompany_receipt_type_id
+        if not ptype:
+            wh = company.sudo().intercompany_warehouse_id
+            ptype = wh.in_type_id if wh else self.env["stock.picking.type"].sudo().search(
+                [("code", "=", "incoming"), ("company_id", "=", company.id)], limit=1)
+        if not ptype:
+            _logger.warning(
+                "Hilo dropship: no hay tipo de recepción para la compañía %s; "
+                "no se creó la recepción automática.", company.name)
+            return
+        # Origen: el tránsito donde el dropship dejó la mercadería (o el default).
+        src = self.location_dest_id if self.location_dest_id.usage == "transit" \
+            else (ptype.default_location_src_id
+                  or self.env.ref("stock.stock_location_inter_company", raise_if_not_found=False)
+                  or self.location_dest_id)
+        dest = ptype.default_location_dest_id
+        data = self.thread_pending_bag_data or []
+        total = sum((r.get("net_weight") or 0.0) for r in data)
+
+        Picking = self.env["stock.picking"].sudo().with_company(company)
+        picking = Picking.create({
+            "picking_type_id": ptype.id,
+            "location_id": src.id,
+            "location_dest_id": dest.id,
+            "partner_id": self.company_id.partner_id.id,
+            "origin": self.picking_id.name,
+            "company_id": company.id,
+        })
+        new_move = self.env["stock.move"].sudo().with_company(company).create({
+            "picking_id": picking.id,
+            "product_id": self.product_id.id,
+            "product_uom": self.product_uom.id,
+            "product_uom_qty": total or self.quantity,
+            "location_id": src.id,
+            "location_dest_id": dest.id,
+            "company_id": company.id,
+        })
+        picking.action_confirm()
+        # Detalle por lote + packing por-bolsa listos: la receptora solo valida.
+        new_move._thread_apply_reception_data(data)
+        self.picking_id.message_post(body=_(
+            "Se creó la recepción %(rcpt)s en %(comp)s con el packing de hilo "
+            "(%(n)s bolsas, %(kg).2f kg). Se validará al llegar la mercadería.",
+            rcpt=picking.name, comp=company.name, n=len(data), kg=total))
+        return picking
+
     # ------------------------------------------------------------------
     # Validación: consumir / reubicar bolsas
     # ------------------------------------------------------------------
     def _action_done(self, cancel_backorder=False):
+        # Recepción de hilo con packing pendiente: resolver/crear los LOTES con la
+        # compañía del movimiento ANTES de que el core procese lot_name. El core
+        # (`_prepare_new_lot_vals`) crea lotes SIN compañía cuando el producto es
+        # compartido, y eso choca con la unicidad si el mismo lote ya existe en
+        # OTRA compañía (caso inter-compañía: Idetex ya creó I020626B y Full Pima
+        # valida su recepción). `_get_or_create_lot` busca en la compañía o
+        # compartidos y, si no existe, lo crea CON compañía específica (permitido).
+        Bag = self.env["thread.bag"]
+        for move in self:
+            if not move.thread_pending_bag_data:
+                continue
+            if move.product_id.tracking not in ("lot", "serial"):
+                continue
+            for ml in move.move_line_ids:
+                if ml.state in ("done", "cancel") or ml.lot_id or not ml.lot_name:
+                    continue
+                ml.lot_id = Bag._get_or_create_lot(
+                    move.product_id, ml.lot_name, move.company_id)
+
         done_moves = super()._action_done(cancel_backorder=cancel_backorder)
         for move in done_moves:
             # Recepción de hilo: crear ahora los lotes/bolsas del packing pendiente
             # (los lotes ya los creó el core a partir de lot_name).
             if move.thread_pending_bag_data:
-                move._thread_create_bags_from_pending()
+                if move.picking_id.picking_type_id.code == "dropship":
+                    # Tramo DROPSHIP (triangulación / maquila): el import solo
+                    # arma el detalle (lotes/kilos) para validar; aquí NO se
+                    # crean bolsas. Si el destinatario es OTRA compañía de la BD
+                    # (p.ej. Full Pima, servicio de tejido), se crea AUTOMÁTICO
+                    # su recepción pre-llenada con el packing; al validarla, las
+                    # bolsas y el stock nacen en ESA compañía.
+                    move._thread_create_intercompany_receipt()
+                    move.thread_pending_bag_data = False
+                else:
+                    move._thread_create_bags_from_pending()
             bags = move.thread_bag_ids
             if not bags:
                 continue
