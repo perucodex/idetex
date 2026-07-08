@@ -102,17 +102,13 @@ class ThreadBagImport(models.Model):
                 return row_idx, cells
         return None, None
 
-    def _parse_rows(self, ws, header_row, cols, create_lots=True, check_existing=True):
+    def _parse_rows(self, ws, header_row, cols, create_lots=True):
         """Devuelve (bag_vals_list_parcial, missing_codes, skipped_dup, skipped_invalid).
 
         Cada elemento de bag_vals_list es un dict con los datos crudos + product/lot
         resueltos; el move/picking se arma después. Con `create_lots=False` NO crea
         el `stock.lot` (deja `lot`=False y solo el `lot_name` de texto) — para flujos
         que difieren la creación de lotes/bolsas hasta validar la recepción.
-        Con `check_existing=False` NO omite correlativos que ya existan como bolsa
-        en la compañía (solo dedup dentro del archivo) — para flujos que solo arman
-        el detalle y difieren/delegan la creación de bolsas (la deduplicación real
-        ocurre al crearlas).
         """
         c = cols
         Product = self.env["product.product"]
@@ -125,10 +121,8 @@ class ThreadBagImport(models.Model):
             if code:
                 product_by_code[code.upper()] = p
 
-        existing = set()
-        if check_existing:
-            existing = set(Bag.with_context(active_test=False).search(
-                [("company_id", "=", company.id)]).mapped("name"))
+        existing = set(Bag.with_context(active_test=False).search(
+            [("company_id", "=", company.id)]).mapped("name"))
 
         lot_cache = {}
         def get_lot(product, lot_name):
