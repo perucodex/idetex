@@ -8,3 +8,5 @@ access_mrp_workorder_option_line,mrp_workorder_option_line,model_mrp_workorder_o
 access_operation_parameter,access_operation_parameter,model_operation_parameter,base.group_user,1,1,1,1
 access_scale_registry,scale_registry,model_scale_registry,base.group_user,1,1,1,1
 access_batch_add_wizard,batch_add_wizard,model_batch_add_wizard,base.group_user,1,1,1,1
+access_mrp_workorder_batch_split,mrp_workorder_batch_split,model_mrp_workorder_batch_split,base.group_user,1,1,1,1
+access_mrp_workorder_batch_split_line,mrp_workorder_batch_split_line,model_mrp_workorder_batch_split_line,base.group_user,1,1,1,1

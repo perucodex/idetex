@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- El grupo manager puede editar la descripcion en cualquier estado
+             (no solo en 'test'). Al guardar, el write() propaga el cambio a
+             las fichas tecnicas (related), al producto y a TEXPLUS
+             (ARTICU.ArtDsc en todas las empresas/clientes). -->
+        <record id="product_analysis_form_view_inherit_dbf" model="ir.ui.view">
+            <field name="name">product.analysis.form.inherit.dbf</field>
+            <field name="model">product.analysis</field>
+            <field name="inherit_id" ref="idtx_product_development.product_analysis_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='product_description']" position="attributes">
+                    <attribute name="groups">!idtx_product_development.group_module_product_development_manager</attribute>
+                </xpath>
+                <xpath expr="//field[@name='product_description']" position="after">
+                    <field name="product_description" required="1"
+                           groups="idtx_product_development.group_module_product_development_manager"/>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -371,15 +371,73 @@ class MrpWorkorder(models.Model):
         except Exception as e:
             return {'status': 'danger', 'message': _(f'Error: {str(e)}')}
 
-    def action_create_size_record(self, size_id, quantity, employee_id, equipment_id):
-        self.roll_ids.create({
-            'sequence': len(self.roll_ids),
-            'workorder_id': self.id,
-            'size_id': size_id,
-            'quantity': quantity,
-            'employee_id': employee_id,
-            'equipment_id': equipment_id,
-        })
+    def action_create_size_record(self, size_id, quantity, employee_id, equipment_id,
+                                  option_id=False, manual_weight=None, scale_id=False):
+        """Registro por TALLA de rectilíneos: además de la cantidad lleva PESO
+        (leído de la balanza en vivo o manual autorizado, igual que
+        `action_read_scale`). Los valores llegan como strings desde el diálogo.
+        """
+        self.ensure_one()
+        try:
+            size_id = int(size_id) if size_id else False
+            employee_id = int(employee_id) if employee_id else False
+            equipment_id = int(equipment_id) if equipment_id else False
+            option_id = int(option_id) if option_id else False
+            quantity = int(float(quantity or 0))
+            scale = self.env['scale.registry'].browse(int(scale_id)) if scale_id else False
+
+            if not employee_id or not equipment_id:
+                return {'status': 'danger', 'message': _('Employee and equipment are required')}
+            if not size_id or quantity <= 0:
+                return {'status': 'danger', 'message': _('You must select a size and quantity.')}
+
+            if option_id:
+                option = self.env['mrp.workorder.option'].browse(option_id)
+                if not option.exists() or option.workorder_id != self:
+                    return {'status': 'danger', 'message': _('The selected option does not belong to this workorder')}
+                if employee_id not in option.employee_ids.ids:
+                    return {'status': 'danger', 'message': _('The selected employee is not assigned to this option')}
+                if equipment_id not in option.equipment_ids.ids:
+                    return {'status': 'danger', 'message': _('The selected equipment is not assigned to this option')}
+
+            peso = None
+            if manual_weight not in (None, False, ""):
+                peso = round(float(manual_weight), 2)
+            if peso is None or peso <= 0:
+                return {'status': 'danger', 'message': _('No valid weight was provided')}
+
+            # Rolls del mismo equipment para calcular start (igual que la balanza).
+            rolls = self.roll_ids.filtered(lambda r: r.equipment_id.id == equipment_id)
+            last_date = rolls.sorted('roll_end', reverse=True)[0].roll_end if rolls else None
+            start = last_date or (self.time_ids and self.time_ids[-1].date_start) or fields.Datetime.now()
+            end = fields.Datetime.now()
+
+            roll = self.roll_ids.create({
+                'sequence': len(self.roll_ids),
+                'workorder_id': self.id,
+                'size_id': size_id,
+                'quantity': quantity,
+                'gross_weight': peso,
+                'net_weight': peso,
+                'employee_id': employee_id,
+                'equipment_id': equipment_id,
+                # Opción de la OT (en tejido el roll la exige: define
+                # tejedora/operarios y el consumo de hilo por opción).
+                'option_id': option_id,
+                'roll_start': start,
+                'roll_end': end,
+            })
+
+            if scale and scale.printer_ip:
+                roll._print_zpl_to_network(roll.create_zpl(), scale.printer_ip)
+
+            return {
+                'status': 'success',
+                'peso': peso,
+                'message': _(f'Added size {roll.size_id.size} x {quantity} ({peso} kg) production order {self.production_id.name}'),
+            }
+        except Exception as e:
+            return {'status': 'danger', 'message': _(f'Error: {str(e)}')}
 
     def action_create_registry_record(self, batch_id_or_payload, employee_id=False, equipment_id=False):
         self.ensure_one()

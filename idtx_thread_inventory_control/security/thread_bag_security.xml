@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Regla de registro multi-compañía: cada compañía ve SOLO sus bolsas.
+         Sin esta regla, el company_id no filtra nada (los ACL del CSV solo
+         controlan CRUD, no el aislamiento por compañía). -->
+    <record id="thread_bag_company_rule" model="ir.rule">
+        <field name="name">Bolsas de hilo: multi-compañía</field>
+        <field name="model_id" ref="model_thread_bag"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="thread_bag_import_company_rule" model="ir.rule">
+        <field name="name">Importación de bolsas: multi-compañía</field>
+        <field name="model_id" ref="model_thread_bag_import"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

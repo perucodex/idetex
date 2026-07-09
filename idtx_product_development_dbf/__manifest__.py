@@ -18,6 +18,7 @@ de FoxPro usadas por SITPRO/Tintoreria.
     'data': [
         'security/ir.model.access.csv',
         'data/cron.xml',
+        'views/product_analysis_views.xml',
         'views/res_config_settings_views.xml',
         'views/technical_sheet_views.xml',
         'views/mrp_base_process_views.xml',

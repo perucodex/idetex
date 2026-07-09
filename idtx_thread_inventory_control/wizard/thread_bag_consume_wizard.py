@@ -1,8 +1,112 @@
 import base64
 import io
+import math
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+
+
+def _pick_indices_for_target(weights, target):
+    """Elige el subconjunto de `weights` cuya suma sea >= `target` con el MENOR
+    exceso posible (la combinación ÓPTIMA que más se acerca a la demanda, nunca
+    por debajo si el total alcanza).
+
+    Exacto vía subset-sum con bitsets (granularidad 0.01 kg, pesos truncados
+    hacia abajo para garantizar suma real >= target). Si el problema es muy
+    grande (n * rango de sumas), cae a un greedy descendente + mejor ajuste
+    (agregar la bolsa mínima que cubra el hueco o el mejor intercambio 1x1),
+    que deja excesos de fracciones de kg.
+
+    Devuelve la lista de índices elegidos. Si la suma total no alcanza el
+    target, devuelve TODOS los índices (mejor esfuerzo, queda por debajo).
+    """
+    n = len(weights)
+    if not n or target <= 0:
+        return []
+    if sum(weights) < target:
+        return list(range(n))
+
+    scale = 100  # centésimas de kg (10 g)
+    w_int = [int(w * scale + 1e-9) for w in weights]  # truncar hacia abajo
+    T = int(math.ceil(target * scale - 1e-9))
+    B = T + max(w_int)  # el óptimo está en [T, T + w_max]
+
+    # DP exacto solo si el trabajo es razonable. n*B = bits procesados; los
+    # enteros de Python operan 64 bits/palabra, así que 2e10 ≈ pocos segundos
+    # (cubre p.ej. 2,500 bolsas contra 60,000 kg de demanda).
+    if n * B <= 20_000_000_000:
+        CHUNK = 64
+        full = (1 << (B + 1)) - 1
+        checkpoints = []  # máscara ANTES de cada bloque
+        mask = 1
+        for start in range(0, n, CHUNK):
+            checkpoints.append(mask)
+            for i in range(start, min(start + CHUNK, n)):
+                if w_int[i]:
+                    mask = (mask | (mask << w_int[i])) & full
+        # menor suma alcanzable en [T, B]
+        window = mask >> T
+        if not window:
+            return list(range(n))  # no debería pasar (total >= target)
+        best = ((window & -window).bit_length() - 1) + T
+        # reconstrucción por bloques (recalcula máscaras dentro del bloque)
+        chosen = []
+        remaining = best
+        for b in range(len(checkpoints) - 1, -1, -1):
+            start = b * CHUNK
+            end = min(start + CHUNK, n)
+            masks = [checkpoints[b]]
+            for i in range(start, end):
+                m = masks[-1]
+                if w_int[i]:
+                    m = (m | (m << w_int[i])) & full
+                masks.append(m)
+            for i in range(end - 1, start - 1, -1):
+                before = masks[i - start]
+                if w_int[i] and remaining >= w_int[i] and not ((before >> remaining) & 1):
+                    chosen.append(i)
+                    remaining -= w_int[i]
+            # si remaining ya es alcanzable al inicio del bloque, seguir subiendo
+        return sorted(chosen)
+
+    # ---- Fallback casi-óptimo: greedy descendente + mejor ajuste ----
+    order = sorted(range(n), key=lambda i: -weights[i])
+    sel, total = [], 0.0
+    for i in order:
+        if total + weights[i] <= target:
+            sel.append(i)
+            total += weights[i]
+    gap = target - total
+    if gap <= 1e-9:
+        return sorted(sel)
+    sel_set = set(sel)
+    unsel = sorted((i for i in range(n) if i not in sel_set), key=lambda i: weights[i])
+    # Opción A: agregar la bolsa más chica (todas las no elegidas son > gap).
+    best_excess = weights[unsel[0]] - gap
+    best_plan = ("add", unsel[0])
+    # Opción B: mejor intercambio 1x1 (sale s, entra u; u - s >= gap mínimo).
+    sel_asc = sorted(sel, key=lambda i: weights[i])
+    j = 0
+    for u in unsel:
+        wu = weights[u]
+        # el s más grande con wu - ws >= gap
+        cand = None
+        for s in sel_asc:
+            if wu - weights[s] >= gap - 1e-9:
+                cand = s
+            else:
+                break
+        if cand is not None:
+            exc = (wu - weights[cand]) - gap
+            if exc < best_excess - 1e-9:
+                best_excess = exc
+                best_plan = ("swap", cand, u)
+    if best_plan[0] == "add":
+        sel.append(best_plan[1])
+    else:
+        sel.remove(best_plan[1])
+        sel.append(best_plan[2])
+    return sorted(sel)
 
 
 class ThreadBagConsumeWizardLine(models.TransientModel):
@@ -216,17 +320,38 @@ class ThreadBagConsumeWizard(models.TransientModel):
         }
 
     def action_import_packing(self):
-        """RECEPCIÓN: lee el Excel y GUARDA las líneas del packing como registros
-        reales (`thread.bag.consume.wizard.line`) ligados al wizard.
+        """Importar TODO el packing (todas las filas del producto)."""
+        return self._import_packing(limit_to_demand=False)
 
-        Al persistirlas en la BD, la lista se pagina normal y el Confirmar las lee
-        TODAS (sin depender del límite del widget), soportando cualquier cantidad
-        de bolsas. NO crea lotes ni `thread.bag`: eso ocurre solo al VALIDAR el
-        picking. Solo carga las filas del producto de esta línea (avisa de otros).
+    def action_import_packing_demand(self):
+        """Importar SOLO hasta cubrir la demanda: acumula bolsas en el orden del
+        Excel y se detiene apenas el total alcanza/supera la demanda (incluye la
+        bolsa que cruza el umbral: demanda 1000 y 40 bolsas = 998.7 → entra la
+        41 y el total queda en ~1023, nunca por debajo de la demanda si alcanza).
+        """
+        return self._import_packing(limit_to_demand=True)
+
+    def _import_packing(self, limit_to_demand=False):
+        """Lee el Excel del packing y actúa según el modo del wizard.
+
+        RECEPCIÓN: guarda las filas como líneas reales del wizard
+        (`thread.bag.consume.wizard.line`) — al persistirlas la lista se pagina
+        normal y el Confirmar las lee TODAS de la BD, sin límite. NO crea lotes
+        ni `thread.bag` (eso ocurre al VALIDAR el picking).
+
+        CONSUMO / ENTREGA: SELECCIONA las bolsas EXISTENTES por correlativo (en
+        vez de escanearlas una por una) y las agrega a la selección; reporta las
+        no encontradas / no disponibles / en otra ubicación. No crea nada.
+
+        Con `limit_to_demand=True` solo se toma lo necesario para cubrir la
+        demanda del movimiento (en el orden del Excel).
         """
         self.ensure_one()
         if not self.import_file:
             raise UserError(_("Suba el archivo Excel del packing."))
+        if limit_to_demand and self.demand <= 0:
+            raise UserError(_(
+                "La demanda del movimiento es 0: usa 'Importar todo'."))
         product = self.move_id.product_id
         company = self.move_id.company_id
         try:
@@ -258,8 +383,56 @@ class ThreadBagConsumeWizard(models.TransientModel):
         rows, missing_codes, skipped_dup, skipped_invalid = parser._parse_rows(
             ws, header_row, cols, create_lots=False, check_existing=False)
         prod_rows = [r for r in rows if r["product"] == product]
+        other = sorted({(r["product"].default_code or r["product"].display_name)
+                        for r in rows if r["product"] != product})
+        self.import_file = False
+        self.import_filename = False
 
-        # Persistir las líneas (reemplazando las anteriores de este wizard).
+        if self.is_reception:
+            if limit_to_demand:
+                # Combinación ÓPTIMA: subconjunto con suma >= demanda y exceso
+                # mínimo, calculado ANTES de crear las líneas.
+                idx = _pick_indices_for_target(
+                    [r["net"] for r in prod_rows], self.demand)
+                prod_rows = [prod_rows[i] for i in idx]
+                total = sum(r["net"] for r in prod_rows)
+                msg_extra = _("(óptimo para demanda %.2f kg: %.2f kg, diferencia %+.2f)") % (
+                    self.demand, total, total - self.demand)
+            else:
+                msg_extra = ""
+            self._load_packing_lines(prod_rows)
+            msg = [(_("Bolsas cargadas para %s: %s %s") % (
+                product.default_code or product.display_name,
+                len(prod_rows), msg_extra)).strip()]
+        else:
+            msg, _found = self._select_existing_bags(
+                [r["correl"] for r in prod_rows],
+                max_net=self.demand if limit_to_demand else None)
+
+        if other:
+            msg.append(_("El Excel trae otros productos; impórtalos desde la línea "
+                         "de cada uno: %s") % ", ".join(other))
+        if missing_codes:
+            msg.append(_("Artículos del Excel no existentes en Odoo: %s")
+                       % ", ".join(sorted(missing_codes)))
+        # Notificación (NO sticky) + recarga del wizard. El `next` funciona porque
+        # _reload_action incluye `views` explícito (el cliente hace .map sobre esa
+        # lista y no la deriva de view_mode en esta ruta).
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("Packing importado"),
+                "message": "\n".join(msg),
+                "type": "warning" if (other or missing_codes) else "success",
+                "sticky": False,
+                "next": self._reload_action(),
+            },
+        }
+
+    def _load_packing_lines(self, prod_rows):
+        """Persiste las filas del Excel como líneas del wizard (reemplaza las
+        anteriores). Usado por la recepción y por la declaración de packing."""
         Line = self.env["thread.bag.consume.wizard.line"]
         Line.search([("wizard_id", "=", self.id)]).unlink()
         Line.create([{
@@ -274,38 +447,82 @@ class ThreadBagConsumeWizard(models.TransientModel):
             "packaging_type": r["packaging"],
             "yarn_color": r["yarn_color"],
         } for r in prod_rows])
-        self.import_file = False
-        self.import_filename = False
 
-        # Notificación (NO sticky) + recarga del wizard. El `next` funciona porque
-        # _reload_action incluye `views` explícito (el cliente hace .map sobre esa
-        # lista y no la deriva de view_mode en esta ruta).
-        msg = [_("Bolsas cargadas para %s: %s") % (
-            product.default_code or product.display_name, len(prod_rows))]
-        other = sorted({(r["product"].default_code or r["product"].display_name)
-                        for r in rows if r["product"] != product})
-        if other:
-            msg.append(_("El Excel trae otros productos; impórtalos desde la línea "
-                         "de cada uno: %s") % ", ".join(other))
-        if missing_codes:
-            msg.append(_("Artículos del Excel no existentes en Odoo: %s")
-                       % ", ".join(sorted(missing_codes)))
-        return {
-            "type": "ir.actions.client",
-            "tag": "display_notification",
-            "params": {
-                "title": _("Packing importado"),
-                "message": "\n".join(msg),
-                "type": "warning" if (other or missing_codes) else "success",
-                "sticky": False,
-                "next": self._reload_action(),
-            },
-        }
+    def _select_existing_bags(self, correls, max_net=None):
+        """CONSUMO/ENTREGA: agrega a la selección las bolsas EXISTENTES cuyos
+        correlativos vienen en el packing. Mismas validaciones que el escaneo
+        (disponible + en la ubicación de origen). Devuelve (resumen, n_halladas).
+
+        Con `max_net` se eligen, ENTRE TODAS las bolsas válidas del Excel, las
+        que dan la suma >= al neto faltante con exceso MÍNIMO (óptimo, no en el
+        orden del archivo), partiendo de lo YA seleccionado.
+        """
+        move = self.move_id
+        Bag = self.env["thread.bag"]
+        found = {b.name: b for b in Bag.search([
+            ("name", "in", correls),
+            ("product_id", "=", move.product_id.id),
+            ("company_id", "=", move.company_id.id),
+        ])}
+        src = move.location_id
+        current = move.thread_bag_ids
+        missing, unavailable, wrong_loc = [], [], []
+        already = Bag      # ya elegidas que reaparecen (se re-aceptan, no suman)
+        candidates = []    # bolsas nuevas VÁLIDAS (candidatas a entrar)
+        for correl in correls:
+            bag = found.get(correl)
+            if not bag:
+                missing.append(correl)
+            elif bag in current or bag in self.bag_ids:
+                already |= bag
+            elif bag.state != "available":
+                unavailable.append(correl)
+            elif src and not bag.filtered_domain([("location_id", "child_of", src.id)]):
+                wrong_loc.append(correl)
+            else:
+                candidates.append(bag)
+        if max_net is not None:
+            # Falta por cubrir = demanda objetivo - lo ya seleccionado.
+            residual = max_net - sum(self.bag_ids.mapped("net_weight"))
+            if residual > 1e-9 and candidates:
+                idx = _pick_indices_for_target(
+                    [b.net_weight for b in candidates], residual)
+                candidates = [candidates[i] for i in idx]
+            else:
+                candidates = []
+        to_add = already
+        for b in candidates:
+            to_add |= b
+        total = sum(self.bag_ids.mapped("net_weight")) + sum(
+            b.net_weight for b in candidates)
+        if to_add:
+            self.bag_ids = [(4, b.id) for b in to_add]
+
+        def _sample(items):
+            s = ", ".join(items[:10])
+            return s + ("…" if len(items) > 10 else "")
+
+        msg = [_("Bolsas seleccionadas del Excel: %s de %s")
+               % (len(to_add), len(correls))]
+        if max_net is not None:
+            msg.append(_("Cobertura de la demanda (%.2f kg): %.2f kg (diferencia %+.2f)")
+                       % (max_net, total, total - max_net))
+        if missing:
+            msg.append(_("No existen en esta compañía (%s): %s")
+                       % (len(missing), _sample(missing)))
+        if unavailable:
+            msg.append(_("No disponibles —reservadas/consumidas— (%s): %s")
+                       % (len(unavailable), _sample(unavailable)))
+        if wrong_loc:
+            msg.append(_("En otra ubicación distinta al origen (%s): %s")
+                       % (len(wrong_loc), _sample(wrong_loc)))
+        return msg, len(found)
 
     def action_clear_lines(self):
-        """Elimina todas las líneas del packing (y el archivo subido)."""
+        """Vacía la lista (líneas del packing o selección de bolsas) y el archivo."""
         self.ensure_one()
         self.line_ids.unlink()
+        self.bag_ids = [(5, 0, 0)]
         self.import_file = False
         self.import_filename = False
         return self._reload_action()

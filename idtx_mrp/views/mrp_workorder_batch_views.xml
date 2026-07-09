@@ -10,10 +10,24 @@
                     <button name="create_batch" class="oe_highlight" string="Create Batch" type="object" invisible="state != 'draft' or not wo_roll_ids"/>
                     <button name="clear_rolls" string="Clear Rolls" type="object" invisible="state != 'draft' or not wo_roll_ids"/>
                     <button name="unbuild_batch" class="oe_highlight" string="Unbuild Batch" type="object" invisible="state != 'batch'"/>
+                    <button name="action_open_split_wizard" string="Dividir Partida" type="object" invisible="state != 'batch'"/>
                     <button name="rebuild_batch" class="oe_highlight" string="Rebuild Batch" type="object" invisible="state != 'unbuild'" groups="mrp.group_mrp_manager"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_children" type="object" class="oe_stat_button"
+                                icon="fa-sitemap" invisible="child_count == 0">
+                            <field name="child_count" widget="statinfo" string="Sub-partidas"/>
+                        </button>
+                        <button name="action_view_parent" type="object" class="oe_stat_button"
+                                icon="fa-level-up" invisible="not parent_batch_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Partida</span>
+                                <span class="o_stat_text">Origen</span>
+                            </div>
+                        </button>
+                    </div>
                     <div class="oe_title">
                         <h1>
                             <field name="name" readonly="1"/>
@@ -23,6 +37,8 @@
                         <group>
                             <field name="batch_date" readonly="state != 'draft'"/>
                             <field name="mrwo_id" readonly="1"/>
+                            <field name="parent_batch_id" invisible="not parent_batch_id"/>
+                            <field name="split_code" invisible="not split_code"/>
                         </group>
                     </group>
                     <notebook>

@@ -23,6 +23,7 @@ Control de hilo a nivel de bolsa física.
     ],
     "data": [
         "security/ir.model.access.csv",
+        "security/thread_bag_security.xml",
         "views/thread_bag_views.xml",
         "views/thread_bag_consume_wizard_views.xml",
         "views/stock_views.xml",

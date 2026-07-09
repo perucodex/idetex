@@ -6,7 +6,7 @@
             <!-- Option -->
             <div class="mt-4" t-if="options and options.length">
                 <h5 class="fw-bold">Option</h5>
-                <select class="form-select fs-4"
+                <select t-att-class="'form-select fs-4' + (isOptionInvalid ? ' is-invalid' : '')"
                         t-model="state.selectedOption"
                         t-on-change="onOptionChange">
                     <option value=""> </option>
@@ -21,7 +21,7 @@
             <!-- Employee -->
             <div class="mt-4">
                 <h5 class="fw-bold">Employee</h5>
-                <select class="form-select fs-4"
+                <select t-att-class="'form-select fs-4' + (isEmployeeInvalid ? ' is-invalid' : '')"
                         t-model="state.selectedEmployee"
                         t-on-change="onEmployeeChange">
                     <option value=""></option>
@@ -36,7 +36,7 @@
             <!-- Equipment -->
             <div class="mt-4">
                 <h5 class="fw-bold">Equipment</h5>
-                <select class="form-select fs-4"
+                <select t-att-class="'form-select fs-4' + (isEquipmentInvalid ? ' is-invalid' : '')"
                         t-model="state.selectedEquipment"
                         t-on-change="onEquipmentChange">
                     <option value=""></option>
@@ -76,7 +76,7 @@
                     <label class="form-label fs-4">Peso Balanza</label>
 
                     <input type="text"
-                           class="form-control fs-4"
+                           t-att-class="'form-control fs-4' + (isWeightInvalid ? ' is-invalid' : '')"
                            t-att-value="state.manualWeight"
                            readonly="readonly"/>
 
@@ -150,7 +150,8 @@
                     </div>
 
                     <label class="form-label fs-4">Peso manual</label>
-                    <input type="text" class="form-control fs-4"
+                    <input type="text"
+                           t-att-class="'form-control fs-4' + (isWeightInvalid ? ' is-invalid' : '')"
                            placeholder="Enter weight (kg)"
                            inputmode="decimal"
                            pattern="^[0-9]*\.?[0-9]+$"
@@ -161,10 +162,10 @@
                 </div>
 
                 <t t-set-slot="footer">
+                    <!-- Siempre clicable: al confirmar con campos faltantes se
+                         marcan en rojo (is-invalid) y el diálogo NO se cierra. -->
                     <button class="btn btn-primary"
                             data-select-confirm="1"
-                            t-att-disabled="!isConfirmEnabled"
-                            t-att-style="!isConfirmEnabled ? 'pointer-events:none;opacity:0.6' : ''"
                             t-on-click="confirm">
                         Confirm
                     </button>

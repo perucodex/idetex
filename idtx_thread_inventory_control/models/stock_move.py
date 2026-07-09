@@ -31,8 +31,56 @@ class StockPicking(models.Model):
             "res_model": "thread.bag",
             "view_mode": "list,form",
             "domain": [("receipt_picking_id", "=", self.id)],
-            "context": {'search_default_available': True, 'search_default_group_lot': True},
+            "context": {'search_default_available': True, 'search_default_group_product': True, 'search_default_group_lot': True},
         }
+
+    def button_validate(self):
+        res = super().button_validate()
+        # ENTREGA inter-compañía de hilo (p.ej. Hilurin valida la salida de su SO
+        # espejo): el módulo enterprise (sale_purchase_stock_inter_company_rules)
+        # ya sincroniza los LOTES/KILOS hacia el picking espejo del comprador
+        # (recepción o DS de Idetex). Aquí propagamos además el detalle POR BOLSA
+        # (thread_pending_bag_data), para que al validar ese DS se cree la
+        # recepción de la maquila (Full Pima) con el packing completo, sin
+        # re-importar el Excel.
+        for picking in self:
+            if not picking.sale_id or picking.picking_type_code not in ("outgoing", "dropship"):
+                continue
+            buyer = self.env["res.company"].sudo().search([
+                ("partner_id", "=", picking.sale_id.partner_id.commercial_partner_id.id),
+            ], limit=1)
+            if not buyer:
+                continue
+            po = self.env["purchase.order"].sudo().search([
+                ("name", "=", picking.sale_id.client_order_ref),
+                ("company_id", "=", buyer.id),
+            ], limit=1)
+            receipts = po.picking_ids.filtered(
+                lambda p: p.picking_type_code in ("incoming", "dropship")
+                and p.state not in ("done", "cancel"))
+            if not receipts:
+                continue
+            for move in picking.move_ids:
+                if move.state != "done" or not move.product_id.is_thread:
+                    continue
+                # Detalle por bolsa de la salida: del packing importado o de las
+                # bolsas físicas seleccionadas.
+                data = move.thread_pending_bag_data or [{
+                    "name": b.name, "lot_name": b.lot_id.name,
+                    "cone_qty": b.cone_qty, "net_weight": b.net_weight,
+                    "gross_weight": b.gross_weight, "tare": b.tare,
+                    "cone_color": b.cone_color, "packaging_type": b.packaging_type,
+                    "yarn_color": b.yarn_color,
+                } for b in move.thread_bag_ids]
+                if not data:
+                    continue
+                rmove = receipts.move_ids.filtered(
+                    lambda m: m.product_id == move.product_id
+                    and m.state not in ("done", "cancel"))[:1]
+                # No pisar un packing que el comprador ya haya importado él mismo.
+                if rmove and not rmove.thread_pending_bag_data:
+                    rmove.sudo().thread_pending_bag_data = data
+        return res
 
 
 class StockMove(models.Model):

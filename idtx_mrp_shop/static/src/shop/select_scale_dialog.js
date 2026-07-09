@@ -44,6 +44,9 @@ export class SelectScaleDialog extends ConfirmationDialog {
             selectedEquipment: this.props.selectedEquipment ? String(this.props.selectedEquipment) : "",
             selectedOption: initialOption,
             optionTouched: !!initialOption,
+            // Al intentar confirmar con campos faltantes, se marcan en rojo
+            // (is-invalid) y el diálogo NO se cierra.
+            triedConfirm: false,
             employees: this.props.employees || [],
 
             selectedMode: "manual",
@@ -220,6 +223,32 @@ export class SelectScaleDialog extends ConfirmationDialog {
 
         if (!this.state.isManualAuthorized) return false;
         return !isNaN(w) && w > 0;
+    }
+
+    // =========================
+    // Campos requeridos en rojo (estilo backend). Solo tras intentar confirmar;
+    // se limpian solos al corregir el valor.
+    // =========================
+    get isOptionInvalid() {
+        return this.state.triedConfirm && (this.options || []).length > 0 && !this.state.selectedOption;
+    }
+
+    get isEmployeeInvalid() {
+        return this.state.triedConfirm && !this.state.selectedEmployee;
+    }
+
+    get isEquipmentInvalid() {
+        return this.state.triedConfirm && !this.state.selectedEquipment;
+    }
+
+    get isWeightInvalid() {
+        if (!this.state.triedConfirm) return false;
+        const w = parseFloat(this.state.manualWeight || "");
+        if (isNaN(w) || w <= 0) return true;
+        if (this.state.selectedMode === "scale") {
+            return !!this.state.scaleReadError || this.state.scaleStable === false;
+        }
+        return !this.state.isManualAuthorized;
     }
 
     // =========================
@@ -438,10 +467,30 @@ export class SelectScaleDialog extends ConfirmationDialog {
         if (ev.key === "Enter" && this.isConfirmEnabled) this.confirm();
     }
 
+    // Payload que se envía al confirmar (las subclases pueden extenderlo,
+    // p.ej. SelectSizeDialog agrega talla y cantidad).
+    _getConfirmPayload(w) {
+        return {
+            scale_id: this.state.selectedMode === "scale" ? this.state.selectedScaleId : false,
+            employee_id: this.state.selectedEmployee || false,
+            equipment_id: this.state.selectedEquipment || false,
+            option_id: this.state.selectedOption || false,
+            manual_weight: !isNaN(w) ? w : false,
+        };
+    }
+
     // =========================
     // Confirm
     // =========================
     confirm() {
+        this.state.triedConfirm = true;
+        // La opción es requerida cuando la OT tiene opciones (el roll de tejido
+        // la exige en el backend; validarla aquí evita que el diálogo se cierre
+        // y el error llegue después).
+        if ((this.options || []).length > 0 && !this.state.selectedOption) {
+            this.notification.add(_t("You must select an option."), { type: "danger" });
+            return;
+        }
         if (!this.state.selectedEmployee) {
             this.notification.add(_t("You must select an employee."), { type: "danger" });
             return;
@@ -479,13 +528,7 @@ export class SelectScaleDialog extends ConfirmationDialog {
             }
         }
 
-        const payload = {
-            scale_id: this.state.selectedMode === "scale" ? this.state.selectedScaleId : false,
-            employee_id: this.state.selectedEmployee || false,
-            equipment_id: this.state.selectedEquipment || false,
-            option_id: this.state.selectedOption || false,
-            manual_weight: !isNaN(w) ? w : false,
-        };
+        const payload = this._getConfirmPayload(w);
 
         // ✅ Persistir full (aquí sí permitimos vacíos si quieres, pero normalmente ya no estarán vacíos)
         this._persistSelectionPartial({ includeEmpty: true });

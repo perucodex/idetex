@@ -1,86 +1,82 @@
 /** @odoo-module **/
 
 import { _t } from "@web/core/l10n/translation";
-import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
-import { useService } from "@web/core/utils/hooks";
-import { onWillStart, useState } from "@odoo/owl";
+import { onWillStart } from "@odoo/owl";
+import { SelectScaleDialog } from "./select_scale_dialog";
 
-export class SelectSizeDialog extends ConfirmationDialog {
+/**
+ * Diálogo de tallas de rectilíneos: HEREDA todo el comportamiento del diálogo
+ * de balanza (opciones con filtrado de empleados/equipos, lectura de peso en
+ * vivo, peso manual con autorización, persistencia de selección) y agrega
+ * Talla + Cantidad. El rectilíneo registra cantidad Y peso.
+ */
+export class SelectSizeDialog extends SelectScaleDialog {
     static template = "idtx_mrp_shop.SelectSizeDialog";
     static props = {
-        ...ConfirmationDialog.props,
+        ...SelectScaleDialog.props,
         sizes: { type: Array, optional: true },
-        recordId: { type: Number },
-        employees: { type: Array, optional: true },
-        equipments: { type: Array, optional: true },
-        employee_ids: { type: Array, optional: true },
-        equipment_ids: { type: Array, optional: true },
-        selectedEmployee: { type: [Number, String], optional: true },
-        selectedEquipment: { type: [Number, String], optional: true },
+        selectedSize: { type: [Number, String], optional: true },
     };
 
     setup() {
         super.setup();
-        this.ormService = useService("orm");
-        this.notification = useService("notification");
-        this.sizes = this.props.sizes || [];
-        this.employees = this.props.employees || [];
-        this.equipments = this.props.equipments || [];
-        this.state = useState({
-            quantity: 1,
-            sizes: this.sizes || [],
-            selectedSize: null,
-            selectedEmployee: this.props.selectedEmployee || "",
-            selectedEquipment: this.props.selectedEquipment || "",
-        });
+        this.state.sizes = this.props.sizes || [];
+        this.state.selectedSize = this.props.selectedSize ? String(this.props.selectedSize) : "";
+        this.state.quantity = 1;
         onWillStart(async () => {
             if (!this.state.sizes.length) {
                 await this._loadSizes();
             }
-            if (!this.employees.length) {
-                await this._loadEmployees();
-            }
-            if (!this.equipments.length) {
-                await this._loadEquipments();
-            }
+            this._restoreSizeSelection();
         });
     }
 
-    selectSize(size) {
-        this.state.selectedSize = size;
+    // La talla también se recuerda (último roll vía props + localStorage,
+    // igual que opción/empleado/equipo del padre).
+    _restoreSizeSelection() {
+        const validIds = new Set((this.state.sizes || []).map((s) => String(s.id)));
+        if (this.state.selectedSize && !validIds.has(String(this.state.selectedSize))) {
+            this.state.selectedSize = "";
+        }
+        if (!this.state.selectedSize) {
+            try {
+                const raw = window.localStorage.getItem(this._getLSKey());
+                const parsed = raw ? JSON.parse(raw) : {};
+                if (parsed.size_id && validIds.has(String(parsed.size_id))) {
+                    this.state.selectedSize = String(parsed.size_id);
+                }
+            } catch (e) {
+                // ignore
+            }
+        }
     }
 
-    confirm() {
-        if (!this.state.selectedEmployee) {
-            this.notification.add(_t("You must select an employee."), { type: "danger" });
-            return;
+    _persistSizeSelection() {
+        try {
+            const key = this._getLSKey();
+            const raw = window.localStorage.getItem(key);
+            const parsed = raw ? JSON.parse(raw) : {};
+            if (this.state.selectedSize) {
+                parsed.size_id = String(this.state.selectedSize);
+            }
+            window.localStorage.setItem(key, JSON.stringify(parsed));
+        } catch (e) {
+            // ignore
         }
-        if (!this.state.selectedEquipment) {
-            this.notification.add(_t("You must select an equipment."), { type: "danger" });
-            return;
-        }
-        if (this.state.selectedSize && this.state.quantity > 0) {
-            this.props.confirm({
-                size: this.state.selectedSize,
-                quantity: this.state.quantity,
-                employee_id: this.state.selectedEmployee,
-                equipment_id: this.state.selectedEquipment,
-            });
-        } else {
-            this.notification.add(_t("You must select a size and quantity."), { type: "danger" });
-            return;
-        }
-        this.props.close();
     }
 
     async _loadSizes() {
-        // Llamar al ORM para leer las tallas desde el workorder
+        const workorderId = this._getWorkorderId();
+        if (!workorderId) {
+            this.state.sizes = [];
+            return;
+        }
         const result = await this.ormService.call(
             "mrp.workorder",
             "get_available_sizes",
-            [this.props.recordId]
+            [workorderId]
         );
-        this.state.sizes = result;
+        this.state.sizes = result || [];
         if (!this.state.sizes.length) {
             this.notification.add(
                 _t("No sizes on technical sheet of the product."),
@@ -89,25 +85,48 @@ export class SelectSizeDialog extends ConfirmationDialog {
         }
     }
 
-    async _loadEmployees() {
-        const employee_ids = this.props.employee_ids || [];
-        this.employees = await this.ormService.searchRead("hr.employee", [['id','in',employee_ids]], ["name"]);
-        if (!this.employees.length) {
-            this.notification.add(
-                _t("No employees are available, please assign one first to add it to the shop floor view"),
-                { type: "danger" }
-            );
-        }
+    get isConfirmEnabled() {
+        return (
+            super.isConfirmEnabled &&
+            !!this.state.selectedOption &&
+            !!this.state.selectedSize &&
+            Number(this.state.quantity) > 0
+        );
     }
 
-    async _loadEquipments() {
-        const equipment_ids = this.props.equipment_ids || [];
-        this.equipments = await this.ormService.searchRead("maintenance.equipment", [['id','in',equipment_ids]], ["name"]);
-        if (!this.equipments.length) {
-            this.notification.add(
-                _t("No equipments are available, please assign one first to add it to the shop floor view"),
-                { type: "danger" }
-            );
+    get isSizeInvalid() {
+        return this.state.triedConfirm && !this.state.selectedSize;
+    }
+
+    get isQuantityInvalid() {
+        return this.state.triedConfirm && !(Number(this.state.quantity) > 0);
+    }
+
+    _getConfirmPayload(w) {
+        return {
+            ...super._getConfirmPayload(w),
+            size: this.state.selectedSize,
+            quantity: Number(this.state.quantity),
+        };
+    }
+
+    confirm() {
+        this.state.triedConfirm = true;
+        // Validaciones propias del registro por talla; el resto (empleado,
+        // equipo, peso balanza/manual) las hace el padre.
+        if (!this.state.selectedOption) {
+            this.notification.add(_t("You must select an option."), { type: "danger" });
+            return;
         }
+        if (!this.state.selectedSize) {
+            this.notification.add(_t("You must select a size."), { type: "danger" });
+            return;
+        }
+        if (!(Number(this.state.quantity) > 0)) {
+            this.notification.add(_t("You must enter a valid quantity."), { type: "danger" });
+            return;
+        }
+        this._persistSizeSelection();
+        return super.confirm();
     }
 }

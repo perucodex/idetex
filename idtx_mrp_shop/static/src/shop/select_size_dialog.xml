@@ -2,40 +2,194 @@
 <templates xml:space="preserve">
     <t t-name="idtx_mrp_shop.SelectSizeDialog">
         <Dialog size="'md'" title="props.title" modalRef="modalRef">
+
+            <!-- Option -->
+            <div class="mt-4" t-if="options and options.length">
+                <h5 class="fw-bold">Option</h5>
+                <select t-att-class="'form-select fs-4' + (isOptionInvalid ? ' is-invalid' : '')"
+                        t-model="state.selectedOption"
+                        t-on-change="onOptionChange">
+                    <option value=""> </option>
+                    <t t-foreach="options" t-as="opt" t-key="opt.id">
+                        <option t-att-value="'' + opt.id"
+                                t-att-selected="state.selectedOption == ('' + opt.id)"
+                                t-esc="opt.name"/>
+                    </t>
+                </select>
+            </div>
+
+            <!-- Employee -->
             <div class="mt-4">
                 <h5 class="fw-bold">Employee</h5>
-                <select class="form-select fs-4" t-model="state.selectedEmployee">
-                    <t t-foreach="employees" t-as="emp" t-key="emp.id">
-                        <option t-att-value="emp.id" t-esc="emp.name"/>
+                <select t-att-class="'form-select fs-4' + (isEmployeeInvalid ? ' is-invalid' : '')"
+                        t-model="state.selectedEmployee"
+                        t-on-change="onEmployeeChange">
+                    <option value=""></option>
+                    <t t-foreach="state.employees" t-as="emp" t-key="emp.id">
+                        <option t-att-value="'' + emp.id"
+                                t-att-selected="state.selectedEmployee == ('' + emp.id)"
+                                t-esc="emp.name"/>
                     </t>
                 </select>
             </div>
+
+            <!-- Equipment -->
             <div class="mt-4">
                 <h5 class="fw-bold">Equipment</h5>
-                <select class="form-select fs-4" t-model="state.selectedEquipment">
-                    <t t-foreach="equipments" t-as="eqp" t-key="eqp.id">
-                        <option t-att-value="eqp.id" t-esc="eqp.name"/>
+                <select t-att-class="'form-select fs-4' + (isEquipmentInvalid ? ' is-invalid' : '')"
+                        t-model="state.selectedEquipment"
+                        t-on-change="onEquipmentChange">
+                    <option value=""></option>
+                    <t t-foreach="state.equipments" t-as="eqp" t-key="eqp.id">
+                        <option t-att-value="'' + eqp.id"
+                                t-att-selected="state.selectedEquipment == ('' + eqp.id)"
+                                t-esc="eqp.name"/>
                     </t>
                 </select>
             </div>
-            <div class="o_select_size_dialog w-100">
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Select Size:</label>
-                    <select class="form-select" t-model="state.selectedSize">
-                        <option value="" selected="selected">
-                            <t t-esc="'Select a size...'"/>
-                        </option>
-                        <option t-foreach="state.sizes" t-as="size" t-key="size.id" t-att-value="size.id">
-                            <t t-esc="size.size"/>
-                        </option>
-                    </select>
+
+            <!-- Talla -->
+            <div class="mt-4">
+                <h5 class="fw-bold">Talla</h5>
+                <select t-att-class="'form-select fs-4' + (isSizeInvalid ? ' is-invalid' : '')" t-model="state.selectedSize">
+                    <option value=""> </option>
+                    <t t-foreach="state.sizes" t-as="size" t-key="size.id">
+                        <option t-att-value="'' + size.id"
+                                t-att-selected="state.selectedSize == ('' + size.id)"
+                                t-esc="size.size"/>
+                    </t>
+                </select>
+            </div>
+
+            <!-- Cantidad -->
+            <div class="mt-4">
+                <h5 class="fw-bold">Cantidad</h5>
+                <input type="number" min="1"
+                       t-att-class="'form-control fs-4' + (isQuantityInvalid ? ' is-invalid' : '')"
+                       inputmode="numeric"
+                       t-model="state.quantity"/>
+            </div>
+
+            <div class="o_select_size_dialog w-100 mt-3">
+
+                <!-- Lista de balanzas -->
+                <t t-foreach="scales" t-as="scale" t-key="scale.id">
+                    <div class="form-check py-2 fs-3 pointer-cursor"
+                         t-on-click="() => this.selectScale(scale)">
+                        <!-- La balanza es selección única: siempre radio (la otra
+                             pantalla lo logra pasando radioMode=true). -->
+                        <input type="radio" name="scaleChoice"
+                               class="form-check-input"
+                               t-att-checked="state.selectedMode === 'scale' and state.selectedScaleId === scale.id"/>
+                        <label class="form-check-label">
+                            <t t-out="scale.equipment_name"/>
+                        </label>
+                    </div>
+                </t>
+
+                <!-- Manual -->
+                <div class="form-check py-2 fs-3 pointer-cursor" t-on-click="() => this.selectManual()">
+                    <input type="radio" name="scaleChoice" class="form-check-input"
+                           t-att-checked="state.selectedMode === 'manual'"/>
+                    <label class="form-check-label">Manual</label>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Cantidad:</label>
-                    <input type="number" class="form-control" t-model="state.quantity" min="1" placeholder="Enter Quantity"/>
+
+                <!-- Peso Balanza -->
+                <div t-if="state.selectedMode === 'scale'" class="mt-3">
+                    <label class="form-label fs-4">Peso Balanza</label>
+
+                    <input type="text"
+                           t-att-class="'form-control fs-4' + (isWeightInvalid ? ' is-invalid' : '')"
+                           t-att-value="state.manualWeight"
+                           readonly="readonly"/>
+
+                    <div class="mt-2 fs-6 d-flex flex-wrap gap-2 align-items-center" t-if="!state.scaleReadError">
+                        <span class="badge rounded-pill bg-secondary">
+                            Unidad: <t t-esc="state.scaleUnit"/>
+                        </span>
+
+                        <span t-if="state.scaleStable === true" class="badge rounded-pill bg-success">
+                            Estable
+                        </span>
+                        <span t-if="state.scaleStable === false" class="badge rounded-pill bg-warning text-dark">
+                            Inestable
+                        </span>
+                        <span t-if="state.scaleStable === null" class="badge rounded-pill bg-light text-dark border">
+                            Sin estado
+                        </span>
+                    </div>
+
+                    <div class="mt-1 text-danger fs-6" t-if="state.scaleReadError">
+                        <t t-esc="state.scaleReadError"/>
+                    </div>
+
+                    <div class="mt-1 text-muted fs-6" t-if="state.scaleStable === false and !state.scaleReadError">
+                        Espera a que el peso esté estable para confirmar.
+                    </div>
                 </div>
+
+                <!-- Auth manual -->
+                <div t-if="state.selectedMode === 'manual' and !state.isManualAuthorized" class="mt-3">
+                    <div class="alert alert-warning">
+                        Se requiere autorización para ingreso manual.
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label fs-4">Usuario</label>
+                        <input type="text" class="form-control fs-4"
+                               t-model="state.authLogin"
+                               t-on-keydown="onAuthKeyDown"
+                               t-ref="authLogin"
+                               autocomplete="username"/>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label fs-4">Contraseña</label>
+                        <input type="password" class="form-control fs-4"
+                               t-model="state.authPassword"
+                               t-on-keydown="onAuthKeyDown"
+                               t-ref="authPassword"
+                               autocomplete="current-password"/>
+                    </div>
+
+                    <div t-if="state.authError" class="text-danger fs-5 mb-2">
+                        <t t-esc="state.authError"/>
+                    </div>
+
+                    <button class="btn btn-primary fs-4"
+                            t-att-disabled="state.isAuthChecking or !state.authLogin or !state.authPassword"
+                            t-on-click="confirmManualAuth">
+                        <t t-if="state.isAuthChecking">Verificando...</t>
+                        <t t-else="">Verificar</t>
+                    </button>
+                </div>
+
+                <!-- Manual autorizado -->
+                <div t-if="state.selectedMode === 'manual' and state.isManualAuthorized" class="mt-3">
+                    <div class="d-flex justify-content-end mb-2">
+                        <button class="btn btn-outline-danger fs-5" t-on-click="deactivateManual">
+                            Desactivar manual
+                        </button>
+                    </div>
+
+                    <label class="form-label fs-4">Peso manual</label>
+                    <input type="text"
+                           t-att-class="'form-control fs-4' + (isWeightInvalid ? ' is-invalid' : '')"
+                           placeholder="Enter weight (kg)"
+                           inputmode="decimal"
+                           pattern="^[0-9]*\.?[0-9]+$"
+                           t-on-input="onManualInput"
+                           t-on-keydown="onInputKeyDown"
+                           t-att-value="state.manualWeight"
+                           t-ref="manualInput"/>
+                </div>
+
                 <t t-set-slot="footer">
-                    <button class="btn btn-primary" t-on-click="confirm">Confirm</button>
+                    <button class="btn btn-primary"
+                            data-select-confirm="1"
+                            t-on-click="confirm">
+                        Confirm
+                    </button>
                 </t>
             </div>
         </Dialog>

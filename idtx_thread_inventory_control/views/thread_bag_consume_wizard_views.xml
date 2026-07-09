@@ -26,13 +26,21 @@
                     <field name="scan_input" placeholder="Escanea aquí el correlativo de la bolsa…"
                            widget="char"/>
                 </group>
-                <!-- Recepción de compra: al SUBIR el packing (Excel) se llenan las
-                     líneas de abajo. NO crea lotes ni bolsas; se crean al VALIDAR. -->
-                <group invisible="not is_reception" string="Packing de hilo (Excel)">
+                <!-- Packing (Excel). Recepción: llena las líneas de abajo (lotes y
+                     bolsas se crean al VALIDAR). Consumo/entrega: SELECCIONA las
+                     bolsas existentes por correlativo (no crea nada). -->
+                <group string="Packing de hilo (Excel)">
                     <field name="import_file" filename="import_filename" string="Archivo"/>
                     <field name="import_filename" invisible="1"/>
-                    <button name="action_import_packing" type="object" string="Importar packing"
-                            class="btn-primary" invisible="not import_file"/>
+                    <!-- Importar todo = todas las filas del producto.
+                         Importar = solo hasta cubrir la demanda (incluye la bolsa
+                         que cruza el umbral; nunca queda debajo si el Excel alcanza). -->
+                    <!-- <div invisible="not import_file"> -->
+                        <button name="action_import_packing" type="object"
+                                string="Importar todo" class="btn-primary" invisible="not import_file"/>
+                        <button name="action_import_packing_demand" type="object"
+                                string="Importar" class="btn-secondary ms-2" invisible="not import_file"/>
+                    <!-- </div> -->
                 </group>
                 <!-- Consumo / transferencia: bolsas existentes -->
                 <separator string="Bolsas de la selección (agregar / quitar)" invisible="is_reception"/>
@@ -67,7 +75,7 @@
                     <button name="action_confirm" type="object" string="Confirmar selección"
                             class="btn-primary"/>
                     <button name="action_clear_lines" type="object" string="Limpiar"
-                            class="btn-secondary" invisible="not is_reception"/>
+                            class="btn-secondary"/>
                     <button string="Cancelar" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>

@@ -5,6 +5,8 @@ import dbf
 
 from odoo import api, models
 
+from .technical_sheet import _dbf_char
+
 _logger = logging.getLogger(__name__)
 
 # The SITPRO/TEXPLUS product code is built as `<prefix><analysis.product_code>`.
@@ -83,6 +85,166 @@ def _build_sysproceso_memo(op_names, max_len=_SYSPROCESO_MEMO_MAX,
 
 class ProductAnalysis(models.Model):
     _inherit = 'product.analysis'
+
+    def write(self, vals):
+        # Cambio de descripcion (editable por el grupo manager incluso fuera
+        # del estado 'test'): capturar ANTES de super() quienes cambian de
+        # verdad para propagar despues del guardado.
+        if 'product_description' in vals:
+            new_desc = (vals.get('product_description') or '').strip()
+            desc_changed = self.filtered(
+                lambda a: (a.product_description or '').strip() != new_desc
+            )
+        else:
+            desc_changed = self.browse()
+        result = super().write(vals)
+        if desc_changed:
+            desc_changed._propagate_product_description()
+        return result
+
+    def _propagate_product_description(self):
+        """Cascada al cambiar `product_description`:
+
+        - Fichas tecnicas: nada que escribir — `technical.sheet.description`
+          es related a `analysis_id.product_description`, refleja el cambio.
+        - Producto Odoo: renombra el product.template del analisis y los de
+          sus fichas (sudo: el manager puede no tener write en producto).
+        - TEXPLUS: ARTICU.ArtDsc para TODAS las empresas y TODOS los clientes
+          del articulo (el ArtCod se repite por CliCod). Best-effort: un fallo
+          externo no bloquea la edicion, pero se avisa en el chatter.
+        - SITPRO: DESCRIP en tinto_cab_ruta.dbf para cada ficha tecnica ya
+          exportada (con sitpro_sheet). Best-effort igual que TEXPLUS.
+        """
+        for analysis in self:
+            description = (analysis.product_description or '').strip()
+            if not description:
+                continue
+            templates = (
+                analysis.product_id
+                | analysis.technical_sheet_ids.product_id
+            ).filtered(lambda t: t.name != description)
+            if templates:
+                templates.sudo().write({'name': description})
+            try:
+                analysis._sync_texplus_article_description()
+            except Exception:
+                _logger.exception(
+                    "product.analysis %s: fallo al actualizar ArtDsc en TEXPLUS",
+                    analysis.display_name,
+                )
+                analysis.message_post(body=(
+                    "No se pudo actualizar la descripcion del articulo en "
+                    "TEXPLUS (ver log del servidor). La descripcion en Odoo "
+                    "si se guardo; reintente guardando de nuevo o corrija "
+                    "TEXPLUS manualmente."
+                ))
+            analysis._sync_sitpro_ficha_descriptions()
+
+    def _sync_sitpro_ficha_descriptions(self):
+        """Actualiza DESCRIP en tinto_cab_ruta.dbf (SITPRO) para cada ficha
+        tecnica del analisis que ya fue exportada (tiene `sitpro_sheet`, el
+        numero de ficha SITPRO = campo FICHA del DBF).
+
+        Solo UPDATE del registro existente — el alta completa de la ficha la
+        hace 'Export DBF'. Best-effort por ficha: los fallos se acumulan y se
+        avisan en el chatter sin bloquear la edicion.
+        """
+        self.ensure_one()
+        description = (self.product_description or '').strip()
+        if not description:
+            return
+        sheets = self.technical_sheet_ids.filtered(
+            lambda s: (s.sitpro_sheet or '').strip()
+        )
+        if not sheets:
+            return
+        failed = []
+        for sheet in sheets:
+            ficha = sheet.sitpro_sheet.strip()
+            try:
+                table = sheet._open_table('tinto_cab_ruta.dbf')
+                try:
+                    updated = sheet._update_record(
+                        table, 'FICHA', ficha, {'DESCRIP': description},
+                    )
+                finally:
+                    table.close()
+                if updated:
+                    _logger.info(
+                        "product.analysis %s: DESCRIP actualizado en "
+                        "tinto_cab_ruta.dbf ficha=%s",
+                        self.display_name, ficha,
+                    )
+                else:
+                    _logger.warning(
+                        "product.analysis %s: ficha %s no existe en "
+                        "tinto_cab_ruta.dbf — DESCRIP no actualizado",
+                        self.display_name, ficha,
+                    )
+                    failed.append(ficha)
+            except Exception:
+                _logger.exception(
+                    "product.analysis %s: fallo al actualizar DESCRIP en "
+                    "tinto_cab_ruta.dbf ficha=%s",
+                    self.display_name, ficha,
+                )
+                failed.append(ficha)
+        if failed:
+            self.message_post(body=(
+                "No se pudo actualizar la descripcion en SITPRO "
+                "(tinto_cab_ruta.dbf) para la(s) ficha(s): %s. La descripcion "
+                "en Odoo si se guardo; corrija SITPRO manualmente o vuelva a "
+                "guardar." % ', '.join(failed)
+            ))
+
+    def _sync_texplus_article_description(self):
+        """UPDATE dbo.ARTICU SET ArtDsc = <descripcion> para el articulo en
+        todas sus variantes de prefijo (M/P/S) y en TODAS las filas donde
+        exista (todas las empresas y todos los clientes: la PK de ARTICU es
+        EmprCod+CliCod+ArtCod, asi que el mismo ArtCod se repite por cliente).
+        Solo toca ArtDsc; el resto del articulo queda intacto.
+        """
+        self.ensure_one()
+        if not self.product_code:
+            return
+        description = (self.product_description or '').strip()
+        if not description:
+            return
+
+        helper = self.technical_sheet_ids[:1]
+        if not helper:
+            helper = self.env['technical.sheet'].new({'company_id': self.company_id.id})
+
+        art_dsc = _dbf_char(description, max_len=26)
+        conn = None
+        cursor = None
+        try:
+            conn = helper._get_texplus_sql_connection()
+            cursor = conn.cursor()
+            helper._configure_texplus_cursor(cursor)
+            for prefix in _SITPRO_PREFIXES:
+                cdgart = f"{prefix}{self.product_code}"
+                cursor.execute(
+                    "UPDATE dbo.ARTICU SET ArtDsc = ? WHERE ArtCod = ?",
+                    art_dsc, cdgart,
+                )
+                if cursor.rowcount:
+                    _logger.info(
+                        "product.analysis %s: ARTICU.ArtDsc='%s' actualizado "
+                        "en %s fila(s) (todas las empresas/clientes) para "
+                        "ArtCod=%s",
+                        self.display_name, art_dsc, cursor.rowcount, cdgart,
+                    )
+            conn.commit()
+        except Exception:
+            if conn:
+                conn.rollback()
+            raise
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
 
     def _propagate_base_process(self):
         """After the in-Odoo propagation runs, also refresh SITPRO's

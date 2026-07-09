@@ -85,11 +85,14 @@ patch(MrpMenuDialog.prototype, {
             const result = await this.orm.call(
                 "mrp.workorder",
                 "action_create_size_record",
-                [[this.props.record.resId], 
-                payload.size, 
+                [[this.props.record.resId],
+                payload.size,
                 payload.quantity,
                 payload.employee_id,
                 payload.equipment_id,
+                payload.option_id,
+                payload.manual_weight,
+                payload.scale_id,
             ]);
 
             if (result) {
@@ -108,13 +111,18 @@ patch(MrpMenuDialog.prototype, {
         } else if (roll_field?.resIds) {
             roll_resIds = roll_field.resIds;
         }
-        let defaultEmployee = this.props.record.data.employee_assigned_ids?.resIds?.[0] || "";
-        let defaultEquipment = this.props.record.data.equipment_ids?.resIds?.[0] || "";
+        // Defaults desde el último roll (opción/empleado/equipo). El diálogo
+        // carga las opciones del WO y filtra empleados/equipos por la opción
+        // elegida (mismo patrón que select_scale_dialog).
+        let defaultEmployee = "";
+        let defaultEquipment = "";
+        let defaultOption = "";
+        let defaultSize = "";
         if (roll_resIds && roll_resIds.length) {
             const rolls = await this.orm.searchRead(
                 "mrp.workorder.roll",
                 [["id", "in", roll_resIds]],
-                ["employee_id", "equipment_id", "sequence"]
+                ["employee_id", "equipment_id", "option_id", "size_id", "sequence"]
             );
             if (rolls && rolls.length) {
                 const lastRoll = rolls.reduce((a, b) => ( (a.sequence || 0) >= (b.sequence || 0) ? a : b ));
@@ -124,17 +132,25 @@ patch(MrpMenuDialog.prototype, {
                 if (lastRoll.equipment_id) {
                     defaultEquipment = lastRoll.equipment_id[0];
                 }
+                if (lastRoll.option_id) {
+                    defaultOption = lastRoll.option_id[0];
+                }
+                if (lastRoll.size_id) {
+                    defaultSize = lastRoll.size_id[0];
+                }
             }
         };
 
         const params = {
             title: _t("Select size and quantity"),
             confirm: _createRecord,
-            recordId: this.props.record.resId,
-            employee_ids: this.props.record.data.employee_assigned_ids.resIds,
-            equipment_ids: this.props.record.data.equipment_ids.resIds,
+            // El diálogo hereda del de balanza: usa `active` para el workorder
+            // (opciones, tallas, persistencia de selección).
+            active: [this.props.record.resId],
             selectedEmployee: defaultEmployee || "",
             selectedEquipment: defaultEquipment || "",
+            selectedOption: defaultOption || "",
+            selectedSize: defaultSize || "",
         };
 
         this.dialogService.add(SelectSizeDialog, params);
