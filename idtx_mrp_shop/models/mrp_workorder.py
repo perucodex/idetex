@@ -5,6 +5,11 @@ import requests
 class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'
 
+    use_lab_recipe = fields.Boolean(
+        related='mrwo_id.use_lab_recipe',
+        help='La operación usa receta de laboratorio: el taller abre el registro '
+             'completo de teñido; si no, solo el registro simple de la partida.',
+    )
     operator_department_id = fields.Many2one(
         'hr.department',
         string='Departamento de Operarios',
@@ -508,4 +513,45 @@ class MrpWorkorder(models.Model):
             'status': 'success',
             'batchId': br.id,
             'message': _(f'Registry created for batch {br.batch_id.name}'),
+        }
+
+    def action_register_batch_operation(self, payload):
+        """Registro SIMPLE de partida para operaciones de tintorería sin receta
+        de laboratorio (HABILITADO, HIDROEXTRACTORA, ...): solo deja constancia
+        de que la partida recibió esta operación y a qué hora empezó/terminó.
+        Crea un batch.registry mínimo (sin datos de teñido) en estado Done."""
+        self.ensure_one()
+        batch_id = int(payload.get('batch_id')) if payload.get('batch_id') else False
+        date_start = fields.Datetime.to_datetime(payload.get('date_start'))
+        date_end = fields.Datetime.to_datetime(payload.get('date_end'))
+
+        if not batch_id:
+            return {'status': 'danger', 'message': _('Debes seleccionar una partida.')}
+        batch = self.env['mrp.workorder.batch'].browse(batch_id)
+        if not batch.exists():
+            return {'status': 'danger', 'message': _('La partida seleccionada no existe.')}
+        if not date_start or not date_end:
+            return {'status': 'danger', 'message': _('Debes indicar la hora de inicio y de fin.')}
+        if date_end < date_start:
+            return {'status': 'danger', 'message': _('La hora de fin no puede ser anterior a la de inicio.')}
+
+        defaults = self.action_get_registry_defaults(batch_id=batch_id)
+        br = self.env['batch.registry'].create({
+            'batch_id': batch.id,
+            'workorder_id': self.id,
+            'color_name': defaults.get('color_name'),
+            'color_code': defaults.get('color_code'),
+            'partner_id': defaults.get('partner_id'),
+            'registry_date': fields.Datetime.now(),
+            'date_start': date_start,
+            'date_end': date_end,
+            'state': 'done',
+        })
+        related_workorders = (self | batch.wo_roll_ids.mapped('workorder_id')).filtered(lambda wo: wo.id)
+        related_workorders.write({'batch_ids': [(4, batch.id)]})
+        return {
+            'status': 'success',
+            'batchId': br.id,
+            'message': _('Operación %(op)s registrada para la partida %(batch)s.',
+                         op=self.name, batch=batch.name),
         }

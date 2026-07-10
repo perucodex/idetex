@@ -8,7 +8,9 @@
         <field name="arch" type="xml">
             <field name="mrwo_id" position="after">
                 <field name="partner_ids" readonly="1" widget="many2many_tags"/>
-                <field name="color_names" readonly="1"/>
+                <field name="color_code" readonly="1"/>
+                <field name="color_name" readonly="1"/>
+                <field name="color_recipe_id" readonly="1"/>
             </field>
             <notebook position="inside">
                 <page name="registry_page" string="Dyeing Registry">

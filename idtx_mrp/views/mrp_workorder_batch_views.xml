@@ -43,7 +43,21 @@
                     </group>
                     <notebook>
                         <page name="roll_page" string="Rolls">
-                            <field name="wo_roll_ids" domain="[('in_batch','=',False)]" readonly="state != 'draft'">
+                            <!-- Partida dividida: composición ORIGINAL reconstruida
+                                 desde las sub-partidas (trazabilidad). -->
+                            <field name="origin_roll_ids" readonly="1" invisible="state != 'split'">
+                                <list create="0" delete="0">
+                                    <field name="current_batch_id" string="Sub-partida"/>
+                                    <field name="workorder_id"/>
+                                    <field name="name"/>
+                                    <field name="product_id"/>
+                                    <field name="uom_id"/>
+                                    <field name="quantity" sum="Total"/>
+                                    <field name="net_weight" sum="Total"/>
+                                    <field name="gross_weight" sum="Total"/>
+                                </list>
+                            </field>
+                            <field name="wo_roll_ids" domain="[('in_batch','=',False)]" readonly="state != 'draft'" invisible="state == 'split'">
                                 <list create="0">
                                     <field name="workorder_id"/>
                                     <field name="name"/>

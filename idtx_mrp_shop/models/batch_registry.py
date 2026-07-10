@@ -11,6 +11,8 @@ class BatchRegistry(models.Model):
     batch_id = fields.Many2one('mrp.workorder.batch', string='Batch')
     workorder_id = fields.Many2one('mrp.workorder', string='Workorder')
     registry_date = fields.Datetime('Registry Date')
+    date_start = fields.Datetime('Hora Inicio')
+    date_end = fields.Datetime('Hora Fin')
     employee_id = fields.Many2one('hr.employee', string='Employee')
     equipment_id = fields.Many2one('maintenance.equipment', string='Equipment')
     bath_ratio = fields.Integer('Bath ratio')

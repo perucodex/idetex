@@ -78,4 +78,10 @@
               sequence="30"
               parent="menu_acabado_root"
               action="action_control_partida_calidad_kilos"/>
+
+    <menuitem id="menu_control_partida_kilos_pesar"
+              name="Kilos x Pesar"
+              sequence="40"
+              parent="menu_acabado_root"
+              action="action_control_partida_kilos_pesar"/>
 </odoo>

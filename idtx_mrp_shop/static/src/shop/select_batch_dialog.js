@@ -245,6 +245,7 @@ export class SelectBatchDialog extends ConfirmationDialog {
                 {
                     limit: 20,
                     state: "batch",
+                    workorder_id: this.state.workorderId || false,
                 },
                 { signal: this._searchAbort.signal }
             );
@@ -278,7 +279,8 @@ export class SelectBatchDialog extends ConfirmationDialog {
                 "mrp.workorder.batch",
                 "search_batch_lookup",
                 [String(lastId)],
-                { limit: 5, state: "batch", prefer_id: lastId }
+                { limit: 5, state: "batch", prefer_id: lastId,
+                  workorder_id: this.state.workorderId || false }
             );
             this.state.recent = Array.isArray(rec) ? rec.slice(0, 5) : [];
         } catch (e) {

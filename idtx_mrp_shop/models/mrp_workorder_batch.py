@@ -6,7 +6,13 @@ class MrpWorkorderBatch(models.Model):
     _inherit = 'mrp.workorder.batch'
 
     partner_ids = fields.Many2many('res.partner', string='Partners', compute='_compute_partner_ids', store=True)
-    color_names = fields.Char('Colors', compute='_compute_colors', store=True)
+    color_recipe_id = fields.Many2one(
+        'color.recipe', string='Receta de Color',
+        compute='_compute_colors', store=True,
+        help='Receta con la que se tiñe la partida (única: los rollos deben '
+             'compartir receta). Igual que en la OF: código + nombre + receta.')
+    color_code = fields.Char(related='color_recipe_id.color_code', string='Código de Color')
+    color_name = fields.Char(related='color_recipe_id.color_name', string='Nombre de Color')
     registry_ids = fields.One2many('batch.registry', 'batch_id', string='Registers')
 
     @api.depends('wo_roll_ids')
@@ -15,21 +21,28 @@ class MrpWorkorderBatch(models.Model):
             partners = rec.wo_roll_ids.workorder_id.production_id.sale_order_line_id.order_id.mapped('partner_id')
             rec.partner_ids = [(6, 0, partners.ids)] if partners else [(5, 0, 0)]
 
-    @api.depends('wo_roll_ids')
-    def _compute_colors(self): 
+    @api.depends('wo_roll_ids', 'child_batch_ids.wo_roll_ids')
+    def _compute_colors(self):
         for rec in self:
-            colors = rec.wo_roll_ids.workorder_id.production_id.color_recipe_id.filtered(lambda l: l.color_name).mapped('color_name')
-            if colors:
-                rec.color_names = ', '.join(set(colors))
-            else:
-                rec.color_names = ''
+            recipes = rec.wo_roll_ids.workorder_id.production_id.color_recipe_id
+            if not recipes and rec.child_batch_ids:
+                # Partida dividida: conserva el color histórico desde sus hijas.
+                recipes = rec.child_batch_ids.wo_roll_ids.workorder_id.production_id.color_recipe_id
+            rec.color_recipe_id = recipes[:1]
 
     # =========================
     # Lookup para UI (Shop Floor)
     # =========================
     @api.model
-    def search_batch_lookup(self, query="", limit=20, state="batch", prefer_id=None):
+    def search_batch_lookup(self, query="", limit=20, state="batch", prefer_id=None,
+                            workorder_id=None):
         limit = int(limit or 20)
+        # OT que llama (p.ej. TEÑIDO en el taller): filtra partidas con al menos
+        # un rollo del MISMO producto de su OF, y marca con warning las que
+        # traen rollos fabricados en OTRA OF.
+        caller_wo = self.env['mrp.workorder'].browse(int(workorder_id)) if workorder_id else False
+        caller_production = caller_wo.production_id if caller_wo else False
+        caller_tmpl = caller_production.product_id.product_tmpl_id if caller_production else False
         query = (query or "").strip()
         query_terms = [term.strip() for term in query.split(",") if term.strip()] if query else []
         try:
@@ -47,6 +60,14 @@ class MrpWorkorderBatch(models.Model):
         parts = []
         if state:
             parts.append(Domain("state", "=", state))
+        if caller_tmpl:
+            # roll.product_id es la plantilla del producto de su OT
+            parts.append(Domain("wo_roll_ids.product_id", "=", caller_tmpl.id))
+        caller_recipe = caller_production.color_recipe_id if caller_production else False
+        if caller_recipe:
+            # Mismo COLOR: la partida se tiñe con la receta de la OF llamante
+            # (blanco no aparece si la OT es para negro).
+            parts.append(Domain("color_recipe_id", "=", caller_recipe.id))
 
         if query_terms:
             term_domains = []
@@ -64,6 +85,8 @@ class MrpWorkorderBatch(models.Model):
                     or_parts.append(Domain("color_code", "ilike", term))
                 if has_color_id:
                     or_parts.append(Domain("color_id.name", "ilike", term))
+                if "color_recipe_id" in self._fields:
+                    or_parts.append(Domain("color_recipe_id.name", "ilike", term))
                 term_domains.append(Domain.OR(or_parts))
 
             parts.append(Domain.AND(term_domains))
@@ -116,6 +139,15 @@ class MrpWorkorderBatch(models.Model):
             mrwo = rec.mrwo_id.display_name if "mrwo_id" in self._fields and rec.mrwo_id else ""
             st = rec.state if "state" in self._fields else False
 
+            warning = ""
+            if caller_production:
+                foreign = (rec.wo_roll_ids.workorder_id.production_id
+                           - caller_production)
+                if foreign:
+                    warning = _(
+                        "Contiene rollos fabricados en otra OF: %s"
+                    ) % ", ".join(foreign.mapped("name"))
+
             res.append({
                 "id": rec.id,
                 "name": rec.name or "",
@@ -126,6 +158,7 @@ class MrpWorkorderBatch(models.Model):
                 "partner_id": partner,
                 "color": color,
                 "mrwo": mrwo,
+                "warning": warning,
             })
 
         return res

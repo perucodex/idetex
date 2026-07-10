@@ -24,6 +24,16 @@ class MrpWorkorderRoll(models.Model):
     option_id = fields.Many2one('mrp.workorder.option', string='Option')
     equipment_ids = fields.Many2many(related='option_id.equipment_ids')
     employee_ids = fields.Many2many(related='option_id.employee_ids')
+    current_batch_id = fields.Many2one(
+        'mrp.workorder.batch', string='Partida Actual',
+        compute='_compute_current_batch_id',
+        help='Partida activa (no dividida/desarmada) en la que vive el rollo hoy.')
+
+    def _compute_current_batch_id(self):
+        Batch = self.env['mrp.workorder.batch']
+        for roll in self:
+            roll.current_batch_id = Batch.search(
+                [('wo_roll_ids', 'in', roll.id), ('state', '=', 'batch')], limit=1)
 
     def reprint(self):
         # self.ensure_one()

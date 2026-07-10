@@ -13,10 +13,15 @@
                         t-on-click="() => this.createSizeRecord(props.record.resId)">
                         <i class="fa fa-plus-square me-2"/>Add Size
                 </button>
-                <button t-if="props.record.data.state == 'progress' and props.record.data.operation_type == 'dyeing'"
+                <button t-if="props.record.data.state == 'progress' and props.record.data.operation_type == 'dyeing' and props.record.data.use_lab_recipe"
                         class="d-flex flex-column gap-1 btn btn-warning fs-3 w-100 h-100 py-3"
                         t-on-click="() => this.registerDyeBatch(props.record.resId)">
                         <i class="fa fa-flask me-2"/>Dye Batch
+                </button>
+                <button t-if="props.record.data.state == 'progress' and props.record.data.operation_type == 'dyeing' and !props.record.data.use_lab_recipe"
+                        class="d-flex flex-column gap-1 btn btn-warning fs-3 w-100 h-100 py-3"
+                        t-on-click="() => this.registerBatchOperation(props.record.resId)">
+                        <i class="fa fa-check-square-o me-2"/>Register Batch
                 </button>
             </div>
         </xpath>

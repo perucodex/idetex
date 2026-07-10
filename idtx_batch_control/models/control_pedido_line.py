@@ -127,6 +127,48 @@ class ControlPedidoLine(models.Model):
         help="El ÁREA de la fase lista de la partida es CONTROL DE CALIDAD (campo `area`) "
              "y la ruta aún no terminó (su última fase no está cerrada).")
 
+    # ------------------------------------------------------------------
+    # Reporte "Kilos x Pesar": partidas cuya ÚLTIMA fase de CONTROL DE
+    # CALIDAD ya cerró (fecha inicio y fin) y que tienen kilos pesados en
+    # SITPRO tinto_acab pero 0 kilos ingresados en alm_acab_ing (ambas
+    # tablas SQL Server, base SITPRO, llave voucher = batch).
+    # Los kilos NO son compute: los refresca _refresh_kilos_pesar() (cron
+    # de sync y accion manual) porque vienen de SQL externo.
+    # ------------------------------------------------------------------
+    quality_last_start = fields.Datetime(
+        string='Inicio Últ. C. Calidad',
+        compute='_compute_finishing_metrics', store=True,
+        help="Fecha de inicio (barFasDTI) de la ÚLTIMA fase de CONTROL DE "
+             "CALIDAD de la ruta (mayor barOrdLin con operation_type=quality).")
+    quality_last_end = fields.Datetime(
+        string='Fin Últ. C. Calidad',
+        compute='_compute_finishing_metrics', store=True,
+        help="Fecha de fin (barFasDTF) de la ÚLTIMA fase de CONTROL DE "
+             "CALIDAD de la ruta.")
+    acab_weighed_kilos = fields.Float(
+        string='Kilos Pesados (Acabado)', readonly=True,
+        help="SUM(kneto) en SITPRO tinto_acab para voucher = batch. "
+             "Refrescado por el sync o la accion 'Actualizar Kilos x Pesar'.")
+    alm_ing_kilos = fields.Float(
+        string='Kilos Ingreso Almacén', readonly=True,
+        help="SUM(kneto) en SITPRO alm_acab_ing para voucher = batch. "
+             "Refrescado por el sync o la accion 'Actualizar Kilos x Pesar'.")
+    is_pending_weigh = fields.Boolean(
+        string='Kilos x Pesar',
+        compute='_compute_is_pending_weigh', store=True,
+        help="Última fase de C. Calidad cerrada (inicio y fin), con kilos "
+             "pesados en tinto_acab y 0 kilos en alm_acab_ing.")
+
+    @api.depends('quality_last_start', 'quality_last_end',
+                 'acab_weighed_kilos', 'alm_ing_kilos')
+    def _compute_is_pending_weigh(self):
+        for rec in self:
+            rec.is_pending_weigh = bool(
+                rec.quality_last_start and rec.quality_last_end
+                and rec.acab_weighed_kilos > 0.0
+                and not rec.alm_ing_kilos
+            )
+
     @api.depends('area',
                  'proceso_ids.barFasDTI', 'proceso_ids.barFasDTF', 'proceso_ids.barOrdLin',
                  'proceso_ids.fas_code', 'proceso_ids.fasCod')
@@ -148,6 +190,12 @@ class ControlPedidoLine(models.Model):
         for rec in self:
             procs = rec.proceso_ids.sorted(key=lambda p: p.barOrdLin or 0)
             finishing = [p for p in procs if op_type(p) == 'finishing']
+            # Última fase de CONTROL DE CALIDAD de la ruta (mayor barOrdLin):
+            # sus fechas alimentan el reporte "Kilos x Pesar".
+            quality = [p for p in procs if op_type(p) == 'quality']
+            last_quality = quality[-1] if quality else None
+            rec.quality_last_start = last_quality.barFasDTI if last_quality else False
+            rec.quality_last_end = last_quality.barFasDTF if last_quality else False
             # El conteo de operaciones de acabado pendientes arranca DESDE la
             # última fase TERMINADA (mayor barOrdLin con fecha fin). Las
             # operaciones de acabado anteriores a ese punto que quedaron sin
@@ -226,6 +274,97 @@ class ControlPedidoLine(models.Model):
 
     def action_set_active(self):
         self.write({'state': 'active'})
+
+    # ------------------------------------------------------------------
+    # Kilos x Pesar: refresh desde SITPRO SQL (tinto_acab / alm_acab_ing)
+    # ------------------------------------------------------------------
+    @api.model
+    def refresh_kilos_pesar(self):
+        """Refresca los kilos de las partidas candidatas al reporte:
+        las activas con la última fase de C. Calidad cerrada, más las que
+        hoy están marcadas (para des-marcarlas cuando almacén ya ingresó).
+        Llamado desde el sync horario (_sync_extra_data) y utilizable a mano.
+        """
+        lines = self.search([
+            '|',
+            ('is_pending_weigh', '=', True),
+            '&', ('state', '=', 'active'), ('quality_last_end', '!=', False),
+        ])
+        lines._refresh_kilos_pesar()
+        return len(lines)
+
+    def action_refresh_kilos_pesar(self):
+        """Accion de servidor: refresca la selección; sin selección refresca
+        todas las candidatas."""
+        if self:
+            self._refresh_kilos_pesar()
+        else:
+            self.refresh_kilos_pesar()
+
+    def _refresh_kilos_pesar(self):
+        """Escribe acab_weighed_kilos / alm_ing_kilos consultando SITPRO SQL
+        por lotes (voucher = batch). Best-effort: si SQL no responde, deja los
+        valores como están y registra el problema (el flag is_pending_weigh
+        se recalcula solo al escribirse los kilos).
+
+        Nota: voucher es varchar y SQL Server ignora espacios finales en la
+        comparación, así que `voucher IN (...)` matchea aunque la columna
+        venga con padding; el RTRIM solo hace falta en el SELECT.
+        """
+        lines = self.filtered(lambda l: (l.batch or '').strip())
+        if not lines:
+            return
+        batches = sorted({l.batch.strip() for l in lines})
+        try:
+            conn = self.env['control.pedido']._get_sitpro_connection()
+        except Exception:
+            _logger.warning(
+                "kilos x pesar: SITPRO SQL inalcanzable, kilos sin refrescar",
+                exc_info=True)
+            return
+        acab, alm = {}, {}
+        try:
+            cursor = conn.cursor()
+            chunk = 900
+            for i in range(0, len(batches), chunk):
+                part = batches[i:i + chunk]
+                placeholders = ",".join(["?"] * len(part))
+                cursor.execute(
+                    f"SELECT LTRIM(RTRIM(voucher)), SUM(kneto) "
+                    f"FROM tinto_acab WITH (NOLOCK) "
+                    f"WHERE voucher IN ({placeholders}) "
+                    f"GROUP BY LTRIM(RTRIM(voucher))",
+                    *part,
+                )
+                for voucher, kilos in cursor.fetchall():
+                    acab[voucher] = _safe_float(kilos)
+                cursor.execute(
+                    f"SELECT LTRIM(RTRIM(voucher)), SUM(kneto) "
+                    f"FROM alm_acab_ing WITH (NOLOCK) "
+                    f"WHERE voucher IN ({placeholders}) "
+                    f"GROUP BY LTRIM(RTRIM(voucher))",
+                    *part,
+                )
+                for voucher, kilos in cursor.fetchall():
+                    alm[voucher] = _safe_float(kilos)
+        except Exception:
+            _logger.warning(
+                "kilos x pesar: fallo la consulta a SITPRO, kilos sin refrescar",
+                exc_info=True)
+            return
+        finally:
+            conn.close()
+        for line in lines:
+            batch = line.batch.strip()
+            vals = {}
+            weighed = acab.get(batch, 0.0)
+            ingressed = alm.get(batch, 0.0)
+            if abs(line.acab_weighed_kilos - weighed) > 0.005:
+                vals['acab_weighed_kilos'] = weighed
+            if abs(line.alm_ing_kilos - ingressed) > 0.005:
+                vals['alm_ing_kilos'] = ingressed
+            if vals:
+                line.write(vals)
 
     @api.depends('proceso_ids.barFasDTF', 'proceso_ids.barOrdLin', 'proceso_ids.fasCod')
     def _compute_next_process(self):

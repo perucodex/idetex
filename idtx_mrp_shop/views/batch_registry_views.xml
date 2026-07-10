@@ -15,6 +15,8 @@
                         <group>
                             <field name="workorder_id" domain="[('operation_type','=','dyeing')]" required="1" readonly="state == 'done'"/>
                             <field name="registry_date" readonly="1" invisible="not registry_date" force_save="1"/>
+                            <field name="date_start" readonly="state == 'done'" invisible="not date_start"/>
+                            <field name="date_end" readonly="state == 'done'" invisible="not date_end"/>
                             <field name="partner_id" readonly="1" force_save="1"/>
                         </group>
                         <group>
@@ -190,6 +192,8 @@
                 <!-- <field name="batch_id"/> -->
                 <field name="workorder_id"/>
                 <field name="registry_date"/>
+                <field name="date_start" optional="hide"/>
+                <field name="date_end" optional="hide"/>
                 <field name="employee_id"/>
                 <field name="equipment_id"/>
                 <field name="color_name"/>

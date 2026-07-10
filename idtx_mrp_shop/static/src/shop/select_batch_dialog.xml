@@ -94,6 +94,10 @@
                                 Total: <t t-esc="selectedBatch.total_weight"/> kg
                             </span>
                         </div>
+                        <div t-if="selectedBatch.warning" class="alert alert-warning mt-2 mb-0 py-2">
+                            <i class="fa fa-exclamation-triangle me-1"/>
+                            <t t-esc="selectedBatch.warning"/>
+                        </div>
                     </div>
 
                     <div class="mt-3">
@@ -114,6 +118,10 @@
                                         <span t-if="b.total_weight !== null and b.total_weight !== undefined" class="badge rounded-pill bg-light text-dark border">Total: <t t-esc="b.total_weight"/> kg</span>
                                         <span t-if="b.state_label" class="badge rounded-pill bg-secondary"><t t-esc="b.state_label"/></span>
                                         <span t-if="b.mrwo" class="badge rounded-pill bg-light text-dark border">Op: <t t-esc="b.mrwo"/></span>
+                                    </div>
+                                    <div t-if="b.warning" class="text-warning small mt-1">
+                                        <i class="fa fa-exclamation-triangle me-1"/>
+                                        <t t-esc="b.warning"/>
                                     </div>
                                 </button>
                             </t>

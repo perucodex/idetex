@@ -938,10 +938,13 @@ class ControlPedido(models.Model):
 
     def _sync_extra_data(self, nums):
         """Hook llamado al final de sync_from_dbf con la lista de números de
-        pedido procesados (`nums`). No hace nada por defecto; los módulos que
-        derivan datos adicionales de SITPRO lo sobreescriben — ver
-        idtx_printing_dbf, que calcula el kilaje de estampado por pedido."""
-        return
+        pedido procesados (`nums`). Los módulos que derivan datos adicionales
+        de SITPRO lo extienden — ver idtx_printing_dbf, que calcula el kilaje
+        de estampado por pedido.
+
+        Aquí refresca los kilos del reporte 'Kilos x Pesar' (tinto_acab vs
+        alm_acab_ing en SITPRO SQL). El caller ya envuelve en try/except."""
+        self.env['control.pedido.line'].refresh_kilos_pesar()
 
     def _cleanup_zombie_lines(self, rows, existing_map):
         """Borra lineas Odoo cuya combinacion (pedido, route, batch) ya no

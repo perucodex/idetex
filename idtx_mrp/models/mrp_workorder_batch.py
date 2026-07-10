@@ -34,6 +34,22 @@ class MrpWorkorderBatch(models.Model):
     child_batch_ids = fields.One2many(
         'mrp.workorder.batch', 'parent_batch_id', string='Sub-partidas')
     child_count = fields.Integer(compute='_compute_child_count')
+    origin_roll_ids = fields.Many2many(
+        'mrp.workorder.roll', string='Rollos Originales',
+        compute='_compute_origin_roll_ids',
+        help='Composición original de la partida dividida: los rollos que hoy '
+             'viven en sus sub-partidas (recursivo si estas se volvieron a dividir).')
+
+    def _compute_origin_roll_ids(self):
+        for rec in self:
+            rolls = rec.wo_roll_ids
+            seen = self.browse()
+            children = rec.child_batch_ids
+            while children:
+                rolls |= children.wo_roll_ids
+                seen |= children
+                children = children.child_batch_ids - seen
+            rec.origin_roll_ids = rolls
 
     def _compute_child_count(self):
         for rec in self:

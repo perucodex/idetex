@@ -5,6 +5,7 @@ import { MrpMenuDialog } from "@mrp_workorder/mrp_display/dialog/mrp_menu_dialog
 import { SelectScaleDialog } from "./select_scale_dialog";
 import { SelectSizeDialog } from "./select_size_dialog";
 import { SelectBatchDialog } from "./select_batch_dialog";
+import { SimpleBatchDialog } from "./simple_batch_dialog";
 import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
 
@@ -177,6 +178,37 @@ patch(MrpMenuDialog.prototype, {
             document.activeElement?.blur?.();
             this.dialogService.add(SelectBatchDialog, {
                 title: _t("Select batch"),
+                confirm: _createRecord,
+                recordId: this.props.record.resId,
+            });
+        });
+
+        this.props.close();
+    },
+
+    async registerBatchOperation() {
+        // Operaciones de tintorería SIN receta de laboratorio (HABILITADO,
+        // HIDROEXTRACTORA, ...): registro simple en un paso — partida + horas.
+        await new Promise(resolve => {
+            const _createRecord = async (payload) => {
+                const res = await this.orm.call(
+                    "mrp.workorder",
+                    "action_register_batch_operation",
+                    [[this.props.record.resId], payload]
+                );
+
+                if (res) {
+                    this.notification.add(res.message, { type: res.status });
+                }
+                await this.props.record.load();
+                this.props.removeFromCache(this.props.record.resId);
+
+                resolve(res);
+            };
+
+            document.activeElement?.blur?.();
+            this.dialogService.add(SimpleBatchDialog, {
+                title: _t("Register batch operation"),
                 confirm: _createRecord,
                 recordId: this.props.record.resId,
             });
