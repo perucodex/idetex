@@ -1,0 +1,203 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* idtx_quality_board
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-10 22:02+0000\n"
+"PO-Revision-Date: 2026-07-10 22:02+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "# Partidas"
+msgstr "# Partidas"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid ") coincide con"
+msgstr ") coincide con"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "Análisis de Motivos"
+msgstr "Análisis de Motivos"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "Análisis de Recetas"
+msgstr "Análisis de Recetas"
+
+#. module: idtx_quality_board
+#: model:ir.ui.menu,name:idtx_quality_board.menu_calidad_root
+msgid "Calidad"
+msgstr "Calidad"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "Cambio de Receta"
+msgstr "Cambio de Receta"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "Cargando evaluaciones…"
+msgstr "Cargando evaluaciones…"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "Comparación de Recetas por Mes"
+msgstr "Comparación de Recetas por Mes"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "Distribución de Motivos por Mes"
+msgstr "Distribución de Motivos por Mes"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "Distribución por Mes y Resultado"
+msgstr "Distribución por Mes y Resultado"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "Evolución Mensual de Motivos"
+msgstr "Evolución Mensual de Motivos"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "Evolución Mensual de Recetas"
+msgstr "Evolución Mensual de Recetas"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "Evolución Mensual por Resultado"
+msgstr "Evolución Mensual por Resultado"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "Haz clic en una barra para ver los registros correspondientes"
+msgstr "Haz clic en una barra para ver los registros correspondientes"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "Motivo"
+msgstr "Motivo"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "Receta Correcta"
+msgstr "Receta Correcta"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "Resultado"
+msgstr "Resultado"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "TOTAL"
+msgstr "TOTAL"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "Tipo"
+msgstr "Tipo"
+
+#. module: idtx_quality_board
+#: model:ir.actions.client,name:idtx_quality_board.action_calidad_acabado_board
+#: model:ir.ui.menu,name:idtx_quality_board.menu_calidad_acabado
+msgid "Tono Acabado"
+msgstr "Tono Acabado"
+
+#. module: idtx_quality_board
+#: model:ir.actions.client,name:idtx_quality_board.action_calidad_tintoreria_board
+#: model:ir.ui.menu,name:idtx_quality_board.menu_calidad_tintoreria
+msgid "Tono Tintorería"
+msgstr "Tono Tintorería"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "Total"
+msgstr "Total"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "evaluaciones"
+msgstr "evaluaciones"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "mes(es)"
+msgstr "mes(es)"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "ocurrencias"
+msgstr "ocurrencias"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "receta"
+msgstr "receta"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "receta_tono"
+msgstr "receta_tono"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid "registros ·"
+msgstr "registros ·"
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid ""
+"—\n"
+"                            Receta Tacho ("
+msgstr ""
+"—\n"
+"                            Receta Tacho ("
+
+#. module: idtx_quality_board
+#. odoo-javascript
+#: code:addons/idtx_quality_board/static/src/quality_board.xml:0
+msgid ""
+"—\n"
+"                            Receta Tacho difiere de"
+msgstr ""
+"—\n"
+"                            Receta Tacho difiere de"

@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-03 15:12+0000\n"
-"PO-Revision-Date: 2025-12-03 15:12+0000\n"
+"POT-Creation-Date: 2026-07-10 22:02+0000\n"
+"PO-Revision-Date: 2026-07-10 22:02+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -30,32 +30,32 @@ msgstr " al: "
 #. module: idtx_menu_invoice_pe
 #: model_terms:ir.ui.view,arch_db:idtx_menu_invoice_pe.view_menu_invoice_form
 msgid "--&gt;"
-msgstr ""
+msgstr "--&gt;"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__message_needaction
 msgid "Action Needed"
-msgstr ""
+msgstr "Acción requerida"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__activity_ids
 msgid "Activities"
-msgstr ""
+msgstr "Actividades"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__activity_exception_decoration
 msgid "Activity Exception Decoration"
-msgstr ""
+msgstr "Decoración de excepción de actividad"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__activity_state
 msgid "Activity State"
-msgstr ""
+msgstr "Estado de la actividad"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__activity_type_icon
 msgid "Activity Type Icon"
-msgstr ""
+msgstr "Ícono del tipo de actividad"
 
 #. module: idtx_menu_invoice_pe
 #: model_terms:ir.ui.view,arch_db:idtx_menu_invoice_pe.view_menu_invoice_form
@@ -65,7 +65,7 @@ msgstr "Esta seguro que desea crear los comprobantes?"
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__message_attachment_count
 msgid "Attachment Count"
-msgstr ""
+msgstr "Número de archivos adjuntos"
 
 #. module: idtx_menu_invoice_pe
 #. odoo-python
@@ -74,6 +74,11 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:idtx_menu_invoice_pe.view_menu_invoice_line_filter
 msgid "Breakfast"
 msgstr "Desayuno"
+
+#. module: idtx_menu_invoice_pe
+#: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__company_ids
+msgid "Companies"
+msgstr "Compañías"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__company_id
@@ -89,13 +94,13 @@ msgstr "Crear Comprobantes"
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__create_uid
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice_line__create_uid
 msgid "Created by"
-msgstr ""
+msgstr "Creado por"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__create_date
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice_line__create_date
 msgid "Created on"
-msgstr ""
+msgstr "Creado el"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice_line__partner_id
@@ -105,7 +110,7 @@ msgstr "Cliente"
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields.selection,name:idtx_menu_invoice_pe.selection__menu_invoice__state__data
 msgid "Data"
-msgstr ""
+msgstr "Datos"
 
 #. module: idtx_menu_invoice_pe
 #: model_terms:ir.ui.view,arch_db:idtx_menu_invoice_pe.view_menu_invoice_form
@@ -140,7 +145,7 @@ msgstr "Cena"
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__display_name
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice_line__display_name
 msgid "Display Name"
-msgstr ""
+msgstr "Nombre mostrado"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields.selection,name:idtx_menu_invoice_pe.selection__menu_invoice__state__done
@@ -160,17 +165,17 @@ msgstr "Fecha Final"
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__message_follower_ids
 msgid "Followers"
-msgstr ""
+msgstr "Seguidores"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__message_partner_ids
 msgid "Followers (Partners)"
-msgstr ""
+msgstr "Seguidores (Contactos)"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,help:idtx_menu_invoice_pe.field_menu_invoice__activity_type_icon
 msgid "Font awesome icon e.g. fa-tasks"
-msgstr ""
+msgstr "Ícono de Font Awesome, p. ej. fa-tasks"
 
 #. module: idtx_menu_invoice_pe
 #: model_terms:ir.ui.view,arch_db:idtx_menu_invoice_pe.view_menu_invoice_form
@@ -180,39 +185,39 @@ msgstr "Obtener Data"
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__has_message
 msgid "Has Message"
-msgstr ""
+msgstr "Tiene mensaje"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__id
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice_line__id
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__activity_exception_icon
 msgid "Icon"
-msgstr ""
+msgstr "Ícono"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,help:idtx_menu_invoice_pe.field_menu_invoice__activity_exception_icon
 msgid "Icon to indicate an exception activity."
-msgstr ""
+msgstr "Ícono para indicar una actividad de excepción."
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,help:idtx_menu_invoice_pe.field_menu_invoice__message_needaction
 msgid "If checked, new messages require your attention."
-msgstr ""
+msgstr "Si está marcado, hay nuevos mensajes que requieren su atención."
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,help:idtx_menu_invoice_pe.field_menu_invoice__message_has_error
 #: model:ir.model.fields,help:idtx_menu_invoice_pe.field_menu_invoice__message_has_sms_error
 msgid "If checked, some messages have a delivery error."
-msgstr ""
+msgstr "Si está marcado, algunos mensajes tienen error de entrega."
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__invoice_count
 msgid "Invoice Count"
-msgstr ""
+msgstr "Número de facturas"
 
 #. module: idtx_menu_invoice_pe
 #. odoo-python
@@ -225,19 +230,19 @@ msgstr "Comprobantes"
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__message_is_follower
 msgid "Is Follower"
-msgstr ""
+msgstr "Es seguidor"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__write_uid
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice_line__write_uid
 msgid "Last Updated by"
-msgstr ""
+msgstr "Última actualización por"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__write_date
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice_line__write_date
 msgid "Last Updated on"
-msgstr ""
+msgstr "Última actualización el"
 
 #. module: idtx_menu_invoice_pe
 #: model:res.groups,name:idtx_menu_invoice_pe.group_module_menu_invoice_pe_manager
@@ -251,6 +256,11 @@ msgstr "Administrador"
 #: model_terms:ir.ui.view,arch_db:idtx_menu_invoice_pe.view_menu_invoice_line_filter
 msgid "Menu"
 msgstr "Menú"
+
+#. module: idtx_menu_invoice_pe
+#: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice_line__line_description
+msgid "Menu Description"
+msgstr "Descripción del menú"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.actions.act_window,name:idtx_menu_invoice_pe.menu_invoice_action
@@ -287,6 +297,11 @@ msgid "Menu Management"
 msgstr "Gestion de Menú"
 
 #. module: idtx_menu_invoice_pe
+#: model:product.template,name:idtx_menu_invoice_pe.product_template_product_menu
+msgid "Menu Service"
+msgstr "Servicio de menú"
+
+#. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice_line__menu_type
 #: model_terms:ir.ui.view,arch_db:idtx_menu_invoice_pe.view_menu_invoice_line_filter
 msgid "Menu Type"
@@ -295,17 +310,17 @@ msgstr "Tipo de Menú"
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__message_has_error
 msgid "Message Delivery error"
-msgstr ""
+msgstr "Error de entrega del mensaje"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__message_ids
 msgid "Messages"
-msgstr ""
+msgstr "Mensajes"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__my_activity_date_deadline
 msgid "My Activity Deadline"
-msgstr ""
+msgstr "Fecha límite de mi actividad"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__name
@@ -321,37 +336,37 @@ msgstr "Nuevo"
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__activity_date_deadline
 msgid "Next Activity Deadline"
-msgstr ""
+msgstr "Fecha límite de la siguiente actividad"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__activity_summary
 msgid "Next Activity Summary"
-msgstr ""
+msgstr "Resumen de la siguiente actividad"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__activity_type_id
 msgid "Next Activity Type"
-msgstr ""
+msgstr "Tipo de la siguiente actividad"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__message_needaction_counter
 msgid "Number of Actions"
-msgstr ""
+msgstr "Número de acciones"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__message_has_error_counter
 msgid "Number of errors"
-msgstr ""
+msgstr "Número de errores"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,help:idtx_menu_invoice_pe.field_menu_invoice__message_needaction_counter
 msgid "Number of messages requiring action"
-msgstr ""
+msgstr "Número de mensajes que requieren acción"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,help:idtx_menu_invoice_pe.field_menu_invoice__message_has_error_counter
 msgid "Number of messages with delivery error"
-msgstr ""
+msgstr "Número de mensajes con error de entrega"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.ui.menu,name:idtx_menu_invoice_pe.dev_operations_menu
@@ -376,12 +391,12 @@ msgstr "Cantidad"
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__rating_ids
 msgid "Ratings"
-msgstr ""
+msgstr "Calificaciones"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__activity_user_id
 msgid "Responsible User"
-msgstr ""
+msgstr "Usuario responsable"
 
 #. module: idtx_menu_invoice_pe
 #: model_terms:ir.ui.view,arch_db:idtx_menu_invoice_pe.view_menu_invoice_form
@@ -391,17 +406,12 @@ msgstr "Volver"
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__message_has_sms_error
 msgid "SMS Delivery error"
-msgstr ""
+msgstr "Error de entrega de SMS"
 
 #. module: idtx_menu_invoice_pe
 #: model_terms:ir.ui.view,arch_db:idtx_menu_invoice_pe.view_menu_invoice_line_filter
 msgid "Search Menu Items"
-msgstr ""
-
-#. module: idtx_menu_invoice_pe
-#: model:product.template,name:idtx_menu_invoice_pe.product_template_product_menu
-msgid "Menu Service"
-msgstr "Servicio de menú"
+msgstr "Buscar elementos de menú"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__start_date
@@ -421,6 +431,10 @@ msgid ""
 "Today: Activity date is today\n"
 "Planned: Future activities."
 msgstr ""
+"Estado basado en actividades\n"
+"Vencida: la fecha límite ya pasó\n"
+"Hoy: la fecha de la actividad es hoy\n"
+"Planificada: actividades futuras."
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__tax_id
@@ -428,9 +442,15 @@ msgid "Tax"
 msgstr "Impuesto"
 
 #. module: idtx_menu_invoice_pe
+#. odoo-python
+#: code:addons/idtx_menu_invoice_pe/models/menu_invoice.py:0
+msgid "The ending date must not be prior to the starting date."
+msgstr "La fecha final no debe ser anterior a la fecha inicial."
+
+#. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,help:idtx_menu_invoice_pe.field_menu_invoice__activity_exception_decoration
 msgid "Type of the exception activity on record."
-msgstr ""
+msgstr "Tipo de actividad de excepción en el registro."
 
 #. module: idtx_menu_invoice_pe
 #: model:res.groups,name:idtx_menu_invoice_pe.group_module_menu_invoice_pe_user
@@ -440,12 +460,31 @@ msgstr "Usuario"
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__website_message_ids
 msgid "Website Messages"
-msgstr ""
+msgstr "Mensajes del sitio web"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,help:idtx_menu_invoice_pe.field_menu_invoice__website_message_ids
 msgid "Website communication history"
+msgstr "Historial de comunicación del sitio web"
+
+#. module: idtx_menu_invoice_pe
+#. odoo-python
+#: code:addons/idtx_menu_invoice_pe/models/menu_invoice.py:0
+msgid ""
+"You can not have an overlap between menu invoices, please correct the start "
+"and/or end dates."
 msgstr ""
+"No puede haber una superposición entre menús de facturas; corrija las fechas"
+" de inicio y/o fin."
+
+#. module: idtx_menu_invoice_pe
+#. odoo-python
+#: code:addons/idtx_menu_invoice_pe/models/menu_invoice.py:0
+msgid ""
+"You can't return this document, some invoices are already posted or canceled"
+msgstr ""
+"No puede revertir este documento, algunas facturas ya están publicadas o "
+"canceladas"
 
 #. module: idtx_menu_invoice_pe
 #: model:ir.model.fields,field_description:idtx_menu_invoice_pe.field_menu_invoice__line_ids

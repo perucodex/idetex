@@ -6,14 +6,29 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-20 20:29+0000\n"
-"PO-Revision-Date: 2026-04-20 20:29+0000\n"
+"POT-Creation-Date: 2026-07-10 22:02+0000\n"
+"PO-Revision-Date: 2026-07-10 22:02+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
+
+#. module: idtx_mrp
+#. odoo-python
+#: code:addons/idtx_mrp/models/mrp_workorder_batch.py:0
+msgid "(sin receta de color)"
+msgstr "(sin receta de color)"
+
+#. module: idtx_mrp
+#: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_workorder_batch_form
+msgid ""
+"<span class=\"o_stat_text\">Partida</span>\n"
+"                                <span class=\"o_stat_text\">Origen</span>"
+msgstr ""
+"<span class=\"o_stat_text\">Partida</span>\n"
+"                                <span class=\"o_stat_text\">Origen</span>"
 
 #. module: idtx_mrp
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_workcenter_view_inherit
@@ -26,36 +41,38 @@ msgid ""
 "<strong>Nota:</strong> Los hilados se cargan automáticamente desde la orden "
 "de producción. Todos los hilos deben estar presentes en la opción."
 msgstr ""
+"<strong>Nota:</strong> Los hilados se cargan automáticamente desde la orden "
+"de producción. Todos los hilos deben estar presentes en la opción."
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__message_needaction
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__message_needaction
 msgid "Action Needed"
-msgstr ""
+msgstr "Acción requerida"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__activity_ids
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__activity_ids
 msgid "Activities"
-msgstr ""
+msgstr "Actividades"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__activity_exception_decoration
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__activity_exception_decoration
 msgid "Activity Exception Decoration"
-msgstr ""
+msgstr "Decoración de actividad de excepción"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__activity_state
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__activity_state
 msgid "Activity State"
-msgstr ""
+msgstr "Estado de la actividad"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__activity_type_icon
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__activity_type_icon
 msgid "Activity Type Icon"
-msgstr ""
+msgstr "Icono del tipo de actividad"
 
 #. module: idtx_mrp
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.view_batch_add_wizard_form
@@ -70,17 +87,23 @@ msgstr "Orden de trabajo adicional"
 #. module: idtx_mrp
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.wo_batch_tree_view
 msgid "Agregar en lote"
-msgstr ""
+msgstr "Agregar en lote"
 
 #. module: idtx_mrp
 #: model:ir.actions.act_window,name:idtx_mrp.action_batch_add_wizard
 msgid "Agregar registros"
-msgstr ""
+msgstr "Agregar registros"
 
 #. module: idtx_mrp
 #: model:ir.model,name:idtx_mrp.model_batch_add_wizard
 msgid "Agregar registros en lote"
-msgstr ""
+msgstr "Agregar registros en lote"
+
+#. module: idtx_mrp
+#. odoo-python
+#: code:addons/idtx_mrp/models/mrp_workorder.py:0
+msgid "Alguna máquina no tiene RPM; no se cuenta en el cálculo."
+msgstr "Alguna máquina no tiene RPM; no se cuenta en el cálculo."
 
 #. module: idtx_mrp
 #. odoo-python
@@ -92,7 +115,7 @@ msgstr "Todos los rollos terminados deben tener un lote antes de producir."
 #. odoo-python
 #: code:addons/idtx_mrp/models/mrp_workorder.py:0
 msgid "All option lines must have product and lot."
-msgstr "Todas las lineas de opciones deben tener un producto y un lote."
+msgstr "Todas las líneas de opciones deben tener un producto y un lote."
 
 #. module: idtx_mrp
 #. odoo-python
@@ -100,13 +123,26 @@ msgstr "Todas las lineas de opciones deben tener un producto y un lote."
 msgid ""
 "All options must have assigned employees and equipments before starting."
 msgstr ""
-"Todas las opciones deben tener un empleado y equipos asignados antes de comenzar."
+"Todas las opciones deben tener un empleado y equipos asignados antes de "
+"comenzar."
+
+#. module: idtx_mrp
+#. odoo-python
+#: code:addons/idtx_mrp/models/mrp_workorder.py:0
+msgid "Asigna máquinas con RPM configurado."
+msgstr "Asigna máquinas con RPM configurado."
+
+#. module: idtx_mrp
+#. odoo-python
+#: code:addons/idtx_mrp/wizards/mrp_workorder_batch_split.py:0
+msgid "Asigna un grupo al rollo %s."
+msgstr "Asigna un grupo al rollo %s."
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__message_attachment_count
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__message_attachment_count
 msgid "Attachment Count"
-msgstr ""
+msgstr "Número de archivos adjuntos"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_option_line__available_lot_ids
@@ -119,15 +155,22 @@ msgid "Available Thread Products"
 msgstr "Hilado Disponible"
 
 #. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder__weaving_estimate_warning
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_option__weaving_estimate_warning
+msgid "Aviso de Estimación"
+msgstr "Aviso de Estimación"
+
+#. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_res_company__zpl_printer_ip
 #: model:ir.model.fields,field_description:idtx_mrp.field_res_config_settings__zpl_printer_ip
 msgid "Barcode Printer IP"
-msgstr "Ip de impresora de codigo de barras"
+msgstr "IP de impresora de código de barras"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_batch_add_wizard__batch_id
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_production__batch_id
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_production_roll__batch_id
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch_split__batch_id
 #: model:ir.model.fields.selection,name:idtx_mrp.selection__mrp_workorder_batch__state__batch
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_workorder_batch_form
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_workorder_batch_view_search
@@ -169,14 +212,29 @@ msgid ""
 "Rolls:\n"
 "%s"
 msgstr ""
-"No se puede eliminar un rollo que esta en una partida.\n"
+"No se puede eliminar un rollo que está en una partida.\n"
 "Rollos:\n"
 "%s"
 
 #. module: idtx_mrp
+#: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_workorder_batch_split_form
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.view_batch_add_wizard_form
 msgid "Cancelar"
+msgstr "Cancelar"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,help:idtx_mrp.field_mrp_workorder__estimated_roll_count
+msgid ""
+"Cantidad de rollos = techo(kg a producir / peso por rollo de la "
+"configuración)."
 msgstr ""
+"Cantidad de rollos = techo(kg a producir / peso por rollo de la "
+"configuración)."
+
+#. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__child_count
+msgid "Child Count"
+msgstr "Número de sub-partidas"
 
 #. module: idtx_mrp
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_workorder_batch_form
@@ -191,7 +249,16 @@ msgstr "Empresas"
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__company_id
 msgid "Company"
+msgstr "Compañía"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,help:idtx_mrp.field_mrp_workorder_batch__origin_roll_ids
+msgid ""
+"Composición original de la partida dividida: los rollos que hoy viven en sus"
+" sub-partidas (recursivo si estas se volvieron a dividir)."
 msgstr ""
+"Composición original de la partida dividida: los rollos que hoy viven en sus"
+" sub-partidas (recursivo si estas se volvieron a dividir)."
 
 #. module: idtx_mrp
 #: model:ir.model,name:idtx_mrp.model_res_config_settings
@@ -201,7 +268,13 @@ msgstr "Ajustes de configuración"
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_batch_add_wizard__count_products
 msgid "Count Products"
-msgstr ""
+msgstr "Número de productos"
+
+#. module: idtx_mrp
+#. odoo-python
+#: code:addons/idtx_mrp/models/mrp_workorder.py:0
+msgid "Crea una opción con máquinas para estimar el tiempo."
+msgstr "Crea una opción con máquinas para estimar el tiempo."
 
 #. module: idtx_mrp
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_workorder_batch_form
@@ -223,42 +296,53 @@ msgstr "Crear nueva operación"
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_production_roll__create_uid
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__create_uid
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__create_uid
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch_split__create_uid
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch_split_line__create_uid
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_option__create_uid
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_option_line__create_uid
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_roll__create_uid
 #: model:ir.model.fields,field_description:idtx_mrp.field_operation_parameter__create_uid
 #: model:ir.model.fields,field_description:idtx_mrp.field_scale_registry__create_uid
 msgid "Created by"
-msgstr ""
+msgstr "Creado por"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_batch_add_wizard__create_date
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_production_roll__create_date
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__create_date
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__create_date
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch_split__create_date
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch_split_line__create_date
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_option__create_date
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_option_line__create_date
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_roll__create_date
 #: model:ir.model.fields,field_description:idtx_mrp.field_operation_parameter__create_date
 #: model:ir.model.fields,field_description:idtx_mrp.field_scale_registry__create_date
 msgid "Created on"
-msgstr ""
+msgstr "Creado el"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__fas_code
+#: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_routing_workcenter_operation_view_search
 msgid "Código MSSQL"
-msgstr ""
+msgstr "Código MSSQL"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,help:idtx_mrp.field_mrp_routing_workcenter_operation__fas_code
 msgid "Código correspondiente en la tabla FASPRO de MSSQL"
-msgstr ""
+msgstr "Código correspondiente en la tabla FASPRO de MSSQL"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,help:idtx_mrp.field_mrp_workorder_batch__split_code
+msgid "Código del grupo dentro de la partida original (A, B, ...)."
+msgstr "Código del grupo dentro de la partida original (A, B, ...)."
 
 #. module: idtx_mrp
 #: model:ir.model.fields,help:idtx_mrp.field_mrp_production_roll__uom_id
 #: model:ir.model.fields,help:idtx_mrp.field_mrp_workorder_roll__uom_id
 msgid "Default unit of measure used for all stock operations."
-msgstr "Unidad de medida por defecto usada para todas las operaciones de stock."
+msgstr ""
+"Unidad de medida por defecto usada para todas las operaciones de stock."
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_batch_add_wizard__display_name
@@ -270,6 +354,8 @@ msgstr "Unidad de medida por defecto usada para todas las operaciones de stock."
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workcenter__display_name
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder__display_name
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__display_name
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch_split__display_name
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch_split_line__display_name
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_option__display_name
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_option_line__display_name
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_roll__display_name
@@ -283,6 +369,37 @@ msgid "Display Name"
 msgstr "Nombre en pantalla"
 
 #. module: idtx_mrp
+#: model:ir.model.fields.selection,name:idtx_mrp.selection__mrp_workorder_batch__state__split
+msgid "Dividida"
+msgstr "Dividida"
+
+#. module: idtx_mrp
+#: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_workorder_batch_split_form
+msgid "Dividir"
+msgstr "Dividir"
+
+#. module: idtx_mrp
+#: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_workorder_batch_form
+msgid "Dividir Partida"
+msgstr "Dividir Partida"
+
+#. module: idtx_mrp
+#: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_workorder_batch_split_form
+msgid "Dividir partida"
+msgstr "Dividir partida"
+
+#. module: idtx_mrp
+#. odoo-python
+#: code:addons/idtx_mrp/models/mrp_workorder_batch.py:0
+msgid "Dividir partida %s"
+msgstr "Dividir partida %s"
+
+#. module: idtx_mrp
+#: model:ir.model,name:idtx_mrp.model_mrp_workorder_batch_split
+msgid "Dividir partida en sub-partidas"
+msgstr "Dividir partida en sub-partidas"
+
+#. module: idtx_mrp
 #: model:ir.model.fields.selection,name:idtx_mrp.selection__mrp_workorder_batch__state__draft
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_workorder_batch_view_search
 msgid "Draft"
@@ -292,6 +409,22 @@ msgstr "Borrador"
 #: model:ir.model.fields.selection,name:idtx_mrp.selection__mrp_workcenter__operation_type__dyeing
 msgid "Dyeing"
 msgstr "Teñido"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_res_company__weaving_default_efficiency
+#: model:ir.model.fields,field_description:idtx_mrp.field_res_config_settings__weaving_default_efficiency
+msgid "Eficiencia Tejido por Defecto (%)"
+msgstr "Eficiencia Tejido por Defecto (%)"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,help:idtx_mrp.field_res_company__weaving_default_efficiency
+#: model:ir.model.fields,help:idtx_mrp.field_res_config_settings__weaving_default_efficiency
+msgid ""
+"Eficiencia de tejido por defecto (0-100) cuando la máquina no tiene una "
+"propia. Es el factor de calibración global del tiempo estimado."
+msgstr ""
+"Eficiencia de tejido por defecto (0-100) cuando la máquina no tiene una "
+"propia. Es el factor de calibración global del tiempo estimado."
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_production_roll__employee_id
@@ -336,6 +469,23 @@ msgid "Extra products not allowed: %s"
 msgstr "Productos extra no permitidos: %s"
 
 #. module: idtx_mrp
+#. odoo-python
+#: code:addons/idtx_mrp/models/mrp_workorder.py:0
+msgid "Faltan agujas/alimentadores o datos de hilo en la ficha."
+msgstr "Faltan agujas/alimentadores o datos de hilo en la ficha."
+
+#. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__parent_operation_id
+#: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_routing_workcenter_operation_view_search
+msgid "Fase Padre"
+msgstr "Fase Padre"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,help:idtx_mrp.field_mrp_routing_workcenter_operation__parent_operation_id
+msgid "Fase padre para agrupar. Puede ser la misma fase (auto-padre)."
+msgstr "Fase padre para agrupar. Puede ser la misma fase (auto-padre)."
+
+#. module: idtx_mrp
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_production_form_view_inherit
 msgid "Finished Rolls"
 msgstr "Rollos Terminados"
@@ -344,7 +494,8 @@ msgstr "Rollos Terminados"
 #. odoo-python
 #: code:addons/idtx_mrp/models/mrp_production.py:0
 msgid "Finished roll quantity must be greater than zero before producing."
-msgstr "Cantidad de rollos terminados debe ser mayor a cero antes de producir."
+msgstr ""
+"Cantidad de rollos terminados debe ser mayor a cero antes de producir."
 
 #. module: idtx_mrp
 #. odoo-python
@@ -352,7 +503,8 @@ msgstr "Cantidad de rollos terminados debe ser mayor a cero antes de producir."
 msgid ""
 "Finished rolls must have a positive quantity/weight to create lot moves."
 msgstr ""
-"Los rollos terminados deben tener una cantidad/peso positiva para crear los lotes."
+"Los rollos terminados deben tener una cantidad/peso positiva para crear los "
+"lotes."
 
 #. module: idtx_mrp
 #: model:ir.model.fields.selection,name:idtx_mrp.selection__mrp_workcenter__operation_type__finishing
@@ -363,19 +515,26 @@ msgstr "Acabado"
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__message_follower_ids
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__message_follower_ids
 msgid "Followers"
-msgstr ""
+msgstr "Seguidores"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__message_partner_ids
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__message_partner_ids
 msgid "Followers (Partners)"
-msgstr ""
+msgstr "Seguidores (Contactos)"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,help:idtx_mrp.field_mrp_routing_workcenter_operation__activity_type_icon
 #: model:ir.model.fields,help:idtx_mrp.field_mrp_workorder_batch__activity_type_icon
 msgid "Font awesome icon e.g. fa-tasks"
+msgstr "Icono de Font Awesome, p. ej. fa-tasks"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,help:idtx_mrp.field_mrp_workorder_option__weight_per_rev_g
+msgid ""
+"Gramos de tela tejidos por una vuelta de la máquina, según la ficha técnica."
 msgstr ""
+"Gramos de tela tejidos por una vuelta de la máquina, según la ficha técnica."
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_batch_add_wizard__gross_weight
@@ -385,10 +544,20 @@ msgid "Gross Weight"
 msgstr "Peso Bruto"
 
 #. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch_split_line__group_code
+msgid "Grupo"
+msgstr "Grupo"
+
+#. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__has_message
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__has_message
 msgid "Has Message"
-msgstr ""
+msgstr "Tiene mensaje"
+
+#. module: idtx_mrp
+#: model:ir.model.fields.selection,name:idtx_mrp.selection__mrp_workcenter__operation_type__spinning
+msgid "Hilado"
+msgstr "Hilado"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_batch_add_wizard__id
@@ -400,6 +569,8 @@ msgstr ""
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workcenter__id
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder__id
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__id
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch_split__id
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch_split_line__id
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_option__id
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_option_line__id
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_roll__id
@@ -410,25 +581,25 @@ msgstr ""
 #: model:ir.model.fields,field_description:idtx_mrp.field_stock_lot__id
 #: model:ir.model.fields,field_description:idtx_mrp.field_stock_quant__id
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__activity_exception_icon
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__activity_exception_icon
 msgid "Icon"
-msgstr ""
+msgstr "Icono"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,help:idtx_mrp.field_mrp_routing_workcenter_operation__activity_exception_icon
 #: model:ir.model.fields,help:idtx_mrp.field_mrp_workorder_batch__activity_exception_icon
 msgid "Icon to indicate an exception activity."
-msgstr ""
+msgstr "Icono para indicar una actividad de excepción."
 
 #. module: idtx_mrp
 #: model:ir.model.fields,help:idtx_mrp.field_mrp_routing_workcenter_operation__message_needaction
 #: model:ir.model.fields,help:idtx_mrp.field_mrp_workorder_batch__message_needaction
 msgid "If checked, new messages require your attention."
-msgstr ""
+msgstr "Si está marcado, hay nuevos mensajes que requieren su atención."
 
 #. module: idtx_mrp
 #: model:ir.model.fields,help:idtx_mrp.field_mrp_routing_workcenter_operation__message_has_error
@@ -436,49 +607,90 @@ msgstr ""
 #: model:ir.model.fields,help:idtx_mrp.field_mrp_workorder_batch__message_has_error
 #: model:ir.model.fields,help:idtx_mrp.field_mrp_workorder_batch__message_has_sms_error
 msgid "If checked, some messages have a delivery error."
-msgstr ""
+msgstr "Si está marcado, algunos mensajes tienen error de envío."
 
 #. module: idtx_mrp
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.res_config_settings_view_form_inherit_mrp_printers
 msgid "Impresoras"
-msgstr ""
+msgstr "Impresoras"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__message_is_follower
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__message_is_follower
 msgid "Is Follower"
+msgstr "Es seguidor"
+
+#. module: idtx_mrp
+#. odoo-python
+#: code:addons/idtx_mrp/models/mrp_workorder_batch.py:0
+msgid "La división requiere al menos 2 grupos con rollos."
+msgstr "La división requiere al menos 2 grupos con rollos."
+
+#. module: idtx_mrp
+#. odoo-python
+#: code:addons/idtx_mrp/models/mrp_workorder_batch.py:0
+msgid ""
+"La partida %(batch)s no puede mezclar órdenes de fabricación con recetas de color distintas:\n"
+"%(detail)s"
 msgstr ""
+"La partida %(batch)s no puede mezclar órdenes de fabricación con recetas de color distintas:\n"
+"%(detail)s"
+
+#. module: idtx_mrp
+#. odoo-python
+#: code:addons/idtx_mrp/models/mrp_workorder_batch.py:0
+msgid "La partida necesita al menos 2 rollos para dividirse."
+msgstr "La partida necesita al menos 2 rollos para dividirse."
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__mrwo_id
 msgid "Last Operation"
-msgstr "Ultima Operación"
+msgstr "Última Operación"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_batch_add_wizard__write_uid
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_production_roll__write_uid
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__write_uid
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__write_uid
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch_split__write_uid
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch_split_line__write_uid
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_option__write_uid
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_option_line__write_uid
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_roll__write_uid
 #: model:ir.model.fields,field_description:idtx_mrp.field_operation_parameter__write_uid
 #: model:ir.model.fields,field_description:idtx_mrp.field_scale_registry__write_uid
 msgid "Last Updated by"
-msgstr ""
+msgstr "Última actualización por"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_batch_add_wizard__write_date
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_production_roll__write_date
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__write_date
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__write_date
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch_split__write_date
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch_split_line__write_date
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_option__write_date
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_option_line__write_date
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_roll__write_date
 #: model:ir.model.fields,field_description:idtx_mrp.field_operation_parameter__write_date
 #: model:ir.model.fields,field_description:idtx_mrp.field_scale_registry__write_date
 msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: idtx_mrp
+#: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_workorder_batch_split_form
+msgid ""
+"Los rollos con el mismo <b>Grupo</b> forman una sub-partida\n"
+"                    (se nombran <i>partida-A</i>, <i>partida-B</i>, ...). La\n"
+"                    agrupación propuesta es por producto; puedes cambiar el grupo\n"
+"                    de cada rollo. La partida original conserva su nombre como\n"
+"                    registro del teñido."
 msgstr ""
+"Los rollos con el mismo <b>Grupo</b> forman una sub-partida\n"
+"                    (se nombran <i>partida-A</i>, <i>partida-B</i>, ...). La\n"
+"                    agrupación propuesta es por producto; puedes cambiar el grupo\n"
+"                    de cada rollo. La partida original conserva su nombre como\n"
+"                    registro del teñido."
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_production_roll__lot_id
@@ -492,6 +704,11 @@ msgid "Lot/Serial"
 msgstr "Número de serie/lote"
 
 #. module: idtx_mrp
+#: model:ir.model,name:idtx_mrp.model_mrp_workorder_batch_split_line
+msgid "Línea de división de partida"
+msgstr "Línea de división de partida"
+
+#. module: idtx_mrp
 #: model:ir.model,name:idtx_mrp.model_mrp_production
 msgid "Manufacturing Order"
 msgstr "Orden de fabricación"
@@ -500,19 +717,24 @@ msgstr "Orden de fabricación"
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__message_has_error
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__message_has_error
 msgid "Message Delivery error"
-msgstr ""
+msgstr "Error de envío del mensaje"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__message_ids
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__message_ids
 msgid "Messages"
-msgstr ""
+msgstr "Mensajes"
 
 #. module: idtx_mrp
 #. odoo-python
 #: code:addons/idtx_mrp/models/mrp_workorder.py:0
 msgid "Missing required thread products: %s"
 msgstr "Hilado requerido faltante: %s"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,help:idtx_mrp.field_mrp_workorder__weaving_estimate_warning
+msgid "Motivo por el que no se pudo estimar la duración (datos faltantes)."
+msgstr "Motivo por el que no se pudo estimar la duración (datos faltantes)."
 
 #. module: idtx_mrp
 #: model:ir.model,name:idtx_mrp.model_mrp_production_roll
@@ -533,7 +755,7 @@ msgstr "Rollo de Tejido"
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__my_activity_date_deadline
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__my_activity_date_deadline
 msgid "My Activity Deadline"
-msgstr ""
+msgstr "Fecha límite de mi actividad"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__name
@@ -562,28 +784,47 @@ msgid "New"
 msgstr "Nuevo"
 
 #. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__activity_calendar_event_id
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__activity_calendar_event_id
+msgid "Next Activity Calendar Event"
+msgstr "Evento de calendario de la siguiente actividad"
+
+#. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__activity_date_deadline
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__activity_date_deadline
 msgid "Next Activity Deadline"
-msgstr ""
+msgstr "Fecha límite de la siguiente actividad"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__activity_summary
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__activity_summary
 msgid "Next Activity Summary"
-msgstr ""
+msgstr "Resumen de la siguiente actividad"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__activity_type_id
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__activity_type_id
 msgid "Next Activity Type"
-msgstr ""
+msgstr "Tipo de la siguiente actividad"
 
 #. module: idtx_mrp
 #. odoo-python
 #: code:addons/idtx_mrp/models/mrp_production.py:0
 msgid "No active finished move found for %(mo)s."
-msgstr "No se encontró ningun acabado activo para %(mo)s."
+msgstr ""
+"No se encontró ningún movimiento de producto terminado activo para %(mo)s."
+
+#. module: idtx_mrp
+#. odoo-python
+#: code:addons/idtx_mrp/models/mrp_routing_workcenter_operation.py:0
+msgid "No encontrados: %s"
+msgstr "No encontrados: %s"
+
+#. module: idtx_mrp
+#. odoo-python
+#: code:addons/idtx_mrp/models/mrp_routing_workcenter_operation.py:0
+msgid "No se pudo conectar a TEXPLUS SQL Server: %s"
+msgstr "No se pudo conectar a TEXPLUS SQL Server: %s"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_option__notes
@@ -600,25 +841,25 @@ msgstr "Número"
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__message_needaction_counter
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__message_needaction_counter
 msgid "Number of Actions"
-msgstr ""
+msgstr "Número de acciones"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__message_has_error_counter
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__message_has_error_counter
 msgid "Number of errors"
-msgstr ""
+msgstr "Número de errores"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,help:idtx_mrp.field_mrp_routing_workcenter_operation__message_needaction_counter
 #: model:ir.model.fields,help:idtx_mrp.field_mrp_workorder_batch__message_needaction_counter
 msgid "Number of messages requiring action"
-msgstr ""
+msgstr "Número de mensajes que requieren una acción"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,help:idtx_mrp.field_mrp_routing_workcenter_operation__message_has_error_counter
 #: model:ir.model.fields,help:idtx_mrp.field_mrp_workorder_batch__message_has_error_counter
 msgid "Number of messages with delivery error"
-msgstr ""
+msgstr "Número de mensajes con error de envío"
 
 #. module: idtx_mrp
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_production_workorder_tree_editable_view_mrp_inherit
@@ -629,7 +870,7 @@ msgstr "Abrir"
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_production_additional_workorder__add_mrwo_id
 #: model:ir.model.fields,field_description:idtx_mrp.field_operation_parameter__operation_id
 msgid "Operation"
-msgstr "Operacióm"
+msgstr "Operación"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder__mrwo_id
@@ -644,7 +885,7 @@ msgstr "Nombre de Operación"
 #. module: idtx_mrp
 #: model:ir.model,name:idtx_mrp.model_operation_parameter
 msgid "Operation Parameter"
-msgstr "Parametro de Operación"
+msgstr "Parámetro de Operación"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__operation_type
@@ -652,7 +893,7 @@ msgstr "Parametro de Operación"
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder__operation_type
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_routing_workcenter_operation_view_search
 msgid "Operation Type"
-msgstr ""
+msgstr "Tipo de operación"
 
 #. module: idtx_mrp
 #: model_terms:ir.actions.act_window,help:idtx_mrp.mrp_routing_operation_action
@@ -660,6 +901,8 @@ msgid ""
 "Operation define that need to be done to realize a Work Order.\n"
 "                Each operation is done at a specific Work Center and has a specific price."
 msgstr ""
+"Operación que define lo que se debe hacer para realizar una orden de trabajo.\n"
+"                Cada operación se realiza en un centro de trabajo específico y tiene un precio específico."
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_option_line__option_id
@@ -671,7 +914,7 @@ msgstr "Opción"
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_option__option_line_ids
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_workorder_option_form
 msgid "Option Lines"
-msgstr "Linea de Opciones"
+msgstr "Línea de Opciones"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder__option_ids
@@ -680,16 +923,88 @@ msgid "Options"
 msgstr "Opciones"
 
 #. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch_split_line__production_id
+msgid "Orden de fabricación"
+msgstr "Orden de fabricación"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch_split_line__workorder_id
+msgid "Orden de trabajo"
+msgstr "Orden de trabajo"
+
+#. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__parameter_ids
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_routing_workcenter_operation_form_view
 msgid "Parameters"
 msgstr "Parámetros"
 
 #. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_roll__current_batch_id
+msgid "Partida Actual"
+msgstr "Partida Actual"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__parent_batch_id
+msgid "Partida Origen"
+msgstr "Partida Origen"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,help:idtx_mrp.field_mrp_workorder_roll__current_batch_id
+msgid "Partida activa (no dividida/desarmada) en la que vive el rollo hoy."
+msgstr "Partida activa (no dividida/desarmada) en la que vive el rollo hoy."
+
+#. module: idtx_mrp
+#: model:ir.model.fields,help:idtx_mrp.field_mrp_workorder_batch__parent_batch_id
+msgid "Partida de teñido de la que se dividió esta sub-partida."
+msgstr "Partida de teñido de la que se dividió esta sub-partida."
+
+#. module: idtx_mrp
+#. odoo-python
+#: code:addons/idtx_mrp/models/mrp_workorder_batch.py:0
+msgid "Partida dividida en: %s"
+msgstr "Partida dividida en: %s"
+
+#. module: idtx_mrp
+#: model_terms:ir.ui.view,arch_db:idtx_mrp.res_config_settings_view_form_inherit_mrp_printers
+msgid ""
+"Parámetros para estimar el tiempo de las órdenes de trabajo de tejido "
+"(TEJIDO CRUDO)."
+msgstr ""
+"Parámetros para estimar el tiempo de las órdenes de trabajo de tejido "
+"(TEJIDO CRUDO)."
+
+#. module: idtx_mrp
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.res_config_settings_view_form_inherit_mrp_printers
 msgid ""
 "Permite imprimir etiquetas de codigos de barra para la producción de telas."
 msgstr ""
+"Permite imprimir etiquetas de codigos de barra para la producción de telas."
+
+#. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch_split_line__gross_weight
+msgid "Peso Bruto"
+msgstr "Peso Bruto"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,help:idtx_mrp.field_res_company__weaving_weight_per_roll
+#: model:ir.model.fields,help:idtx_mrp.field_res_config_settings__weaving_weight_per_roll
+msgid ""
+"Peso estándar de un rollo de tela cruda (kg). Para estimar la cantidad de "
+"rollos por orden de trabajo de tejido."
+msgstr ""
+"Peso estándar de un rollo de tela cruda (kg). Para estimar la cantidad de "
+"rollos por orden de trabajo de tejido."
+
+#. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_res_company__weaving_weight_per_roll
+#: model:ir.model.fields,field_description:idtx_mrp.field_res_config_settings__weaving_weight_per_roll
+msgid "Peso por Rollo (kg)"
+msgstr "Peso por Rollo (kg)"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_option__weight_per_rev_g
+msgid "Peso por Vuelta (g)"
+msgstr "Peso por Vuelta (g)"
 
 #. module: idtx_mrp
 #: model:ir.model.fields.selection,name:idtx_mrp.selection__mrp_production__production_type__pilot
@@ -700,7 +1015,8 @@ msgstr "Piloto"
 #. odoo-python
 #: code:addons/idtx_mrp/models/mrp_workorder.py:0
 msgid "Please create at least one option before starting the workorder."
-msgstr "Por favor cree por lo menos una opcion antes de empezar la orden de trabajo."
+msgstr ""
+"Por favor cree por lo menos una opción antes de empezar la orden de trabajo."
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_scale_registry__printer_id
@@ -718,9 +1034,20 @@ msgid "Printing"
 msgstr "Estampado"
 
 #. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder__estimated_rate_kg_h
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_option__estimated_rate_kg_h
+msgid "Producción Estimada (kg/h)"
+msgstr "Producción Estimada (kg/h)"
+
+#. module: idtx_mrp
 #: model:ir.module.category,name:idtx_mrp.module_category_textiles
 msgid "Producción Textil"
-msgstr ""
+msgstr "Producción Textil"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,help:idtx_mrp.field_mrp_workorder_option__estimated_rate_kg_h
+msgid "Producción estimada de esta opción (suma de sus máquinas)."
+msgstr "Producción estimada de esta opción (suma de sus máquinas)."
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_batch_add_wizard__product_id
@@ -756,6 +1083,11 @@ msgid "Production Type"
 msgstr "Tipo de Producción"
 
 #. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch_split_line__product_id
+msgid "Producto"
+msgstr "Producto"
+
+#. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_batch_add_wizard__all_products
 msgid "Products"
 msgstr "Productos"
@@ -781,7 +1113,7 @@ msgstr "Cantidades"
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__rating_ids
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__rating_ids
 msgid "Ratings"
-msgstr ""
+msgstr "Calificaciones"
 
 #. module: idtx_mrp
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_workorder_batch_form
@@ -799,13 +1131,38 @@ msgstr "Reimprimir"
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__activity_user_id
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__activity_user_id
 msgid "Responsible User"
-msgstr ""
+msgstr "Usuario responsable"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_stock_lot__roll_id
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_workorder_roll_form
 msgid "Roll"
 msgstr "Rollo"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch_split_line__roll_id
+msgid "Rollo"
+msgstr "Rollo"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch_split__line_ids
+msgid "Rollos"
+msgstr "Rollos"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder__estimated_roll_count
+msgid "Rollos Estimados"
+msgstr "Rollos Estimados"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__origin_roll_ids
+msgid "Rollos Originales"
+msgstr "Rollos Originales"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,help:idtx_mrp.field_mrp_workorder_batch_split_line__group_code
+msgid "Rollos con el mismo grupo forman una sub-partida (<partida>-<grupo>)."
+msgstr "Rollos con el mismo grupo forman una sub-partida (<partida>-<grupo>)."
 
 #. module: idtx_mrp
 #: model:ir.actions.act_window,name:idtx_mrp.wo_rolls_action
@@ -825,7 +1182,7 @@ msgstr "Operaciones de Centro de Trabajo"
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__message_has_sms_error
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__message_has_sms_error
 msgid "SMS Delivery error"
-msgstr ""
+msgstr "Error de envío del SMS"
 
 #. module: idtx_mrp
 #: model:ir.model.fields.selection,name:idtx_mrp.selection__mrp_production__production_type__sale
@@ -855,7 +1212,7 @@ msgstr "Balanza"
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_scale_registry__ip
 msgid "Scale IP"
-msgstr "Ip de Balanza"
+msgstr "IP de Balanza"
 
 #. module: idtx_mrp
 #: model:ir.model,name:idtx_mrp.model_scale_registry
@@ -892,15 +1249,51 @@ msgstr "Servicio"
 
 #. module: idtx_mrp
 #. odoo-python
+#: code:addons/idtx_mrp/models/mrp_workorder.py:0
+msgid "Sin ficha técnica (análisis) en el producto."
+msgstr "Sin ficha técnica (análisis) en el producto."
+
+#. module: idtx_mrp
+#. odoo-python
+#: code:addons/idtx_mrp/models/mrp_workorder.py:0
+msgid "Sin máquinas asignadas."
+msgstr "Sin máquinas asignadas."
+
+#. module: idtx_mrp
+#. odoo-python
+#: code:addons/idtx_mrp/models/mrp_routing_workcenter_operation.py:0
+msgid ""
+"Sincronizacion FASPRO completada. Actualizados: %s. Sin cambios: %s. Sin "
+"match: %s."
+msgstr ""
+"Sincronizacion FASPRO completada. Actualizados: %s. Sin cambios: %s. Sin "
+"match: %s."
+
+#. module: idtx_mrp
+#. odoo-python
+#: code:addons/idtx_mrp/models/mrp_routing_workcenter_operation.py:0
+msgid "Sincronizacion TEXPLUS"
+msgstr "Sincronizacion TEXPLUS"
+
+#. module: idtx_mrp
+#. odoo-python
+#: code:addons/idtx_mrp/models/mrp_workorder_batch.py:0
+msgid "Solo se puede dividir una partida confirmada."
+msgstr "Solo se puede dividir una partida confirmada."
+
+#. module: idtx_mrp
+#. odoo-python
 #: code:addons/idtx_mrp/models/mrp_workorder_batch.py:0
 msgid "Some rolls are in other batch, can't rebuild batch."
-msgstr "Algunos rollos estan en otra partida, no se puede rehacer partida."
+msgstr "Algunos rollos están en otra partida, no se puede rehacer la partida."
 
 #. module: idtx_mrp
 #. odoo-python
 #: code:addons/idtx_mrp/models/mrp_workorder_batch.py:0
 msgid "Some rolls are in other batch, please select rolls again."
-msgstr "Algunos rollos estan en otra partida, por favor selecciones los rollos otra vez."
+msgstr ""
+"Algunos rollos están en otra partida, por favor seleccione los rollos otra "
+"vez."
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_roll__new_weight
@@ -926,6 +1319,59 @@ msgid ""
 "Today: Activity date is today\n"
 "Planned: Future activities."
 msgstr ""
+"Estado basado en actividades\n"
+"Vencida: la fecha límite ya pasó\n"
+"Hoy: la actividad es para hoy\n"
+"Planificada: actividades futuras."
+
+#. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__child_operation_ids
+msgid "Sub-fases"
+msgstr "Sub-fases"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__split_code
+#: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_workorder_batch_form
+msgid "Sub-partida"
+msgstr "Sub-partida"
+
+#. module: idtx_mrp
+#. odoo-python
+#: code:addons/idtx_mrp/models/mrp_workorder_batch.py:0
+msgid "Sub-partida creada por división de %s (teñida junto a %s)."
+msgstr "Sub-partida creada por división de %s (teñida junto a %s)."
+
+#. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__child_batch_ids
+#: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_workorder_batch_form
+msgid "Sub-partidas"
+msgstr "Sub-partidas"
+
+#. module: idtx_mrp
+#. odoo-python
+#: code:addons/idtx_mrp/models/mrp_workorder_batch.py:0
+#: code:addons/idtx_mrp/wizards/mrp_workorder_batch_split.py:0
+msgid "Sub-partidas de %s"
+msgstr "Sub-partidas de %s"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,help:idtx_mrp.field_mrp_workorder__estimated_rate_kg_h
+msgid ""
+"Suma de la producción estimada de todas las máquinas de las opciones (corren"
+" en paralelo)."
+msgstr ""
+"Suma de la producción estimada de todas las máquinas de las opciones (corren"
+" en paralelo)."
+
+#. module: idtx_mrp
+#: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_routing_workcenter_operation_tree_view
+msgid "Sync Fas Code"
+msgstr "Sincronizar código de fase"
+
+#. module: idtx_mrp
+#: model_terms:ir.ui.view,arch_db:idtx_mrp.res_config_settings_view_form_inherit_mrp_printers
+msgid "Tejeduría"
+msgstr "Tejeduría"
 
 #. module: idtx_mrp
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.res_config_settings_view_form_inherit_mrp_printers
@@ -939,19 +1385,30 @@ msgid "The selected lot '%s' does not match the product '%s'"
 msgstr "El lote seleccionado '%s' no corresponde al producto '%s'"
 
 #. module: idtx_mrp
+#. odoo-python
+#: code:addons/idtx_mrp/models/mrp_workorder_batch.py:0
+msgid ""
+"Todos los rollos de la partida deben quedar asignados a exactamente un grupo"
+" (sin repetidos ni faltantes)."
+msgstr ""
+"Todos los rollos de la partida deben quedar asignados a exactamente un grupo"
+" (sin repetidos ni faltantes)."
+
+#. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__total_weight
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_production_roll_view_tree
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_production_workorder_form_view_inherit_mrp_form
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_workorder_batch_form
+#: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_workorder_batch_split_form
 #: model_terms:ir.ui.view,arch_db:idtx_mrp.mrp_workorder_roll_view_tree
 msgid "Total"
-msgstr ""
+msgstr "Total"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,help:idtx_mrp.field_mrp_routing_workcenter_operation__activity_exception_decoration
 #: model:ir.model.fields,help:idtx_mrp.field_mrp_workorder_batch__activity_exception_decoration
 msgid "Type of the exception activity on record."
-msgstr ""
+msgstr "Tipo de la actividad de excepción en el registro."
 
 #. module: idtx_mrp
 #: model:ir.model.fields.selection,name:idtx_mrp.selection__mrp_workorder_batch__state__unbuild
@@ -971,11 +1428,6 @@ msgid "Unit"
 msgstr "Unidad"
 
 #. module: idtx_mrp
-#: model:ir.model.fields.selection,name:idtx_mrp.selection__mrp_workcenter__operation_type__spinning
-msgid "Hilado"
-msgstr "Hilado"
-
-#. module: idtx_mrp
 #: model:ir.model.fields.selection,name:idtx_mrp.selection__mrp_workcenter__operation_type__weaving
 msgid "Weaving"
 msgstr "Tejido"
@@ -989,13 +1441,18 @@ msgstr "Rollos Tejidos"
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_routing_workcenter_operation__website_message_ids
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch__website_message_ids
 msgid "Website Messages"
-msgstr ""
+msgstr "Mensajes del sitio web"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,help:idtx_mrp.field_mrp_routing_workcenter_operation__website_message_ids
 #: model:ir.model.fields,help:idtx_mrp.field_mrp_workorder_batch__website_message_ids
 msgid "Website communication history"
-msgstr ""
+msgstr "Historial de comunicación del sitio web"
+
+#. module: idtx_mrp
+#: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_batch_split_line__wizard_id
+msgid "Wizard"
+msgstr "Asistente"
 
 #. module: idtx_mrp
 #: model:ir.model,name:idtx_mrp.model_mrp_workcenter
@@ -1028,7 +1485,7 @@ msgstr "Operación"
 #: model:ir.actions.act_window,name:idtx_mrp.mrp_routing_operation_action
 #: model:ir.ui.menu,name:idtx_mrp.dev_mrp_routing_operation_action_menu
 msgid "Workcenter Operations"
-msgstr "Operaciónes de Trabajo"
+msgstr "Operaciones de Trabajo"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_option__workorder_id
@@ -1049,7 +1506,7 @@ msgstr "Opción de Orden de trabajo"
 #. module: idtx_mrp
 #: model:ir.model,name:idtx_mrp.model_mrp_workorder_option_line
 msgid "Workorder Option Line"
-msgstr "Linea de Opción de Orden de Trabajo"
+msgstr "Línea de Opción de Orden de Trabajo"
 
 #. module: idtx_mrp
 #: model:ir.actions.act_window,name:idtx_mrp.mrp_workorder_option_action
@@ -1063,6 +1520,12 @@ msgstr "Rollos de Orden de Trabajo"
 
 #. module: idtx_mrp
 #. odoo-python
+#: code:addons/idtx_mrp/models/mrp_workorder_batch.py:0
+msgid "Ya existe una partida con el nombre %s."
+msgstr "Ya existe una partida con el nombre %s."
+
+#. module: idtx_mrp
+#. odoo-python
 #: code:addons/idtx_mrp/models/mrp_workorder.py:0
 msgid "You can't delete a workorder in state %s"
 msgstr "No puede borrar una orden de trabajo en estado %s"
@@ -1071,15 +1534,16 @@ msgstr "No puede borrar una orden de trabajo en estado %s"
 #. odoo-python
 #: code:addons/idtx_mrp/models/mrp_workorder.py:0
 msgid "You can't delete options of a workorder used in any roll"
-msgstr "No puede borrar opciones de una orden de trabajo usada en cualquier rollo"
+msgstr ""
+"No puede borrar opciones de una orden de trabajo usada en cualquier rollo"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_mrp_workorder_roll__in_batch
 msgid "in_batch?"
-msgstr ""
+msgstr "¿En partida?"
 
 #. module: idtx_mrp
 #: model:ir.model.fields,field_description:idtx_mrp.field_res_company__is_printer
 #: model:ir.model.fields,field_description:idtx_mrp.field_res_config_settings__is_printer
 msgid "is_printer?"
-msgstr ""
+msgstr "¿Es impresora?"

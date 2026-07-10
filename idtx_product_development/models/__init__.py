@@ -2,6 +2,7 @@
 
 from . import configurate_svg_example
 from . import density_stability_twisting
+from . import ligament_structure
 from . import mrp_base_process
 from . import mrp_routing_workcenter_operation
 from . import mrp_bom

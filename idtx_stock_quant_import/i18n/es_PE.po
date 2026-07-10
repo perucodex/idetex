@@ -1,0 +1,311 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* idtx_stock_quant_import
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-10 22:02+0000\n"
+"PO-Revision-Date: 2026-07-10 22:02+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: idtx_stock_quant_import
+#: model_terms:ir.ui.view,arch_db:idtx_stock_quant_import.view_stock_quant_import_form
+msgid "Are you sure you want to apply this inventory ?"
+msgstr "¿Está seguro de que desea aplicar este inventario?"
+
+#. module: idtx_stock_quant_import
+#: model_terms:ir.ui.view,arch_db:idtx_stock_quant_import.view_stock_quant_import_form
+msgid "Clean"
+msgstr "Limpiar"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import_line__color_id
+msgid "Color"
+msgstr "Color"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import_line__recipe_color_code
+msgid "Color Code"
+msgstr "Código de color"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import_line__recipe_color_name
+msgid "Color Name"
+msgstr "Nombre del color"
+
+#. module: idtx_stock_quant_import
+#. odoo-python
+#: code:addons/idtx_stock_quant_import/models/stock_quant_import.py:0
+msgid "Column %s not found in Excel sheet."
+msgstr "No se encontró la columna %s en la hoja de Excel."
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import__create_uid
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import_line__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import__create_date
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import_line__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import__date
+msgid "Date"
+msgstr "Fecha"
+
+#. module: idtx_stock_quant_import
+#: model_terms:ir.ui.view,arch_db:idtx_stock_quant_import.view_stock_quant_import_form
+msgid "Delete Import Xls"
+msgstr "Eliminar importación Xls"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import__display_name
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import_line__display_name
+msgid "Display Name"
+msgstr "Nombre en pantalla"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields.selection,name:idtx_stock_quant_import.selection__stock_quant_import__state__done
+#: model_terms:ir.ui.view,arch_db:idtx_stock_quant_import.view_stock_quant_import_form
+msgid "Done"
+msgstr "Hecho"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields.selection,name:idtx_stock_quant_import.selection__stock_quant_import__state__draft
+msgid "Draft"
+msgstr "Borrador"
+
+#. module: idtx_stock_quant_import
+#. odoo-python
+#: code:addons/idtx_stock_quant_import/models/stock_quant_import.py:0
+msgid "Error reading .xls: %s"
+msgstr "Error al leer .xls: %s"
+
+#. module: idtx_stock_quant_import
+#. odoo-python
+#: code:addons/idtx_stock_quant_import/models/stock_quant_import.py:0
+msgid "Error reading .xlsx: %s"
+msgstr "Error al leer .xlsx: %s"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import__file
+msgid "Excel File"
+msgstr "Archivo Excel"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import__filename
+msgid "Filename"
+msgstr "Nombre de archivo"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import__id
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import_line__id
+msgid "ID"
+msgstr "ID"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import_line__ident_lot
+msgid "Ident Lot"
+msgstr "Ident. de lote"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import_line__import_id
+msgid "Import"
+msgstr "Importar"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import_line__color_code
+msgid "Import Color Code"
+msgstr "Importar código de color"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import_line__color_name
+msgid "Import Color Name"
+msgstr "Importar nombre de color"
+
+#. module: idtx_stock_quant_import
+#: model_terms:ir.ui.view,arch_db:idtx_stock_quant_import.view_stock_quant_import_form
+msgid "Imported Quants"
+msgstr "Quants importados"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import__item_count
+msgid "Items"
+msgstr "Artículos"
+
+#. module: idtx_stock_quant_import
+#. odoo-python
+#: code:addons/idtx_stock_quant_import/models/stock_quant_import.py:0
+msgid "La importación ha sido revertida completamente."
+msgstr "La importación ha sido revertida completamente."
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import__write_uid
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import_line__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import__write_date
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import_line__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import__line_ids
+msgid "Lines"
+msgstr "Líneas"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import__location_id
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import_line__location_id
+msgid "Location"
+msgstr "Ubicación"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import_line__lot_name
+msgid "Lot Name"
+msgstr "Nombre del lote"
+
+#. module: idtx_stock_quant_import
+#: model_terms:ir.ui.view,arch_db:idtx_stock_quant_import.view_stock_quant_import_tree
+msgid "Modificación"
+msgstr "Modificación"
+
+#. module: idtx_stock_quant_import
+#. odoo-python
+#: code:addons/idtx_stock_quant_import/models/stock_quant_import.py:0
+msgid "Only .xls or .xlsx files are allowed."
+msgstr "Solo se permiten archivos .xls o .xlsx."
+
+#. module: idtx_stock_quant_import
+#. odoo-python
+#: code:addons/idtx_stock_quant_import/models/stock_quant_import.py:0
+msgid "Please upload an Excel file."
+msgstr "Por favor, suba un archivo Excel."
+
+#. module: idtx_stock_quant_import
+#. odoo-python
+#: code:addons/idtx_stock_quant_import/models/stock_quant_import.py:0
+msgid "Proceso Terminado"
+msgstr "Proceso Terminado"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields.selection,name:idtx_stock_quant_import.selection__stock_quant_import__state__process
+#: model_terms:ir.ui.view,arch_db:idtx_stock_quant_import.view_stock_quant_import_form
+msgid "Process"
+msgstr "Procesar"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import_line__product_code
+msgid "Product Code"
+msgstr "Código de producto"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import_line__product_name
+msgid "Product Name"
+msgstr "Nombre del producto"
+
+#. module: idtx_stock_quant_import
+#: model:ir.ui.menu,name:idtx_stock_quant_import.menu_stock_quant_import_root
+msgid "Quant Imports"
+msgstr "Importaciones de quants"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import_line__quantity
+msgid "Quantity"
+msgstr "Cantidad"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import__name
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import_line__ref
+msgid "Reference"
+msgstr "Referencia"
+
+#. module: idtx_stock_quant_import
+#: model_terms:ir.ui.view,arch_db:idtx_stock_quant_import.view_stock_quant_import_form
+msgid "Sincronizar Color por Partida"
+msgstr "Sincronizar Color por Partida"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import__state
+msgid "Status"
+msgstr "Estado"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model,name:idtx_stock_quant_import.model_stock_quant_import
+#: model_terms:ir.ui.view,arch_db:idtx_stock_quant_import.view_stock_quant_import_form
+msgid "Stock Quant Import"
+msgstr "Importación de quants de stock"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model,name:idtx_stock_quant_import.model_stock_quant_import_line
+msgid "Stock Quant Import Line"
+msgstr "Línea de importación de quants de stock"
+
+#. module: idtx_stock_quant_import
+#: model:ir.actions.act_window,name:idtx_stock_quant_import.action_stock_quant_import
+#: model_terms:ir.ui.view,arch_db:idtx_stock_quant_import.view_stock_quant_import_tree
+msgid "Stock Quant Imports"
+msgstr "Importaciones de quants de stock"
+
+#. module: idtx_stock_quant_import
+#. odoo-python
+#: code:addons/idtx_stock_quant_import/models/stock_quant_import.py:0
+msgid "The sheet is empty."
+msgstr "La hoja está vacía."
+
+#. module: idtx_stock_quant_import
+#: model_terms:ir.ui.view,arch_db:idtx_stock_quant_import.view_stock_quant_import_form
+msgid ""
+"This will reverse all quantities and delete the generated rolls. Are you "
+"sure?"
+msgstr ""
+"Esto revertirá todas las cantidades y eliminará los rollos generados. ¿Está "
+"seguro?"
+
+#. module: idtx_stock_quant_import
+#: model_terms:ir.ui.view,arch_db:idtx_stock_quant_import.view_stock_quant_import_tree
+msgid "Time"
+msgstr "Hora"
+
+#. module: idtx_stock_quant_import
+#: model_terms:ir.ui.view,arch_db:idtx_stock_quant_import.view_stock_quant_import_form
+msgid "Total"
+msgstr "Total"
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import__total_weight
+msgid "Total Kilos"
+msgstr "Total de kilos"
+
+#. module: idtx_stock_quant_import
+#: model_terms:ir.ui.view,arch_db:idtx_stock_quant_import.view_stock_quant_import_tree
+msgid "User"
+msgstr "Usuario"
+
+#. module: idtx_stock_quant_import
+#: model:res.groups,name:idtx_stock_quant_import.group_stock_quant_import_menu
+msgid "Ver menú Importación de Quants"
+msgstr "Ver menú Importación de Quants"
+
+#. module: idtx_stock_quant_import
+#. odoo-python
+#: code:addons/idtx_stock_quant_import/models/stock_quant_import.py:0
+msgid "You can only delete an import in Done state."
+msgstr "Solo puede eliminar una importación en estado Hecho."
+
+#. module: idtx_stock_quant_import
+#: model:ir.model.fields,field_description:idtx_stock_quant_import.field_stock_quant_import_line__red_flag
+msgid "red_flag"
+msgstr "Alerta"

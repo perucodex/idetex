@@ -1,0 +1,126 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* idtx_pos_payment_term
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-10 22:02+0000\n"
+"PO-Revision-Date: 2026-07-10 22:02+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: idtx_pos_payment_term
+#. odoo-javascript
+#: code:addons/idtx_pos_payment_term/static/src/popups/payment_term_popup/payment_term_popup.xml:0
+msgid "Buscar termino de pago..."
+msgstr "Buscar término de pago..."
+
+#. module: idtx_pos_payment_term
+#: model:ir.model.fields,field_description:idtx_pos_payment_term.field_account_payment_term__display_name
+#: model:ir.model.fields,field_description:idtx_pos_payment_term.field_pos_order__display_name
+#: model:ir.model.fields,field_description:idtx_pos_payment_term.field_pos_payment_method__display_name
+#: model:ir.model.fields,field_description:idtx_pos_payment_term.field_pos_session__display_name
+msgid "Display Name"
+msgstr "Nombre en pantalla"
+
+#. module: idtx_pos_payment_term
+#: model:ir.model.fields,field_description:idtx_pos_payment_term.field_account_payment_term__id
+#: model:ir.model.fields,field_description:idtx_pos_payment_term.field_pos_order__id
+#: model:ir.model.fields,field_description:idtx_pos_payment_term.field_pos_payment_method__id
+#: model:ir.model.fields,field_description:idtx_pos_payment_term.field_pos_session__id
+msgid "ID"
+msgstr "ID"
+
+#. module: idtx_pos_payment_term
+#. odoo-javascript
+#: code:addons/idtx_pos_payment_term/static/src/overrides/components/payment_screen/payment_lines.js:0
+#: code:addons/idtx_pos_payment_term/static/src/overrides/components/payment_screen/payment_screen.js:0
+msgid ""
+"No hay terminos de pago disponibles. Configure al menos uno en Contabilidad."
+msgstr ""
+"No hay términos de pago disponibles. Configure al menos uno en Contabilidad."
+
+#. module: idtx_pos_payment_term
+#: model:ir.model,name:idtx_pos_payment_term.model_account_payment_term
+msgid "Payment Terms"
+msgstr "Términos de pago"
+
+#. module: idtx_pos_payment_term
+#: model:ir.model,name:idtx_pos_payment_term.model_pos_order
+msgid "Point of Sale Orders"
+msgstr "Órdenes del punto de venta"
+
+#. module: idtx_pos_payment_term
+#: model:ir.model,name:idtx_pos_payment_term.model_pos_payment_method
+msgid "Point of Sale Payment Methods"
+msgstr "Métodos de pago del punto de venta"
+
+#. module: idtx_pos_payment_term
+#: model:ir.model,name:idtx_pos_payment_term.model_pos_session
+msgid "Point of Sale Session"
+msgstr "Sesión del punto de venta"
+
+#. module: idtx_pos_payment_term
+#. odoo-javascript
+#: code:addons/idtx_pos_payment_term/static/src/overrides/components/payment_screen/payment_lines.xml:0
+msgid "Seleccionar..."
+msgstr "Seleccionar..."
+
+#. module: idtx_pos_payment_term
+#. odoo-javascript
+#: code:addons/idtx_pos_payment_term/static/src/popups/payment_term_popup/payment_term_popup.js:0
+msgid "Seleccione el termino de pago"
+msgstr "Seleccione el término de pago"
+
+#. module: idtx_pos_payment_term
+#: model:ir.model.fields,help:idtx_pos_payment_term.field_pos_payment_method__use_payment_terms
+msgid ""
+"Si esta activo, al elegir este metodo en el POS se pedira seleccionar un "
+"termino de pago y la orden sera facturada usando ese termino."
+msgstr ""
+"Si está activo, al elegir este método en el POS se pedirá seleccionar un "
+"término de pago y la orden será facturada usando ese término."
+
+#. module: idtx_pos_payment_term
+#. odoo-javascript
+#: code:addons/idtx_pos_payment_term/static/src/popups/payment_term_popup/payment_term_popup.xml:0
+msgid "Sin resultados"
+msgstr "Sin resultados"
+
+#. module: idtx_pos_payment_term
+#. odoo-javascript
+#: code:addons/idtx_pos_payment_term/static/src/overrides/components/payment_screen/payment_lines.js:0
+#: code:addons/idtx_pos_payment_term/static/src/overrides/components/payment_screen/payment_screen.js:0
+msgid "Sin terminos de pago"
+msgstr "Sin términos de pago"
+
+#. module: idtx_pos_payment_term
+#: model:ir.model.fields,field_description:idtx_pos_payment_term.field_pos_order__invoice_payment_term_id
+msgid "Termino de Pago"
+msgstr "Término de Pago"
+
+#. module: idtx_pos_payment_term
+#. odoo-javascript
+#: code:addons/idtx_pos_payment_term/static/src/overrides/components/payment_screen/payment_lines.xml:0
+msgid "Termino de pago"
+msgstr "Término de pago"
+
+#. module: idtx_pos_payment_term
+#: model:ir.model.fields,help:idtx_pos_payment_term.field_pos_order__invoice_payment_term_id
+msgid ""
+"Termino de pago seleccionado en el POS al usar un metodo de pago con \"Usa "
+"Terminos de Pago\". Se aplica a la factura generada."
+msgstr ""
+"Término de pago seleccionado en el POS al usar un método de pago con \"Usa "
+"Términos de Pago\". Se aplica a la factura generada."
+
+#. module: idtx_pos_payment_term
+#: model:ir.model.fields,field_description:idtx_pos_payment_term.field_pos_payment_method__use_payment_terms
+msgid "Usa Terminos de Pago"
+msgstr "Usa Términos de Pago"

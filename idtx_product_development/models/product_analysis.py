@@ -57,6 +57,12 @@ class ProductAnalysis(models.Model):
         ('test', 'Test'),
         ('prod', 'Product'),
     ], string='State', default='test', copy=False, tracking=True)
+    ligament_structure_id = fields.Many2one(
+        'ligament.structure', string='Base Structure', ondelete='set null',
+        help="Estructura base de ligamento definida en Configuración. Al "
+             "seleccionarla se copia su grilla al análisis (snapshot): los "
+             "cambios posteriores en el análisis no modifican la estructura "
+             "base ni viceversa.")
     ligament_row = fields.Integer('Rows',default=0)
     ligament_column = fields.Integer('Columns',default=0)
     ligament_join_row_column = fields.Char('Union')
@@ -429,6 +435,21 @@ class ProductAnalysis(models.Model):
     def open_product(self):
         return self.product_id._get_records_action(name=_('Product'))
     
+    @api.onchange('ligament_structure_id')
+    def _onchange_ligament_structure_id(self):
+        # Copia (snapshot) de la estructura base a la grilla del análisis.
+        # Se hace en onchange y no como related para que el usuario pueda
+        # ajustar la grilla sin afectar la estructura base.
+        structure = self.ligament_structure_id
+        if not structure:
+            return
+        self.ligament_row = structure.ligament_row
+        self.ligament_column = structure.ligament_column
+        self.grid_data = structure.grid_data
+        # El widget se re-renderiza cuando cambia este campo (useEffect).
+        self.ligament_join_row_column = '%s, %s' % (
+            structure.ligament_row, structure.ligament_column)
+
     def action_generate(self):
         row = self.ligament_row
         column = self.ligament_column

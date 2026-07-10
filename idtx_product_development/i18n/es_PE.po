@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-03-27 22:51+0000\n"
-"PO-Revision-Date: 2026-03-27 22:51+0000\n"
+"POT-Creation-Date: 2026-07-10 22:06+0000\n"
+"PO-Revision-Date: 2026-07-10 22:06+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -16,15 +16,36 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.texplus_machine_view_list
+msgid "# Especificas"
+msgstr "# Específicas"
+
+#. module: idtx_product_development
+#: model:ir.actions.report,print_report_name:idtx_product_development.action_report_technical_sheet_weaving
+msgid "'Ficha Tecnica de Tejido - %s' % (object.name)"
+msgstr "'Ficha Técnica de Tejido - %s' % (object.name)"
+
+#. module: idtx_product_development
+#: model:ir.actions.report,print_report_name:idtx_product_development.action_report_mrp_base_process
+msgid "'Proceso Base - %s' % (object.name or '')"
+msgstr "'Proceso Base - %s' % (object.name or '')"
+
+#. module: idtx_product_development
 #: model:ir.actions.report,print_report_name:idtx_product_development.action_report_product_analysis
 msgid "'Product Analysis - %s - %s' % (object.analysis_id.name, object.stylo)"
 msgstr ""
-"'Analisis de Producto - %s - %s' % (object.analysis_id.name, object.stylo)"
+"'Análisis de Producto - %s - %s' % (object.analysis_id.name, object.stylo)"
 
 #. module: idtx_product_development
 #: model:ir.actions.report,print_report_name:idtx_product_development.action_report_technical_sheet
 msgid "'Technical Sheet - %s - %s' % (object.name, object.stylo)"
 msgstr "'Ficha Técnica - %s - %s' % (object.name, object.stylo)"
+
+#. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/product_analysis.py:0
+msgid "(sin ruta)"
+msgstr "(sin ruta)"
 
 #. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__density_stability_twisting__wash_temperature_level__cold
@@ -57,21 +78,53 @@ msgid "95°C"
 msgstr "95°C"
 
 #. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid ""
+"<span class=\"ftt-lbl\" style=\"display:inline-block; width:140px; vertical-"
+"align:top;\">Tela</span>"
+msgstr ""
+"<span class=\"ftt-lbl\" style=\"display:inline-block; width:140px; vertical-"
+"align:top;\">Tela</span>"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid ""
+"<span class=\"ftt-lbl\" style=\"display:inline-block; width:140px;\">Nombre "
+"o Razón Social</span>"
+msgstr ""
+"<span class=\"ftt-lbl\" style=\"display:inline-block; width:140px;\">Nombre "
+"o Razón Social</span>"
+
+#. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_form_view
 msgid "<span class=\"ms-1 oe_inline\">cm</span>"
-msgstr ""
+msgstr "<span class=\"ms-1 oe_inline\">cm</span>"
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_form_view
 msgid "<span class=\"ms-1 oe_inline\">g/m²</span>"
-msgstr ""
+msgstr "<span class=\"ms-1 oe_inline\">g/m²</span>"
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_form_view
 msgid "<span class=\"ms-1 oe_inline\">m/kg</span>"
+msgstr "<span class=\"ms-1 oe_inline\">m/kg</span>"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
+msgid "<span class=\"ms-1 oe_inline\">°</span>"
+msgstr "<span class=\"ms-1 oe_inline\">°</span>"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.density_stability_twisting_form_view
+msgid ""
+"<span class=\"o_form_label mx-3 oe_edit_only text-center\" style=\"width: "
+"6ch;\">cm</span>"
 msgstr ""
+"<span class=\"o_form_label mx-3 oe_edit_only text-center\" style=\"width: "
+"6ch;\">cm</span>"
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.density_stability_twisting_form_view
@@ -88,11 +141,18 @@ msgid ""
 "<span class=\"o_form_label mx-3 oe_edit_only text-center\" style=\"width: "
 "6ch;\">°</span>"
 msgstr ""
+"<span class=\"o_form_label mx-3 oe_edit_only text-center\" style=\"width: "
+"6ch;\">°</span>"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "<span class=\"sample-lbl\">Muestra de Tela</span>"
+msgstr "<span class=\"sample-lbl\">Muestra de Tela</span>"
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
 msgid "<span>Analysis Date:</span>"
-msgstr "<span>Fecha de Analisis:</span>"
+msgstr "<span>Fecha de Análisis:</span>"
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
@@ -112,6 +172,11 @@ msgid "<span>Fabric:</span>"
 msgstr "<span>Tela:</span>"
 
 #. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_mrp_base_process_document
+msgid "<span>Proceso Base:</span>"
+msgstr "<span>Proceso Base:</span>"
+
+#. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
 msgid "<span>Technical Date:</span>"
 msgstr "<span>Fecha de Ficha:</span>"
@@ -119,12 +184,12 @@ msgstr "<span>Fecha de Ficha:</span>"
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
 msgid "<strong>Datos de Acabado</strong>"
-msgstr ""
+msgstr "<strong>Datos de Acabado</strong>"
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
 msgid "<strong>Datos de Crudo</strong>"
-msgstr ""
+msgstr "<strong>Datos de Crudo</strong>"
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
@@ -139,12 +204,12 @@ msgstr "<strong>Ligamentos</strong>"
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
 msgid "<strong>Pocess</strong>"
-msgstr "<strong>Pocesos</strong>"
+msgstr "<strong>Procesos</strong>"
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
 msgid "<strong>Rectilinear Size Chart</strong>"
-msgstr "<strong>Tabla de tallas Rectilineos</strong>"
+msgstr "<strong>Tabla de tallas de rectilíneos</strong>"
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
@@ -152,17 +217,43 @@ msgid "<strong>Thread Description</strong>"
 msgstr "<strong>Descripción del Hilado</strong>"
 
 #. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.texplus_machine_view_form
+msgid "ACRM"
+msgstr "ACRM"
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__atx
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
 msgid "ATX"
+msgstr "ATX"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.mrp_base_process_form_view
+msgid ""
+"Abre un nuevo proceso prellenado con las lineas de este. Tienes que "
+"modificar al menos una linea para que pase el constraint de composicion "
+"unica."
 msgstr ""
+"Abre un nuevo proceso prellenado con las líneas de este. Tienes que "
+"modificar al menos una línea para que pase el constraint de composición "
+"única."
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__message_needaction
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__message_needaction
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__message_needaction
 msgid "Action Needed"
-msgstr "Accion requerida"
+msgstr "Acción requerida"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_texplus_machine__active
+msgid "Activa"
+msgstr "Activa"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_ligament_structure__active
+msgid "Active"
+msgstr "Activo"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__activity_ids
@@ -176,7 +267,7 @@ msgstr "Actividades"
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__activity_exception_decoration
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__activity_exception_decoration
 msgid "Activity Exception Decoration"
-msgstr "Decoracion de excepcion de actividad"
+msgstr "Decoración de excepción de actividad"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__activity_state
@@ -193,21 +284,45 @@ msgid "Activity Type Icon"
 msgstr "Icono del tipo de actividad"
 
 #. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/product_analysis.py:0
+msgid ""
+"All fibers of the weaving data must have weight greater than 0 to generate "
+"the product!"
+msgstr ""
+"¡Todas las fibras de los datos de tejido deben tener un peso mayor a 0 para "
+"generar el producto!"
+
+#. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/product_analysis.py:0
+msgid "All fibers of the weaving data must sum 100% to generate the product!"
+msgstr ""
+"¡Todas las fibras de los datos de tejido deben sumar 100% para generar el "
+"producto!"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__width
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
+msgid "Alto"
+msgstr "Alto"
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_product__analysis_id
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_template__analysis_id
 msgid "Analysis"
-msgstr "Analisis"
+msgstr "Análisis"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__analysis_date
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_view_search
 msgid "Analysis Date"
-msgstr "Fecha de Analyisis"
+msgstr "Fecha de Análisis"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__density
 msgid "Analysis Density"
-msgstr "Densidad Standard"
+msgstr "Densidad Estándar"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber_line__analysis_fiber_id
@@ -242,6 +357,11 @@ msgid "Analysis Width"
 msgstr "Ancho"
 
 #. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "Ancho"
+msgstr "Ancho"
+
+#. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__density_stability_twisting__bleaching__any
 msgid "Any Bleach"
 msgstr "Cualquier blanqueador"
@@ -252,20 +372,30 @@ msgid "Any Heat"
 msgstr "Cualquier temperatura"
 
 #. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_view_search
+msgid "Apariencia"
+msgstr "Apariencia"
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__product_appearance_id
 #: model:ir.ui.menu,name:idtx_product_development.dev_product_appearance_action_menu
 msgid "Appearance"
 msgstr "Apariencia"
 
 #. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.ligament_structure_view_form
+msgid "Archived"
+msgstr "Archivado"
+
+#. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
 msgid "Are you sure you want to create the product ?"
-msgstr "Esta seguro que desea crear el producto?"
+msgstr "¿Está seguro de que desea crear el producto?"
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
 msgid "Are you sure you want to create the technical sheet ?"
-msgstr "Esta seguro que desea crear la ficha técnica?"
+msgstr "¿Está seguro de que desea crear la ficha técnica?"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__message_attachment_count
@@ -280,6 +410,16 @@ msgstr "Cantidad de adjuntos"
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__mrp_base_process_id
 msgid "Base Process"
 msgstr "Proceso Base"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_routing_workcenter_operation__base_process_count
+msgid "Base Process Count"
+msgstr "Número de Procesos Base"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__ligament_structure_id
+msgid "Base Structure"
+msgstr "Estructura Base"
 
 #. module: idtx_product_development
 #: model:ir.model,name:idtx_product_development.model_mrp_bom
@@ -297,6 +437,12 @@ msgid "Bleaching Care Icon URL"
 msgstr "URL de icono de cuidado de blanqueado"
 
 #. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/density_stability_twisting.py:0
+msgid "Bleaching: %s"
+msgstr "Blanqueado: %s"
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__body
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
 msgid "Body"
@@ -305,6 +451,11 @@ msgstr "Cuerpo"
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.split_roll_form
 msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_copy_wizard_form
+msgid "Cancelar"
 msgstr "Cancelar"
 
 #. module: idtx_product_development
@@ -321,13 +472,18 @@ msgstr "Categorías"
 #. odoo-javascript
 #: code:addons/idtx_product_development/static/src/ligament_widget/ligament_widget.xml:0
 msgid "Clean Cell"
-msgstr ""
+msgstr "Limpiar celda"
 
 #. module: idtx_product_development
 #. odoo-javascript
 #: code:addons/idtx_product_development/static/src/ligament_widget/svg_selection_popup.xml:0
 msgid "Close"
-msgstr ""
+msgstr "Cerrar"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "Cod P"
+msgstr "Cod P"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_ligament_type__code
@@ -341,9 +497,15 @@ msgid "Code"
 msgstr "Código"
 
 #. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_texplus_machine__code
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "Codigo"
+msgstr "Código"
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__codpro
 msgid "CodigoProductoBD"
-msgstr ""
+msgstr "CodigoProductoBD"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__column_qty
@@ -351,6 +513,7 @@ msgid "Column Qty"
 msgstr "Cantidad de Columnas"
 
 #. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_ligament_structure__ligament_column
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__ligament_column
 msgid "Columns"
 msgstr "Columnas"
@@ -369,7 +532,7 @@ msgstr "Empresas"
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__company_id
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__company_id
 msgid "Company"
-msgstr "Compania"
+msgstr "Compañía"
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
@@ -402,9 +565,14 @@ msgid "Create Technical Sheet"
 msgstr "Crear Ficha Técnica"
 
 #. module: idtx_product_development
+#: model_terms:ir.actions.act_window,help:idtx_product_development.ligament_structure_action
+msgid "Create a ligament base structure"
+msgstr "Crear una estructura base de ligamento"
+
+#. module: idtx_product_development
 #: model_terms:ir.actions.act_window,help:idtx_product_development.product_analysis_action
 msgid "Create a new Product Analysis"
-msgstr "Nuevo Analisis de Producto"
+msgstr "Nuevo Análisis de Producto"
 
 #. module: idtx_product_development
 #: model_terms:ir.actions.act_window,help:idtx_product_development.technical_sheet_action
@@ -428,10 +596,12 @@ msgstr "Nuevos datos de tejido"
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__create_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_configurate_svg_example__create_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__create_uid
+#: model:ir.model.fields,field_description:idtx_product_development.field_ligament_structure__create_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_ligament_type__create_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process__create_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process_line__create_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__create_uid
+#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis_copy_wizard__create_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_appearance__create_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_code_system__create_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_family__create_uid
@@ -443,6 +613,7 @@ msgstr "Nuevos datos de tejido"
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_route_line__create_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__create_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__create_uid
+#: model:ir.model.fields,field_description:idtx_product_development.field_texplus_machine__create_uid
 msgid "Created by"
 msgstr "Creado por"
 
@@ -453,10 +624,12 @@ msgstr "Creado por"
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__create_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_configurate_svg_example__create_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__create_date
+#: model:ir.model.fields,field_description:idtx_product_development.field_ligament_structure__create_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_ligament_type__create_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process__create_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process_line__create_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__create_date
+#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis_copy_wizard__create_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_appearance__create_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_code_system__create_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_family__create_date
@@ -468,6 +641,7 @@ msgstr "Creado por"
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_route_line__create_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__create_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__create_date
+#: model:ir.model.fields,field_description:idtx_product_development.field_texplus_machine__create_date
 msgid "Created on"
 msgstr "Creado el"
 
@@ -485,14 +659,40 @@ msgid "Customer"
 msgstr "Cliente"
 
 #. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_mrp_base_process_document
+msgid "Código (fas_code)"
+msgstr "Código (fas_code)"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_ligament_structure__grid_data
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__grid_data
 msgid "Data Widget"
 msgstr "Widget de datos"
 
 #. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "Datos de Acabados"
+msgstr "Datos de Acabados"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "Datos de Crudo"
+msgstr "Datos de Crudo"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_template_form_view_inherit_ld
+msgid "Datos de Hilado"
+msgstr "Datos de Hilado"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "Datos de Maquina"
+msgstr "Datos de Máquina"
+
+#. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__analysis_fiber__system_type__dtex
 msgid "Decitex (dtex)"
-msgstr ""
+msgstr "Decitex (dtex)"
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.res_config_settings_view_form
@@ -505,6 +705,15 @@ msgid "Default categories applied when selecting products."
 msgstr "Categoría por defecto al seleccionar productos"
 
 #. module: idtx_product_development
+#: model_terms:ir.actions.act_window,help:idtx_product_development.ligament_structure_action
+msgid ""
+"Define reusable ligament structures that can be selected\n"
+"                in the product analysis."
+msgstr ""
+"Define estructuras de ligamento reutilizables que se pueden seleccionar\n"
+"                en el análisis de producto."
+
+#. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__density_stability_twisting__wash_cycle_type__delicate
 msgid "Delicate / Gentle"
 msgstr "Delicado / Suave"
@@ -512,7 +721,12 @@ msgstr "Delicado / Suave"
 #. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__analysis_fiber__system_type__dn
 msgid "Denier (dn)"
-msgstr ""
+msgstr "Denier (dn)"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "Densidad"
+msgstr "Densidad"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__density
@@ -520,7 +734,7 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_view_search
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
 msgid "Density"
-msgstr "Densidad Standard"
+msgstr "Densidad Estándar"
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.density_stability_twisting_form_view
@@ -544,11 +758,26 @@ msgid "Density should be grather than zero."
 msgstr "La densidad debe ser mayor a cero."
 
 #. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_texplus_machine__name
+msgid "Descripcion"
+msgstr "Descripción"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__description
+msgid "Description"
+msgstr "Descripción"
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__diameter
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_gauge__diameter
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
 msgid "Diameter"
-msgstr "Diametro"
+msgstr "Diámetro"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "Diametro"
+msgstr "Diámetro"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__display_name
@@ -557,15 +786,18 @@ msgstr "Diametro"
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__display_name
 #: model:ir.model.fields,field_description:idtx_product_development.field_configurate_svg_example__display_name
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__display_name
+#: model:ir.model.fields,field_description:idtx_product_development.field_ligament_structure__display_name
 #: model:ir.model.fields,field_description:idtx_product_development.field_ligament_type__display_name
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process__display_name
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process_line__display_name
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_bom__display_name
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_production__display_name
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_production_roll__display_name
+#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_routing_workcenter_operation__display_name
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_workorder__display_name
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_workorder_roll__display_name
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__display_name
+#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis_copy_wizard__display_name
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_appearance__display_name
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_category__display_name
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_code_system__display_name
@@ -583,6 +815,7 @@ msgstr "Diametro"
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_route_line__display_name
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__display_name
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__display_name
+#: model:ir.model.fields,field_description:idtx_product_development.field_texplus_machine__display_name
 msgid "Display Name"
 msgstr "Nombre en pantalla"
 
@@ -590,7 +823,7 @@ msgstr "Nombre en pantalla"
 #. odoo-python
 #: code:addons/idtx_product_development/models/mrp_workorder_roll.py:0
 msgid "Divide Roll"
-msgstr ""
+msgstr "Dividir Rollo"
 
 #. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__density_stability_twisting__bleaching__not_allowed
@@ -620,12 +853,12 @@ msgstr "No lavar"
 #. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__density_stability_twisting__profesional_textile_care_wet__not_allowed
 msgid "Do Not Wet Clean"
-msgstr "No limpieza en humedo"
+msgstr "No limpieza en húmedo"
 
 #. module: idtx_product_development
 #. odoo-python
-#: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__do_not_wring
 #: code:addons/idtx_product_development/models/density_stability_twisting.py:0
+#: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__do_not_wring
 msgid "Do Not Wring"
 msgstr "No retorcer"
 
@@ -667,7 +900,7 @@ msgstr "Lavado en seco suave con cualquier solvente"
 #. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__density_stability_twisting__profesional_textile_care_dry__dry_clean_mild_f
 msgid "Dry Clean Mild Gentle Solvent Petroleum or Silicone Solvent Only"
-msgstr "Lavado en seco suave con solvente petroleo o silicona"
+msgstr "Lavado en seco suave con solvente de petróleo o silicona"
 
 #. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__density_stability_twisting__profesional_textile_care_dry__dry_clean_normal_any
@@ -677,7 +910,7 @@ msgstr "Lavado en seco normal con cualquier solvente"
 #. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__density_stability_twisting__profesional_textile_care_dry__dry_clean_normal_f
 msgid "Dry Clean Normal Gentle Solvent Petroleum or Silicone Solvent Only"
-msgstr "Lavado en seco normal con solvente petroleo o silicona"
+msgstr "Lavado en seco normal con solvente de petróleo o silicona"
 
 #. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__density_stability_twisting__drying_condition__dry_flat
@@ -697,7 +930,7 @@ msgstr "Lavado en seco"
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__drying_condition
 msgid "Drying Condition"
-msgstr "Condicion de secado"
+msgstr "Condición de secado"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__drying_heat
@@ -710,39 +943,144 @@ msgid "Drying Heat Care Icon URL"
 msgstr "URL de icono de temperatura de secado"
 
 #. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/density_stability_twisting.py:0
+msgid "Drying: %s"
+msgstr "Secado: %s"
+
+#. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/density_stability_twisting.py:0
+msgid "Drying: %s / %s"
+msgstr "Secado: %s / %s"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.mrp_base_process_form_view
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_copy_wizard_form
+msgid "Duplicar"
+msgstr "Duplicar"
+
+#. module: idtx_product_development
+#: model:ir.actions.act_window,name:idtx_product_development.action_product_analysis_copy_wizard
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_copy_wizard_form
+msgid "Duplicar Analisis"
+msgstr "Duplicar Análisis"
+
+#. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/mrp_base_process.py:0
+msgid "Duplicar Proceso Base"
+msgstr "Duplicar Proceso Base"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.analysis_weaving_data_view_form
+msgid "Duplicate"
+msgstr "Duplicar"
+
+#. module: idtx_product_development
+#: model:ir.model.constraint,message:idtx_product_development.constraint_texplus_machine_code_unique
+msgid "El codigo de maquina TEXPLUS debe ser unico."
+msgstr "El código de máquina TEXPLUS debe ser único."
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.mrp_base_process_form_view
+msgid ""
+"Empuja la ruta (PROCES/PROLIN) y sus articulos (SERPAU/ARTLIN) a TEXPLUS. La"
+" sincronizacion ya NO ocurre al guardar: edita y guarda libremente, y al "
+"terminar presiona este boton una vez."
+msgstr ""
+"Empuja la ruta (PROCES/PROLIN) y sus artículos (SERPAU/ARTLIN) a TEXPLUS. La"
+" sincronización ya NO ocurre al guardar: edita y guarda libremente, y al "
+"terminar presiona este botón una vez."
+
+#. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__analysis_fiber__system_type__ne
 msgid "English number (ne)"
-msgstr "Número Ingles (ne)"
+msgstr "Número Inglés (ne)"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,help:idtx_product_development.field_texplus_machine__active
+msgid "Equivalente a MaqEst en TEXPLUS (A=Activa, I=Inactiva)."
+msgstr "Equivalente a MaqEst en TEXPLUS (A=Activa, I=Inactiva)."
+
+#. module: idtx_product_development
+#: model:ir.model.fields,help:idtx_product_development.field_texplus_machine__is_general
+msgid ""
+"Equivalente a MaqTip=G en TEXPLUS. Las maquinas generales agrupan varias "
+"especificas (ACRM -> ACRM01, ACRM02, ...)"
+msgstr ""
+"Equivalente a MaqTip=G en TEXPLUS. Las máquinas generales agrupan varias "
+"específicas (ACRM -> ACRM01, ACRM02, ...)"
 
 #. module: idtx_product_development
 #. odoo-javascript
 #: code:addons/idtx_product_development/static/src/ligament_widget/ligament_widget.js:0
 msgid "Error Drop"
-msgstr ""
+msgstr "Error al soltar"
 
 #. module: idtx_product_development
 #. odoo-javascript
 #: code:addons/idtx_product_development/static/src/ligament_widget/ligament_widget.js:0
 msgid "Error de SVG"
-msgstr ""
+msgstr "Error de SVG"
 
 #. module: idtx_product_development
 #. odoo-javascript
 #: code:addons/idtx_product_development/static/src/ligament_widget/ligament_widget.js:0
 msgid "Error to load"
-msgstr ""
+msgstr "Error al cargar"
 
 #. module: idtx_product_development
 #. odoo-javascript
 #: code:addons/idtx_product_development/static/src/ligament_widget/ligament_widget.js:0
 msgid "Error to load SVG. Try again."
-msgstr ""
+msgstr "Error al cargar el SVG. Intente de nuevo."
 
 #. module: idtx_product_development
 #. odoo-javascript
 #: code:addons/idtx_product_development/static/src/ligament_widget/ligament_widget.js:0
 msgid "Error to load SVGs. Please, reload page."
+msgstr "Error al cargar los SVG. Recargue la página."
+
+#. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_texplus_machine__is_general
+msgid "Es General"
+msgstr "Es General"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.texplus_machine_view_search
+msgid "Especificas"
+msgstr "Específicas"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_mrp_base_process_document
+msgid "Este proceso no tiene operaciones registradas."
+msgstr "Este proceso no tiene operaciones registradas."
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "Estilo / Intensidad"
+msgstr "Estilo / Intensidad"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.mrp_base_process_form_view
+msgid ""
+"Esto sincronizara la ruta y sus articulos a TEXPLUS (puede tardar segun la "
+"cantidad de productos). ¿Continuar?"
 msgstr ""
+"Esto sincronizará la ruta y sus artículos a TEXPLUS (puede tardar según la "
+"cantidad de productos). ¿Continuar?"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,help:idtx_product_development.field_product_analysis__ligament_structure_id
+msgid ""
+"Estructura base de ligamento definida en Configuración. Al seleccionarla se "
+"copia su grilla al análisis (snapshot): los cambios posteriores en el "
+"análisis no modifican la estructura base ni viceversa."
+msgstr ""
+"Estructura base de ligamento definida en Configuración. Al seleccionarla se "
+"copia su grilla al análisis (snapshot): los cambios posteriores en el "
+"análisis no modifican la estructura base ni viceversa."
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__fabric_composition
@@ -750,11 +1088,33 @@ msgid "Fabric Composition"
 msgstr "Composición de Tela"
 
 #. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_view_search
+msgid "Familia"
+msgstr "Familia"
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__product_family_id
+#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__analysis_product_family_id
 #: model:ir.ui.menu,name:idtx_product_development.dev_product_family_action_menu
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
 msgid "Family"
 msgstr "Familia"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.mrp_base_process_view_search
+msgid "Fase"
+msgstr "Fase"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.mrp_base_process_view_search
+msgid "Fase (texto)"
+msgstr "Fase (texto)"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_texplus_machine__operation_ids
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.texplus_machine_view_form
+msgid "Fases asignadas"
+msgstr "Fases asignadas"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__feeders
@@ -764,7 +1124,9 @@ msgstr "Alimentadores"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__product_fiber_id
+#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__analysis_product_fiber_id
 #: model:ir.ui.menu,name:idtx_product_development.dev_product_fiber_action_menu
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_view_search
 msgid "Fiber"
 msgstr "Fibra"
 
@@ -778,12 +1140,22 @@ msgstr "Fibras"
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__ficha
 msgid "Ficha"
-msgstr ""
+msgstr "Ficha"
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
 msgid "Ficha Sitpro"
-msgstr ""
+msgstr "Ficha Sitpro"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "Ficha Tecnica de Tejido"
+msgstr "Ficha Técnica de Tejido"
+
+#. module: idtx_product_development
+#: model:ir.actions.report,name:idtx_product_development.action_report_technical_sheet_weaving
+msgid "Ficha Técnica de Tejido"
+msgstr "Ficha Técnica de Tejido"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__finish_density
@@ -844,13 +1216,18 @@ msgstr "Seguidores (Contactos)"
 #: model:ir.model.fields,help:idtx_product_development.field_product_analysis__activity_type_icon
 #: model:ir.model.fields,help:idtx_product_development.field_technical_sheet__activity_type_icon
 msgid "Font awesome icon e.g. fa-tasks"
-msgstr "Icono font awesome por ejemplo fa-tasks"
+msgstr "Icono de Font Awesome, p. ej. fa-tasks"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "GG"
+msgstr "GG"
 
 #. module: idtx_product_development
 #. odoo-python
 #: code:addons/idtx_product_development/models/product_product.py:0
 msgid "GS1 sequence exhausted. Contact admin."
-msgstr ""
+msgstr "Secuencia GS1 agotada. Contacte al administrador."
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__gauge_id
@@ -863,6 +1240,12 @@ msgid "Gauge"
 msgstr "Galga"
 
 #. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.texplus_machine_view_search
+msgid "Generales"
+msgstr "Generales"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.ligament_structure_view_form
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
 msgid "Generate"
 msgstr "Generar"
@@ -886,21 +1269,29 @@ msgid "High"
 msgstr "Alta"
 
 #. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "Hilado"
+msgstr "Hilado"
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__id
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber_line__id
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_routing_line__id
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__id
 #: model:ir.model.fields,field_description:idtx_product_development.field_configurate_svg_example__id
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__id
+#: model:ir.model.fields,field_description:idtx_product_development.field_ligament_structure__id
 #: model:ir.model.fields,field_description:idtx_product_development.field_ligament_type__id
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process__id
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process_line__id
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_bom__id
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_production__id
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_production_roll__id
+#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_routing_workcenter_operation__id
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_workorder__id
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_workorder_roll__id
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__id
+#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis_copy_wizard__id
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_appearance__id
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_category__id
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_code_system__id
@@ -918,8 +1309,9 @@ msgstr "Alta"
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_route_line__id
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__id
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__id
+#: model:ir.model.fields,field_description:idtx_product_development.field_texplus_machine__id
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__activity_exception_icon
@@ -933,14 +1325,19 @@ msgstr "Icono"
 #: model:ir.model.fields,help:idtx_product_development.field_product_analysis__activity_exception_icon
 #: model:ir.model.fields,help:idtx_product_development.field_technical_sheet__activity_exception_icon
 msgid "Icon to indicate an exception activity."
-msgstr "Icono para indicar una actividad de excepcion."
+msgstr "Icono para indicar una actividad de excepción."
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "Id"
+msgstr "Id"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,help:idtx_product_development.field_density_stability_twisting__message_needaction
 #: model:ir.model.fields,help:idtx_product_development.field_product_analysis__message_needaction
 #: model:ir.model.fields,help:idtx_product_development.field_technical_sheet__message_needaction
 msgid "If checked, new messages require your attention."
-msgstr "Si esta marcado, los mensajes nuevos requieren su atencion."
+msgstr "Si está marcado, hay nuevos mensajes que requieren su atención."
 
 #. module: idtx_product_development
 #: model:ir.model.fields,help:idtx_product_development.field_density_stability_twisting__message_has_error
@@ -950,7 +1347,17 @@ msgstr "Si esta marcado, los mensajes nuevos requieren su atencion."
 #: model:ir.model.fields,help:idtx_product_development.field_technical_sheet__message_has_error
 #: model:ir.model.fields,help:idtx_product_development.field_technical_sheet__message_has_sms_error
 msgid "If checked, some messages have a delivery error."
-msgstr "Si esta marcado, algunos mensajes tienen un error de entrega."
+msgstr "Si está marcado, algunos mensajes tienen un error de entrega."
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.texplus_machine_view_form
+msgid "Inactiva"
+msgstr "Inactiva"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.texplus_machine_view_search
+msgid "Inactivas"
+msgstr "Inactivas"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__care_iron_steam_icon_url
@@ -968,11 +1375,37 @@ msgid "Ironing Care Icon URL"
 msgstr "URL de icono de planchado"
 
 #. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/density_stability_twisting.py:0
+msgid "Ironing: %s"
+msgstr "Planchado: %s"
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__message_is_follower
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__message_is_follower
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__message_is_follower
 msgid "Is Follower"
 msgstr "Es seguidor"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "L. M"
+msgstr "L. M"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__length
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
+msgid "Largo"
+msgstr "Largo"
+
+#. module: idtx_product_development
+#: model_terms:ir.actions.act_window,help:idtx_product_development.texplus_machine_action
+msgid ""
+"Las maquinas se importan automaticamente al instalar/actualizar el modulo "
+"desde <code>data/texplus.machine.csv</code>."
+msgstr ""
+"Las máquinas se importan automáticamente al instalar/actualizar el módulo "
+"desde <code>data/texplus.machine.csv</code>."
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__write_uid
@@ -981,10 +1414,12 @@ msgstr "Es seguidor"
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__write_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_configurate_svg_example__write_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__write_uid
+#: model:ir.model.fields,field_description:idtx_product_development.field_ligament_structure__write_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_ligament_type__write_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process__write_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process_line__write_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__write_uid
+#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis_copy_wizard__write_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_appearance__write_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_code_system__write_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_family__write_uid
@@ -996,8 +1431,9 @@ msgstr "Es seguidor"
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_route_line__write_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__write_uid
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__write_uid
+#: model:ir.model.fields,field_description:idtx_product_development.field_texplus_machine__write_uid
 msgid "Last Updated by"
-msgstr "Ultima actualizacion por"
+msgstr "Última actualización por"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__write_date
@@ -1006,10 +1442,12 @@ msgstr "Ultima actualizacion por"
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__write_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_configurate_svg_example__write_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__write_date
+#: model:ir.model.fields,field_description:idtx_product_development.field_ligament_structure__write_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_ligament_type__write_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process__write_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process_line__write_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__write_date
+#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis_copy_wizard__write_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_appearance__write_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_code_system__write_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_family__write_date
@@ -1021,8 +1459,9 @@ msgstr "Ultima actualizacion por"
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_route_line__write_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__write_date
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__write_date
+#: model:ir.model.fields,field_description:idtx_product_development.field_texplus_machine__write_date
 msgid "Last Updated on"
-msgstr "Ultima actualizacion el"
+msgstr "Última actualización el"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__laundering_ballast_type
@@ -1032,13 +1471,7 @@ msgstr "Tipo de lastre de lavado"
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__bom_id
 msgid "LdM"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__length
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
-msgid "Length"
-msgstr "Longitud"
+msgstr "LdM"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__length_shrinkage_from
@@ -1057,6 +1490,17 @@ msgid "Ligament"
 msgstr "Ligamento"
 
 #. module: idtx_product_development
+#: model:ir.model,name:idtx_product_development.model_ligament_structure
+msgid "Ligament Base Structure"
+msgstr "Estructura Base de Ligamento"
+
+#. module: idtx_product_development
+#: model:ir.actions.act_window,name:idtx_product_development.ligament_structure_action
+#: model:ir.ui.menu,name:idtx_product_development.ligament_structure_menu
+msgid "Ligament Base Structures"
+msgstr "Estructuras Base de Ligamento"
+
+#. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
 msgid "Ligament Design Structure"
 msgstr "Diseño de Estructura de Ligamento"
@@ -1073,6 +1517,11 @@ msgid "Ligament type"
 msgstr "Tipo de Ligamento"
 
 #. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "Ligamento"
+msgstr "Ligamento"
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_route_line__line_parameter_ids
 msgid "Line Parameter"
 msgstr "Parámetro"
@@ -1083,22 +1532,27 @@ msgid "Line/Hang Dry"
 msgstr "Secar colgado"
 
 #. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "Linea"
+msgstr "Línea"
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__line_ids
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__routing_ids
 msgid "Lines"
-msgstr "Lineas"
+msgstr "Líneas"
 
 #. module: idtx_product_development
 #. odoo-javascript
 #: code:addons/idtx_product_development/static/src/ligament_widget/svg_selection_popup.xml:0
 msgid "Loading SVGs..."
-msgstr ""
+msgstr "Cargando SVGs..."
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
 msgid "Logo"
-msgstr ""
+msgstr "Logo"
 
 #. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__density_stability_twisting__drying_heat__low
@@ -1114,7 +1568,75 @@ msgstr "Administrador"
 #. module: idtx_product_development
 #: model:ir.model,name:idtx_product_development.model_mrp_production
 msgid "Manufacturing Order"
-msgstr "Orden de fabricación"
+msgstr "Orden de producción"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "Maquina"
+msgstr "Máquina"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_texplus_machine__general_machine_id
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.texplus_machine_view_search
+msgid "Maquina General"
+msgstr "Máquina General"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process_line__general_machine_id
+#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_routing_workcenter_operation__general_machine_id
+msgid "Maquina General (TEXPLUS)"
+msgstr "Máquina General (TEXPLUS)"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.texplus_machine_view_form
+msgid "Maquina TEXPLUS"
+msgstr "Máquina TEXPLUS"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,help:idtx_product_development.field_mrp_base_process_line__general_machine_id
+#: model:ir.model.fields,help:idtx_product_development.field_mrp_routing_workcenter_operation__general_machine_id
+msgid "Maquina general de TEXPLUS. Se guarda en FASPRO.MaqCod."
+msgstr "Máquina general de TEXPLUS. Se guarda en FASPRO.MaqCod."
+
+#. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_texplus_machine__specific_machine_ids
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.texplus_machine_view_form
+msgid "Maquinas Especificas"
+msgstr "Máquinas Específicas"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_routing_workcenter_operation__specific_machine_ids
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.mrp_routing_workcenter_operation_form_view_texplus_machine
+msgid "Maquinas Especificas (TEXPLUS)"
+msgstr "Máquinas Específicas (TEXPLUS)"
+
+#. module: idtx_product_development
+#: model:ir.actions.act_window,name:idtx_product_development.texplus_machine_action
+#: model:ir.ui.menu,name:idtx_product_development.dev_texplus_machine_menu
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.texplus_machine_view_list
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.texplus_machine_view_search
+msgid "Maquinas TEXPLUS"
+msgstr "Máquinas TEXPLUS"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,help:idtx_product_development.field_mrp_routing_workcenter_operation__specific_machine_ids
+msgid ""
+"Maquinas especificas asignadas a esta fase. Se sincroniza con la tabla "
+"MAQFAS de TEXPLUS."
+msgstr ""
+"Máquinas específicas asignadas a esta fase. Se sincroniza con la tabla "
+"MAQFAS de TEXPLUS."
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_copy_wizard_form
+msgid ""
+"Marca/desmarca los Weaving Data que quieres copiar al nuevo\n"
+"                        analisis. Cada uno se copia como registro NUEVO (no link).\n"
+"                        Las fibras anidadas se copian tambien."
+msgstr ""
+"Marca/desmarca los Datos de Tejido que quieres copiar al nuevo\n"
+"                        análisis. Cada uno se copia como registro NUEVO (no vinculado).\n"
+"                        Las fibras anidadas se copian también."
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.analysis_fibe_form_view
@@ -1203,16 +1725,33 @@ msgstr "Rollo de Tejido"
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__my_activity_date_deadline
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__my_activity_date_deadline
 msgid "My Activity Deadline"
-msgstr "Mi fecha limite de actividad"
+msgstr "Mi fecha límite de actividad"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,help:idtx_product_development.field_product_analysis__product_description
+#: model:ir.model.fields,help:idtx_product_development.field_technical_sheet__description
+msgid ""
+"Máximo 26 caracteres: es el largo de ArtDsc en TEXPLUS (char(26)). Más allá "
+"de 26 se truncaría al exportar."
+msgstr ""
+"Máximo 26 caracteres: es el largo de ArtDsc en TEXPLUS (char(26)). Más allá "
+"de 26 se truncaría al exportar."
+
+#. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/density_stability_twisting.py:0
+msgid "N/A"
+msgstr "N/A"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__ne
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
 msgid "NE"
-msgstr ""
+msgstr "NE"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__name
+#: model:ir.model.fields,field_description:idtx_product_development.field_ligament_structure__name
 #: model:ir.model.fields,field_description:idtx_product_development.field_ligament_type__name
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process__name
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__name
@@ -1262,34 +1801,47 @@ msgstr "Nuevo Peso"
 #. odoo-python
 #: code:addons/idtx_product_development/wizards/split_roll.py:0
 msgid "New quantity can't be greather than old quantity."
-msgstr ""
+msgstr "La nueva cantidad no puede ser mayor que la cantidad anterior."
 
 #. module: idtx_product_development
 #. odoo-python
 #: code:addons/idtx_product_development/wizards/split_roll.py:0
 msgid "New weight can't be greather than gross weight."
-msgstr ""
+msgstr "El nuevo peso no puede ser mayor que el peso bruto."
+
+#. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__activity_calendar_event_id
+#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__activity_calendar_event_id
+#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__activity_calendar_event_id
+msgid "Next Activity Calendar Event"
+msgstr "Próximo evento de calendario de actividad"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__activity_date_deadline
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__activity_date_deadline
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__activity_date_deadline
 msgid "Next Activity Deadline"
-msgstr "Proxima fecha limite de actividad"
+msgstr "Próxima fecha límite de actividad"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__activity_summary
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__activity_summary
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__activity_summary
 msgid "Next Activity Summary"
-msgstr "Resumen de la proxima actividad"
+msgstr "Resumen de la próxima actividad"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__activity_type_id
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__activity_type_id
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__activity_type_id
 msgid "Next Activity Type"
-msgstr "Tipo de proxima actividad"
+msgstr "Tipo de próxima actividad"
+
+#. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/technical_sheet.py:0
+msgid "No"
+msgstr "No"
 
 #. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__density_stability_twisting__drying_heat__not_allowed
@@ -1300,12 +1852,12 @@ msgstr "Sin calor / aire"
 #. odoo-javascript
 #: code:addons/idtx_product_development/static/src/ligament_widget/svg_selection_popup.xml:0
 msgid "No SVGs availables. Please, add records."
-msgstr ""
+msgstr "No hay SVG disponibles. Agregue registros."
 
 #. module: idtx_product_development
 #. odoo-python
-#: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__iron_steam
 #: code:addons/idtx_product_development/models/density_stability_twisting.py:0
+#: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__iron_steam
 msgid "No Steam"
 msgstr "Sin vapor"
 
@@ -1313,7 +1865,42 @@ msgstr "Sin vapor"
 #. odoo-javascript
 #: code:addons/idtx_product_development/static/src/ligament_widget/ligament_widget.js:0
 msgid "No find SVG selected."
+msgstr "No se encontró el SVG seleccionado."
+
+#. module: idtx_product_development
+#: model_terms:ir.actions.act_window,help:idtx_product_development.texplus_machine_action
+msgid "No hay maquinas cargadas todavia."
+msgstr "No hay máquinas cargadas todavía."
+
+#. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/product_analysis.py:0
+msgid ""
+"No se puede asignar la ruta '%s' al analisis: las siguientes operaciones no tienen Maquina General (TEXPLUS) asignada. Sin maquina la fase no puede registrarse en produccion.\n"
+"\n"
+"%s\n"
+"\n"
+"Configura la maquina general en cada operacion antes de continuar."
 msgstr ""
+"No se puede asignar la ruta '%s' al análisis: las siguientes operaciones no tienen Máquina General (TEXPLUS) asignada. Sin máquina la fase no puede registrarse en producción.\n"
+"\n"
+"%s\n"
+"\n"
+"Configura la máquina general en cada operación antes de continuar."
+
+#. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/mrp_base_process.py:0
+msgid ""
+"No se puede determinar el centro de trabajo (area) para la fase \"%(name)s\""
+" (codigo %(code)s). No aparece en estatus_reproceso de TEXPLUS ni coincide "
+"con ninguna palabra clave conocida. Registra el area en TEXPLUS antes de "
+"reintentar la sincronizacion."
+msgstr ""
+"No se puede determinar el centro de trabajo (área) para la fase \"%(name)s\""
+" (código %(code)s). No aparece en estatus_reproceso de TEXPLUS ni coincide "
+"con ninguna palabra clave conocida. Registra el área en TEXPLUS antes de "
+"reintentar la sincronización."
 
 #. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__density_stability_twisting__wash_cycle_type__normal
@@ -1321,44 +1908,87 @@ msgid "Normal"
 msgstr "Normal"
 
 #. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_ligament_structure__notes
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__notes
+#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__notes
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
 msgid "Notes"
 msgstr "Observaciones"
 
 #. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/wizards/product_analysis_copy_wizard.py:0
+msgid "Nuevo analisis"
+msgstr "Nuevo análisis"
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__message_needaction_counter
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__message_needaction_counter
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__message_needaction_counter
 msgid "Number of Actions"
-msgstr "Numero de acciones"
+msgstr "Número de acciones"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__message_has_error_counter
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__message_has_error_counter
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__message_has_error_counter
 msgid "Number of errors"
-msgstr "Numero de errores"
+msgstr "Número de errores"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,help:idtx_product_development.field_density_stability_twisting__message_needaction_counter
 #: model:ir.model.fields,help:idtx_product_development.field_product_analysis__message_needaction_counter
 #: model:ir.model.fields,help:idtx_product_development.field_technical_sheet__message_needaction_counter
 msgid "Number of messages requiring action"
-msgstr "Numero de mensajes que requieren accion"
+msgstr "Número de mensajes que requieren acción"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,help:idtx_product_development.field_density_stability_twisting__message_has_error_counter
 #: model:ir.model.fields,help:idtx_product_development.field_product_analysis__message_has_error_counter
 #: model:ir.model.fields,help:idtx_product_development.field_technical_sheet__message_has_error_counter
 msgid "Number of messages with delivery error"
-msgstr "Numero de mensajes con error de entrega"
+msgstr "Número de mensajes con error de entrega"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
+msgid "N°"
+msgstr "N°"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "N° Agujas"
+msgstr "N° Agujas"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "N° Alim."
+msgstr "N° Alim."
+
+#. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__cabo_number
+msgid "N° Cabo"
+msgstr "N° Cabo"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "N° Cabos"
+msgstr "N° Cabos"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "N° Máq"
+msgstr "N° Máq"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "Observaciones"
+msgstr "Observaciones"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_route_line_parameter__is_observation
 msgid "Observación?"
-msgstr ""
+msgstr "¿Observación?"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_split_roll__old_quantity
@@ -1373,13 +2003,13 @@ msgstr "Peso anterior"
 #. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__density_stability_twisting__bleaching__only
 msgid "Only Non-Chlorine / Oxygen Bleach"
-msgstr "Solo blanqueador sin cloro / oxigeno"
+msgstr "Solo blanqueador sin cloro / oxígeno"
 
 #. module: idtx_product_development
 #. odoo-python
 #: code:addons/idtx_product_development/models/product_analysis.py:0
 msgid "Only one weaving operation is allowed"
-msgstr ""
+msgstr "Solo se permite una operación de tejido"
 
 #. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__product_analysis__weave_type__open
@@ -1392,8 +2022,13 @@ msgid "Open Technical Sheet"
 msgstr "Abrir Ficha Técnica"
 
 #. module: idtx_product_development
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.mrp_base_process_view_search
-msgid "Operation"
+#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process__operation_ids
+msgid "Operaciones"
+msgstr "Operaciones"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_mrp_base_process_document
+msgid "Operación"
 msgstr "Operación"
 
 #. module: idtx_product_development
@@ -1409,6 +2044,11 @@ msgid "Operations"
 msgstr "Operaciones"
 
 #. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis_copy_wizard__source_id
+msgid "Origen"
+msgstr "Origen"
+
+#. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__product_analysis__weave_type__othe
 msgid "Other"
 msgstr "Otro"
@@ -1418,6 +2058,11 @@ msgstr "Otro"
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_form_view
 msgid "Other Information"
 msgstr "Otra información"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,help:idtx_product_development.field_texplus_machine__general_machine_id
+msgid "Para una maquina especifica, la maquina general a la que pertenece."
+msgstr "Para una máquina específica, la máquina general a la que pertenece."
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_route_line_parameter__name
@@ -1442,9 +2087,29 @@ msgstr "Planchado permanente"
 
 #. module: idtx_product_development
 #. odoo-python
+#: code:addons/idtx_product_development/models/product_analysis.py:0
+msgid ""
+"Please add at least one fiber to the weaving data to generate the product!"
+msgstr ""
+"¡Agregue al menos una fibra a los datos de tejido para generar el producto!"
+
+#. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/product_analysis.py:0
+msgid "Please add at least one weaving data to generate the product!"
+msgstr "¡Agregue al menos un dato de tejido para generar el producto!"
+
+#. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/product_analysis.py:0
+msgid "Please select a base process and the route to generate the product!"
+msgstr "¡Seleccione un proceso base y la ruta para generar el producto!"
+
+#. module: idtx_product_development
+#. odoo-python
 #: code:addons/idtx_product_development/models/mrp_production.py:0
 msgid "Please select a production type before marking as done."
-msgstr ""
+msgstr "Seleccione un tipo de producción antes de marcar como hecho."
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__plies
@@ -1479,6 +2144,16 @@ msgid "Print Analysis"
 msgstr "Imprimir Análisis"
 
 #. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "Proceso"
+msgstr "Proceso"
+
+#. module: idtx_product_development
+#: model:ir.actions.report,name:idtx_product_development.action_report_mrp_base_process
+msgid "Proceso Base"
+msgstr "Proceso Base"
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process__process_ids
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.mrp_base_process_form_view
 msgid "Process"
@@ -1495,6 +2170,11 @@ msgstr "Proceso"
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_view_search
 msgid "Product"
 msgstr "Producto"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process__product_analysis_ids
+msgid "Product Analyses"
+msgstr "Análisis de Producto"
 
 #. module: idtx_product_development
 #: model:ir.actions.act_window,name:idtx_product_development.product_analysis_action
@@ -1515,8 +2195,8 @@ msgid ""
 "Product Analysis define that need to be done to realize a Technical Sheet.\n"
 "                Each analysis is done from customer samples."
 msgstr ""
-"Análisis de Producto define lo que se tiene que hacer para realizar un Ficha Técnica.\n"
-"                Cada análisis se hace a partir de una muestra del cliente."
+"El Análisis de Producto define lo que se debe hacer para realizar una Ficha Técnica.\n"
+"                Cada análisis se hace a partir de muestras del cliente."
 
 #. module: idtx_product_development
 #: model:ir.actions.act_window,name:idtx_product_development.product_appearance_action
@@ -1543,6 +2223,11 @@ msgid "Product Code System"
 msgstr "Sistema de Codificación de Producto"
 
 #. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process__product_count
+msgid "Product Count"
+msgstr "Número de Productos"
+
+#. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_form_view
 msgid "Product Data"
 msgstr "Datos de Producto"
@@ -1566,67 +2251,58 @@ msgstr "Desarrollo de Producto"
 
 #. module: idtx_product_development
 #: model:ir.actions.act_window,name:idtx_product_development.product_family_action
-
 #: model:ir.model,name:idtx_product_development.model_product_family
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.product_family_tree_view
 msgid "Product Family"
 msgstr "Familia"
-
 
 #. module: idtx_product_development
 #: model:ir.actions.act_window,name:idtx_product_development.product_fiber_action
 #: model:ir.model,name:idtx_product_development.model_product_fiber
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.product_fiber_tree_view
 msgid "Product Fiber"
-
 msgstr "Fibra"
 
 #. module: idtx_product_development
 #: model:ir.actions.act_window,name:idtx_product_development.product_gauge_action
 #: model:ir.model,name:idtx_product_development.model_product_gauge
-
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.product_gauge_tree_view
 msgid "Product Gauge"
 msgstr "Galga"
 
 #. module: idtx_product_development
-
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
 msgid "Product Technical Sheet"
 msgstr "Ficha Técnica"
 
 #. module: idtx_product_development
-
 #: model:ir.actions.act_window,name:idtx_product_development.product_title_action
 #: model:ir.model,name:idtx_product_development.model_product_title
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.product_title_tree_view
 msgid "Product Title"
 msgstr "Título"
 
-
 #. module: idtx_product_development
 #: model:ir.model,name:idtx_product_development.model_product_product
 msgid "Product Variant"
 msgstr "Variante del producto"
 
-
 #. module: idtx_product_development
 #: model:ir.model.constraint,message:idtx_product_development.constraint_product_analysis_product_code_unique
 msgid "Product code must be unique!"
-msgstr "El codigo de producto debe ser unico!"
-
+msgstr "¡El código de producto debe ser único!"
 
 #. module: idtx_product_development
 #. odoo-python
 #: code:addons/idtx_product_development/models/mrp_production.py:0
 msgid "Product is in Pilot state"
-msgstr ""
+msgstr "El producto está en estado Piloto"
 
 #. module: idtx_product_development
 #. odoo-python
 #: code:addons/idtx_product_development/models/mrp_production.py:0
 msgid "Product is in Production state!"
-msgstr ""
+msgstr "¡El producto está en estado Producción!"
 
 #. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__technical_sheet__state__prod
@@ -1639,14 +2315,32 @@ msgid "Production Scrap"
 msgstr "Merma de Producción"
 
 #. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__production_state
+#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__production_state
 msgid "Production State"
-msgstr "Estado de produccion"
+msgstr "Estado de Producción"
 
 #. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/mrp_base_process.py:0
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.mrp_base_process_form_view
+msgid "Productos"
+msgstr "Productos"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process__product_ids
 #: model:ir.ui.menu,name:idtx_product_development.dev_product_menu
 msgid "Products"
 msgstr "Productos"
+
+#. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/product_template.py:0
+msgid ""
+"Products in the weaving category must have an analysis. Please set one "
+"before changing the category."
+msgstr ""
+"Los productos de la categoría de tejido deben tener un análisis. Asigne uno "
+"antes de cambiar la categoría."
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__care_profesional_dry_icon_url
@@ -1656,7 +2350,19 @@ msgstr "URL de icono de cuidado profesional en seco"
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__care_profesional_wet_icon_url
 msgid "Professional Wet Care Icon URL"
-msgstr "URL de icono de cuidado profesional en humedo"
+msgstr "URL de icono de cuidado profesional en húmedo"
+
+#. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/density_stability_twisting.py:0
+msgid "Professional care (dry): %s"
+msgstr "Cuidado profesional (seco): %s"
+
+#. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/density_stability_twisting.py:0
+msgid "Professional care (wet): %s"
+msgstr "Cuidado profesional (húmedo): %s"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__program
@@ -1700,7 +2406,12 @@ msgstr "Ancho"
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__product_analysis__weave_type__rect
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.mrp_workorder_roll_view_search_inherit
 msgid "Rectilinear"
-msgstr "Rectilineo"
+msgstr "Rectilíneo"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "Rendimiento"
+msgstr "Rendimiento"
 
 #. module: idtx_product_development
 #: model:ir.ui.menu,name:idtx_product_development.dev_report_menu
@@ -1757,9 +2468,26 @@ msgid "Routing Work Centers Operations"
 msgstr "Operaciones de Centros de Trabajo"
 
 #. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_ligament_structure__ligament_row
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__ligament_row
 msgid "Rows"
 msgstr "Filas"
+
+#. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/product_analysis.py:0
+msgid "Ruta cambiada desde el análisis a: %s"
+msgstr "Ruta cambiada desde el análisis a: %s"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.mrp_routing_workcenter_operation_form_view_texplus_machine
+msgid "Rutas"
+msgstr "Rutas"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_mrp_routing_workcenter_operation__base_process_ids
+msgid "Rutas que usan esta operacion"
+msgstr "Rutas que usan esta operación"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__message_has_sms_error
@@ -1775,15 +2503,24 @@ msgstr "Merma"
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_view_search
-#: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_search_view
 msgid "Search Product Analysis"
-msgstr "Buscar Analisis de Producto"
+msgstr "Buscar Análisis de Producto"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_search_view
+msgid "Search Technical Sheets"
+msgstr "Buscar Fichas Técnicas"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_mrp_base_process_document
+msgid "Secuencia"
+msgstr "Secuencia"
 
 #. module: idtx_product_development
 #. odoo-javascript
 #: code:addons/idtx_product_development/static/src/ligament_widget/svg_selection_popup.xml:0
 msgid "Select Ligament"
-msgstr ""
+msgstr "Seleccionar Ligamento"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__sequence
@@ -1800,6 +2537,28 @@ msgid "Settings"
 msgstr "Ajustes"
 
 #. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/technical_sheet.py:0
+msgid "Si"
+msgstr "Sí"
+
+#. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/mrp_base_process.py:0
+msgid "Sincronizacion a TEXPLUS completada."
+msgstr "Sincronización a TEXPLUS completada."
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.mrp_base_process_form_view
+msgid "Sincronizar a TEXPLUS"
+msgstr "Sincronizar a TEXPLUS"
+
+#. module: idtx_product_development
+#: model:ir.actions.server,name:idtx_product_development.ir_cron_sync_texplus_base_process_ir_actions_server
+msgid "Sincronizar procesos base TEXPLUS"
+msgstr "Sincronizar procesos base TEXPLUS"
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__size
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
 msgid "Size"
@@ -1814,6 +2573,20 @@ msgstr "Tabla de Tallas"
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_form_view
 msgid "Sizes"
 msgstr "Tallas"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,help:idtx_product_development.field_product_analysis_copy_wizard__weaving_data_ids
+msgid ""
+"Solo se copiaran al nuevo analisis los que selecciones aqui. Por defecto "
+"vienen todos pre-seleccionados."
+msgstr ""
+"Solo se copiarán al nuevo análisis los que selecciones aquí. Por defecto "
+"vienen todos pre-seleccionados."
+
+#. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_texplus_machine__specific_machine_count
+msgid "Specific Machine Count"
+msgstr "Número de Máquinas Específicas"
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.mrp_workorder_batch_form_inherit
@@ -1835,12 +2608,12 @@ msgstr "Estabilidad y Revirado"
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__standard_width
 msgid "Standard Width"
-msgstr "Ancho Standard"
+msgstr "Ancho Estándar"
 
 #. module: idtx_product_development
 #: model:ir.model.constraint,message:idtx_product_development.constraint_product_analysis_check_standard_width
 msgid "Standard width should be grather than zero."
-msgstr "El ancho standard debe ser mayor a cero."
+msgstr "El ancho estándar debe ser mayor a cero."
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__state
@@ -1859,6 +2632,16 @@ msgid ""
 "Today: Activity date is today\n"
 "Planned: Future activities."
 msgstr ""
+"Estado basado en actividades\n"
+"Vencida: la fecha límite ya pasó\n"
+"Hoy: la fecha de la actividad es hoy\n"
+"Planificada: actividades futuras."
+
+#. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/density_stability_twisting.py:0
+msgid "Steam: %s"
+msgstr "Vapor: %s"
 
 #. module: idtx_product_development
 #: model:ir.model,name:idtx_product_development.model_stock_move
@@ -1866,16 +2649,32 @@ msgid "Stock Move"
 msgstr "Movimiento de stock"
 
 #. module: idtx_product_development
+#: model:ir.model.constraint,message:idtx_product_development.constraint_ligament_structure_name_unique
+msgid "Structure name must be unique!"
+msgstr "¡El nombre de la estructura debe ser único!"
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__stylo
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__stylo
 msgid "Stylo"
-msgstr "Stylo"
+msgstr "Estilo"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__system_type
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
 msgid "System Type"
 msgstr "Tipo de Sistema"
+
+#. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/mrp_base_process.py:0
+msgid "TEXPLUS"
+msgstr "TEXPLUS"
+
+#. module: idtx_product_development
+#: model:ir.model,name:idtx_product_development.model_texplus_machine
+msgid "TEXPLUS Maquina (MAQUIN)"
+msgstr "TEXPLUS Máquina (MAQUIN)"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__technical_date
@@ -1942,7 +2741,7 @@ msgstr "Línea de Talla de F.T."
 #. module: idtx_product_development
 #: model:ir.ui.menu,name:idtx_product_development.dev_technical_tolerance_menu
 msgid "Technical Tolerances"
-msgstr "Tolerancias tecnicas"
+msgstr "Tolerancias técnicas"
 
 #. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__product_analysis__state__test
@@ -1953,7 +2752,7 @@ msgstr "Prueba"
 #. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__analysis_fiber__system_type__tex
 msgid "Tex (tex)"
-msgstr ""
+msgstr "Tex (tex)"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_production_roll__theorical_length
@@ -1966,6 +2765,8 @@ msgstr "Longitud Teórica"
 msgid ""
 "There is no weaving operation in bom. Please check your product routing!"
 msgstr ""
+"No hay operación de tejido en la lista de materiales. ¡Revise la ruta del "
+"producto!"
 
 #. module: idtx_product_development
 #: model:ir.actions.act_window,name:idtx_product_development.product_product_action_thread
@@ -1989,6 +2790,11 @@ msgid "Thread Code"
 msgstr "Código de Hilado"
 
 #. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_product_category__thread_company_ids
+msgid "Thread Companies"
+msgstr "Empresas de Hilado"
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__thread_qty
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_product_analysis_document
 msgid "Thread Quantity"
@@ -2002,12 +2808,27 @@ msgstr "Título de Hilado"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__tilt
+msgid "Tilt"
+msgstr "Inclinación"
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__tilt_wash
 msgid "Tilt Wash"
 msgstr "Inclinación"
 
 #. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_weaving_document
+msgid "Tip Tej"
+msgstr "Tip Tej"
+
+#. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.texplus_machine_view_search
+msgid "Tipo"
+msgstr "Tipo"
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__product_title_id
+#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__analysis_product_title_id
 #: model:ir.ui.menu,name:idtx_product_development.dev_product_title_action_menu
 msgid "Title"
 msgstr "Título"
@@ -2042,21 +2863,22 @@ msgstr "Revirado"
 #. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__density_stability_twisting__laundering_ballast_type__type_1
 msgid "Type 1 - 100% Cotton"
-msgstr "Tipo 1 - 100% Algodon"
+msgstr "Tipo 1 - 100% Algodón"
 
 #. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__density_stability_twisting__laundering_ballast_type__type_3
 msgid "Type 3 - 50% Cotton / 50% Polyester ± 3%"
-msgstr "Tipo 3 - 50% Algodon / 50% Poliester ± 3%"
+msgstr "Tipo 3 - 50% Algodón / 50% Poliéster ± 3%"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,help:idtx_product_development.field_density_stability_twisting__activity_exception_decoration
 #: model:ir.model.fields,help:idtx_product_development.field_product_analysis__activity_exception_decoration
 #: model:ir.model.fields,help:idtx_product_development.field_technical_sheet__activity_exception_decoration
 msgid "Type of the exception activity on record."
-msgstr "Tipo de la actividad de excepcion en el registro."
+msgstr "Tipo de la actividad de excepción en el registro."
 
 #. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_ligament_structure__ligament_join_row_column
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__ligament_join_row_column
 msgid "Union"
 msgstr "Unión"
@@ -2083,15 +2905,15 @@ msgstr "Tipo de ciclo de lavado"
 
 #. module: idtx_product_development
 #. odoo-python
-#: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__wash_inside_out
 #: code:addons/idtx_product_development/models/density_stability_twisting.py:0
+#: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__wash_inside_out
 msgid "Wash Inside Out"
-msgstr "Lavar al reves"
+msgstr "Lavar al revés"
 
 #. module: idtx_product_development
 #. odoo-python
-#: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__separately
 #: code:addons/idtx_product_development/models/density_stability_twisting.py:0
+#: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__separately
 msgid "Wash Separately"
 msgstr "Lavar por separado"
 
@@ -2102,21 +2924,28 @@ msgstr "Nivel de temperatura de lavado"
 
 #. module: idtx_product_development
 #. odoo-python
-#: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__with_like_colors
 #: code:addons/idtx_product_development/models/density_stability_twisting.py:0
+#: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__with_like_colors
 msgid "Wash With Like Colors"
 msgstr "Lavar con colores similares"
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.density_stability_twisting_form_view
 msgid "Washing Parameters (AATCC TM 135)"
-msgstr "Parametros de lavado (AATCC TM 135)"
+msgstr "Parámetros de lavado (AATCC TM 135)"
+
+#. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/density_stability_twisting.py:0
+msgid "Washing: %s / %s"
+msgstr "Lavado: %s / %s"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_workorder__weave_type
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_workorder_roll__weave_type
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__weave_type
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__weave_type
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_view_search
 msgid "Weave Type"
 msgstr "Tipo de Tejido"
 
@@ -2142,6 +2971,11 @@ msgid "Weaving Categories"
 msgstr "Categorías de Tejido"
 
 #. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_product_category__weaving_company_ids
+msgid "Weaving Companies"
+msgstr "Empresas de Tejido"
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__weaving_data_ids
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.analysis_weaving_data_view_form
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
@@ -2154,8 +2988,13 @@ msgid "Weaving Data Parent"
 msgstr "Datos de Tejido Padre"
 
 #. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis_copy_wizard__weaving_data_ids
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_copy_wizard_form
+msgid "Weaving Data a copiar"
+msgstr "Datos de Tejido a copiar"
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_weaving_data__notes
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__notes
 msgid "Weaving Notes"
 msgstr "Observaciones de Tejido"
 
@@ -2166,8 +3005,8 @@ msgstr "Precio de tejido"
 
 #. module: idtx_product_development
 #: model:ir.model.constraint,message:idtx_product_development.constraint_product_analysis_check_weaving_price
-msgid "Weaving Price should be grather than zero."
-msgstr "El precio de tejido debe ser mayor que cero."
+msgid "Weaving Price cannot be negative."
+msgstr "El precio de tejido no puede ser negativo."
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__scrap
@@ -2186,7 +3025,7 @@ msgstr "Mensajes del sitio web"
 #: model:ir.model.fields,help:idtx_product_development.field_product_analysis__website_message_ids
 #: model:ir.model.fields,help:idtx_product_development.field_technical_sheet__website_message_ids
 msgid "Website communication history"
-msgstr "Historial de comunicacion del sitio web"
+msgstr "Historial de comunicación del sitio web"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_fiber__weight
@@ -2200,24 +3039,30 @@ msgid "Weight (gr/m²)"
 msgstr "Peso (gr/m²)"
 
 #. module: idtx_product_development
+#. odoo-python
+#: code:addons/idtx_product_development/models/product_analysis.py:0
+msgid "Weight in fiber %s must be greater than 0."
+msgstr "El peso en la fibra %s debe ser mayor a 0."
+
+#. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__density_stability_twisting__profesional_textile_care_wet__wet_clean_l
 msgid "Wet Clean Mild"
-msgstr "Limpieza en humedo suave"
+msgstr "Limpieza en húmedo suave"
 
 #. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__density_stability_twisting__profesional_textile_care_wet__wet_clean_n
 msgid "Wet Clean Normal"
-msgstr "Limpieza en humedo normal"
+msgstr "Limpieza en húmedo normal"
 
 #. module: idtx_product_development
 #: model:ir.model.fields.selection,name:idtx_product_development.selection__density_stability_twisting__profesional_textile_care_wet__wet_clean_h
 msgid "Wet Clean Very Mild"
-msgstr "Limpieza en humedo muy suave"
+msgstr "Limpieza en húmedo muy suave"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__profesional_textile_care_wet
 msgid "Wetclean"
-msgstr "Limpieza en humedo"
+msgstr "Limpieza en húmedo"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__raw_widening
@@ -2228,7 +3073,7 @@ msgstr "Ensanchamiento"
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_density_stability_twisting__width
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__width
-#: model:ir.model.fields,field_description:idtx_product_development.field_technical_size_line__width
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_view_search
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
 msgid "Width"
 msgstr "Ancho"
@@ -2244,6 +3089,12 @@ msgid "Width Shrinkage To"
 msgstr "Encogimiento de ancho hasta"
 
 #. module: idtx_product_development
+#: model:ir.model,name:idtx_product_development.model_product_analysis_copy_wizard
+msgid "Wizard para duplicar product.analysis con seleccion de Weaving Data"
+msgstr ""
+"Wizard para duplicar product.analysis con selección de Datos de Tejido"
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_analysis_routing_line__workcenter_id
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_route_line__workcenter_id
 msgid "Work Center"
@@ -2255,22 +3106,44 @@ msgid "Work Order"
 msgstr "Orden de trabajo"
 
 #. module: idtx_product_development
+#: model:ir.model,name:idtx_product_development.model_mrp_routing_workcenter_operation
+msgid "Workcenter Operation"
+msgstr "Operación"
+
+#. module: idtx_product_development
+#: model:ir.ui.menu,name:idtx_product_development.dev_mrp_routing_operation_action_menu_dev
+msgid "Workcenter Operations"
+msgstr "Operaciones de Centro de Trabajo"
+
+#. module: idtx_product_development
+#. odoo-javascript
+#: code:addons/idtx_product_development/static/src/ligament_widget/ligament_widget.xml:0
+msgid "X"
+msgstr "X"
+
+#. module: idtx_product_development
+#: model:ir.model.fields,field_description:idtx_product_development.field_product_analysis__yield_meter
 #: model:ir.model.fields,field_description:idtx_product_development.field_technical_sheet__yield_meter
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.report_technical_sheet_document
 msgid "Yield"
 msgstr "Rendimiento"
 
 #. module: idtx_product_development
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.ligament_structure_view_form
+msgid "e.g. Jersey, Piqué, Rib 1x1..."
+msgstr "p. ej. Jersey, Piqué, Rib 1x1..."
+
+#. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_product__is_thread
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_template__is_thread
 msgid "is_thread"
-msgstr ""
+msgstr "is_thread"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_product__is_weaving
 #: model:ir.model.fields,field_description:idtx_product_development.field_product_template__is_weaving
 msgid "is_weaving"
-msgstr ""
+msgstr "is_weaving"
 
 #. module: idtx_product_development
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_base_process_line__sequence
@@ -2281,73 +3154,3 @@ msgstr "secuencia"
 #: model:ir.model.fields,field_description:idtx_product_development.field_mrp_workorder_roll__size_id
 msgid "size"
 msgstr "talla"
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_category__thread_company_categ_id
-msgid "thread_company_categ_id"
-msgstr ""
-
-#. module: idtx_product_development
-#: model:ir.model.fields,field_description:idtx_product_development.field_product_category__weaving_company_categ_id
-msgid "weaving_company_categ_id"
-msgstr ""
-
-#. module: idtx_product_development
-#. odoo-python
-#: code:addons/idtx_product_development/models/density_stability_twisting.py:0
-msgid "N/A"
-msgstr "N/A"
-
-#. module: idtx_product_development
-#. odoo-python
-#: code:addons/idtx_product_development/models/density_stability_twisting.py:0
-msgid "Washing: %s / %s"
-msgstr "Lavado: %s / %s"
-
-#. module: idtx_product_development
-#. odoo-python
-#: code:addons/idtx_product_development/models/density_stability_twisting.py:0
-msgid "Drying: %s"
-msgstr "Secado: %s"
-
-#. module: idtx_product_development
-#. odoo-python
-#: code:addons/idtx_product_development/models/density_stability_twisting.py:0
-msgid "Drying: %s / %s"
-msgstr "Secado: %s / %s"
-
-#. module: idtx_product_development
-#. odoo-python
-#: code:addons/idtx_product_development/models/density_stability_twisting.py:0
-msgid "Bleaching: %s"
-msgstr "Blanqueado: %s"
-
-#. module: idtx_product_development
-#. odoo-python
-#: code:addons/idtx_product_development/models/density_stability_twisting.py:0
-msgid "Ironing: %s"
-msgstr "Planchado: %s"
-
-#. module: idtx_product_development
-#. odoo-python
-#: code:addons/idtx_product_development/models/density_stability_twisting.py:0
-msgid "Steam: %s"
-msgstr "Vapor: %s"
-
-#. module: idtx_product_development
-#. odoo-python
-#: code:addons/idtx_product_development/models/density_stability_twisting.py:0
-msgid "Professional care (dry): %s"
-msgstr "Cuidado profesional (seco): %s"
-
-#. module: idtx_product_development
-#. odoo-python
-#: code:addons/idtx_product_development/models/density_stability_twisting.py:0
-msgid "Professional care (wet): %s"
-msgstr "Cuidado profesional (humedo): %s"
-
-#. module: idtx_product_development
-#. odoo-python
-#: code:addons/idtx_product_development/models/density_stability_twisting.py:0
-msgid "No icon available for the selected combination."
-msgstr "No hay icono disponible para la combinacion seleccionada."

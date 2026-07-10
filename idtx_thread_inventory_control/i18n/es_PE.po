@@ -1,0 +1,1339 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* idtx_thread_inventory_control
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-10 22:02+0000\n"
+"PO-Revision-Date: 2026-07-10 22:02+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_import_wizard.py:0
+msgid "  ⚠ Valida la recepción manualmente: %s"
+msgstr "  ⚠ Valida la recepción manualmente: %s"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_lot__thread_control_count
+msgid "# Controles"
+msgstr "# Controles"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_mrp_production__thread_liquidation_count
+msgid "# Liquidaciones"
+msgstr "# Liquidaciones"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+msgid "(óptimo para demanda %.2f kg: %.2f kg, diferencia %+.2f)"
+msgstr "(óptimo para demanda %.2f kg: %.2f kg, diferencia %+.2f)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_lot__thread_second_quality_bags
+msgid "2da Cal. Bolsas"
+msgstr "2da Cal. Bolsas"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_lot__thread_second_quality_cones
+msgid "2da Cal. Conos"
+msgstr "2da Cal. Conos"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_lot__thread_second_quality_weight
+msgid "2da Cal. Kg"
+msgstr "2da Cal. Kg"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard_line__transfer_qty
+msgid "A Transferir (kg)"
+msgstr "A Transferir (kg)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard__allowed_bag_ids
+msgid "Allowed Bag"
+msgstr "Bolsa permitida"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard__main_location_id
+msgid "Almacén Principal Hilo"
+msgstr "Almacén Principal Hilo"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_location__is_thread_main_location
+msgid "Almacén Principal de Hilo"
+msgstr "Almacén Principal de Hilo"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_location__is_thread_second_quality_location
+msgid "Almacén de Hilo 2da Calidad"
+msgstr "Almacén de Hilo 2da Calidad"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_location__is_thread_production_location
+msgid "Almacén de Producción de Hilo"
+msgstr "Almacén de Producción de Hilo"
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_consume_wizard_form
+msgid "Archivo"
+msgstr "Archivo"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_import__import_file
+msgid "Archivo Excel"
+msgstr "Archivo Excel"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__product_id
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_search
+msgid "Artículo"
+msgstr "Artículo"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+msgid "Artículos del Excel no existentes en Odoo: %s"
+msgstr "Artículos del Excel no existentes en Odoo: %s"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_import_wizard.py:0
+msgid "Artículos no encontrados en Odoo (omitidos):"
+msgstr "Artículos no encontrados en Odoo (omitidos):"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control__average_cone_weight
+msgid "Avg Cone Weight (kg)"
+msgstr "Peso promedio por cono (kg)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control__bag_count
+msgid "Bag Count"
+msgstr "Número de bolsas"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control_line__bag_qty
+msgid "Bag Qty"
+msgstr "Cant. de bolsas"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control_line__total_weight
+msgid "Bag Weight (kg)"
+msgstr "Peso de la bolsa (kg)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control__line_ids
+msgid "Bags"
+msgstr "Bolsas"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model,name:idtx_thread_inventory_control.model_thread_bag
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_form
+msgid "Bolsa de Hilo"
+msgstr "Bolsa de Hilo"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+msgid "Bolsa no válida"
+msgstr "Bolsa no válida"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_move_line__thread_bag_qty
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard__selected_count
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard_line__bag_qty
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_production_lot_form_thread
+msgid "Bolsas"
+msgstr "Bolsas"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_product_product__thread_bag_count
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_product_template__thread_bag_count
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_lot__thread_bag_count
+msgid "Bolsas Disponibles"
+msgstr "Bolsas Disponibles"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_lot__thread_in_bags
+msgid "Bolsas Entrada"
+msgstr "Bolsas Entrada"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/models/stock_move.py:0
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_picking__thread_received_bag_ids
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_picking_form_thread
+msgid "Bolsas Recibidas"
+msgstr "Bolsas Recibidas"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_lot__thread_out_bags
+msgid "Bolsas Salida"
+msgstr "Bolsas Salida"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_move__thread_bag_ids
+msgid "Bolsas Seleccionadas"
+msgstr "Bolsas Seleccionadas"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_move__thread_selected_bag_count
+msgid "Bolsas Seleccionadas (n)"
+msgstr "Bolsas Seleccionadas (n)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard__bag_ids
+msgid "Bolsas a usar"
+msgstr "Bolsas a usar"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+msgid "Bolsas cargadas para %s: %s %s"
+msgstr "Bolsas cargadas para %s: %s %s"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_import_wizard.py:0
+msgid "Bolsas creadas: %s"
+msgstr "Bolsas creadas: %s"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/models/stock_lot.py:0
+msgid "Bolsas de %s"
+msgstr "Bolsas de %s"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/models/thread_bag.py:0
+#: model:ir.actions.act_window,name:idtx_thread_inventory_control.action_thread_bag
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_lot__thread_bag_ids
+#: model:ir.ui.menu,name:idtx_thread_inventory_control.menu_thread_bag
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_list
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_search
+msgid "Bolsas de Hilo"
+msgstr "Bolsas de Hilo"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,help:idtx_thread_inventory_control.field_stock_move__thread_bag_ids
+msgid "Bolsas de hilo elegidas para mover/consumir en este movimiento."
+msgstr "Bolsas de hilo elegidas para mover/consumir en este movimiento."
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_consume_wizard_form
+msgid "Bolsas de la selección (agregar / quitar)"
+msgstr "Bolsas de la selección (agregar / quitar)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard__line_ids
+msgid "Bolsas del packing"
+msgstr "Bolsas del packing"
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_consume_wizard_form
+msgid "Bolsas del packing (los lotes y bolsas se crean al Validar)"
+msgstr "Bolsas del packing (los lotes y bolsas se crean al Validar)"
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_mrp_production_form_thread
+msgid "Bolsas hilo"
+msgstr "Bolsas hilo"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+msgid "Bolsas seleccionadas del Excel: %s de %s"
+msgstr "Bolsas seleccionadas del Excel: %s de %s"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields.selection,name:idtx_thread_inventory_control.selection__thread_bag_import__state__draft
+msgid "Borrador"
+msgstr "Borrador"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,help:idtx_thread_inventory_control.field_thread_bag__packaging_type
+msgid "CARTÓN / PLÁSTICOS."
+msgstr "CARTÓN / PLÁSTICOS."
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_consume_wizard_form
+msgid "Cancelar"
+msgstr "Cancelar"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+msgid "Cobertura de la demanda (%.2f kg): %.2f kg (diferencia %+.2f)"
+msgstr "Cobertura de la demanda (%.2f kg): %.2f kg (diferencia %+.2f)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__cone_color
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard_line__cone_color
+msgid "Color de Cono"
+msgstr "Color de Cono"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__yarn_color
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard_line__yarn_color
+msgid "Color de Hilo"
+msgstr "Color de Hilo"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_import__company_id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control__company_id
+msgid "Company"
+msgstr "Compañía"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__company_id
+msgid "Compañía"
+msgstr "Compañía"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control__cone_count
+msgid "Cone Count"
+msgstr "Número de conos"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control_line__cone_qty
+msgid "Cone Qty per Bag"
+msgstr "Conos por bolsa"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control_line__cone_weight
+msgid "Cone Weight (kg)"
+msgstr "Peso del cono (kg)"
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_consume_wizard_form
+msgid "Confirmar selección"
+msgstr "Confirmar selección"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__cone_qty
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard_line__cone_qty
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_list
+msgid "Conos"
+msgstr "Conos"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_lot__thread_cone_count
+msgid "Conos Disponibles"
+msgstr "Conos Disponibles"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_lot__thread_in_cones
+msgid "Conos Entrada"
+msgstr "Conos Entrada"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_lot__thread_out_cones
+msgid "Conos Salida"
+msgstr "Conos Salida"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_move_line__thread_cone_qty
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard_line__cone_qty
+msgid "Conos/Bolsa"
+msgstr "Conos/Bolsa"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields.selection,name:idtx_thread_inventory_control.selection__thread_bag__state__consumed
+msgid "Consumida"
+msgstr "Consumida"
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_search
+msgid "Consumidas"
+msgstr "Consumidas"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard_line__consumed_qty
+msgid "Consumido (kg)"
+msgstr "Consumido (kg)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control_line__control_id
+msgid "Control"
+msgstr "Control"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_move__thread_control_generated
+msgid "Control Generado"
+msgstr "Control Generado"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_lot__thread_control_ids
+msgid "Controles de Hilo"
+msgstr "Controles de Hilo"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__name
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard_line__name
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_form
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_search
+msgid "Correlativo"
+msgstr "Correlativo"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_move_import_packing_wizard__create_uid
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_picking_import_packing_wizard__create_uid
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__create_uid
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard__create_uid
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard_line__create_uid
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_import__create_uid
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control__create_uid
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control_line__create_uid
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard__create_uid
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard_line__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_move_import_packing_wizard__create_date
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_picking_import_packing_wizard__create_date
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__create_date
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard__create_date
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard_line__create_date
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_import__create_date
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control__create_date
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control_line__create_date
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard__create_date
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard_line__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_form
+msgid "Código de la bolsa"
+msgstr "Código de la bolsa"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,help:idtx_thread_inventory_control.field_thread_bag__name
+msgid "Código único de la bolsa (Correl)."
+msgstr "Código único de la bolsa (Correl)."
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control__date
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control_line__date
+msgid "Date"
+msgstr "Fecha"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,help:idtx_thread_inventory_control.field_stock_move__thread_pending_bag_data
+msgid ""
+"Datos por bolsa del packing importado en una RECEPCIÓN, a la espera de "
+"validar: recién al validar se crean los lotes y las bolsas."
+msgstr ""
+"Datos por bolsa del packing importado en una RECEPCIÓN, a la espera de "
+"validar: recién al validar se crean los lotes y las bolsas."
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_import_wizard.py:0
+msgid "Defina el tipo de recepción."
+msgstr "Defina el tipo de recepción."
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_import_wizard.py:0
+msgid "Defina la ubicación de ingreso."
+msgstr "Defina la ubicación de ingreso."
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard__demand
+msgid "Demanda (kg)"
+msgstr "Demanda (kg)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control__dest_location_id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control_line__dest_location_id
+msgid "Destination Location"
+msgstr "Ubicación destino"
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_form
+msgid "Detalle"
+msgstr "Detalle"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard__diff_net
+msgid "Diferencia vs Demanda (kg)"
+msgstr "Diferencia vs Demanda (kg)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_mrp_production__display_name
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_product_template__display_name
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_location__display_name
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_lot__display_name
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_move__display_name
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_move_import_packing_wizard__display_name
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_move_line__display_name
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_picking__display_name
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_picking_import_packing_wizard__display_name
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__display_name
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard__display_name
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard_line__display_name
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_import__display_name
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control__display_name
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control_line__display_name
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard__display_name
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard_line__display_name
+msgid "Display Name"
+msgstr "Nombre en pantalla"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields.selection,name:idtx_thread_inventory_control.selection__thread_bag__state__available
+msgid "Disponible"
+msgstr "Disponible"
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_search
+msgid "Disponibles"
+msgstr "Disponibles"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_import_wizard.py:0
+msgid "Duplicadas (omitidas): %s"
+msgstr "Duplicadas (omitidas): %s"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+msgid ""
+"El Excel trae otros productos; impórtalos desde la línea de cada uno: %s"
+msgstr ""
+"El Excel trae otros productos; impórtalos desde la línea de cada uno: %s"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/models/thread_bag.py:0
+msgid "El lote %(lot)s no corresponde al artículo %(prod)s."
+msgstr "El lote %(lot)s no corresponde al artículo %(prod)s."
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/models/stock_move.py:0
+msgid "El movimiento %s ya está %s; no se puede aplicar el packing."
+msgstr "El movimiento %s ya está %s; no se puede aplicar el packing."
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/models/thread_bag.py:0
+msgid "El peso neto de la bolsa debe ser mayor a 0."
+msgstr "El peso neto de la bolsa debe ser mayor a 0."
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_mrp_production_form_thread
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_picking_form_thread
+msgid "Elegir bolsas"
+msgstr "Elegir bolsas"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/models/stock_move.py:0
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_consume_wizard_form
+msgid "Elegir bolsas de hilo"
+msgstr "Elegir bolsas de hilo"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard_line__packaging_type
+msgid "Empaque"
+msgstr "Empaque"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+msgid "En otra ubicación distinta al origen (%s): %s"
+msgstr "En otra ubicación distinta al origen (%s): %s"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields.selection,name:idtx_thread_inventory_control.selection__thread_lot_control__movement_type__in
+msgid "Entrada"
+msgstr "Entrada"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_move__thread_is_thread
+msgid "Es Hilo"
+msgstr "Es Hilo"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,help:idtx_thread_inventory_control.field_thread_bag_consume_wizard__scan_input
+msgid "Escanea (o escribe) el código de la bolsa; se agrega automáticamente."
+msgstr "Escanea (o escribe) el código de la bolsa; se agrega automáticamente."
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_consume_wizard_form
+msgid "Escanea aquí el correlativo de la bolsa…"
+msgstr "Escanea aquí el correlativo de la bolsa…"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard__scan_input
+msgid "Escanear correlativo"
+msgstr "Escanear correlativo"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__state
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_search
+msgid "Estado"
+msgstr "Estado"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/models/stock_move.py:0
+msgid "Este movimiento no es de un producto de hilo."
+msgstr "Este movimiento no es de un producto de hilo."
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__consumed_date
+msgid "Fecha de Consumo"
+msgstr "Fecha de Consumo"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_import_wizard.py:0
+msgid "Filas inválidas (omitidas): %s"
+msgstr "Filas inválidas (omitidas): %s"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.ui.menu,name:idtx_thread_inventory_control.menu_thread_root
+msgid "Hilo"
+msgstr "Hilo"
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_pivot
+msgid "Hilo por Lote"
+msgstr "Hilo por Lote"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_mrp_production__id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_product_template__id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_location__id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_lot__id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_move__id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_move_import_packing_wizard__id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_move_line__id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_picking__id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_picking_import_packing_wizard__id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard__id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard_line__id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_import__id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control__id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control_line__id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard__id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard_line__id
+msgid "ID"
+msgstr "ID"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model,name:idtx_thread_inventory_control.model_thread_bag_import
+msgid "Importación de Bolsas de Hilo"
+msgstr "Importación de Bolsas de Hilo"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_import_wizard.py:0
+msgid "Importación de bolsas"
+msgstr "Importación de bolsas"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields.selection,name:idtx_thread_inventory_control.selection__thread_bag_import__state__done
+msgid "Importado"
+msgstr "Importado"
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_consume_wizard_form
+msgid "Importar"
+msgstr "Importar"
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_consume_wizard_form
+msgid "Importar todo"
+msgstr "Importar todo"
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.actions.act_window,help:idtx_thread_inventory_control.action_thread_bag
+msgid "Importe el packing list desde el menú \"Importar Bolsas\"."
+msgstr "Importe el packing list desde el menú \"Importar Bolsas\"."
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields.selection,name:idtx_thread_inventory_control.selection__thread_lot_control__movement_type__int
+msgid "Interno"
+msgstr "Interno"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model,name:idtx_thread_inventory_control.model_stock_location
+msgid "Inventory Locations"
+msgstr "Ubicaciones de inventario"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard__is_reception
+msgid "Is Reception"
+msgstr "Es recepción"
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_production_lot_form_thread
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_consume_wizard_form
+msgid "Kg"
+msgstr "Kg"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_lot__thread_available_net
+msgid "Kg Disponibles"
+msgstr "Kg Disponibles"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_lot__thread_in_weight
+msgid "Kg Entrada"
+msgstr "Kg Entrada"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_mrp_production__thread_liquidation_pending_qty
+msgid "Kg Hilo Pendiente"
+msgstr "Kg Hilo Pendiente"
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_list
+msgid "Kg Netos"
+msgstr "Kg Netos"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_lot__thread_out_weight
+msgid "Kg Salida"
+msgstr "Kg Salida"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_move__thread_selected_net
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard__selected_net
+msgid "Kg Seleccionados"
+msgstr "Kg Seleccionados"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_product_product__thread_available_net
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_product_template__thread_available_net
+msgid "Kg de Hilo Disponibles"
+msgstr "Kg de Hilo Disponibles"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+msgid "La bolsa %(c)s es del producto %(p)s, no de %(m)s."
+msgstr "La bolsa %(c)s es del producto %(p)s, no de %(m)s."
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+msgid "La bolsa %(c)s está %(s)s."
+msgstr "La bolsa %(c)s está %(s)s."
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+msgid "La bolsa %(c)s está en %(loc)s, no en la ubicación de origen %(src)s."
+msgstr "La bolsa %(c)s está en %(loc)s, no en la ubicación de origen %(src)s."
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+msgid "La bolsa %s ya está en la lista."
+msgstr "La bolsa %s ya está en la lista."
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+msgid "La demanda del movimiento es 0: usa 'Importar todo'."
+msgstr "La demanda del movimiento es 0: usa 'Importar todo'."
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_move_import_packing_wizard__write_uid
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_picking_import_packing_wizard__write_uid
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__write_uid
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard__write_uid
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard_line__write_uid
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_import__write_uid
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control__write_uid
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control_line__write_uid
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard__write_uid
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard_line__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_move_import_packing_wizard__write_date
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_picking_import_packing_wizard__write_date
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__write_date
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard__write_date
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard_line__write_date
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_import__write_date
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control__write_date
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control_line__write_date
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard__write_date
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard_line__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_consume_wizard_form
+msgid "Limpiar"
+msgstr "Limpiar"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_mrp_production__thread_liquidation_picking_ids
+msgid "Liquidaciones de Hilo"
+msgstr "Liquidaciones de Hilo"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard_line__liquidated_qty
+msgid "Liquidado (kg)"
+msgstr "Liquidado (kg)"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/models/thread_bag.py:0
+msgid "Los conos de la bolsa deben ser mayor a 0."
+msgstr "Los conos de la bolsa deben ser mayor a 0."
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control__lot_id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control_line__lot_id
+msgid "Lot"
+msgstr "Lote"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model,name:idtx_thread_inventory_control.model_stock_lot
+msgid "Lot/Serial"
+msgstr "Número de serie/lote"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__lot_id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard_line__lot_name
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard_line__lot_id
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_search
+msgid "Lote"
+msgstr "Lote"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard__line_ids
+msgid "Lotes"
+msgstr "Lotes"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__consumed_move_line_id
+msgid "Línea de Movimiento"
+msgstr "Línea de Movimiento"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model,name:idtx_thread_inventory_control.model_thread_bag_consume_wizard_line
+msgid "Línea de packing de hilo importada (previa a recepción)"
+msgstr "Línea de packing de hilo importada (previa a recepción)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model,name:idtx_thread_inventory_control.model_mrp_production
+msgid "Manufacturing Order"
+msgstr "Orden de fabricación"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard__move_id
+msgid "Move"
+msgstr "Movimiento"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_import_wizard.py:0
+msgid "NO"
+msgstr "NO"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+msgid "No disponible"
+msgstr "No disponible"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+msgid "No disponibles —reservadas/consumidas— (%s): %s"
+msgstr "No disponibles —reservadas/consumidas— (%s): %s"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+msgid "No existe una bolsa con correlativo %s."
+msgstr "No existe una bolsa con correlativo %s."
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+msgid "No existen en esta compañía (%s): %s"
+msgstr "No existen en esta compañía (%s): %s"
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.actions.act_window,help:idtx_thread_inventory_control.action_thread_bag
+msgid "No hay bolsas de hilo registradas"
+msgstr "No hay bolsas de hilo registradas"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_import_wizard.py:0
+msgid ""
+"No hay bolsas nuevas para importar (¿duplicadas o productos inexistentes?)."
+msgstr ""
+"No hay bolsas nuevas para importar (¿duplicadas o productos inexistentes?)."
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_import_wizard.py:0
+msgid "No se encontró un tipo de recepción para %s."
+msgstr "No se encontró un tipo de recepción para %s."
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_import_wizard.py:0
+msgid "No se encontró una hoja con columnas Correl, Articulo, Lote y Kilos."
+msgstr "No se encontró una hoja con columnas Correl, Articulo, Lote y Kilos."
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_import_wizard.py:0
+msgid "No se pudo leer el Excel: %s"
+msgstr "No se pudo leer el Excel: %s"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard__import_filename
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_import__filename
+msgid "Nombre de archivo"
+msgstr "Nombre de archivo"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control__note
+msgid "Notes"
+msgstr "Notas"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_picking__thread_received_bag_count
+msgid "N° Bolsas Recibidas"
+msgstr "N° Bolsas Recibidas"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__production_id
+msgid "Orden de Fabricación"
+msgstr "Orden de Fabricación"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard__production_id
+msgid "Orden de Producción"
+msgstr "Orden de Producción"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_picking__thread_liquidation_production_id
+msgid "Orden de Producción (Liquidación)"
+msgstr "Orden de Producción (Liquidación)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard__import_file
+msgid "Packing de Hilo (Excel)"
+msgstr "Packing de Hilo (Excel)"
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_consume_wizard_form
+msgid "Packing de hilo (Excel)"
+msgstr "Packing de hilo (Excel)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_move__thread_pending_bag_data
+msgid "Packing de hilo pendiente"
+msgstr "Packing de hilo pendiente"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+msgid "Packing importado"
+msgstr "Packing importado"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__gross_weight
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard_line__gross_weight
+msgid "Peso Bruto (kg)"
+msgstr "Peso Bruto (kg)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_move_line__thread_cone_weight
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard_line__cone_weight
+msgid "Peso Cono (kg)"
+msgstr "Peso Cono (kg)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__net_weight
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard_line__net_weight
+msgid "Peso Neto (kg)"
+msgstr "Peso Neto (kg)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,help:idtx_thread_inventory_control.field_thread_bag__net_weight
+msgid "Peso neto real de esta bolsa (lo que se controla)."
+msgstr "Peso neto real de esta bolsa (lo que se controla)."
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__avg_cone_weight
+msgid "Peso x Cono (kg)"
+msgstr "Peso x Cono (kg)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model,name:idtx_thread_inventory_control.model_product_template
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard__product_id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control__product_id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control_line__product_id
+msgid "Product"
+msgstr "Producto"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model,name:idtx_thread_inventory_control.model_stock_move_line
+msgid "Product Moves (Stock Move Line)"
+msgstr "Movimientos de producto (línea de movimiento de stock)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard_line__product_id
+msgid "Producto"
+msgstr "Producto"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__receipt_picking_id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_import__picking_id
+msgid "Recepción"
+msgstr "Recepción"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,help:idtx_thread_inventory_control.field_thread_bag__receipt_picking_id
+msgid "Recepción que dio de alta esta bolsa."
+msgstr "Recepción que dio de alta esta bolsa."
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,help:idtx_thread_inventory_control.field_thread_bag_import__picking_type_id
+msgid "Recepción que se creará y validará con las bolsas importadas."
+msgstr "Recepción que se creará y validará con las bolsas importadas."
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_import_wizard.py:0
+msgid "Recepción validada (existencia generada): %s"
+msgstr "Recepción validada (existencia generada): %s"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_import_wizard.py:0
+msgid "Recepción: %s"
+msgstr "Recepción: %s"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard_line__received_qty
+msgid "Recibido (kg)"
+msgstr "Recibido (kg)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control__name
+msgid "Reference"
+msgstr "Referencia"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_import__name
+msgid "Referencia"
+msgstr "Referencia"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+msgid "Repetida"
+msgstr "Repetida"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields.selection,name:idtx_thread_inventory_control.selection__thread_bag__state__reserved
+msgid "Reservada"
+msgstr "Reservada"
+
+#. module: idtx_thread_inventory_control
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_search
+msgid "Reservadas"
+msgstr "Reservadas"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_import__log
+msgid "Resultado"
+msgstr "Resultado"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard_line__balance_qty
+msgid "Saldo (kg)"
+msgstr "Saldo (kg)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_lot__thread_balance_bags
+msgid "Saldo Bolsas"
+msgstr "Saldo Bolsas"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_lot__thread_balance_cones
+msgid "Saldo Conos"
+msgstr "Saldo Conos"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_lot__thread_balance_weight
+msgid "Saldo Kg"
+msgstr "Saldo Kg"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields.selection,name:idtx_thread_inventory_control.selection__thread_lot_control__movement_type__out
+msgid "Salida"
+msgstr "Salida"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/models/stock_move.py:0
+msgid ""
+"Se creó la recepción %(rcpt)s en %(comp)s con el packing de hilo (%(n)s "
+"bolsas, %(kg).2f kg). Se validará al llegar la mercadería."
+msgstr ""
+"Se creó la recepción %(rcpt)s en %(comp)s con el packing de hilo (%(n)s "
+"bolsas, %(kg).2f kg). Se validará al llegar la mercadería."
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_import_wizard.py:0
+msgid "Se requiere la librería openpyxl."
+msgstr "Se requiere la librería openpyxl."
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields.selection,name:idtx_thread_inventory_control.selection__thread_lot_control__movement_type__2q
+msgid "Segunda Calidad"
+msgstr "Segunda Calidad"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model,name:idtx_thread_inventory_control.model_thread_bag_consume_wizard
+msgid "Selección de bolsas de hilo para el movimiento"
+msgstr "Selección de bolsas de hilo para el movimiento"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,help:idtx_thread_inventory_control.field_thread_bag__avg_cone_weight
+msgid "Solo informativo = neto / conos."
+msgstr "Solo informativo = neto / conos."
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/models/stock_location.py:0
+msgid "Solo puede existir una ubicación marcada como %s por compañía."
+msgstr "Solo puede existir una ubicación marcada como %s por compañía."
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control__source_location_id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control_line__source_location_id
+msgid "Source Location"
+msgstr "Ubicación origen"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_import__state
+msgid "State"
+msgstr "Estado"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model,name:idtx_thread_inventory_control.model_stock_move
+msgid "Stock Move"
+msgstr "Movimiento de stock"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model,name:idtx_thread_inventory_control.model_stock_move_import_packing_wizard
+msgid "Stock Move Import Packing Wizard"
+msgstr "Asistente de importación de packing (movimiento de stock)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model,name:idtx_thread_inventory_control.model_stock_picking_import_packing_wizard
+msgid "Stock Picking Import Packing Wizard"
+msgstr "Asistente de importación de packing (transferencia)"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+msgid "Suba el archivo Excel del packing."
+msgstr "Suba el archivo Excel del packing."
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_import_wizard.py:0
+msgid "Suba un archivo Excel."
+msgstr "Suba un archivo Excel."
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_import_wizard.py:0
+msgid "Sí"
+msgstr "Sí"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__tare
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard_line__tare
+msgid "Tara (kg)"
+msgstr "Tara (kg)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,help:idtx_thread_inventory_control.field_thread_bag_consume_wizard__demand
+msgid ""
+"This is the quantity of product that is planned to be moved.Lowering this "
+"quantity does not generate a backorder.Changing this quantity on assigned "
+"moves affects the product reservation, and should be done with care."
+msgstr ""
+"Esta es la cantidad de producto que se planea mover. Reducir esta cantidad "
+"no genera una entrega parcial. Cambiar esta cantidad en movimientos "
+"asignados afecta la reserva del producto y debe hacerse con cuidado."
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model,name:idtx_thread_inventory_control.model_thread_lot_control
+msgid "Thread Lot Bag Control"
+msgstr "Control de bolsas de lote de hilo"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model,name:idtx_thread_inventory_control.model_thread_lot_control_line
+msgid "Thread Lot Bag Control Line"
+msgstr "Línea de control de bolsas de lote de hilo"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model,name:idtx_thread_inventory_control.model_thread_second_quality_wizard
+msgid "Thread Second Quality Wizard"
+msgstr "Asistente de hilo de segunda calidad"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model,name:idtx_thread_inventory_control.model_thread_second_quality_wizard_line
+msgid "Thread Second Quality Wizard Line"
+msgstr "Línea del asistente de hilo de segunda calidad"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control__movement_type
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control_line__movement_type
+msgid "Tipo Movimiento"
+msgstr "Tipo Movimiento"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__packaging_type
+msgid "Tipo de Empaque"
+msgstr "Tipo de Empaque"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_import__picking_type_id
+msgid "Tipo de Recepción"
+msgstr "Tipo de Recepción"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_stock_move_line__thread_total_cones
+msgid "Total Conos"
+msgstr "Total Conos"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_lot_control__total_weight
+msgid "Total Weight (kg)"
+msgstr "Peso total (kg)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model,name:idtx_thread_inventory_control.model_stock_picking
+msgid "Transfer"
+msgstr "Trasladar"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag__location_id
+#: model_terms:ir.ui.view,arch_db:idtx_thread_inventory_control.view_thread_bag_search
+msgid "Ubicación"
+msgstr "Ubicación"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard__second_location_id
+msgid "Ubicación 2da Calidad"
+msgstr "Ubicación 2da Calidad"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard__destination_location_id
+msgid "Ubicación Destino"
+msgstr "Ubicación Destino"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard__source_location_id
+msgid "Ubicación Origen"
+msgstr "Ubicación Origen"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_import__default_location_id
+msgid "Ubicación de Ingreso (destino)"
+msgstr "Ubicación de Ingreso (destino)"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,help:idtx_thread_inventory_control.field_thread_bag_import__default_location_id
+msgid ""
+"Ubicación destino de las bolsas. Define el almacén/compañía y el tipo de "
+"recepción. Puedes elegir, por ejemplo, AF/Preproducción para que el hilo "
+"entre donde lo consume la orden de fabricación."
+msgstr ""
+"Ubicación destino de las bolsas. Define el almacén/compañía y el tipo de "
+"recepción. Puedes elegir, por ejemplo, AF/Preproducción para que el hilo "
+"entre donde lo consume la orden de fabricación."
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/wizard/thread_bag_consume_wizard.py:0
+msgid "Ubicación distinta"
+msgstr "Ubicación distinta"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,help:idtx_thread_inventory_control.field_thread_bag__location_id
+msgid "Ubicación física actual de la bolsa."
+msgstr "Ubicación física actual de la bolsa."
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_bag_consume_wizard_line__wizard_id
+#: model:ir.model.fields,field_description:idtx_thread_inventory_control.field_thread_second_quality_wizard_line__wizard_id
+msgid "Wizard"
+msgstr "Asistente"
+
+#. module: idtx_thread_inventory_control
+#: model:ir.model.constraint,message:idtx_thread_inventory_control.constraint_thread_bag_name_company_uniq
+msgid "Ya existe una bolsa con ese correlativo en esta compañía."
+msgstr "Ya existe una bolsa con ese correlativo en esta compañía."
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/models/stock_location.py:0
+msgid "almacén de hilo de 2da calidad"
+msgstr "almacén de hilo de 2da calidad"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/models/stock_location.py:0
+msgid "almacén de producción de hilo"
+msgstr "almacén de producción de hilo"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/models/stock_location.py:0
+msgid "almacén principal de hilo"
+msgstr "almacén principal de hilo"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/models/thread_bag.py:0
+msgid "product_id"
+msgstr "product_id"
+
+#. module: idtx_thread_inventory_control
+#. odoo-python
+#: code:addons/idtx_thread_inventory_control/models/stock_move.py:0
+msgid "receipt_picking_id"
+msgstr "receipt_picking_id"

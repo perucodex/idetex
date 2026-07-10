@@ -1,0 +1,157 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* idtx_ocr_gemini
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-10 22:02+0000\n"
+"PO-Revision-Date: 2026-07-10 22:02+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: idtx_ocr_gemini
+#: model:ir.model,name:idtx_ocr_gemini.model_account_bank_statement
+msgid "Bank Statement"
+msgstr "Estado de cuenta bancario"
+
+#. module: idtx_ocr_gemini
+#: model:ir.model,name:idtx_ocr_gemini.model_extract_mixin
+msgid "Base class to extract data from documents"
+msgstr "Clase base para extraer datos de documentos"
+
+#. module: idtx_ocr_gemini
+#: model_terms:ir.ui.view,arch_db:idtx_ocr_gemini.pdf_password_wizard_form
+msgid "Cancelar"
+msgstr "Cancelar"
+
+#. module: idtx_ocr_gemini
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_idtx_ocr_gemini_pdf_password_wizard__password
+msgid "Contrasena"
+msgstr "Contraseña"
+
+#. module: idtx_ocr_gemini
+#. odoo-python
+#: code:addons/idtx_ocr_gemini/wizards/pdf_password_wizard.py:0
+msgid "Contrasena incorrecta para el PDF."
+msgstr "Contraseña incorrecta para el PDF."
+
+#. module: idtx_ocr_gemini
+#: model:ir.model.fields,help:idtx_ocr_gemini.field_idtx_ocr_gemini_pdf_password_wizard__password
+msgid "Contrasena para desencriptar los PDFs listados. No se guarda."
+msgstr "Contraseña para desencriptar los PDFs listados. No se guarda."
+
+#. module: idtx_ocr_gemini
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_idtx_ocr_gemini_pdf_password_wizard__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: idtx_ocr_gemini
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_idtx_ocr_gemini_pdf_password_wizard__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: idtx_ocr_gemini
+#: model_terms:ir.ui.view,arch_db:idtx_ocr_gemini.pdf_password_wizard_form
+msgid "Desbloquear y procesar"
+msgstr "Desbloquear y procesar"
+
+#. module: idtx_ocr_gemini
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_account_bank_statement__display_name
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_account_journal__display_name
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_account_move__display_name
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_extract_mixin__display_name
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_hr_expense__display_name
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_idtx_ocr_gemini_pdf_password_wizard__display_name
+msgid "Display Name"
+msgstr "Nombre en pantalla"
+
+#. module: idtx_ocr_gemini
+#: model_terms:ir.ui.view,arch_db:idtx_ocr_gemini.pdf_password_wizard_form
+msgid ""
+"El o los siguientes archivos PDF estan protegidos con\n"
+"                    contrasena. Ingresa la clave para desbloquearlos antes\n"
+"                    de mandarlos a Gemini."
+msgstr ""
+"El o los siguientes archivos PDF están protegidos con\n"
+"                    contraseña. Ingresa la clave para desbloquearlos antes\n"
+"                    de mandarlos a Gemini."
+
+#. module: idtx_ocr_gemini
+#: model:ir.model,name:idtx_ocr_gemini.model_hr_expense
+msgid "Expense"
+msgstr "Gasto"
+
+#. module: idtx_ocr_gemini
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_account_bank_statement__id
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_account_journal__id
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_account_move__id
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_extract_mixin__id
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_hr_expense__id
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_idtx_ocr_gemini_pdf_password_wizard__id
+msgid "ID"
+msgstr "ID"
+
+#. module: idtx_ocr_gemini
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_account_bank_statement__idtx_ocr_gemini_payload
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_account_bank_statement_line__idtx_ocr_gemini_payload
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_account_move__idtx_ocr_gemini_payload
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_extract_mixin__idtx_ocr_gemini_payload
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_extract_mixin_with_words__idtx_ocr_gemini_payload
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_hr_expense__idtx_ocr_gemini_payload
+msgid "Idtx Ocr Gemini Payload"
+msgstr "Payload de OCR Gemini"
+
+#. module: idtx_ocr_gemini
+#. odoo-python
+#: code:addons/idtx_ocr_gemini/wizards/pdf_password_wizard.py:0
+msgid "Ingresa la contrasena del PDF."
+msgstr "Ingresa la contraseña del PDF."
+
+#. module: idtx_ocr_gemini
+#: model:ir.model,name:idtx_ocr_gemini.model_account_journal
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_idtx_ocr_gemini_pdf_password_wizard__journal_id
+msgid "Journal"
+msgstr "Diario"
+
+#. module: idtx_ocr_gemini
+#: model:ir.model,name:idtx_ocr_gemini.model_account_move
+msgid "Journal Entry"
+msgstr "Asiento contable"
+
+#. module: idtx_ocr_gemini
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_idtx_ocr_gemini_pdf_password_wizard__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: idtx_ocr_gemini
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_idtx_ocr_gemini_pdf_password_wizard__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: idtx_ocr_gemini
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_idtx_ocr_gemini_pdf_password_wizard__other_attachment_ids
+msgid "Otros archivos (no encriptados)"
+msgstr "Otros archivos (no encriptados)"
+
+#. module: idtx_ocr_gemini
+#. odoo-python
+#: code:addons/idtx_ocr_gemini/models/account_journal.py:0
+#: model_terms:ir.ui.view,arch_db:idtx_ocr_gemini.pdf_password_wizard_form
+msgid "PDF protegido con contrasena"
+msgstr "PDF protegido con contraseña"
+
+#. module: idtx_ocr_gemini
+#: model:ir.model.fields,field_description:idtx_ocr_gemini.field_idtx_ocr_gemini_pdf_password_wizard__attachment_ids
+msgid "PDFs protegidos"
+msgstr "PDFs protegidos"
+
+#. module: idtx_ocr_gemini
+#: model:ir.model,name:idtx_ocr_gemini.model_idtx_ocr_gemini_pdf_password_wizard
+msgid "Wizard para desbloquear PDFs antes de mandarlos a Gemini"
+msgstr "Asistente para desbloquear PDFs antes de mandarlos a Gemini"

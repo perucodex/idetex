@@ -107,7 +107,7 @@
                                 </group>
                             </page>
                             <page name="size_chart_page" string="Sizes" invisible="weave_type != 'rect'">
-                                <field name="size_chart_ids" readonly="state != 'draft'">
+                                <field name="size_chart_ids">
                                     <list editable="bottom">
                                         <field name="sequence" widget="handle"/>
                                         <field name="size"/>
@@ -122,7 +122,7 @@
                                 </field>
                             </page>
                             <page name="route_page" string="Routing">
-                                <field name="route_line_ids" readonly="state != 'draft'" groups="!idtx_product_development.group_module_product_development_manager">
+                                <field name="route_line_ids" groups="!idtx_product_development.group_module_product_development_manager">
                                     <list>
                                         <field name="sequence" widget="handle"/>
                                         <field name="operation_id"/>

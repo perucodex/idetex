@@ -1,0 +1,54 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* idtx_approvals_purchase
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-10 22:02+0000\n"
+"PO-Revision-Date: 2026-07-10 22:02+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: idtx_approvals_purchase
+#: model:ir.model,name:idtx_approvals_purchase.model_approval_request
+msgid "Approval Request"
+msgstr "Solicitud de aprobación"
+
+#. module: idtx_approvals_purchase
+#. odoo-python
+#: code:addons/idtx_approvals_purchase/models/approval_request.py:0
+msgid "Cant't cancel an approved request."
+msgstr "No se puede cancelar una solicitud aprobada."
+
+#. module: idtx_approvals_purchase
+#: model:ir.model.fields,field_description:idtx_approvals_purchase.field_approval_product_line__display_name
+#: model:ir.model.fields,field_description:idtx_approvals_purchase.field_approval_request__display_name
+msgid "Display Name"
+msgstr "Nombre en pantalla"
+
+#. module: idtx_approvals_purchase
+#: model:ir.model.fields,field_description:idtx_approvals_purchase.field_approval_product_line__id
+#: model:ir.model.fields,field_description:idtx_approvals_purchase.field_approval_request__id
+msgid "ID"
+msgstr "ID"
+
+#. module: idtx_approvals_purchase
+#: model:ir.model.fields,field_description:idtx_approvals_purchase.field_approval_product_line__item
+msgid "Item"
+msgstr "Ítem"
+
+#. module: idtx_approvals_purchase
+#: model:ir.model,name:idtx_approvals_purchase.model_approval_product_line
+msgid "Product Line"
+msgstr "Línea de producto"
+
+#. module: idtx_approvals_purchase
+#: model:ir.model.fields,field_description:idtx_approvals_purchase.field_approval_product_line__sequence
+msgid "Sequence"
+msgstr "Secuencia"

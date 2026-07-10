@@ -16,6 +16,8 @@ access_technical_size_line,access_technical_size_line,model_technical_size_line,
 access_technical_route_line,access_technical_route_line,model_technical_route_line,base.group_user,1,1,1,1
 access_route_line_parameter,access_route_line_parameter,model_route_line_parameter,base.group_user,1,1,1,1
 access_configurate_svg_example,access_configurate_svg_example,model_configurate_svg_example,base.group_user,1,1,1,1
+access_ligament_structure_user,ligament.structure.user,model_ligament_structure,base.group_user,1,0,0,0
+access_ligament_structure_manager,ligament.structure.manager,model_ligament_structure,idtx_product_development.group_module_product_development_manager,1,1,1,1
 access_mrp_base_process,access_mrp_base_process,model_mrp_base_process,base.group_user,1,1,1,1
 access_mrp_base_process_line,access_mrp_base_process_line,model_mrp_base_process_line,base.group_user,1,1,1,1
 access_split_roll,split_roll,model_split_roll,base.group_user,1,1,1,1

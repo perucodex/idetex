@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="ligament_structure_view_list" model="ir.ui.view">
+        <field name="name">ligament.structure.view.list</field>
+        <field name="model">ligament.structure</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="ligament_row"/>
+                <field name="ligament_column"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="ligament_structure_view_form" model="ir.ui.view">
+        <field name="name">ligament.structure.view.form</field>
+        <field name="model">ligament.structure</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Jersey, Piqué, Rib 1x1..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="active" invisible="1"/>
+                            <field name="ligament_row"/>
+                            <field name="ligament_column"/>
+                            <field name="grid_data" invisible="1" force_save="1"/>
+                            <button string="Generate" name="action_generate" type="object" class="oe_highlight"/>
+                        </group>
+                        <group>
+                            <field name="notes"/>
+                        </group>
+                    </group>
+                    <div class="o_grid_ligament_widget_container">
+                        <field name="ligament_join_row_column" widget="grid_ligament_widget"/>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="ligament_structure_action" model="ir.actions.act_window">
+        <field name="name">Ligament Base Structures</field>
+        <field name="res_model">ligament.structure</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a ligament base structure
+            </p>
+            <p>
+                Define reusable ligament structures that can be selected
+                in the product analysis.
+            </p>
+        </field>
+    </record>
+
+</odoo>

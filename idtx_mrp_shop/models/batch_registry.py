@@ -10,9 +10,11 @@ class BatchRegistry(models.Model):
     
     batch_id = fields.Many2one('mrp.workorder.batch', string='Batch')
     workorder_id = fields.Many2one('mrp.workorder', string='Workorder')
+    use_lab_recipe = fields.Boolean(
+        related='workorder_id.use_lab_recipe',
+        help='La operación registrada usa receta de laboratorio: solo entonces '
+             'el registro lleva los datos de teñido (receta, volúmenes, curva...).')
     registry_date = fields.Datetime('Registry Date')
-    date_start = fields.Datetime('Hora Inicio')
-    date_end = fields.Datetime('Hora Fin')
     employee_id = fields.Many2one('hr.employee', string='Employee')
     equipment_id = fields.Many2one('maintenance.equipment', string='Equipment')
     bath_ratio = fields.Integer('Bath ratio')

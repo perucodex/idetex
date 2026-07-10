@@ -1,0 +1,1453 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* idtx_hr_payroll_pe
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-10 22:02+0000\n"
+"PO-Revision-Date: 2026-07-10 22:02+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.actions.report,print_report_name:idtx_hr_payroll_pe.action_report_payslip_pe
+msgid "'Boleta - %s' % (object.employee_id.name or '')"
+msgstr "'Boleta - %s' % (object.employee_id.name or '')"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid ""
+"<br/>\n"
+"                        CÓDIGO:"
+msgstr ""
+"<br/>\n"
+"                        CÓDIGO:"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid ""
+"<br/>\n"
+"                        D.S. Nº 017-2001-TR DEL 07-06-01<br/>\n"
+"                        De"
+msgstr ""
+"<br/>\n"
+"                        D.S. Nº 017-2001-TR DEL 07-06-01<br/>\n"
+"                        De"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid ""
+"<br/>\n"
+"                        RUC:"
+msgstr ""
+"<br/>\n"
+"                        RUC:"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.hr_payslip_run_form_tareo_pe
+msgid ""
+"<span class=\"text-muted\">\n"
+"                            Sube el tareo por DNI; se rellenan Días trabajados y Entradas\n"
+"                            salariales al generar las boletas.\n"
+"                        </span>"
+msgstr ""
+"<span class=\"text-muted\">\n"
+"                            Sube el tareo por DNI; se rellenan Días trabajados y Entradas\n"
+"                            salariales al generar las boletas.\n"
+"                        </span>"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.hr_contract_salary_view_employee_form
+msgid "<span>Peruvian Localization</span>"
+msgstr "<span>Localización Peruana</span>"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "<strong>Apellidos y Nombres: </strong>"
+msgstr "<strong>Apellidos y Nombres: </strong>"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "<strong>C.Costo: </strong>"
+msgstr "<strong>C.Costo: </strong>"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "<strong>DATOS DEL TRABAJADOR</strong>"
+msgstr "<strong>DATOS DEL TRABAJADOR</strong>"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.actions.act_window,name:idtx_hr_payroll_pe.hr_afp_action
+#: model:ir.model,name:idtx_hr_payroll_pe.model_hr_afp
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_employee__afp_id
+#: model:ir.model.fields.selection,name:idtx_hr_payroll_pe.selection__hr_employee__pension_system__afp
+#: model:ir.ui.menu,name:idtx_hr_payroll_pe.hr_afp_menu
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.hr_afp_view_form
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "AFP"
+msgstr "AFP"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_afp_oblig
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sem_afp_oblig
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_gen_afp_aporte
+msgid "AFP - Aporte Obligatorio"
+msgstr "AFP - Aporte Obligatorio"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_afp_comision
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sem_afp_comision
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_gen_afp_comision
+msgid "AFP - Comisión"
+msgstr "AFP - Comisión"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_afp_seguro
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sem_afp_seguro
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_gen_afp_seguro
+msgid "AFP - Prima de Seguro"
+msgstr "AFP - Prima de Seguro"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_afp_oblig
+msgid "AFP Aporte 10%"
+msgstr "AFP Aporte 10%"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_afp_commission
+msgid "AFP Comisión"
+msgstr "AFP Comisión"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_afp_insurance
+msgid "AFP Seguro (ISS)"
+msgstr "AFP Seguro (ISS)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields.selection,name:idtx_hr_payroll_pe.selection__l10n_pe_payroll_export_wizard__export_type__afpnet
+msgid "AFPNet - aportes AFP"
+msgstr "AFPNet - aportes AFP"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "APORTAC. EMPLEADOR"
+msgstr "APORTAC. EMPLEADOR"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payslip.input.type,name:idtx_hr_payroll_pe.input_type_adel_quinc
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_adel_quinc
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.res_config_settings_view_form_hr_pe
+msgid "Adelanto de Quincena"
+msgstr "Adelanto de Quincena"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_res_config_settings__l10n_pe_adelanto_quincena
+msgid "Adelanto de Quincena (S/)"
+msgstr "Adelanto de Quincena (S/)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_has_eps
+msgid "Afiliado a EPS"
+msgstr "Afiliado a EPS"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_res_company__l10n_pe_senati_affiliated
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_res_config_settings__l10n_pe_senati_affiliated
+msgid "Afiliado a SENATI"
+msgstr "Afiliado a SENATI"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.hr_afp_view_list
+msgid "Afp"
+msgstr "AFP"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields.selection,name:idtx_hr_payroll_pe.selection__hr_version__l10n_pe_labor_regime__agrario
+msgid "Agrario (Ley 31110)"
+msgstr "Agrario (Ley 31110)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_disability
+msgid ""
+"Aplica beneficios/deducciones específicas (p. ej. en renta de 5ta "
+"categoría)."
+msgstr ""
+"Aplica beneficios/deducciones específicas (p. ej. en renta de 5ta "
+"categoría)."
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_res_company__l10n_pe_sctr_affiliated
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_res_config_settings__l10n_pe_sctr_affiliated
+msgid "Aporta SCTR (actividad de riesgo)"
+msgstr "Aporta SCTR (actividad de riesgo)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_l10n_pe_payroll_export_wizard__file
+msgid "Archivo"
+msgstr "Archivo"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_asig_fam
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sem_asig_fam
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_gen_asig_fam
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_asig_fam
+msgid "Asignación Familiar"
+msgstr "Asignación Familiar"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "BOLETA DE PAGO"
+msgstr "BOLETA DE PAGO"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.actions.report,name:idtx_hr_payroll_pe.action_report_payslip_pe
+msgid "Boleta de Pago (PE)"
+msgstr "Boleta de Pago (PE)"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_bonif_prop
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sem_bonif_prop
+msgid "Bonif. Extraordinaria Ley 30334 (integrada)"
+msgstr "Bonif. Extraordinaria Ley 30334 (integrada)"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payslip.input.type,name:idtx_hr_payroll_pe.input_type_bonif
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_bonif
+msgid "Bonificación"
+msgstr "Bonificación"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_grati_bonif
+msgid "Bonificación Extraordinaria (Ley 30334)"
+msgstr "Bonificación Extraordinaria (Ley 30334)"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_liq_bonif_trunca
+msgid "Bonificación Extraordinaria Trunca (Ley 30334)"
+msgstr "Bonificación Extraordinaria Trunca (Ley 30334)"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_nocturna
+msgid "Bonificación Nocturna"
+msgstr "Bonificación Nocturna"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_basico
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sem_basico
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_gen_basico
+msgid "Básico"
+msgstr "Básico"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Básico:"
+msgstr "Básico:"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule.category,name:idtx_hr_payroll_pe.CTS
+msgid "CTS"
+msgstr "CTS"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_cts
+msgid "CTS (Depósito)"
+msgstr "CTS (Depósito)"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payroll.structure,name:idtx_hr_payroll_pe.struct_cts_pe
+msgid "CTS - Perú (Régimen General)"
+msgstr "CTS - Perú (Régimen General)"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_cts_prop
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sem_cts_prop
+msgid "CTS Proporcional (integrada)"
+msgstr "CTS Proporcional (integrada)"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_liq_cts_trunca
+msgid "CTS Trunca"
+msgstr "CTS Trunca"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_cuspp
+msgid "CUSPP"
+msgstr "CUSPP"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "CUSPP:"
+msgstr "CUSPP:"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.res_config_settings_view_form_hr_pe
+msgid ""
+"Calcula las boletas desde el Excel de tareo cargado en el lote de nómina, en"
+" vez de las marcaciones biométricas."
+msgstr ""
+"Calcula las boletas desde el Excel de tareo cargado en el lote de nómina, en"
+" vez de las marcaciones biométricas."
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_payslip__l10n_pe_tareo_loaded
+msgid "Cargado desde Tareo"
+msgstr "Cargado desde Tareo"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Cargo:"
+msgstr "Cargo:"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Categoría:"
+msgstr "Categoría:"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_cost_center
+msgid "Centro de Costo"
+msgstr "Centro de Costo"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_cost_center
+msgid "Centro de costo del trabajador (p. ej. '100 TEJEDURÍA')."
+msgstr "Centro de costo del trabajador (p. ej. '100 TEJEDURÍA')."
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.l10n_pe_payroll_export_wizard_form
+msgid "Cerrar"
+msgstr "Cerrar"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_afp__commission_balance
+msgid "Comisión Anual sobre Saldo - Mixta (%)"
+msgstr "Comisión Anual sobre Saldo - Mixta (%)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_hr_afp__commission_flow
+msgid ""
+"Comisión pura sobre flujo (% de la remuneración bruta mensual). Es la que SE"
+" DESCUENTA en planilla a los afiliados con comisión sobre flujo."
+msgstr ""
+"Comisión pura sobre flujo (% de la remuneración bruta mensual). Es la que SE"
+" DESCUENTA en planilla a los afiliados con comisión sobre flujo."
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_afp__commission_flow
+msgid "Comisión sobre Flujo (%)"
+msgstr "Comisión sobre Flujo (%)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model,name:idtx_hr_payroll_pe.model_res_company
+msgid "Companies"
+msgstr "Empresas"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_hr_afp__commission_balance
+msgid ""
+"Componente de la comisión MIXTA que la AFP cobra sobre el saldo del fondo "
+"(anual). NO se descuenta en planilla; es informativo. Desde feb-2023 el "
+"componente de flujo de la mixta es 0%, por lo que un afiliado mixto no tiene"
+" descuento por comisión en la boleta."
+msgstr ""
+"Componente de la comisión MIXTA que la AFP cobra sobre el saldo del fondo "
+"(anual). NO se descuenta en planilla; es informativo. Desde feb-2023 el "
+"componente de flujo de la mixta es 0%, por lo que un afiliado mixto no tiene"
+" descuento por comisión en la boleta."
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payslip.input.type,name:idtx_hr_payroll_pe.input_type_cond_trab
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_cond_trab
+msgid "Condición de Trabajo"
+msgstr "Condición de Trabajo"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model,name:idtx_hr_payroll_pe.model_res_config_settings
+msgid "Config Settings"
+msgstr "Ajustes de configuración"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_afp__afp_contribution
+msgid "Contribution (%)"
+msgstr "Aporte (%)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_afp__create_uid
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_l10n_pe_payroll_export_wizard__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_afp__create_date
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_l10n_pe_payroll_export_wizard__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_credito_eps
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sem_credito_eps
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_gen_credito_eps
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_credito_eps
+msgid "Crédito EPS"
+msgstr "Crédito EPS"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_salary_rule__l10n_pe_plame_concept
+msgid "Código Concepto PLAME"
+msgstr "Código Concepto PLAME"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_worker_code
+msgid "Código de Trabajador"
+msgstr "Código de Trabajador"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_worker_code
+msgid "Código del trabajador en la planilla (el 'CÓDIGO' de la boleta)."
+msgstr "Código del trabajador en la planilla (el 'CÓDIGO' de la boleta)."
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_hr_salary_rule__l10n_pe_plame_concept
+msgid ""
+"Código oficial del concepto en la PLAME de SUNAT (p. ej. 0121 remuneración "
+"básica). Se usa para la exportación. Verifica los códigos con la versión "
+"vigente de tu PDT PLAME."
+msgstr ""
+"Código oficial del concepto en la PLAME de SUNAT (p. ej. 0121 remuneración "
+"básica). Se usa para la exportación. Verifica los códigos con la versión "
+"vigente de tu PDT PLAME."
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_cuspp
+msgid ""
+"Código Único del afiliado al SPP (AFP). Aparece en la boleta y en AFPNet."
+msgstr ""
+"Código Único del afiliado al SPP (AFP). Aparece en la boleta y en AFPNet."
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "DESCUENTOS"
+msgstr "DESCUENTOS"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.hr_payslip_run_form_tareo_pe
+msgid "Descargar plantilla"
+msgstr "Descargar plantilla"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payslip.input.type,name:idtx_hr_payroll_pe.input_type_dsct_comedor
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_comedor
+msgid "Descuento Comedor"
+msgstr "Descuento Comedor"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sem_dom_desc
+msgid "Descuento Dominical Proporcional"
+msgstr "Descuento Dominical Proporcional"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_faltas
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sem_faltas
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_gen_faltas
+msgid "Descuento por Inasistencias"
+msgstr "Descuento por Inasistencias"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_l10n_pe_payroll_export_wizard__date_from
+msgid "Desde"
+msgstr "Desde"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_afp__display_name
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_employee__display_name
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_payslip__display_name
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_payslip_run__display_name
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_salary_rule__display_name
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_version__display_name
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_l10n_pe_payroll_export_wizard__display_name
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_res_company__display_name
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_res_config_settings__display_name
+msgid "Display Name"
+msgstr "Mostrar nombre"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Documento: DNI"
+msgstr "Documento: DNI"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sem_dominical
+msgid "Dominical (DSR)"
+msgstr "Dominical (DSR)"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_dominical
+msgid "Dominical Trabajado"
+msgstr "Dominical Trabajado"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Días Efec.:"
+msgstr "Días Efec.:"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payslip.input.type,name:idtx_hr_payroll_pe.input_type_dias_lab
+msgid "Días Laborables"
+msgstr "Días Laborables"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payslip.input.type,name:idtx_hr_payroll_pe.input_type_dias_trab
+msgid "Días Trabajados"
+msgstr "Días Trabajados"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payslip.input.type,name:idtx_hr_payroll_pe.input_type_dias_vac
+msgid "Días de Vacaciones"
+msgstr "Días de Vacaciones"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payslip.input.type,name:idtx_hr_payroll_pe.input_type_dias_venta_vac
+msgid "Días de Vacaciones Vendidos"
+msgstr "Días de Vacaciones Vendidos"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Días no Lab.:"
+msgstr "Días no Lab.:"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields.selection,name:idtx_hr_payroll_pe.selection__hr_version__l10n_pe_worker_type__empleado
+msgid "Empleado"
+msgstr "Empleado"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_worker_type
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_hr_version__l10n_pe_worker_type
+msgid ""
+"Empleado (trabajo predominantemente intelectual) u Obrero (predominantemente"
+" manual). Afecta periodicidad de pago y conceptos como el dominical."
+msgstr ""
+"Empleado (trabajo predominantemente intelectual) u Obrero (predominantemente"
+" manual). Afecta periodicidad de pago y conceptos como el dominical."
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model,name:idtx_hr_payroll_pe.model_hr_employee
+msgid "Employee"
+msgstr "Empleado"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model,name:idtx_hr_payroll_pe.model_hr_version
+msgid "Employee Contract"
+msgstr "Contrato del empleado"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_l10n_pe_payroll_export_wizard__company_id
+msgid "Empresa"
+msgstr "Empresa"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_gen_essalud
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_essalud
+msgid "EsSalud"
+msgstr "EsSalud"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_essalud
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sem_essalud
+msgid "EsSalud (Agrario)"
+msgstr "EsSalud (Agrario)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_service_unit
+msgid "Establecimiento / sede donde labora (p. ej. 'EL AGUSTINO')."
+msgstr "Establecimiento / sede donde labora (p. ej. 'EL AGUSTINO')."
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_payslip_run__l10n_pe_tareo_file
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.hr_payslip_run_form_tareo_pe
+msgid "Excel de Tareo"
+msgstr "Excel de Tareo"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.ui.menu,name:idtx_hr_payroll_pe.l10n_pe_payroll_export_menu
+msgid "Exportar PLAME / AFPNet"
+msgstr "Exportar PLAME / AFPNet"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.actions.act_window,name:idtx_hr_payroll_pe.l10n_pe_payroll_export_action
+#: model:ir.model,name:idtx_hr_payroll_pe.model_l10n_pe_payroll_export_wizard
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.l10n_pe_payroll_export_wizard_form
+msgid "Exportar Planilla (PLAME / AFPNet)"
+msgstr "Exportar Planilla (PLAME / AFPNet)"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.work.entry.type,display_code:idtx_hr_payroll_pe.we_falta_injustificada
+msgid "FAL"
+msgstr "FAL"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "FECHA DE PAGO: ____/____/______"
+msgstr "FECHA DE PAGO: ____/____/______"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.work.entry.type,name:idtx_hr_payroll_pe.we_falta_injustificada
+msgid "Falta Injustificada"
+msgstr "Falta Injustificada"
+
+#. module: idtx_hr_payroll_pe
+#. odoo-python
+#: code:addons/idtx_hr_payroll_pe/models/hr_payslip_run.py:0
+msgid "Falta la librería 'openpyxl' en el servidor."
+msgstr "Falta la librería 'openpyxl' en el servidor."
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_faltas
+msgid "Faltas"
+msgstr "Faltas"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Fec. Cese:"
+msgstr "Fec. Cese:"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Fec. Ing.:"
+msgstr "Fec. Ing.:"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_l10n_pe_payroll_export_wizard__filename
+msgid "Filename"
+msgstr "Nombre de archivo"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.l10n_pe_payroll_export_wizard_form
+msgid ""
+"Genera un CSV con los datos de planilla (conceptos por trabajador\n"
+"                    o aportes AFP) para cargar/adaptar al PDT PLAME o AFPNet."
+msgstr ""
+"Genera un CSV con los datos de planilla (conceptos por trabajador\n"
+"                    o aportes AFP) para cargar/adaptar al PDT PLAME o AFPNet."
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.l10n_pe_payroll_export_wizard_form
+msgid "Generar"
+msgstr "Generar"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_grati
+#: model:hr.salary.rule.category,name:idtx_hr_payroll_pe.GRAT
+msgid "Gratificación"
+msgstr "Gratificación"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payroll.structure,name:idtx_hr_payroll_pe.struct_grati_pe
+msgid "Gratificación - Perú (Régimen General)"
+msgstr "Gratificación - Perú (Régimen General)"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_grati_prop
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sem_grati_prop
+msgid "Gratificación Proporcional (integrada)"
+msgstr "Gratificación Proporcional (integrada)"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_liq_grati_trunca
+msgid "Gratificación Trunca"
+msgstr "Gratificación Trunca"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_l10n_pe_payroll_export_wizard__date_to
+msgid "Hasta"
+msgstr "Hasta"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Hor. Ext.:"
+msgstr "Hor. Ext.:"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Hor. Ord.:"
+msgstr "Hor. Ord.:"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_he_25
+msgid "Hora Extra 25%"
+msgstr "Hora Extra 25%"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_he_35
+msgid "Hora Extra 35%"
+msgstr "Hora Extra 35%"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payslip.input.type,name:idtx_hr_payroll_pe.input_type_he25
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_he25
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sem_he25
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_gen_he25
+msgid "Horas Extra 25%"
+msgstr "Horas Extra 25%"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payslip.input.type,name:idtx_hr_payroll_pe.input_type_he35
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_he35
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sem_he35
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_gen_he35
+msgid "Horas Extra 35%"
+msgstr "Horas Extra 35%"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payslip.input.type,name:idtx_hr_payroll_pe.input_type_horas_jorn
+msgid "Horas Jornada"
+msgstr "Horas Jornada"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payslip.input.type,name:idtx_hr_payroll_pe.input_type_horas_noct
+msgid "Horas Nocturnas"
+msgstr "Horas Nocturnas"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_afp__id
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_employee__id
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_payslip__id
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_payslip_run__id
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_salary_rule__id
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_version__id
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_l10n_pe_payroll_export_wizard__id
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_res_company__id
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_res_config_settings__id
+msgid "ID"
+msgstr "ID"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "INGRESOS"
+msgstr "INGRESOS"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payslip.input.type,name:idtx_hr_payroll_pe.input_type_inasist_dias
+msgid "Inasistencia (Días)"
+msgstr "Inasistencia (Días)"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule.category,name:idtx_hr_payroll_pe.INAF
+msgid "Ingresos Inafectos"
+msgstr "Ingresos Inafectos"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_payslip_run__l10n_pe_tareo_template_filename
+msgid "L10N Pe Tareo Template Filename"
+msgstr "Nombre del archivo de plantilla de tareo"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.work.entry.type,display_code:idtx_hr_payroll_pe.we_licencia_con_goce
+msgid "LCG"
+msgstr "LCG"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.work.entry.type,display_code:idtx_hr_payroll_pe.we_licencia_sin_goce
+msgid "LSG"
+msgstr "LSG"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_hr_payslip__l10n_pe_tareo_loaded
+msgid "La boleta fue poblada desde el Excel de tareo del lote."
+msgstr "La boleta fue poblada desde el Excel de tareo del lote."
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.res_config_settings_view_form_hr_pe
+msgid "La empresa aporta a SENATI (actividad industrial, 0.75%)."
+msgstr "La empresa aporta a SENATI (actividad industrial, 0.75%)."
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_afp__write_uid
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_l10n_pe_payroll_export_wizard__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_afp__write_date
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_l10n_pe_payroll_export_wizard__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_lic_goce
+msgid "Licencia con Goce"
+msgstr "Licencia con Goce"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.work.entry.type,name:idtx_hr_payroll_pe.we_licencia_con_goce
+msgid "Licencia con Goce de Haber"
+msgstr "Licencia con Goce de Haber"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.work.entry.type,name:idtx_hr_payroll_pe.we_licencia_sin_goce
+msgid "Licencia sin Goce de Haber"
+msgstr "Licencia sin Goce de Haber"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.res_config_settings_view_form_hr_pe
+msgid "Life Insurance Law"
+msgstr "Seguro Vida Ley"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payroll.structure,name:idtx_hr_payroll_pe.struct_liq_pe
+msgid "Liquidación de Cese - Perú (Régimen General)"
+msgstr "Liquidación de Cese - Perú (Régimen General)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.ui.menu,name:idtx_hr_payroll_pe.hr_payroll_pe_menu
+msgid "Localization PE"
+msgstr "Localización PE"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields.selection,name:idtx_hr_payroll_pe.selection__hr_version__l10n_pe_labor_regime__mype_micro
+msgid "MYPE - Microempresa"
+msgstr "MYPE - Microempresa"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields.selection,name:idtx_hr_payroll_pe.selection__hr_version__l10n_pe_labor_regime__mype_pequena
+msgid "MYPE - Pequeña empresa"
+msgstr "MYPE - Pequeña empresa"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_family_allowance_right
+msgid ""
+"Marcar si el trabajador tiene hijos menores de 18 años (o hasta 24 si cursan"
+" estudios superiores). Da derecho a la asignación familiar (10% de la RMV)."
+msgstr ""
+"Marcar si el trabajador tiene hijos menores de 18 años (o hasta 24 si cursan"
+" estudios superiores). Da derecho a la asignación familiar (10% de la RMV)."
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_res_company__l10n_pe_senati_affiliated
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_res_config_settings__l10n_pe_senati_affiliated
+msgid ""
+"Marcar si la empresa aporta a SENATI (actividad industrial). La tasa se toma"
+" del parámetro 'l10n_pe_senati_rate' (0.75%)."
+msgstr ""
+"Marcar si la empresa aporta a SENATI (actividad industrial). La tasa se toma"
+" del parámetro 'l10n_pe_senati_rate' (0.75%)."
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields.selection,name:idtx_hr_payroll_pe.selection__hr_employee__commission_type__mixed
+msgid "Mixta"
+msgstr "Mixta"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.res_config_settings_view_form_hr_pe
+msgid ""
+"Monto fijo (S/) que se descuenta a todos los trabajadores por adelanto de "
+"quincena."
+msgstr ""
+"Monto fijo (S/) que se descuenta a todos los trabajadores por adelanto de "
+"quincena."
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_res_config_settings__l10n_pe_adelanto_quincena
+msgid ""
+"Monto fijo de adelanto de quincena que se descuenta a todos los trabajadores"
+" (regla ADELQUINC_PE). Parámetro l10n_pe_adelanto_quincena."
+msgstr ""
+"Monto fijo de adelanto de quincena que se descuenta a todos los trabajadores"
+" (regla ADELQUINC_PE). Parámetro l10n_pe_adelanto_quincena."
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Mot. Cese:"
+msgstr "Mot. Cese:"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payslip.input.type,name:idtx_hr_payroll_pe.input_type_movilidad
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_movilidad
+msgid "Movilidad"
+msgstr "Movilidad"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_afp__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_cts_net
+msgid "Neto CTS (Depósito)"
+msgstr "Neto CTS (Depósito)"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_grati_net
+msgid "Neto Gratificación"
+msgstr "Neto Gratificación"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_liq_net
+msgid "Neto Liquidación"
+msgstr "Neto Liquidación"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_vac_net
+msgid "Neto Vacaciones"
+msgstr "Neto Vacaciones"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_net
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sem_net
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_gen_net
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_net
+msgid "Neto a Pagar"
+msgstr "Neto a Pagar"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Neto a pagar:"
+msgstr "Neto a pagar:"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_is_pensioner
+msgid "No aporta al sistema de pensiones (ONP/AFP)."
+msgstr "No aporta al sistema de pensiones (ONP/AFP)."
+
+#. module: idtx_hr_payroll_pe
+#. odoo-python
+#: code:addons/idtx_hr_payroll_pe/models/hr_payslip_run.py:0
+msgid "No se pudo leer el Excel del tareo: %s"
+msgstr "No se pudo leer el Excel del tareo: %s"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_payslip_run__l10n_pe_tareo_filename
+msgid "Nombre del Tareo"
+msgstr "Nombre del Tareo"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Nº"
+msgstr "Nº"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "OBSERVACIONES:"
+msgstr "OBSERVACIONES:"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields.selection,name:idtx_hr_payroll_pe.selection__hr_employee__pension_system__onp
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "ONP"
+msgstr "ONP"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_onp
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sem_onp
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_gen_onp
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_onp
+msgid "ONP (SNP)"
+msgstr "ONP (SNP)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields.selection,name:idtx_hr_payroll_pe.selection__hr_version__l10n_pe_worker_type__obrero
+msgid "Obrero"
+msgstr "Obrero"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payslip.input.type,name:idtx_hr_payroll_pe.input_type_otros_desc
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_otros_desc
+msgid "Otros Descuentos"
+msgstr "Otros Descuentos"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "PERIODO DE PAGO:"
+msgstr "PERIODO DE PAGO:"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields.selection,name:idtx_hr_payroll_pe.selection__l10n_pe_payroll_export_wizard__export_type__plame
+msgid "PLAME - conceptos por trabajador"
+msgstr "PLAME - conceptos por trabajador"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.ui.menu,name:idtx_hr_payroll_pe.hr_rule_parameter_pe_menu
+msgid "Parámetros Legales"
+msgstr "Parámetros Legales"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.actions.act_window,name:idtx_hr_payroll_pe.hr_rule_parameter_pe_action
+msgid "Parámetros Legales (PE)"
+msgstr "Parámetros Legales (PE)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model,name:idtx_hr_payroll_pe.model_hr_payslip_run
+msgid "Pay Run"
+msgstr "Periodo de planilla"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model,name:idtx_hr_payroll_pe.model_hr_payslip
+msgid "Pay Slip"
+msgstr "Boleta de pago"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_employee__pension_system
+msgid "Pension Sistem"
+msgstr "Sistema de Pensiones"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_is_pensioner
+msgid "Pensionista / Jubilado"
+msgstr "Pensionista / Jubilado"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_permiso_hora
+msgid "Permiso por Hora"
+msgstr "Permiso por Hora"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payslip.input.type,name:idtx_hr_payroll_pe.input_type_perm_horas
+msgid "Permiso por Hora (no pagado)"
+msgstr "Permiso por Hora (no pagado)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_disability
+msgid "Persona con Discapacidad"
+msgstr "Persona con Discapacidad"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.res_config_settings_view_form_hr_pe
+msgid "Peruvian Localization"
+msgstr "Localización Peruana"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Período vacac:"
+msgstr "Período vacac:"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payroll.structure,name:idtx_hr_payroll_pe.struct_pe_agrario_integral
+msgid "Planilla Agraria - Remuneración Integral (Perú)"
+msgstr "Planilla Agraria - Remuneración Integral (Perú)"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payroll.structure,name:idtx_hr_payroll_pe.struct_pe_agrario_integral_sem
+msgid "Planilla Agraria Jornalero - Remuneración Integral (Perú)"
+msgstr "Planilla Agraria Jornalero - Remuneración Integral (Perú)"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payroll.structure,name:idtx_hr_payroll_pe.hr_payroll_structure_peru_general
+msgid "Planilla Mensual Perú - Régimen General"
+msgstr "Planilla Mensual Perú - Régimen General"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payroll.structure,name:idtx_hr_payroll_pe.structure_pe_obrero_textil
+msgid "Planilla Obrero Mensual (Perú)"
+msgstr "Planilla Obrero Mensual (Perú)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_res_company__l10n_pe_use_tareo
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_res_config_settings__l10n_pe_use_tareo
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.res_config_settings_view_form_hr_pe
+msgid "Planilla por Tareo (Excel)"
+msgstr "Planilla por Tareo (Excel)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_payslip_run__l10n_pe_tareo_template_file
+msgid "Plantilla de Tareo"
+msgstr "Plantilla de Tareo"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payslip.input.type,name:idtx_hr_payroll_pe.input_type_pres_alim
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_pres_alim
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_pres_alim_desc
+msgid "Prestación Alimentaria"
+msgstr "Prestación Alimentaria"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_prim_tex
+msgid "Prima Textil 10%"
+msgstr "Prima Textil 10%"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_afp__insurance_rate
+msgid "Prima de Seguro (%)"
+msgstr "Prima de Seguro (%)"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Reg. Laboral:"
+msgstr "Reg. Laboral:"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Reg. Pens.:"
+msgstr "Reg. Pens.:"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_afp__max_insurable
+msgid "Remuneración Máxima Asegurable (referencial)"
+msgstr "Remuneración Máxima Asegurable (referencial)"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_vac_remun
+msgid "Remuneración Vacacional"
+msgstr "Remuneración Vacacional"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_gen_renta_5ta
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_renta5ta
+msgid "Renta de 5ta Categoría"
+msgstr "Renta de 5ta Categoría"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields.selection,name:idtx_hr_payroll_pe.selection__hr_version__l10n_pe_labor_regime__general
+msgid "Régimen General (D.L. 728)"
+msgstr "Régimen General (D.L. 728)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_labor_regime
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_version__l10n_pe_labor_regime
+msgid "Régimen Laboral (PE)"
+msgstr "Régimen Laboral (PE)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_labor_regime
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_hr_version__l10n_pe_labor_regime
+msgid ""
+"Régimen laboral peruano que determina beneficios, aportes y tasas "
+"aplicables. 'Textil' es el régimen general con pago semanal de obreros y "
+"prima sectorial."
+msgstr ""
+"Régimen laboral peruano que determina beneficios, aportes y tasas "
+"aplicables. 'Textil' es el régimen general con pago semanal de obreros y "
+"prima sectorial."
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "S/"
+msgstr "S/"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.res_config_settings_view_form_hr_pe
+msgid "SCTR"
+msgstr "SCTR"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sctr_pension
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sem_sctr_pension
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_gen_sctr_pension
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_sctr_pension
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.res_config_settings_view_form_hr_pe
+msgid "SCTR Pensión"
+msgstr "SCTR Pensión"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_res_company__l10n_pe_sctr_pension_rate
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_res_config_settings__l10n_pe_sctr_pension_rate
+msgid "SCTR Pensión (%)"
+msgstr "SCTR Pensión (%)"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sctr_salud
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sem_sctr_salud
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_gen_sctr_salud
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_sctr_salud
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.res_config_settings_view_form_hr_pe
+msgid "SCTR Salud"
+msgstr "SCTR Salud"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_res_company__l10n_pe_sctr_salud_rate
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_res_config_settings__l10n_pe_sctr_salud_rate
+msgid "SCTR Salud (%)"
+msgstr "SCTR Salud (%)"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_gen_senati
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_senati
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.res_config_settings_view_form_hr_pe
+msgid "SENATI"
+msgstr "SENATI"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_gen_sis
+msgid "SIS (MYPE Micro)"
+msgstr "SIS (MYPE Micro)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model,name:idtx_hr_payroll_pe.model_hr_salary_rule
+msgid "Salary Rule"
+msgstr "Regla salarial"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.res_config_settings_view_form_hr_pe
+msgid ""
+"Seguro Complementario de Trabajo de Riesgo (actividad de riesgo). Las tasas "
+"varían por aseguradora."
+msgstr ""
+"Seguro Complementario de Trabajo de Riesgo (actividad de riesgo). Las tasas "
+"varían por aseguradora."
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_res_company__l10n_pe_use_tareo
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_res_config_settings__l10n_pe_use_tareo
+msgid ""
+"Si está activo, las boletas peruanas se calculan desde el Excel de tareo "
+"cargado en el lote de nómina (no desde las marcaciones biométricas). "
+"Desactívalo para volver al cálculo por asistencias."
+msgstr ""
+"Si está activo, las boletas peruanas se calculan desde el Excel de tareo "
+"cargado en el lote de nómina (no desde las marcaciones biométricas). "
+"Desactívalo para volver al cálculo por asistencias."
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_has_eps
+msgid ""
+"Si está afiliado a una EPS, el aporte del empleador a EsSalud tiene un "
+"crédito (parte se destina a la EPS)."
+msgstr ""
+"Si está afiliado a una EPS, el aporte del empleador a EsSalud tiene un "
+"crédito (parte se destina a la EPS)."
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Situación Especial: NINGUNA"
+msgstr "Situación Especial: NINGUNA"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields.selection,name:idtx_hr_payroll_pe.selection__hr_employee__commission_type__flow
+msgid "Sobre Flujo"
+msgstr "Sobre Flujo"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_hr_employee__commission_type
+msgid ""
+"Sobre Flujo: comisión % sobre la remuneración (se descuenta en planilla). "
+"Mixta: la comisión va sobre el saldo del fondo (no se descuenta en planilla;"
+" flujo de la mixta = 0% desde feb-2023). Los afiliados desde 2013 son Mixta "
+"por defecto."
+msgstr ""
+"Sobre Flujo: comisión % sobre la remuneración (se descuenta en planilla). "
+"Mixta: la comisión va sobre el saldo del fondo (no se descuenta en planilla;"
+" flujo de la mixta = 0% desde feb-2023). Los afiliados desde 2013 son Mixta "
+"por defecto."
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_basico
+msgid "Sueldo"
+msgstr "Sueldo"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_sueldo_pactado
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_hr_version__l10n_pe_sueldo_pactado
+msgid ""
+"Sueldo NETO pactado con el trabajador, fuera de los descuentos. Si se "
+"define: la Movilidad se ajusta como variable de cierre para que (sueldo + "
+"asig + HE + nocturna + condición − pensión − comedor) + movilidad = este "
+"pactado; y la renta de 5ta se calcula sobre este pactado. Si está en 0 se "
+"usa la lógica normal (input de movilidad y 5ta sobre el sueldo si supera 7 "
+"UIT)."
+msgstr ""
+"Sueldo NETO pactado con el trabajador, fuera de los descuentos. Si se "
+"define: la Movilidad se ajusta como variable de cierre para que (sueldo + "
+"asig + HE + nocturna + condición − pensión − comedor) + movilidad = este "
+"pactado; y la renta de 5ta se calcula sobre este pactado. Si está en 0 se "
+"usa la lógica normal (input de movilidad y 5ta sobre el sueldo si supera 7 "
+"UIT)."
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_sueldo_pactado
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_version__l10n_pe_sueldo_pactado
+msgid "Sueldo Pactado (neto)"
+msgstr "Sueldo Pactado (neto)"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_tardanza
+msgid "Tardanza"
+msgstr "Tardanza"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payslip.input.type,name:idtx_hr_payroll_pe.input_type_tardanza_hrs
+msgid "Tardanza (Horas)"
+msgstr "Tardanza (Horas)"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.hr_payslip_run_form_tareo_pe
+msgid "Tareo (Perú)"
+msgstr "Tareo (Perú)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_payslip__l10n_pe_tareo_faltas
+msgid "Tareo: Faltas (días)"
+msgstr "Tareo: Faltas (días)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_payslip__l10n_pe_tareo_horas_noct
+msgid "Tareo: Horas nocturnas"
+msgstr "Tareo: Horas nocturnas"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_payslip__l10n_pe_tareo_lic_cg
+msgid "Tareo: Licencia c/goce (días)"
+msgstr "Tareo: Licencia c/goce (días)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_payslip__l10n_pe_tareo_vac
+msgid "Tareo: Vacaciones (días)"
+msgstr "Tareo: Vacaciones (días)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_res_company__l10n_pe_sctr_pension_rate
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_res_config_settings__l10n_pe_sctr_pension_rate
+msgid ""
+"Tasa SCTR Pensión a cargo del empleador (varía por aseguradora/riesgo)."
+msgstr ""
+"Tasa SCTR Pensión a cargo del empleador (varía por aseguradora/riesgo)."
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_res_company__l10n_pe_sctr_salud_rate
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_res_config_settings__l10n_pe_sctr_salud_rate
+msgid "Tasa SCTR Salud a cargo del empleador (varía por aseguradora/riesgo)."
+msgstr "Tasa SCTR Salud a cargo del empleador (varía por aseguradora/riesgo)."
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields.selection,name:idtx_hr_payroll_pe.selection__hr_version__l10n_pe_labor_regime__textil
+msgid "Textil (general + prima sectorial)"
+msgstr "Textil (general + prima sectorial)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_family_allowance_right
+msgid "Tiene Asignación Familiar"
+msgstr "Tiene Asignación Familiar"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_employee__commission_type
+msgid "Tipo de Comisión AFP"
+msgstr "Tipo de Comisión AFP"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_l10n_pe_payroll_export_wizard__export_type
+msgid "Tipo de Exportación"
+msgstr "Tipo de Exportación"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_worker_type
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_version__l10n_pe_worker_type
+msgid "Tipo de Trabajador (PE)"
+msgstr "Tipo de Trabajador (PE)"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,help:idtx_hr_payroll_pe.field_hr_afp__max_insurable
+msgid ""
+"Tope referencial por AFP. El tope legal vigente (RMA) que aplica SOLO a la "
+"prima de seguro se toma del parámetro 'l10n_pe_afp_rma'."
+msgstr ""
+"Tope referencial por AFP. El tope legal vigente (RMA) que aplica SOLO a la "
+"prima de seguro se toma del parámetro 'l10n_pe_afp_rma'."
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Total Aportes"
+msgstr "Total Aportes"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Total Descuentos:"
+msgstr "Total Descuentos:"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_gross
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sem_gross
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_gen_gross
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_gross
+msgid "Total Ingresos"
+msgstr "Total Ingresos"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Total Ingresos:"
+msgstr "Total Ingresos:"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Unid.Servicios:"
+msgstr "Unid.Servicios:"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_hr_employee__l10n_pe_service_unit
+msgid "Unidad de Servicios"
+msgstr "Unidad de Servicios"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.work.entry.type,display_code:idtx_hr_payroll_pe.work_entry_type_vac
+msgid "VAC"
+msgstr "VAC"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payslip.input.type,name:idtx_hr_payroll_pe.input_type_vac_diario
+msgid "Vacacional Diario (manual)"
+msgstr "Vacacional Diario (manual)"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.leave.type,name:idtx_hr_payroll_pe.leave_type_vacaciones_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_vacaciones
+#: model:hr.salary.rule.category,name:idtx_hr_payroll_pe.VAC
+#: model:hr.work.entry.type,name:idtx_hr_payroll_pe.work_entry_type_vac
+msgid "Vacaciones"
+msgstr "Vacaciones"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.payroll.structure,name:idtx_hr_payroll_pe.struct_vac_pe
+msgid "Vacaciones - Perú (Régimen General)"
+msgstr "Vacaciones - Perú (Régimen General)"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_liq_vac_truncas
+msgid "Vacaciones Truncas"
+msgstr "Vacaciones Truncas"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_vac_venta
+msgid "Venta de Vacaciones"
+msgstr "Venta de Vacaciones"
+
+#. module: idtx_hr_payroll_pe
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_sem_vida_ley
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_agro_vida_ley
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_gen_vida_ley
+#: model:hr.salary.rule,name:idtx_hr_payroll_pe.rule_pe_vida_ley
+msgid "Vida Ley"
+msgstr "Vida Ley"
+
+#. module: idtx_hr_payroll_pe
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_res_company__life_insurance_law
+#: model:ir.model.fields,field_description:idtx_hr_payroll_pe.field_res_config_settings__life_insurance_law
+msgid "Vida Ley (%)"
+msgstr "Vida Ley (%)"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.res_config_settings_view_form_hr_pe
+msgid "Vida Ley: prima a cargo del empleador (%)."
+msgstr "Vida Ley: prima a cargo del empleador (%)."
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "_______________________________<br/>Firma Empresa"
+msgstr "_______________________________<br/>Firma Empresa"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "_______________________________<br/>Firma Trabajador"
+msgstr "_______________________________<br/>Firma Trabajador"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "al"
+msgstr "al"
+
+#. module: idtx_hr_payroll_pe
+#: model_terms:ir.ui.view,arch_db:idtx_hr_payroll_pe.report_payslip_pe_copy
+msgid "Área:"
+msgstr "Área:"

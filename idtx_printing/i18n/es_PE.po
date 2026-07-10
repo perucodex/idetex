@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-03 23:27+0000\n"
-"PO-Revision-Date: 2026-02-03 23:27+0000\n"
+"POT-Creation-Date: 2026-07-10 22:02+0000\n"
+"PO-Revision-Date: 2026-07-10 22:02+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -16,44 +16,106 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_rotary_line_form
+msgid "<span class=\"ms-1 oe_inline\">%</span>"
+msgstr "<span class=\"ms-1 oe_inline\">%</span>"
+
+#. module: idtx_printing
 #: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_form
 msgid "<span class=\"ms-1 oe_inline\">kg</span>"
-msgstr ""
+msgstr "<span class=\"ms-1 oe_inline\">kg</span>"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
+msgid "<span class=\"ms-1 oe_inline\">mts.</span>"
+msgstr "<span class=\"ms-1 oe_inline\">mts.</span>"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__message_needaction
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__message_needaction
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__message_needaction
 msgid "Action Needed"
-msgstr ""
+msgstr "Acción requerida"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__activity_ids
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__activity_ids
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__activity_ids
 msgid "Activities"
-msgstr ""
+msgstr "Actividades"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__activity_exception_decoration
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__activity_exception_decoration
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__activity_exception_decoration
 msgid "Activity Exception Decoration"
-msgstr ""
+msgstr "Decoración de excepción de actividad"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__activity_state
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__activity_state
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__activity_state
 msgid "Activity State"
-msgstr ""
+msgstr "Estado de la actividad"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__activity_type_icon
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__activity_type_icon
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__activity_type_icon
 msgid "Activity Type Icon"
-msgstr ""
+msgstr "Icono del tipo de actividad"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_rotary_line_form
+msgid "Approve"
+msgstr "Aprobar"
+
+#. module: idtx_printing
+#: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design_rotary_line__state__approved
+#: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_rotary_line_search
+msgid "Approved"
+msgstr "Aprobada"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__message_attachment_count
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__message_attachment_count
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__message_attachment_count
 msgid "Attachment Count"
-msgstr ""
+msgstr "Cantidad de adjuntos"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__bonding_price
 msgid "Bonding Price"
 msgstr "Precio de Bondeo"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color_chemical__product_id
+#: model_terms:ir.ui.view,arch_db:idtx_printing.printing_recipe_sheet_template
+msgid "Chemical"
+msgstr "Químico"
+
+#. module: idtx_printing
+#. odoo-python
+#: code:addons/idtx_printing/models/printing_design.py:0
+msgid "Chemical quantity must be greater than 0."
+msgstr "La cantidad de químico debe ser mayor a 0."
+
+#. module: idtx_printing
+#. odoo-python
+#: code:addons/idtx_printing/models/printing_design.py:0
+msgid "Chemical: %(old)s -> %(new)s"
+msgstr "Químico: %(old)s -> %(new)s"
+
+#. module: idtx_printing
+#. odoo-python
+#: code:addons/idtx_printing/models/printing_design.py:0
+msgid "Chemical: %s"
+msgstr "Químico: %s"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__chemical_line_ids
+msgid "Chemicals"
+msgstr "Químicos"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_res_company__cylinder_102_price
@@ -79,9 +141,25 @@ msgid "Code"
 msgstr "Código"
 
 #. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__color_name
+msgid "Color"
+msgstr "Color"
+
+#. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__color_qty
 msgid "Color Qty"
 msgstr "Cant. Colores"
+
+#. module: idtx_printing
+#. odoo-python
+#: code:addons/idtx_printing/models/printing_design.py:0
+msgid "Color: %s"
+msgstr "Color: %s"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__color_line_ids
+msgid "Colors"
+msgstr "Colores"
 
 #. module: idtx_printing
 #: model:ir.model,name:idtx_printing.model_res_company
@@ -96,19 +174,25 @@ msgstr "Ajustes de configuración"
 #. module: idtx_printing
 #: model:ir.ui.menu,name:idtx_printing.print_settings_menu
 msgid "Configuration"
-msgstr ""
+msgstr "Configuración"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__create_uid
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__create_uid
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__create_uid
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__create_uid
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color_chemical__create_uid
 msgid "Created by"
-msgstr ""
+msgstr "Creado por"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__create_date
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__create_date
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__create_date
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__create_date
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color_chemical__create_date
 msgid "Created on"
-msgstr ""
+msgstr "Creado el"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__currency_id
@@ -117,7 +201,18 @@ msgid "Currency"
 msgstr "Moneda"
 
 #. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_rotary_line_search
+msgid "Current"
+msgstr "Vigente"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__is_current_version
+msgid "Current Recipe"
+msgstr "Receta Vigente"
+
+#. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__partner_id
+#: model_terms:ir.ui.view,arch_db:idtx_printing.printing_recipe_sheet_template
 msgid "Customer"
 msgstr "Cliente"
 
@@ -185,19 +280,29 @@ msgstr "Cantidad mínima de estampado aplicada al seleccionar productos."
 #. module: idtx_printing
 #: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
 msgid "Default prices for rotary printing applied when selecting products."
-msgstr "Precios por defecto de estampado rotativo aplicada al seleccionar productos."
+msgstr ""
+"Precios por defecto de estampado rotativo aplicados al seleccionar "
+"productos."
 
 #. module: idtx_printing
 #: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
 msgid ""
 "Default sample prices for rotary printing applied when selecting products."
 msgstr ""
-"Precios de muestras para estampado rotativo aplicado al seleccionar productos.
+"Precios de muestras por defecto para estampado rotativo aplicados al "
+"seleccionar productos."
 
 #. module: idtx_printing
 #: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
 msgid "Default strike off price for printing applied when selecting products."
 msgstr "Precio de strike off de estampado aplicado al seleccionar productos."
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__printing_design_code
+#: model_terms:ir.ui.view,arch_db:idtx_printing.printing_recipe_sheet_template
+#: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_rotary_line_search
+msgid "Design Code"
+msgstr "Código de Diseño"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__file_name
@@ -211,18 +316,30 @@ msgstr "Imagen"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__file_desc
+#: model_terms:ir.ui.view,arch_db:idtx_printing.printing_recipe_sheet_template
 msgid "Design Name"
 msgstr "Nombre Diseño"
 
 #. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__printing_design_preview_image
+#: model_terms:ir.ui.view,arch_db:idtx_printing.printing_recipe_sheet_template
+msgid "Design Preview"
+msgstr "Vista previa del Diseño"
+
+#. module: idtx_printing
+#: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__state__development
+msgid "Development"
+msgstr "Desarrollo"
+
+#. module: idtx_printing
 #: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__process_type_rotary__devore
 msgid "Devoré"
-msgstr ""
+msgstr "Devoré"
 
 #. module: idtx_printing
 #: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__printing_type__digital
 msgid "Digital"
-msgstr ""
+msgstr "Digital"
 
 #. module: idtx_printing
 #: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
@@ -243,7 +360,7 @@ msgstr "Estampado Digital"
 #: model:ir.model.fields,field_description:idtx_printing.field_res_company__digital_printing_min_qty
 #: model:ir.model.fields,field_description:idtx_printing.field_res_config_settings__digital_printing_min_qty
 msgid "Digital Printing Min. Qty."
-msgstr "Cant. Min. Estampado Digital"
+msgstr "Cant. Mín. Estampado Digital"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__process_type_digital
@@ -253,91 +370,162 @@ msgstr "Tipo de Proceso"
 #. module: idtx_printing
 #: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__process_type_rotary__discharge
 msgid "Discharge"
-msgstr ""
+msgstr "Corrosión"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__display_name
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__display_name
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__display_name
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__display_name
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color_chemical__display_name
 #: model:ir.model.fields,field_description:idtx_printing.field_res_company__display_name
 #: model:ir.model.fields,field_description:idtx_printing.field_res_config_settings__display_name
 msgid "Display Name"
 msgstr "Nombre en pantalla"
 
 #. module: idtx_printing
+#: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__state__done
+msgid "Done"
+msgstr "Hecho"
+
+#. module: idtx_printing
+#: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__state__draft
+msgid "Draft"
+msgstr "Borrador"
+
+#. module: idtx_printing
+#. odoo-python
+#: code:addons/idtx_printing/models/printing_design.py:0
+msgid "Each color must include at least one chemical line before approval."
+msgstr ""
+"Cada color debe incluir al menos una línea de químico antes de la "
+"aprobación."
+
+#. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__fabric_base
+#: model_terms:ir.ui.view,arch_db:idtx_printing.printing_recipe_sheet_template
 msgid "Fabric Base"
 msgstr "Fondo de Tela"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__message_follower_ids
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__message_follower_ids
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__message_follower_ids
 msgid "Followers"
-msgstr ""
+msgstr "Seguidores"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__message_partner_ids
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__message_partner_ids
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__message_partner_ids
 msgid "Followers (Partners)"
-msgstr ""
+msgstr "Seguidores (Contactos)"
 
 #. module: idtx_printing
 #: model:ir.model.fields,help:idtx_printing.field_printing_design__activity_type_icon
+#: model:ir.model.fields,help:idtx_printing.field_printing_design_rotary_line__activity_type_icon
+#: model:ir.model.fields,help:idtx_printing.field_printing_design_rotary_line_color__activity_type_icon
 msgid "Font awesome icon e.g. fa-tasks"
-msgstr ""
+msgstr "Icono de Font Awesome, p. ej. fa-tasks"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_rotary_line_search
+msgid "Group by Design"
+msgstr "Agrupar por Diseño"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_rotary_line_search
+msgid "Group by Recipe Date"
+msgstr "Agrupar por Fecha de Receta"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_rotary_line_search
+msgid "Group by Status"
+msgstr "Agrupar por Estado"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__has_been_approved
+msgid "Has Been Approved"
+msgstr "Ha sido aprobada"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__has_message
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__has_message
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__has_message
 msgid "Has Message"
-msgstr ""
+msgstr "Tiene mensajes"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__id
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__id
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__id
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__id
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color_chemical__id
 #: model:ir.model.fields,field_description:idtx_printing.field_res_company__id
 #: model:ir.model.fields,field_description:idtx_printing.field_res_config_settings__id
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__activity_exception_icon
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__activity_exception_icon
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__activity_exception_icon
 msgid "Icon"
-msgstr ""
+msgstr "Icono"
 
 #. module: idtx_printing
 #: model:ir.model.fields,help:idtx_printing.field_printing_design__activity_exception_icon
+#: model:ir.model.fields,help:idtx_printing.field_printing_design_rotary_line__activity_exception_icon
+#: model:ir.model.fields,help:idtx_printing.field_printing_design_rotary_line_color__activity_exception_icon
 msgid "Icon to indicate an exception activity."
-msgstr ""
+msgstr "Icono para indicar una actividad de excepción."
 
 #. module: idtx_printing
 #: model:ir.model.fields,help:idtx_printing.field_printing_design__message_needaction
+#: model:ir.model.fields,help:idtx_printing.field_printing_design_rotary_line__message_needaction
+#: model:ir.model.fields,help:idtx_printing.field_printing_design_rotary_line_color__message_needaction
 msgid "If checked, new messages require your attention."
-msgstr ""
+msgstr "Si está marcado, hay nuevos mensajes que requieren su atención."
 
 #. module: idtx_printing
 #: model:ir.model.fields,help:idtx_printing.field_printing_design__message_has_error
 #: model:ir.model.fields,help:idtx_printing.field_printing_design__message_has_sms_error
+#: model:ir.model.fields,help:idtx_printing.field_printing_design_rotary_line__message_has_error
+#: model:ir.model.fields,help:idtx_printing.field_printing_design_rotary_line__message_has_sms_error
+#: model:ir.model.fields,help:idtx_printing.field_printing_design_rotary_line_color__message_has_error
+#: model:ir.model.fields,help:idtx_printing.field_printing_design_rotary_line_color__message_has_sms_error
 msgid "If checked, some messages have a delivery error."
-msgstr ""
+msgstr "Si está marcado, algunos mensajes tienen un error de entrega."
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__message_is_follower
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__message_is_follower
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__message_is_follower
 msgid "Is Follower"
-msgstr ""
+msgstr "Es seguidor"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__is_locked
 msgid "Is Locked"
-msgstr ""
+msgstr "Está bloqueado"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__write_uid
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__write_uid
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__write_uid
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__write_uid
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color_chemical__write_uid
 msgid "Last Updated by"
-msgstr ""
+msgstr "Última actualización por"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__write_date
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__write_date
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__write_date
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__write_date
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color_chemical__write_date
 msgid "Last Updated on"
-msgstr ""
+msgstr "Última actualización el"
 
 #. module: idtx_printing
 #: model:res.groups,name:idtx_printing.group_module_print_manager
@@ -351,13 +539,17 @@ msgstr "Cant. Máx."
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__message_has_error
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__message_has_error
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__message_has_error
 msgid "Message Delivery error"
-msgstr ""
+msgstr "Error de entrega de mensaje"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__message_ids
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__message_ids
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__message_ids
 msgid "Messages"
-msgstr ""
+msgstr "Mensajes"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__min_qty
@@ -366,8 +558,10 @@ msgstr "Cant. Mín."
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__my_activity_date_deadline
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__my_activity_date_deadline
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__my_activity_date_deadline
 msgid "My Activity Deadline"
-msgstr ""
+msgstr "Mi fecha límite de actividad"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__name
@@ -381,39 +575,86 @@ msgid "New"
 msgstr "Nuevo"
 
 #. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_rotary_line_form
+msgid "New Version"
+msgstr "Nueva Versión"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__activity_calendar_event_id
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__activity_calendar_event_id
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__activity_calendar_event_id
+msgid "Next Activity Calendar Event"
+msgstr "Próximo evento de calendario de actividad"
+
+#. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__activity_date_deadline
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__activity_date_deadline
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__activity_date_deadline
 msgid "Next Activity Deadline"
-msgstr ""
+msgstr "Próxima fecha límite de actividad"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__activity_summary
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__activity_summary
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__activity_summary
 msgid "Next Activity Summary"
-msgstr ""
+msgstr "Resumen de la próxima actividad"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__activity_type_id
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__activity_type_id
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__activity_type_id
 msgid "Next Activity Type"
-msgstr ""
+msgstr "Tipo de próxima actividad"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.printing_recipe_sheet_template
+msgid "No chemicals"
+msgstr "Sin químicos"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.printing_recipe_sheet_template
+msgid "No preview image"
+msgstr "Sin imagen de vista previa"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__message_needaction_counter
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__message_needaction_counter
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__message_needaction_counter
 msgid "Number of Actions"
-msgstr ""
+msgstr "Número de acciones"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__message_has_error_counter
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__message_has_error_counter
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__message_has_error_counter
 msgid "Number of errors"
-msgstr ""
+msgstr "Número de errores"
 
 #. module: idtx_printing
 #: model:ir.model.fields,help:idtx_printing.field_printing_design__message_needaction_counter
+#: model:ir.model.fields,help:idtx_printing.field_printing_design_rotary_line__message_needaction_counter
+#: model:ir.model.fields,help:idtx_printing.field_printing_design_rotary_line_color__message_needaction_counter
 msgid "Number of messages requiring action"
-msgstr ""
+msgstr "Número de mensajes que requieren acción"
 
 #. module: idtx_printing
 #: model:ir.model.fields,help:idtx_printing.field_printing_design__message_has_error_counter
+#: model:ir.model.fields,help:idtx_printing.field_printing_design_rotary_line__message_has_error_counter
+#: model:ir.model.fields,help:idtx_printing.field_printing_design_rotary_line_color__message_has_error_counter
 msgid "Number of messages with delivery error"
-msgstr ""
+msgstr "Número de mensajes con error de entrega"
+
+#. module: idtx_printing
+#: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design_rotary_line__state__obsolete
+msgid "Obsolete"
+msgstr "Obsoleta"
+
+#. module: idtx_printing
+#. odoo-python
+#: code:addons/idtx_printing/models/printing_design.py:0
+msgid "Obsolete recipes are read-only and cannot be modified."
+msgstr "Las recetas obsoletas son de solo lectura y no se pueden modificar."
 
 #. module: idtx_printing
 #. odoo-python
@@ -427,6 +668,16 @@ msgid "Operations"
 msgstr "Operaciones"
 
 #. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_rotary_line_search
+msgid "Pending"
+msgstr "Pendiente"
+
+#. module: idtx_printing
+#: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design_rotary_line__state__pending
+msgid "Pending Approval"
+msgstr "Pendiente de Aprobación"
+
+#. module: idtx_printing
 #: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__process_type_digital__pigment
 #: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__process_type_rotary__pigment
 msgid "Pigment"
@@ -436,6 +687,11 @@ msgstr "Pigmento"
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__preview_image
 msgid "Preview"
 msgstr "Preliminar"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__previous_recipe_id
+msgid "Previous Recipe"
+msgstr "Receta Anterior"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__total_price
@@ -468,6 +724,8 @@ msgstr "Fecha de Estampado"
 #. module: idtx_printing
 #: model:ir.actions.act_window,name:idtx_printing.action_printing_design
 #: model:ir.model,name:idtx_printing.model_printing_design
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__printing_design_id
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__printing_design_id
 #: model:ir.ui.menu,name:idtx_printing.print_dev_menu
 #: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_form
 msgid "Printing Design"
@@ -479,9 +737,69 @@ msgid "Printing Design Price"
 msgstr "Precio de Diseño"
 
 #. module: idtx_printing
+#: model:ir.model,name:idtx_printing.model_printing_design_rotary_line
+msgid "Printing Design Rotary Line"
+msgstr "Línea de Diseño de Estampado Rotativo"
+
+#. module: idtx_printing
+#: model:ir.model,name:idtx_printing.model_printing_design_rotary_line_color
+msgid "Printing Design Rotary Line Color"
+msgstr "Color de Línea de Diseño de Estampado Rotativo"
+
+#. module: idtx_printing
+#: model:ir.model,name:idtx_printing.model_printing_design_rotary_line_color_chemical
+msgid "Printing Design Rotary Line Color Chemical"
+msgstr "Químico de Color de Línea de Diseño de Estampado Rotativo"
+
+#. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__printing_type
+#: model_terms:ir.ui.view,arch_db:idtx_printing.printing_recipe_sheet_template
 msgid "Printing Type"
 msgstr "Tipo de Estampado"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.printing_recipe_sheet_template
+msgid "Process"
+msgstr "Proceso"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__production_percentage
+msgid "Production Percentage"
+msgstr "Porcentaje de Producción"
+
+#. module: idtx_printing
+#. odoo-python
+#: code:addons/idtx_printing/models/printing_design.py:0
+msgid "Production Percentage must be between 0 and 100."
+msgstr "El porcentaje de producción debe estar entre 0 y 100."
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color_chemical__quantity
+#: model_terms:ir.ui.view,arch_db:idtx_printing.printing_recipe_sheet_template
+msgid "Quantity"
+msgstr "Cantidad"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.printing_recipe_sheet_template
+msgid "Quantity +"
+msgstr "Cantidad +"
+
+#. module: idtx_printing
+#. odoo-python
+#: code:addons/idtx_printing/models/printing_design.py:0
+msgid "Quantity: %(old)s -> %(new)s"
+msgstr "Cantidad: %(old)s -> %(new)s"
+
+#. module: idtx_printing
+#. odoo-python
+#: code:addons/idtx_printing/models/printing_design.py:0
+msgid "Quantity: %s"
+msgstr "Cantidad: %s"
+
+#. module: idtx_printing
+#: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__state__quoting
+msgid "Quoting"
+msgstr "Cotización"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__range
@@ -489,15 +807,16 @@ msgid "Range"
 msgstr "Rango"
 
 #. module: idtx_printing
-#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__raport
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__raport
 msgid "Raport"
-msgstr ""
+msgstr "Raport"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__rating_ids
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__rating_ids
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__rating_ids
 msgid "Ratings"
-msgstr ""
+msgstr "Valoraciones"
 
 #. module: idtx_printing
 #: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__process_type_digital__reactive
@@ -506,9 +825,81 @@ msgid "Reactive"
 msgstr "Reactivo"
 
 #. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__name
+#: model_terms:ir.ui.view,arch_db:idtx_printing.printing_recipe_sheet_template
+msgid "Recipe"
+msgstr "Receta"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.printing_recipe_sheet_template
+msgid "Recipe +"
+msgstr "Receta +"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color_chemical__color_line_id
+#: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_rotary_line_form
+msgid "Recipe Color"
+msgstr "Color de Receta"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__recipe_date
+#: model_terms:ir.ui.view,arch_db:idtx_printing.printing_recipe_sheet_template
+msgid "Recipe Date"
+msgstr "Fecha de Receta"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_rotary_line_form
+msgid "Recipe Sheet"
+msgstr "Hoja de Receta"
+
+#. module: idtx_printing
+#. odoo-python
+#: code:addons/idtx_printing/models/printing_design.py:0
+#: model_terms:ir.ui.view,arch_db:idtx_printing.printing_recipe_sheet_template
+msgid "Recipe Version"
+msgstr "Versión de Receta"
+
+#. module: idtx_printing
+#. odoo-python
+#: code:addons/idtx_printing/models/printing_design.py:0
+msgid "Recipe chemical created:"
+msgstr "Químico de receta creado:"
+
+#. module: idtx_printing
+#. odoo-python
+#: code:addons/idtx_printing/models/printing_design.py:0
+msgid "Recipe chemical deleted:"
+msgstr "Químico de receta eliminado:"
+
+#. module: idtx_printing
+#. odoo-python
+#: code:addons/idtx_printing/models/printing_design.py:0
+msgid "Recipe chemical updated:"
+msgstr "Químico de receta actualizado:"
+
+#. module: idtx_printing
+#. odoo-python
+#: code:addons/idtx_printing/models/printing_design.py:0
+msgid "Recipe color created:"
+msgstr "Color de receta creado:"
+
+#. module: idtx_printing
+#. odoo-python
+#: code:addons/idtx_printing/models/printing_design.py:0
+msgid "Recipe color deleted:"
+msgstr "Color de receta eliminado:"
+
+#. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__activity_user_id
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__activity_user_id
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__activity_user_id
 msgid "Responsible User"
-msgstr ""
+msgstr "Usuario responsable"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_rotary_line_form
+msgid "Return to Pending"
+msgstr "Regresar a Pendiente"
 
 #. module: idtx_printing
 #: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__printing_type__rotary
@@ -516,9 +907,14 @@ msgid "Rotary"
 msgstr "Rotativo"
 
 #. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__rotary_line_id
+msgid "Rotary Line"
+msgstr "Línea Rotativa"
+
+#. module: idtx_printing
 #: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
 msgid "Rotary Min. Qty."
-msgstr "Can. Mín. Rotativo"
+msgstr "Cant. Mín. Rotativo"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__rotary_unit_price_ids
@@ -534,7 +930,7 @@ msgstr "Estampado Rotativo"
 #: model:ir.model.fields,field_description:idtx_printing.field_res_company__rotary_printing_min_qty
 #: model:ir.model.fields,field_description:idtx_printing.field_res_config_settings__rotary_printing_min_qty
 msgid "Rotary Printing Min. Qty."
-msgstr "Can. Mín. Estampado Rotativo"
+msgstr "Cant. Mín. Estampado Rotativo"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__process_type_rotary
@@ -542,9 +938,26 @@ msgid "Rotary Process Type"
 msgstr "Tipo de Proceso"
 
 #. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_rotary_line_form
+msgid "Rotary Recipe"
+msgstr "Receta Rotativa"
+
+#. module: idtx_printing
+#: model:ir.actions.act_window,name:idtx_printing.action_printing_design_rotary_line
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__rotary_recipe_line_ids
+#: model:ir.ui.menu,name:idtx_printing.print_rotary_recipe_menu
+#: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_form
+#: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_rotary_line_list
+#: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_rotary_line_search
+msgid "Rotary Recipes"
+msgstr "Recetas Rotativas"
+
+#. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__message_has_sms_error
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__message_has_sms_error
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__message_has_sms_error
 msgid "SMS Delivery error"
-msgstr ""
+msgstr "Error de entrega de SMS"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__sample_min_qty
@@ -595,6 +1008,16 @@ msgid "Sample Prices"
 msgstr "Precio de Muestras"
 
 #. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_form
+msgid "Set Development"
+msgstr "Pasar a Desarrollo"
+
+#. module: idtx_printing
+#: model_terms:ir.ui.view,arch_db:idtx_printing.view_printing_design_form
+msgid "Set Quoting"
+msgstr "Pasar a Cotización"
+
+#. module: idtx_printing
 #: model:ir.actions.act_window,name:idtx_printing.action_idtx_printing_config
 #: model:ir.ui.menu,name:idtx_printing.print_menu_settings_config
 msgid "Settings"
@@ -606,13 +1029,26 @@ msgid "Shrinkage"
 msgstr "Encogimiento"
 
 #. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design__state
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__state
+#: model_terms:ir.ui.view,arch_db:idtx_printing.printing_recipe_sheet_template
+msgid "Status"
+msgstr "Estado"
+
+#. module: idtx_printing
 #: model:ir.model.fields,help:idtx_printing.field_printing_design__activity_state
+#: model:ir.model.fields,help:idtx_printing.field_printing_design_rotary_line__activity_state
+#: model:ir.model.fields,help:idtx_printing.field_printing_design_rotary_line_color__activity_state
 msgid ""
 "Status based on activities\n"
 "Overdue: Due date is already passed\n"
 "Today: Activity date is today\n"
 "Planned: Future activities."
 msgstr ""
+"Estado basado en actividades\n"
+"Vencida: la fecha límite ya pasó\n"
+"Hoy: la fecha de la actividad es hoy\n"
+"Planificada: actividades futuras."
 
 #. module: idtx_printing
 #: model_terms:ir.ui.view,arch_db:idtx_printing.res_config_settings_view_form
@@ -628,9 +1064,17 @@ msgid "Strike Off Price"
 msgstr "Precio Strike Off"
 
 #. module: idtx_printing
+#. odoo-python
+#: code:addons/idtx_printing/models/printing_design.py:0
+msgid "The recipe must have at least one color before approval."
+msgstr "La receta debe tener al menos un color antes de la aprobación."
+
+#. module: idtx_printing
 #: model:ir.model.fields,help:idtx_printing.field_printing_design__activity_exception_decoration
+#: model:ir.model.fields,help:idtx_printing.field_printing_design_rotary_line__activity_exception_decoration
+#: model:ir.model.fields,help:idtx_printing.field_printing_design_rotary_line_color__activity_exception_decoration
 msgid "Type of the exception activity on record."
-msgstr ""
+msgstr "Tipo de la actividad de excepción en el registro."
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__unit_price
@@ -641,17 +1085,26 @@ msgstr "Precio"
 #. module: idtx_printing
 #: model:res.groups,name:idtx_printing.group_module_print_user
 msgid "User"
-msgstr ""
+msgstr "Usuario"
+
+#. module: idtx_printing
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__version
+msgid "Version"
+msgstr "Versión"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__website_message_ids
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line__website_message_ids
+#: model:ir.model.fields,field_description:idtx_printing.field_printing_design_rotary_line_color__website_message_ids
 msgid "Website Messages"
-msgstr ""
+msgstr "Mensajes del sitio web"
 
 #. module: idtx_printing
 #: model:ir.model.fields,help:idtx_printing.field_printing_design__website_message_ids
+#: model:ir.model.fields,help:idtx_printing.field_printing_design_rotary_line__website_message_ids
+#: model:ir.model.fields,help:idtx_printing.field_printing_design_rotary_line_color__website_message_ids
 msgid "Website communication history"
-msgstr ""
+msgstr "Historial de comunicación del sitio web"
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__yield_meter
@@ -661,4 +1114,4 @@ msgstr "Rendimiento"
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design_price__sequence
 msgid "sequence"
-msgstr ""
+msgstr "secuencia"

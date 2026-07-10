@@ -1,0 +1,781 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* idtx_thread_codigo
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-10 22:02+0000\n"
+"PO-Revision-Date: 2026-07-10 22:02+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: idtx_thread_codigo
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.thread_code_view_form
+msgid "(se genera de los atributos)"
+msgstr "(se genera de los atributos)"
+
+#. module: idtx_thread_codigo
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.thread_code_return_wizard_form
+msgid ""
+"<strong>¡Atención!</strong> Esta acción es <b>definitiva</b>: se\n"
+"                    eliminará el producto y la fila en SITPRO. <b>No se puede deshacer.</b>"
+msgstr ""
+"<strong>¡Atención!</strong> Esta acción es <b>definitiva</b>: se\n"
+"                    eliminará el producto y la fila en SITPRO. <b>No se puede deshacer.</b>"
+
+#. module: idtx_thread_codigo
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.thread_catalog_delete_wizard_form
+msgid "<strong>¡Atención!</strong> Vas a eliminar"
+msgstr "<strong>¡Atención!</strong> Vas a eliminar"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__message_needaction
+msgid "Action Needed"
+msgstr "Acción requerida"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_catalog__active
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_cabos__active
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_composicion__active
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_diseno__active
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_linea__active
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_proceso__active
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_titulo__active
+msgid "Active"
+msgstr "Activo"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__activity_ids
+msgid "Activities"
+msgstr "Actividades"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr "Decoración de actividad de excepción"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__activity_state
+msgid "Activity State"
+msgstr "Estado de la actividad"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__activity_type_icon
+msgid "Activity Type Icon"
+msgstr "Icono del tipo de actividad"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__message_attachment_count
+msgid "Attachment Count"
+msgstr "Número de archivos adjuntos"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields.selection,name:idtx_thread_codigo.selection__idtx_thread_code__state__draft
+msgid "Borrador"
+msgstr "Borrador"
+
+#. module: idtx_thread_codigo
+#: model:ir.actions.act_window,name:idtx_thread_codigo.product_thread_cabos_action
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__thread_cabos_id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_product__thread_cabos_id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_template__thread_cabos_id
+#: model:ir.ui.menu,name:idtx_thread_codigo.menu_thread_cabos
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_cabos_view_form
+msgid "Cabos"
+msgstr "Cabos"
+
+#. module: idtx_thread_codigo
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.thread_catalog_delete_wizard_form
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.thread_code_return_wizard_form
+msgid "Cancelar"
+msgstr "Cancelar"
+
+#. module: idtx_thread_codigo
+#: model:ir.model,name:idtx_thread_codigo.model_idtx_thread_catalog
+msgid "Catálogo de Hilado (base)"
+msgstr "Catálogo de Hilado (base)"
+
+#. module: idtx_thread_codigo
+#: model:ir.actions.act_window,name:idtx_thread_codigo.product_thread_composicion_action
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__thread_composicion_id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_product__thread_composicion_id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_template__thread_composicion_id
+#: model:ir.ui.menu,name:idtx_thread_codigo.menu_thread_composicion
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_composicion_view_form
+msgid "Composición"
+msgstr "Composición"
+
+#. module: idtx_thread_codigo
+#: model:ir.model,name:idtx_thread_codigo.model_idtx_thread_catalog_delete_wizard
+msgid "Confirmación de borrado de catálogo de hilado (definitivo + SITPRO)"
+msgstr "Confirmación de borrado de catálogo de hilado (definitivo + SITPRO)"
+
+#. module: idtx_thread_codigo
+#: model:ir.model,name:idtx_thread_codigo.model_idtx_thread_code_return_wizard
+msgid "Confirmación de revertir hilado (borrado definitivo)"
+msgstr "Confirmación de revertir hilado (borrado definitivo)"
+
+#. module: idtx_thread_codigo
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.thread_catalog_delete_wizard_form
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.thread_code_return_wizard_form
+msgid "Confirmar borrado definitivo"
+msgstr "Confirmar borrado definitivo"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_catalog_delete_wizard__count
+msgid "Count"
+msgstr "Número"
+
+#. module: idtx_thread_codigo
+#: model_terms:ir.actions.act_window,help:idtx_thread_codigo.thread_code_action
+msgid "Crea un nuevo código de hilado"
+msgstr "Crea un nuevo código de hilado"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields.selection,name:idtx_thread_codigo.selection__idtx_thread_code__state__created
+msgid "Creado"
+msgstr "Creado"
+
+#. module: idtx_thread_codigo
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.thread_code_view_form
+msgid "Crear Producto"
+msgstr "Crear Producto"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_catalog_delete_wizard__create_uid
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__create_uid
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code_return_wizard__create_uid
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_cabos__create_uid
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_composicion__create_uid
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_diseno__create_uid
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_linea__create_uid
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_proceso__create_uid
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_titulo__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_catalog_delete_wizard__create_date
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__create_date
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code_return_wizard__create_date
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_cabos__create_date
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_composicion__create_date
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_diseno__create_date
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_linea__create_date
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_proceso__create_date
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_titulo__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_catalog__code
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_cabos__code
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_composicion__code
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_diseno__code
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_linea__code
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_proceso__code
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_titulo__code
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.thread_code_view_form
+msgid "Código"
+msgstr "Código"
+
+#. module: idtx_thread_codigo
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_cabos_view_search
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_composicion_view_search
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_diseno_view_search
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_linea_view_search
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_proceso_view_search
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_titulo_view_search
+msgid "Código / Descripción"
+msgstr "Código / Descripción"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__thread_desarrollo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_product__thread_desarrollo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_template__thread_desarrollo
+msgid "Desarrollo"
+msgstr "Desarrollo"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_catalog__name
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__descripcion
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_cabos__name
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_composicion__name
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_diseno__name
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_linea__name
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_proceso__name
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_titulo__name
+msgid "Descripción"
+msgstr "Descripción"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_product__thread_descrip2
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_template__thread_descrip2
+msgid "Descripción 2"
+msgstr "Descripción 2"
+
+#. module: idtx_thread_codigo
+#: model:ir.actions.act_window,name:idtx_thread_codigo.product_thread_diseno_action
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__thread_diseno_id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_product__thread_diseno_id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_template__thread_diseno_id
+#: model:ir.ui.menu,name:idtx_thread_codigo.menu_thread_diseno
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_diseno_view_form
+msgid "Diseño"
+msgstr "Diseño"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_catalog__display_name
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_catalog_delete_wizard__display_name
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__display_name
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code_return_wizard__display_name
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_template__display_name
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_cabos__display_name
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_composicion__display_name
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_diseno__display_name
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_linea__display_name
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_proceso__display_name
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_titulo__display_name
+msgid "Display Name"
+msgstr "Nombre en pantalla"
+
+#. module: idtx_thread_codigo
+#. odoo-python
+#: code:addons/idtx_thread_codigo/models/thread_code.py:0
+msgid ""
+"El código '%s' ya existe en SITPRO (codigohilocrud); no se puede crear de "
+"nuevo."
+msgstr ""
+"El código '%s' ya existe en SITPRO (codigohilocrud); no se puede crear de "
+"nuevo."
+
+#. module: idtx_thread_codigo
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_cabos_view_form
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_cabos_view_list
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_composicion_view_form
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_composicion_view_list
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_diseno_view_form
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_diseno_view_list
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_linea_view_form
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_linea_view_list
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_proceso_view_form
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_proceso_view_list
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_titulo_view_form
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_titulo_view_list
+msgid "Eliminar"
+msgstr "Eliminar"
+
+#. module: idtx_thread_codigo
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.thread_catalog_delete_wizard_form
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.thread_code_return_wizard_form
+msgid "Eliminar definitivamente"
+msgstr "Eliminar definitivamente"
+
+#. module: idtx_thread_codigo
+#. odoo-python
+#: code:addons/idtx_thread_codigo/models/thread_catalog.py:0
+msgid "Eliminar valor de catálogo"
+msgstr "Eliminar valor de catálogo"
+
+#. module: idtx_thread_codigo
+#. odoo-python
+#: code:addons/idtx_thread_codigo/models/thread_code.py:0
+msgid "Este hilado ya tiene un producto creado."
+msgstr "Este hilado ya tiene un producto creado."
+
+#. module: idtx_thread_codigo
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_template_form_thread_codigo
+msgid ""
+"Estos datos provienen del Maestro de Código de Hilado\n"
+"                    (Operaciones ▸ Hilado) y no se editan desde el producto."
+msgstr ""
+"Estos datos provienen del Maestro de Código de Hilado\n"
+"                    (Operaciones ▸ Hilado) y no se editan desde el producto."
+
+#. module: idtx_thread_codigo
+#. odoo-python
+#: code:addons/idtx_thread_codigo/models/thread_code.py:0
+msgid "Faltan atributos para generar el código."
+msgstr "Faltan atributos para generar el código."
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__message_follower_ids
+msgid "Followers"
+msgstr "Seguidores"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__message_partner_ids
+msgid "Followers (Partners)"
+msgstr "Seguidores (contactos)"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,help:idtx_thread_codigo.field_idtx_thread_code__activity_type_icon
+msgid "Font awesome icon e.g. fa-tasks"
+msgstr "Icono de Font Awesome, p. ej. fa-tasks"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__has_message
+msgid "Has Message"
+msgstr "Tiene mensaje"
+
+#. module: idtx_thread_codigo
+#: model:ir.actions.act_window,name:idtx_thread_codigo.thread_code_action
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code_return_wizard__thread_code_id
+#: model:ir.ui.menu,name:idtx_thread_codigo.menu_thread_catalog_config
+#: model:ir.ui.menu,name:idtx_thread_codigo.menu_thread_code
+#: model:res.groups.privilege,name:idtx_thread_codigo.privilege_thread
+msgid "Hilado"
+msgstr "Hilado"
+
+#. module: idtx_thread_codigo
+#: model:ir.model,name:idtx_thread_codigo.model_idtx_thread_code
+msgid "Hilado (Maestro de Código)"
+msgstr "Hilado (Maestro de Código)"
+
+#. module: idtx_thread_codigo
+#: model:ir.model,name:idtx_thread_codigo.model_product_thread_cabos
+msgid "Hilado: Cabos"
+msgstr "Hilado: Cabos"
+
+#. module: idtx_thread_codigo
+#: model:ir.model,name:idtx_thread_codigo.model_product_thread_composicion
+msgid "Hilado: Composición"
+msgstr "Hilado: Composición"
+
+#. module: idtx_thread_codigo
+#: model:ir.model,name:idtx_thread_codigo.model_product_thread_diseno
+msgid "Hilado: Diseño"
+msgstr "Hilado: Diseño"
+
+#. module: idtx_thread_codigo
+#: model:ir.model,name:idtx_thread_codigo.model_product_thread_linea
+msgid "Hilado: Línea"
+msgstr "Hilado: Línea"
+
+#. module: idtx_thread_codigo
+#: model:ir.model,name:idtx_thread_codigo.model_product_thread_proceso
+msgid "Hilado: Proceso"
+msgstr "Hilado: Proceso"
+
+#. module: idtx_thread_codigo
+#: model:ir.model,name:idtx_thread_codigo.model_product_thread_titulo
+msgid "Hilado: Título"
+msgstr "Hilado: Título"
+
+#. module: idtx_thread_codigo
+#: model:ir.actions.server,name:idtx_thread_codigo.ir_cron_sync_thread_from_sitpro_ir_actions_server
+msgid "Hilado: sincronizar campos desde SITPRO"
+msgstr "Hilado: sincronizar campos desde SITPRO"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_catalog__id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_catalog_delete_wizard__id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code_return_wizard__id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_template__id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_cabos__id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_composicion__id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_diseno__id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_linea__id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_proceso__id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_titulo__id
+msgid "ID"
+msgstr "ID"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__activity_exception_icon
+msgid "Icon"
+msgstr "Icono"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,help:idtx_thread_codigo.field_idtx_thread_code__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr "Icono para indicar una actividad de excepción."
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,help:idtx_thread_codigo.field_idtx_thread_code__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr "Si está marcado, hay nuevos mensajes que requieren su atención."
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,help:idtx_thread_codigo.field_idtx_thread_code__message_has_error
+#: model:ir.model.fields,help:idtx_thread_codigo.field_idtx_thread_code__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr "Si está marcado, algunos mensajes tienen error de entrega."
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__message_is_follower
+msgid "Is Follower"
+msgstr "Es seguidor"
+
+#. module: idtx_thread_codigo
+#. odoo-python
+#: code:addons/idtx_thread_codigo/models/thread_code.py:0
+msgid "La referencia interna '%(code)s' ya existe en el producto '%(name)s'."
+msgstr "La referencia interna '%(code)s' ya existe en el producto '%(name)s'."
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_catalog_delete_wizard__write_uid
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__write_uid
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code_return_wizard__write_uid
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_cabos__write_uid
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_composicion__write_uid
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_diseno__write_uid
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_linea__write_uid
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_proceso__write_uid
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_titulo__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_catalog_delete_wizard__write_date
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__write_date
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code_return_wizard__write_date
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_cabos__write_date
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_composicion__write_date
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_diseno__write_date
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_linea__write_date
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_proceso__write_date
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_thread_titulo__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: idtx_thread_codigo
+#: model:ir.actions.act_window,name:idtx_thread_codigo.product_thread_linea_action
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__thread_linea_id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_product__thread_linea_id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_template__thread_linea_id
+#: model:ir.ui.menu,name:idtx_thread_codigo.menu_thread_linea
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_linea_view_form
+msgid "Línea"
+msgstr "Línea"
+
+#. module: idtx_thread_codigo
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_template_form_thread_codigo
+msgid "Maestro de Código (Hilado)"
+msgstr "Maestro de Código (Hilado)"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__message_has_error
+msgid "Message Delivery error"
+msgstr "Error de entrega del mensaje"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__message_ids
+msgid "Messages"
+msgstr "Mensajes"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr "Fecha límite de mi actividad"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__activity_calendar_event_id
+msgid "Next Activity Calendar Event"
+msgstr "Evento de calendario de la siguiente actividad"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr "Fecha límite de la siguiente actividad"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__activity_summary
+msgid "Next Activity Summary"
+msgstr "Resumen de la siguiente actividad"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__activity_type_id
+msgid "Next Activity Type"
+msgstr "Tipo de la siguiente actividad"
+
+#. module: idtx_thread_codigo
+#. odoo-python
+#: code:addons/idtx_thread_codigo/models/thread_catalog.py:0
+msgid "No se pudo actualizar el catálogo en SITPRO (%(t)s): %(e)s"
+msgstr "No se pudo actualizar el catálogo en SITPRO (%(t)s): %(e)s"
+
+#. module: idtx_thread_codigo
+#. odoo-python
+#: code:addons/idtx_thread_codigo/models/thread_code.py:0
+msgid "No se pudo actualizar la descripción en SITPRO (codigohilocrud): %s"
+msgstr "No se pudo actualizar la descripción en SITPRO (codigohilocrud): %s"
+
+#. module: idtx_thread_codigo
+#. odoo-python
+#: code:addons/idtx_thread_codigo/models/thread_code.py:0
+msgid "No se pudo crear el hilado en SITPRO (codigohilocrud): %s"
+msgstr "No se pudo crear el hilado en SITPRO (codigohilocrud): %s"
+
+#. module: idtx_thread_codigo
+#. odoo-python
+#: code:addons/idtx_thread_codigo/models/thread_catalog.py:0
+msgid "No se pudo eliminar el catálogo en SITPRO (%(t)s): %(e)s"
+msgstr "No se pudo eliminar el catálogo en SITPRO (%(t)s): %(e)s"
+
+#. module: idtx_thread_codigo
+#. odoo-python
+#: code:addons/idtx_thread_codigo/models/thread_code.py:0
+msgid "No se pudo revertir el hilado en SITPRO (codigohilocrud): %s"
+msgstr "No se pudo revertir el hilado en SITPRO (codigohilocrud): %s"
+
+#. module: idtx_thread_codigo
+#. odoo-python
+#: code:addons/idtx_thread_codigo/models/thread_catalog.py:0
+msgid ""
+"No se puede eliminar este valor de catálogo: hay %(n)s registro(s) de "
+"«%(model)s» que lo usan."
+msgstr ""
+"No se puede eliminar este valor de catálogo: hay %(n)s registro(s) de "
+"«%(model)s» que lo usan."
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__name
+msgid "Nombre"
+msgstr "Nombre"
+
+#. module: idtx_thread_codigo
+#. odoo-python
+#: code:addons/idtx_thread_codigo/models/thread_code.py:0
+msgid "Nuevo"
+msgstr "Nuevo"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__message_needaction_counter
+msgid "Number of Actions"
+msgstr "Número de acciones"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__message_has_error_counter
+msgid "Number of errors"
+msgstr "Número de errores"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,help:idtx_thread_codigo.field_idtx_thread_code__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr "Número de mensajes que requieren una acción"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,help:idtx_thread_codigo.field_idtx_thread_code__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr "Número de mensajes con error de entrega"
+
+#. module: idtx_thread_codigo
+#: model:ir.actions.act_window,name:idtx_thread_codigo.product_thread_proceso_action
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__thread_proceso_id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_product__thread_proceso_id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_template__thread_proceso_id
+#: model:ir.ui.menu,name:idtx_thread_codigo.menu_thread_proceso
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_proceso_view_form
+msgid "Proceso"
+msgstr "Proceso"
+
+#. module: idtx_thread_codigo
+#: model:ir.model,name:idtx_thread_codigo.model_product_template
+msgid "Product"
+msgstr "Producto"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__product_count
+msgid "Product Count"
+msgstr "Número de productos"
+
+#. module: idtx_thread_codigo
+#. odoo-python
+#: code:addons/idtx_thread_codigo/models/thread_code.py:0
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__product_id
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.thread_code_view_form
+msgid "Producto"
+msgstr "Producto"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__rating_ids
+msgid "Ratings"
+msgstr "Calificaciones"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_catalog_delete_wizard__res_ids
+msgid "Res"
+msgstr "Res"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_catalog_delete_wizard__res_model
+msgid "Res Model"
+msgstr "Modelo de recurso"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__activity_user_id
+msgid "Responsible User"
+msgstr "Usuario responsable"
+
+#. module: idtx_thread_codigo
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.thread_code_view_form
+msgid "Revertir"
+msgstr "Revertir"
+
+#. module: idtx_thread_codigo
+#. odoo-python
+#: code:addons/idtx_thread_codigo/models/thread_code.py:0
+msgid "Revertir hilado"
+msgstr "Revertir hilado"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr "Error de entrega del SMS"
+
+#. module: idtx_thread_codigo
+#. odoo-python
+#: code:addons/idtx_thread_codigo/models/thread_catalog.py:0
+msgid "Selecciona al menos un registro para eliminar."
+msgstr "Selecciona al menos un registro para eliminar."
+
+#. module: idtx_thread_codigo
+#: model:ir.actions.server,name:idtx_thread_codigo.action_sync_thread_catalogs_sitpro
+msgid "Sincronizar desde SITPRO"
+msgstr "Sincronizar desde SITPRO"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__state
+msgid "State"
+msgstr "Estado"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,help:idtx_thread_codigo.field_idtx_thread_code__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+"Estado basado en actividades\n"
+"Vencida: la fecha límite ya pasó\n"
+"Hoy: la fecha de la actividad es hoy\n"
+"Planificada: actividades futuras."
+
+#. module: idtx_thread_codigo
+#: model:res.groups,name:idtx_thread_codigo.group_thread_manager
+msgid "Thread Manager"
+msgstr "Gestor de Hilado"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,help:idtx_thread_codigo.field_idtx_thread_code__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr "Tipo de actividad de excepción en el registro."
+
+#. module: idtx_thread_codigo
+#: model:ir.actions.act_window,name:idtx_thread_codigo.product_thread_titulo_action
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__thread_titulo_id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_product__thread_titulo_id
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_product_template__thread_titulo_id
+#: model:ir.ui.menu,name:idtx_thread_codigo.menu_thread_titulo
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_titulo_view_form
+msgid "Título"
+msgstr "Título"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__user_is_thread_manager
+msgid "User Is Thread Manager"
+msgstr "El usuario es gestor de hilado"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,field_description:idtx_thread_codigo.field_idtx_thread_code__website_message_ids
+msgid "Website Messages"
+msgstr "Mensajes del sitio web"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.fields,help:idtx_thread_codigo.field_idtx_thread_code__website_message_ids
+msgid "Website communication history"
+msgstr "Historial de comunicación del sitio web"
+
+#. module: idtx_thread_codigo
+#: model:ir.model.constraint,message:idtx_thread_codigo.constraint_product_thread_diseno_uniq_code
+msgid "Ya existe un diseño con ese código."
+msgstr "Ya existe un diseño con ese código."
+
+#. module: idtx_thread_codigo
+#: model:ir.model.constraint,message:idtx_thread_codigo.constraint_product_thread_proceso_uniq_code
+msgid "Ya existe un proceso con ese código."
+msgstr "Ya existe un proceso con ese código."
+
+#. module: idtx_thread_codigo
+#: model:ir.model.constraint,message:idtx_thread_codigo.constraint_product_thread_titulo_uniq_code
+msgid "Ya existe un título con ese código."
+msgstr "Ya existe un título con ese código."
+
+#. module: idtx_thread_codigo
+#: model:ir.model.constraint,message:idtx_thread_codigo.constraint_product_thread_composicion_uniq_code
+msgid "Ya existe una composición con ese código."
+msgstr "Ya existe una composición con ese código."
+
+#. module: idtx_thread_codigo
+#: model:ir.model.constraint,message:idtx_thread_codigo.constraint_product_thread_linea_uniq_code
+msgid "Ya existe una línea con ese código."
+msgstr "Ya existe una línea con ese código."
+
+#. module: idtx_thread_codigo
+#: model:ir.model.constraint,message:idtx_thread_codigo.constraint_product_thread_cabos_uniq_code
+msgid "Ya existen cabos con ese código."
+msgstr "Ya existen cabos con ese código."
+
+#. module: idtx_thread_codigo
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.thread_catalog_delete_wizard_form
+msgid ""
+"valor(es) de catálogo. Esta acción es <b>definitiva</b>: también se eliminarán\n"
+"                    de <b>SITPRO</b>. No se puede deshacer."
+msgstr ""
+"valor(es) de catálogo. Esta acción es <b>definitiva</b>: también se eliminarán\n"
+"                    de <b>SITPRO</b>. No se puede deshacer."
+
+#. module: idtx_thread_codigo
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.thread_code_view_form
+msgid "¿Borrar el producto y volver a borrador?"
+msgstr "¿Borrar el producto y volver a borrador?"
+
+#. module: idtx_thread_codigo
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.thread_catalog_delete_wizard_form
+msgid "¿Confirmas el borrado definitivo?"
+msgstr "¿Confirmas el borrado definitivo?"
+
+#. module: idtx_thread_codigo
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.thread_code_view_form
+msgid "¿Crear el producto de este hilado?"
+msgstr "¿Crear el producto de este hilado?"
+
+#. module: idtx_thread_codigo
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_cabos_view_list
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_composicion_view_list
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_diseno_view_list
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_linea_view_list
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_proceso_view_list
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_titulo_view_list
+msgid "¿Eliminar el/los valor(es) de catálogo seleccionados?"
+msgstr "¿Eliminar el/los valor(es) de catálogo seleccionados?"
+
+#. module: idtx_thread_codigo
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_cabos_view_form
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_composicion_view_form
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_diseno_view_form
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_linea_view_form
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_proceso_view_form
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.product_thread_titulo_view_form
+msgid "¿Eliminar este valor de catálogo?"
+msgstr "¿Eliminar este valor de catálogo?"
+
+#. module: idtx_thread_codigo
+#: model_terms:ir.ui.view,arch_db:idtx_thread_codigo.thread_code_return_wizard_form
+msgid "¿Estás seguro de eliminar definitivamente este hilado?"
+msgstr "¿Estás seguro de eliminar definitivamente este hilado?"
+
+#. module: idtx_thread_codigo
+#: model:ir.ui.menu,name:idtx_thread_codigo.menu_thread_sync_sitpro
+msgid "↻ Sincronizar desde SITPRO"
+msgstr "↻ Sincronizar desde SITPRO"

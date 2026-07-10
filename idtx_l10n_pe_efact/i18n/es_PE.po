@@ -1,0 +1,105 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* idtx_l10n_pe_efact
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-10 22:02+0000\n"
+"PO-Revision-Date: 2026-07-10 22:02+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: idtx_l10n_pe_efact
+#: model:ir.model,name:idtx_l10n_pe_efact.model_res_company
+msgid "Companies"
+msgstr "Empresas"
+
+#. module: idtx_l10n_pe_efact
+#: model:ir.model.fields,field_description:idtx_l10n_pe_efact.field_account_edi_format__display_name
+#: model:ir.model.fields,field_description:idtx_l10n_pe_efact.field_res_company__display_name
+msgid "Display Name"
+msgstr "Nombre en pantalla"
+
+#. module: idtx_l10n_pe_efact
+#: model:ir.model,name:idtx_l10n_pe_efact.model_account_edi_format
+msgid "EDI format"
+msgstr "Formato EDI"
+
+#. module: idtx_l10n_pe_efact
+#: model:ir.model.fields.selection,name:idtx_l10n_pe_efact.selection__res_company__l10n_pe_edi_provider__efact
+msgid "Efact"
+msgstr "Efact"
+
+#. module: idtx_l10n_pe_efact
+#: model:ir.model.fields,field_description:idtx_l10n_pe_efact.field_res_company__l10n_pe_edi_provider
+msgid "Electronic Service Provider (ESP)"
+msgstr "Proveedor de Servicios Electrónicos (PSE)"
+
+#. module: idtx_l10n_pe_efact
+#. odoo-python
+#: code:addons/idtx_l10n_pe_efact/models/account_edi_format.py:0
+msgid ""
+"Empty EDI string provided for signing. XML generation might have failed."
+msgstr ""
+"Se proporcionó una cadena EDI vacía para firmar. La generación del XML pudo "
+"haber fallado."
+
+#. module: idtx_l10n_pe_efact
+#: model:ir.model.fields,field_description:idtx_l10n_pe_efact.field_account_edi_format__id
+#: model:ir.model.fields,field_description:idtx_l10n_pe_efact.field_res_company__id
+msgid "ID"
+msgstr "ID"
+
+#. module: idtx_l10n_pe_efact
+#. odoo-python
+#: code:addons/idtx_l10n_pe_efact/models/account_edi_format.py:0
+msgid "No valid certificate found for %s company."
+msgstr "No se encontró un certificado válido para la compañía %s."
+
+#. module: idtx_l10n_pe_efact
+#. odoo-python
+#: code:addons/idtx_l10n_pe_efact/models/account_edi_format.py:0
+msgid "Original message:"
+msgstr "Mensaje original:"
+
+#. module: idtx_l10n_pe_efact
+#. odoo-python
+#: code:addons/idtx_l10n_pe_efact/models/account_edi_format.py:0
+msgid "SOAP status code: "
+msgstr "Código de estado SOAP: "
+
+#. module: idtx_l10n_pe_efact
+#: model:ir.model.fields,help:idtx_l10n_pe_efact.field_res_company__l10n_pe_edi_provider
+msgid ""
+"Selector for the service we are going to use to report the invoices:Estela "
+"(formerly DIGIFLOW): With the certificate that estela (formerly digiflow) "
+"provided you, user and password you will report the invoices to them.SUNAT: "
+"You will report the invoices directly to them using your own certified, user"
+" and password.IAP: This is an odoo service that will send the unsigned "
+"documents to a PSE and process their response."
+msgstr ""
+"Selector para el servicio que sera usado para reportar las facturas: Estela "
+"(antes DIGIFLOW): Con el certificado, usuario y contraseña que estela (antes"
+" digiflow) te ha proporcionado podrás enviar tus facturas con ese "
+"ellos.SUNAT: Reportaras los documentos directamente con ellos con tu propio "
+"certificado, usuario y contraseña.IAP: Este es el servicio de odoo que "
+"enviará los documentos sin firmar al PSE y procesara la respuesta de este."
+
+#. module: idtx_l10n_pe_efact
+#. odoo-python
+#: code:addons/idtx_l10n_pe_efact/models/account_edi_format.py:0
+msgid "This document number is now registered by SUNAT as invalid."
+msgstr ""
+"Este número de documento ahora está registrado por SUNAT como inválido."
+
+#. module: idtx_l10n_pe_efact
+#. odoo-python
+#: code:addons/idtx_l10n_pe_efact/models/account_edi_format.py:0
+msgid "We got an error response from the OSE. "
+msgstr "Recibimos una respuesta de error del OSE. "

@@ -1,0 +1,205 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* idtx_hr_biometric_zk
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-10 22:02+0000\n"
+"PO-Revision-Date: 2026-07-10 22:02+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: idtx_hr_biometric_zk
+#. odoo-python
+#: code:addons/idtx_hr_biometric_zk/models/zk_device.py:0
+msgid "%s registros de asistencia creados/actualizados."
+msgstr "%s registros de asistencia creados/actualizados."
+
+#. module: idtx_hr_biometric_zk
+#: model:ir.model.fields,field_description:idtx_hr_biometric_zk.field_zk_device__active
+msgid "Active"
+msgstr "Activo"
+
+#. module: idtx_hr_biometric_zk
+#: model:ir.ui.menu,name:idtx_hr_biometric_zk.menu_zk_device
+msgid "Biométrico ZKTeco"
+msgstr "Biométrico ZKTeco"
+
+#. module: idtx_hr_biometric_zk
+#: model:ir.actions.server,name:idtx_hr_biometric_zk.cron_zk_sync_ir_actions_server
+msgid "Biométrico ZKTeco: sincronizar marcaciones"
+msgstr "Biométrico ZKTeco: sincronizar marcaciones"
+
+#. module: idtx_hr_biometric_zk
+#: model:ir.model.fields,field_description:idtx_hr_biometric_zk.field_zk_device__comm_password
+msgid "Clave de comunicación"
+msgstr "Clave de comunicación"
+
+#. module: idtx_hr_biometric_zk
+#: model:ir.model.fields,field_description:idtx_hr_biometric_zk.field_zk_device__company_id
+msgid "Compañía"
+msgstr "Compañía"
+
+#. module: idtx_hr_biometric_zk
+#: model_terms:ir.ui.view,arch_db:idtx_hr_biometric_zk.zk_device_view_form
+msgid "Conexión"
+msgstr "Conexión"
+
+#. module: idtx_hr_biometric_zk
+#. odoo-python
+#: code:addons/idtx_hr_biometric_zk/models/zk_device.py:0
+msgid "Conexión exitosa"
+msgstr "Conexión exitosa"
+
+#. module: idtx_hr_biometric_zk
+#: model:ir.model.fields,field_description:idtx_hr_biometric_zk.field_zk_device__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: idtx_hr_biometric_zk
+#: model:ir.model.fields,field_description:idtx_hr_biometric_zk.field_zk_device__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: idtx_hr_biometric_zk
+#: model:ir.model.fields,field_description:idtx_hr_biometric_zk.field_zk_device__ip
+msgid "Dirección IP"
+msgstr "Dirección IP"
+
+#. module: idtx_hr_biometric_zk
+#: model:ir.model.fields,field_description:idtx_hr_biometric_zk.field_zk_device__display_name
+msgid "Display Name"
+msgstr "Nombre mostrado"
+
+#. module: idtx_hr_biometric_zk
+#: model:ir.model,name:idtx_hr_biometric_zk.model_zk_device
+msgid "Dispositivo Biométrico ZKTeco"
+msgstr "Dispositivo Biométrico ZKTeco"
+
+#. module: idtx_hr_biometric_zk
+#: model:ir.actions.act_window,name:idtx_hr_biometric_zk.zk_device_action
+msgid "Dispositivos Biométricos"
+msgstr "Dispositivos Biométricos"
+
+#. module: idtx_hr_biometric_zk
+#: model:ir.model.fields,field_description:idtx_hr_biometric_zk.field_zk_device__lookback_days
+msgid "Días a revisar"
+msgstr "Días a revisar"
+
+#. module: idtx_hr_biometric_zk
+#. odoo-python
+#: code:addons/idtx_hr_biometric_zk/models/zk_device.py:0
+msgid "Equipo: %s"
+msgstr "Equipo: %s"
+
+#. module: idtx_hr_biometric_zk
+#. odoo-python
+#: code:addons/idtx_hr_biometric_zk/models/zk_device.py:0
+msgid ""
+"Falta la librería 'pyzk' en el servidor de Odoo. Instálela con:  pip install"
+" pyzk"
+msgstr ""
+"Falta la librería 'pyzk' en el servidor de Odoo. Instálela con:  pip install"
+" pyzk"
+
+#. module: idtx_hr_biometric_zk
+#: model:ir.model.fields,field_description:idtx_hr_biometric_zk.field_zk_device__force_udp
+msgid "Forzar UDP"
+msgstr "Forzar UDP"
+
+#. module: idtx_hr_biometric_zk
+#: model:ir.model.fields,field_description:idtx_hr_biometric_zk.field_zk_device__id
+msgid "ID"
+msgstr "ID"
+
+#. module: idtx_hr_biometric_zk
+#: model:ir.model.fields,field_description:idtx_hr_biometric_zk.field_zk_device__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: idtx_hr_biometric_zk
+#: model:ir.model.fields,field_description:idtx_hr_biometric_zk.field_zk_device__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: idtx_hr_biometric_zk
+#: model_terms:ir.ui.view,arch_db:idtx_hr_biometric_zk.zk_device_view_form
+msgid ""
+"Mapeo: el <strong>User ID</strong> del reloj debe ser el\n"
+"                        <strong>DNI</strong> del trabajador (campo de identificación del empleado).\n"
+"                        Los usuarios cuyo DNI no exista en Odoo se omiten y se registran en el log."
+msgstr ""
+"Mapeo: el <strong>User ID</strong> del reloj debe ser el\n"
+"                        <strong>DNI</strong> del trabajador (campo de identificación del empleado).\n"
+"                        Los usuarios cuyo DNI no exista en Odoo se omiten y se registran en el log."
+
+#. module: idtx_hr_biometric_zk
+#. odoo-python
+#: code:addons/idtx_hr_biometric_zk/models/zk_device.py:0
+msgid ""
+"No se pudo conectar al equipo %(name)s (%(ip)s:%(port)s).\n"
+"%(err)s"
+msgstr ""
+"No se pudo conectar al equipo %(name)s (%(ip)s:%(port)s).\n"
+"%(err)s"
+
+#. module: idtx_hr_biometric_zk
+#: model:ir.model.fields,field_description:idtx_hr_biometric_zk.field_zk_device__name
+msgid "Nombre"
+msgstr "Nombre"
+
+#. module: idtx_hr_biometric_zk
+#: model_terms:ir.ui.view,arch_db:idtx_hr_biometric_zk.zk_device_view_form
+msgid "Probar conexión"
+msgstr "Probar conexión"
+
+#. module: idtx_hr_biometric_zk
+#: model:ir.model.fields,field_description:idtx_hr_biometric_zk.field_zk_device__port
+msgid "Puerto"
+msgstr "Puerto"
+
+#. module: idtx_hr_biometric_zk
+#: model_terms:ir.ui.view,arch_db:idtx_hr_biometric_zk.zk_device_view_form
+msgid "Sincronización"
+msgstr "Sincronización"
+
+#. module: idtx_hr_biometric_zk
+#. odoo-python
+#: code:addons/idtx_hr_biometric_zk/models/zk_device.py:0
+msgid "Sincronización de marcaciones"
+msgstr "Sincronización de marcaciones"
+
+#. module: idtx_hr_biometric_zk
+#: model_terms:ir.ui.view,arch_db:idtx_hr_biometric_zk.zk_device_view_form
+msgid "Sincronizar ahora"
+msgstr "Sincronizar ahora"
+
+#. module: idtx_hr_biometric_zk
+#: model:ir.model.fields,field_description:idtx_hr_biometric_zk.field_zk_device__timeout
+msgid "Timeout (s)"
+msgstr "Tiempo de espera (s)"
+
+#. module: idtx_hr_biometric_zk
+#: model:ir.model.fields,help:idtx_hr_biometric_zk.field_zk_device__lookback_days
+msgid ""
+"Ventana de días hacia atrás que se procesa en cada sincronización. Las "
+"marcaciones más antiguas que esta ventana se ignoran."
+msgstr ""
+"Ventana de días hacia atrás que se procesa en cada sincronización. Las "
+"marcaciones más antiguas que esta ventana se ignoran."
+
+#. module: idtx_hr_biometric_zk
+#: model_terms:ir.ui.view,arch_db:idtx_hr_biometric_zk.zk_device_view_form
+msgid "p. ej. Reloj Tejeduría"
+msgstr "p. ej. Reloj Tejeduría"
+
+#. module: idtx_hr_biometric_zk
+#: model:ir.model.fields,field_description:idtx_hr_biometric_zk.field_zk_device__last_sync
+msgid "Última sincronización"
+msgstr "Última sincronización"

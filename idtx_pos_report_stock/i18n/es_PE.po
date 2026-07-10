@@ -1,0 +1,287 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* idtx_pos_report_stock
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-10 22:02+0000\n"
+"PO-Revision-Date: 2026-07-10 22:02+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: idtx_pos_report_stock
+#: model_terms:ir.ui.view,arch_db:idtx_pos_report_stock.view_idtx_pos_stock_report_list
+msgid "Bloq."
+msgstr "Bloq."
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_idtx_pos_stock_report__is_reserved
+msgid "Bloqueado"
+msgstr "Bloqueado"
+
+#. module: idtx_pos_report_stock
+#: model_terms:ir.ui.view,arch_db:idtx_pos_report_stock.view_pos_stock_barcode_wizard_form
+msgid "Close"
+msgstr "Cerrar"
+
+#. module: idtx_pos_report_stock
+#: model_terms:ir.ui.view,arch_db:idtx_pos_report_stock.view_idtx_pos_stock_report_search
+msgid "Color"
+msgstr "Color"
+
+#. module: idtx_pos_report_stock
+#: model_terms:ir.ui.view,arch_db:idtx_pos_report_stock.view_idtx_pos_stock_report_search
+msgid "Con Stock"
+msgstr "Con Stock"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_pos_stock_barcode_wizard__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_pos_stock_barcode_wizard__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: idtx_pos_report_stock
+#: model_terms:ir.ui.view,arch_db:idtx_pos_report_stock.view_idtx_pos_stock_report_search
+msgid "Código"
+msgstr "Código"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_idtx_pos_stock_report__color_code
+msgid "Código Color"
+msgstr "Código Color"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_idtx_pos_stock_report__product_code
+msgid "Código Producto"
+msgstr "Código Producto"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_idtx_pos_stock_report__product_name
+msgid "Descripción Producto"
+msgstr "Descripción Producto"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_idtx_pos_stock_report__display_name
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_pos_stock_barcode_wizard__display_name
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_stock_lot__display_name
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_stock_quant_relocate__display_name
+msgid "Display Name"
+msgstr "Nombre para mostrar"
+
+#. module: idtx_pos_report_stock
+#: model_terms:ir.ui.view,arch_db:idtx_pos_report_stock.view_idtx_pos_stock_report_search
+msgid "Estado Bloqueo"
+msgstr "Estado Bloqueo"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_pos_stock_barcode_wizard__label_html
+msgid "Etiquetas"
+msgstr "Etiquetas"
+
+#. module: idtx_pos_report_stock
+#: model:ir.actions.act_window,name:idtx_pos_report_stock.action_idtx_pos_stock_report
+#: model:ir.ui.menu,name:idtx_pos_report_stock.menu_idtx_pos_stock_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_report_stock.view_idtx_pos_stock_report_list
+msgid "Existencias PdV"
+msgstr "Existencias PdV"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_idtx_pos_stock_report__id
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_pos_stock_barcode_wizard__id
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_stock_lot__id
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_stock_quant_relocate__id
+msgid "ID"
+msgstr "ID"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_pos_stock_barcode_wizard__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_pos_stock_barcode_wizard__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model,name:idtx_pos_report_stock.model_stock_lot
+msgid "Lot/Serial"
+msgstr "Número de serie/lote"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_idtx_pos_stock_report__lot_id
+#: model_terms:ir.ui.view,arch_db:idtx_pos_report_stock.view_idtx_pos_stock_report_search
+msgid "Lote"
+msgstr "Lote"
+
+#. module: idtx_pos_report_stock
+#: model_terms:ir.actions.act_window,help:idtx_pos_report_stock.action_idtx_pos_stock_report
+msgid "No hay existencias registradas."
+msgstr "No hay existencias registradas."
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_idtx_pos_stock_report__color_name
+msgid "Nombre Color"
+msgstr "Nombre Color"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_idtx_pos_stock_report__lot_name
+msgid "Número de Lote"
+msgstr "Número de Lote"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_idtx_pos_stock_report__roll_name
+msgid "Número de Referencia"
+msgstr "Número de Referencia"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_idtx_pos_stock_report__partida
+#: model_terms:ir.ui.view,arch_db:idtx_pos_report_stock.view_idtx_pos_stock_report_search
+msgid "Partida"
+msgstr "Partida"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_idtx_pos_stock_report__partida_label
+msgid "Partida Detallada"
+msgstr "Partida Detallada"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,help:idtx_pos_report_stock.field_stock_lot__pos_reserved_order_id
+msgid ""
+"Pedido POS guardado que tiene este rollo reservado. Si está vacío, el rollo "
+"está disponible para venta."
+msgstr ""
+"Pedido POS guardado que tiene este rollo reservado. Si está vacío, el rollo "
+"está disponible para venta."
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,help:idtx_pos_report_stock.field_idtx_pos_stock_report__reserved_by_order_id
+msgid "Pedido POS que tiene este rollo bloqueado."
+msgstr "Pedido POS que tiene este rollo bloqueado."
+
+#. module: idtx_pos_report_stock
+#: model_terms:ir.ui.view,arch_db:idtx_pos_report_stock.view_idtx_pos_stock_report_list
+msgid "Pedido que bloquea"
+msgstr "Pedido que bloquea"
+
+#. module: idtx_pos_report_stock
+#: model_terms:ir.ui.view,arch_db:idtx_pos_report_stock.view_pos_stock_barcode_wizard_form
+msgid "Print"
+msgstr "Imprimir"
+
+#. module: idtx_pos_report_stock
+#: model_terms:ir.ui.view,arch_db:idtx_pos_report_stock.view_idtx_pos_stock_report_list
+msgid "Print Bar Code"
+msgstr "Imprimir código de barras"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_idtx_pos_stock_report__product_id
+#: model_terms:ir.ui.view,arch_db:idtx_pos_report_stock.view_idtx_pos_stock_report_search
+msgid "Producto"
+msgstr "Producto"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_idtx_pos_stock_report__product_label
+msgid "Producto Detallado"
+msgstr "Producto Detallado"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_idtx_pos_stock_report__roll_id
+msgid "Referencia"
+msgstr "Referencia"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model,name:idtx_pos_report_stock.model_idtx_pos_stock_report
+msgid "Reporte de Existencias PdV"
+msgstr "Reporte de Existencias PdV"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_pos_stock_barcode_wizard__report_ids
+msgid "Reports"
+msgstr "Reportes"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_stock_lot__pos_reserved_order_id
+msgid "Reservado en POS"
+msgstr "Reservado en POS"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_idtx_pos_stock_report__reserved_by_order_id
+msgid "Reservado por pedido"
+msgstr "Reservado por pedido"
+
+#. module: idtx_pos_report_stock
+#: model_terms:ir.ui.view,arch_db:idtx_pos_report_stock.view_idtx_pos_stock_report_list
+msgid "Reubicar"
+msgstr "Reubicar"
+
+#. module: idtx_pos_report_stock
+#: model_terms:ir.ui.view,arch_db:idtx_pos_report_stock.view_idtx_pos_stock_report_list
+#: model_terms:ir.ui.view,arch_db:idtx_pos_report_stock.view_pos_stock_barcode_wizard_form
+msgid "Screen Bar Code"
+msgstr "Código de barras en pantalla"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model,name:idtx_pos_report_stock.model_pos_stock_barcode_wizard
+msgid "Screen Barcode Wizard"
+msgstr "Asistente de código de barras en pantalla"
+
+#. module: idtx_pos_report_stock
+#: model_terms:ir.ui.view,arch_db:idtx_pos_report_stock.view_idtx_pos_stock_report_search
+msgid "Search Existencias"
+msgstr "Buscar existencias"
+
+#. module: idtx_pos_report_stock
+#: model_terms:ir.ui.view,arch_db:idtx_pos_report_stock.view_idtx_pos_stock_report_search
+msgid "Solo Bloqueados"
+msgstr "Solo Bloqueados"
+
+#. module: idtx_pos_report_stock
+#: model_terms:ir.ui.view,arch_db:idtx_pos_report_stock.view_idtx_pos_stock_report_search
+msgid "Solo Disponibles"
+msgstr "Solo Disponibles"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_idtx_pos_stock_report__quantity
+msgid "Stock (Kg)"
+msgstr "Stock (Kg)"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model,name:idtx_pos_report_stock.model_stock_quant_relocate
+msgid "Stock Quantity Relocation"
+msgstr "Traslado de las cantidades de existencias"
+
+#. module: idtx_pos_report_stock
+#: model_terms:ir.ui.view,arch_db:idtx_pos_report_stock.view_idtx_pos_stock_report_list
+msgid "Total"
+msgstr "Total"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,help:idtx_pos_report_stock.field_idtx_pos_stock_report__is_reserved
+msgid ""
+"True cuando el rollo está reservado por un pedido POS guardado y no se puede"
+" vender."
+msgstr ""
+"True cuando el rollo está reservado por un pedido POS guardado y no se puede"
+" vender."
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_idtx_pos_stock_report__location_id
+#: model_terms:ir.ui.view,arch_db:idtx_pos_report_stock.view_idtx_pos_stock_report_search
+msgid "Ubicación"
+msgstr "Ubicación"
+
+#. module: idtx_pos_report_stock
+#: model:ir.model.fields,field_description:idtx_pos_report_stock.field_idtx_pos_stock_report__write_date
+msgid "Última Actualización"
+msgstr "Última Actualización"

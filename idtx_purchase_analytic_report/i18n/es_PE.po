@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-06 15:21+0000\n"
-"PO-Revision-Date: 2026-02-06 15:21+0000\n"
+"POT-Creation-Date: 2026-07-10 22:02+0000\n"
+"PO-Revision-Date: 2026-07-10 22:02+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -26,6 +26,11 @@ msgid "Buyer"
 msgstr "Comprador"
 
 #. module: idtx_purchase_analytic_report
+#: model:ir.model.fields,field_description:idtx_purchase_analytic_report.field_purchase_order_line_analytic_report__categ_id
+msgid "Category"
+msgstr "Categoría"
+
+#. module: idtx_purchase_analytic_report
 #: model:ir.model.fields,field_description:idtx_purchase_analytic_report.field_purchase_order_line_analytic_report__code
 msgid "Code"
 msgstr "Código"
@@ -40,8 +45,9 @@ msgstr "Empresa"
 #: model:ir.ui.menu,name:idtx_purchase_analytic_report.menu_purchase_analytic_report
 #: model_terms:ir.ui.view,arch_db:idtx_purchase_analytic_report.view_purchase_analytic_report_list
 #: model_terms:ir.ui.view,arch_db:idtx_purchase_analytic_report.view_purchase_analytic_report_pivot
+#: model_terms:ir.ui.view,arch_db:idtx_purchase_analytic_report.view_purchase_analytic_report_search
 msgid "Compras por Centro de Costo"
-msgstr ""
+msgstr "Compras por Centro de Costo"
 
 #. module: idtx_purchase_analytic_report
 #: model:ir.model.fields,field_description:idtx_purchase_analytic_report.field_purchase_order_line_analytic_report__currency_id
@@ -56,12 +62,12 @@ msgstr "Fecha de Orden"
 #. module: idtx_purchase_analytic_report
 #: model:ir.model.fields,field_description:idtx_purchase_analytic_report.field_purchase_order_line_analytic_report__display_name
 msgid "Display Name"
-msgstr ""
+msgstr "Nombre mostrado"
 
 #. module: idtx_purchase_analytic_report
 #: model:ir.model.fields,field_description:idtx_purchase_analytic_report.field_purchase_order_line_analytic_report__id
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #. module: idtx_purchase_analytic_report
 #: model:ir.model.fields,field_description:idtx_purchase_analytic_report.field_purchase_order_line_analytic_report__order_id

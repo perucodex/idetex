@@ -1,432 +1,1636 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # 	* idtx_mrp_shop
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo 19.0\n"
+"Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-02-26 00:00+0000\n"
-"PO-Revision-Date: 2026-02-26 00:00+0000\n"
-"Last-Translator: Codex Development\n"
-"Language-Team: Spanish\n"
-"Language: es\n"
+"POT-Creation-Date: 2026-07-10 22:02+0000\n"
+"PO-Revision-Date: 2026-07-10 22:02+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
 
 #. module: idtx_mrp_shop
-msgid "Select a scale"
-msgstr "Seleccionar una balanza"
-
-#. module: idtx_mrp_shop
-msgid "Select size and quantity"
-msgstr "Seleccionar talla y cantidad"
-
-#. module: idtx_mrp_shop
-msgid "Select batch"
-msgstr "Seleccionar partida"
-
-#. module: idtx_mrp_shop
-msgid "You must select an employee."
-msgstr "Debe seleccionar un empleado."
-
-#. module: idtx_mrp_shop
-msgid "You must select an equipment."
-msgstr "Debe seleccionar una máquina."
-
-#. module: idtx_mrp_shop
-msgid "You must select a batch."
-msgstr "Debe seleccionar una partida."
-
-#. module: idtx_mrp_shop
-msgid "Batch, employee and equipment are required."
-msgstr "La partida, el empleado y la máquina son obligatorios."
-
-#. module: idtx_mrp_shop
-msgid "Error searching batches."
-msgstr "Error al buscar partidas."
-
-#. module: idtx_mrp_shop
-msgid "Error loading registry defaults."
-msgstr "Error al cargar los valores por defecto del registro."
-
-#. module: idtx_mrp_shop
-msgid "Missing water"
-msgstr "Falta agua"
-
-#. module: idtx_mrp_shop
-msgid "Add Salt and Alkali"
-msgstr "Agregar sal y álcali"
-
-#. module: idtx_mrp_shop
-msgid "Department 'Tintorería' not found. Please check the external ID."
-msgstr "No se encontró el departamento 'Tintorería'. Verifique el ID externo."
-
-#. module: idtx_mrp_shop
-msgid "Workcenter_id 'Tintorería' not found. Please check the external ID."
-msgstr "No se encontró el workcenter_id 'Tintorería'. Verifique el ID externo."
-
-#. module: idtx_mrp_shop
-msgid "No employees are available, please assign one first to add it to the shop floor view"
-msgstr "No hay empleados disponibles; asigne uno para mostrarlo en Shop Floor."
-
-#. module: idtx_mrp_shop
-msgid "No equipments are available, please assign one first to add it to the shop floor view"
-msgstr "No hay máquinas disponibles; asigne una para mostrarla en Shop Floor."
-
-#. module: idtx_mrp_shop
-msgid "No scales are available, please create one first to add it to the shop floor view"
-msgstr "No hay balanzas disponibles; cree una para mostrarla en Shop Floor."
-
-#. module: idtx_mrp_shop
-msgid "No options are available for this work order."
-msgstr "No hay opciones disponibles para esta orden de trabajo."
-
-#. module: idtx_mrp_shop
-msgid "Scale is not available."
-msgstr "La balanza no está disponible."
-
-#. module: idtx_mrp_shop
-msgid "No valid live weight from scale."
-msgstr "No hay un peso en vivo válido desde la balanza."
-
-#. module: idtx_mrp_shop
-msgid "Weight is unstable. Please wait until it stabilizes."
-msgstr "El peso está inestable. Espere a que se estabilice."
-
-#. module: idtx_mrp_shop
-msgid "Manual mode requires authorization."
-msgstr "El modo manual requiere autorización."
-
-#. module: idtx_mrp_shop
-msgid "You must enter a valid manual weight."
-msgstr "Debe ingresar un peso manual válido."
-
-#. module: idtx_mrp_shop
-msgid "No communication with the scale"
-msgstr "Sin comunicación con la balanza"
-
-#. module: idtx_mrp_shop
-msgid "Error reading scale"
-msgstr "Error al leer la balanza"
-
-#. module: idtx_mrp_shop
-msgid "Confirm"
-msgstr "Confirmar"
-
-#. module: idtx_mrp_shop
-msgid "Next"
-msgstr "Siguiente"
-
-#. module: idtx_mrp_shop
-msgid "Previous"
-msgstr "Anterior"
-
-#. module: idtx_mrp_shop
-msgid "Employee"
-msgstr "Empleado"
-
-#. module: idtx_mrp_shop
-msgid "Equipment"
-msgstr "Máquina"
-
-#. module: idtx_mrp_shop
-msgid "Batch"
-msgstr "Partida"
-
-#. module: idtx_mrp_shop
-msgid "Results"
-msgstr "Resultados"
-
-#. module: idtx_mrp_shop
-msgid "Search by code, client, color..."
-msgstr "Buscar por código, cliente, color..."
-
-#. module: idtx_mrp_shop
-msgid "Searching..."
-msgstr "Buscando..."
-
-#. module: idtx_mrp_shop
-msgid "No results."
-msgstr "Sin resultados."
-
-#. module: idtx_mrp_shop
-msgid "Selected:"
-msgstr "Seleccionado:"
-
-#. module: idtx_mrp_shop
-msgid "Client:"
-msgstr "Cliente:"
-
-#. module: idtx_mrp_shop
-msgid "Color:"
-msgstr "Color:"
-
-#. module: idtx_mrp_shop
-msgid "Date:"
-msgstr "Fecha:"
-
-#. module: idtx_mrp_shop
-msgid "Total:"
-msgstr "Total:"
-
-#. module: idtx_mrp_shop
-msgid "Op:"
-msgstr "Op:"
-
-#. module: idtx_mrp_shop
-msgid "Customer"
-msgstr "Cliente"
-
-#. module: idtx_mrp_shop
-msgid "Code"
-msgstr "Código"
-
-#. module: idtx_mrp_shop
-msgid "Weight"
-msgstr "Peso"
-
-#. module: idtx_mrp_shop
-msgid "Bath Ratio"
-msgstr "Relación de baño"
-
-#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__abs_factor
 msgid "Absorption Factor"
 msgstr "Factor de absorción"
 
 #. module: idtx_mrp_shop
-msgid "Recipe Salt"
-msgstr "Sal de receta"
+#: model:hr.department,name:idtx_mrp_shop.acabados
+msgid "Acabados"
+msgstr "Acabados"
 
 #. module: idtx_mrp_shop
-msgid "Recipe Carbonate"
-msgstr "Carbonato de receta"
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.js:0
+msgid "Acceso denegado: se requiere MRP Manager."
+msgstr "Acceso denegado: se requiere MRP Manager."
 
 #. module: idtx_mrp_shop
-msgid "Recipe Soda"
-msgstr "Soda de receta"
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__message_needaction
+msgid "Action Needed"
+msgstr "Acción requerida"
 
 #. module: idtx_mrp_shop
-msgid "Total Volume"
-msgstr "Volumen total"
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__activity_ids
+msgid "Activities"
+msgstr "Actividades"
 
 #. module: idtx_mrp_shop
-msgid "Start Salt"
-msgstr "Inicio sal"
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr "Decoración de actividad de excepción"
 
 #. module: idtx_mrp_shop
-msgid "Start Brine"
-msgstr "Inicio salmuera"
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__activity_state
+msgid "Activity State"
+msgstr "Estado de la actividad"
 
 #. module: idtx_mrp_shop
-msgid "Alkalis Volume"
-msgstr "Volumen de álcalis"
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__activity_type_icon
+msgid "Activity Type Icon"
+msgstr "Icono del tipo de actividad"
 
 #. module: idtx_mrp_shop
-msgid "Dyes Volume"
-msgstr "Volumen de colorantes"
-
-#. module: idtx_mrp_shop
-msgid "Salt Qty"
-msgstr "Cantidad de sal"
-
-#. module: idtx_mrp_shop
-msgid "Hydrophilicity"
-msgstr "Hidrofilidad"
-
-#. module: idtx_mrp_shop
-msgid "Ok"
-msgstr "Ok"
-
-#. module: idtx_mrp_shop
-msgid "Regular"
-msgstr "Regular"
-
-#. module: idtx_mrp_shop
-msgid "Bad"
-msgstr "Malo"
-
-#. module: idtx_mrp_shop
-msgid "Peroxide Residual"
-msgstr "Peróxido residual"
-
-#. module: idtx_mrp_shop
-msgid "Hardness Dyeing Water"
-msgstr "Dureza agua de teñido"
-
-#. module: idtx_mrp_shop
-msgid "Anti-pilling pH"
-msgstr "pH antipilling"
-
-#. module: idtx_mrp_shop
-msgid "Dye pH"
-msgstr "pH teñido"
-
-#. module: idtx_mrp_shop
-msgid "Previous pH"
-msgstr "pH anterior"
-
-#. module: idtx_mrp_shop
-msgid "Neutralized pH"
-msgstr "pH neutralizado"
-
-#. module: idtx_mrp_shop
-msgid "Pump Speed"
-msgstr "Velocidad de bomba"
-
-#. module: idtx_mrp_shop
-msgid "Reel Speed"
-msgstr "Velocidad de reel"
-
-#. module: idtx_mrp_shop
-msgid "Hydrovary"
-msgstr "Hydrovary"
-
-#. module: idtx_mrp_shop
-msgid "Rope 1"
-msgstr "Cuerda 1"
-
-#. module: idtx_mrp_shop
-msgid "Rope 2"
-msgstr "Cuerda 2"
-
-#. module: idtx_mrp_shop
-msgid "Rope 3"
-msgstr "Cuerda 3"
-
-#. module: idtx_mrp_shop
-msgid "Rope 4"
-msgstr "Cuerda 4"
-
-#. module: idtx_mrp_shop
-msgid "Rope 5"
-msgstr "Cuerda 5"
-
-#. module: idtx_mrp_shop
-msgid "Rope 6"
-msgstr "Cuerda 6"
-
-#. module: idtx_mrp_shop
-msgid "Salt Measurement"
-msgstr "Medición de sal"
-
-#. module: idtx_mrp_shop
-msgid "Water Batches"
-msgstr "Lotes de agua"
-
-#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__actual_volume
 msgid "Actual Volume"
-msgstr "Volumen actual"
+msgstr "Volumen real"
 
 #. module: idtx_mrp_shop
-msgid "Total Tank Volume"
-msgstr "Volumen total de tanque"
-
-#. module: idtx_mrp_shop
-msgid "Final Volume"
-msgstr "Volumen final"
-
-#. module: idtx_mrp_shop
-msgid "Volume Variation"
-msgstr "Variación de volumen"
-
-#. module: idtx_mrp_shop
-msgid "Missing Water"
-msgstr "Falta agua"
-
-#. module: idtx_mrp_shop
-msgid "Add Salt"
-msgstr "Agregar sal"
-
-#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
 msgid "Add Carbonate"
 msgstr "Agregar carbonato"
 
 #. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/menuPopup.xml:0
+msgid "Add Roll"
+msgstr "Agregar rollo"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+msgid "Add Salt"
+msgstr "Agregar sal"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#. odoo-python
+#: code:addons/idtx_mrp_shop/models/batch_registry.py:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.js:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model_terms:ir.ui.view,arch_db:idtx_mrp_shop.batch_registry_form_view
+msgid "Add Salt and Alkali"
+msgstr "Agregar sal y álcali"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/menuPopup.xml:0
+msgid "Add Size"
+msgstr "Agregar talla"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
 msgid "Add Soda"
 msgstr "Agregar soda"
 
 #. module: idtx_mrp_shop
-msgid "Tipo de Proceso"
-msgstr "Tipo de proceso"
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__alkalis_volume
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_maintenance_equipment__alkalis_vol
+msgid "Alkalis Volume"
+msgstr "Volumen de álcalis"
 
 #. module: idtx_mrp_shop
-msgid "Imagen Proceso"
-msgstr "Imagen de proceso"
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__antipilling_ph
+msgid "Anti-pilling pH"
+msgstr "pH antipilling"
 
 #. module: idtx_mrp_shop
-msgid "pH Poly"
-msgstr "pH Poly"
+#: model_terms:ir.ui.view,arch_db:idtx_mrp_shop.batch_registry_form_view
+msgid "Are you sure you want to register batch process?"
+msgstr "¿Estás seguro de registrar el proceso de la partida?"
 
 #. module: idtx_mrp_shop
-msgid "Red Wash"
-msgstr "Lavado rojo"
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__message_attachment_count
+msgid "Attachment Count"
+msgstr "Número de archivos adjuntos"
 
 #. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields.selection,name:idtx_mrp_shop.selection__batch_registry__hydrophilicity__bad
+msgid "Bad"
+msgstr "Malo"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/simple_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__batch_id
+msgid "Batch"
+msgstr "Partida"
+
+#. module: idtx_mrp_shop
+#: model:ir.ui.menu,name:idtx_mrp_shop.menu_batch_registry
+msgid "Batch Registers"
+msgstr "Registros de partida"
+
+#. module: idtx_mrp_shop
+#: model:ir.actions.act_window,name:idtx_mrp_shop.batch_registry_action
+#: model:ir.model,name:idtx_mrp_shop.model_batch_registry
+msgid "Batch Registry"
+msgstr "Registro de partida"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.js:0
+msgid "Batch, employee and equipment are required."
+msgstr "Se requiere partida, empleado y equipo."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+msgid "Bath Ratio"
+msgstr "Relación de baño"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__bath_ratio
+msgid "Bath ratio"
+msgstr "Relación de baño"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__before_carb
 msgid "Before Carbonate"
-msgstr "Antes de carbonato"
+msgstr "Antes del carbonato"
 
 #. module: idtx_mrp_shop
-msgid "First Carbonate"
-msgstr "Primer carbonato"
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__brine_qty
+msgid "Brine Quantity"
+msgstr "Cantidad de salmuera"
 
 #. module: idtx_mrp_shop
-msgid "Second Carbonate"
-msgstr "Segundo carbonato"
+#: model_terms:ir.ui.view,arch_db:idtx_mrp_shop.batch_registry_form_view
+msgid "Calculation to Add"
+msgstr "Cálculo a agregar"
 
 #. module: idtx_mrp_shop
-msgid "Exhaustion"
-msgstr "Agotamiento"
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.xml:0
+msgid "Cantidad"
+msgstr "Cantidad"
 
 #. module: idtx_mrp_shop
-msgid "Neutralization"
-msgstr "Neutralización"
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__add_carbonate
+msgid "Carbonate"
+msgstr "Carbonato"
 
 #. module: idtx_mrp_shop
-msgid "Soaping"
-msgstr "Jabonado"
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/simple_batch_dialog.xml:0
+msgid "Clear"
+msgstr "Limpiar"
 
 #. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/simple_batch_dialog.xml:0
+msgid "Client:"
+msgstr "Cliente:"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+msgid "Code"
+msgstr "Código"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+msgid "Color"
+msgstr "Color"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__color_code
+msgid "Color Code"
+msgstr "Código de color"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__color_name
+msgid "Color Name"
+msgstr "Nombre de color"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_maintenance_equipment__color_vol
+msgid "Color Volume"
+msgstr "Volumen de color"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/simple_batch_dialog.xml:0
+msgid "Color:"
+msgstr "Color:"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.js:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/simple_batch_dialog.xml:0
+msgid "Confirm"
+msgstr "Confirmar"
+
+#. module: idtx_mrp_shop
+#. odoo-python
+#: code:addons/idtx_mrp_shop/models/mrp_workorder_batch.py:0
+msgid "Contiene rollos fabricados en otra OF: %s"
+msgstr "Contiene rollos fabricados en otra OF: %s"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.xml:0
+msgid "Contraseña"
+msgstr "Contraseña"
+
+#. module: idtx_mrp_shop
+#: model:hr.department,name:idtx_mrp_shop.calidad
+msgid "Control de Calidad"
+msgstr "Control de Calidad"
+
+#. module: idtx_mrp_shop
+#: model_terms:ir.actions.act_window,help:idtx_mrp_shop.batch_registry_action
+msgid "Create a new registry for a batch"
+msgstr "Crear un nuevo registro para una partida"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__partner_id
+msgid "Customer"
+msgstr "Cliente"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_mrp_workorder_batch__color_code
+msgid "Código de Color"
+msgstr "Código de Color"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/simple_batch_dialog.xml:0
+msgid "Date:"
+msgstr "Fecha:"
+
+#. module: idtx_mrp_shop
+#. odoo-python
+#: code:addons/idtx_mrp_shop/models/mrp_workorder.py:0
+msgid "Debes seleccionar empleado y equipo."
+msgstr "Debes seleccionar empleado y equipo."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/simple_batch_dialog.xml:0
+msgid "Debes seleccionar un empleado."
+msgstr "Debes seleccionar un empleado."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/simple_batch_dialog.xml:0
+msgid "Debes seleccionar un equipo."
+msgstr "Debes seleccionar un equipo."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#. odoo-python
+#: code:addons/idtx_mrp_shop/models/mrp_workorder.py:0
+#: code:addons/idtx_mrp_shop/static/src/shop/simple_batch_dialog.xml:0
+msgid "Debes seleccionar una partida."
+msgstr "Debes seleccionar una partida."
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,help:idtx_mrp_shop.field_mrp_workorder__operator_department_id
+msgid ""
+"Departamento (por compañía) cuyos empleados pueden operar el centro de "
+"trabajo de esta orden. Lo usa el shop floor para listar operarios."
+msgstr ""
+"Departamento (por compañía) cuyos empleados pueden operar el centro de "
+"trabajo de esta orden. Lo usa el shop floor para listar operarios."
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_mrp_workcenter__operator_department_id
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_mrp_workorder__operator_department_id
+msgid "Departamento de Operarios"
+msgstr "Departamento de Operarios"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,help:idtx_mrp_shop.field_mrp_workcenter__operator_department_id
+msgid ""
+"Departamento de RR.HH. cuyos empleados pueden operar este centro de trabajo "
+"(p. ej. los tintoreros). El shop floor usa este departamento para listar a "
+"quién asignar el batch. Es por compañía: configura el centro de trabajo de "
+"cada empresa con su propio departamento."
+msgstr ""
+"Departamento de RR.HH. cuyos empleados pueden operar este centro de trabajo "
+"(p. ej. los tintoreros). El shop floor usa este departamento para listar a "
+"quién asignar el batch. Es por compañía: configura el centro de trabajo de "
+"cada empresa con su propio departamento."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.xml:0
+msgid "Desactivar manual"
+msgstr "Desactivar manual"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__discharge
 msgid "Discharge"
 msgstr "Descarga"
 
 #. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__display_name
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_maintenance_equipment__display_name
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_mrp_workcenter__display_name
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_mrp_workorder__display_name
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_mrp_workorder_batch__display_name
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_mrp_workorder_roll__display_name
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_res_users__display_name
+msgid "Display Name"
+msgstr "Mostrar nombre"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields.selection,name:idtx_mrp_shop.selection__batch_registry__state__done
+msgid "Done"
+msgstr "Hecho"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields.selection,name:idtx_mrp_shop.selection__batch_registry__state__draft
+msgid "Draft"
+msgstr "Borrador"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/menuPopup.xml:0
+msgid "Dye Batch"
+msgstr "Partida de teñido"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__dye_ph
+msgid "Dye pH"
+msgstr "pH de teñido"
+
+#. module: idtx_mrp_shop
+#: model_terms:ir.ui.view,arch_db:idtx_mrp_shop.batch_registry_form_view
+msgid "Dyeing Curve"
+msgstr "Curva de teñido"
+
+#. module: idtx_mrp_shop
+#: model_terms:ir.ui.view,arch_db:idtx_mrp_shop.hr_equipment_view_form_inherit
+msgid "Dyeing Data"
+msgstr "Datos de teñido"
+
+#. module: idtx_mrp_shop
+#: model_terms:ir.ui.view,arch_db:idtx_mrp_shop.mrp_workorder_batch_form_inherit
+msgid "Dyeing Registry"
+msgstr "Registro de teñido"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__dyes_volume
+msgid "Dyes Volume"
+msgstr "Volumen de colorantes"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.js:0
+msgid ""
+"El centro de trabajo de esta orden no tiene un 'Departamento de Operarios' "
+"configurado. Configúralo en el centro de trabajo."
+msgstr ""
+"El centro de trabajo de esta orden no tiene un 'Departamento de Operarios' "
+"configurado. Configúralo en el centro de trabajo."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/simple_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__employee_id
+msgid "Employee"
+msgstr "Empleado"
+
+#. module: idtx_mrp_shop
+#. odoo-python
+#: code:addons/idtx_mrp_shop/models/mrp_workorder.py:0
+msgid "Employee and equipment are required"
+msgstr "Se requiere empleado y equipo"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.xml:0
+msgid "Enter weight (kg)"
+msgstr "Ingresa el peso (kg)"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/simple_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__equipment_id
+msgid "Equipment"
+msgstr "Equipo"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.js:0
+msgid "Error loading registry defaults."
+msgstr "Error al cargar los valores por defecto del registro."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.js:0
+msgid "Error reading scale"
+msgstr "Error al leer la balanza"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.js:0
+msgid "Error searching batches."
+msgstr "Error al buscar partidas."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.xml:0
+msgid "Espera a que el peso esté estable para confirmar."
+msgstr "Espera a que el peso esté estable para confirmar."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.xml:0
+msgid "Estable"
+msgstr "Estable"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__exhaustion
+msgid "Exhaustion"
+msgstr "Agotamiento"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__final_volume
+msgid "Final Volume"
+msgstr "Volumen final"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__first_carb
+msgid "First Carbonate"
+msgstr "Primer carbonato"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__message_follower_ids
+msgid "Followers"
+msgstr "Seguidores"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__message_partner_ids
+msgid "Followers (Partners)"
+msgstr "Seguidores (Contactos)"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,help:idtx_mrp_shop.field_batch_registry__activity_type_icon
+msgid "Font awesome icon e.g. fa-tasks"
+msgstr "Icono de Font Awesome, p. ej. fa-tasks"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__hardness_dyeing_water
+msgid "Hardness Dyeing Water"
+msgstr "Dureza del agua de teñido"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__has_message
+msgid "Has Message"
+msgstr "Tiene mensaje"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__hydrophilicity
+msgid "Hydrophilicity"
+msgstr "Hidrofilidad"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__hydrovary
+msgid "Hydrovary"
+msgstr "Hydrovary"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__id
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_maintenance_equipment__id
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_mrp_workcenter__id
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_mrp_workorder__id
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_mrp_workorder_batch__id
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_mrp_workorder_roll__id
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_res_users__id
+msgid "ID"
+msgstr "ID"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields.selection,name:idtx_mrp_shop.selection__batch_registry__tipo_proceso__isotermica60
+msgid "ISOTERMICA60"
+msgstr "ISOTERMICA60"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__activity_exception_icon
+msgid "Icon"
+msgstr "Icono"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,help:idtx_mrp_shop.field_batch_registry__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr "Icono para indicar una actividad de excepción."
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,help:idtx_mrp_shop.field_batch_registry__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr "Si está marcado, hay nuevos mensajes que requieren su atención."
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,help:idtx_mrp_shop.field_batch_registry__message_has_error
+#: model:ir.model.fields,help:idtx_mrp_shop.field_batch_registry__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr "Si está marcado, algunos mensajes tienen error de envío."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__imagen_proceso
+msgid "Imagen Proceso"
+msgstr "Imagen Proceso"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.xml:0
+msgid "Inestable"
+msgstr "Inestable"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.xml:0
+msgid "Install App"
+msgstr "Instalar aplicación"
+
+#. module: idtx_mrp_shop
+#: model_terms:ir.ui.view,arch_db:idtx_mrp_shop.batch_registry_form_view
+msgid "Intensity"
+msgstr "Intensidad"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__message_is_follower
+msgid "Is Follower"
+msgstr "Es seguidor"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,help:idtx_mrp_shop.field_batch_registry__use_lab_recipe
+msgid ""
+"La operación registrada usa receta de laboratorio: solo entonces el registro"
+" lleva los datos de teñido (receta, volúmenes, curva...)."
+msgstr ""
+"La operación registrada usa receta de laboratorio: solo entonces el registro"
+" lleva los datos de teñido (receta, volúmenes, curva...)."
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,help:idtx_mrp_shop.field_mrp_workorder__use_lab_recipe
+msgid ""
+"La operación usa receta de laboratorio: el taller abre el registro completo "
+"de teñido; si no, solo el registro simple de la partida."
+msgstr ""
+"La operación usa receta de laboratorio: el taller abre el registro completo "
+"de teñido; si no, solo el registro simple de la partida."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.js:0
+msgid "La orden no tiene un centro de trabajo asignado."
+msgstr "La orden no tiene un centro de trabajo asignado."
+
+#. module: idtx_mrp_shop
+#. odoo-python
+#: code:addons/idtx_mrp_shop/models/mrp_workorder.py:0
+msgid "La partida seleccionada no existe."
+msgstr "La partida seleccionada no existe."
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields.selection,name:idtx_mrp_shop.selection__batch_registry__tipo_proceso__migracion40-60
+msgid "MIGRACION40-60"
+msgstr "MIGRACION40-60"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields.selection,name:idtx_mrp_shop.selection__batch_registry__tipo_proceso__migracion60-80-60
+msgid "MIGRACION60-80-60"
+msgstr "MIGRACION60-80-60"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields.selection,name:idtx_mrp_shop.selection__batch_registry__tipo_proceso__migracion80-90-60
+msgid "MIGRACION80-90-60"
+msgstr "MIGRACION80-90-60"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields.selection,name:idtx_mrp_shop.selection__batch_registry__tipo_proceso__migrasalade160-80-60
+msgid "MIGRASALADE160-80-60"
+msgstr "MIGRASALADE160-80-60"
+
+#. module: idtx_mrp_shop
+#: model:ir.model,name:idtx_mrp_shop.model_maintenance_equipment
+msgid "Maintenance Equipment"
+msgstr "Equipo de mantenimiento"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.xml:0
+msgid "Manual"
+msgstr "Manual"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.js:0
+msgid "Manual mode requires authorization."
+msgstr "El modo manual requiere autorización."
+
+#. module: idtx_mrp_shop
+#: model_terms:ir.ui.view,arch_db:idtx_mrp_shop.batch_registry_form_view
+msgid "Measure Control"
+msgstr "Control de medidas"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__message
+msgid "Message"
+msgstr "Mensaje"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__message_has_error
+msgid "Message Delivery error"
+msgstr "Error de envío del mensaje"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__message_ids
+msgid "Messages"
+msgstr "Mensajes"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model_terms:ir.ui.view,arch_db:idtx_mrp_shop.batch_registry_form_view
+msgid "Missing Water"
+msgstr "Agua faltante"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#. odoo-python
+#: code:addons/idtx_mrp_shop/models/batch_registry.py:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.js:0
+msgid "Missing water"
+msgstr "Agua faltante"
+
+#. module: idtx_mrp_shop
+#: model:ir.model,name:idtx_mrp_shop.model_mrp_workorder_batch
+msgid "Mrp Workorder Batch"
+msgstr "Partida"
+
+#. module: idtx_mrp_shop
+#: model:ir.model,name:idtx_mrp_shop.model_mrp_workorder_roll
+msgid "Mrp Workorder Roll"
+msgstr "Rollo de Tejido"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr "Fecha límite de mi actividad"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__neutralization
+msgid "Neutralization"
+msgstr "Neutralización"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__neutralized_ph
+msgid "Neutralized pH"
+msgstr "pH neutralizado"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.js:0
+msgid "Next"
+msgstr "Siguiente"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__activity_calendar_event_id
+msgid "Next Activity Calendar Event"
+msgstr "Evento de calendario de la siguiente actividad"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr "Fecha límite de la siguiente actividad"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__activity_summary
+msgid "Next Activity Summary"
+msgstr "Resumen de la siguiente actividad"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__activity_type_id
+msgid "Next Activity Type"
+msgstr "Tipo de la siguiente actividad"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#. odoo-python
+#: code:addons/idtx_mrp_shop/models/mrp_workorder.py:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.js:0
+msgid "No communication with the scale"
+msgstr "Sin comunicación con la balanza"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.js:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.js:0
+msgid ""
+"No employees are available, please assign one first to add it to the shop "
+"floor view"
+msgstr ""
+"No hay empleados disponibles; asigna uno primero para agregarlo a la vista "
+"de piso de planta"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.js:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.js:0
+msgid ""
+"No equipments are available, please assign one first to add it to the shop "
+"floor view"
+msgstr ""
+"No hay equipos disponibles; asigna uno primero para agregarlo a la vista de "
+"piso de planta"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.js:0
+msgid "No options are available for this work order."
+msgstr "No hay opciones disponibles para esta orden de trabajo."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/simple_batch_dialog.xml:0
+msgid "No results."
+msgstr "Sin resultados."
+
+#. module: idtx_mrp_shop
+#. odoo-python
+#: code:addons/idtx_mrp_shop/models/mrp_workorder.py:0
+msgid "No scale selected and no weight provided"
+msgstr "No se seleccionó balanza ni se ingresó un peso"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.js:0
+msgid ""
+"No scales are available, please create one first to add it to the shop floor"
+" view"
+msgstr ""
+"No hay balanzas disponibles; crea una primero para agregarla a la vista de "
+"piso de planta"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.js:0
+msgid "No sizes on technical sheet of the product."
+msgstr "El producto no tiene tallas en su ficha técnica."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.js:0
+msgid "No valid live weight from scale."
+msgstr "La balanza no entrega un peso en vivo válido."
+
+#. module: idtx_mrp_shop
+#. odoo-python
+#: code:addons/idtx_mrp_shop/models/mrp_workorder.py:0
+msgid "No valid weight was provided"
+msgstr "No se ingresó un peso válido"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_mrp_workorder_batch__color_name
+msgid "Nombre de Color"
+msgstr "Nombre de Color"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__message_needaction_counter
+msgid "Number of Actions"
+msgstr "Número de acciones"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__message_has_error_counter
+msgid "Number of errors"
+msgstr "Número de errores"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,help:idtx_mrp_shop.field_batch_registry__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr "Número de mensajes que requieren una acción"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,help:idtx_mrp_shop.field_batch_registry__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr "Número de mensajes con error de envío"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__notes
 msgid "Observations"
 msgstr "Observaciones"
 
 #. module: idtx_mrp_shop
-msgid "The record will be created in state Done when you press Confirm."
-msgstr "El registro se creará en estado Hecho cuando presione Confirmar."
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields.selection,name:idtx_mrp_shop.selection__batch_registry__hydrophilicity__ok
+msgid "Ok"
+msgstr "Aceptar"
 
 #. module: idtx_mrp_shop
-msgid "No sizes on technical sheet of the product."
-msgstr "No hay tallas en la ficha técnica del producto."
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/simple_batch_dialog.xml:0
+msgid "Op:"
+msgstr "Op:"
 
 #. module: idtx_mrp_shop
-msgid "You must select a size and quantity."
-msgstr "Debe seleccionar una talla y una cantidad."
+#. odoo-python
+#: code:addons/idtx_mrp_shop/models/mrp_workorder.py:0
+msgid "Operación %(op)s registrada para la partida %(batch)s."
+msgstr "Operación %(op)s registrada para la partida %(batch)s."
 
 #. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.xml:0
+msgid "Option"
+msgstr "Opción"
+
+#. module: idtx_mrp_shop
+#. odoo-python
+#: code:addons/idtx_mrp_shop/models/mrp_workorder.py:0
+msgid "Option %(option)s is missing product/lot for %(product)s."
+msgstr "A la opción %(option)s le falta producto/lote para %(product)s."
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_mrp_workorder_batch__partner_ids
+msgid "Partners"
+msgstr "Contactos"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__peroxide_residual
+msgid "Peroxide Residual"
+msgstr "Peróxido residual"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.xml:0
+msgid "Peso Balanza"
+msgstr "Peso Balanza"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.xml:0
+msgid "Peso manual"
+msgstr "Peso manual"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+msgid "Previous"
+msgstr "Anterior"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__previous_ph
+msgid "Previous pH"
+msgstr "pH previo"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/hide_mark_as_done.xml:0
+msgid "Progress"
+msgstr "Progreso"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__pump_speed
+msgid "Pump Speed"
+msgstr "Velocidad de bomba"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__rating_ids
+msgid "Ratings"
+msgstr "Calificaciones"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,help:idtx_mrp_shop.field_mrp_workorder_batch__color_recipe_id
+msgid ""
+"Receta con la que se tiñe la partida (única: los rollos deben compartir "
+"receta). Igual que en la OF: código + nombre + receta."
+msgstr ""
+"Receta con la que se tiñe la partida (única: los rollos deben compartir "
+"receta). Igual que en la OF: código + nombre + receta."
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_mrp_workorder_batch__color_recipe_id
+msgid "Receta de Color"
+msgstr "Receta de Color"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__recipe_carbonate
+msgid "Recipe Carbonate"
+msgstr "Carbonato de receta"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__recipe_salt
+msgid "Recipe Salt"
+msgstr "Sal de receta"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__recipe_soda
+msgid "Recipe Soda"
+msgstr "Soda de receta"
+
+#. module: idtx_mrp_shop
+#: model_terms:ir.ui.view,arch_db:idtx_mrp_shop.batch_registry_form_view
+msgid "Recipe Values"
+msgstr "Valores de receta"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__red_wash
+msgid "Red Wash"
+msgstr "Lavado reductivo"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+msgid "Reel Speed"
+msgstr "Velocidad de molinete"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__reel_speed
+msgid "Reel Speed Mt/min"
+msgstr "Velocidad de molinete Mt/min"
+
+#. module: idtx_mrp_shop
+#: model_terms:ir.ui.view,arch_db:idtx_mrp_shop.batch_registry_form_view
+msgid "Register"
+msgstr "Registrar"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/menuPopup.xml:0
+msgid "Register Batch"
+msgstr "Registrar partida"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/mrp_menu_dialog.js:0
+msgid "Register batch operation"
+msgstr "Registrar operación de la partida"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_mrp_workorder_batch__registry_ids
+msgid "Registers"
+msgstr "Registros"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__registry_date
+msgid "Registry Date"
+msgstr "Fecha de registro"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields.selection,name:idtx_mrp_shop.selection__batch_registry__hydrophilicity__reg
+msgid "Regular"
+msgstr "Regular"
+
+#. module: idtx_mrp_shop
+#: model_terms:ir.ui.view,arch_db:idtx_mrp_shop.batch_registry_form_view
+msgid "Regulations"
+msgstr "Regulaciones"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields.selection,name:idtx_mrp_shop.selection__batch_registry__state__rejected
+msgid "Rejected"
+msgstr "Rechazado"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__activity_user_id
+msgid "Responsible User"
+msgstr "Usuario responsable"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/simple_batch_dialog.xml:0
+msgid "Results"
+msgstr "Resultados"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__ribbon_message
+msgid "Ribbon Message"
+msgstr "Mensaje de la cinta"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+msgid "Rope 1"
+msgstr "Cuerda 1"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+msgid "Rope 2"
+msgstr "Cuerda 2"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+msgid "Rope 3"
+msgstr "Cuerda 3"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+msgid "Rope 4"
+msgstr "Cuerda 4"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+msgid "Rope 5"
+msgstr "Cuerda 5"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+msgid "Rope 6"
+msgstr "Cuerda 6"
+
+#. module: idtx_mrp_shop
+#: model_terms:ir.ui.view,arch_db:idtx_mrp_shop.batch_registry_form_view
+msgid "Rope speed Mt/min"
+msgstr "Velocidad de cuerda Mt/min"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__rope1
+msgid "Rope1"
+msgstr "Cuerda1"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__rope2
+msgid "Rope2"
+msgstr "Cuerda2"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__rope3
+msgid "Rope3"
+msgstr "Cuerda3"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__rope4
+msgid "Rope4"
+msgstr "Cuerda4"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__rope5
+msgid "Rope5"
+msgstr "Cuerda5"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__rope6
+msgid "Rope6"
+msgstr "Cuerda6"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr "Error de envío del SMS"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__salt_measurement
+msgid "Salt Measurement"
+msgstr "Medición de sal"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+msgid "Salt Qty"
+msgstr "Cant. de sal"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__salt_qty
+msgid "Salt Quantity"
+msgstr "Cantidad de sal"
+
+#. module: idtx_mrp_shop
+#. odoo-python
+#: code:addons/idtx_mrp_shop/models/mrp_workorder.py:0
 msgid "Scale IP is not configured"
 msgstr "La IP de la balanza no está configurada"
 
 #. module: idtx_mrp_shop
-msgid "No valid weight was provided"
-msgstr "No se proporcionó un peso válido"
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.js:0
+msgid "Scale is not available."
+msgstr "La balanza no está disponible."
 
 #. module: idtx_mrp_shop
-msgid "Employee and equipment are required"
-msgstr "Empleado y máquina son obligatorios"
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.xml:0
+msgid "Se requiere autorización para ingreso manual."
+msgstr "Se requiere autorización para ingreso manual."
 
 #. module: idtx_mrp_shop
-msgid "The selected option does not belong to this workorder"
-msgstr "La opción seleccionada no pertenece a esta orden de trabajo"
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/simple_batch_dialog.xml:0
+msgid "Search by code, client, color..."
+msgstr "Buscar por código, cliente, color..."
 
 #. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/simple_batch_dialog.xml:0
+msgid "Searching..."
+msgstr "Buscando..."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__second_carb
+msgid "Second Carbonate"
+msgstr "Segundo carbonato"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/mrp_menu_dialog.js:0
+msgid "Select a scale"
+msgstr "Selecciona una balanza"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/simple_batch_dialog.xml:0
+msgid "Select an employee..."
+msgstr "Selecciona un empleado..."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/simple_batch_dialog.xml:0
+msgid "Select an equipment..."
+msgstr "Selecciona un equipo..."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/mrp_menu_dialog.js:0
+msgid "Select batch"
+msgstr "Seleccionar partida"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/mrp_menu_dialog.js:0
+msgid "Select size and quantity"
+msgstr "Selecciona talla y cantidad"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/simple_batch_dialog.xml:0
+msgid "Selected:"
+msgstr "Seleccionado:"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.xml:0
+msgid "Sin estado"
+msgstr "Sin estado"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__soaping
+msgid "Soaping"
+msgstr "Jabonado"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__add_soda
+msgid "Soda"
+msgstr "Soda"
+
+#. module: idtx_mrp_shop
+#: model_terms:ir.ui.view,arch_db:idtx_mrp_shop.batch_registry_form_view
+msgid "Speed"
+msgstr "Velocidad"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__start_brine
+msgid "Start Brine"
+msgstr "Salmuera inicial"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__start_salt
+msgid "Start Salt"
+msgstr "Sal inicial"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,help:idtx_mrp_shop.field_batch_registry__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+"Estado basado en actividades\n"
+"Vencida: la fecha límite ya pasó\n"
+"Hoy: la actividad es para hoy\n"
+"Planificada: actividades futuras."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.xml:0
+msgid "Talla"
+msgstr "Talla"
+
+#. module: idtx_mrp_shop
+#: model:hr.department,name:idtx_mrp_shop.tejeduria
+msgid "Tejeduría"
+msgstr "Tejeduría"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__add_salt
+msgid "Textile Salt"
+msgstr "Sal textil"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+msgid "The record will be created in state"
+msgstr "El registro se creará en estado"
+
+#. module: idtx_mrp_shop
+#. odoo-python
+#: code:addons/idtx_mrp_shop/models/mrp_workorder.py:0
 msgid "The selected employee is not assigned to this option"
 msgstr "El empleado seleccionado no está asignado a esta opción"
 
 #. module: idtx_mrp_shop
+#. odoo-python
+#: code:addons/idtx_mrp_shop/models/mrp_workorder.py:0
 msgid "The selected equipment is not assigned to this option"
-msgstr "La máquina seleccionada no está asignada a esta opción"
+msgstr "El equipo seleccionado no está asignado a esta opción"
+
+#. module: idtx_mrp_shop
+#. odoo-python
+#: code:addons/idtx_mrp_shop/models/mrp_workorder.py:0
+msgid "The selected option does not belong to this workorder"
+msgstr "La opción seleccionada no pertenece a esta orden de trabajo"
+
+#. module: idtx_mrp_shop
+#. odoo-python
+#: code:addons/idtx_mrp_shop/models/mrp_workorder.py:0
+msgid ""
+"The selected option is incomplete for thread consumption. Missing "
+"product/lot for: %s"
+msgstr ""
+"La opción seleccionada está incompleta para el consumo de hilo. Falta "
+"producto/lote para: %s"
+
+#. module: idtx_mrp_shop
+#: model:hr.department,name:idtx_mrp_shop.tintoreria
+msgid "Tintorería"
+msgstr "Tintorería"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__tipo_proceso
+msgid "Tipo de Proceso"
+msgstr "Tipo de Proceso"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__total_tanq_volume
+msgid "Total Tank Volume"
+msgstr "Volumen total del tanque"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__total_volume
+msgid "Total Volume"
+msgstr "Volumen total"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__weight
+msgid "Total Weight"
+msgstr "Peso total"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/simple_batch_dialog.xml:0
+msgid "Total:"
+msgstr "Total:"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,help:idtx_mrp_shop.field_batch_registry__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr "Tipo de la actividad de excepción en el registro."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.xml:0
+msgid "Unidad:"
+msgstr "Unidad:"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__use_lab_recipe
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_mrp_workorder__use_lab_recipe
+msgid "Use Lab Recipe?"
+msgstr "¿Usa receta de laboratorio?"
+
+#. module: idtx_mrp_shop
+#: model:ir.model,name:idtx_mrp_shop.model_res_users
+msgid "User"
+msgstr "Usuario"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.xml:0
+msgid "Usuario"
+msgstr "Usuario"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.xml:0
+msgid "Verificando..."
+msgstr "Verificando..."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.xml:0
+msgid "Verificar"
+msgstr "Verificar"
+
+#. module: idtx_mrp_shop
+#: model_terms:ir.ui.view,arch_db:idtx_mrp_shop.batch_registry_form_view
+msgid "Volume"
+msgstr "Volumen"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__volume_variation
+msgid "Volume Variation"
+msgstr "Variación de volumen"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__water_batches
+msgid "Water Batches"
+msgstr "Baños de agua"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__website_message_ids
+msgid "Website Messages"
+msgstr "Mensajes del sitio web"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,help:idtx_mrp_shop.field_batch_registry__website_message_ids
+msgid "Website communication history"
+msgstr "Historial de comunicación del sitio web"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+msgid "Weight"
+msgstr "Peso"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.js:0
+msgid "Weight is unstable. Please wait until it stabilizes."
+msgstr "El peso está inestable. Espera a que se estabilice."
+
+#. module: idtx_mrp_shop
+#: model:ir.model,name:idtx_mrp_shop.model_mrp_workcenter
+msgid "Work Center"
+msgstr "Centro de trabajo"
+
+#. module: idtx_mrp_shop
+#: model:ir.model,name:idtx_mrp_shop.model_mrp_workorder
+msgid "Work Order"
+msgstr "Orden de trabajo"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__workorder_id
+msgid "Workorder"
+msgstr "Orden de trabajo"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.js:0
+msgid "You must enter a valid manual weight."
+msgstr "Debes ingresar un peso manual válido."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.js:0
+msgid "You must enter a valid quantity."
+msgstr "Debes ingresar una cantidad válida."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.js:0
+msgid "You must select a batch."
+msgstr "Debes seleccionar una partida."
+
+#. module: idtx_mrp_shop
+#. odoo-python
+#: code:addons/idtx_mrp_shop/models/mrp_workorder.py:0
+msgid "You must select a size and quantity."
+msgstr "Debes seleccionar una talla y una cantidad."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.js:0
+msgid "You must select a size."
+msgstr "Debes seleccionar una talla."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.js:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.js:0
+msgid "You must select an employee."
+msgstr "Debes seleccionar un empleado."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.js:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.js:0
+msgid "You must select an equipment."
+msgstr "Debes seleccionar un equipo."
+
+#. module: idtx_mrp_shop
+#. odoo-python
+#: code:addons/idtx_mrp_shop/models/mrp_workorder_roll.py:0
+msgid "You must select an option before creating a weaving roll."
+msgstr "Debes seleccionar una opción antes de crear un rollo de tejido."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_scale_dialog.js:0
+#: code:addons/idtx_mrp_shop/static/src/shop/select_size_dialog.js:0
+msgid "You must select an option."
+msgstr "Debes seleccionar una opción."
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: code:addons/idtx_mrp_shop/static/src/shop/simple_batch_dialog.xml:0
+msgid "kg"
+msgstr "kg"
+
+#. module: idtx_mrp_shop
+#: model_terms:ir.ui.view,arch_db:idtx_mrp_shop.batch_registry_form_view
+msgid "pH Measurement"
+msgstr "Medición de pH"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__ph_poly
+msgid "pH Poly"
+msgstr "pH Poli"
+
+#. module: idtx_mrp_shop
+#: model:ir.model.fields,field_description:idtx_mrp_shop.field_batch_registry__state
+msgid "state"
+msgstr "estado"
+
+#. module: idtx_mrp_shop
+#. odoo-javascript
+#: code:addons/idtx_mrp_shop/static/src/shop/select_batch_dialog.xml:0
+msgid "when you press Confirm."
+msgstr "cuando presiones Confirmar."

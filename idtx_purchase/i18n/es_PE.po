@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-03 17:30+0000\n"
-"PO-Revision-Date: 2025-10-03 17:30+0000\n"
+"POT-Creation-Date: 2026-07-10 22:02+0000\n"
+"PO-Revision-Date: 2026-07-10 22:02+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -16,17 +16,29 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: idtx_purchase
+#: model_terms:ir.ui.view,arch_db:idtx_purchase.report_purchaseorder_document_inherit
+msgid ""
+"%\n"
+"                        <br/>"
+msgstr ""
+"%\n"
+"                        <br/>"
+
+#. module: idtx_purchase
 #: model_terms:ir.ui.view,arch_db:idtx_purchase.styles_company_report_inherit
 msgid ""
 "&amp;.o_report_layout_idtx {\n"
 "                    #informations {\n"
 "                        border-color:"
 msgstr ""
+"&amp;.o_report_layout_idtx {\n"
+"                    #informations {\n"
+"                        border-color:"
 
 #. module: idtx_purchase
 #: model_terms:ir.ui.view,arch_db:idtx_purchase.external_layout_idtx
 msgid "(document name)"
-msgstr ""
+msgstr "(nombre del documento)"
 
 #. module: idtx_purchase
 #: model_terms:ir.ui.view,arch_db:idtx_purchase.styles_company_report_inherit
@@ -36,6 +48,10 @@ msgid ""
 "                        strong {\n"
 "                            color: preview-color-contrast("
 msgstr ""
+");\n"
+"\n"
+"                        strong {\n"
+"                            color: preview-color-contrast("
 
 #. module: idtx_purchase
 #: model_terms:ir.ui.view,arch_db:idtx_purchase.styles_company_report_inherit
@@ -46,6 +62,11 @@ msgid ""
 "                    thead th, #total .o_total td {\n"
 "                        background-color:"
 msgstr ""
+", 92%);\n"
+"                    }\n"
+"\n"
+"                    thead th, #total .o_total td {\n"
+"                        background-color:"
 
 #. module: idtx_purchase
 #: model_terms:ir.ui.view,arch_db:idtx_purchase.styles_company_report_inherit
@@ -53,6 +74,8 @@ msgid ""
 ";\n"
 "                        background-color: mix(white,"
 msgstr ""
+";\n"
+"                        background-color: mix(white,"
 
 #. module: idtx_purchase
 #: model_terms:ir.ui.view,arch_db:idtx_purchase.styles_company_report_inherit
@@ -60,20 +83,32 @@ msgid ""
 ";\n"
 "                        color: preview-color-contrast("
 msgstr ""
+";\n"
+"                        color: preview-color-contrast("
 
 #. module: idtx_purchase
 #: model_terms:ir.ui.view,arch_db:idtx_purchase.external_layout_idtx
 msgid "<strong>Company address block</strong>"
-msgstr ""
+msgstr "<strong>Bloque de dirección de la compañía</strong>"
 
 #. module: idtx_purchase
 #: model_terms:ir.ui.view,arch_db:idtx_purchase.external_layout_idtx
 msgid "<strong>Company details block</strong>"
-msgstr ""
+msgstr "<strong>Bloque de detalles de la compañía</strong>"
 
 #. module: idtx_purchase
 #: model_terms:ir.ui.view,arch_db:idtx_purchase.report_purchaseorder_document_inherit
-msgid "<strong>Notes:</strong>"
+msgid "<strong>Distr.</strong>"
+msgstr "<strong>Distr.</strong>"
+
+#. module: idtx_purchase
+#: model_terms:ir.ui.view,arch_db:idtx_purchase.report_purchaseorder_document_inherit
+msgid "<strong>Item</strong>"
+msgstr "<strong>Ítem</strong>"
+
+#. module: idtx_purchase
+#: model_terms:ir.ui.view,arch_db:idtx_purchase.report_purchaseorder_document_inherit
+msgid "<strong>Notas:</strong>"
 msgstr "<strong>Notas:</strong>"
 
 #. module: idtx_purchase
@@ -83,33 +118,62 @@ msgstr "<strong>Fecha de Orden:</strong>"
 
 #. module: idtx_purchase
 #: model_terms:ir.ui.view,arch_db:idtx_purchase.report_purchaseorder_document_inherit
-msgid "<strong>Payment Terms: </strong>"
+msgid "<strong>Precio Desc.</strong>"
+msgstr "<strong>Precio Desc.</strong>"
+
+#. module: idtx_purchase
+#: model_terms:ir.ui.view,arch_db:idtx_purchase.report_purchaseorder_document_inherit
+msgid "<strong>Tipo de Cambio (USD): </strong>"
+msgstr "<strong>Tipo de Cambio (USD): </strong>"
+
+#. module: idtx_purchase
+#: model_terms:ir.ui.view,arch_db:idtx_purchase.report_purchaseorder_document_inherit
+msgid "<strong>Términos de Pago: </strong>"
 msgstr "<strong>Términos de Pago: </strong>"
 
 #. module: idtx_purchase
 #: model_terms:ir.ui.view,arch_db:idtx_purchase.external_layout_idtx
 msgid "Company tagline"
-msgstr ""
+msgstr "Eslogan de la compañía"
 
 #. module: idtx_purchase
 #: model_terms:ir.ui.view,arch_db:idtx_purchase.external_layout_idtx
 msgid "Contains the company address."
-msgstr ""
+msgstr "Contiene la dirección de la compañía."
 
 #. module: idtx_purchase
 #: model_terms:ir.ui.view,arch_db:idtx_purchase.external_layout_idtx
 msgid "Contains the company details."
-msgstr ""
+msgstr "Contiene los detalles de la compañía."
+
+#. module: idtx_purchase
+#: model:ir.model.fields,field_description:idtx_purchase.field_purchase_order__currency_rate_usd
+msgid "Currency Rate USD"
+msgstr "Tipo de cambio USD"
+
+#. module: idtx_purchase
+#: model:ir.model.fields,field_description:idtx_purchase.field_ir_sequence__display_name
+#: model:ir.model.fields,field_description:idtx_purchase.field_purchase_order__display_name
+#: model:ir.model.fields,field_description:idtx_purchase.field_purchase_order_line__display_name
+msgid "Display Name"
+msgstr "Nombre en pantalla"
+
+#. module: idtx_purchase
+#: model:ir.model.fields,field_description:idtx_purchase.field_ir_sequence__id
+#: model:ir.model.fields,field_description:idtx_purchase.field_purchase_order__id
+#: model:ir.model.fields,field_description:idtx_purchase.field_purchase_order_line__id
+msgid "ID"
+msgstr "ID"
 
 #. module: idtx_purchase
 #: model_terms:ir.ui.view,arch_db:idtx_purchase.external_layout_idtx
 msgid "Logo"
-msgstr ""
+msgstr "Logo"
 
 #. module: idtx_purchase
 #: model_terms:ir.ui.view,arch_db:idtx_purchase.external_layout_idtx
 msgid "Page <span class=\"page\"/> / <span class=\"topage\"/>"
-msgstr ""
+msgstr "Página <span class=\"page\"/> / <span class=\"topage\"/>"
 
 #. module: idtx_purchase
 #: model:ir.ui.menu,name:idtx_purchase.menu_payment_terms_purchase
@@ -117,11 +181,36 @@ msgid "Payment Terms"
 msgstr "Términos de Pago"
 
 #. module: idtx_purchase
+#: model:ir.model,name:idtx_purchase.model_purchase_order
+msgid "Purchase Order"
+msgstr "Orden de compra"
+
+#. module: idtx_purchase
+#: model:ir.model,name:idtx_purchase.model_purchase_order_line
+msgid "Purchase Order Line"
+msgstr "Línea de la orden de compra"
+
+#. module: idtx_purchase
+#: model:ir.model,name:idtx_purchase.model_ir_sequence
+msgid "Sequence"
+msgstr "Secuencia"
+
+#. module: idtx_purchase
 #: model_terms:ir.ui.view,arch_db:idtx_purchase.external_layout_idtx
 msgid "Tax ID"
-msgstr ""
+msgstr "RUC"
 
 #. module: idtx_purchase
 #: model_terms:ir.ui.view,arch_db:idtx_purchase.external_layout_idtx
 msgid "US12345671"
-msgstr ""
+msgstr "US12345671"
+
+#. module: idtx_purchase
+#: model:ir.model.fields,field_description:idtx_purchase.field_purchase_order_line__price_unit
+msgid "Unit Price"
+msgstr "Precio unitario"
+
+#. module: idtx_purchase
+#: model:ir.model.fields,field_description:idtx_purchase.field_purchase_order_line__price_unit_discounted
+msgid "Unit Price (Discounted)"
+msgstr "Precio unitario (descontado)"

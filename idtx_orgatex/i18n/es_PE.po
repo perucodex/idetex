@@ -1,0 +1,302 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* idtx_orgatex
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-10 22:02+0000\n"
+"PO-Revision-Date: 2026-07-10 22:02+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_recipe__amount
+msgid "Amount"
+msgstr "Cantidad"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_recipe__amount_per_machine
+msgid "Amount Per Machine"
+msgstr "Cantidad por máquina"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields.selection,name:idtx_orgatex.selection__integration_orgatex__state__approved
+msgid "Approved"
+msgstr "Aprobado"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__article
+msgid "Article"
+msgstr "Artículo"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_recipe__call_off
+msgid "Call Off"
+msgstr "Call Off"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__colourNo
+msgid "Colourno"
+msgstr "N° de color"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_recipe__correction_number
+msgid "Correction Number"
+msgstr "Número de corrección"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_recipe__counter
+msgid "Counter"
+msgstr "Contador"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__create_uid
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_procedure__create_uid
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_recipe__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__create_date
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_procedure__create_date
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_recipe__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__customer
+msgid "Customer"
+msgstr "Cliente"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields.selection,name:idtx_orgatex.selection__integration_orgatex__state__denied
+msgid "Denied"
+msgstr "Rechazado"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__display_name
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_procedure__display_name
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_recipe__display_name
+msgid "Display Name"
+msgstr "Nombre mostrado"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__dyelot
+msgid "Dyelot"
+msgstr "Dyelot"
+
+#. module: idtx_orgatex
+#: model_terms:ir.ui.view,arch_db:idtx_orgatex.view_integration_orgatex_form
+msgid "Dyelot Cabecera"
+msgstr "Dyelot Cabecera"
+
+#. module: idtx_orgatex
+#: model:ir.model,name:idtx_orgatex.model_integration_orgatex
+msgid "Dyelot Header"
+msgstr "Cabecera de Dyelot"
+
+#. module: idtx_orgatex
+#: model:ir.model,name:idtx_orgatex.model_integration_orgatex_procedure
+msgid "Dyelot Procedure Detail"
+msgstr "Detalle de procedimiento del Dyelot"
+
+#. module: idtx_orgatex
+#: model:ir.model,name:idtx_orgatex.model_integration_orgatex_recipe
+msgid "Dyelot Recipe Detail"
+msgstr "Detalle de receta del Dyelot"
+
+#. module: idtx_orgatex
+#: model_terms:ir.ui.view,arch_db:idtx_orgatex.view_integration_orgatex_form
+msgid "Enviar a Orgatex"
+msgstr "Enviar a Orgatex"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__id
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_procedure__id
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_recipe__id
+msgid "ID"
+msgstr "ID"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__import_state
+msgid "Import State"
+msgstr "Estado de importación"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_recipe__kind_of_station
+msgid "Kind Of Station"
+msgstr "Tipo de estación"
+
+#. module: idtx_orgatex
+#: model:ir.ui.menu,name:idtx_orgatex.orga_dev_menu
+msgid "Lab Dev"
+msgstr "Desarrollo Lab"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__write_uid
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_procedure__write_uid
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_recipe__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__write_date
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_procedure__write_date
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_recipe__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__liquor_ratio
+msgid "Liquor Ratio"
+msgstr "Relación de baño"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__machine
+msgid "Machine"
+msgstr "Máquina"
+
+#. module: idtx_orgatex
+#: model:res.groups,name:idtx_orgatex.group_module_orga_manager
+msgid "Manager"
+msgstr "Administrador"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_recipe__no_of_station
+msgid "No Of Station"
+msgstr "N° de estación"
+
+#. module: idtx_orgatex
+#: model:ir.ui.menu,name:idtx_orgatex.orga_operations_menu
+msgid "Operations"
+msgstr "Operaciones"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_procedure__orgatex_id
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_recipe__orgatex_id
+#: model:ir.ui.menu,name:idtx_orgatex.menu_orgatex_data
+#: model:ir.ui.menu,name:idtx_orgatex.orgatex_menu
+#: model:res.groups.privilege,name:idtx_orgatex.module_orga_user
+msgid "Orgatex"
+msgstr "Orgatex"
+
+#. module: idtx_orgatex
+#: model_terms:ir.ui.view,arch_db:idtx_orgatex.view_integration_orgatex_form
+msgid "Orgatex Dyelot"
+msgstr "Dyelot Orgatex"
+
+#. module: idtx_orgatex
+#: model:ir.actions.act_window,name:idtx_orgatex.action_integration_orgatex_menu
+msgid "Orgatex Integration"
+msgstr "Integración Orgatex"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__parameter7
+msgid "Parameter7"
+msgstr "Parámetro 7"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields.selection,name:idtx_orgatex.selection__integration_orgatex__state__pending
+msgid "Pendiente"
+msgstr "Pendiente"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__procedure_no
+msgid "Procedure No"
+msgstr "N° de procedimiento"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__procedure_ids
+#: model_terms:ir.ui.view,arch_db:idtx_orgatex.view_integration_orgatex_form
+msgid "Procedures"
+msgstr "Procedimientos"
+
+#. module: idtx_orgatex
+#: model_terms:ir.ui.view,arch_db:idtx_orgatex.view_integration_orgatex_form
+msgid "Proceso"
+msgstr "Proceso"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_recipe__product_code
+msgid "Product Code"
+msgstr "Código de producto"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_recipe__product_name
+msgid "Product Name"
+msgstr "Nombre del producto"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_recipe__product_short_name
+msgid "Product Short Name"
+msgstr "Nombre corto del producto"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__program_creation_type
+msgid "Program Creation Type"
+msgstr "Tipo de creación de programa"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__recipe_no
+msgid "Recipe No"
+msgstr "N° de receta"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__recipe_state
+msgid "Recipe State"
+msgstr "Estado de la receta"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__recipe_ids
+#: model_terms:ir.ui.view,arch_db:idtx_orgatex.view_integration_orgatex_form
+msgid "Recipes"
+msgstr "Recetas"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__redye
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_procedure__redye
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_recipe__redye
+msgid "Redye"
+msgstr "Reteñido"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_recipe__specific_weight
+msgid "Specific Weight"
+msgstr "Peso específico"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__state
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_recipe__state
+msgid "State"
+msgstr "Estado"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_procedure__treatment_cnt
+msgid "Treatment Cnt"
+msgstr "Cant. de tratamientos"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_procedure__treatment_no
+msgid "Treatment No"
+msgstr "N° de tratamiento"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex_recipe__unit
+msgid "Unit"
+msgstr "Unidad"
+
+#. module: idtx_orgatex
+#: model:res.groups,name:idtx_orgatex.group_module_orga_user
+msgid "User"
+msgstr "Usuario"
+
+#. module: idtx_orgatex
+#: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__weight
+msgid "Weight"
+msgstr "Peso"

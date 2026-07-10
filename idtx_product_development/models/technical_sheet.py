@@ -148,8 +148,10 @@ class TechnicalSizeLine(models.Model):
     technical_id = fields.Many2one('technical.sheet', string='Technical Sheet')
     sequence = fields.Integer('Sequence')
     size = fields.Char('Size')
-    length = fields.Float('Length')
-    width = fields.Float('Width')
+    # Largo/Alto en el codigo (no via .po): el msgid "Width" es compartido
+    # con technical.sheet.width (Ancho) y no admite dos traducciones.
+    length = fields.Float('Largo')
+    width = fields.Float('Alto')
     needles = fields.Integer('Needles')
     ne = fields.Char('NE')
     plies = fields.Integer('Plies')

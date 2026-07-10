@@ -223,8 +223,8 @@
               <thead style="font-size: 0.7rem">
                   <tr>
                     <th style="background-color: #c2c2c2;">Size</th>
-                    <th style="background-color: #c2c2c2;">Length</th>
-                    <th style="background-color: #c2c2c2;">Width</th>
+                    <th style="background-color: #c2c2c2;">Largo</th>
+                    <th style="background-color: #c2c2c2;">Alto</th>
                     <th style="background-color: #c2c2c2;">Needles</th>
                     <th style="background-color: #c2c2c2;">NE</th>
                     <th style="background-color: #c2c2c2;">Plies</th>

@@ -518,33 +518,31 @@ class MrpWorkorder(models.Model):
     def action_register_batch_operation(self, payload):
         """Registro SIMPLE de partida para operaciones de tintorería sin receta
         de laboratorio (HABILITADO, HIDROEXTRACTORA, ...): solo deja constancia
-        de que la partida recibió esta operación y a qué hora empezó/terminó.
-        Crea un batch.registry mínimo (sin datos de teñido) en estado Done."""
+        de que la partida recibió esta operación (las horas de inicio/fin ya
+        viven en la propia OT). Crea un batch.registry mínimo en estado Done."""
         self.ensure_one()
         batch_id = int(payload.get('batch_id')) if payload.get('batch_id') else False
-        date_start = fields.Datetime.to_datetime(payload.get('date_start'))
-        date_end = fields.Datetime.to_datetime(payload.get('date_end'))
+        employee_id = int(payload.get('employee_id')) if payload.get('employee_id') else False
+        equipment_id = int(payload.get('equipment_id')) if payload.get('equipment_id') else False
 
         if not batch_id:
             return {'status': 'danger', 'message': _('Debes seleccionar una partida.')}
         batch = self.env['mrp.workorder.batch'].browse(batch_id)
         if not batch.exists():
             return {'status': 'danger', 'message': _('La partida seleccionada no existe.')}
-        if not date_start or not date_end:
-            return {'status': 'danger', 'message': _('Debes indicar la hora de inicio y de fin.')}
-        if date_end < date_start:
-            return {'status': 'danger', 'message': _('La hora de fin no puede ser anterior a la de inicio.')}
+        if not employee_id or not equipment_id:
+            return {'status': 'danger', 'message': _('Debes seleccionar empleado y equipo.')}
 
         defaults = self.action_get_registry_defaults(batch_id=batch_id)
         br = self.env['batch.registry'].create({
             'batch_id': batch.id,
             'workorder_id': self.id,
+            'employee_id': employee_id,
+            'equipment_id': equipment_id,
             'color_name': defaults.get('color_name'),
             'color_code': defaults.get('color_code'),
             'partner_id': defaults.get('partner_id'),
             'registry_date': fields.Datetime.now(),
-            'date_start': date_start,
-            'date_end': date_end,
             'state': 'done',
         })
         related_workorders = (self | batch.wo_roll_ids.mapped('workorder_id')).filtered(lambda wo: wo.id)

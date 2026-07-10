@@ -1,0 +1,354 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* idtx_pos_closing_report
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-10 22:02+0000\n"
+"PO-Revision-Date: 2026-07-10 22:02+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: idtx_pos_closing_report
+#: model:ir.actions.report,print_report_name:idtx_pos_closing_report.action_report_closing_control
+msgid "'Reporte_Cierre_Caja_%s' % (object.session_id.name)"
+msgstr "'Reporte_Cierre_Caja_%s' % (object.session_id.name)"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid ""
+"<br/>\n"
+"                                <strong>Cierre:</strong>"
+msgstr ""
+"<br/>\n"
+"                                <strong>Cierre:</strong>"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "<strong>Apertura:</strong>"
+msgstr "<strong>Apertura:</strong>"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "<strong>Saldo Inicial:</strong>"
+msgstr "<strong>Saldo Inicial:</strong>"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.view_pos_closing_report_wizard_form
+msgid "Cancelar"
+msgstr "Cancelar"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__kilos
+msgid "Cantidad"
+msgstr "Cantidad"
+
+#. module: idtx_pos_closing_report
+#: model:ir.actions.server,name:idtx_pos_closing_report.idtx_action_server_open_closing_report
+msgid "Cierre de Caja Detallado"
+msgstr "Cierre de Caja Detallado"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__partner_name
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.idtx_view_pos_closing_report_line_search
+msgid "Cliente"
+msgstr "Cliente"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__color_name
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "Color"
+msgstr "Color"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__create_uid
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_wizard__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__create_date
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_wizard__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "Cta. Cliente"
+msgstr "Cta. Cliente"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__currency_id
+msgid "Currency"
+msgstr "Moneda"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "Cód. Col."
+msgstr "Cód. Col."
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "Cód. Prod."
+msgstr "Cód. Prod."
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__color_code
+msgid "Código Color"
+msgstr "Código Color"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__product_code
+msgid "Código Producto"
+msgstr "Código Producto"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__amount_account
+msgid "Deposito"
+msgstr "Depósito"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "Descripción"
+msgstr "Descripción"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__display_name
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_wizard__display_name
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_report_idtx_pos_closing_report_report_closing_control__display_name
+msgid "Display Name"
+msgstr "Nombre mostrado"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__doc_number
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "Documento"
+msgstr "Documento"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__amount_cash
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "Efectivo"
+msgstr "Efectivo"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__date
+msgid "Fecha"
+msgstr "Fecha"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__id
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_wizard__id
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_report_idtx_pos_closing_report_report_closing_control__id
+msgid "ID"
+msgstr "ID"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.view_pos_closing_report_wizard_form
+msgid "Imprimir PDF"
+msgstr "Imprimir PDF"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "Kilos"
+msgstr "Kilos"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__write_uid
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_wizard__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__write_date
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_wizard__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__lot_name
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "Lote"
+msgstr "Lote"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model,name:idtx_pos_closing_report.model_pos_closing_report_line
+msgid "Línea de Reporte de Cierre de Caja"
+msgstr "Línea de Reporte de Cierre de Caja"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model,name:idtx_pos_closing_report.model_report_idtx_pos_closing_report_report_closing_control
+msgid "Lógica del Reporte de Cierre de Caja"
+msgstr "Lógica del Reporte de Cierre de Caja"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.idtx_view_pos_closing_report_line_search
+msgid "Mov. Caja"
+msgstr "Mov. Caja"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields.selection,name:idtx_pos_closing_report.selection__pos_closing_report_line__entry_type__cash_move
+msgid "Movimiento de Efectivo"
+msgstr "Movimiento de Efectivo"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__session_display_name
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.idtx_view_pos_closing_report_line_search
+msgid "Numero de sesion"
+msgstr "Número de sesión"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__batch
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "Partida"
+msgstr "Partida"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__price_unit
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "Precio"
+msgstr "Precio"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__product_name
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.idtx_view_pos_closing_report_line_search
+msgid "Producto"
+msgstr "Producto"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__partner_vat
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.idtx_view_pos_closing_report_line_search
+msgid "RUC"
+msgstr "RUC"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "Ref."
+msgstr "Ref."
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__ref
+msgid "Referencia"
+msgstr "Referencia"
+
+#. module: idtx_pos_closing_report
+#: model:ir.actions.act_window,name:idtx_pos_closing_report.action_pos_closing_report_wizard
+#: model:ir.actions.report,name:idtx_pos_closing_report.action_report_closing_control
+#: model:ir.ui.menu,name:idtx_pos_closing_report.menu_pos_closing_control_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "Reporte Cierre y Control de Caja"
+msgstr "Reporte Cierre y Control de Caja"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.view_pos_closing_report_wizard_form
+msgid "Reporte de Cierre de Caja"
+msgstr "Reporte de Cierre de Caja"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "Responsable:"
+msgstr "Responsable:"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "Saldo Apertura:"
+msgstr "Saldo Apertura:"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "Saldo Final Efectivo:"
+msgstr "Saldo Final Efectivo:"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields.selection,name:idtx_pos_closing_report.selection__pos_closing_report_line__entry_type__initial
+msgid "Saldo Inicial"
+msgstr "Saldo Inicial"
+
+#. module: idtx_pos_closing_report
+#. odoo-python
+#: code:addons/idtx_pos_closing_report/report/pos_closing_report.py:0
+msgid "Saldo Inicial de Apertura"
+msgstr "Saldo Inicial de Apertura"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__session_id
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.idtx_view_pos_closing_report_line_search
+msgid "Sesión"
+msgstr "Sesión"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_wizard__session_id
+msgid "Sesión de TPV"
+msgstr "Sesión de TPV"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "Sesión:"
+msgstr "Sesión:"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "TOTALES"
+msgstr "TOTALES"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__amount_card
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "Tarjeta"
+msgstr "Tarjeta"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields,field_description:idtx_pos_closing_report.field_pos_closing_report_line__entry_type
+msgid "Tipo"
+msgstr "Tipo"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.idtx_view_pos_closing_report_line_list
+msgid "Total Cantidad"
+msgstr "Total Cantidad"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.idtx_view_pos_closing_report_line_list
+msgid "Total Deposito"
+msgstr "Total Depósito"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.idtx_view_pos_closing_report_line_list
+msgid "Total Efectivo"
+msgstr "Total Efectivo"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.idtx_view_pos_closing_report_line_list
+msgid "Total Tarjeta"
+msgstr "Total Tarjeta"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.report_closing_control
+msgid "Total Ventas/Mov. Efectivo:"
+msgstr "Total Ventas/Mov. Efectivo:"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model.fields.selection,name:idtx_pos_closing_report.selection__pos_closing_report_line__entry_type__sale
+msgid "Venta"
+msgstr "Venta"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.idtx_view_pos_closing_report_line_search
+msgid "Ventas"
+msgstr "Ventas"
+
+#. module: idtx_pos_closing_report
+#: model_terms:ir.ui.view,arch_db:idtx_pos_closing_report.view_pos_closing_report_wizard_form
+msgid "Ver Tabla Detallada"
+msgstr "Ver Tabla Detallada"
+
+#. module: idtx_pos_closing_report
+#: model:ir.model,name:idtx_pos_closing_report.model_pos_closing_report_wizard
+msgid "Wizard de Reporte de Cierre de Caja"
+msgstr "Wizard de Reporte de Cierre de Caja"

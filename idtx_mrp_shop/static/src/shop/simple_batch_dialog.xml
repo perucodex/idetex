@@ -5,6 +5,42 @@
             <div class="o_batch_registry_wizard">
 
                 <div class="mt-3">
+                    <h5 class="fw-bold">Employee</h5>
+                    <select class="form-select fs-4"
+                            t-att-class="isEmployeeInvalid ? 'is-invalid' : ''"
+                            t-model="state.selectedEmployee"
+                            t-on-change="onEmployeeChange">
+                        <option value="">Select an employee...</option>
+                        <t t-foreach="employees" t-as="emp" t-key="emp.id">
+                            <option t-att-value="'' + emp.id"
+                                    t-att-selected="state.selectedEmployee == ('' + emp.id)"
+                                    t-esc="emp.name"/>
+                        </t>
+                    </select>
+                    <div t-if="isEmployeeInvalid" class="invalid-feedback d-block">
+                        Debes seleccionar un empleado.
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <h5 class="fw-bold">Equipment</h5>
+                    <select class="form-select fs-4"
+                            t-att-class="isEquipmentInvalid ? 'is-invalid' : ''"
+                            t-model="state.selectedEquipment"
+                            t-on-change="onEquipmentChange">
+                        <option value="">Select an equipment...</option>
+                        <t t-foreach="equipments" t-as="eqp" t-key="eqp.id">
+                            <option t-att-value="'' + eqp.id"
+                                    t-att-selected="state.selectedEquipment == ('' + eqp.id)"
+                                    t-esc="eqp.name"/>
+                        </t>
+                    </select>
+                    <div t-if="isEquipmentInvalid" class="invalid-feedback d-block">
+                        Debes seleccionar un equipo.
+                    </div>
+                </div>
+
+                <div class="mt-3">
                     <div class="d-flex align-items-center justify-content-between">
                         <h5 class="fw-bold mb-0">Batch</h5>
                         <button t-if="state.selectedBatchId"
@@ -85,33 +121,6 @@
                         </div>
                         <div class="text-muted mt-2" t-if="(!state.results || !state.results.length) and !state.isSearching">
                             No results.
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row g-3 mt-3">
-                    <div class="col-6">
-                        <h5 class="fw-bold">Hora Inicio</h5>
-                        <input type="datetime-local"
-                               class="form-control fs-4"
-                               t-att-class="isStartInvalid ? 'is-invalid' : ''"
-                               t-att-value="state.dateStart"
-                               t-on-input="(ev) => this.onDateInput(ev, 'dateStart')"/>
-                        <div t-if="isStartInvalid" class="invalid-feedback d-block">
-                            <t t-if="isRangeInvalid">La hora de inicio debe ser anterior a la de fin.</t>
-                            <t t-else="">Debes indicar la hora de inicio.</t>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <h5 class="fw-bold">Hora Fin</h5>
-                        <input type="datetime-local"
-                               class="form-control fs-4"
-                               t-att-class="isEndInvalid ? 'is-invalid' : ''"
-                               t-att-value="state.dateEnd"
-                               t-on-input="(ev) => this.onDateInput(ev, 'dateEnd')"/>
-                        <div t-if="isEndInvalid" class="invalid-feedback d-block">
-                            <t t-if="isRangeInvalid">La hora de fin no puede ser anterior a la de inicio.</t>
-                            <t t-else="">Debes indicar la hora de fin.</t>
                         </div>
                     </div>
                 </div>

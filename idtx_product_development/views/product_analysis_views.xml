@@ -99,14 +99,15 @@
                             <page name="ligament_page" string="Ligament Design Structure">
                                 <group>
                                     <group>
-                                        <field name="ligament_row" readonly="state != 'test'"/>
-                                        <field name="ligament_column" readonly="state != 'test'"/>
+                                        <field name="ligament_structure_id" options="{'no_create': True, 'no_open': True}"/>
+                                        <field name="ligament_row"/>
+                                        <field name="ligament_column"/>
                                         <field name="grid_data" invisible="1" force_save="1"/>
-                                        <button string="Generate" name="action_generate" type="object" class="oe_highlight" invisible="state != 'test'"/>
+                                        <button string="Generate" name="action_generate" type="object" class="oe_highlight"/>
                                     </group>                                    
                                 </group>
                                 <div class="o_grid_ligament_widget_container">
-                                    <field name="ligament_join_row_column" widget="grid_ligament_widget" readonly="state != 'test'"/>
+                                    <field name="ligament_join_row_column" widget="grid_ligament_widget"/>
                                 </div>
                             </page>
                             <page name="other_page" string="Other Information">

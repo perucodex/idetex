@@ -1,0 +1,2019 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* idtx_plan_general_alpha
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-10 22:02+0000\n"
+"PO-Revision-Date: 2026-07-10 22:02+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "% Cumplimiento"
+msgstr "% Cumplimiento"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_production_kanban
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_workorder_kanban
+msgid "<i class=\"fa fa-clock-o me-1\" title=\"Fecha\"/>"
+msgstr "<i class=\"fa fa-clock-o me-1\" title=\"Fecha\"/>"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_sale_kanban
+msgid "<i class=\"fa fa-truck me-1\" title=\"Entrega\"/>"
+msgstr "<i class=\"fa fa-truck me-1\" title=\"Entrega\"/>"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_pedido_search
+msgid "A Tiempo"
+msgstr "A Tiempo"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Acabados"
+msgstr "Acabados"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_line_search
+msgid "Activas"
+msgstr "Activas"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Actividad de Máquinas · TEXPLUS"
+msgstr "Actividad de Máquinas · TEXPLUS"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__activo
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Activo"
+msgstr "Activo"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_pedido_search
+msgid "Activos"
+msgstr "Activos"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Actualizar"
+msgstr "Actualizar"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__ancho
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Ancho"
+msgstr "Ancho"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Análisis de Pedidos"
+msgstr "Análisis de Pedidos"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Apagada"
+msgstr "Apagada"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "Aplicar Filtro"
+msgstr "Aplicar Filtro"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_line_search
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_pedido_search
+msgid "Area"
+msgstr "Área"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Arrastra las tarjetas para reorganizar · Haz clic para ver detalles"
+msgstr "Arrastra las tarjetas para reorganizar · Haz clic para ver detalles"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid ""
+"Arrastra una barra para reprogramar · arrastra sus bordes para cambiar "
+"fechas"
+msgstr ""
+"Arrastra una barra para reprogramar · arrastra sus bordes para cambiar "
+"fechas"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_line_list
+msgid "Articulo"
+msgstr "Artículo"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__descrip
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Artículo"
+msgstr "Artículo"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_production_search
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_workorder_search
+msgid "Atrasadas"
+msgstr "Atrasadas"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_sale_search
+msgid "Atrasados"
+msgstr "Atrasados"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Año fabricación"
+msgstr "Año fabricación"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__barcod
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Barcode"
+msgstr "Código de barras"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__barcodpar
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Barcode Par."
+msgstr "Cód. Barras Par."
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__barcodreo
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Barcode Reo."
+msgstr "Cód. Barras Reo."
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_production_search
+msgid "Borrador"
+msgstr "Borrador"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_workorder_search
+msgid "Buscar Operaciones"
+msgstr "Buscar Operaciones"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_production_search
+msgid "Buscar Ordenes"
+msgstr "Buscar Órdenes"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_line_search
+msgid "Buscar Partidas"
+msgstr "Buscar Partidas"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_pedido_search
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_sale_search
+msgid "Buscar Pedidos"
+msgstr "Buscar Pedidos"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "Buscar por lote, cliente, área..."
+msgstr "Buscar por lote, cliente, área..."
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__cc
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "CC"
+msgstr "CC"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.ui.menu,name:idtx_plan_general_alpha.menu_plan_alpha_plan_calendario
+msgid "Calendario"
+msgstr "Calendario"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.actions.act_window,name:idtx_plan_general_alpha.action_plan_alpha_calendar
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_production_calendar
+msgid "Calendario de Produccion"
+msgstr "Calendario de Producción"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__calidad
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Calidad"
+msgstr "Calidad"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "Cancelar"
+msgstr "Cancelar"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_workorder_list
+msgid "Cant. hecha"
+msgstr "Cant. hecha"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_workorder_list
+msgid "Cant. prod."
+msgstr "Cant. prod."
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Capacidad / Potencia"
+msgstr "Capacidad / Potencia"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Cargando centros de trabajo…"
+msgstr "Cargando centros de trabajo…"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Cargando dashboard…"
+msgstr "Cargando dashboard…"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Cargando datos…"
+msgstr "Cargando datos…"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "Cargando lotes…"
+msgstr "Cargando lotes…"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Cargando máquinas…"
+msgstr "Cargando máquinas…"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "Cargando partidas seleccionadas…"
+msgstr "Cargando partidas seleccionadas…"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Cargas Esta Semana"
+msgstr "Cargas Esta Semana"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Cargas Hoy (TEXPLUS)"
+msgstr "Cargas Hoy (TEXPLUS)"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_production_search
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_workorder_search
+msgid "Centro de trabajo"
+msgstr "Centro de trabajo"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.actions.act_window,name:idtx_plan_general_alpha.action_plan_alpha_workcenter
+#: model:ir.ui.menu,name:idtx_plan_general_alpha.menu_plan_alpha_config_workcenter
+msgid "Centros de Trabajo"
+msgstr "Centros de Trabajo"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_sale_search
+msgid "Cerrado"
+msgstr "Cerrado"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_line_search
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_pedido_search
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_sale_search
+msgid "Cliente"
+msgstr "Cliente"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.actions.act_window,name:idtx_plan_general_alpha.action_plan_alpha_dash_clientes
+msgid "Clientes"
+msgstr "Clientes"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_line_list
+msgid "Cod. Color"
+msgstr "Cód. Color"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__descol
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_line_list
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Color"
+msgstr "Color"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "Completado"
+msgstr "Completado"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__descri
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Cond.Pago"
+msgstr "Cond.Pago"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.ui.menu,name:idtx_plan_general_alpha.menu_plan_alpha_config
+msgid "Configuracion"
+msgstr "Configuración"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_production_search
+msgid "Confirmado"
+msgstr "Confirmado"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__correl
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Correlativo"
+msgstr "Correlativo"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_alpha_list
+msgid ""
+"Crea una nueva orden desde el modulo de Manufactura\n"
+"                o confirma los pedidos de venta pendientes."
+msgstr ""
+"Crea una nueva orden desde el módulo de Manufactura\n"
+"                o confirma los pedidos de venta pendientes."
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_idtx_alpha_floor_layout__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_idtx_alpha_floor_layout__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Cronograma de Vencimientos"
+msgstr "Cronograma de Vencimientos"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__ctrl
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Ctrl"
+msgstr "Ctrl"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__cdgart
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Cód.Art."
+msgstr "Cód.Art."
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__cdgclie
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Cód.Cliente"
+msgstr "Cód.Cliente"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__cdgcol
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Cód.Color"
+msgstr "Cód.Color"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__coddiseno
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Cód.Diseño"
+msgstr "Cód.Diseño"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__codigohilo
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Cód.Hilo"
+msgstr "Cód.Hilo"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__cdgven
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Cód.Vend."
+msgstr "Cód.Vend."
+
+#. module: idtx_plan_general_alpha
+#: model:ir.actions.act_window,name:idtx_plan_general_alpha.action_plan_alpha_dashboard_board
+#: model:ir.ui.menu,name:idtx_plan_general_alpha.menu_plan_alpha_dashboard
+msgid "Dashboard"
+msgstr "Dashboard"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+#: model:ir.actions.client,name:idtx_plan_general_alpha.action_plan_alpha_dashboard_client
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.view_plan_alpha_dashboard_board
+msgid "Dashboard de Planeamiento"
+msgstr "Dashboard de Planeamiento"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_alpha_workcenter
+msgid ""
+"Define los centros de trabajo (maquinas, lineas)\n"
+"                que ejecutan las operaciones de produccion."
+msgstr ""
+"Define los centros de trabajo (máquinas, líneas)\n"
+"                que ejecutan las operaciones de producción."
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Demorado"
+msgstr "Demorado"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__densid
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Densidad"
+msgstr "Densidad"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Departamento"
+msgstr "Departamento"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Detalle de Máquina"
+msgstr "Detalle de Máquina"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_line_list
+msgid "Dias"
+msgstr "Días"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_pedido_list
+msgid "Dias retraso"
+msgstr "Días retraso"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__diseno
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Diseño"
+msgstr "Diseño"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_idtx_alpha_floor_layout__display_name
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__display_name
+msgid "Display Name"
+msgstr "Nombre mostrado"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_workorder_list
+msgid "Duracion (min)"
+msgstr "Duración (min)"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__dia
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Días"
+msgstr "Días"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Días restantes"
+msgstr "Días restantes"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "ESCALA"
+msgstr "ESCALA"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Ejecutando"
+msgstr "Ejecutando"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "En proceso"
+msgstr "En proceso"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_production_search
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_workorder_search
+msgid "En progreso"
+msgstr "En progreso"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "En tiempo real"
+msgstr "En tiempo real"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "En vivo"
+msgstr "En vivo"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_sale_list
+msgid "Entrega comprometida"
+msgstr "Entrega comprometida"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_sale_search
+msgid "Enviado"
+msgstr "Enviado"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_idtx_alpha_floor_layout__equipment_id
+msgid "Equipment"
+msgstr "Equipo"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.actions.act_window,name:idtx_plan_general_alpha.action_plan_alpha_equipment
+#: model:ir.ui.menu,name:idtx_plan_general_alpha.menu_plan_alpha_config_equipment
+msgid "Equipos y Maquinas"
+msgstr "Equipos y Máquinas"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_pedido_search
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_production_search
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_sale_search
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_workorder_search
+msgid "Estado"
+msgstr "Estado"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Estado de Pedidos"
+msgstr "Estado de Pedidos"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Estado:"
+msgstr "Estado:"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.actions.act_window,name:idtx_plan_general_alpha.action_plan_alpha_dash_estados
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_dash_graph_estados
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.view_plan_alpha_dashboard_board
+msgid "Estados de Pedidos"
+msgstr "Estados de Pedidos"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__estampado1
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Estampado"
+msgstr "Estampado"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__expo
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Expo"
+msgstr "Expo"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_pedido_list
+msgid "F. Deseada"
+msgstr "F. Deseada"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fecaca
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.Acab.2"
+msgstr "F.Acab.2"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fecacabado
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.Acabado"
+msgstr "F.Acabado"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fecactualiza
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.Actualiza"
+msgstr "F.Actualiza"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fecalm
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.Alm.Tex"
+msgstr "F.Alm.Tex"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__feccc
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.CC"
+msgstr "F.CC"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fechadespa
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.Despa."
+msgstr "F.Despa."
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fecdesp
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.Despacho"
+msgstr "F.Despacho"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fechadespacho
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.Despazo"
+msgstr "F.Despacho"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fecfin
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.Fin"
+msgstr "F.Fin"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fecgvtas
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.G.Vtas"
+msgstr "F.G.Vtas"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fechil
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.Hilo"
+msgstr "F.Hilo"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fing
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.Ingreso"
+msgstr "F.Ingreso"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fecinitej
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.Ini.Tej."
+msgstr "F.Ini.Tej."
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fecini
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.Inicio"
+msgstr "F.Inicio"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fechamod
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.Mod."
+msgstr "F.Mod."
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fecoc
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.OC"
+msgstr "F.OC"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fechaplan
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.Plan"
+msgstr "F.Plan"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fecreceta
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.Receta"
+msgstr "F.Receta"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fectej
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.Tejido"
+msgstr "F.Tejido"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fectenido
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.Tenido"
+msgstr "F.Teñido"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fecteni
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.Tenido2"
+msgstr "F.Teñido2"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fectemo
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.Termof."
+msgstr "F.Termof."
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fecvouc
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "F.Voucher"
+msgstr "F.Voucher"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Fabricante"
+msgstr "Fabricante"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__fecha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_pedido_search
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Fecha"
+msgstr "Fecha"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Fecha compra"
+msgstr "Fecha compra"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_sale_search
+msgid "Fecha de entrega"
+msgstr "Fecha de entrega"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_production_search
+msgid "Fecha inicio"
+msgstr "Fecha inicio"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_sale_list
+msgid "Fecha pedido"
+msgstr "Fecha pedido"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_workorder_search
+msgid "Fecha planificada"
+msgstr "Fecha planificada"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__ficha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Ficha"
+msgstr "Ficha"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Ficha Técnica"
+msgstr "Ficha Técnica"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "Filtrar Lotes de Producción"
+msgstr "Filtrar Lotes de Producción"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "Filtrar Pedidos"
+msgstr "Filtrar Pedidos"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_line_list
+msgid "Fin"
+msgstr "Fin"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_workorder_list
+msgid "Fin plan."
+msgstr "Fin plan."
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__gvtas
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "G.Vtas"
+msgstr "G.Vtas"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__galga
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Galga"
+msgstr "Galga"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Garantía hasta"
+msgstr "Garantía hasta"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__grem
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Grem."
+msgstr "Grem."
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__hdr
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "HDR"
+msgstr "HDR"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "HOY"
+msgstr "HOY"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__htf
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "HTF"
+msgstr "HTF"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_workorder_search
+msgid "Hecha"
+msgstr "Hecha"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_production_search
+msgid "Hecho"
+msgstr "Hecho"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__hilo1
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Hilo 1"
+msgstr "Hilo 1"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__hilo10
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Hilo 10"
+msgstr "Hilo 10"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__hilo2
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Hilo 2"
+msgstr "Hilo 2"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__hilo3
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Hilo 3"
+msgstr "Hilo 3"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__hilo4
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Hilo 4"
+msgstr "Hilo 4"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__hilo5
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Hilo 5"
+msgstr "Hilo 5"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__hilo6
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Hilo 6"
+msgstr "Hilo 6"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__hilo7
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Hilo 7"
+msgstr "Hilo 7"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__hilo8
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Hilo 8"
+msgstr "Hilo 8"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__hilo9
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Hilo 9"
+msgstr "Hilo 9"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__hiloc1
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Hilo C1"
+msgstr "Hilo C1"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__hiloc10
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Hilo C10"
+msgstr "Hilo C10"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__hiloc2
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Hilo C2"
+msgstr "Hilo C2"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__hiloc3
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Hilo C3"
+msgstr "Hilo C3"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__hiloc4
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Hilo C4"
+msgstr "Hilo C4"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__hiloc5
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Hilo C5"
+msgstr "Hilo C5"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__hiloc6
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Hilo C6"
+msgstr "Hilo C6"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__hiloc7
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Hilo C7"
+msgstr "Hilo C7"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__hiloc8
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Hilo C8"
+msgstr "Hilo C8"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__hiloc9
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Hilo C9"
+msgstr "Hilo C9"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_production_search
+msgid "Hoy"
+msgstr "Hoy"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_idtx_alpha_floor_layout__id
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__id
+msgid "ID"
+msgstr "ID"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__incoterms
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Incoterms"
+msgstr "Incoterms"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_line_list
+msgid "Inicio"
+msgstr "Inicio"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_workorder_list
+msgid "Inicio plan."
+msgstr "Inicio plan."
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__item
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Item"
+msgstr "Ítem"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__kbruto
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "K.Bruto"
+msgstr "K.Bruto"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__kneto
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "K.Neto"
+msgstr "K.Neto"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__ktejido
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "K.Tejido"
+msgstr "K.Tejido"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__keyes
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Keyes"
+msgstr "Keyes"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__keyes1
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Keyes1"
+msgstr "Keyes1"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_line_list
+msgid "Kg"
+msgstr "Kg"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__kilos
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Kilos"
+msgstr "Kilos"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_dash_pivot_area
+msgid "Kilos por Area"
+msgstr "Kilos por Área"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_dash_pivot_clientes
+msgid "Kilos por Cliente"
+msgstr "Kilos por Cliente"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_dash_pivot_proceso
+msgid "Kilos por Proceso"
+msgstr "Kilos por Proceso"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_alpha_workorders
+msgid ""
+"Las operaciones aparecen al confirmar ordenes de produccion\n"
+"                con rutas de trabajo definidas."
+msgstr ""
+"Las operaciones aparecen al confirmar órdenes de producción\n"
+"                con rutas de trabajo definidas."
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_alpha_kanban
+msgid ""
+"Las ordenes confirmadas y en progreso apareceran aqui\n"
+"                para planificar y hacer seguimiento."
+msgstr ""
+"Las órdenes confirmadas y en progreso aparecerán aquí\n"
+"                para planificar y hacer seguimiento."
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_idtx_alpha_floor_layout__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_idtx_alpha_floor_layout__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Limpiar"
+msgstr "Limpiar"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__liqdes
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Liq.Des."
+msgstr "Liq.Des."
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_pedido_search
+msgid "Liquidados"
+msgstr "Liquidados"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_workorder_search
+msgid "Lista"
+msgstr "Lista"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_alpha_sales
+msgid ""
+"Los pedidos confirmados con produccion asociada\n"
+"                apareceran aqui para su seguimiento."
+msgstr ""
+"Los pedidos confirmados con producción asociada\n"
+"                aparecerán aquí para su seguimiento."
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_alpha_pedidos_lista
+msgid ""
+"Los pedidos se importan desde FASPRO/SITPRO\n"
+"                y aparecen aqui para su seguimiento."
+msgstr ""
+"Los pedidos se importan desde FASPRO/SITPRO\n"
+"                y aparecen aquí para su seguimiento."
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_beta_lista
+msgid ""
+"Los registros se leen en tiempo real desde\n"
+"                la tabla <strong>pla_general_planta</strong> de SITPRO."
+msgstr ""
+"Los registros se leen en tiempo real desde\n"
+"                la tabla <strong>pla_general_planta</strong> de SITPRO."
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__lote
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Lote"
+msgstr "Lote"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Malograda"
+msgstr "Malograda"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Mantenim."
+msgstr "Mantenim."
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__maq_proce
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Maq.Proc."
+msgstr "Maq.Proc."
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__mercado
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Mercado"
+msgstr "Mercado"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__metrosf
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Metros F."
+msgstr "Metros F."
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_sale_search
+msgid "Mis pedidos"
+msgstr "Mis pedidos"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__moneda
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Moneda"
+msgstr "Moneda"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__maq
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Máquina"
+msgstr "Máquina"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Máquinas Activas Hoy"
+msgstr "Máquinas Activas Hoy"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Máquinas más Activas Hoy"
+msgstr "Máquinas más Activas Hoy"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__numot
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "N.OT"
+msgstr "N.OT"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_alpha_kanban
+msgid "No hay ordenes de produccion activas."
+msgstr "No hay órdenes de producción activas."
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_alpha_calendar
+msgid "No hay ordenes programadas en este periodo."
+msgstr "No hay órdenes programadas en este periodo."
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "No hay partidas en el planner"
+msgstr "No hay partidas en el planner"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "No se encontraron resultados para \""
+msgstr "No se encontraron resultados para \""
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "No se pudo cargar el detalle"
+msgstr "No se pudo cargar el detalle"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__nro
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Nro"
+msgstr "Nro"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_pedido_search
+msgid "N° Pedido"
+msgstr "N° Pedido"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__occ
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "OCC"
+msgstr "OCC"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "OP"
+msgstr "OP"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__observ
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Observ."
+msgstr "Observ."
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_workorder_search
+msgid "Operacion"
+msgstr "Operación"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.actions.act_window,name:idtx_plan_general_alpha.action_plan_alpha_workorders
+#: model:ir.ui.menu,name:idtx_plan_general_alpha.menu_plan_alpha_prog_operaciones
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_workorder_list
+msgid "Operaciones"
+msgstr "Operaciones"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Operativa"
+msgstr "Operativa"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__orden
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Orden"
+msgstr "Orden"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__numordped
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Orden Pedido"
+msgstr "Orden Pedido"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_workorder_search
+msgid "Orden de produccion"
+msgstr "Orden de producción"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.ui.menu,name:idtx_plan_general_alpha.menu_plan_alpha_prog_ordenes
+msgid "Ordenes MRP"
+msgstr "Órdenes MRP"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.actions.act_window,name:idtx_plan_general_alpha.action_plan_alpha_list
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_production_list
+msgid "Ordenes de Produccion"
+msgstr "Órdenes de Producción"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__preuni
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "P.Unitario"
+msgstr "P.Unitario"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__pcpi
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "PCPI"
+msgstr "PCPI"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__partiorig
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Part.Orig."
+msgstr "Part.Orig."
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__partida
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Partida"
+msgstr "Partida"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.actions.act_window,name:idtx_plan_general_alpha.action_plan_alpha_partidas_lista
+#: model:ir.ui.menu,name:idtx_plan_general_alpha.menu_plan_alpha_tablas_partidas
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_line_list
+msgid "Partidas"
+msgstr "Partidas"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Partidas activas en este piso"
+msgstr "Partidas activas en este piso"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_dash_graph_area
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.view_plan_alpha_dashboard_board
+msgid "Partidas por Area (kg)"
+msgstr "Partidas por Área (kg)"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_dash_graph_proceso
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.view_plan_alpha_dashboard_board
+msgid "Partidas por Proceso"
+msgstr "Partidas por Proceso"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Partidas por Área (kg)"
+msgstr "Partidas por Área (kg)"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_sale_search
+msgid "Pedido confirmado"
+msgstr "Pedido confirmado"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_production_search
+msgid "Pedido origen"
+msgstr "Pedido origen"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.actions.act_window,name:idtx_plan_general_alpha.action_plan_alpha_pedidos_lista
+#: model:ir.ui.menu,name:idtx_plan_general_alpha.menu_plan_alpha_tablas_pedidos
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_pedido_list
+msgid "Pedidos"
+msgstr "Pedidos"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Pedidos Más Retrasados"
+msgstr "Pedidos Más Retrasados"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Pedidos Urgentes"
+msgstr "Pedidos Urgentes"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.actions.act_window,name:idtx_plan_general_alpha.action_plan_alpha_sales
+#: model:ir.ui.menu,name:idtx_plan_general_alpha.menu_plan_alpha_plan_pedidos
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_sale_list
+msgid "Pedidos de Venta"
+msgstr "Pedidos de Venta"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Pedidos que Vencen por Semana (próximas 4 semanas)"
+msgstr "Pedidos que Vencen por Semana (próximas 4 semanas)"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_workorder_search
+msgid "Pendiente"
+msgstr "Pendiente"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__pescl
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Peso Cl."
+msgstr "Peso Cl."
+
+#. module: idtx_plan_general_alpha
+#: model:ir.actions.client,name:idtx_plan_general_alpha.action_plan_alpha_floors
+#: model:ir.ui.menu,name:idtx_plan_general_alpha.menu_plan_alpha_prog_floors
+msgid "Pisos de Máquinas"
+msgstr "Pisos de Máquinas"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Pisos de Producción"
+msgstr "Pisos de Producción"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.actions.act_window,name:idtx_plan_general_alpha.action_plan_beta_lista
+#: model:ir.ui.menu,name:idtx_plan_general_alpha.menu_plan_alpha_tablas_plan_beta
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Plan Beta"
+msgstr "Plan Beta"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.ui.menu,name:idtx_plan_general_alpha.menu_plan_alpha_app
+msgid "Plan General Alpha"
+msgstr "Plan General Alpha"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model,name:idtx_plan_general_alpha.model_plan_beta
+msgid "Plan General Planta (SITPRO)"
+msgstr "Plan General Planta (SITPRO)"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "Planificación de Pedidos"
+msgstr "Planificación de Pedidos"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.ui.menu,name:idtx_plan_general_alpha.menu_plan_alpha_plan_planner
+msgid "Planner"
+msgstr "Planner"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.actions.client,name:idtx_plan_general_alpha.action_plan_alpha_planner
+msgid "Planner de Producción"
+msgstr "Planner de Producción"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.ui.menu,name:idtx_plan_general_alpha.menu_plan_alpha_planning
+msgid "Planning"
+msgstr "Planning"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.actions.act_window,name:idtx_plan_general_alpha.action_plan_alpha_dash_area
+msgid "Por Area"
+msgstr "Por Área"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.actions.act_window,name:idtx_plan_general_alpha.action_plan_alpha_dash_proceso
+msgid "Por Proceso"
+msgstr "Por Proceso"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_production_search
+msgid "Por cerrar"
+msgstr "Por cerrar"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model,name:idtx_plan_general_alpha.model_idtx_alpha_floor_layout
+msgid "Posición de máquina en cuadrícula por centro de trabajo"
+msgstr "Posición de máquina en cuadrícula por centro de trabajo"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Preparado"
+msgstr "Preparado"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_sale_search
+msgid "Presupuesto"
+msgstr "Presupuesto"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__prio
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Prioridad"
+msgstr "Prioridad"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__procod
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Proc.Cod."
+msgstr "Proc.Cod."
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__procsigui
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Proc.Sig."
+msgstr "Proc.Sig."
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_line_search
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_pedido_search
+msgid "Proceso"
+msgstr "Proceso"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_line_list
+msgid "Proceso actual"
+msgstr "Proceso actual"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Producción Textil · IDETEX S.A.C."
+msgstr "Producción Textil · IDETEX S.A.C."
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Producción por Área y Proceso"
+msgstr "Producción por Área y Proceso"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_pedido_list
+msgid "Producido kg"
+msgstr "Producido kg"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_line_search
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_production_search
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_workorder_search
+msgid "Producto"
+msgstr "Producto"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "Programa de producción textil · organizado por área"
+msgstr "Programa de producción textil · organizado por área"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.ui.menu,name:idtx_plan_general_alpha.menu_plan_alpha_programacion
+msgid "Programacion"
+msgstr "Programación"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Próximos a Vencer (14 días)"
+msgstr "Próximos a Vencer (14 días)"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "Quitar selección"
+msgstr "Quitar selección"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__razsoc
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Razón Social"
+msgstr "Razón Social"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_workorder_list
+msgid "Real (min)"
+msgstr "Real (min)"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__receta
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Receta"
+msgstr "Receta"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Ref. 30d"
+msgstr "Ref. 30d"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_production_search
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_sale_search
+msgid "Referencia"
+msgstr "Referencia"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_alpha_equipment
+msgid ""
+"Registra las maquinas y equipos de cada area\n"
+"                para asignarlos al planeamiento de produccion."
+msgstr ""
+"Registra las máquinas y equipos de cada área\n"
+"                para asignarlos al planeamiento de producción."
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "Reintentar"
+msgstr "Reintentar"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__repos
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Repos."
+msgstr "Repos."
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_production_search
+msgid "Responsable"
+msgstr "Responsable"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_dash_pivot_estados
+msgid "Resumen por Estado"
+msgstr "Resumen por Estado"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "Retrasado"
+msgstr "Retrasado"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_pedido_search
+msgid "Retrasados"
+msgstr "Retrasados"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_line_list
+msgid "Rollos"
+msgstr "Rollos"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__rutafin
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Ruta Fin"
+msgstr "Ruta Fin"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Serial / Código"
+msgstr "Serial / Código"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_line_list
+msgid "Sig. proceso"
+msgstr "Sig. proceso"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_alpha_workcenter
+msgid "Sin centros de trabajo configurados."
+msgstr "Sin centros de trabajo configurados."
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_beta_lista
+msgid "Sin datos disponibles desde SITPRO."
+msgstr "Sin datos disponibles desde SITPRO."
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_alpha_equipment
+msgid "Sin equipos registrados."
+msgstr "Sin equipos registrados."
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_alpha_workorders
+msgid "Sin operaciones registradas."
+msgstr "Sin operaciones registradas."
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_alpha_list
+msgid "Sin ordenes de produccion."
+msgstr "Sin órdenes de producción."
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Sin partidas activas asignadas"
+msgstr "Sin partidas activas asignadas"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_alpha_dash_area
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_alpha_dash_proceso
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_alpha_partidas_lista
+msgid "Sin partidas registradas."
+msgstr "Sin partidas registradas."
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_alpha_sales
+msgid "Sin pedidos de venta activos."
+msgstr "Sin pedidos de venta activos."
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Sin pedidos próximos a vencer en los próximos 14 días."
+msgstr "Sin pedidos próximos a vencer en los próximos 14 días."
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_alpha_dash_clientes
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_alpha_dash_estados
+#: model_terms:ir.actions.act_window,help:idtx_plan_general_alpha.action_plan_alpha_pedidos_lista
+msgid "Sin pedidos registrados."
+msgstr "Sin pedidos registrados."
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Sin resultados"
+msgstr "Sin resultados"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_idtx_alpha_floor_layout__slot_index
+msgid "Slot Index"
+msgstr "Índice de posición"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__t
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "T"
+msgstr "T"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__talm
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "T.Alm"
+msgstr "T.Alm"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__talm_b
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "T.Alm B"
+msgstr "T.Alm B"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__tj
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "TJ"
+msgstr "TJ"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.ui.menu,name:idtx_plan_general_alpha.menu_plan_alpha_tablas
+msgid "Tablas"
+msgstr "Tablas"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.ui.menu,name:idtx_plan_general_alpha.menu_plan_alpha_prog_kanban
+msgid "Tablero Produccion"
+msgstr "Tablero Producción"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.actions.act_window,name:idtx_plan_general_alpha.action_plan_alpha_kanban
+msgid "Tablero de Produccion"
+msgstr "Tablero de Producción"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__telefono
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Teléfono"
+msgstr "Teléfono"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Tendencia Mensual (últimos 6 meses)"
+msgstr "Tendencia Mensual (últimos 6 meses)"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Tendencia de Cargas por Área (últimos 7 días)"
+msgstr "Tendencia de Cargas por Área (últimos 7 días)"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_pedido_search
+msgid "Terminados"
+msgstr "Terminados"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__testado
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Testado"
+msgstr "Testado"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Tintorería"
+msgstr "Tintorería"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__tiptej
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Tip.Tej."
+msgstr "Tip.Tej."
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__tipoventa1
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Tipo Venta"
+msgstr "Tipo Venta"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Tipo:"
+msgstr "Tipo:"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Todas"
+msgstr "Todas"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_dash_graph_clientes
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.view_plan_alpha_dashboard_board
+msgid "Top Clientes (kg)"
+msgstr "Top Clientes (kg)"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Top Clientes por Kg"
+msgstr "Top Clientes por Kg"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_sale_list
+msgid "Total"
+msgstr "Total"
+
+#. module: idtx_plan_general_alpha
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_pedido_list
+msgid "Total kg"
+msgstr "Total kg"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "Técnico responsable"
+msgstr "Técnico responsable"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__unid
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_production_list
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Unidad"
+msgstr "Unidad"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "Usa el botón"
+msgstr "Usa el botón"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "VISTA"
+msgstr "VISTA"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__vend1
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_alpha_sale_search
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Vendedor"
+msgstr "Vendedor"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "Visión General"
+msgstr "Visión General"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__voucher
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "Voucher"
+msgstr "Voucher"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_idtx_alpha_floor_layout__workcenter
+msgid "Workcenter"
+msgstr "Centro de trabajo"
+
+#. module: idtx_plan_general_alpha
+#: model:ir.model.fields,field_description:idtx_plan_general_alpha.field_plan_beta__xtf
+#: model_terms:ir.ui.view,arch_db:idtx_plan_general_alpha.plan_beta_list_view
+msgid "XTF"
+msgstr "XTF"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "cargas procesadas hoy"
+msgstr "cargas procesadas hoy"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "d"
+msgstr "d"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "de"
+msgstr "de"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "días"
+msgstr "días"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "en seguimiento"
+msgstr "en seguimiento"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/machine_floor/machine_floor.xml:0
+msgid "kg"
+msgstr "kg"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "para seleccionar las partidas que deseas programar."
+msgstr "para seleccionar las partidas que deseas programar."
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "partidas"
+msgstr "partidas"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "pedidos"
+msgstr "pedidos"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/planner/planner.xml:0
+msgid "ÁREA / PARTIDA"
+msgstr "ÁREA / PARTIDA"
+
+#. module: idtx_plan_general_alpha
+#. odoo-javascript
+#: code:addons/idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.xml:0
+msgid "últimos 7 días"
+msgstr "últimos 7 días"

@@ -1,0 +1,141 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* idtx_diagram_orgatex
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-10 22:02+0000\n"
+"PO-Revision-Date: 2026-07-10 22:02+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: idtx_diagram_orgatex
+#: model_terms:ir.ui.view,arch_db:idtx_diagram_orgatex.view_control_pedido_line_form_inherit_diagram
+msgid "Actualizar Diagramas"
+msgstr "Actualizar Diagramas"
+
+#. module: idtx_diagram_orgatex
+#: model:ir.model,name:idtx_diagram_orgatex.model_control_pedido_line
+msgid "Control Pedido (Detalle)"
+msgstr "Control Pedido (Detalle)"
+
+#. module: idtx_diagram_orgatex
+#: model:ir.model.fields,field_description:idtx_diagram_orgatex.field_diagram_orgatex__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: idtx_diagram_orgatex
+#: model:ir.model.fields,field_description:idtx_diagram_orgatex.field_diagram_orgatex__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: idtx_diagram_orgatex
+#: model:ir.model.fields,field_description:idtx_diagram_orgatex.field_diagram_orgatex__diagram_image
+#: model_terms:ir.ui.view,arch_db:idtx_diagram_orgatex.view_control_pedido_line_form_inherit_diagram
+msgid "Diagrama"
+msgstr "Diagrama"
+
+#. module: idtx_diagram_orgatex
+#: model:ir.model,name:idtx_diagram_orgatex.model_diagram_orgatex
+msgid "Diagrama Orgatex"
+msgstr "Diagrama Orgatex"
+
+#. module: idtx_diagram_orgatex
+#: model:ir.model.fields,field_description:idtx_diagram_orgatex.field_control_pedido_line__diagram_ids
+msgid "Diagramas"
+msgstr "Diagramas"
+
+#. module: idtx_diagram_orgatex
+#. odoo-python
+#: code:addons/idtx_diagram_orgatex/models/control_pedido_line.py:0
+msgid "Diagramas Actualizados"
+msgstr "Diagramas Actualizados"
+
+#. module: idtx_diagram_orgatex
+#: model:ir.model.fields,field_description:idtx_diagram_orgatex.field_control_pedido_line__display_name
+#: model:ir.model.fields,field_description:idtx_diagram_orgatex.field_diagram_orgatex__display_name
+msgid "Display Name"
+msgstr "Nombre para mostrar"
+
+#. module: idtx_diagram_orgatex
+#: model:ir.model.fields,field_description:idtx_diagram_orgatex.field_diagram_orgatex__dyelot
+msgid "Dyelot"
+msgstr "Dyelot"
+
+#. module: idtx_diagram_orgatex
+#: model:ir.model.fields,field_description:idtx_diagram_orgatex.field_diagram_orgatex__ref_no
+msgid "Dyelot Ref No"
+msgstr "N° Ref. Dyelot"
+
+#. module: idtx_diagram_orgatex
+#. odoo-python
+#: code:addons/idtx_diagram_orgatex/models/control_pedido_line.py:0
+msgid "Error al conectar con la base de datos de Orgatex: %s"
+msgstr "Error al conectar con la base de datos de Orgatex: %s"
+
+#. module: idtx_diagram_orgatex
+#. odoo-python
+#: code:addons/idtx_diagram_orgatex/models/control_pedido_line.py:0
+msgid "Error al procesar el diagrama: %s"
+msgstr "Error al procesar el diagrama: %s"
+
+#. module: idtx_diagram_orgatex
+#: model:ir.model.fields,field_description:idtx_diagram_orgatex.field_control_pedido_line__id
+#: model:ir.model.fields,field_description:idtx_diagram_orgatex.field_diagram_orgatex__id
+msgid "ID"
+msgstr "ID"
+
+#. module: idtx_diagram_orgatex
+#. odoo-python
+#: code:addons/idtx_diagram_orgatex/models/control_pedido_line.py:0
+msgid "La ruta compartida %s no es accesible."
+msgstr "La ruta compartida %s no es accesible."
+
+#. module: idtx_diagram_orgatex
+#: model:ir.model.fields,field_description:idtx_diagram_orgatex.field_diagram_orgatex__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: idtx_diagram_orgatex
+#: model:ir.model.fields,field_description:idtx_diagram_orgatex.field_diagram_orgatex__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: idtx_diagram_orgatex
+#: model:ir.model.fields,field_description:idtx_diagram_orgatex.field_diagram_orgatex__pedido_line_id
+msgid "Línea de Pedido"
+msgstr "Línea de Pedido"
+
+#. module: idtx_diagram_orgatex
+#. odoo-python
+#: code:addons/idtx_diagram_orgatex/models/control_pedido_line.py:0
+msgid "No hay una ruta definida para esta partida."
+msgstr "No hay una ruta definida para esta partida."
+
+#. module: idtx_diagram_orgatex
+#. odoo-python
+#: code:addons/idtx_diagram_orgatex/models/control_pedido_line.py:0
+msgid ""
+"No se encontraron archivos de diagrama validos para los registros de "
+"Orgatex."
+msgstr ""
+"No se encontraron archivos de diagrama válidos para los registros de "
+"Orgatex."
+
+#. module: idtx_diagram_orgatex
+#. odoo-python
+#: code:addons/idtx_diagram_orgatex/models/control_pedido_line.py:0
+msgid "No se encontró el dyelot en Orgatex para: %s"
+msgstr "No se encontró el dyelot en Orgatex para: %s"
+
+#. module: idtx_diagram_orgatex
+#. odoo-python
+#: code:addons/idtx_diagram_orgatex/models/control_pedido_line.py:0
+msgid "Se han actualizado %s diagramas para la ruta %s."
+msgstr "Se han actualizado %s diagramas para la ruta %s."
