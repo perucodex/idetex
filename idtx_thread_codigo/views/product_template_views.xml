@@ -7,11 +7,14 @@
         <field name="inherit_id" ref="product.product_template_only_form_view"/>
         <field name="priority">10</field>
         <field name="arch" type="xml">
+            <!-- add/separator: SUMA la condición a la que ya puso
+                 idtx_product_development (readonly="is_weaving") en estos
+                 mismos campos; reemplazarla dejaba editables los tejidos. -->
             <field name="categ_id" position="attributes">
-                <attribute name="readonly">is_thread</attribute>
+                <attribute name="readonly" add="is_thread" separator=" or "/>
             </field>
             <field name="default_code" position="attributes">
-                <attribute name="readonly">is_thread</attribute>
+                <attribute name="readonly" add="is_thread" separator=" or "/>
             </field>
         </field>
     </record>
