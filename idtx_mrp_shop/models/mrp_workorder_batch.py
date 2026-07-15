@@ -9,26 +9,117 @@ class MrpWorkorderBatch(models.Model):
     color_recipe_id = fields.Many2one(
         'color.recipe', string='Receta de Color',
         compute='_compute_colors', store=True,
-        help='Receta con la que se tiñe la partida (única: los rollos deben '
-             'compartir receta). Igual que en la OF: código + nombre + receta.')
+        help='Receta con la que se tiñe la partida: la aprobada cuya '
+             'combinación de productos coincide con los productos de los '
+             'rollos (exacta primero; si no, la combinada que los contenga).')
+    recipe_lot_id = fields.Many2one(
+        'color.recipe.lot', string='Sub-receta (Lotes)',
+        compute='_compute_recipe_lot', store=True,
+        help='Sub-receta de la receta cuya combinación de lotes de hilo '
+             'coincide con los lotes de los rollos de la partida.')
     color_code = fields.Char(related='color_recipe_id.color_code', string='Código de Color')
     color_name = fields.Char(related='color_recipe_id.color_name', string='Nombre de Color')
     registry_ids = fields.One2many('batch.registry', 'batch_id', string='Registers')
+    recipe_lot_warning = fields.Text(
+        'Aviso de Receta por Lote', compute='_compute_recipe_lot_warning',
+        help='Alerta cuando la combinación de lotes de hilo de los rollos de '
+             'la partida no tiene sub-receta validada en la receta de color.')
+
+    @api.depends('wo_roll_ids.thread_lot_ids', 'color_recipe_id',
+                 'recipe_lot_id', 'recipe_lot_id.state',
+                 'color_recipe_id.product_ids',
+                 'color_recipe_id.recipe_lot_ids.lot_key',
+                 'color_recipe_id.recipe_lot_ids.state')
+    def _compute_recipe_lot_warning(self):
+        for batch in self:
+            batch.recipe_lot_warning = False
+            rolls = batch.wo_roll_ids
+            if not rolls:
+                continue
+            recipe = batch.color_recipe_id
+            msgs = []
+            batch_products = rolls.mapped('product_id')
+            if not recipe:
+                msgs.append(_(
+                    'No hay receta de color aprobada para la combinación de '
+                    'producto(s) %(products)s de la partida: se debe '
+                    'desarrollar/aprobar en laboratorio.',
+                    products=' + '.join(batch_products.mapped('name'))))
+            else:
+                uncovered = batch_products - recipe.product_ids
+                if uncovered:
+                    msgs.append(_(
+                        'La receta %(recipe)s no cubre lo(s) producto(s) '
+                        '%(products)s de la partida: se requiere una receta '
+                        'aprobada para esa combinación de productos.',
+                        recipe=recipe.name,
+                        products=', '.join(uncovered.mapped('name'))))
+            no_lots = rolls.filtered(lambda r: not r.thread_lot_ids)
+            if no_lots:
+                msgs.append(_(
+                    'Rollos sin lotes de hilo registrados: %s. No se puede '
+                    'verificar la receta de su combinación de lotes.')
+                    % ', '.join(no_lots.mapped('name')))
+            lots = rolls.thread_lot_ids
+            if recipe and lots:
+                lot_names = ', '.join(lots.mapped('name'))
+                sub = batch.recipe_lot_id
+                if not sub:
+                    msgs.append(_(
+                        'La combinación de lotes de hilado [%(lots)s] aún no '
+                        'tiene receta para %(recipe)s (%(color)s): se debe '
+                        'realizar la validación en laboratorio.',
+                        lots=lot_names, recipe=recipe.name,
+                        color=recipe.color_name or ''))
+                elif sub.state != 'validated':
+                    msgs.append(_(
+                        'La combinación de lotes [%(lots)s] está registrada '
+                        'en %(recipe)s pero sigue PENDIENTE de validación de '
+                        'laboratorio.', lots=lot_names, recipe=recipe.name))
+            batch.recipe_lot_warning = '\n'.join(msgs) if msgs else False
 
     @api.depends('wo_roll_ids')
-    def _compute_partner_ids(self): 
+    def _compute_partner_ids(self):
         for rec in self:
             partners = rec.wo_roll_ids.workorder_id.production_id.sale_order_line_id.order_id.mapped('partner_id')
             rec.partner_ids = [(6, 0, partners.ids)] if partners else [(5, 0, 0)]
 
     @api.depends('wo_roll_ids', 'child_batch_ids.wo_roll_ids')
     def _compute_colors(self):
+        """La PARTIDA resuelve su receta por combinación de productos: la
+        receta aprobada del color (línea de Lab Dev de las OFs) cuya
+        combinación coincide EXACTAMENTE con los productos de los rollos;
+        si no hay exacta, la combinada que los contenga (la más chica)."""
         for rec in self:
-            recipes = rec.wo_roll_ids.workorder_id.production_id.color_recipe_id
-            if not recipes and rec.child_batch_ids:
+            rolls = rec.wo_roll_ids
+            if not rolls and rec.child_batch_ids:
                 # Partida dividida: conserva el color histórico desde sus hijas.
-                recipes = rec.child_batch_ids.wo_roll_ids.workorder_id.production_id.color_recipe_id
-            rec.color_recipe_id = recipes[:1]
+                rolls = rec.child_batch_ids.wo_roll_ids
+            productions = rolls.workorder_id.production_id
+            line = (productions.sale_order_line_id.lab_dev_line_id
+                    or productions.color_recipe_id.lab_dev_line_id)[:1]
+            products = rolls.mapped('product_id')
+            recipe = self.env['color.recipe']
+            if line and products:
+                candidates = line.color_recipe_ids.filtered(
+                    lambda r: r.state == 'approved'
+                    and not (products - r.product_ids))
+                exact = candidates.filtered(
+                    lambda r: r._product_key() == tuple(sorted(products.ids)))
+                recipe = (exact or candidates.sorted(
+                    key=lambda r: (len(r.product_ids), r.id)))[:1]
+            if not recipe:
+                # Fallback legado: la receta resuelta en las OFs.
+                recipe = productions.color_recipe_id[:1]
+            rec.color_recipe_id = recipe
+
+    @api.depends('color_recipe_id', 'wo_roll_ids.thread_lot_ids',
+                 'color_recipe_id.recipe_lot_ids.lot_key')
+    def _compute_recipe_lot(self):
+        for rec in self:
+            recipe = rec.color_recipe_id
+            lots = rec.wo_roll_ids.thread_lot_ids
+            rec.recipe_lot_id = recipe._find_lot_subrecipe(lots) if recipe and lots else False
 
     # =========================
     # Lookup para UI (Shop Floor)

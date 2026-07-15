@@ -68,26 +68,29 @@ class MrpWorkorderBatch(models.Model):
 
     @api.constrains('wo_roll_ids')
     def _check_same_color_recipe(self):
-        """Una partida solo puede agrupar rollos de órdenes de fabricación con la
-        MISMA receta de color (se tiñe todo junto). Aplica a cualquier vía de
-        armado: formulario de Partidas, taller (dye batch), etc."""
+        """Una partida solo puede agrupar rollos de órdenes de fabricación del
+        MISMO COLOR (misma línea de Lab Dev): se tiñe todo junto. La receta
+        concreta la resuelve la partida por combinación de productos, así que
+        aquí ya no se exige la misma receta sino el mismo color."""
         for batch in self:
             productions = batch.wo_roll_ids.workorder_id.production_id
-            by_recipe = {}
+            by_color = {}
             for prod in productions:
-                by_recipe.setdefault(prod.color_recipe_id, self.env['mrp.production'])
-                by_recipe[prod.color_recipe_id] |= prod
-            if len(by_recipe) > 1:
+                line = (prod.sale_order_line_id.lab_dev_line_id
+                        or prod.color_recipe_id.lab_dev_line_id)
+                by_color.setdefault(line, self.env['mrp.production'])
+                by_color[line] |= prod
+            if len(by_color) > 1:
                 detail = '\n'.join(
                     '- %s: %s' % (
-                        recipe.display_name if recipe else _('(sin receta de color)'),
+                        line.display_name if line else _('(sin color de laboratorio)'),
                         ', '.join(prods.mapped('name')),
                     )
-                    for recipe, prods in by_recipe.items()
+                    for line, prods in by_color.items()
                 )
                 raise ValidationError(_(
                     'La partida %(batch)s no puede mezclar órdenes de fabricación '
-                    'con recetas de color distintas:\n%(detail)s',
+                    'de colores distintos:\n%(detail)s',
                     batch=batch.name, detail=detail,
                 ))
     
@@ -105,6 +108,22 @@ class MrpWorkorderBatch(models.Model):
 
         return super().create(vals_list)
     
+    def _sync_linked_workorders(self):
+        """Recalcula qty_produced de las OTs que PROCESAN estas partidas
+        (las tienen en batch_ids): su cantidad producida es el peso de los
+        rollos de la partida que pertenecen a su OF, asi que cualquier
+        cambio de composicion/estado de la partida las desactualiza."""
+        if not self.ids:
+            return
+        self.env['mrp.workorder'].search(
+            [('batch_ids', 'in', self.ids)])._sync_textile_qty_produced()
+
+    def write(self, vals):
+        res = super().write(vals)
+        if {'wo_roll_ids', 'state'} & set(vals.keys()):
+            self._sync_linked_workorders()
+        return res
+
     def clear_rolls(self):
         workorders = self.wo_roll_ids.mapped('workorder_id')
         self.wo_roll_ids = [Command.clear()]
@@ -117,6 +136,43 @@ class MrpWorkorderBatch(models.Model):
             rec.wo_roll_ids.write({'in_batch': True})
             rec.state = 'batch'
             rec.wo_roll_ids.mapped('workorder_id')._sync_textile_qty_produced()
+
+    def action_back_to_draft(self):
+        """Devuelve la partida a borrador para corregir su composición
+        (rollos de más o de menos), SOLO si nadie la usó todavía: sin
+        registros de operación en taller, sin OTs que la tengan anexada
+        y sin divisiones de por medio."""
+        for rec in self:
+            if rec.state != 'batch':
+                raise UserError(_(
+                    'Solo una partida confirmada puede regresar a borrador.'))
+            if rec.parent_batch_id:
+                raise UserError(_(
+                    'La partida %(batch)s es una sub-partida: su composición '
+                    'proviene de la división de %(parent)s. Corrígela con una '
+                    'nueva división, no regresándola a borrador.',
+                    batch=rec.name, parent=rec.parent_batch_id.name))
+            if 'batch.registry' in self.env:
+                registries = self.env['batch.registry'].search_count(
+                    [('batch_id', '=', rec.id)])
+                if registries:
+                    raise UserError(_(
+                        'La partida %(batch)s ya tiene %(count)s registro(s) '
+                        'de operación en el taller; no puede regresar a '
+                        'borrador.', batch=rec.name, count=registries))
+            using_wos = self.env['mrp.workorder'].search(
+                [('batch_ids', 'in', rec.id)])
+            if using_wos:
+                raise UserError(_(
+                    'La partida %(batch)s ya está anexada a la(s) OT(s): '
+                    '%(wos)s; no puede regresar a borrador.',
+                    batch=rec.name,
+                    wos=', '.join(using_wos.mapped('display_name'))))
+            rec.wo_roll_ids.write({'in_batch': False})
+            rec.state = 'draft'
+            rec.wo_roll_ids.mapped('workorder_id')._sync_textile_qty_produced()
+            rec.message_post(body=_(
+                'Partida regresada a borrador para corregir su composición.'))
 
     def unbuild_batch(self):
         # if self.workorder_id:

@@ -49,22 +49,29 @@ class MrpProduction(models.Model):
 
     def _compute_need_recipe(self):
         for rec in self:
-            # Si no viene de venta, permitimos receta manual.
-            # Si viene de venta, requiere tener lab_dev_line para trabajar con receta.
-            rec.need_recipe = bool((not rec.sale_order_line_id) or rec.sale_order_line_id.lab_dev_line_id)
+            # Solo exige receta si viene de venta CON color de laboratorio.
+            # (El flujo de receta manual se retiró: la receta real la resuelve
+            # la PARTIDA por combinación de productos + lotes; la OF solo
+            # muestra color y código.)
+            rec.need_recipe = bool(rec.sale_order_line_id and rec.sale_order_line_id.lab_dev_line_id)
 
-    @api.depends('manual_recipe', 'manual_color_recipe_id', 'product_tmpl_id', 'sale_order_line_id', 'sale_order_line_id.lab_dev_line_id', 'sale_order_line_id.lab_dev_line_id.color_recipe_ids.state', 'sale_order_line_id.lab_dev_line_id.color_recipe_ids.product_id')
+    @api.depends('manual_recipe', 'manual_color_recipe_id', 'product_tmpl_id', 'sale_order_line_id', 'sale_order_line_id.lab_dev_line_id', 'sale_order_line_id.lab_dev_line_id.color_recipe_ids.state', 'sale_order_line_id.lab_dev_line_id.color_recipe_ids.product_ids')
     def _compute_color_recipe(self):
         for rec in self:
             if rec.manual_recipe:
                 color_recipe_id = rec.manual_color_recipe_id
             else:
                 if rec.sale_order_line_id:
-                    # La línea de lab dev puede tener una receta aprobada por
-                    # producto: se identifica la que coincide con el producto
-                    # a fabricar de la orden de producción.
-                    color_recipe_id = rec.sale_order_line_id.lab_dev_line_id.color_recipe_ids.filtered(
-                        lambda l: l.state == 'approved' and l.product_id == rec.product_tmpl_id)[:1]
+                    # La línea de lab dev tiene recetas aprobadas por producto
+                    # o por COMBINACIÓN (teñidos juntos). Pueden coexistir
+                    # (JERSEY y JERSEY+RIB): la OF prefiere la receta UNITARIA
+                    # exacta de su producto; si no existe, la combinada que lo
+                    # contenga (la de menos productos, determinista).
+                    candidates = rec.sale_order_line_id.lab_dev_line_id.color_recipe_ids.filtered(
+                        lambda l: l.state == 'approved' and rec.product_tmpl_id in l.product_ids)
+                    exact = candidates.filtered(lambda l: len(l.product_ids) == 1)
+                    color_recipe_id = (exact or candidates.sorted(
+                        key=lambda l: (len(l.product_ids), l.id)))[:1]
                 else:
                     color_recipe_id = False
             rec.color_recipe_id = color_recipe_id
@@ -86,6 +93,6 @@ class MrpProduction(models.Model):
         self.manual_recipe = not self.manual_recipe
         if not self.manual_recipe:
             approved = self.sale_order_line_id.lab_dev_line_id.color_recipe_ids.filtered(
-                lambda l: l.state == 'approved' and l.product_id == self.product_tmpl_id)
+                lambda l: l.state == 'approved' and self.product_tmpl_id in l.product_ids)
             if approved:
                 self.color_recipe_id = approved[:1]

@@ -21,7 +21,13 @@ class MrpProduction(models.Model):
         res = super()._compute_workorder_ids()
         for rec in self:
             for wo in rec.workorder_ids:
-                wo.mrwo_id = wo.operation_id.operation_id
+                # Solo sincronizar desde la operación de LdM cuando existe:
+                # este compute se re-ejecuta ante muchos cambios (p.ej.
+                # qty_producing) y pisar mrwo_id con False borraba la
+                # Operación LAB de las OTs sin operación de LdM enlazada.
+                op = wo.operation_id.operation_id
+                if op and wo.mrwo_id != op:
+                    wo.mrwo_id = op
         return res
 
     def _roll_done_qty(self, final=False):

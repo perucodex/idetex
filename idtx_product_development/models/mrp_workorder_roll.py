@@ -12,7 +12,7 @@ class MrpWorkorderRoll(models.Model):
             'name': _('Divide Roll'),
             'view_mode': 'form',
             'res_model': 'split.roll',
-            'views': [(self.env.ref('idtx_mrp.split_roll_form').id, 'form')],
+            'views': [(self.env.ref('idtx_product_development.split_roll_form').id, 'form')],
             'type': 'ir.actions.act_window',
             'target': 'new',
             'context': dict(self.env.context)

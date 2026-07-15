@@ -6,12 +6,20 @@
         <field name="model">mrp.workorder.batch</field>
         <field name="inherit_id" ref="idtx_mrp.mrp_workorder_batch_form"/>
         <field name="arch" type="xml">
-            <field name="mrwo_id" position="after">
-                <field name="partner_ids" readonly="1" widget="many2many_tags"/>
-                <field name="color_code" readonly="1"/>
-                <field name="color_name" readonly="1"/>
-                <field name="color_recipe_id" readonly="1"/>
-            </field>
+            <sheet position="before">
+                <div class="alert alert-warning d-flex justify-content-between align-items-center" role="alert" invisible="not recipe_lot_warning">
+                    <field name="recipe_lot_warning" readonly="1" class="w-auto mb-0"/>
+                </div>
+            </sheet>
+            <group name="batch_info" position="after">
+                <group>
+                    <field name="partner_ids" readonly="1" widget="many2many_tags"/>
+                    <field name="color_code" readonly="1"/>
+                    <field name="color_name" readonly="1"/>
+                    <field name="color_recipe_id" readonly="1"/>
+                    <field name="recipe_lot_id" readonly="1"/>
+                </group>
+            </group>
             <notebook position="inside">
                 <page name="registry_page" string="Dyeing Registry">
                     <field name="registry_ids" readonly="1"/>

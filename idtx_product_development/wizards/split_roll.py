@@ -38,8 +38,8 @@ class SplitRoll(models.TransientModel):
             if not used_numbers:
                 roll.name = f'{prefix}-{str(next_number).zfill(3)}'
                 next_number += 1
-            new_quantity = round(roll.gross_quantity - self.new_quantity, 2)
-            new_roll = roll.copy({
+            new_quantity = round(roll.quantity - self.new_quantity, 2)
+            new_roll = roll.with_context(skip_roll_option_check=True).copy({
                 'quantity': new_quantity,
                 'equipment_id': roll.equipment_id.id,
                 'employee_id': roll.employee_id.id,
@@ -61,7 +61,7 @@ class SplitRoll(models.TransientModel):
                 roll.name = f'{prefix}-{str(next_number).zfill(3)}'
                 next_number += 1
             new_weight = round(roll.gross_weight - self.new_weight, 2)
-            new_roll = roll.copy({
+            new_roll = roll.with_context(skip_roll_option_check=True).copy({
                 'net_weight': new_weight,
                 'gross_weight': new_weight,
                 'equipment_id': roll.equipment_id.id,

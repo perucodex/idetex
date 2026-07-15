@@ -125,10 +125,18 @@ class SaleOrderLine(models.Model):
         for line in self:
             line.is_salesman = not is_admin
             
-    @api.depends('lab_dev_line_id')
+    @api.depends('lab_dev_line_id', 'lab_dev_line_id.state',
+                 'lab_dev_line_id.color_recipe_ids.state',
+                 'lab_dev_line_id.color_recipe_ids.product_ids',
+                 'product_template_id')
     def _compute_has_approved_lab_line(self):
+        # El badge del color solo es verde si la línea de Lab Dev tiene una
+        # receta APROBADA que incluya al PRODUCTO de esta línea de venta
+        # (receta individual o de combinación de productos).
         for line in self:
-            line.has_approved_lab_line = bool(len(line.lab_dev_line_id.filtered(lambda l: l.state == 'approved')))
+            line.has_approved_lab_line = bool(line.lab_dev_line_id and any(
+                cr.state == 'approved' and line.product_template_id in cr.product_ids
+                for cr in line.lab_dev_line_id.color_recipe_ids))
 
     @api.depends(
         'bom_id',
@@ -231,14 +239,12 @@ class SaleOrderLine(models.Model):
             if not previous:
                 raise UserError(_(
                     "No se puede agregar un complemento: no hay una línea de "
-                    "producto anterior de la cual heredar el color."))
-            if not previous.color_name:
-                raise UserError(_(
-                    "No se puede agregar un complemento: la línea anterior no "
-                    "tiene Nombre de color (color_name)."))
+                    "producto anterior a la cual complementar."))
+            # Herencia por comodidad: solo rellena vacíos. El complemento
+            # puede elegir su propio color (color_name / lab_dev_line_id).
             if previous.product_color_id and not rec.product_color_id:
                 rec.product_color_id = previous.product_color_id
-            if not rec.color_name:
+            if previous.color_name and not rec.color_name:
                 rec.color_name = previous.color_name
 
     @api.onchange('lab_dev_line_id')
@@ -252,7 +258,7 @@ class SaleOrderLine(models.Model):
                 if any(wo.state == 'progress' for wo in rec.production_id.workorder_ids.filtered(lambda wo: wo.mrwo_id.use_lab_recipe)):
                     raise UserError(_('Cannot change recipe because there are workorders in progress using the lab recipe.'))
                 rec.production_id.color_recipe_id = rec.lab_dev_line_id.color_recipe_ids.filtered(
-                    lambda cr: cr.state == 'approved' and cr.product_id == rec.production_id.product_tmpl_id)[:1]
+                    lambda cr: cr.state == 'approved' and rec.production_id.product_tmpl_id in cr.product_ids)[:1]
 
     @api.onchange('product_id')
     def _onchange_product_id(self):

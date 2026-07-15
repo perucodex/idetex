@@ -4,6 +4,7 @@ from . import base_process
 from . import color_code_system
 from . import color_recipe_process
 from . import color_recipe
+from . import color_recipe_lot
 from . import colorfastness_washing
 from . import lab_dev
 from . import mrp_routing

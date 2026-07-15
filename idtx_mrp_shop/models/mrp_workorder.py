@@ -255,9 +255,14 @@ class MrpWorkorder(models.Model):
 
     def action_get_registry_defaults(self, batch_id=False, employee_id=False, equipment_id=False):
         self.ensure_one()
-        recipe = self.production_id.color_recipe_id
-        ldl = recipe.lab_dev_line_id
         batch = self.env['mrp.workorder.batch'].browse(int(batch_id)) if batch_id else False
+        # La PARTIDA es la dueña de la resolución: su receta (por combinación
+        # de productos) y su sub-receta (por combinación de lotes) mandan;
+        # la receta de la OF queda como fallback legado.
+        recipe = (batch.color_recipe_id if batch and batch.exists() else False) \
+            or self.production_id.color_recipe_id
+        sub = batch.recipe_lot_id if batch and batch.exists() else self.env['color.recipe.lot']
+        ldl = recipe.lab_dev_line_id if recipe else False
         equipment = self.env['maintenance.equipment'].browse(int(equipment_id)) if equipment_id else False
         recipe_components = self._compute_registry_recipe_components()
 
@@ -267,7 +272,9 @@ class MrpWorkorder(models.Model):
             'employee_id': int(employee_id) if employee_id else False,
             'equipment_id': equipment.id if equipment and equipment.exists() else False,
             'weight': batch.total_weight if batch and batch.exists() else 0,
-            'bath_ratio': ldl.bath_ratio if ldl else 0,
+            'bath_ratio': sub.bath_ratio or recipe.bath_ratio or (ldl.bath_ratio if ldl else 0),
+            'abs_factor': sub.absorption_factor or recipe.absorption_factor or 0,
+            'tipo_proceso': sub.tipo_proceso or False,
             'color_name': ldl.color_name if ldl else False,
             'color_code': ldl.color_code if ldl else False,
             'partner_id': ldl.lab_dev_id.partner_id.id if ldl and ldl.lab_dev_id and ldl.lab_dev_id.partner_id else False,
@@ -444,6 +451,92 @@ class MrpWorkorder(models.Model):
         except Exception as e:
             return {'status': 'danger', 'message': _(f'Error: {str(e)}')}
 
+    def _get_batch_sibling_workorders(self, batch):
+        """OTs equivalentes (misma operación mrwo_id que self) en las OTRAS
+        OFs de la partida. Una partida puede juntar rollos tejidos en OFs
+        distintas que se procesan juntas (teñido, etc.): el registro de la
+        operación debe reflejarse también en la OT de la misma operación de
+        cada otra OF. Devuelve (siblings, missing) donde missing son los
+        nombres de las OFs que NO tienen la operación — en ese caso la
+        partida no es procesable y el llamador debe abortar con mensaje.
+        """
+        self.ensure_one()
+        siblings = self.env['mrp.workorder']
+        missing = []
+        if not self.mrwo_id:
+            # Sin operación de catálogo no hay con qué comparar.
+            return siblings, missing
+        productions = batch.wo_roll_ids.workorder_id.production_id - self.production_id
+        for prod in productions:
+            same_op = prod.workorder_ids.filtered(lambda wo: wo.mrwo_id == self.mrwo_id)
+            if same_op:
+                siblings |= same_op
+            else:
+                missing.append(prod.name)
+        return siblings, missing
+
+    def _check_batch_sibling_operations(self, batch):
+        """Valida que todas las OFs de la partida tengan la operación de self.
+        Devuelve (siblings, error_dict|None); error_dict es la respuesta
+        'danger' lista para el taller."""
+        siblings, missing = self._get_batch_sibling_workorders(batch)
+        if missing:
+            return siblings, {
+                'status': 'danger',
+                'message': _(
+                    'No se puede procesar la partida %(batch)s: la(s) OF %(prods)s '
+                    'no tienen la operación %(op)s. Una partida con rollos de '
+                    'varias OF solo puede procesarse si todas comparten la operación.',
+                    batch=batch.name, prods=', '.join(missing), op=self.mrwo_id.name),
+            }
+        return siblings, None
+
+    def _get_previous_workorder(self):
+        """OT inmediatamente anterior a self en la ruta de su OF
+        (mismo orden del modelo: sequence, id)."""
+        self.ensure_one()
+        prev = self.env['mrp.workorder']
+        for wo in self.production_id.workorder_ids.sorted(lambda w: (w.sequence, w.id)):
+            if wo == self:
+                return prev
+            prev = wo
+        return self.env['mrp.workorder']
+
+    def _check_batch_previous_operation(self, batch):
+        """La partida debe haber pasado por la operación ANTERIOR de la ruta
+        antes de registrarse en esta (control de secuencia de fases).
+
+        - Acepta el historial de las partidas PADRE: una sub-partida dividida
+          hereda las operaciones registradas en su partida de origen.
+        - No aplica cuando la operación anterior es tejido (las partidas se
+          arman recién con los rollos ya tejidos), ni en OTs de tejido.
+        Devuelve error_dict|None (respuesta 'danger' lista para el taller).
+        """
+        self.ensure_one()
+        if self.operation_type == 'weaving':
+            return None
+        prev = self._get_previous_workorder()
+        if not prev or prev.operation_type == 'weaving':
+            return None
+        # Linaje: la partida y toda su cadena de partidas de origen.
+        lineage = batch
+        node = batch
+        while node.parent_batch_id:
+            node = node.parent_batch_id
+            lineage |= node
+        if not (prev.batch_ids & lineage):
+            return {
+                'status': 'danger',
+                'message': _(
+                    'No se puede registrar %(op)s para la partida %(batch)s: '
+                    'la partida aún no pasó por la operación anterior '
+                    '%(prev)s de la OF %(prod)s.',
+                    op=self.mrwo_id.name or self.name, batch=batch.name,
+                    prev=prev.mrwo_id.name or prev.name,
+                    prod=self.production_id.name),
+            }
+        return None
+
     def action_create_registry_record(self, batch_id_or_payload, employee_id=False, equipment_id=False):
         self.ensure_one()
         payload = batch_id_or_payload if isinstance(batch_id_or_payload, dict) else {
@@ -457,6 +550,21 @@ class MrpWorkorder(models.Model):
         equipment_id = int(payload.get('equipment_id')) if payload.get('equipment_id') else False
 
         defaults = self.action_get_registry_defaults(batch_id=batch_id, employee_id=employee_id, equipment_id=equipment_id)
+
+        # Partidas multi-OF: valida ANTES de crear el registro que cada OF
+        # de los rollos tenga esta misma operación; si falta, se aborta.
+        # Ademas, control de secuencia: la partida debe haber pasado por la
+        # operación anterior de la ruta (considerando partidas padre).
+        sibling_workorders = self.env['mrp.workorder']
+        if defaults.get('batch_id'):
+            batch = self.env['mrp.workorder.batch'].browse(defaults['batch_id'])
+            error = self._check_batch_previous_operation(batch)
+            if error:
+                return error
+            sibling_workorders, error = self._check_batch_sibling_operations(batch)
+            if error:
+                return error
+
         recipe_components = self._compute_registry_recipe_components()
 
         vals = {
@@ -507,8 +615,12 @@ class MrpWorkorder(models.Model):
 
         br = self.env['batch.registry'].create(vals)
         if br.batch_id:
-            related_workorders = (self | br.batch_id.wo_roll_ids.mapped('workorder_id')).filtered(lambda wo: wo.id)
+            # Se anexa la partida a la OT actual, a las OTs de origen de los
+            # rollos y a la OT de esta misma operación en cada otra OF
+            # (siblings): asi su qty_produced de teñido refleja la partida.
+            related_workorders = (self | sibling_workorders | br.batch_id.wo_roll_ids.mapped('workorder_id')).filtered(lambda wo: wo.id)
             related_workorders.write({'batch_ids': [(4, br.batch_id.id)]})
+            related_workorders._sync_textile_qty_produced()
         return {
             'status': 'success',
             'batchId': br.id,
@@ -533,6 +645,16 @@ class MrpWorkorder(models.Model):
         if not employee_id or not equipment_id:
             return {'status': 'danger', 'message': _('Debes seleccionar empleado y equipo.')}
 
+        # Control de secuencia: la partida debe haber pasado por la operación
+        # anterior de la ruta (considerando partidas padre).
+        error = self._check_batch_previous_operation(batch)
+        if error:
+            return error
+        # Partidas multi-OF: cada OF de los rollos debe tener esta operación.
+        sibling_workorders, error = self._check_batch_sibling_operations(batch)
+        if error:
+            return error
+
         defaults = self.action_get_registry_defaults(batch_id=batch_id)
         br = self.env['batch.registry'].create({
             'batch_id': batch.id,
@@ -545,8 +667,9 @@ class MrpWorkorder(models.Model):
             'registry_date': fields.Datetime.now(),
             'state': 'done',
         })
-        related_workorders = (self | batch.wo_roll_ids.mapped('workorder_id')).filtered(lambda wo: wo.id)
+        related_workorders = (self | sibling_workorders | batch.wo_roll_ids.mapped('workorder_id')).filtered(lambda wo: wo.id)
         related_workorders.write({'batch_ids': [(4, batch.id)]})
+        related_workorders._sync_textile_qty_produced()
         return {
             'status': 'success',
             'batchId': br.id,

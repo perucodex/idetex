@@ -6,8 +6,11 @@ class ColorRecipeProcess(models.Model):
 
     sequence = fields.Integer('Sequence')
     color_recipe_id = fields.Many2one('color.recipe', string='Color Recipe', ondelete='cascade')
+    # Legacy (sin UI): stock_lot_id y mixing_group_id eran los antiguos
+    # flujos de receta por lote; el vigente es recipe_lot_id (sub-receta).
     stock_lot_id = fields.Many2one('stock.lot', string='Lot', ondelete='cascade')
     mixing_group_id = fields.Many2one('color.recipe.mixing.group', string='Mixing Group', ondelete='cascade')
+    recipe_lot_id = fields.Many2one('color.recipe.lot', string='Sub-receta por Lote', ondelete='cascade')
     base_process_id = fields.Many2one('base.process', string='Process Template', ondelete='restrict')
     colorfastness_washing_id = fields.Many2one('colorfastness.washing', string='Solidez al Lavado', ondelete='cascade')
     
@@ -24,13 +27,8 @@ class ColorRecipeProcess(models.Model):
     light_fastness_light = fields.Float(related='colorfastness_washing_id.light_fastness_light', readonly=False, store=True)
     color_recipe_process_line_ids = fields.One2many('color.recipe.process.line', 'color_recipe_process_id', string='Color Process Line', copy=True)
     
-    @api.model_create_multi
-    def create(self, vals_list):
-        records = super().create(vals_list)
-        for rec in records:
-            if not rec.colorfastness_washing_id:
-                rec.colorfastness_washing_id = self.env['colorfastness.washing'].create({})
-        return records
+    # Nota: ya no se auto-crea colorfastness.washing por proceso — la solidez
+    # vive en la sub-receta por combinación de lotes (color.recipe.lot).
 
     @api.onchange('base_process_id')
     def _onchange_base_process_id(self):

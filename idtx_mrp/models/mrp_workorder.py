@@ -133,6 +133,11 @@ class MrpWorkorder(models.Model):
             rec.workcenter_id = rec.mrwo_id.workcenter_id
             rec.name = rec.mrwo_id.name
 
+    # Operaciones que procesan PARTIDAS (no rollos sueltos): su cantidad
+    # producida es el peso de los rollos de sus partidas que pertenecen a
+    # la propia OF (las partidas pueden combinar rollos de varias OFs).
+    BATCH_OPERATION_TYPES = ('dyeing', 'finishing', 'printing', 'quality')
+
     def _get_textile_produced_qty(self):
         self.ensure_one()
         if self.operation_type == 'weaving':
@@ -140,7 +145,7 @@ class MrpWorkorder(models.Model):
                 return float(sum(self.roll_ids.mapped('quantity')))
             total_weight = float(sum(self.roll_ids.mapped('gross_weight')))
             return total_weight or float(sum(self.roll_ids.mapped('quantity')))
-        if self.operation_type == 'dyeing':
+        if self.operation_type in self.BATCH_OPERATION_TYPES:
             batch_rolls = self.batch_ids.wo_roll_ids.filtered(
                 lambda roll: roll.workorder_id and roll.workorder_id.production_id == self.production_id
             )
@@ -151,11 +156,11 @@ class MrpWorkorder(models.Model):
         return 0.0
 
     def _sync_textile_qty_produced(self):
-        for workorder in self.filtered(lambda wo: wo.operation_type in ('weaving', 'dyeing') and wo.state not in ('done', 'cancel')):
+        for workorder in self.filtered(lambda wo: wo.operation_type in (('weaving',) + wo.BATCH_OPERATION_TYPES) and wo.state not in ('done', 'cancel')):
             workorder.qty_produced = workorder._get_textile_produced_qty()
 
     def write(self, vals):
-        if 'state' in vals and vals['state'] in ('progress', 'done') and self.filtered(lambda wo: wo.operation_type in ('weaving', 'dyeing')):
+        if 'state' in vals and vals['state'] in ('progress', 'done') and self.filtered(lambda wo: wo.operation_type in (('weaving',) + wo.BATCH_OPERATION_TYPES)):
             result = True
             for workorder in self:
                 current_vals = dict(vals)

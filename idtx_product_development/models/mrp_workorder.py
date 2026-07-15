@@ -25,16 +25,21 @@ class MrpWorkorder(models.Model):
                     rec.roll_weight = sum(rec.roll_ids.mapped('gross_weight'))
                     rec.progress = 100
                 else:
+                    # El avance se mide contra el TOTAL de la OF
+                    # (qty_production); qty_remaining disminuye con el avance
+                    # e inflaba el porcentaje.
                     if rec.weave_type == 'rect':
                         rec.quantity = sum(rec.roll_ids.mapped('quantity'))
-                        rec.progress = (rec.quantity / (rec.qty_remaining if rec.qty_remaining else rec.qty_production)) * 100
+                        rec.progress = (rec.quantity / rec.qty_production * 100) if rec.qty_production else 0
                         rec.roll_weight = 0
                     else:
                         rec.roll_weight = sum(rec.roll_ids.mapped('gross_weight'))
-                        rec.progress = (rec.roll_weight / (rec.qty_remaining if rec.qty_remaining else rec.qty_production)) * 100
+                        rec.progress = (rec.roll_weight / rec.qty_production * 100) if rec.qty_production else 0
                         rec.quantity = 0
-            elif rec.operation_type == 'dyeing':
+            elif rec.operation_type in rec.BATCH_OPERATION_TYPES:
                 if rec.batch_ids:
+                    # Solo los rollos de la partida que pertenecen a ESTA OF
+                    # (las partidas pueden combinar rollos de varias OFs).
                     batch_rolls = rec.batch_ids.wo_roll_ids.filtered(
                         lambda r: r.workorder_id and r.workorder_id.production_id == rec.production_id
                     )
@@ -45,11 +50,11 @@ class MrpWorkorder(models.Model):
                     else:
                         if sum(batch_rolls.mapped('gross_weight')) > 0:
                             rec.roll_weight = sum(batch_rolls.mapped('gross_weight'))
-                            rec.progress = (rec.roll_weight / (rec.qty_remaining if rec.qty_remaining else rec.qty_production)) * 100
+                            rec.progress = (rec.roll_weight / rec.qty_production * 100) if rec.qty_production else 0
                             rec.quantity = 0
                         else:
                             rec.quantity = sum(batch_rolls.mapped('quantity'))
-                            rec.progress = (rec.quantity / (rec.qty_remaining if rec.qty_remaining else rec.qty_production)) * 100
+                            rec.progress = (rec.quantity / rec.qty_production * 100) if rec.qty_production else 0
                             rec.roll_weight = 0
                 else:
                     rec.quantity = 0

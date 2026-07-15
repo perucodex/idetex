@@ -15,6 +15,11 @@ class MrpWorkorderRoll(models.Model):
     def create(self, vals_list):
         records = super().create(vals_list)
         for roll in records:
+            # skip_roll_option_check: la división de un rollo existente no es
+            # un registro nuevo de tejido; no exige más datos que el original
+            # (rollos antiguos pueden no tener opción).
+            if self.env.context.get('skip_roll_option_check'):
+                continue
             if roll.workorder_id and roll.workorder_id.operation_type == 'weaving' and not roll.option_id:
                 raise UserError(_('You must select an option before creating a weaving roll.'))
         workorders = records.mapped('workorder_id')
@@ -32,6 +37,11 @@ class MrpWorkorderRoll(models.Model):
             workorders._sync_thread_consumption_from_rolls()
         if fields_that_change_qty & set(vals.keys()):
             self._sync_weaving_qty_produced(workorders)
+            # Si el rollo esta en una partida, las OTs que la procesan
+            # (teñido/acabado/...) tambien dependen de su peso.
+            batches = self.env['mrp.workorder.batch'].search(
+                [('wo_roll_ids', 'in', self.ids)])
+            batches._sync_linked_workorders()
         return res
 
     def unlink(self):

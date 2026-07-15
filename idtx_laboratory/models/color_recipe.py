@@ -9,10 +9,14 @@ class ColorRecipe(models.Model):
     name = fields.Char('Name', copy=False, default=lambda self: _('New'))
     lab_dev_line_id = fields.Many2one('lab.dev.line', string='Lab Dev Line', ondelete='cascade')
     lab_dev_id = fields.Many2one(related='lab_dev_line_id.lab_dev_id')
-    product_ids = fields.Many2many(related='lab_dev_line_id.product_ids')
-    product_id = fields.Many2one(
-        'product.template', string='Product', ondelete='restrict',
-        domain="[('id', 'in', product_ids)]")
+    available_product_ids = fields.Many2many(
+        related='lab_dev_line_id.product_ids', string='Available Products')
+    # La receta puede ser de UN producto o de una COMBINACIÓN de productos
+    # que se tiñen juntos (p.ej. cuerpo JERSEY + cuello RIB): el correlativo,
+    # la aprobación y la resolución de receta trabajan por combinación.
+    product_ids = fields.Many2many(
+        'product.template', 'color_recipe_product_rel', 'recipe_id', 'product_tmpl_id',
+        string='Productos', domain="[('id', 'in', available_product_ids)]")
     color_code = fields.Char(related='lab_dev_line_id.color_code')
     color_name = fields.Char(related='lab_dev_line_id.color_name')
     partner_id = fields.Many2one(related='lab_dev_id.partner_id')
@@ -47,16 +51,62 @@ class ColorRecipe(models.Model):
         ('approved', 'Approved'),
     ], string='State', default='test', tracking=True)
     observations = fields.Text('Observaciones')
+    absorption_factor = fields.Float(
+        'Factor de Absorción (L/kg)', digits=(12, 2),
+        help='Litros de baño absorbidos por kilogramo de tela.', default=3.00)
+    bath_ratio = fields.Integer(
+        'Relación de Baño 1:',
+        help='Relación de baño 1:N en litros por kilogramo. '
+             'Ej.: ingrese 10 para una relación 1:10 (uno a diez).')
+    # Legacy (histórico, ya sin UI): grupos de mezcla reemplazados por
+    # recipe_lot_ids (sub-recetas por combinación de lotes).
     mixing_group_ids = fields.One2many('color.recipe.mixing.group', 'color_recipe_id', string='Grupos de Mezcla')
+    recipe_lot_ids = fields.One2many(
+        'color.recipe.lot', 'color_recipe_id', string='Sub-recetas por Lote')
 
-    @api.onchange('lab_dev_line_id', 'product_ids')
+    def _find_lot_subrecipe(self, lots):
+        """Sub-receta cuya combinación de lotes de hilo coincide EXACTAMENTE
+        con `lots` (recordset de stock.lot). Devuelve recordset vacío si la
+        combinación no está registrada. Compara contra los lotes REALES de
+        cada sub-receta (no contra lot_key almacenado) para ser inmune a
+        claves desactualizadas."""
+        self.ensure_one()
+        key = self.env['color.recipe.lot']._make_lot_key(lots.ids)
+        return self.recipe_lot_ids.filtered(
+            lambda r: self.env['color.recipe.lot']._make_lot_key(r.lot_ids.ids) == key)[:1]
+
+    def _product_key(self):
+        """Clave canónica de la combinación de productos de la receta."""
+        self.ensure_one()
+        return tuple(sorted(self.product_ids.ids))
+
+    @api.onchange('lab_dev_line_id', 'available_product_ids')
     def _onchange_default_single_product(self):
         """Si la línea de Lab Dev tiene un único producto, la receta lo toma
         por defecto. Si tiene varios, se deja en blanco para que el usuario
-        elija. No sobreescribe una selección previa del usuario."""
+        elija su combinación. No sobreescribe una selección previa."""
         for rec in self:
-            if not rec.product_id and len(rec.product_ids) == 1:
-                rec.product_id = rec.product_ids
+            if not rec.product_ids and len(rec.available_product_ids) == 1:
+                rec.product_ids = rec.available_product_ids
+
+    @api.constrains('recipe_color_code', 'product_ids', 'lab_dev_line_id')
+    def _check_recipe_color_code_unique(self):
+        # Respaldo contra duplicados: el correlativo es único por combinación
+        # de productos dentro de la línea (la asignación además serializa con
+        # un lock FOR UPDATE sobre la línea de Lab Dev).
+        for rec in self:
+            if not rec.recipe_color_code or not rec.lab_dev_line_id:
+                continue
+            key = rec._product_key()
+            dup = rec.lab_dev_line_id.color_recipe_ids.filtered(
+                lambda r: r.id != rec.id
+                and r.recipe_color_code == rec.recipe_color_code
+                and r._product_key() == key)
+            if dup:
+                raise UserError(_(
+                    'El código %(code)s ya existe para esta combinación de '
+                    'productos en la línea de Lab Dev.',
+                    code=rec.recipe_color_code))
 
     #=== CRUD METHODS ===#
 
@@ -74,11 +124,11 @@ class ColorRecipe(models.Model):
                     vals['company_id'] = lab_dev.company_id.id
 
             # Si la línea de Lab Dev tiene un único producto, la receta lo toma
-            # por defecto (con varios, se deja en blanco para que el usuario elija).
-            if vals.get('lab_dev_line_id') and not vals.get('product_id'):
+            # por defecto (con varios, el usuario elige la combinación).
+            if vals.get('lab_dev_line_id') and not vals.get('product_ids'):
                 products = self.env['lab.dev.line'].browse(vals['lab_dev_line_id']).product_ids
                 if len(products) == 1:
-                    vals['product_id'] = products.id
+                    vals['product_ids'] = [(6, 0, products.ids)]
 
             if vals.get('name', _("New")) == _("New"):
                 seq_date = fields.Datetime.context_timestamp(
@@ -87,46 +137,49 @@ class ColorRecipe(models.Model):
                 vals['name'] = self.env['ir.sequence'].with_company(vals.get('company_id')).next_by_code(
                     'color.recipe', sequence_date=seq_date) or _("New")
 
-            lab_dev_line_id = vals.get('lab_dev_line_id')
-            if lab_dev_line_id and not vals.get('recipe_color_code'):
-                line = self.env['lab.dev.line'].browse(lab_dev_line_id)
-                prefix = line.color_code or ''
-                if prefix:
-                    # Recolecta los correlativos ya en uso para esta línea
-                    # (una sola vez por línea dentro de este lote de creación).
-                    if lab_dev_line_id not in used_by_line:
-                        used = set()
-                        for rec in line.color_recipe_ids:
-                            code = rec.recipe_color_code or ''
-                            if code.startswith(f'{prefix}-'):
-                                try:
-                                    used.add(int(code.rsplit('-', 1)[-1]))
-                                except ValueError:
-                                    pass
-                        used_by_line[lab_dev_line_id] = used
-                    used = used_by_line[lab_dev_line_id]
-
-                    # Toma el menor correlativo libre (reutiliza huecos).
-                    n = 1
-                    while n in used:
-                        n += 1
-                    used.add(n)
-                    vals['recipe_color_code'] = f'{prefix}-{str(n).zfill(3)}'
-
         records = super().create(vals_list)
+        # El correlativo es POR COMBINACIÓN DE PRODUCTOS dentro de la línea
+        # de Lab Dev (JERSEY 001,002..., RIB 001,002..., JERSEY+RIB 001...).
+        # Se asigna DESPUÉS del create para trabajar con product_ids ya
+        # resueltos; la lectura de usados bloquea la línea (FOR UPDATE) para
+        # serializar asignaciones concurrentes.
         for rec in records:
-            if not rec.colorfastness_washing_id:
-                rec.colorfastness_washing_id = self.env['colorfastness.washing'].create({})
+            if rec.recipe_color_code or not rec.lab_dev_line_id:
+                continue
+            prefix = rec.lab_dev_line_id.color_code or ''
+            if not prefix:
+                continue
+            key = (rec.lab_dev_line_id.id, rec._product_key())
+            if key not in used_by_line:
+                used_by_line[key] = self._get_used_recipe_numbers(
+                    rec.lab_dev_line_id.id, prefix, rec._product_key(),
+                    exclude_ids=records.ids)
+            used = used_by_line[key]
+            # Toma el menor correlativo libre (reutiliza huecos).
+            n = 1
+            while n in used:
+                n += 1
+            used.add(n)
+            rec.recipe_color_code = f'{prefix}-{str(n).zfill(3)}'
         return records
     
     def action_approve(self):
-        if any(cr.state == 'approved'
-               for cr in self.lab_dev_line_id.color_recipe_ids.filtered(
-                   lambda cr: cr.color_name == self.color_name and cr.product_id == self.product_id)):
+        # Pueden coexistir aprobadas una receta unitaria (JERSEY) y una
+        # combinada que incluya el mismo producto (JERSEY+RIB). Lo que NO
+        # puede repetirse aprobado es la MISMA combinación exacta.
+        key = self._product_key()
+        duplicated = self.lab_dev_line_id.color_recipe_ids.filtered(
+            lambda cr: cr.id != self.id and cr.state == 'approved'
+            and cr.color_name == self.color_name
+            and cr._product_key() == key)
+        if duplicated:
             raise UserError(_(
-                'You can\'t approve this recipe. Another recipe in the Lab Dev for product %(product)s and color %(color)s is already approved.',
-                product=self.product_id.display_name or _('N/A'),
+                'No se puede aprobar esta receta: la receta %(other)s ya está '
+                'aprobada para el color %(color)s con la misma combinación de '
+                'producto(s) (%(products)s). Retorne esa receta primero.',
+                other=duplicated[:1].name,
                 color=self.color_name,
+                products=', '.join(self.product_ids.mapped('name')),
             ))
         self.state = 'approved'
         self.lab_dev_line_id.state = 'approved'
@@ -134,6 +187,72 @@ class ColorRecipe(models.Model):
     def action_return(self):
         self.state = 'test'
         self.lab_dev_line_id.state = self.state
+
+    def write(self, vals):
+        # Si cambia la combinación de productos de la receta (p.ej. tras
+        # "Ajustar receta" y elegir otros productos), el correlativo asignado
+        # pertenece a la numeración anterior: se recalcula con la nueva.
+        if 'product_ids' in vals:
+            keys_before = {rec.id: rec._product_key() for rec in self}
+        else:
+            keys_before = None
+        res = super().write(vals)
+        if keys_before is not None:
+            changed = self.filtered(lambda r: r._product_key() != keys_before[r.id])
+            changed._reassign_recipe_color_code()
+        return res
+
+    def _get_used_recipe_numbers(self, lab_dev_line_id, prefix, product_key, exclude_ids=None):
+        """Correlativos ya usados por las recetas de la MISMA combinación de
+        productos en la línea de Lab Dev. Bloquea la fila de la línea
+        (FOR UPDATE) para serializar la asignación entre transacciones
+        concurrentes: si dos usuarios graban a la vez, el segundo espera el
+        commit del primero y ya ve su número tomado. Lee por SQL (post-lock)
+        para no depender del caché del ORM."""
+        self.flush_model(['lab_dev_line_id', 'product_ids', 'recipe_color_code'])
+        self.env.cr.execute(
+            'SELECT id FROM lab_dev_line WHERE id = %s FOR UPDATE',
+            (lab_dev_line_id,))
+        self.env.cr.execute("""
+            SELECT cr.recipe_color_code,
+                   COALESCE(array_agg(rel.product_tmpl_id ORDER BY rel.product_tmpl_id)
+                            FILTER (WHERE rel.product_tmpl_id IS NOT NULL), '{}')
+            FROM color_recipe cr
+            LEFT JOIN color_recipe_product_rel rel ON rel.recipe_id = cr.id
+            WHERE cr.lab_dev_line_id = %s
+              AND cr.recipe_color_code IS NOT NULL
+              AND cr.id != ALL(%s)
+            GROUP BY cr.id
+        """, (lab_dev_line_id, list(exclude_ids or [0])))
+        target = list(product_key or [])
+        used = set()
+        for code, products in self.env.cr.fetchall():
+            if products != target:
+                continue
+            if code.startswith(f'{prefix}-'):
+                try:
+                    used.add(int(code.rsplit('-', 1)[-1]))
+                except ValueError:
+                    pass
+        return used
+
+    def _reassign_recipe_color_code(self):
+        """Reasigna el correlativo del código de receta según la numeración
+        de la combinación de productos actual (menor número libre entre las
+        recetas de la misma combinación de la línea de Lab Dev)."""
+        for rec in self:
+            line = rec.lab_dev_line_id
+            prefix = line.color_code or ''
+            if not line or not prefix:
+                continue
+            used = self._get_used_recipe_numbers(
+                line.id, prefix, rec._product_key(), exclude_ids=rec.ids)
+            n = 1
+            while n in used:
+                n += 1
+            new_code = f'{prefix}-{str(n).zfill(3)}'
+            if rec.recipe_color_code != new_code:
+                rec.recipe_color_code = new_code
 
     def action_adjust_recipe(self):
         self.ensure_one()

@@ -10,6 +10,8 @@
                     <button name="create_batch" class="oe_highlight" string="Create Batch" type="object" invisible="state != 'draft' or not wo_roll_ids"/>
                     <button name="clear_rolls" string="Clear Rolls" type="object" invisible="state != 'draft' or not wo_roll_ids"/>
                     <button name="unbuild_batch" class="oe_highlight" string="Unbuild Batch" type="object" invisible="state != 'batch'"/>
+                    <button name="action_back_to_draft" string="Regresar a Borrador" type="object" invisible="state != 'batch'"
+                            confirm="La partida volverá a borrador y sus rollos quedarán libres para corregir la composición. ¿Continuar?"/>
                     <button name="action_open_split_wizard" string="Dividir Partida" type="object" invisible="state != 'batch'"/>
                     <button name="rebuild_batch" class="oe_highlight" string="Rebuild Batch" type="object" invisible="state != 'unbuild'" groups="mrp.group_mrp_manager"/>
                     <field name="state" widget="statusbar"/>
@@ -34,7 +36,7 @@
                         </h1>
                     </div>
                     <group>
-                        <group>
+                        <group name="batch_info">
                             <field name="batch_date" readonly="state != 'draft'"/>
                             <field name="mrwo_id" readonly="1"/>
                             <field name="parent_batch_id" invisible="not parent_batch_id"/>

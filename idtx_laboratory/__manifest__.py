@@ -15,7 +15,7 @@ Laboratory  module allows colors for dieying
     # Check https://github.com/odoo/odoo/blob/15.0/odoo/addons/base/data/ir_module_category_data.xml
     # for the full list
     'category': 'Producción Textil',
-    'version': '0.3',
+    'version': '0.4',
     'license': 'LGPL-3',
     'sequence': 0,
 
@@ -50,7 +50,6 @@ Laboratory  module allows colors for dieying
         'views/base_process_views.xml',
         'views/color_code_system_views.xml',
         'views/color_recipe_views.xml',
-        'views/color_recipe_mixing_views.xml',
         'views/colorfastness_washing_views.xml',
         'views/lab_dev_views.xml',
         'views/mrp_routing_views.xml',
@@ -59,6 +58,11 @@ Laboratory  module allows colors for dieying
         'views/stock_lot_views.xml',
         'views/lab_menu.xml',
     ],
-    
+
+    'assets': {
+        'web.assets_backend': [
+            'idtx_laboratory/static/src/**/*',
+        ],
+    },
 }
 

@@ -151,7 +151,9 @@ class LabDev(models.Model):
     technical_observations = fields.Text('Observaciones')
     
     def action_development(self):
-        for rec in self.lab_dev_line_ids:
+        # Solo crear la solidez si falta: reemplazarla perdería valores ya
+        # registrados (el create de la línea normalmente ya la crea).
+        for rec in self.lab_dev_line_ids.filtered(lambda l: not l.colorfastness_washing_id):
             rec.colorfastness_washing_id = self.env['colorfastness.washing'].create({})
         self.state = 'dev'
 
@@ -226,6 +228,19 @@ class LabDevLine(models.Model):
         compute='_compute_available_products',
         string='Available Products'
     )
+    # Productos de la línea que ya tienen receta APROBADA: alimenta el widget
+    # lab_products_approval_tags (tag verde = aprobado, rojo = pendiente).
+    approved_product_ids = fields.Many2many(
+        'product.template',
+        compute='_compute_approved_product_ids',
+        string='Products with Approved Recipe',
+    )
+
+    @api.depends('color_recipe_ids.state', 'color_recipe_ids.product_ids')
+    def _compute_approved_product_ids(self):
+        for line in self:
+            line.approved_product_ids = line.color_recipe_ids.filtered(
+                lambda cr: cr.state == 'approved').mapped('product_ids')
     display_name = fields.Char(
             string='Display Name',
             compute='_compute_display_name',
@@ -301,11 +316,15 @@ class LabDevLine(models.Model):
                 #         (rec.color_range_id.code or '') + \
                 #         (rec.color_intensity_id.code or '')
                 
-    # @api.model_create_multi
-    # def create(self, vals_list):
-    #     for rec in self:
-    #         rec.colorfastness_washing_id = self.env['colorfastness.washing'].create({})
-    #     return super().create(vals_list)
+    @api.model_create_multi
+    def create(self, vals_list):
+        # Toda línea de color nace con su registro de solidez al lavado
+        # (con los defaults del modelo): sin él, los campos related se ven
+        # en 0.00 y las ediciones no se guardan.
+        records = super().create(vals_list)
+        for rec in records.filtered(lambda r: not r.colorfastness_washing_id):
+            rec.colorfastness_washing_id = self.env['colorfastness.washing'].create({})
+        return records
 
     def unlink(self):
         if any(r.state == 'approved' for r in self.color_recipe_ids):

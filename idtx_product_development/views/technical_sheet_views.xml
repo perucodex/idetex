@@ -198,6 +198,7 @@
                     <field name="technical_date"/>
                     <field name="product_code"/>
                     <field name="partner_id"/>
+                    <field name="stylo"/>
                     <field name="program"/>
                     <field name="atx"/>
                     <field name="weave_type"/>

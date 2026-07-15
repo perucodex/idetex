@@ -28,6 +28,19 @@ class StockLot(models.Model):
             ld_name = rec.color_recipe_id.lab_dev_id.name if rec.color_recipe_id and rec.color_recipe_id.lab_dev_id else ''
             rec.recipe_lot_title = f"Receta {ld_name} + {rec.name}"
 
+    @api.depends('name', 'product_id')
+    @api.depends_context('display_thread_product')
+    def _compute_display_name(self):
+        # En los selectores de lotes de hilo (sub-recetas) pueden existir
+        # lotes HOMÓNIMOS de hilos distintos: con este flag de contexto el
+        # lote se muestra junto a su producto para distinguirlos.
+        if not self.env.context.get('display_thread_product'):
+            return super()._compute_display_name()
+        for lot in self:
+            lot.display_name = (
+                f"{lot.name} ({lot.product_id.name})"
+                if lot.product_id else (lot.name or ''))
+
     def action_view_lot_recipe(self):
         self.ensure_one()
         

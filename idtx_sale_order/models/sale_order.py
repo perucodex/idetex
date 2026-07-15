@@ -59,12 +59,12 @@ class SaleOrder(models.Model):
 
     @api.onchange('order_line')
     def _onchange_order_line_sync_complements(self):
-        """Mantiene sincronizados color_name, product_color_id y
-        lab_dev_line_id de las líneas complemento con la línea de producto
-        inmediatamente anterior. Al cambiar esos campos en una línea, los
-        complementos de abajo se actualizan. Debe vivir en el pedido (no en la
-        línea), porque un onchange a nivel de línea no puede modificar líneas
-        hermanas."""
+        """Propaga color_name, product_color_id y lab_dev_line_id de la línea
+        de producto inmediatamente anterior a los complementos que aún NO
+        tienen valor propio (comodidad al agregarlos). Los complementos pueden
+        elegir su propio color: los valores ya establecidos no se pisan.
+        Debe vivir en el pedido (no en la línea), porque un onchange a nivel
+        de línea no puede modificar líneas hermanas."""
         for order in self:
             previous = None
             for line in order.order_line:
@@ -73,11 +73,11 @@ class SaleOrder(models.Model):
                     continue
                 if line.is_complement:
                     if previous is not None:
-                        if previous.color_name and line.color_name != previous.color_name:
+                        if previous.color_name and not line.color_name:
                             line.color_name = previous.color_name
-                        if line.product_color_id != previous.product_color_id:
+                        if previous.product_color_id and not line.product_color_id:
                             line.product_color_id = previous.product_color_id
-                        if line.lab_dev_line_id != previous.lab_dev_line_id:
+                        if previous.lab_dev_line_id and not line.lab_dev_line_id:
                             line.lab_dev_line_id = previous.lab_dev_line_id
                 else:
                     previous = line

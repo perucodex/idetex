@@ -482,6 +482,11 @@ export class SelectBatchDialog extends ConfirmationDialog {
             this.state.weight = this._toNumber(defaults.weight);
             this.state.bath_ratio = this._toNumber(defaults.bath_ratio);
             this.state.abs_factor = this._toNumber(defaults.abs_factor || 3.0);
+            // Curva de proceso precargada desde la sub-receta de la
+            // combinación de lotes de la partida (el operario puede cambiarla).
+            if (defaults.tipo_proceso) {
+                this.state.tipo_proceso = defaults.tipo_proceso;
+            }
             this.state.recipe_salt = this._toNumber(defaults.recipe_salt);
             this.state.recipe_carbonate = this._toNumber(defaults.recipe_carbonate);
             this.state.recipe_soda = this._toNumber(defaults.recipe_soda);

@@ -28,6 +28,14 @@ class MrpWorkorderRoll(models.Model):
         'mrp.workorder.batch', string='Partida Actual',
         compute='_compute_current_batch_id',
         help='Partida activa (no dividida/desarmada) en la que vive el rollo hoy.')
+    # Lotes de hilado con los que se tejió el rollo: snapshot tomado de la
+    # opción de la tejedora al crear el rollo (los lotes de la opción pueden
+    # cambiar después; el rollo conserva los suyos). copy=True: un rollo
+    # dividido hereda los lotes del original. Lo usan las partidas para
+    # validar la sub-receta de la combinación de lotes en laboratorio.
+    thread_lot_ids = fields.Many2many(
+        'stock.lot', 'wo_roll_thread_lot_rel', 'roll_id', 'lot_id',
+        string='Lotes de Hilo', copy=True)
 
     def _compute_current_batch_id(self):
         Batch = self.env['mrp.workorder.batch']
@@ -53,6 +61,12 @@ class MrpWorkorderRoll(models.Model):
     def create(self, vals_list):
         for vals in vals_list:
             vals['name'] = self.env['ir.sequence'].with_company(vals.get('company_id')).next_by_code('mrp.workorder.roll')
+            # Snapshot de los lotes de hilo desde la opción de la tejedora.
+            if not vals.get('thread_lot_ids') and vals.get('option_id'):
+                option = self.env['mrp.workorder.option'].browse(vals['option_id'])
+                lot_ids = option.option_line_ids.filtered('lot_id').mapped('lot_id').ids
+                if lot_ids:
+                    vals['thread_lot_ids'] = [(6, 0, lot_ids)]
         return super().create(vals_list)
     
     def unlink(self):
