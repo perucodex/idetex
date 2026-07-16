@@ -2,7 +2,7 @@
 <odoo>
 
     <template id="report_batch_dye_recipe_document">
-        <t t-call="web.external_layout">
+        <t t-call="web.internal_layout">
             <t t-set="data" t-value="doc._get_dye_report_data()"/>
             <div class="page receta-tinte" style="font-size: 0.85rem;">
                 <style>
@@ -68,7 +68,7 @@
                         </tr>
                         <tr>
                             <td><strong>Lotes de Hilo</strong></td>
-                            <td colspan="3"><t t-esc="data['sub'].lot_summary if data['sub'] else '(sin sub-receta validada)'"/></td>
+                            <td colspan="3"><t t-esc="', '.join(data['sub'].lot_ids.with_context(display_thread_product=True).mapped('display_name')) if data['sub'] else '(sin sub-receta validada)'"/></td>
                         </tr>
                     </tbody>
                 </table>
@@ -199,6 +199,21 @@
         </t>
     </template>
 
+    <!-- Cabecera interna de una sola linea: margen superior chico
+         (el A4 estandar reserva ~40mm para el membrete externo). -->
+    <record id="paperformat_dye_recipe" model="report.paperformat">
+        <field name="name">Receta de Tinte A4</field>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">15</field>
+        <field name="margin_bottom">10</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">10</field>
+        <field name="dpi">90</field>
+    </record>
+
     <record id="action_report_batch_dye_recipe" model="ir.actions.report">
         <field name="name">Receta de Tinte</field>
         <field name="model">mrp.workorder.batch</field>
@@ -206,6 +221,7 @@
         <field name="report_name">idtx_mrp_shop.report_batch_dye_recipe</field>
         <field name="report_file">idtx_mrp_shop.report_batch_dye_recipe</field>
         <field name="print_report_name">'Receta_Tinte_%s' % (object.name)</field>
+        <field name="paperformat_id" ref="paperformat_dye_recipe"/>
         <field name="binding_model_id" ref="idtx_mrp.model_mrp_workorder_batch"/>
         <field name="binding_type">report</field>
     </record>
