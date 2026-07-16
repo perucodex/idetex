@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import datetime
 import logging
 from collections import defaultdict
@@ -25,7 +24,6 @@ def _maq_tipo(cod):
 
 class PlanAlphaDashboard(http.Controller):
 
-    # ── TEXPLUS: producción de máquinas ───────────────────────────────────────
     def _get_maquinas_data(self):
         try:
             import pyodbc
@@ -123,7 +121,6 @@ class PlanAlphaDashboard(http.Controller):
         methods=["POST"],
     )
     def floor_data(self, workcenter=None):
-        """Return machines for a workcenter with their grid slot positions."""
         env = request.env
         if not workcenter:
             return {"machines": [], "workcenter": workcenter}
@@ -331,7 +328,6 @@ class PlanAlphaDashboard(http.Controller):
             "partidas": {"total_activas": 0, "por_area": [], "por_proceso": []},
             "maquinas": {"top_maquinas": [], "tendencia_maq": [], "disponible": False},
         }
-        # === FIN VACIADO TEMPORAL (código original intacto debajo) ============
         env = request.env
         today = datetime.date.today()
         in_7_days = today + datetime.timedelta(days=7)
