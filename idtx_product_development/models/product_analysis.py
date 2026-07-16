@@ -266,8 +266,7 @@ class ProductAnalysis(models.Model):
                     })
                     for p in new_lines
                 ]
-            if sheet.bom_id:
-                self._refresh_bom_operations(sheet)
+            self._refresh_bom_operations(sheet)
 
             # Single summary message per sheet (chatter remains traceable).
             new_name = base.name if base else _('(sin ruta)')
@@ -277,41 +276,59 @@ class ProductAnalysis(models.Model):
             )
 
     def _refresh_bom_operations(self, sheet):
-        """Rebuild `operation_ids` of the BoM attached to a technical sheet.
+        """Rebuild `operation_ids` of every BoM tied to a technical sheet.
         Bom lines that pointed at the old weaving operation are re-bound to
         the new weaving operation (if there is one) so the manufacturing
         consumption stays correct.
+
+        Antes solo se refrescaba `sheet.bom_id`; si ese enlace estaba roto
+        (LdM recreada a mano, bom_id vacio tras un unlink, etc.) la LdM
+        conservaba la ruta vieja aunque el analisis y la ficha si se
+        actualizaran. Ahora se refrescan todas las LdM del producto de la
+        ficha que pertenecen a esta ficha (o a ninguna) y se repara el
+        enlace `bom_id` cuando falta.
         """
-        bom = sheet.bom_id
-        if not bom:
+        boms = sheet.bom_id
+        if sheet.product_id:
+            candidates = self.env['mrp.bom'].sudo().search([
+                ('product_tmpl_id', '=', sheet.product_id.id),
+            ])
+            boms |= candidates.filtered(
+                lambda b: not b.technical_sheet_id or b.technical_sheet_id == sheet
+            )
+        if not boms:
             return
-        # Snapshot bom_lines previously pinned to a weaving op.
-        weaving_lines = bom.bom_line_ids.filtered(
-            lambda l: l.operation_id
-            and l.operation_id.operation_id
-            and l.operation_id.operation_id.operation_type == 'weaving'
-        )
+        if not sheet.bom_id:
+            sheet.bom_id = boms.sorted('id')[-1]
 
-        bom.operation_ids.unlink()
         ordered = sheet.route_line_ids.sorted(key=lambda r: r.sequence)
-        bom.operation_ids = [
-            Command.create({
-                'name': r.operation_id.name,
-                'operation_id': r.operation_id.id,
-                'workcenter_id': r.workcenter_id.id,
-            })
-            for r in ordered
-        ]
+        for bom in boms:
+            # Snapshot bom_lines previously pinned to a weaving op.
+            weaving_lines = bom.bom_line_ids.filtered(
+                lambda l: l.operation_id
+                and l.operation_id.operation_id
+                and l.operation_id.operation_id.operation_type == 'weaving'
+            )
 
-        new_weaving = bom.operation_ids.filtered(
-            lambda o: o.operation_id and o.operation_id.operation_type == 'weaving'
-        )
-        if new_weaving and weaving_lines:
-            weaving_lines.write({'operation_id': new_weaving[0].id})
-        elif weaving_lines:
-            # No weaving op in the new routing — clear the dangling reference
-            # rather than letting it point to a deleted record.
-            weaving_lines.write({'operation_id': False})
+            bom.operation_ids.unlink()
+            bom.operation_ids = [
+                Command.create({
+                    'name': r.operation_id.name,
+                    'operation_id': r.operation_id.id,
+                    'workcenter_id': r.workcenter_id.id,
+                })
+                for r in ordered
+            ]
+
+            new_weaving = bom.operation_ids.filtered(
+                lambda o: o.operation_id and o.operation_id.operation_type == 'weaving'
+            )
+            if new_weaving and weaving_lines:
+                weaving_lines.write({'operation_id': new_weaving[0].id})
+            elif weaving_lines:
+                # No weaving op in the new routing — clear the dangling reference
+                # rather than letting it point to a deleted record.
+                weaving_lines.write({'operation_id': False})
 
     def _apply_routing_to_sheets(self):
         """Refresca las rutas (route_line_ids) de las fichas tecnicas y sus LdM
@@ -344,8 +361,7 @@ class ProductAnalysis(models.Model):
                         })
                         for r in ordered if r.operation_id
                     ]
-                if sheet.bom_id:
-                    analysis._refresh_bom_operations(sheet)
+                analysis._refresh_bom_operations(sheet)
 
     def action_product(self):
         if not self.weaving_data_ids and not self.env.context.get('by_pass_error'):

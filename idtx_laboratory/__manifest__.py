@@ -36,8 +36,7 @@ Laboratory  module allows colors for dieying
         'data/product.category.csv',
         'data/intial_company_categories.xml',
         'data/chemical_products.xml',
-        'data/base_process.xml',
-        'data/base_process_line.xml',
+        'data/texplus_base_process_data.xml',
         # Fin de orden especial
         'data/color.fiber.csv',
         'data/color.intensity.csv',

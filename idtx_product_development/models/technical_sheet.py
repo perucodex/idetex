@@ -174,9 +174,23 @@ class TechnicalRouteLine(models.Model):
             rec.line_parameter_ids.unlink()
             rec.line_parameter_ids = [Command.create({'name': param.name}) for param in rec.operation_id.parameter_ids]
 
+    def _refresh_sheet_boms(self, sheets):
+        """Editar la ruta directamente en la ficha tambien debe reflejarse en
+        su(s) LdM. `skip_route_propagation` evita el doble refresh cuando la
+        reescritura proviene de `_propagate_base_process` /
+        `_apply_routing_to_sheets` (alli el refresh de la LdM corre una sola
+        vez al final)."""
+        if self.env.context.get('skip_route_propagation'):
+            return
+        Analysis = self.env['product.analysis'].with_context(
+            skip_route_line_chatter=True, skip_route_propagation=True)
+        for sheet in sheets:
+            Analysis._refresh_bom_operations(sheet)
+
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
+        records._refresh_sheet_boms(records.mapped('technical_id'))
         if self.env.context.get('skip_route_line_chatter'):
             return records
         for record in records:
@@ -188,7 +202,11 @@ class TechnicalRouteLine(models.Model):
 
     def write(self, vals):
         if self.env.context.get('skip_route_line_chatter'):
-            return super().write(vals)
+            sheets = self.mapped('technical_id')
+            result = super().write(vals)
+            if {'operation_id', 'sequence', 'technical_id'}.intersection(vals):
+                self._refresh_sheet_boms(sheets | self.mapped('technical_id'))
+            return result
         tracked_fields = {'operation_id', 'technical_id'}
         before_by_id = {}
         if tracked_fields.intersection(vals):
@@ -220,11 +238,21 @@ class TechnicalRouteLine(models.Model):
                     body=Markup('Se actualizo una linea de ruta:<br/>%s') % _html_bullet_list(changes)
                 )
 
+        if {'operation_id', 'sequence', 'technical_id'}.intersection(vals):
+            before_sheets = self.env['technical.sheet'].browse()
+            for before in before_by_id.values():
+                if before['sheet']:
+                    before_sheets |= before['sheet']
+            self._refresh_sheet_boms(before_sheets | self.mapped('technical_id'))
+
         return result
 
     def unlink(self):
+        sheets = self.mapped('technical_id')
         if self.env.context.get('skip_route_line_chatter'):
-            return super().unlink()
+            result = super().unlink()
+            self._refresh_sheet_boms(sheets.exists())
+            return result
         messages = [
             (
                 record.technical_id,
@@ -238,6 +266,8 @@ class TechnicalRouteLine(models.Model):
 
         for sheet, body in messages:
             sheet.message_post(body=body)
+
+        self._refresh_sheet_boms(sheets.exists())
 
         return result
 

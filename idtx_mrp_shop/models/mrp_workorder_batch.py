@@ -122,6 +122,89 @@ class MrpWorkorderBatch(models.Model):
             rec.recipe_lot_id = recipe._find_lot_subrecipe(lots) if recipe and lots else False
 
     # =========================
+    # Reporte "Receta de Tinte"
+    # =========================
+    def _get_dye_report_data(self):
+        """Datos del reporte Receta de Tinte de la partida:
+        - Kilos (peso bruto de los rollos), Piezas (n° de rollos).
+        - Volumen (L) = Kilos x Relación de Baño (sub-receta > receta > línea LabDev).
+        - Metros = kilos de cada producto x rendimiento (m/kg) de su ficha
+          técnica (análisis).
+        - Cantidad por químico: Gr/L -> factor x Volumen; % -> factor x Kilos
+          (en gramos). Procesos de la sub-receta si tiene propios; si no, los
+          de la receta madre.
+        """
+        self.ensure_one()
+        rolls = self.wo_roll_ids or self.child_batch_ids.wo_roll_ids
+        recipe = self.color_recipe_id
+        sub = self.recipe_lot_id
+        kilos = sum(rolls.mapped('gross_weight'))
+        rb = (sub.bath_ratio if sub else 0) or (recipe.bath_ratio if recipe else 0) \
+            or (recipe.lab_dev_line_id.bath_ratio if recipe and recipe.lab_dev_line_id else 0)
+        fac_abs = (sub.absorption_factor if sub else 0.0) \
+            or (recipe.absorption_factor if recipe else 0.0)
+        volume = kilos * rb
+        products, total_meters = [], 0.0
+        for tmpl in rolls.mapped('product_id'):
+            p_rolls = rolls.filtered(lambda r: r.product_id == tmpl)
+            p_kilos = sum(p_rolls.mapped('gross_weight'))
+            yield_m = tmpl.analysis_id.yield_meter if tmpl.analysis_id else 0.0
+            meters = p_kilos * yield_m
+            total_meters += meters
+            products.append({
+                'product': tmpl, 'kilos': p_kilos, 'yield': yield_m,
+                'meters': meters, 'pieces': len(p_rolls),
+            })
+        processes = []
+        process_src = (sub.process_ids if sub and sub.process_ids
+                       else (recipe.color_recipe_process_ids if recipe else self.env['color.recipe.process']))
+        # N° de ingreso a máquina ACUMULATIVO entre procesos: cada proceso
+        # base numera desde 1, pero en la receta completa la numeración
+        # continúa (proceso 1 usa 1..2 -> el N° 1 del proceso 2 se imprime 3).
+        order_offset = 0
+        for proc in process_src.sorted(lambda p: (p.sequence, p.id)):
+            lines, max_local = [], 0
+            proc_lines = proc.color_recipe_process_line_ids
+            # CF del proceso (suma de % de colorantes, incluye sub-líneas del
+            # hueco COLORANTES): resuelve EN VIVO las líneas con TABLA cuyo
+            # factor guardado quedó desactualizado (recetas históricas).
+            cf = sum(x.factor for x in (proc_lines | proc_lines.child_ids)
+                     if x.uom == 'por' and x.product_id.is_colorant)
+            for l in proc_lines:
+                local = l.order_number or 1
+                max_local = max(max_local, local)
+                # Hueco COLORANTES: se imprimen sus sub-líneas (los productos
+                # reales elegidos por el laboratorio), no el hueco en sí.
+                sub_lines = l.child_ids if l.line_type == 'colorants' else l
+                if l.line_type == 'colorants' and not l.child_ids:
+                    continue
+                for sl in sub_lines:
+                    factor = sl.factor
+                    if sl.base_line_id.range_ids and not sl.factor_manual:
+                        rng = sl.base_line_id.range_ids.filtered(
+                            lambda r: r.percent_from <= cf <= r.percent_to)[:1]
+                        if rng:
+                            factor = rng.factor
+                    grams = (factor * volume) if sl.uom == 'gxl' \
+                        else (factor / 100.0 * kilos * 1000.0)
+                    lines.append({'line': sl, 'factor': factor, 'grams': grams,
+                                  'has_table': bool(sl.base_line_id.range_ids),
+                                  'order': order_offset + local})
+            order_offset += max_local
+            processes.append({'process': proc, 'lines': lines})
+        return {
+            'rolls': rolls, 'kilos': kilos, 'pieces': len(rolls),
+            'rb': rb, 'fac_abs': fac_abs, 'volume': volume,
+            'meters': total_meters, 'products': products,
+            'recipe': recipe, 'sub': sub, 'processes': processes,
+            'productions': rolls.workorder_id.production_id,
+        }
+
+    def action_print_dye_recipe(self):
+        return self.env.ref(
+            'idtx_mrp_shop.action_report_batch_dye_recipe').report_action(self)
+
+    # =========================
     # Lookup para UI (Shop Floor)
     # =========================
     @api.model

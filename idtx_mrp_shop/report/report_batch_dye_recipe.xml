@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_batch_dye_recipe_document">
+        <t t-call="web.external_layout">
+            <t t-set="data" t-value="doc._get_dye_report_data()"/>
+            <div class="page receta-tinte" style="font-size: 0.85rem;">
+                <style>
+                    /* Sin borde a nivel de tabla: el contorno lo forman las
+                       celdas colapsadas (evita los cortes de esquina del
+                       renderizador de PDF con marcos redondeados). */
+                    .receta-tinte table::before, .receta-tinte table::after {
+                        display: none !important;
+                        content: none !important;
+                        border: 0 !important;
+                    }
+                    .receta-tinte table {
+                        border-collapse: collapse !important;
+                        border-radius: 0 !important;
+                        border: 0 !important;
+                        box-shadow: none !important;
+                        overflow: visible !important;
+                    }
+                    .receta-tinte th, .receta-tinte td {
+                        border: 1px solid #444 !important;
+                        border-radius: 0 !important;
+                        box-shadow: none !important;
+                        font-family: inherit !important;
+                        padding: 3px 6px !important;
+                        text-align: left;
+                    }
+                    .receta-tinte th.text-end, .receta-tinte td.text-end { text-align: right !important; }
+                    .receta-tinte table.text-center th, .receta-tinte table.text-center td { text-align: center !important; }
+                </style>
+                <div class="row mb-2">
+                    <div class="col-6"><h3>Receta de Tinte</h3></div>
+                    <div class="col-6 text-end">
+                        <h4><t t-esc="doc.name"/></h4>
+                        <span t-esc="doc.batch_date" t-options="{'widget': 'date'}"/>
+                    </div>
+                </div>
+
+                <table class="table table-sm table-bordered o_ignore_layout_styling mb-2">
+                    <tbody>
+                        <tr>
+                            <td style="width:15%"><strong>Cliente</strong></td>
+                            <td style="width:52%"><t t-esc="', '.join(doc.partner_ids.mapped('name'))"/></td>
+                            <td style="width:15%"><strong>O.P.</strong></td>
+                            <td style="width:18%"><t t-esc="', '.join(data['productions'].mapped('name'))"/></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Color</strong></td>
+                            <td><t t-esc="doc.color_code"/> - <t t-esc="doc.color_name"/></td>
+                            <td><strong>Receta</strong></td>
+                            <td><t t-esc="data['recipe'].recipe_color_code or data['recipe'].name"/></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tipo de Proceso</strong></td>
+                            <td><t t-esc="data['recipe'].lab_dev_line_id.color_process_type_id.name if data['recipe'] and data['recipe'].lab_dev_line_id.color_process_type_id else ''"/></td>
+                            <td><strong>Fibra</strong></td>
+                            <td><t t-esc="data['recipe'].lab_dev_line_id.fiber_id.name if data['recipe'] and data['recipe'].lab_dev_line_id.fiber_id else ''"/></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Intensidad</strong></td>
+                            <td><t t-esc="data['recipe'].lab_dev_line_id.color_intensity_id.name if data['recipe'] and data['recipe'].lab_dev_line_id.color_intensity_id else ''"/></td>
+                            <td><strong>Curva</strong></td>
+                            <td><t t-esc="(data['sub'].tipo_proceso if data['sub'] else '') or ''"/></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Lotes de Hilo</strong></td>
+                            <td colspan="3"><t t-esc="data['sub'].lot_summary if data['sub'] else '(sin sub-receta validada)'"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <table class="table table-sm table-bordered o_ignore_layout_styling mb-2 text-center">
+                    <thead style="background-color:#e9e9e9;">
+                        <tr>
+                            <th>Volumen (Lts)</th>
+                            <th>Rb</th>
+                            <th>Fac. Abs.</th>
+                            <th>Kilos</th>
+                            <th>Metros</th>
+                            <th>Piezas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="font-size:1.05rem;">
+                            <td><strong><t t-esc="'%.2f' % data['volume']"/></strong></td>
+                            <td><strong><t t-esc="'1:' + str(data['rb'])"/></strong></td>
+                            <td><strong><t t-esc="'%.2f' % data['fac_abs']"/></strong></td>
+                            <td><strong><t t-esc="'%.2f' % data['kilos']"/></strong></td>
+                            <td><strong><t t-esc="'%.2f' % data['meters']"/></strong></td>
+                            <td><strong><t t-esc="data['pieces']"/></strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <table class="table table-sm table-bordered o_ignore_layout_styling mb-2">
+                    <thead style="background-color:#e9e9e9;">
+                        <tr>
+                            <th style="width:16%">Código</th>
+                            <th>Artículo</th>
+                            <th class="text-end">Kilos</th>
+                            <th class="text-end">Rend. (m/kg)</th>
+                            <th class="text-end">Metros</th>
+                            <th class="text-end">Piezas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="data['products']" t-as="p">
+                            <td><t t-esc="p['product'].default_code or ''"/></td>
+                            <td><t t-esc="p['product'].name"/></td>
+                            <td class="text-end"><t t-esc="'%.2f' % p['kilos']"/></td>
+                            <td class="text-end"><t t-esc="'%.4f' % p['yield']"/></td>
+                            <td class="text-end"><t t-esc="'%.2f' % p['meters']"/></td>
+                            <td class="text-end"><t t-esc="p['pieces']"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <t t-set="ldl" t-value="data['recipe'].lab_dev_line_id if data['recipe'] else False"/>
+                <table t-if="ldl" class="table table-sm table-bordered o_ignore_layout_styling mb-2 text-center">
+                    <thead>
+                        <tr style="background-color:#d9d9d9;">
+                            <th colspan="10">SOLIDEZ AL LAVADO</th>
+                        </tr>
+                        <tr style="font-size:0.75rem; background-color:#f2f2f2;">
+                            <th>Cambio de Color</th>
+                            <th>Acetato</th>
+                            <th>Algodón</th>
+                            <th>Nylon</th>
+                            <th>Poliéster</th>
+                            <th>Acrílico</th>
+                            <th>Lana</th>
+                            <th>Frote Seco</th>
+                            <th>Frote Húmedo</th>
+                            <th>Luz</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><t t-esc="'%.2f' % (ldl.color_change_degree or 0)"/></td>
+                            <td><t t-esc="'%.2f' % (ldl.migration_acetate or 0)"/></td>
+                            <td><t t-esc="'%.2f' % (ldl.migration_cotton or 0)"/></td>
+                            <td><t t-esc="'%.2f' % (ldl.migration_nylon or 0)"/></td>
+                            <td><t t-esc="'%.2f' % (ldl.migration_polyester or 0)"/></td>
+                            <td><t t-esc="'%.2f' % (ldl.migration_acrylic or 0)"/></td>
+                            <td><t t-esc="'%.2f' % (ldl.migration_wool or 0)"/></td>
+                            <td><t t-esc="'%.2f' % (ldl.colorfastness_to_dry_rubbing or 0)"/></td>
+                            <td><t t-esc="'%.2f' % (ldl.colorfastness_to_wet_rubbing or 0)"/></td>
+                            <td><t t-esc="'%.2f' % (ldl.light_fastness_light or 0)"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <t t-foreach="data['processes']" t-as="proc">
+                    <table class="table table-sm table-bordered o_ignore_layout_styling mb-1">
+                        <thead>
+                            <tr style="background-color:#d9d9d9;">
+                                <t t-set="bp" t-value="proc['process'].base_process_id"/>
+                                <th colspan="3"><t t-esc="bp.code or ''"/> <t t-esc="bp.name or ''"/></th>
+                                <th class="text-center">Tiempo: <t t-esc="'%d:%02d' % (int(bp.time or 0), round((bp.time or 0) % 1 * 60))"/></th>
+                                <th colspan="2" class="text-end">Programa: <t t-esc="bp.program or ''"/></th>
+                            </tr>
+                            <tr style="font-size:0.75rem; background-color:#f2f2f2;">
+                                <th style="width:13%;">Factor</th>
+                                <th style="width:8%;">UdM</th>
+                                <th style="width:13%;">Código</th>
+                                <th style="width:41%;">Producto</th>
+                                <th style="width:6%;" class="text-center">N°</th>
+                                <th style="width:19%;" class="text-end">Cantidad (Gr)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="proc['lines']" t-as="l">
+                                <t t-set="is_dye" t-value="l['line'].product_id.is_colorant"/>
+                                <!-- Subrayado = la cantidad sale de una TABLA de cálculo (CF -> rango) -->
+                                <t t-set="cell_style" t-value="('font-weight: bold;' if is_dye else '') + ('text-decoration: underline;' if l.get('has_table') else '')"/>
+                                <td><t t-esc="'%.5f' % l['factor']"/></td>
+                                <td><t t-esc="'Gr/L' if l['line'].uom == 'gxl' else '%'"/></td>
+                                <td t-attf-style="{{cell_style}}"><t t-esc="l['line'].product_id.default_code or ''"/></td>
+                                <td t-attf-style="{{cell_style}}"><t t-esc="l['line'].product_id.name"/></td>
+                                <td class="text-center"><t t-esc="l['order']"/></td>
+                                <td class="text-end"><t t-esc="'{:,.3f}'.format(l['grams'])"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_batch_dye_recipe">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="idtx_mrp_shop.report_batch_dye_recipe_document"/>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_batch_dye_recipe" model="ir.actions.report">
+        <field name="name">Receta de Tinte</field>
+        <field name="model">mrp.workorder.batch</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">idtx_mrp_shop.report_batch_dye_recipe</field>
+        <field name="report_file">idtx_mrp_shop.report_batch_dye_recipe</field>
+        <field name="print_report_name">'Receta_Tinte_%s' % (object.name)</field>
+        <field name="binding_model_id" ref="idtx_mrp.model_mrp_workorder_batch"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

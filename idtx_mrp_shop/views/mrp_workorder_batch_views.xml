@@ -11,9 +11,14 @@
                     <field name="recipe_lot_warning" readonly="1" class="w-auto mb-0"/>
                 </div>
             </sheet>
+            <button name="action_open_split_wizard" position="after">
+                <button name="action_print_dye_recipe" string="Imprimir Receta de Tinte" type="object" invisible="state == 'draft'"/>
+            </button>
+            <field name="mrwo_id" position="after">
+                <field name="partner_ids" readonly="1" widget="many2many_tags"/>
+            </field>
             <group name="batch_info" position="after">
                 <group>
-                    <field name="partner_ids" readonly="1" widget="many2many_tags"/>
                     <field name="color_code" readonly="1"/>
                     <field name="color_name" readonly="1"/>
                     <field name="color_recipe_id" readonly="1"/>

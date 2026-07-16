@@ -56,6 +56,27 @@ class ColorRecipeLot(models.Model):
         ('pending', 'Pendiente'),
         ('validated', 'Validada'),
     ], string='Estado', default='pending', required=True)
+
+    # Una sub-receta VALIDADA es intocable: para modificarla o borrarla hay
+    # que reabrirla primero (action_reset, grupo manager).
+    _PROTECTED_WHEN_VALIDATED = {'lot_ids', 'absorption_factor', 'bath_ratio',
+                                 'tipo_proceso', 'process_ids'}
+
+    def write(self, vals):
+        if self._PROTECTED_WHEN_VALIDATED & set(vals.keys()) \
+                and 'state' not in vals:
+            locked = self.filtered(lambda r: r.state == 'validated')
+            if locked:
+                raise UserError(_(
+                    'La sub-receta %s está validada: reábrela para modificarla.',
+                    locked[0].lot_summary or locked[0].id))
+        return super().write(vals)
+
+    def unlink(self):
+        if any(r.state == 'validated' for r in self):
+            raise UserError(_(
+                'No se puede eliminar una sub-receta validada: reábrela primero.'))
+        return super().unlink()
     validated_date = fields.Date('Fecha Validación', readonly=True, copy=False)
     validated_by_id = fields.Many2one('res.users', 'Validada por', readonly=True, copy=False)
     # Procesos propios de la combinación: los factores pueden variar según

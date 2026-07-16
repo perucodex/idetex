@@ -51,10 +51,20 @@
                                             <notebook>
                                                 <page name="lines_page" string="Lines">
                                                     <field name="color_recipe_process_line_ids" nolabel="1">
-                                                        <list editable="bottom">
-                                                            <field name="product_id" domain="[('is_chemical','=', True)]"/>
-                                                            <field name="factor"/>
-                                                            <field name="uom"/>
+                                                        <!-- Sin edicion en linea: el clic en la fila abre el form
+                                                             en MODAL (dialogo nativo del framework), asi el usuario
+                                                             regresa facil a la pila de dialogos. -->
+                                                        <list decoration-info="has_table" decoration-primary="line_type == 'colorants'">
+                                                            <field name="sequence" widget="handle"/>
+                                                            <field name="line_type" string="Tipo"/>
+                                                            <field name="product_id" domain="[('is_chemical','=', True)]" required="line_type != 'colorants'" readonly="line_type == 'colorants'"/>
+                                                            <field name="order_number"/>
+                                                            <field name="factor" readonly="line_type == 'colorants'"/>
+                                                            <field name="uom" readonly="line_type == 'colorants'"/>
+                                                            <field name="has_table" column_invisible="1"/>
+                                                            <field name="factor_manual" string="Manual" optional="hide"/>
+                                                            <field name="recipe_lot_state" column_invisible="1"/>
+                                                            <button name="action_reset_table_factor" type="object" icon="fa-undo" title="Volver al valor de la tabla" invisible="not factor_manual or recipe_lot_state == 'validated'"/>
                                                         </list>
                                                     </field>
                                                 </page>
@@ -67,8 +77,8 @@
                                 <field name="recipe_lot_ids" nolabel="1">
                                     <list editable="bottom" decoration-success="state == 'validated'" decoration-warning="state == 'pending'">
                                         <field name="available_thread_lot_ids" column_invisible="1"/>
-                                        <field name="lot_ids" widget="many2many_tags" options="{'no_create': True}" domain="[('id', 'in', available_thread_lot_ids)]" context="{'display_thread_product': True}"/>
-                                        <field name="validated_date" optional="show"/>
+                                        <field name="lot_ids" widget="many2many_tags" options="{'no_create': True}" domain="[('id', 'in', available_thread_lot_ids)]" context="{'display_thread_product': True}" readonly="state == 'validated'"/>
+                                        <field name="validated_date" optional="show" readonly="1"/>
                                         <field name="validated_by_id" optional="hide"/>
                                         <field name="state" widget="badge" decoration-success="state == 'validated'" decoration-warning="state == 'pending'"/>
                                         <button name="action_open_subrecipe" type="object" string="Vista" class="btn btn-link" title="Abrir sub-receta (procesos y factores por hilado)"/>
@@ -133,10 +143,18 @@
                                                 </group>
                                             </group>
                                             <field name="color_recipe_process_line_ids" nolabel="1">
-                                                <list editable="bottom">
-                                                    <field name="product_id" domain="[('is_chemical','=', True)]"/>
-                                                    <field name="factor"/>
-                                                    <field name="uom"/>
+                                                <!-- Sin edicion en linea: el clic en la fila abre el form en MODAL. -->
+                                                <list decoration-info="has_table" decoration-primary="line_type == 'colorants'">
+                                                    <field name="sequence" widget="handle"/>
+                                                    <field name="line_type" string="Tipo"/>
+                                                    <field name="product_id" domain="[('is_chemical','=', True)]" required="line_type != 'colorants'" readonly="line_type == 'colorants'"/>
+                                                    <field name="order_number"/>
+                                                    <field name="factor" readonly="line_type == 'colorants'"/>
+                                                    <field name="uom" readonly="line_type == 'colorants'"/>
+                                                    <field name="has_table" column_invisible="1"/>
+                                                    <field name="factor_manual" string="Manual"/>
+                                                    <field name="recipe_lot_state" column_invisible="1"/>
+                                                    <button name="action_reset_table_factor" type="object" icon="fa-undo" title="Volver al valor de la tabla" invisible="not factor_manual or recipe_lot_state == 'validated'"/>
                                                 </list>
                                             </field>
                                         </sheet>
@@ -144,6 +162,55 @@
                                 </field>
                             </page>
                         </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="color_recipe_process_line_form_view" model="ir.ui.view">
+            <field name="name">color.recipe.process.line.form</field>
+            <field name="model">color.recipe.process.line</field>
+            <field name="arch" type="xml">
+                <form string="Línea de Receta">
+                    <sheet>
+                        <div class="oe_title">
+                            <h1 invisible="line_type == 'colorants'"><field name="product_id" domain="[('is_chemical','=', True)]" options="{'no_create': True, 'no_open': True}" required="line_type == 'product'"/></h1>
+                            <h1 invisible="line_type != 'colorants'">COLORANTES</h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="line_type"/>
+                                <field name="order_number"/>
+                            </group>
+                            <group invisible="line_type == 'colorants'">
+                                <field name="factor" readonly="has_table and not factor_manual"/>
+                                <field name="uom"/>
+                                <field name="has_table" invisible="1"/>
+                                <field name="factor_manual" invisible="not has_table"/>
+                            </group>
+                        </group>
+                        <separator string="Colorantes utilizados (producto real y porcentaje)" invisible="line_type != 'colorants'"/>
+                        <field name="child_ids" nolabel="1" invisible="line_type != 'colorants'" context="{'default_uom': 'por'}">
+                            <!-- Sin edicion en linea: la fila abre el modal nativo del
+                                 framework (readonly si la sub-receta esta validada). -->
+                            <list>
+                                <field name="sequence" widget="handle"/>
+                                <field name="product_id" domain="[('is_colorant','=', True)]" required="1" options="{'no_create': True}"/>
+                                <field name="factor"/>
+                                <field name="uom"/>
+                            </list>
+                            <form>
+                                <group>
+                                    <group>
+                                        <field name="product_id" domain="[('is_colorant','=', True)]" required="1" options="{'no_create': True}"/>
+                                    </group>
+                                    <group>
+                                        <field name="factor"/>
+                                        <field name="uom"/>
+                                    </group>
+                                </group>
+                            </form>
+                        </field>
                     </sheet>
                 </form>
             </field>

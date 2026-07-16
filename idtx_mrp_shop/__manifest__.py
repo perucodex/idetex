@@ -29,6 +29,7 @@ luego armar las partidas
     'data': [
         'data/hr_department.xml',
         'security/ir.model.access.csv',
+        'report/report_batch_dye_recipe.xml',
         'views/batch_registry_views.xml',
         'views/maintenance_equipment_views.xml',
         'views/mrp_menu.xml',

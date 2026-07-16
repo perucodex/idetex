@@ -4,6 +4,11 @@ class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
     is_chemical = fields.Boolean('is_chemical', compute='_compute_is_chemical', store=True)
+    is_colorant = fields.Boolean(
+        'Es Colorante', default=False,
+        help='Los porcentajes de las líneas de colorantes de un proceso suman '
+             'el CF que resuelve los productos con tabla (p.ej. sal/soda por '
+             'rango de concentración). Convención TEXPLUS: códigos 1XXXXX.')
 
     @api.depends('categ_id')
     def _compute_is_chemical(self):
