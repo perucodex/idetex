@@ -40,6 +40,7 @@ luego armar las partidas
     'assets': {
         'web.assets_backend': [
             'idtx_mrp_shop/static/src/shop/**/*',
+            'idtx_mrp_shop/static/src/dye_recipe/**/*',
             # 'idtx_mrp_shop/static/src/images/**/*',
         ],
     },

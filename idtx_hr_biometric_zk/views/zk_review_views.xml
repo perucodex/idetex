@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="zk_review_form_view" model="ir.ui.view">
+        <field name="name">zk.attendance.review.form</field>
+        <field name="model">zk.attendance.review</field>
+        <field name="arch" type="xml">
+            <form string="Revisión de Marcaciones">
+                <header>
+                    <button name="action_detect" type="object" string="Detectar problemas" class="oe_highlight"/>
+                    <button name="action_view_issues" type="object" string="Gestionar problemas (masivo)"
+                            invisible="issue_count == 0"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                        <group>
+                            <field name="company_id"/>
+                            <field name="issue_count" string="Problemas"/>
+                            <field name="pending_count"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="issues" string="Problemas">
+                            <field name="issue_ids" nolabel="1">
+                                <list decoration-danger="state == 'pending'"
+                                      decoration-success="state == 'fixed'"
+                                      decoration-muted="state == 'accepted'"
+                                      multi_edit="1"
+                                      default_order="state, date, employee_name">
+                                    <header>
+                                        <button name="action_mark_fixed" type="object" string="Marcar corregido"
+                                                display="always"/>
+                                        <button name="action_accept" type="object" string="Dejar como está"
+                                                display="always"/>
+                                        <button name="action_reopen" type="object" string="Reabrir"
+                                                display="always"/>
+                                    </header>
+                                    <field name="date"/>
+                                    <field name="employee_name" string="Empleado"/>
+                                    <field name="issue_type"/>
+                                    <field name="description"/>
+                                    <field name="minutes_late" optional="hide" sum="Total"/>
+                                    <field name="state" widget="badge"
+                                           decoration-danger="state == 'pending'"
+                                           decoration-success="state == 'fixed'"/>
+                                    <field name="resolution_note" optional="show"/>
+                                    <button name="action_open_attendance" type="object" string="Asistencia"
+                                            icon="fa-pencil" invisible="issue_type == 'absence' or state != 'pending'"
+                                            title="Abrir la asistencia del día para corregirla"/>
+                                    <button name="action_create_leave" type="object" string="Justificar"
+                                            icon="fa-calendar-plus-o" invisible="issue_type != 'absence' or state != 'pending'"
+                                            title="Registrar ausencia justificada"/>
+                                    <button name="action_mark_fixed" type="object" string="Corregido"
+                                            icon="fa-check" invisible="state != 'pending'"/>
+                                    <button name="action_accept" type="object" string="Dejar como está"
+                                            icon="fa-hand-paper-o" invisible="state != 'pending'"/>
+                                    <button name="action_reopen" type="object" icon="fa-undo"
+                                            title="Reabrir" invisible="state == 'pending'"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="zk_review_tree_view" model="ir.ui.view">
+        <field name="name">zk.attendance.review.list</field>
+        <field name="model">zk.attendance.review</field>
+        <field name="arch" type="xml">
+            <list string="Revisiones">
+                <field name="name"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="company_id"/>
+                <field name="issue_count" string="Problemas"/>
+                <field name="pending_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="zk_issue_form_view" model="ir.ui.view">
+        <field name="name">zk.attendance.issue.form</field>
+        <field name="model">zk.attendance.issue</field>
+        <field name="arch" type="xml">
+            <form string="Problema de marcación">
+                <header>
+                    <button name="action_open_attendance" type="object" string="Abrir asistencia"
+                            invisible="issue_type == 'absence' or state != 'pending'"/>
+                    <button name="action_create_leave" type="object" string="Justificar ausencia"
+                            invisible="issue_type != 'absence' or state != 'pending'"/>
+                    <button name="action_mark_fixed" type="object" string="Corregido" class="oe_highlight"
+                            invisible="state != 'pending'"/>
+                    <button name="action_accept" type="object" string="Dejar como está"
+                            invisible="state != 'pending'"/>
+                    <button name="action_reopen" type="object" string="Reabrir" invisible="state == 'pending'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="employee_name" string="Empleado" readonly="1"/>
+                            <field name="date" readonly="1"/>
+                            <field name="issue_type" readonly="1"/>
+                            <field name="description" readonly="1"/>
+                            <field name="minutes_late" invisible="issue_type != 'late'" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="resolution_note" readonly="1"/>
+                            <field name="resolved_by_id"/>
+                            <field name="resolved_date"/>
+                        </group>
+                    </group>
+                    <separator string="Marcas crudas del día"/>
+                    <field name="punch_ids" nolabel="1" readonly="1">
+                        <list>
+                            <field name="punch_time"/>
+                            <field name="punch_type"/>
+                            <field name="device_id"/>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="zk_issue_tree_view" model="ir.ui.view">
+        <field name="name">zk.attendance.issue.list</field>
+        <field name="model">zk.attendance.issue</field>
+        <field name="arch" type="xml">
+            <list string="Problemas de Marcación" create="0" multi_edit="1"
+                  decoration-danger="state == 'pending'"
+                  decoration-success="state == 'fixed'"
+                  decoration-muted="state == 'accepted'"
+                  default_order="date, employee_name">
+                <header>
+                    <button name="action_mark_fixed" type="object" string="Marcar corregido" display="always"/>
+                    <button name="action_accept" type="object" string="Dejar como está" display="always"/>
+                    <button name="action_reopen" type="object" string="Reabrir" display="always"/>
+                </header>
+                <field name="date"/>
+                <field name="employee_name" string="Empleado"/>
+                <field name="company_id" optional="hide"/>
+                <field name="issue_type"/>
+                <field name="description"/>
+                <field name="minutes_late" optional="hide" sum="Total"/>
+                <field name="state" widget="badge"
+                       decoration-danger="state == 'pending'"
+                       decoration-success="state == 'fixed'"/>
+                <field name="resolution_note" optional="show"/>
+                <field name="resolved_by_id" optional="hide"/>
+                <button name="action_open_attendance" type="object" string="Asistencia"
+                        icon="fa-pencil" invisible="issue_type == 'absence' or state != 'pending'"
+                        title="Abrir la asistencia del día para corregirla"/>
+                <button name="action_create_leave" type="object" string="Justificar"
+                        icon="fa-calendar-plus-o" invisible="issue_type != 'absence' or state != 'pending'"
+                        title="Registrar ausencia justificada"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="zk_issue_search_view" model="ir.ui.view">
+        <field name="name">zk.attendance.issue.search</field>
+        <field name="model">zk.attendance.issue</field>
+        <field name="arch" type="xml">
+            <search string="Problemas de Marcación">
+                <field name="employee_name" string="Empleado"/>
+                <field name="review_id"/>
+                <field name="date"/>
+                <separator/>
+                <filter name="pending" string="Pendientes" domain="[('state', '=', 'pending')]"/>
+                <filter name="fixed" string="Corregidos" domain="[('state', '=', 'fixed')]"/>
+                <filter name="accepted" string="Se deja como está" domain="[('state', '=', 'accepted')]"/>
+                <separator/>
+                <filter name="late" string="Tardanzas" domain="[('issue_type', '=', 'late')]"/>
+                <filter name="absence" string="Faltas" domain="[('issue_type', '=', 'absence')]"/>
+                <filter name="double_in" string="Doble ingreso" domain="[('issue_type', '=', 'double_in')]"/>
+                <filter name="double_out" string="Doble salida" domain="[('issue_type', '=', 'double_out')]"/>
+                <filter name="single_punch" string="Marca única" domain="[('issue_type', '=', 'single_punch')]"/>
+                <group>
+                    <filter name="g_type" string="Tipo de problema" context="{'group_by': 'issue_type'}"/>
+                    <filter name="g_state" string="Estado" context="{'group_by': 'state'}"/>
+                    <filter name="g_employee" string="Empleado" context="{'group_by': 'employee_name'}"/>
+                    <filter name="g_date" string="Día" context="{'group_by': 'date'}"/>
+                    <filter name="g_review" string="Revisión" context="{'group_by': 'review_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="zk_issue_action" model="ir.actions.act_window">
+        <field name="name">Problemas de Marcación</field>
+        <field name="res_model">zk.attendance.issue</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="zk_issue_search_view"/>
+        <field name="context">{'search_default_pending': 1, 'search_default_g_type': 1}</field>
+    </record>
+
+    <record id="zk_punch_tree_view" model="ir.ui.view">
+        <field name="name">zk.punch.list</field>
+        <field name="model">zk.punch</field>
+        <field name="arch" type="xml">
+            <list string="Marcas crudas" create="0" edit="0">
+                <field name="day"/>
+                <field name="punch_time"/>
+                <field name="employee_id"/>
+                <field name="punch_type"/>
+                <field name="device_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="zk_review_action" model="ir.actions.act_window">
+        <field name="name">Revisión de Marcaciones</field>
+        <field name="res_model">zk.attendance.review</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="zk_punch_action" model="ir.actions.act_window">
+        <field name="name">Marcas crudas</field>
+        <field name="res_model">zk.punch</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_zk_review"
+              name="Revisión de Marcaciones"
+              parent="hr_attendance.menu_hr_attendance_root"
+              action="zk_review_action"
+              sequence="25"/>
+
+    <menuitem id="menu_zk_issue"
+              name="Problemas de Marcación"
+              parent="hr_attendance.menu_hr_attendance_root"
+              action="zk_issue_action"
+              sequence="26"/>
+
+    <menuitem id="menu_zk_punch"
+              name="Marcas crudas (ZK)"
+              parent="hr_attendance.menu_hr_attendance_configuration"
+              action="zk_punch_action"
+              sequence="95"/>
+
+</odoo>

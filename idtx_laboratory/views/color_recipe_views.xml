@@ -45,7 +45,7 @@
                                         <sheet>
                                             <group>
                                                 <group>
-                                                    <field name="base_process_id" options="{'no_create': True, 'no_open': True}"/>
+                                                    <field name="base_process_id" options="{'no_create': True}"/>
                                                 </group>
                                             </group>
                                             <notebook>
@@ -139,7 +139,7 @@
                                         <sheet>
                                             <group invisible="id">
                                                 <group>
-                                                    <field name="base_process_id" options="{'no_create': True, 'no_open': True}" required="1"/>
+                                                    <field name="base_process_id" options="{'no_create': True}" required="1"/>
                                                 </group>
                                             </group>
                                             <field name="color_recipe_process_line_ids" nolabel="1">

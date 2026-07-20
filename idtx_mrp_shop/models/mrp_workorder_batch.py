@@ -204,6 +204,21 @@ class MrpWorkorderBatch(models.Model):
         return self.env.ref(
             'idtx_mrp_shop.action_report_batch_dye_recipe').report_action(self)
 
+    def get_dye_recipe_html(self):
+        """HTML del contenido del reporte (mismas tablas), para el modal
+        en pantalla del botón Mostrar Receta."""
+        self.ensure_one()
+        return self.env['ir.qweb']._render(
+            'idtx_mrp_shop.report_batch_dye_recipe_content', {'doc': self})
+
+    def action_show_dye_recipe(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'idtx_mrp_shop.dye_recipe_dialog',
+            'params': {'batch_id': self.id, 'title': _('Receta de Tinte %s') % self.name},
+        }
+
     # =========================
     # Lookup para UI (Shop Floor)
     # =========================

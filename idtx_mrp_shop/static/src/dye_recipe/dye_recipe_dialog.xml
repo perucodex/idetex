@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="idtx_mrp_shop.DyeRecipeDialog">
+        <Dialog title="props.title" size="'xl'">
+            <div class="o_dye_recipe_dialog" t-out="props.html"/>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-on-click="props.close">Cerrar</button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

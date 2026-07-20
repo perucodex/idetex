@@ -131,6 +131,7 @@ class ZkDevice(models.Model):
 
         # Agrupar marcaciones (en UTC) por (empleado, fecha local)
         groups = {}
+        raw_rows = []
         unmatched = set()
         matched_punches = 0
         skipped_old = 0
@@ -150,47 +151,29 @@ class ZkDevice(models.Model):
             local_dt = tz.localize(ts) if ts.tzinfo is None else ts.astimezone(tz)
             utc_dt = local_dt.astimezone(utc).replace(tzinfo=None)
             groups.setdefault((emp.id, local_dt.date()), []).append(utc_dt)
+            # Marca cruda con su tipo (pyzk: punch 0=entrada, 1=salida)
+            punch = getattr(att, 'punch', None)
+            ptype = {0: 'i', 1: 'o'}.get(punch, 'x')
+            raw_rows.append((emp.id, utc_dt, ptype, self.id))
+
+        new_punches = self.env['zk.punch']._register_punches(raw_rows)
 
         _logger.info(
             "ZK %s: get_attendance devolvió %s marcaciones | %s de empleados mapeados "
-            "| %s descartadas por antigüedad | %s usuarios sin empleado | %s días agrupados",
+            "| %s descartadas por antigüedad | %s usuarios sin empleado | %s días agrupados "
+            "| %s marcas crudas nuevas",
             self.name, len(attendances), matched_punches, skipped_old,
-            len(unmatched), len(groups))
+            len(unmatched), len(groups), new_punches)
 
-        Attendance = self.env['hr.attendance']
+        # Rearmar las asistencias (sesiona por turno, cruza medianoche) de los
+        # empleados y días afectados por las marcas descargadas.
+        emp_days = {(e, d) for (e, d) in groups}
         count = 0
-        for (emp_id, day), times in groups.items():
-            times.sort()
-            check_in = times[0]
-            check_out = times[-1] if (len(times) > 1 and times[-1] > times[0]) else times[0]
-
-            # Rango UTC correspondiente al día local
-            day_start = tz.localize(datetime(day.year, day.month, day.day))
-            ds = day_start.astimezone(utc).replace(tzinfo=None)
-            de = (day_start + timedelta(days=1)).astimezone(utc).replace(tzinfo=None)
-
-            existing = Attendance.search([
-                ('employee_id', '=', emp_id),
-                ('check_in', '>=', ds),
-                ('check_in', '<', de),
-            ], limit=1)
-
-            if existing:
-                vals = {}
-                if existing.check_in != check_in:
-                    vals['check_in'] = check_in
-                if existing.check_out != check_out:
-                    vals['check_out'] = check_out
-                if vals:
-                    existing.write(vals)
-                    count += 1
-            else:
-                Attendance.create({
-                    'employee_id': emp_id,
-                    'check_in': check_in,
-                    'check_out': check_out,
-                })
-                count += 1
+        if emp_days:
+            emp_ids = list({e for e, _d in emp_days})
+            dmin = min(d for _e, d in emp_days)
+            dmax = max(d for _e, d in emp_days)
+            count = self.env['zk.punch']._rebuild_attendances(emp_ids, dmin, dmax)
 
         if unmatched:
             _logger.warning(

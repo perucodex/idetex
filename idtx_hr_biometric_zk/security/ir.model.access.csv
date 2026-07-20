@@ -1,3 +1,9 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_zk_device_user,zk.device.user,model_zk_device,hr_attendance.group_hr_attendance_user,1,0,0,0
 access_zk_device_manager,zk.device.manager,model_zk_device,hr_attendance.group_hr_attendance_manager,1,1,1,1
+access_zk_punch_user,zk.punch.user,model_zk_punch,hr_attendance.group_hr_attendance_user,1,0,0,0
+access_zk_punch_manager,zk.punch.manager,model_zk_punch,hr_attendance.group_hr_attendance_manager,1,1,1,1
+access_zk_review_user,zk.review.user,model_zk_attendance_review,hr_attendance.group_hr_attendance_user,1,1,1,0
+access_zk_review_manager,zk.review.manager,model_zk_attendance_review,hr_attendance.group_hr_attendance_manager,1,1,1,1
+access_zk_issue_user,zk.issue.user,model_zk_attendance_issue,hr_attendance.group_hr_attendance_user,1,1,1,0
+access_zk_issue_manager,zk.issue.manager,model_zk_attendance_issue,hr_attendance.group_hr_attendance_manager,1,1,1,1

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <template id="report_batch_dye_recipe_document">
-        <t t-call="web.internal_layout">
+    <!-- Contenido puro (sin layout): lo comparten el PDF y el modal en
+         pantalla (get_dye_recipe_html / boton Mostrar Receta). -->
+    <template id="report_batch_dye_recipe_content">
             <t t-set="data" t-value="doc._get_dye_report_data()"/>
             <div class="page receta-tinte" style="font-size: 0.85rem;">
                 <style>
@@ -66,9 +67,29 @@
                             <td><strong>Curva</strong></td>
                             <td><t t-esc="(data['sub'].tipo_proceso if data['sub'] else '') or ''"/></td>
                         </tr>
-                        <tr>
+                        <tr t-if="not data['sub'] or not data['sub'].lot_ids">
                             <td><strong>Lotes de Hilo</strong></td>
-                            <td colspan="3"><t t-esc="', '.join(data['sub'].lot_ids.with_context(display_thread_product=True).mapped('display_name')) if data['sub'] else '(sin sub-receta validada)'"/></td>
+                            <td colspan="3">(sin sub-receta validada)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <table t-if="data['sub'] and data['sub'].lot_ids" class="table table-sm table-bordered o_ignore_layout_styling mb-2">
+                    <thead>
+                        <tr style="background-color:#d9d9d9;">
+                            <th colspan="3">LOTES DE HILO</th>
+                        </tr>
+                        <tr style="font-size:0.75rem; background-color:#f2f2f2;">
+                            <th style="width:22%">Lote</th>
+                            <th style="width:22%">Código</th>
+                            <th>Producto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="data['sub'].lot_ids" t-as="lt">
+                            <td><t t-esc="lt.name"/></td>
+                            <td><t t-esc="lt.product_id.default_code or ''"/></td>
+                            <td><t t-esc="lt.product_id.name"/></td>
                         </tr>
                     </tbody>
                 </table>
@@ -188,6 +209,11 @@
                     </table>
                 </t>
             </div>
+    </template>
+
+    <template id="report_batch_dye_recipe_document">
+        <t t-call="web.internal_layout">
+            <t t-call="idtx_mrp_shop.report_batch_dye_recipe_content"/>
         </t>
     </template>
 
