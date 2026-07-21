@@ -53,6 +53,9 @@ class AccountMoveLine(models.Model):
         Asigna lote a cada línea de factura consumiendo la lista
         devuelta por _get_invoiced_lot_values() sin repetir.
         """
+        for line in self:
+            line.lot_id = False
+
         # agrupamos por factura para procesar cada una por separado
         for move in self.mapped('move_id'):
             lines = move.invoice_line_ids.filtered(

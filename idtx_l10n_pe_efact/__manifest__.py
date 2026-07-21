@@ -23,10 +23,15 @@ Facturación electrónica con OSE Efact
     'depends': [
         'base',
         'l10n_pe_edi',
+        'idtx_sale_sitpro',
         ],
 
     # always loaded
     'data': [
+        'data/paperformat.xml',
+        'views/report_invoice.xml',
+        'views/account_move_views.xml',
+        'views/account_payment_term_views.xml',
         # 'security/ir.model.access.csv',
         # 'views/views.xml',
         # 'views/templates.xml',
