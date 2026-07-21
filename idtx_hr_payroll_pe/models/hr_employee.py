@@ -35,12 +35,8 @@ class HrEmployee(models.Model):
              "Los afiliados desde 2013 son Mixta por defecto.")
 
     # ---- Datos que afectan beneficios / aportes / 5ta categoría ----
-    l10n_pe_family_allowance_right = fields.Boolean(
-        string='Tiene Asignación Familiar',
-        help="Marcar si el trabajador tiene hijos menores de 18 años (o hasta "
-             "24 si cursan estudios superiores). Da derecho a la asignación "
-             "familiar (10% de la RMV).",
-    )
+    # El derecho a asignación familiar se deriva del campo estándar de Odoo
+    # `children` (Hijos dependientes): tiene derecho si children > 0.
     l10n_pe_has_eps = fields.Boolean(
         string='Afiliado a EPS',
         help="Si está afiliado a una EPS, el aporte del empleador a EsSalud "

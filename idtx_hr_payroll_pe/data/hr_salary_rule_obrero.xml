@@ -157,7 +157,7 @@ result_qty = domingos_trabajados
             <field name="struct_id" ref="idtx_hr_payroll_pe.structure_pe_obrero_textil"/>
             <field name="condition_select">python</field>
             <field name="condition_python">
-result = bool(employee.l10n_pe_family_allowance_right)
+result = employee.children > 0
             </field>
             <field name="amount_select">code</field>
             <field name="amount_python_compute">

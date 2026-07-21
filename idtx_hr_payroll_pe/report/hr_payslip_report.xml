@@ -93,7 +93,7 @@
                 </tr>
                 <tr>
                     <td>Documento: DNI <span t-out="o.employee_id.identification_id or ''"/></td>
-                    <td>Categoría: <span t-field="o.version_id.l10n_pe_worker_type"/></td>
+                    <td>Categoría: <span t-field="o.version_id.employee_type"/></td>
                     <td>Básico: <span t-out="o.version_id.wage" t-options='{"widget": "monetary", "display_currency": cur}'/></td>
                     <td>Período vacac:</td>
                 </tr>

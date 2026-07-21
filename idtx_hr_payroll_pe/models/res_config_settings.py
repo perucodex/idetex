@@ -5,10 +5,9 @@ class ResConfigSettings(models.TransientModel):
 
     # La RMV vive en el parámetro con vigencia 'l10n_pe_rmv' (hr.rule.parameter),
     # no aquí, para soportar cambios de valor por fecha (p.ej. 1025 -> 1130).
-    l10n_pe_use_tareo = fields.Boolean(related='company_id.l10n_pe_use_tareo', readonly=False)
-    # Adelanto de quincena: monto FIJO que se descuenta a TODOS (no va en el
-    # tareo). Vive en el parámetro con vigencia l10n_pe_adelanto_quincena; acá se
-    # expone para editarlo cómodo desde Ajustes.
+    # Adelanto de quincena: monto FIJO que se descuenta a TODOS. Vive en el
+    # parámetro con vigencia l10n_pe_adelanto_quincena; acá se expone para
+    # editarlo cómodo desde Ajustes.
     l10n_pe_adelanto_quincena = fields.Float(
         string='Adelanto de Quincena (S/)',
         compute='_compute_l10n_pe_adelanto_quincena',

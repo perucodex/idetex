@@ -35,14 +35,5 @@ class HrVersion(models.Model):
              "pactado. Si está en 0 se usa la lógica normal (input de movilidad y "
              "5ta sobre el sueldo si supera 7 UIT).",
     )
-    l10n_pe_worker_type = fields.Selection(
-        selection=[
-            ('empleado', 'Empleado'),
-            ('obrero', 'Obrero'),
-        ],
-        string='Tipo de Trabajador (PE)',
-        default='empleado',
-        help="Empleado (trabajo predominantemente intelectual) u Obrero "
-             "(predominantemente manual). Afecta periodicidad de pago y "
-             "conceptos como el dominical.",
-    )
+    # Tipo de trabajador (empleado/obrero) = campo ESTÁNDAR de Odoo
+    # `employee_type` ('employee'/'worker'/...). No se define uno propio.

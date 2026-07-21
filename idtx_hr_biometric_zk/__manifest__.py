@@ -21,7 +21,6 @@ tardanzas y las horas extra (modelo híbrido).
     'data': [
         'security/ir.model.access.csv',
         'security/zk_security.xml',
-        'views/hr_employee_views.xml',
         'views/zk_device_views.xml',
         'views/zk_review_views.xml',
         'data/ir_cron.xml',

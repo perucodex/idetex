@@ -47,7 +47,6 @@ Localización peruana para trabajar planillas de todo tipo
         'views/hr_afp_views.xml',
         'views/hr_contract_salary_views.xml',
         'views/res_config_settings_views.xml',
-        'views/hr_payslip_run_views.xml',
         'views/payroll_export_views.xml',
     ],
 }

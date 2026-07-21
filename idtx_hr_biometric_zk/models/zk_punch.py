@@ -47,27 +47,82 @@ class ZkPunch(models.Model):
             else:
                 rec.day = False
 
+    # Ingreso a esta hora local (float) o después => turno NOCHE (obrero); su
+    # salida es la marca de la mañana siguiente (sesión que cruza medianoche).
+    NIGHT_CUT = 14.0
+
     # ------------------------------------------------------------------
     #  Rearmado de asistencias (sesiones que pueden cruzar medianoche)
     # ------------------------------------------------------------------
-    @api.model
-    def _rebuild_attendances(self, employee_ids, date_from, date_to):
-        """Reconstruye hr.attendance desde las marcas crudas para los
-        empleados y rango de DÍAS locales dados. Sesiona por turno:
-        - ingreso de día (< 14:00): la salida es del mismo día.
-        - ingreso de tarde/noche (>= 14:00, obrero): la salida es la marca de
-          la mañana siguiente (una sola asistencia que cruza medianoche).
-        Marca el turno (día/noche) en la asistencia. Idempotente: borra las
-        asistencias del rango de esos empleados y las vuelve a crear.
-        Devuelve nº de asistencias creadas."""
+    def _sessions_for(self, employee_id, date_from, date_to):
+        """Agrupa las marcas crudas del empleado en SESIONES de trabajo (una
+        entrada + su salida, pudiendo cruzar medianoche). Es la fuente única
+        de verdad tanto para armar hr.attendance como para detectar dobles /
+        marca única en la revisión.
+
+        Devuelve lista de dicts (sesiones cuyo INGRESO cae en [date_from,
+        date_to], ordenadas): {'day', 'shift', 'check_in_utc', 'check_out_utc',
+        'punches' (recordset ordenado)}."""
         from datetime import datetime, timedelta
         import pytz
         tz = pytz.timezone(DEVICE_TZ)
         utc = pytz.UTC
-        NIGHT_CUT = 14.0
+        ds = tz.localize(datetime.combine(date_from, datetime.min.time()))
+        de = tz.localize(datetime.combine(date_to + timedelta(days=2), datetime.min.time()))
+        ds_utc = ds.astimezone(utc).replace(tzinfo=None)
+        de_utc = de.astimezone(utc).replace(tzinfo=None)
 
-        emps = self.env['hr.employee'].with_context(active_test=False).browse(employee_ids)
-        # ventana UTC que cubre el rango local (+1 día por sesiones nocturnas)
+        punches = self.search([
+            ('employee_id', '=', employee_id),
+            ('punch_time', '>=', ds_utc), ('punch_time', '<', de_utc)],
+            order='punch_time')
+        locs = [utc.localize(p.punch_time).astimezone(tz) for p in punches]
+
+        # El cruce de medianoche (turno noche) SOLO aplica a obreros rotativos
+        # (employee_type='worker' + calendario de 2 semanas). Para el resto,
+        # cada día local es una sesión de día (primera=entrada, última=salida).
+        emp = self.env['hr.employee'].with_context(active_test=False).browse(employee_id)
+        rotating = emp._is_rotating_worker()
+
+        sessions = []
+        i, n = 0, len(locs)
+        while i < n:
+            e = locs[i]
+            eh = e.hour + e.minute / 60.0
+            if rotating and eh >= self.NIGHT_CUT:
+                wend = tz.localize(datetime.combine(
+                    e.date() + timedelta(days=1), datetime.min.time().replace(hour=14)))
+                shift = 'night'
+            else:
+                wend = tz.localize(datetime.combine(e.date(), datetime.max.time()))
+                shift = 'day'
+            j = i
+            while j < n and locs[j] <= wend:
+                j += 1
+            sess_locs = locs[i:j]
+            sess_punches = punches[i:j]
+            if date_from <= sess_locs[0].date() <= date_to:
+                ci = sess_locs[0]
+                co = sess_locs[-1] if (len(sess_locs) > 1 and sess_locs[-1] > sess_locs[0]) else sess_locs[0]
+                sessions.append({
+                    'day': ci.date(),
+                    'shift': shift,
+                    'check_in_utc': ci.astimezone(utc).replace(tzinfo=None),
+                    'check_out_utc': co.astimezone(utc).replace(tzinfo=None),
+                    'punches': sess_punches,
+                })
+            i = j
+        return sessions
+
+    def _rebuild_attendances(self, employee_ids, date_from, date_to):
+        """Reconstruye hr.attendance desde las sesiones (_sessions_for) de los
+        empleados y rango de DÍAS locales dados. Marca el turno (día/noche).
+        Idempotente: borra las asistencias del rango de esos empleados (por
+        fecha de ingreso local) y las vuelve a crear. Devuelve nº creadas."""
+        from datetime import datetime, timedelta
+        import pytz
+        tz = pytz.timezone(DEVICE_TZ)
+        utc = pytz.UTC
         ds = tz.localize(datetime.combine(date_from, datetime.min.time()))
         de = tz.localize(datetime.combine(date_to + timedelta(days=2), datetime.min.time()))
         ds_utc = ds.astimezone(utc).replace(tzinfo=None)
@@ -76,37 +131,8 @@ class ZkPunch(models.Model):
         Att = self.env['hr.attendance'].with_context(
             hr_attendance_bypass_validation=True)
         created = 0
-        for emp in emps:
-            punches = self.search([
-                ('employee_id', '=', emp.id),
-                ('punch_time', '>=', ds_utc), ('punch_time', '<', de_utc)],
-                order='punch_time')
-            locs = [utc.localize(p.punch_time).astimezone(tz) for p in punches]
-            sessions = []
-            i, n = 0, len(locs)
-            while i < n:
-                e = locs[i]
-                eh = e.hour + e.minute / 60.0
-                if eh >= NIGHT_CUT:
-                    wend = tz.localize(datetime.combine(
-                        e.date() + timedelta(days=1), datetime.min.time().replace(hour=14)))
-                    shift = 'night'
-                else:
-                    wend = tz.localize(datetime.combine(
-                        e.date(), datetime.max.time()))
-                    shift = 'day'
-                j = i
-                while j < n and locs[j] <= wend:
-                    j += 1
-                sess = locs[i:j]
-                # la sesión debe caer (por su ingreso) dentro del rango pedido
-                if date_from <= sess[0].date() <= date_to:
-                    ci = sess[0]
-                    co = sess[-1] if (len(sess) > 1 and sess[-1] > sess[0]) else sess[0]
-                    sessions.append((ci, co, shift))
-                i = j
-
-            # borrar asistencias existentes cuyo INGRESO cae en el rango local
+        for emp in self.env['hr.employee'].with_context(active_test=False).browse(employee_ids):
+            sessions = self._sessions_for(emp.id, date_from, date_to)
             existing = Att.search([
                 ('employee_id', '=', emp.id),
                 ('check_in', '>=', ds_utc), ('check_in', '<', de_utc)])
@@ -114,12 +140,12 @@ class ZkPunch(models.Model):
                 lambda a: date_from <= utc.localize(a.check_in).astimezone(tz).date() <= date_to)
             if existing:
                 existing.unlink()
-            for ci, co, shift in sessions:
+            for s in sessions:
                 Att.create({
                     'employee_id': emp.id,
-                    'check_in': ci.astimezone(utc).replace(tzinfo=None),
-                    'check_out': co.astimezone(utc).replace(tzinfo=None),
-                    'l10n_pe_shift': shift,
+                    'check_in': s['check_in_utc'],
+                    'check_out': s['check_out_utc'],
+                    'l10n_pe_shift': s['shift'],
                 })
                 created += 1
         return created

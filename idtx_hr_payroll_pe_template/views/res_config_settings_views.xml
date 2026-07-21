@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Reinserta el ajuste "Planilla por Tareo" en el bloque de Localización
+         Peruana (definido por idtx_hr_payroll_pe). -->
+    <record id="res_config_settings_view_form_tareo_pe" model="ir.ui.view">
+        <field name="name">res.config.settings.form.tareo.pe</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="idtx_hr_payroll_pe.res_config_settings_view_form_hr_pe"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='peruvian_localization_div']" position="inside">
+                <setting string="Planilla por Tareo (Excel)" help="Calcula las boletas desde el Excel de tareo cargado en el lote de nómina, en vez de las marcaciones biométricas.">
+                    <field name="l10n_pe_use_tareo"/>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

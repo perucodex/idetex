@@ -8,9 +8,6 @@
         <field name="arch" type="xml">
             <xpath expr="//app[@name='hr_payroll']" position="inside">
                 <block title="Peruvian Localization" name="peruvian_localization_div">
-                    <setting string="Planilla por Tareo (Excel)" help="Calcula las boletas desde el Excel de tareo cargado en el lote de nómina, en vez de las marcaciones biométricas.">
-                        <field name="l10n_pe_use_tareo"/>
-                    </setting>
                     <setting string="Adelanto de Quincena" help="Monto fijo (S/) que se descuenta a todos los trabajadores por adelanto de quincena.">
                         <field name="l10n_pe_adelanto_quincena"/>
                     </setting>
