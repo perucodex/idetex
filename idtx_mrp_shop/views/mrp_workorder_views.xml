@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- En la pestaña "Partidas" de la OT: mostrar en qué operaciones la
+         partida tiene un reproceso PENDIENTE (lista para reprocesar). -->
+    <record id="mrp_workorder_form_batch_reprocess" model="ir.ui.view">
+        <field name="name">mrp.workorder.form.batch.reprocess</field>
+        <field name="model">mrp.workorder</field>
+        <field name="inherit_id" ref="idtx_mrp.mrp_production_workorder_form_view_inherit_mrp_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='batch_ids']/list/field[@name='total_weight']" position="after">
+                <field name="pending_reprocess_mrwo_ids" string="Reproceso pendiente"
+                       widget="many2many_tags" readonly="1" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

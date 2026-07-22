@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="mrp_workorder_roll_transfer_form" model="ir.ui.view">
+        <field name="name">mrp.workorder.roll.transfer.form</field>
+        <field name="model">mrp.workorder.roll.transfer</field>
+        <field name="arch" type="xml">
+            <form string="Transferir Rollos">
+                <field name="source_workorder_ids" invisible="1" widget="many2many_tags"/>
+                <group>
+                    <field name="product_tmpl_id" readonly="1"/>
+                    <field name="roll_ids" widget="many2many_tags" readonly="1"/>
+                    <field name="dest_workorder_id"
+                           options="{'no_create': True}"
+                           domain="[('operation_type', '=', 'weaving'), ('product_id.product_tmpl_id', '=', product_tmpl_id), ('id', 'not in', source_workorder_ids)]"/>
+                </group>
+                <footer>
+                    <button name="action_transfer" string="Transferir" type="object" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_roll_transfer" model="ir.actions.act_window">
+        <field name="name">Transferir Rollos</field>
+        <field name="res_model">mrp.workorder.roll.transfer</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="idtx_mrp.model_mrp_workorder_roll"/>
+        <field name="binding_type">action</field>
+    </record>
+
+</odoo>

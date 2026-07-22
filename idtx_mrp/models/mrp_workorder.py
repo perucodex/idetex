@@ -138,17 +138,45 @@ class MrpWorkorder(models.Model):
     # la propia OF (las partidas pueden combinar rollos de varias OFs).
     BATCH_OPERATION_TYPES = ('dyeing', 'finishing', 'printing', 'quality')
 
+    def _get_textile_rolls(self):
+        """Rollos ACTUALES que esta operación de partida cuenta como
+        procesados. Fuente ÚNICA usada por `_get_textile_produced_qty` (cantidad
+        producida) y por `_compute_progress` (% de avance) para que no diverjan.
+
+        - Resuelve divisiones: una partida dividida ya no tiene rollos propios
+          sino en sus sub-partidas -> `origin_roll_ids` (propios + descendientes).
+        - El union de recordset DEDUPLICA: si están anexadas la partida madre y
+          una sub-partida, el rollo no se cuenta dos veces; un reproceso (misma
+          partida re-registrada) no suma de más (solo el estado actual).
+        - EXCLUYE partidas con reproceso PENDIENTE en esta operación: aún no
+          fueron (re)producidas aquí, así el avance baja al reabrir y se
+          recupera al re-registrar. Guarda de campo para no romper idtx_mrp
+          instalado sin idtx_mrp_shop.
+        - Filtra a los rollos de la propia OF (las partidas pueden combinar
+          rollos de varias OFs).
+        """
+        self.ensure_one()
+        rolls = self.env['mrp.workorder.roll']
+        for batch in self.batch_ids:
+            if (self.mrwo_id and 'pending_reprocess_mrwo_ids' in batch._fields
+                    and self.mrwo_id in batch.pending_reprocess_mrwo_ids):
+                continue
+            rolls |= batch.origin_roll_ids
+        return rolls.filtered(
+            lambda roll: roll.workorder_id and roll.workorder_id.production_id == self.production_id)
+
     def _get_textile_produced_qty(self):
         self.ensure_one()
         if self.operation_type == 'weaving':
+            # Los rollos RECIBIDOS (copia de una transferencia) no se tejieron
+            # aquí -> no cuentan en la cantidad producida de esta OT.
+            weaving_rolls = self.roll_ids.filtered(lambda r: r.transfer_state != 'recibido')
             if getattr(self, 'weave_type', False) == 'rect':
-                return float(sum(self.roll_ids.mapped('quantity')))
-            total_weight = float(sum(self.roll_ids.mapped('gross_weight')))
-            return total_weight or float(sum(self.roll_ids.mapped('quantity')))
+                return float(sum(weaving_rolls.mapped('quantity')))
+            total_weight = float(sum(weaving_rolls.mapped('gross_weight')))
+            return total_weight or float(sum(weaving_rolls.mapped('quantity')))
         if self.operation_type in self.BATCH_OPERATION_TYPES:
-            batch_rolls = self.batch_ids.wo_roll_ids.filtered(
-                lambda roll: roll.workorder_id and roll.workorder_id.production_id == self.production_id
-            )
+            batch_rolls = self._get_textile_rolls()
             total_weight = float(sum(batch_rolls.mapped('gross_weight')))
             if total_weight > 0:
                 return total_weight
@@ -160,7 +188,7 @@ class MrpWorkorder(models.Model):
             workorder.qty_produced = workorder._get_textile_produced_qty()
 
     def write(self, vals):
-        if 'state' in vals and vals['state'] in ('progress', 'done') and self.filtered(lambda wo: wo.operation_type in (('weaving',) + wo.BATCH_OPERATION_TYPES)):
+        if 'state' in vals and vals['state'] in ('progress', 'done') and not self.env.context.get('skip_textile_qty') and self.filtered(lambda wo: wo.operation_type in (('weaving',) + wo.BATCH_OPERATION_TYPES)):
             result = True
             for workorder in self:
                 current_vals = dict(vals)
@@ -181,11 +209,22 @@ class MrpWorkorder(models.Model):
     
     def button_reopen(self):
         self.ensure_one()
-        self.leave_id.unlink()
-        self.write({
-            'state': 'progress',
-            'date_finished': False,
-        })
+        return self._do_reopen()
+
+    def _do_reopen(self):
+        """Reabre la(s) OT(s): borra el descanso registrado, las vuelve a
+        'progress' y limpia la fecha de fin. Reutilizable tanto por el botón
+        manual (button_reopen) como por el reproceso 'hacia adelante' que
+        dispara la alerta de calidad (idtx_mrp_shop)."""
+        # skip_textile_qty: al reabrir NO se debe inyectar qty_produced (core
+        # prohíbe cambiar la cantidad producida mientras la OT sigue en 'done');
+        # la cantidad se recalcula sola cuando la partida se vuelve a registrar.
+        for wo in self:
+            wo.leave_id.unlink()
+            wo.with_context(skip_textile_qty=True).write({
+                'state': 'progress',
+                'date_finished': False,
+            })
         return True
     
     def button_start(self, raise_on_invalid_state=False):

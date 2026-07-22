@@ -8,6 +8,25 @@ class MrpWorkorderRoll(models.Model):
     _description = 'Mrp Workorder Roll'
 
     workorder_id = fields.Many2one('mrp.workorder', string='Workorder')
+    # Trazabilidad de transferencia entre OTs con DOS registros del mismo rollo:
+    #  - En la OT de ORIGEN: el registro original, estado 'transferido'. SIGUE
+    #    contando su consumo (se tejió ahí). Guarda `dest_workorder_id`.
+    #  - En la OT de DESTINO: una COPIA, estado 'recibido'. NO cuenta consumo
+    #    (no se tejió ahí). Guarda `transfer_origin_roll_id` (el original).
+    transfer_state = fields.Selection([
+        ('transferido', 'Transferido'),
+        ('recibido', 'Recibido'),
+    ], string='Estado de Transferencia', readonly=True, copy=False, index=True)
+    dest_workorder_id = fields.Many2one(
+        'mrp.workorder', string='Transferido a (OT)', readonly=True, copy=False, index=True,
+        help='OT a la que se transfirió el rollo (registro de origen).')
+    transfer_origin_roll_id = fields.Many2one(
+        'mrp.workorder.roll', string='Rollo de Origen (Transferencia)',
+        readonly=True, copy=False, ondelete='cascade', index=True,
+        help='Registro original (en la OT de tejido) del cual este rollo '
+             'recibido es copia.')
+    is_transferred = fields.Boolean(
+        'Transferido', compute='_compute_is_transferred', store=True)
     sequence = fields.Integer('Sequence')
     name = fields.Char('Number')
     product_id = fields.Many2one(related='workorder_id.product_id.product_tmpl_id')
@@ -37,6 +56,11 @@ class MrpWorkorderRoll(models.Model):
         'stock.lot', 'wo_roll_thread_lot_rel', 'roll_id', 'lot_id',
         string='Lotes de Hilo', copy=True)
 
+    @api.depends('transfer_state')
+    def _compute_is_transferred(self):
+        for roll in self:
+            roll.is_transferred = bool(roll.transfer_state)
+
     def _compute_current_batch_id(self):
         Batch = self.env['mrp.workorder.batch']
         for roll in self:
@@ -60,7 +84,10 @@ class MrpWorkorderRoll(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
-            vals['name'] = self.env['ir.sequence'].with_company(vals.get('company_id')).next_by_code('mrp.workorder.roll')
+            # Respeta un nombre provisto (p.ej. la copia RECIBIDA conserva el
+            # mismo número del rollo original); genera secuencia solo si falta.
+            if not vals.get('name'):
+                vals['name'] = self.env['ir.sequence'].with_company(vals.get('company_id')).next_by_code('mrp.workorder.roll')
             # Snapshot de los lotes de hilo desde la opción de la tejedora.
             if not vals.get('thread_lot_ids') and vals.get('option_id'):
                 option = self.env['mrp.workorder.option'].browse(vals['option_id'])

@@ -1401,6 +1401,9 @@ class TechnicalSheet(models.Model):
         table = self._open_table('clientes.dbf')
         try:
             existing_code = self._find_cliente_codigo(table, partner.vat)
+            if existing_code:
+                return existing_code
+
             values = {
                 'RAZSOC': partner.name,
                 'RUC': partner.vat,
@@ -1423,11 +1426,6 @@ class TechnicalSheet(models.Model):
                 'USUARIO': self.env.user.name,
                 'ACTIVO': True,
             }
-            if existing_code:
-                values['CDGCLIE'] = existing_code
-                self._update_record(table, 'CDGCLIE', existing_code, values)
-                return existing_code
-
             code = self._next_cliente_codigo(table, partner.name)
             values['CDGCLIE'] = code
             self._append_record_with_table(table, values)

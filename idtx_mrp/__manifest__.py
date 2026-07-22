@@ -49,6 +49,7 @@ Módulo base para los desarrollos de producción para empresas textiles
         'wizards/add_production_roll.xml',
         'wizards/additional_workorder_views.xml',
         'wizards/mrp_workorder_batch_split_views.xml',
+        'wizards/roll_transfer_views.xml',
         'views/mrp_menu.xml',
     ],
     'demo': [

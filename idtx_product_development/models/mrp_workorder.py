@@ -10,39 +10,45 @@ class MrpWorkorder(models.Model):
 
     @api.depends(
         'roll_ids',
+        'roll_ids.transfer_state',
+        'state',
         'batch_ids',
         'batch_ids.wo_roll_ids',
         'batch_ids.wo_roll_ids.gross_weight',
         'batch_ids.wo_roll_ids.quantity',
         'batch_ids.wo_roll_ids.workorder_id',
         'batch_ids.wo_roll_ids.workorder_id.production_id',
+        'batch_ids.child_batch_ids.wo_roll_ids',
     )
     def _compute_progress(self):
         for rec in self:
             if rec.operation_type == 'weaving':
+                # Los rollos RECIBIDOS (copia de transferencia) no se tejieron
+                # aquí -> no cuentan en el avance/cantidad de esta OT.
+                wrolls = rec.roll_ids.filtered(lambda r: r.transfer_state != 'recibido')
                 if rec.state == 'done':
-                    rec.quantity = sum(rec.roll_ids.mapped('quantity'))
-                    rec.roll_weight = sum(rec.roll_ids.mapped('gross_weight'))
+                    rec.quantity = sum(wrolls.mapped('quantity'))
+                    rec.roll_weight = sum(wrolls.mapped('gross_weight'))
                     rec.progress = 100
                 else:
                     # El avance se mide contra el TOTAL de la OF
                     # (qty_production); qty_remaining disminuye con el avance
                     # e inflaba el porcentaje.
                     if rec.weave_type == 'rect':
-                        rec.quantity = sum(rec.roll_ids.mapped('quantity'))
+                        rec.quantity = sum(wrolls.mapped('quantity'))
                         rec.progress = (rec.quantity / rec.qty_production * 100) if rec.qty_production else 0
                         rec.roll_weight = 0
                     else:
-                        rec.roll_weight = sum(rec.roll_ids.mapped('gross_weight'))
+                        rec.roll_weight = sum(wrolls.mapped('gross_weight'))
                         rec.progress = (rec.roll_weight / rec.qty_production * 100) if rec.qty_production else 0
                         rec.quantity = 0
             elif rec.operation_type in rec.BATCH_OPERATION_TYPES:
                 if rec.batch_ids:
-                    # Solo los rollos de la partida que pertenecen a ESTA OF
-                    # (las partidas pueden combinar rollos de varias OFs).
-                    batch_rolls = rec.batch_ids.wo_roll_ids.filtered(
-                        lambda r: r.workorder_id and r.workorder_id.production_id == rec.production_id
-                    )
+                    # Mismo conjunto de rollos que la cantidad producida
+                    # (`_get_textile_rolls`): resuelve divisiones y EXCLUYE
+                    # partidas con reproceso pendiente, así el % de avance baja
+                    # al reabrir y se recupera al re-registrar.
+                    batch_rolls = rec._get_textile_rolls()
                     if rec.state == 'done':
                         rec.quantity = sum(rec.roll_ids.mapped('quantity'))
                         rec.roll_weight = sum(rec.roll_ids.mapped('gross_weight'))

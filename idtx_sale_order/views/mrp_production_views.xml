@@ -170,8 +170,13 @@
             <field name="model">mrp.production</field>
             <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
             <field name="arch" type="xml">
+                <!-- production_type: editable solo en OFs SIN pedido (creadas
+                     manualmente); si viene de un pedido de venta, se hereda y
+                     queda de solo lectura. -->
+                <field name="production_type" position="attributes">
+                    <attribute name="readonly">order_id or state != 'draft'</attribute>
+                </field>
                 <div name="bom_div" position="after">
-                    <field name="sale_type" readonly="state != 'draft'"/>
                     <field name="order_id" readonly="1" invisible="not order_id"/>
                     <field name="partner_id" readonly="1" invisible="not partner_id"/>
                     <field name="color_code" readonly="1" invisible="not color_code"/>

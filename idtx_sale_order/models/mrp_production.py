@@ -16,13 +16,7 @@ class MrpProduction(models.Model):
     color_name = fields.Char(related='color_recipe_id.color_name')
     manual_recipe = fields.Boolean('manual_recipe', default=False)
     manual_color_recipe_id = fields.Many2one('color.recipe', string='Manual Color Recipe', ondelete='restrict')
-    sale_type = fields.Selection([
-        ('sale', 'Sale'),
-        ('service', 'Service'),
-        ('sample', 'Sample'),
-        ('pilot', 'Pilot'),
-    ], string='Sale Type', default='sale')
-    
+
     @api.onchange('color_recipe_id')
     def _onchange_color_recipe_id(self):
         for production in self:

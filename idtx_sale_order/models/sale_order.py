@@ -236,7 +236,7 @@ class SaleOrder(models.Model):
                         'product_qty': line.product_uom_qty,
                         'bom_id': line.bom_id.id,
                         'sale_order_line_id': line.id,
-                        'sale_type': rec.sale_type,
+                        'production_type': rec.sale_type,
                         'company_id': production_company.id,
                     })
                     line.sudo().production_id = prd.id

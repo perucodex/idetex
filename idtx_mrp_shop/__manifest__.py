@@ -23,14 +23,21 @@ luego armar las partidas
     # any module necessary for this one to work correctly
     'depends': [
             'idtx_sale_order',
+            'idtx_mrp',
+            'quality_mrp_workorder',
         ],
 
     # always loaded
     'data': [
         'data/hr_department.xml',
+        'data/quality_reason_data.xml',
         'security/ir.model.access.csv',
         'report/report_batch_dye_recipe.xml',
+        'report/report_batch.xml',
         'views/batch_registry_views.xml',
+        'views/quality_alert_views.xml',
+        'views/mrp_production_views.xml',
+        'views/mrp_workorder_views.xml',
         'views/maintenance_equipment_views.xml',
         'views/mrp_menu.xml',
         'views/mrp_workorder_batch_views.xml',

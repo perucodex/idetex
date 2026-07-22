@@ -12,6 +12,8 @@
                 </header>
                 <sheet>
                     <field name="use_lab_recipe" invisible="1"/>
+                    <field name="is_reprocess" invisible="1"/>
+                    <widget name="web_ribbon" title="Reproceso" bg_color="text-bg-warning" invisible="not is_reprocess"/>
                     <group>
                         <group>
                             <field name="workorder_id" domain="[('operation_type','=','dyeing')]" required="1" readonly="state == 'done'"/>
@@ -23,6 +25,8 @@
                             <field name="color_code" readonly="1" force_save="1"/>
                             <field name="employee_id" required="1" readonly="state == 'done'"/>
                             <field name="equipment_id" required="1" readonly="state == 'done'"/>
+                            <field name="reprocess_number" readonly="1"/>
+                            <field name="quality_alert_id" readonly="1" invisible="not is_reprocess"/>
                         </group>
                     </group>
                     <notebook invisible="not use_lab_recipe">
@@ -191,9 +195,12 @@
                 <!-- <field name="batch_id"/> -->
                 <field name="workorder_id"/>
                 <field name="registry_date"/>
+                <field name="reprocess_number" string="N° Proc." decoration-warning="is_reprocess"/>
+                <field name="is_reprocess" column_invisible="1"/>
                 <field name="employee_id"/>
                 <field name="equipment_id"/>
                 <field name="color_name"/>
+                <field name="quality_alert_id" optional="hide"/>
                 <field name="state" widget="badge" decoration-success="state == 'done'"/>
             </list>
         </field>

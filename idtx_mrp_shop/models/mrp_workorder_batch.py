@@ -20,6 +20,29 @@ class MrpWorkorderBatch(models.Model):
     color_code = fields.Char(related='color_recipe_id.color_code', string='Código de Color')
     color_name = fields.Char(related='color_recipe_id.color_name', string='Nombre de Color')
     registry_ids = fields.One2many('batch.registry', 'batch_id', string='Registers')
+    reprocess_count = fields.Integer(
+        'Reprocesos', compute='_compute_reprocess_count',
+        help='Cantidad de ejecuciones de operación sobre la partida que fueron '
+             'reprocesos (2ª vez o más de una misma operación).')
+    quality_alert_ids = fields.One2many(
+        'quality.alert', 'batch_id', string='Alertas de Calidad')
+    quality_alert_count = fields.Integer(
+        'N° Alertas', compute='_compute_quality_alert_count')
+    # Operaciones (mrwo_id) con un reproceso PENDIENTE para esta partida: las
+    # marca el reproceso al reabrir (X + posteriores) y las limpia el Taller al
+    # re-registrar. Sirve para que una partida ya procesada vuelva a aparecer en
+    # el buscador de partidas SOLO cuando hay un reproceso en curso.
+    pending_reprocess_mrwo_ids = fields.Many2many(
+        'mrp.routing.workcenter.operation',
+        'batch_pending_reprocess_mrwo_rel', 'batch_id', 'mrwo_id',
+        string='Reprocesos Pendientes', copy=False)
+    # "Última Operación": la operación del registro (batch.registry) más
+    # reciente de la partida (= última operación realizada). Si aún no tiene
+    # registros propios (sub-partida recién dividida), hereda la del padre.
+    mrwo_id = fields.Many2one(
+        'mrp.routing.workcenter.operation', string='Last Operation',
+        compute='_compute_last_operation', store=True, readonly=True,
+        recursive=True)
     recipe_lot_warning = fields.Text(
         'Aviso de Receta por Lote', compute='_compute_recipe_lot_warning',
         help='Alerta cuando la combinación de lotes de hilo de los rollos de '
@@ -114,12 +137,95 @@ class MrpWorkorderBatch(models.Model):
             rec.color_recipe_id = recipe
 
     @api.depends('color_recipe_id', 'wo_roll_ids.thread_lot_ids',
+                 'child_batch_ids.wo_roll_ids.thread_lot_ids',
                  'color_recipe_id.recipe_lot_ids.lot_key')
     def _compute_recipe_lot(self):
         for rec in self:
             recipe = rec.color_recipe_id
-            lots = rec.wo_roll_ids.thread_lot_ids
+            # Partida dividida: ya no tiene rollos propios (viven en las hijas);
+            # se usan los rollos ACTUALES (origin_roll_ids resuelve el split)
+            # para no perder la sub-receta al dividir.
+            lots = rec.origin_roll_ids.thread_lot_ids
             rec.recipe_lot_id = recipe._find_lot_subrecipe(lots) if recipe and lots else False
+
+    @api.depends('registry_ids.reprocess_number')
+    def _compute_reprocess_count(self):
+        for rec in self:
+            rec.reprocess_count = len(
+                rec.registry_ids.filtered(lambda r: r.reprocess_number > 1))
+
+    @api.depends('quality_alert_ids')
+    def _compute_quality_alert_count(self):
+        for rec in self:
+            rec.quality_alert_count = len(rec.quality_alert_ids)
+
+    @api.depends('registry_ids.registry_date', 'registry_ids.workorder_id.mrwo_id',
+                 'parent_batch_id.mrwo_id')
+    def _compute_last_operation(self):
+        sentinel = fields.Datetime.to_datetime('1900-01-01 00:00:00')
+        for rec in self:
+            regs = rec.registry_ids.sorted(
+                key=lambda r: (r.registry_date or sentinel, r.id))
+            rec.mrwo_id = (regs[-1].workorder_id.mrwo_id
+                           if regs else rec.parent_batch_id.mrwo_id)
+
+    def _get_process_tree(self):
+        """Árbol genealógico de los procesos (OTs) de la partida según las OFs
+        de sus rollos. Mientras las rutas coinciden operación-a-operación es un
+        tramo COMPARTIDO (banda con todas las OFs + operaciones); en cuanto
+        divergen se ramifica (columnas lado a lado), recursivo, hasta la
+        cabecera por OF. Devuelve el nodo raíz anidado:
+        {'ofs': [nombres], 'ops': [operaciones], 'branches': [nodos hijos]}."""
+        self.ensure_one()
+        productions = self.origin_roll_ids.workorder_id.production_id
+        of_seqs = []
+        for prod in productions:
+            wos = prod.workorder_ids.sorted(lambda w: (w.sequence, w.id))
+            of_seqs.append({
+                'prod': prod,
+                'ops': [(w.mrwo_id.name or w.name or '') for w in wos],
+            })
+        if not of_seqs:
+            return {}
+        return self._build_process_node(of_seqs, 0)
+
+    def _build_process_node(self, group, depth):
+        # Avanza el prefijo COMPARTIDO: mientras todas las OFs del grupo tengan
+        # la misma operación en la posición `d`.
+        shared = []
+        d = depth
+        while True:
+            ops_at_d = [g['ops'][d] if len(g['ops']) > d else None for g in group]
+            if any(o is None for o in ops_at_d) or len(set(ops_at_d)) != 1:
+                break
+            shared.append(ops_at_d[0])
+            d += 1
+        # Divergencia: subgrupos por operación en la posición `d` (recursivo).
+        subgroups, order = {}, []
+        for g in group:
+            if len(g['ops']) > d:
+                key = g['ops'][d]
+                if key not in subgroups:
+                    subgroups[key] = []
+                    order.append(key)
+                subgroups[key].append(g)
+        branches = [self._build_process_node(subgroups[k], d) for k in order]
+        return {
+            'ofs': [g['prod'].name for g in group],
+            'ops': shared,
+            'branches': branches,
+        }
+
+    def action_view_quality_alerts(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Alertas de Calidad de %s') % self.name,
+            'res_model': 'quality.alert',
+            'view_mode': 'list,form',
+            'domain': [('batch_id', '=', self.id)],
+            'context': {'default_batch_id': self.id},
+        }
 
     # =========================
     # Reporte "Receta de Tinte"
@@ -257,6 +363,37 @@ class MrpWorkorderBatch(models.Model):
             # Mismo COLOR: la partida se tiñe con la receta de la OF llamante
             # (blanco no aparece si la OT es para negro).
             parts.append(Domain("color_recipe_id", "=", caller_recipe.id))
+
+        # Ocultar partidas YA procesadas por esta operación (tienen un
+        # batch.registry de la misma mrwo_id), salvo que tengan un reproceso
+        # PENDIENTE en esa operación (lo marca la alerta de calidad al reabrir).
+        # Las SUB-PARTIDAS heredan el proceso del padre: si un ancestro ya hizo
+        # la operación, la hija tampoco aparece (las divididas solo divergen en
+        # las operaciones POSTERIORES al split).
+        if caller_wo and caller_wo.mrwo_id:
+            mrwo = caller_wo.mrwo_id
+            # "Ya procesada por ESTE paso de ruta": tiene un registro en LA OT
+            # llamante o en una OT HERMANA (misma operación en OTRA OF, para
+            # partidas multi-OF). NO se cuentan las operaciones duplicadas de la
+            # MISMA OF (dos "CONTROL PESO" en la ruta son pasos distintos y cada
+            # uno debe procesar la partida) -> el chequeo es por OT, no por
+            # operación.
+            processed = self.env['batch.registry'].search([
+                '|',
+                    ('workorder_id', '=', caller_wo.id),
+                    '&',
+                        ('workorder_id.mrwo_id', '=', mrwo.id),
+                        ('workorder_id.production_id', '!=', caller_wo.production_id.id),
+            ]).mapped('batch_id')
+            lineage = processed
+            frontier = processed
+            while frontier:
+                frontier = frontier.child_batch_ids
+                lineage |= frontier
+            excluded = lineage.filtered(
+                lambda b: mrwo not in b.pending_reprocess_mrwo_ids)
+            if excluded:
+                parts.append(Domain('id', 'not in', excluded.ids))
 
         if query_terms:
             term_domains = []

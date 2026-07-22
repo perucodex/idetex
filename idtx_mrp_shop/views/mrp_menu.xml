@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <data noupdate="1">
-    
-        <menuitem id="menu_batch_registry" name="Batch Registers" action="batch_registry_action" sequence="920" parent="mrp.menu_mrp_manufacturing"/>
+    <data noupdate="0">
+
+        <!-- Operaciones > Partidas > Registros -->
+        <menuitem id="menu_batch_registry" name="Registros" action="batch_registry_action" sequence="20" parent="idtx_mrp.menu_partidas"/>
 
     </data>
-    
+
 </odoo>

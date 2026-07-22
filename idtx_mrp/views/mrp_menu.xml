@@ -1,14 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <data noupdate="1">
-    
-        <menuitem id="wo_batch_menu" name="Workorder Batch" action="wo_batch_action" sequence="900" parent="mrp.menu_mrp_manufacturing"/>
-        <menuitem id="wo_rolls_menu" name="Workorder Rolls" action="wo_rolls_action" sequence="910" parent="mrp.menu_mrp_manufacturing"/>
-        <menuitem id="mrp_rolls_menu" name="Production Rolls" action="mrp_rolls_action" sequence="920" parent="mrp.menu_mrp_manufacturing"/>
+    <data noupdate="0">
+
+        <!-- Operaciones > Partidas (contenedor) -->
+        <menuitem id="menu_partidas" name="Partidas" sequence="900" parent="mrp.menu_mrp_manufacturing"/>
+        <!-- Operaciones > Rollos (contenedor) -->
+        <menuitem id="menu_rollos" name="Rollos" sequence="910" parent="mrp.menu_mrp_manufacturing"/>
+
+        <!-- Partidas > Partidas / Registros(en idtx_mrp_shop) -->
+        <menuitem id="wo_batch_menu" name="Partidas" action="wo_batch_action" sequence="10" parent="menu_partidas"/>
+        <!-- Rollos > Rollos de Tejido / Rollos Terminados -->
+        <menuitem id="wo_rolls_menu" name="Rollos de Tejido" action="wo_rolls_action" sequence="10" parent="menu_rollos"/>
+        <menuitem id="mrp_rolls_menu" name="Rollos Terminados" action="mrp_rolls_action" sequence="20" parent="menu_rollos"/>
+
         <menuitem id="dev_mrp_routing_operation_action_menu" name="Workcenter Operations" action="mrp_routing_operation_action" sequence="900" parent="mrp.menu_mrp_configuration"/>
         <menuitem id="menu_scale_registry" name="Scales" action="action_scale_registry" sequence="910" parent="mrp.menu_mrp_configuration"/>
 
     </data>
-    
+
 </odoo>

@@ -7,9 +7,14 @@
         <field name="arch" type="xml">
             <form string="Roll">
                 <sheet>
+                    <widget name="web_ribbon" title="Transferido" bg_color="text-bg-success" invisible="transfer_state != 'transferido'"/>
+                    <widget name="web_ribbon" title="Recibido" bg_color="text-bg-info" invisible="transfer_state != 'recibido'"/>
                     <group>
                         <group>
-                            <field name="workorder_id" readonly="1"/>
+                            <field name="transfer_state" invisible="1"/>
+                            <field name="workorder_id" readonly="1" string="OT (Tejido)"/>
+                            <field name="dest_workorder_id" readonly="1" invisible="transfer_state != 'transferido'"/>
+                            <field name="transfer_origin_roll_id" readonly="1" invisible="transfer_state != 'recibido'"/>
                             <field name="name" readonly="1"/>
                             <field name="product_id"/>
                             <field name="uom_id"/>
@@ -33,6 +38,9 @@
                 <field name="workorder_id"/>
                 <field name="name"/>
                 <field name="product_id"/>
+                <group>
+                    <filter name="group_workorder" string="Orden de Trabajo" context="{'group_by': 'workorder_id'}"/>
+                </group>
             </search>
         </field>
     </record>
@@ -41,11 +49,14 @@
         <field name="name">mrp.workorder.roll.view.tree</field>
         <field name="model">mrp.workorder.roll</field>
         <field name="arch" type="xml">
-            <list create="0" edit="0">
+            <list create="0" edit="0" decoration-success="transfer_state == 'transferido'" decoration-info="transfer_state == 'recibido'">
                 <header>
                     <button name="reprint" string="Reprint" type="object"/>
                 </header>
+                <field name="transfer_state" string="Transf." optional="show"/>
                 <field name="workorder_id"/>
+                <field name="dest_workorder_id" string="Transferido a" optional="show"/>
+                <field name="transfer_origin_roll_id" string="Rollo origen" optional="hide"/>
                 <field name="name"/>
                 <field name="product_id"/>
                 <field name="uom_id"/>
@@ -61,6 +72,7 @@
         <field name="res_model">mrp.workorder.roll</field>
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="mrp_workorder_roll_view_tree"/>
+        <field name="context">{'search_default_group_workorder': 1}</field>
     </record>
     
 </odoo>

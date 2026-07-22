@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="mrp_production_form_reposition" model="ir.ui.view">
+        <field name="name">mrp.production.form.reposition</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="idtx_mrp.mrp_production_form_view_inherit"/>
+        <field name="arch" type="xml">
+            <!-- OF de origen de esta reposición (de dónde salió) -->
+            <field name="production_type" position="after">
+                <field name="reposition_origin_id" readonly="1"
+                       invisible="not reposition_origin_id"/>
+            </field>
+            <!-- Botón inteligente: reposiciones generadas desde esta OF -->
+            <div name="button_box" position="inside">
+                <button name="action_view_repositions" type="object"
+                        class="oe_stat_button" icon="fa-recycle"
+                        invisible="reposition_count == 0">
+                    <field name="reposition_count" widget="statinfo" string="Reposiciones"/>
+                </button>
+            </div>
+        </field>
+    </record>
+
+</odoo>

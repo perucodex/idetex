@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Contenido: datos de la partida + listado de rollos. -->
+    <template id="report_batch_partida_content">
+        <t t-set="rolls" t-value="doc.origin_roll_ids"/>
+        <t t-set="productions" t-value="rolls.workorder_id.production_id"/>
+        <div class="page reporte-partida" style="font-size: 0.85rem;">
+            <style>
+                .reporte-partida table::before, .reporte-partida table::after {
+                    display: none !important; content: none !important; border: 0 !important;
+                }
+                .reporte-partida table {
+                    border-collapse: collapse !important; border-radius: 0 !important;
+                    border: 0 !important; box-shadow: none !important; overflow: visible !important;
+                    width: 100%;
+                }
+                .reporte-partida th, .reporte-partida td {
+                    border: 1px solid #444 !important; border-radius: 0 !important;
+                    box-shadow: none !important; font-family: inherit !important;
+                    padding: 3px 6px !important; text-align: left;
+                }
+                .reporte-partida th.text-end, .reporte-partida td.text-end { text-align: right !important; }
+                .reporte-partida th.text-center, .reporte-partida td.text-center { text-align: center !important; }
+                /* Árbol de procesos: cajas anidadas (banda compartida + columnas por rama) */
+                .reporte-partida .proc-tree table { border-collapse: collapse !important; width: 100%; margin: 0; }
+                .reporte-partida .proc-of { font-weight: bold !important; text-align: center !important; background: #eee !important; }
+                .reporte-partida .proc-op { text-align: center !important; }
+                .reporte-partida .proc-branch { border: 0 !important; padding: 0 !important; vertical-align: top !important; }
+            </style>
+
+            <div class="row mb-2">
+                <div class="col-6"><h3 class="mb-0">Reporte de Partida</h3></div>
+                <div class="col-6 text-end">
+                    <h4 class="mb-0"><t t-esc="doc.name"/></h4>
+                    <span t-esc="doc.batch_date" t-options="{'widget': 'date'}"/>
+                </div>
+            </div>
+
+            <table class="table table-sm table-bordered o_ignore_layout_styling mb-2">
+                <tbody>
+                    <tr>
+                        <td style="width:17%"><strong>Cliente</strong></td>
+                        <td style="width:50%"><t t-esc="', '.join(doc.partner_ids.mapped('name'))"/></td>
+                        <td style="width:15%"><strong>O.P.</strong></td>
+                        <td style="width:18%"><t t-esc="', '.join(productions.mapped('name'))"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Color</strong></td>
+                        <td><t t-esc="doc.color_code"/> - <t t-esc="doc.color_name"/></td>
+                        <td><strong>Receta</strong></td>
+                        <td><t t-esc="doc.color_recipe_id.recipe_color_code or doc.color_recipe_id.name or ''"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Sub-receta (Lotes)</strong></td>
+                        <td><t t-esc="doc.recipe_lot_id.display_name if doc.recipe_lot_id else ''"/></td>
+                        <td><strong>Última Operación</strong></td>
+                        <td><t t-esc="doc.mrwo_id.name or ''"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total (kg)</strong></td>
+                        <td><t t-esc="'%.2f' % (doc.total_weight or 0)"/></td>
+                        <td><strong>Piezas</strong></td>
+                        <td><t t-esc="len(rolls)"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Reprocesos</strong></td>
+                        <td><t t-esc="doc.reprocess_count"/></td>
+                        <td><strong>Estado</strong></td>
+                        <td><t t-esc="dict(doc._fields['state'].selection).get(doc.state, doc.state)"/></td>
+                    </tr>
+                    <tr t-if="doc.parent_batch_id">
+                        <td><strong>Partida Origen</strong></td>
+                        <td colspan="3"><t t-esc="doc.parent_batch_id.name"/></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h5 class="mb-1">Rollos</h5>
+            <table class="table table-sm table-bordered o_ignore_layout_styling">
+                <thead>
+                    <tr>
+                        <th class="text-center">N°</th>
+                        <th>Producto</th>
+                        <th>O.F.</th>
+                        <th class="text-end">Cantidad</th>
+                        <th class="text-end">Peso Neto (kg)</th>
+                        <th class="text-end">Peso Bruto (kg)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="rolls" t-as="roll">
+                        <td class="text-center"><t t-esc="roll.name or ''"/></td>
+                        <td><t t-esc="roll.product_id.display_name or ''"/></td>
+                        <td><t t-esc="roll.workorder_id.production_id.name or ''"/></td>
+                        <td class="text-end"><t t-esc="roll.quantity"/></td>
+                        <td class="text-end"><t t-esc="'%.2f' % (roll.net_weight or 0)"/></td>
+                        <td class="text-end"><t t-esc="'%.2f' % (roll.gross_weight or 0)"/></td>
+                    </tr>
+                    <tr t-if="not rolls">
+                        <td colspan="6" class="text-center">Sin rollos.</td>
+                    </tr>
+                </tbody>
+                <tfoot t-if="rolls">
+                    <tr>
+                        <td colspan="3" class="text-end"><strong>Totales</strong></td>
+                        <td class="text-end"><strong><t t-esc="sum(rolls.mapped('quantity'))"/></strong></td>
+                        <td class="text-end"><strong><t t-esc="'%.2f' % sum(rolls.mapped('net_weight'))"/></strong></td>
+                        <td class="text-end"><strong><t t-esc="'%.2f' % sum(rolls.mapped('gross_weight'))"/></strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <t t-set="tree" t-value="doc._get_process_tree()"/>
+            <div t-if="tree and (tree.get('ops') or tree.get('branches'))" class="mt-2 proc-tree">
+                <h5 class="mb-1">Procesos a realizar</h5>
+                <t t-call="idtx_mrp_shop.report_batch_process_node">
+                    <t t-set="node" t-value="tree"/>
+                </t>
+            </div>
+        </div>
+    </template>
+
+    <!-- Nodo recursivo del árbol de procesos: banda de OFs + operaciones
+         compartidas, y debajo una columna por cada rama (recursivo). -->
+    <template id="report_batch_process_node">
+        <t t-set="ncols" t-value="len(node['branches']) or 1"/>
+        <table>
+            <tr>
+                <td t-att-colspan="ncols" class="proc-of"><t t-esc="' - '.join(node['ofs'])"/></td>
+            </tr>
+            <tr t-foreach="node['ops']" t-as="op">
+                <td t-att-colspan="ncols" class="proc-op"><t t-esc="op"/></td>
+            </tr>
+            <tr t-if="node['branches']">
+                <td t-foreach="node['branches']" t-as="br" class="proc-branch">
+                    <t t-call="idtx_mrp_shop.report_batch_process_node">
+                        <t t-set="node" t-value="br"/>
+                    </t>
+                </td>
+            </tr>
+        </table>
+    </template>
+
+    <template id="report_batch_partida_document">
+        <t t-call="web.internal_layout">
+            <t t-call="idtx_mrp_shop.report_batch_partida_content"/>
+        </t>
+    </template>
+
+    <template id="report_batch_partida">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="idtx_mrp_shop.report_batch_partida_document"/>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_batch_partida" model="ir.actions.report">
+        <field name="name">Reporte de Partida</field>
+        <field name="model">mrp.workorder.batch</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">idtx_mrp_shop.report_batch_partida</field>
+        <field name="report_file">idtx_mrp_shop.report_batch_partida</field>
+        <field name="print_report_name">'Partida_%s' % (object.name)</field>
+        <field name="paperformat_id" ref="paperformat_dye_recipe"/>
+        <field name="binding_model_id" ref="idtx_mrp.model_mrp_workorder_batch"/>
+        <field name="binding_type">report</field>
+    </record>
+
+</odoo>

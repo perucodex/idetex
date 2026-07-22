@@ -10,3 +10,4 @@ access_scale_registry,scale_registry,model_scale_registry,base.group_user,1,1,1,
 access_batch_add_wizard,batch_add_wizard,model_batch_add_wizard,base.group_user,1,1,1,1
 access_mrp_workorder_batch_split,mrp_workorder_batch_split,model_mrp_workorder_batch_split,base.group_user,1,1,1,1
 access_mrp_workorder_batch_split_line,mrp_workorder_batch_split_line,model_mrp_workorder_batch_split_line,base.group_user,1,1,1,1
+access_mrp_workorder_roll_transfer,mrp_workorder_roll_transfer,model_mrp_workorder_roll_transfer,base.group_user,1,1,1,1

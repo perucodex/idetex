@@ -46,7 +46,11 @@ class MrpWorkorder(models.Model):
             }
 
             qty_by_move_lot = {}
-            rolls = workorder.roll_ids.filtered(lambda r: r.option_id and float(r.gross_weight or 0.0) > 0)
+            # Los rollos RECIBIDOS (copia de una transferencia) no cuentan
+            # consumo: no se tejieron en esta OT, solo se recibieron.
+            rolls = workorder.roll_ids.filtered(
+                lambda r: r.option_id and float(r.gross_weight or 0.0) > 0
+                and r.transfer_state != 'recibido')
             for roll in rolls:
                 product_lot_map = option_lines_by_option.get(roll.option_id.id, {})
                 for move in raw_moves:
@@ -537,6 +541,72 @@ class MrpWorkorder(models.Model):
             }
         return None
 
+    def _reprocess_from_here(self, batch):
+        """Deja la partida lista para rehacer desde ESTA operación hacia
+        adelante en la ruta. Sobre las operaciones que la partida YA procesó
+        (tienen registro), de X en adelante:
+          - las marca como reproceso PENDIENTE (aunque la OT ya esté reabierta)
+            -> reaparecen en el Taller y su avance baja hasta re-registrar;
+          - reabre las que están terminadas ('done'); las que ya están abiertas
+            ('progress') solo se marcan.
+        Tejeduría nunca entra (no está en BATCH_OPERATION_TYPES). Devuelve las
+        OTs afectadas."""
+        self.ensure_one()
+        mrwo = self.mrwo_id
+        if not mrwo:
+            return self.env['mrp.workorder']
+        # OFs que procesan la partida (multi-OF: hermanas con la partida
+        # anexada) más la OF propia de esta OT.
+        prods = self.production_id | self.env['mrp.workorder'].search(
+            [('batch_ids', 'in', batch.id)]).mapped('production_id')
+        # OTs de partida desde X hacia adelante en la ruta (cualquier estado).
+        forward = self.env['mrp.workorder']
+        for prod in prods:
+            wos = prod.workorder_ids  # ordenadas por ruta (_order = sequence,...)
+            ids = wos.ids
+            match = wos.filtered(lambda w: w.mrwo_id == mrwo)[:1]
+            if not match or match.id not in ids:
+                continue
+            forward |= wos[ids.index(match.id):].filtered(
+                lambda w: w.operation_type in self.BATCH_OPERATION_TYPES)
+        forward |= self
+        # Solo las operaciones que la partida YA procesó (tiene registro): son
+        # las que hay que rehacer. Las que aún no procesó siguen su flujo normal.
+        registered_mrwo = batch.registry_ids.mapped('workorder_id.mrwo_id')
+        target = forward.filtered(lambda w: w.mrwo_id in registered_mrwo)
+        if not target:
+            return target
+        # Reabrir las terminadas (las 'progress' ya están abiertas).
+        target.filtered(lambda w: w.state == 'done')._do_reopen()
+        # Marcar PENDIENTE todas las operaciones objetivo (sin importar estado).
+        pending_mrwo = target.mapped('mrwo_id')
+        if pending_mrwo:
+            batch.pending_reprocess_mrwo_ids = [(4, m.id) for m in pending_mrwo]
+        # Recalcular avance/cantidad de las OTs abiertas afectadas (bajan a 0
+        # por estar la partida pendiente).
+        target.filtered(lambda w: w.state not in ('done', 'cancel'))._sync_textile_qty_produced()
+        return target
+
+    def _link_reprocess_alert(self, br):
+        """Bookkeeping tras crear un registro de partida:
+        1) consume el reproceso PENDIENTE de esa (partida, operación) —así la
+           partida deja de reaparecer en el buscador del Taller;
+        2) si el registro es un reproceso (reprocess_number > 1), lo enlaza a la
+           última alerta de calidad de esa partida+operación (trazabilidad)."""
+        if not br or not br.batch_id:
+            return
+        if self.mrwo_id and self.mrwo_id in br.batch_id.pending_reprocess_mrwo_ids:
+            br.batch_id.pending_reprocess_mrwo_ids = [(3, self.mrwo_id.id)]
+        if br.reprocess_number <= 1:
+            return
+        alert = self.env['quality.alert'].search([
+            ('batch_id', '=', br.batch_id.id),
+            ('workorder_id.mrwo_id', '=', self.mrwo_id.id),
+            ('tipo', '=', 'reproceso'),
+        ], order='id desc', limit=1)
+        if alert:
+            br.quality_alert_id = alert.id
+
     def action_create_registry_record(self, batch_id_or_payload, employee_id=False, equipment_id=False):
         self.ensure_one()
         payload = batch_id_or_payload if isinstance(batch_id_or_payload, dict) else {
@@ -614,6 +684,7 @@ class MrpWorkorder(models.Model):
         }
 
         br = self.env['batch.registry'].create(vals)
+        self._link_reprocess_alert(br)
         if br.batch_id:
             # Se anexa la partida a la OT actual, a las OTs de origen de los
             # rollos y a la OT de esta misma operación en cada otra OF
@@ -667,6 +738,7 @@ class MrpWorkorder(models.Model):
             'registry_date': fields.Datetime.now(),
             'state': 'done',
         })
+        self._link_reprocess_alert(br)
         related_workorders = (self | sibling_workorders | batch.wo_roll_ids.mapped('workorder_id')).filtered(lambda wo: wo.id)
         related_workorders.write({'batch_ids': [(4, batch.id)]})
         related_workorders._sync_textile_qty_produced()

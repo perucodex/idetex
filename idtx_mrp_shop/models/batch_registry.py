@@ -135,6 +135,53 @@ class BatchRegistry(models.Model):
         ('rejected', 'Rejected'),
     ], string='state', default='draft', tracking=True)
 
+    # --- Control de reprocesos ---
+    # Ordinal de esta ejecución de la operación (workorder_id.mrwo_id) sobre la
+    # partida: 1 = primera vez; 2, 3... = reprocesos. No almacenado (el ordinal
+    # depende de registros hermanos del mismo grupo y quedaría obsoleto ante
+    # borrados o edición de fecha; el volumen por partida+operación es mínimo).
+    reprocess_number = fields.Integer(
+        'N° de Proceso', compute='_compute_reprocess_number',
+        help='Cuántas veces se realizó esta operación sobre la partida '
+             '(1 = primera vez; 2, 3... = reprocesos).')
+    is_reprocess = fields.Boolean(
+        'Es Reproceso', compute='_compute_reprocess_number')
+    quality_alert_id = fields.Many2one(
+        'quality.alert', string='Alerta de Calidad', index=True,
+        help='Alerta de calidad que originó este reproceso (causa raíz y '
+             'descripción del por qué se rehízo la operación).')
+
+    # El ordinal se cuenta por OT (workorder_id), NO por operación (mrwo_id):
+    # una ruta puede tener la misma operación dos veces (p. ej. dos "CONTROL
+    # PESO") y cada OT es un paso distinto — pasar por la 2ª no es un reproceso.
+    # Un reproceso = re-registrar la MISMA OT (varios registros del mismo
+    # workorder_id).
+    @api.depends('batch_id', 'workorder_id', 'registry_date', 'state')
+    def _compute_reprocess_number(self):
+        self.reprocess_number = 0
+        self.is_reprocess = False
+        groups = {}
+        for rec in self:
+            key = (rec.batch_id.id, rec.workorder_id.id)
+            if not (key[0] and key[1]):
+                rec.reprocess_number = 1 if rec.batch_id else 0
+                continue
+            groups.setdefault(key, self.browse())
+            groups[key] |= rec
+        sentinel = fields.Datetime.to_datetime('9999-12-31 00:00:00')
+        for (batch_id, workorder_id), recs in groups.items():
+            siblings = self.search([
+                ('batch_id', '=', batch_id),
+                ('workorder_id', '=', workorder_id),
+            ])
+            ordered = siblings.sorted(
+                key=lambda r: (r.registry_date or sentinel, r.id))
+            pos = {r.id: i + 1 for i, r in enumerate(ordered)}
+            for rec in recs:
+                n = pos.get(rec.id, len(ordered) + 1)
+                rec.reprocess_number = n
+                rec.is_reprocess = n > 1
+
     @api.depends('tipo_proceso')
     def _compute_imagen_proceso(self):
         for rec in self:

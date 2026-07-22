@@ -14,7 +14,8 @@ class MrpProduction(models.Model):
         ('service', 'Service'),
         ('pilot', 'Pilot'),
         ('sample', 'Sample'),
-    ], string='Production Type')
+        ('reposicion', 'Reposición'),
+    ], string='Production Type', required=True, default='sale')
 
     @api.depends('bom_id', 'product_id', 'qty_producing', 'product_uom_id', 'never_product_template_attribute_value_ids')
     def _compute_workorder_ids(self):

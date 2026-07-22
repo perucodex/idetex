@@ -6,6 +6,11 @@
         <field name="model">mrp.workorder.batch</field>
         <field name="inherit_id" ref="idtx_mrp.mrp_workorder_batch_form"/>
         <field name="arch" type="xml">
+            <!-- Ocultar "Regresar a Borrador" cuando la partida ya tiene al
+                 menos un registro de operación (batch.registry). -->
+            <button name="action_back_to_draft" position="attributes">
+                <attribute name="invisible">state != 'batch' or registry_ids</attribute>
+            </button>
             <sheet position="before">
                 <div class="alert alert-warning d-flex justify-content-between align-items-center" role="alert" invisible="not recipe_lot_warning">
                     <field name="recipe_lot_warning" readonly="1" class="w-auto mb-0"/>
@@ -13,10 +18,14 @@
             </sheet>
             <button name="action_open_split_wizard" position="after">
                 <button name="action_print_dye_recipe" string="Imprimir Receta de Tinte" type="object" invisible="state == 'draft'"/>
+                <button name="%(idtx_mrp_shop.action_report_batch_partida)d" string="Imprimir Partida" type="action"/>
             </button>
             <div name="button_box" position="inside">
                 <button name="action_show_dye_recipe" type="object" class="oe_stat_button" icon="fa-flask" invisible="state == 'draft'">
                     <span class="o_stat_text">Mostrar Receta</span>
+                </button>
+                <button name="action_view_quality_alerts" type="object" class="oe_stat_button" icon="fa-exclamation-triangle" invisible="quality_alert_count == 0">
+                    <field name="quality_alert_count" widget="statinfo" string="Alertas"/>
                 </button>
             </div>
             <field name="mrwo_id" position="after">
@@ -28,11 +37,23 @@
                     <field name="color_name" readonly="1"/>
                     <field name="color_recipe_id" readonly="1"/>
                     <field name="recipe_lot_id" readonly="1"/>
+                    <field name="reprocess_count" readonly="1"/>
                 </group>
             </group>
             <notebook position="inside">
                 <page name="registry_page" string="Dyeing Registry">
                     <field name="registry_ids" readonly="1"/>
+                </page>
+                <page name="quality_alert_page" string="Alertas de Calidad" invisible="quality_alert_count == 0">
+                    <field name="quality_alert_ids" readonly="1">
+                        <list>
+                            <field name="name"/>
+                            <field name="create_date"/>
+                            <field name="workorder_id" string="Operación"/>
+                            <field name="reason_id" string="Causa Raíz"/>
+                            <field name="stage_id"/>
+                        </list>
+                    </field>
                 </page>
             </notebook>
         </field>

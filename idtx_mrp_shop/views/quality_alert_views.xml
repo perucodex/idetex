@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="quality_alert_view_form_reprocess" model="ir.ui.view">
+        <field name="name">quality.alert.form.reprocess.partida</field>
+        <field name="model">quality.alert</field>
+        <field name="inherit_id" ref="quality_control.quality_alert_view_form"/>
+        <field name="arch" type="xml">
+            <field name="reason_id" position="attributes">
+                <attribute name="required">1</attribute>
+            </field>
+            <field name="reason_id" position="after">
+                <field name="available_batch_ids" invisible="1" widget="many2many_tags"/>
+                <field name="workorder_id" string="Operación (OT)" readonly="1" invisible="not workorder_id"/>
+                <field name="tipo" invisible="not available_batch_ids"/>
+                <field name="batch_id"
+                       invisible="not available_batch_ids"
+                       domain="[('id', 'in', available_batch_ids)]"/>
+                <field name="batch_qty" invisible="tipo != 'reposicion' or not available_batch_ids"/>
+                <field name="production_qty" invisible="tipo != 'reposicion' or not available_batch_ids"/>
+                <field name="reposition_qty"
+                       invisible="tipo != 'reposicion' or not available_batch_ids"
+                       required="tipo == 'reposicion' and available_batch_ids and batch_id"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Causas raíz (quality.reason) para las alertas de calidad de reproceso.
+         noupdate="1": se crean una vez; el usuario puede renombrarlas sin que
+         un upgrade las pise. "Otros" ya viene sembrado por el módulo quality. -->
+    <data noupdate="1">
+        <record id="quality_reason_tono" model="quality.reason">
+            <field name="name">Tono</field>
+        </record>
+        <record id="quality_reason_tacto" model="quality.reason">
+            <field name="name">Tacto</field>
+        </record>
+        <record id="quality_reason_apariencia" model="quality.reason">
+            <field name="name">Apariencia</field>
+        </record>
+        <record id="quality_reason_quebradura" model="quality.reason">
+            <field name="name">Quebradura</field>
+        </record>
+    </data>
+</odoo>
