@@ -109,7 +109,7 @@
                     <div class="pad__card">
                         <div class="pad__card-hd">
                             <i class="fa fa-tachometer pad__ic--green"/>
-                            % Cumplimiento
+                            % Confirmados
                         </div>
                         <div class="pad__chart" style="height:280px">
                             <div t-ref="c2"/>
@@ -119,7 +119,7 @@
                     <div class="pad__card">
                         <div class="pad__card-hd">
                             <i class="fa fa-area-chart pad__ic--blue"/>
-                            Tendencia Mensual (últimos 6 meses)
+                            Tendencia Mensual · Cotizaciones vs Confirmados
                         </div>
                         <div class="pad__chart" style="height:280px">
                             <div t-ref="c3"/>
@@ -146,9 +146,8 @@
 
                     <div class="pad__card">
                         <div class="pad__card-hd">
-                            <i class="fa fa-exclamation-triangle pad__ic--red"/>
-                            Pedidos Más Retrasados
-                            <span class="pad__pill pad__pill--warn">Ref. 30d</span>
+                            <i class="fa fa-trophy pad__ic--amber"/>
+                            Pedidos más Grandes (kg)
                         </div>
                         <div class="pad__chart" style="height:320px">
                             <div t-ref="c5"/>
@@ -160,13 +159,13 @@
 
             <!-- ── Sección 3: Producción por Área y Proceso ─────────────── -->
             <section class="pad__section">
-                <h2 class="pad__section-title">Producción por Área y Proceso</h2>
+                <h2 class="pad__section-title">Producción por Producto y Color</h2>
                 <div class="pad__grid pad__grid--1-1">
 
                     <div class="pad__card">
                         <div class="pad__card-hd">
-                            <i class="fa fa-building pad__ic--amber"/>
-                            Partidas por Área (kg)
+                            <i class="fa fa-cubes pad__ic--amber"/>
+                            Kg por Producto
                         </div>
                         <div class="pad__chart" style="height:280px">
                             <div t-ref="c6"/>
@@ -175,8 +174,8 @@
 
                     <div class="pad__card">
                         <div class="pad__card-hd">
-                            <i class="fa fa-cogs pad__ic--indigo"/>
-                            Partidas por Proceso
+                            <i class="fa fa-tint pad__ic--indigo"/>
+                            Kg por Color
                         </div>
                         <div class="pad__chart" style="height:340px">
                             <div t-ref="c7"/>
@@ -228,12 +227,12 @@
 
             <!-- ── Sección 5: Cronograma Semanal ────────────────────────── -->
             <section class="pad__section">
-                <h2 class="pad__section-title">Cronograma de Vencimientos</h2>
+                <h2 class="pad__section-title">Kilos por Estado</h2>
                 <div class="pad__grid pad__grid--full">
                     <div class="pad__card">
                         <div class="pad__card-hd">
-                            <i class="fa fa-calendar pad__ic--indigo"/>
-                            Pedidos que Vencen por Semana (próximas 4 semanas)
+                            <i class="fa fa-balance-scale pad__ic--indigo"/>
+                            Kilos por Estado (confirmado · cotizado · cancelado)
                         </div>
                         <div class="pad__chart" style="height:210px">
                             <div t-ref="c8"/>
@@ -244,42 +243,38 @@
 
             <!-- ── Sección 6: Tabla próximos a vencer ───────────────────── -->
             <section class="pad__section">
-                <h2 class="pad__section-title">Próximos a Vencer (14 días)</h2>
+                <h2 class="pad__section-title">Detalle de Pedidos</h2>
                 <div class="pad__card">
                     <div class="pad__card-hd">
-                        <i class="fa fa-calendar-times-o pad__ic--amber"/>
-                        Pedidos Urgentes
+                        <i class="fa fa-list-alt pad__ic--indigo"/>
+                        Pedidos de venta y cotizaciones
                         <span class="pad__pill">
-                            <t t-esc="state.data.pedidos.proximos_vencer.length"/> pedidos
+                            <t t-esc="state.data.pedidos.detalle.length"/> pedidos
                         </span>
                     </div>
 
-                    <t t-if="state.data.pedidos.proximos_vencer.length">
+                    <t t-if="state.data.pedidos.detalle.length">
                         <div class="pad__table-wrap">
                             <table class="pad__table">
                                 <thead>
                                     <tr>
                                         <th>N° Pedido</th>
                                         <th>Cliente</th>
-                                        <th style="text-align:center">Días restantes</th>
+                                        <th style="text-align:right">Kg</th>
+                                        <th style="text-align:right">Monto S/</th>
                                         <th style="text-align:center">Estado</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <t t-foreach="state.data.pedidos.proximos_vencer"
-                                       t-as="p" t-key="p.num">
-                                        <tr t-attf-class="#{p.days_left &lt;= 2 ? 'tr--urgent' : p.days_left &lt;= 7 ? 'tr--warn' : ''}">
+                                    <t t-foreach="state.data.pedidos.detalle" t-as="p" t-key="p.num">
+                                        <tr>
                                             <td><span class="pad__num" t-esc="p.num"/></td>
                                             <td t-esc="p.customer"/>
+                                            <td style="text-align:right" t-esc="p.kg.toLocaleString('es-PE') + ' kg'"/>
+                                            <td style="text-align:right" t-esc="'S/ ' + p.monto.toLocaleString('es-PE')"/>
                                             <td style="text-align:center">
-                                                <span t-attf-class="pad__chip #{p.days_left &lt;= 2 ? 'chip--red' : p.days_left &lt;= 7 ? 'chip--amber' : 'chip--green'}">
-                                                    <t t-esc="p.days_left"/> días
-                                                </span>
-                                            </td>
-                                            <td style="text-align:center">
-                                                <span t-attf-class="pad__chip #{p.state === 'de' ? 'chip--red' : 'chip--green'}">
-                                                    <t t-if="p.state === 'on'">A Tiempo</t>
-                                                    <t t-else="">Demorado</t>
+                                                <span t-attf-class="pad__chip #{p.state === 'sale' ? 'chip--green' : p.state === 'cancel' ? 'chip--red' : 'chip--amber'}">
+                                                    <t t-esc="p.estado"/>
                                                 </span>
                                             </td>
                                         </tr>
@@ -290,8 +285,8 @@
                     </t>
                     <t t-else="">
                         <div class="pad__empty">
-                            <i class="fa fa-check-circle-o fa-lg"/>
-                            <span>Sin pedidos próximos a vencer en los próximos 14 días.</span>
+                            <i class="fa fa-inbox fa-lg"/>
+                            <span>No hay pedidos de venta registrados.</span>
                         </div>
                     </t>
                 </div>

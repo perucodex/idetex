@@ -312,178 +312,157 @@ class PlanAlphaDashboard(http.Controller):
         methods=["POST"],
     )
     def dashboard_data(self):
-        # === VACIADO TEMPORAL =================================================
-        # El dashboard se alimentará desde otra fuente de datos. Mientras tanto
-        # devolvemos un payload vacío bien formado (misma estructura que espera
-        # el front) para que la vista cargue sin error y muestre todo en cero.
-        # Para reconectar: borra este bloque hasta el `return` (inclusive).
-        return {
-            "pedidos": {
-                "total_activos": 0, "on_time": 0, "delayed": 0, "done": 0, "settled": 0,
-                "kilos_activos": 0.0, "kilos_done": 0.0, "proximos_7d": 0,
-                "estado_dist": [], "top_clientes": [], "top_delayed": [],
-                "proximos_vencer": [], "tendencia": [], "pct_on_time": 0.0,
-                "avg_delay": 0.0, "proximas_semanas": [],
-            },
-            "partidas": {"total_activas": 0, "por_area": [], "por_proceso": []},
-            "maquinas": {"top_maquinas": [], "tendencia_maq": [], "disponible": False},
-        }
+        # ── Fuente: PEDIDOS DE VENTA (sale.order) ─────────────────────────────
+        # Cotizaciones = draft/sent · Pedidos de venta = sale · Cancelados = cancel
+        # Kilos = suma de product_uom_qty (líneas en kg) · Monto = amount_total.
         env = request.env
-        today = datetime.date.today()
-        in_7_days = today + datetime.timedelta(days=7)
-        in_14_days = today + datetime.timedelta(days=14)
+        SO = env["sale.order"].sudo()
+        ESTADO_LBL = {"draft": "Borrador", "sent": "Enviada",
+                      "sale": "Confirmado", "cancel": "Cancelado"}
 
-        Pedido = env["control.pedido"].sudo()
-        Line = env["control.pedido.line"].sudo()
+        def _kg(orders):
+            return round(sum(l.product_uom_qty for o in orders for l in o.order_line
+                             if not l.display_type), 1)
 
-        # ── Pedidos activos ───────────────────────────────────────────────────
-        activos = Pedido.search([("state", "in", ["on", "de"])])
-        on_time_recs  = activos.filtered(lambda p: p.state == "on")
-        delayed_recs  = activos.filtered(lambda p: p.state == "de")
-        done_recs     = Pedido.search([("state", "=", "do")])
-        settled_count = Pedido.search_count([("state", "=", "se")])
+        def _kg_pend(orders):
+            return round(sum((l.product_uom_qty - l.qty_delivered)
+                             for o in orders for l in o.order_line
+                             if not l.display_type), 1)
 
-        kilos_activos = round(sum(activos.mapped("total_weight")), 1)
-        kilos_done    = round(sum(done_recs.mapped("total_weight")), 1)
+        confirmados  = SO.search([("state", "=", "sale")])
+        cotizaciones = SO.search([("state", "in", ["draft", "sent"])])
+        borrador     = cotizaciones.filtered(lambda o: o.state == "draft")
+        enviadas     = cotizaciones.filtered(lambda o: o.state == "sent")
+        cancelados   = SO.search([("state", "=", "cancel")])
+        todos        = SO.search([])
+        vigentes     = confirmados | cotizaciones          # todo menos cancelados
 
-        proximos_7d_recs = activos.filtered(
-            lambda p: p.wish_date and today <= p.wish_date <= in_7_days
-        )
-        proximos_14d_recs = activos.filtered(
-            lambda p: p.wish_date and today <= p.wish_date <= in_14_days
-        ).sorted(key=lambda p: p.wish_date)
+        kilos_produccion = _kg(confirmados)
+        kilos_cotizado   = _kg(cotizaciones)
+        kilos_entregado  = round(sum(l.qty_delivered for o in confirmados
+                                     for l in o.order_line if not l.display_type), 1)
+        kilos_pendientes = _kg_pend(confirmados)
+        monto_produccion = round(sum(confirmados.mapped("amount_total")), 2)
+        monto_cotizado   = round(sum(cotizaciones.mapped("amount_total")), 2)
 
-        # ── Estados (distribución) ────────────────────────────────────────────
+        no_cancel = len(confirmados) + len(cotizaciones)
+        pct_confirmados = round(len(confirmados) / no_cancel * 100, 1) if no_cancel else 0.0
+
+        # ── Distribución por estado (donut) ───────────────────────────────────
         estado_dist = [
-            {"estado": "A Tiempo",   "key": "on", "count": len(on_time_recs),  "color": "#22c55e"},
-            {"estado": "Demorados",  "key": "de", "count": len(delayed_recs),  "color": "#ef4444"},
-            {"estado": "Terminados", "key": "do", "count": len(done_recs),     "color": "#3b82f6"},
-            {"estado": "Liquidados", "key": "se", "count": settled_count,      "color": "#94a3b8"},
+            {"estado": "Confirmados", "count": len(confirmados), "color": "#22c55e"},
+            {"estado": "Borrador",    "count": len(borrador),    "color": "#f59e0b"},
+            {"estado": "Enviadas",    "count": len(enviadas),    "color": "#3b82f6"},
+            {"estado": "Cancelados",  "count": len(cancelados),  "color": "#94a3b8"},
         ]
 
-        # ── Top Clientes por kg ───────────────────────────────────────────────
-        customer_map = defaultdict(lambda: {"kilos": 0.0, "count": 0})
-        for p in activos:
-            k = (p.customer or "Sin Cliente").strip()
-            customer_map[k]["kilos"] += p.total_weight or 0.0
-            customer_map[k]["count"] += 1
+        # ── Kg por estado (barras) ────────────────────────────────────────────
+        estado_kg = [
+            {"label": "Confirmado", "kg": kilos_produccion},
+            {"label": "Cotizado",   "kg": kilos_cotizado},
+            {"label": "Cancelado",  "kg": _kg(cancelados)},
+        ]
 
+        # ── Top clientes por kg (vigentes) ────────────────────────────────────
+        cli = defaultdict(lambda: {"kilos": 0.0, "count": 0})
+        for o in vigentes:
+            k = (o.partner_id.name or "Sin Cliente").strip()
+            cli[k]["kilos"] += _kg(o)
+            cli[k]["count"] += 1
         top_clientes = sorted(
             [{"customer": k, "kilos": round(v["kilos"], 1), "count": v["count"]}
-             for k, v in customer_map.items()],
-            key=lambda x: x["kilos"], reverse=True
-        )[:12]
+             for k, v in cli.items()],
+            key=lambda x: x["kilos"], reverse=True)[:10]
 
-        # ── Top Retrasados ────────────────────────────────────────────────────
-        top_delayed = sorted(
-            [{"num": p.numordped or "", "customer": (p.customer or "").strip(),
-              "days": p.num_days or 0, "area": (p.area or "").strip()}
-             for p in delayed_recs],
-            key=lambda x: x["days"], reverse=True
-        )[:10]
-
-        # ── Próximos a vencer (14d) ───────────────────────────────────────────
-        proximos_vencer = [
-            {"num": p.numordped or "",
-             "customer": (p.customer or "").strip()[:25],
-             "days_left": (p.wish_date - today).days if p.wish_date else 0,
-             "state": p.state}
-            for p in proximos_14d_recs
-        ][:12]
-
-        # ── Partidas ──────────────────────────────────────────────────────────
-        activas_lines = Line.search([("state", "=", "active")])
-        if not activas_lines:
-            activas_lines = Line.search([])  # fallback: mostrar todas
-
-        area_map = defaultdict(lambda: {"kilos": 0.0, "count": 0})
-        proceso_map = defaultdict(lambda: {"kilos": 0.0, "count": 0})
-        for l in activas_lines:
-            a = (l.area or "SIN ÁREA").strip()
-            area_map[a]["kilos"] += l.kilograms or 0.0
-            area_map[a]["count"] += 1
-            proc = (l.process or "Sin Proceso").strip() or "Sin Proceso"
-            proceso_map[proc]["kilos"] += l.kilograms or 0.0
-            proceso_map[proc]["count"] += 1
-
-        por_area = sorted(
-            [{"area": k, "kilos": round(v["kilos"], 1), "count": v["count"]}
-             for k, v in area_map.items()],
-            key=lambda x: x["kilos"], reverse=True
-        )[:10]
-
-        por_proceso = sorted(
-            [{"proceso": k, "kilos": round(v["kilos"], 1), "count": v["count"]}
-             for k, v in proceso_map.items()],
-            key=lambda x: x["count"], reverse=True
-        )[:14]
-
-        # ── Próximas 4 semanas ───────────────────────────────────────────────
-        proximas_semanas = []
-        for i in range(4):
-            w_start = today + datetime.timedelta(days=i * 7)
-            w_end   = today + datetime.timedelta(days=(i + 1) * 7)
-            label   = "Esta semana" if i == 0 else f"Semana {i + 1}"
-            count   = len(activos.filtered(
-                lambda p, s=w_start, e=w_end: p.wish_date and s <= p.wish_date < e
-            ))
-            proximas_semanas.append({"label": label, "count": count})
-
-        pct_on_time = round(len(on_time_recs) / max(len(activos), 1) * 100, 1) if activos else 0.0
-        avg_delay   = round(
-            sum(r.num_days or 0 for r in delayed_recs) / max(len(delayed_recs), 1), 1
-        ) if delayed_recs else 0.0
+        # ── Top pedidos por kg ────────────────────────────────────────────────
+        top_pedidos = sorted(
+            [{"num": o.name or "", "customer": (o.partner_id.name or "").strip()[:26],
+              "kg": _kg(o), "state": o.state, "estado": ESTADO_LBL.get(o.state, o.state)}
+             for o in vigentes],
+            key=lambda x: x["kg"], reverse=True)[:8]
 
         # ── Tendencia mensual (últimos 6 meses) ───────────────────────────────
-        six_months_ago = today - datetime.timedelta(days=180)
-        recientes = Pedido.search([("fecha", ">=", six_months_ago)])
-
-        monthly = defaultdict(lambda: {"on": 0, "de": 0, "do": 0})
-        for p in recientes:
-            if p.fecha:
-                key = p.fecha.strftime("%b %Y")
-                monthly[key][p.state] = monthly[key].get(p.state, 0) + 1
-
-        # Ordenar meses cronológicamente
+        today   = datetime.date.today()
+        six_ago = today - datetime.timedelta(days=180)
+        recientes = SO.search([("date_order", ">=", six_ago)])
+        monthly = defaultdict(lambda: {"cotizaciones": 0, "confirmados": 0})
+        for o in recientes:
+            if not o.date_order:
+                continue
+            key = o.date_order.strftime("%b %Y")
+            if o.state == "sale":
+                monthly[key]["confirmados"] += 1
+            elif o.state in ("draft", "sent"):
+                monthly[key]["cotizaciones"] += 1
         months_order = []
-        d = datetime.date(six_months_ago.year, six_months_ago.month, 1)
+        d = datetime.date(six_ago.year, six_ago.month, 1)
         while d <= today:
             months_order.append(d.strftime("%b %Y"))
-            if d.month == 12:
-                d = d.replace(year=d.year + 1, month=1)
-            else:
-                d = d.replace(month=d.month + 1)
-
+            d = d.replace(year=d.year + 1, month=1) if d.month == 12 else d.replace(month=d.month + 1)
         tendencia = [
-            {"mes": m, "on": monthly[m]["on"], "de": monthly[m]["de"], "do": monthly[m]["do"]}
+            {"mes": m, "cotizaciones": monthly[m]["cotizaciones"],
+             "confirmados": monthly[m]["confirmados"],
+             "total": monthly[m]["cotizaciones"] + monthly[m]["confirmados"]}
             for m in months_order
         ]
+
+        # ── Kg por producto y por color (líneas) ──────────────────────────────
+        prod_map  = defaultdict(float)
+        color_map = defaultdict(lambda: {"kg": 0.0, "count": 0})
+        for o in vigentes:
+            for l in o.order_line:
+                if l.display_type:
+                    continue
+                qty = l.product_uom_qty or 0.0
+                pname = (l.product_id.display_name or "—").strip()
+                prod_map[pname] += qty
+                cname = (l.color_name or "Sin color").strip() or "Sin color"
+                color_map[cname]["kg"] += qty
+                color_map[cname]["count"] += 1
+        por_producto = sorted(
+            [{"producto": k[:28], "kg": round(v, 1)} for k, v in prod_map.items()],
+            key=lambda x: x["kg"], reverse=True)[:10]
+        por_color = sorted(
+            [{"color": k[:24], "kg": round(v["kg"], 1), "count": v["count"]}
+             for k, v in color_map.items()],
+            key=lambda x: x["kg"], reverse=True)[:10]
+
+        # ── Detalle de pedidos (tabla) ────────────────────────────────────────
+        detalle = sorted(
+            [{"num": o.name or "", "customer": (o.partner_id.name or "").strip()[:30],
+              "kg": _kg(o), "monto": round(o.amount_total, 2), "state": o.state,
+              "estado": ESTADO_LBL.get(o.state, o.state),
+              "fecha": str(o.date_order)[:10] if o.date_order else ""}
+             for o in vigentes],
+            key=lambda x: x["kg"], reverse=True)[:15]
 
         maquinas = self._get_maquinas_data()
 
         return {
             "pedidos": {
-                "total_activos":       len(activos),
-                "on_time":             len(on_time_recs),
-                "delayed":             len(delayed_recs),
-                "done":                len(done_recs),
-                "settled":             settled_count,
-                "kilos_activos":       kilos_activos,
-                "kilos_done":          kilos_done,
-                "proximos_7d":         len(proximos_7d_recs),
-                "estado_dist":         estado_dist,
-                "top_clientes":        top_clientes,
-                "top_delayed":         top_delayed,
-                "proximos_vencer":     proximos_vencer,
-                "tendencia":           tendencia,
-                "pct_on_time":         pct_on_time,
-                "avg_delay":           avg_delay,
-                "proximas_semanas":    proximas_semanas,
+                "total":            len(todos),
+                "confirmados":      len(confirmados),
+                "cotizaciones":     len(cotizaciones),
+                "borrador":         len(borrador),
+                "enviadas":         len(enviadas),
+                "cancelados":       len(cancelados),
+                "kilos_produccion": kilos_produccion,
+                "kilos_cotizado":   kilos_cotizado,
+                "kilos_entregado":  kilos_entregado,
+                "kilos_pendientes": kilos_pendientes,
+                "monto_produccion": monto_produccion,
+                "monto_cotizado":   monto_cotizado,
+                "pct_confirmados":  pct_confirmados,
+                "estado_dist":      estado_dist,
+                "estado_kg":        estado_kg,
+                "top_clientes":     top_clientes,
+                "top_pedidos":      top_pedidos,
+                "tendencia":        tendencia,
+                "detalle":          detalle,
             },
-            "partidas": {
-                "total_activas": len(activas_lines),
-                "por_area":      por_area,
-                "por_proceso":   por_proceso,
+            "productos": {
+                "por_producto": por_producto,
+                "por_color":    por_color,
             },
             "maquinas": maquinas,
         }

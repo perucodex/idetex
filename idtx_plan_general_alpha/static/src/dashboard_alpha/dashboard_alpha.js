@@ -159,7 +159,7 @@ export class DashboardAlpha extends Component {
     _chartDonut(d, dk) {
         const el = this.r1.el; if (!el) return;
         const dist  = d.pedidos.estado_dist;
-        const total = d.pedidos.total_activos + d.pedidos.done + d.pedidos.settled;
+        const total = d.pedidos.total;
         const tC = dk ? "#94a3b8" : "#64748b";
         const vC = dk ? "#f1f5f9" : "#0f172a";
         const sC = dk ? "#1e293b" : "#ffffff";
@@ -168,9 +168,7 @@ export class DashboardAlpha extends Component {
             chart:  { ...base(dk).chart, type: "donut", height: 280 },
             series: dist.map(e => e.count),
             labels: dist.map(e => e.estado),
-            colors: dk
-                ? ["#34d399", "#f87171", "#818cf8", "#94a3b8"]
-                : [C.green, C.red, C.blue, C.slate],
+            colors: dist.map(e => e.color),
             plotOptions: { pie: { donut: {
                 size: "72%",
                 labels: { show: true,
@@ -191,7 +189,7 @@ export class DashboardAlpha extends Component {
     // ── 2 · Gauge speedometer (semi-circle) ───────────────────────────────────
     _chartGauge(d, dk) {
         const el = this.r2.el; if (!el) return;
-        const pctOn  = d.pedidos.pct_on_time || 0;
+        const pctOn  = d.pedidos.pct_confirmados || 0;
         const color  = pctOn >= 80 ? C.green : pctOn >= 60 ? C.amber : C.red;
         const colorG = pctOn >= 80 ? "#86efac" : pctOn >= 60 ? "#fcd34d" : "#fca5a5";
         const trackC = dk ? "#334155" : "#f1f5f9";
@@ -214,7 +212,7 @@ export class DashboardAlpha extends Component {
                         name: {
                             show: true, offsetY: -10,
                             fontSize: "11px", fontFamily: FONT, fontWeight: 600, color: tC,
-                            formatter: () => "Cumplimiento",
+                            formatter: () => "Confirmados",
                         },
                         value: {
                             offsetY: 14, fontSize: "30px", fontWeight: 800,
@@ -241,11 +239,11 @@ export class DashboardAlpha extends Component {
             ...base(dk),
             chart: { ...base(dk).chart, type: "line", height: 280 },
             series: [
-                { name: "A Tiempo",   type: "column", data: items.map(t => t.on) },
-                { name: "Demorados",  type: "column", data: items.map(t => t.de) },
-                { name: "Terminados", type: "line",   data: items.map(t => t.do) },
+                { name: "Cotizaciones", type: "column", data: items.map(t => t.cotizaciones) },
+                { name: "Confirmados",  type: "column", data: items.map(t => t.confirmados) },
+                { name: "Total",        type: "line",   data: items.map(t => t.total) },
             ],
-            colors: [C.green, C.red, C.blue],
+            colors: [C.amber, C.green, C.indigo],
             stroke: { width: [0, 0, 2.5], curve: "smooth" },
             fill: { opacity: [0.85, 0.85, 1] },
             markers: { size: [0, 0, 4], strokeColors: dk ? "#1e293b" : "#ffffff", strokeWidth: 2 },
@@ -290,52 +288,40 @@ export class DashboardAlpha extends Component {
         this._charts.clientes = c; c.render();
     }
 
-    // ── 5 · HBar retrasados con línea de referencia 30d ──────────────────────
+    // ── 5 · HBar top pedidos por kg ───────────────────────────────────────────
     _chartRetrasados(d, dk) {
         const el    = this.r5.el; if (!el) return;
-        const items = d.pedidos.top_delayed.slice(0, 8);
+        const items = (d.pedidos.top_pedidos || []).slice(0, 8);
         if (!items.length) return;
-        const lblC   = dk ? "#cbd5e1" : "#374151";
-        const bg     = dk ? "#1e293b" : "#ffffff";
-        const fg     = dk ? "#f1f5f9" : "#0f172a";
-        const colors = items.map(r => r.days > 150 ? C.red : r.days > 80 ? C.amber : C.slate);
-        const maxVal = Math.max(...items.map(r => r.days), 30);
+        const lblC = dk ? "#cbd5e1" : "#374151";
+        const bg   = dk ? "#1e293b" : "#ffffff";
+        const fg   = dk ? "#f1f5f9" : "#0f172a";
+        const stColor = { "Confirmado": C.green, "Enviada": C.blue, "Borrador": C.amber, "Cancelado": C.slate };
+        const colors  = items.map(r => stColor[r.estado] || C.indigo);
         const c = new window.ApexCharts(el, {
             ...base(dk),
             chart: { ...base(dk).chart, type: "bar", height: 320 },
             plotOptions: { bar: { horizontal: true, barHeight: "60%",
                                   borderRadius: 5, borderRadiusApplication: "end",
                                   distributed: true } },
-            series: [{ name: "Días", data: items.map(r => r.days) }],
+            series: [{ name: "Kg", data: items.map(r => r.kg) }],
             xaxis: {
                 categories: items.map(r => (r.num || r.customer).substring(0, 16)),
-                labels: axs(dk), axisBorder: { show: false }, axisTicks: { show: false },
-                max: Math.ceil(maxVal * 1.12),
+                labels: { ...axs(dk), formatter: v => fmtKg(Number(v)) },
+                axisBorder: { show: false }, axisTicks: { show: false },
             },
             yaxis: { labels: { style: { fontSize: "11px", fontFamily: FONT, colors: lblC } } },
             colors,
             legend: { show: false },
-            annotations: {
-                xaxis: [{
-                    x: 30, borderColor: C.amber, strokeDashArray: 5, borderWidth: 2,
-                    label: {
-                        text: "30d", position: "bottom",
-                        style: { background: C.amber, color: "#fff",
-                                 fontSize: "10px", fontFamily: FONT,
-                                 padding: { left: 6, right: 6, top: 2, bottom: 2 } },
-                    },
-                }],
-            },
             dataLabels: { enabled: true, textAnchor: "start",
                           style: { fontSize: "11px", fontFamily: FONT, colors: [lblC], fontWeight: 500 },
-                          formatter: v => v + "d", offsetX: 6 },
+                          formatter: v => fmtKg(v) + " kg", offsetX: 6 },
             tooltip: {
                 custom: ({ dataPointIndex: i }) => {
                     const r = items[i];
                     return `<div style="padding:10px 14px;font-size:12px;font-family:${FONT};background:${bg};color:${fg};border-radius:8px">
                         <strong>${r.num}</strong> · ${r.customer}<br>
-                        <span style="color:${C.red};font-weight:700">${r.days} días de retraso</span>
-                        ${r.area ? ` · <em>${r.area}</em>` : ""}
+                        <span style="font-weight:700">${r.kg.toLocaleString("es-PE")} kg</span> · <em>${r.estado}</em>
                     </div>`;
                 },
             },
@@ -343,18 +329,18 @@ export class DashboardAlpha extends Component {
         this._charts.retrasados = c; c.render();
     }
 
-    // ── 6 · Bar partidas por área ─────────────────────────────────────────────
+    // ── 6 · Bar kg por producto ───────────────────────────────────────────────
     _chartArea(d, dk) {
         const el    = this.r6.el; if (!el) return;
-        const items = d.partidas.por_area.slice(0, 10);
+        const items = (d.productos.por_producto || []).slice(0, 10);
         const c = new window.ApexCharts(el, {
             ...base(dk),
             chart: { ...base(dk).chart, type: "bar", height: 280 },
             plotOptions: { bar: { columnWidth: "56%", borderRadius: 7,
                                   borderRadiusApplication: "end", distributed: true } },
-            series: [{ name: "Kg", data: items.map(a => a.kilos) }],
+            series: [{ name: "Kg", data: items.map(a => a.kg) }],
             xaxis: {
-                categories: items.map(a => a.area.substring(0, 18)),
+                categories: items.map(a => a.producto.substring(0, 18)),
                 labels: { ...axs(dk, "10px"), rotate: -35 },
                 axisBorder: { show: false }, axisTicks: { show: false },
             },
@@ -367,20 +353,20 @@ export class DashboardAlpha extends Component {
         this._charts.area = c; c.render();
     }
 
-    // ── 7 · HBar partidas por proceso (gradiente) ─────────────────────────────
+    // ── 7 · HBar kg por color (gradiente) ─────────────────────────────────────
     _chartProceso(d, dk) {
         const el    = this.r7.el; if (!el) return;
-        const items = d.partidas.por_proceso.slice(0, 10);
+        const items = (d.productos.por_color || []).slice(0, 10);
         const lblC  = dk ? "#cbd5e1" : "#374151";
         const c = new window.ApexCharts(el, {
             ...base(dk),
             chart: { ...base(dk).chart, type: "bar", height: 340 },
             plotOptions: { bar: { horizontal: true, barHeight: "56%",
                                   borderRadius: 5, borderRadiusApplication: "end" } },
-            series: [{ name: "Partidas", data: items.map(p => p.count) }],
+            series: [{ name: "Kg", data: items.map(p => p.kg) }],
             xaxis: {
-                categories: items.map(p => p.proceso.substring(0, 24)),
-                labels: { ...axs(dk), formatter: v => Math.round(Number(v)) },
+                categories: items.map(p => p.color.substring(0, 24)),
+                labels: { ...axs(dk), formatter: v => fmtKg(Number(v)) },
                 axisBorder: { show: false }, axisTicks: { show: false },
             },
             yaxis: { labels: { style: { fontSize: "11px", fontFamily: FONT, colors: lblC }, maxWidth: 190 } },
@@ -394,12 +380,12 @@ export class DashboardAlpha extends Component {
             dataLabels: {
                 enabled: true, textAnchor: "start",
                 style: { fontSize: "11px", fontFamily: FONT, colors: [lblC], fontWeight: 500 },
-                formatter: v => v + " part.", offsetX: 6,
+                formatter: v => fmtKg(v) + " kg", offsetX: 6,
             },
             tooltip: {
                 y: { formatter: (v, { dataPointIndex: i }) => {
                     const p = items[i];
-                    return `${v} partidas · ${fmtKg(p.kilos)} kg`;
+                    return `${fmtKg(v)} kg · ${p.count} pedido(s)`;
                 } },
             },
         });
@@ -409,7 +395,7 @@ export class DashboardAlpha extends Component {
     // ── 8 · Bar semanas próximas ──────────────────────────────────────────────
     _chartSemanas(d, dk) {
         const el    = this.r8.el; if (!el) return;
-        const items = d.pedidos.proximas_semanas || [];
+        const items = d.pedidos.estado_kg || [];
         if (!items.length) return;
         const numC = dk ? "#f1f5f9" : "#0f172a";
         const c = new window.ApexCharts(el, {
@@ -417,20 +403,21 @@ export class DashboardAlpha extends Component {
             chart: { ...base(dk).chart, type: "bar", height: 210 },
             plotOptions: { bar: { columnWidth: "40%", borderRadius: 10,
                                   borderRadiusApplication: "end", distributed: true } },
-            series: [{ name: "Pedidos", data: items.map(s => s.count) }],
+            series: [{ name: "Kg", data: items.map(s => s.kg) }],
             xaxis: {
                 categories: items.map(s => s.label),
                 labels: axs(dk, "12px"), axisBorder: { show: false }, axisTicks: { show: false },
             },
-            yaxis: { labels: axs(dk), min: 0 },
-            colors: [C.indigo, C.cyan, C.amber, C.red].slice(0, items.length),
+            yaxis: { labels: { ...axs(dk), formatter: v => fmtKg(v) }, min: 0 },
+            colors: [C.green, C.amber, C.slate].slice(0, items.length),
             legend: { show: false },
             dataLabels: {
                 enabled: true,
-                style: { fontSize: "14px", fontFamily: FONT, fontWeight: 800, colors: [numC] },
+                style: { fontSize: "13px", fontFamily: FONT, fontWeight: 800, colors: [numC] },
                 offsetY: -8,
+                formatter: v => fmtKg(v) + " kg",
             },
-            tooltip: { y: { formatter: v => v + " pedidos" } },
+            tooltip: { y: { formatter: v => v.toLocaleString("es-PE") + " kg" } },
         });
         this._charts.semanas = c; c.render();
     }
@@ -515,36 +502,28 @@ export class DashboardAlpha extends Component {
     // ── KPIs getter ───────────────────────────────────────────────────────────
     get kpis() {
         const d = this.state.data; if (!d) return [];
-        const { pedidos, partidas } = d;
-        const kgDone = pedidos.kilos_done >= 1000
-            ? (pedidos.kilos_done / 1000).toFixed(1) + "k kg"
-            : Math.round(pedidos.kilos_done) + " kg";
-        const prox14 = (pedidos.proximos_vencer || []).length;
+        const { pedidos } = d;
+        const fmtN   = n => n.toLocaleString("es-PE");
+        const fmtKgC = n => n >= 1000 ? (n / 1000).toFixed(1) + "k kg" : Math.round(n) + " kg";
         return [
-            { lbl: "Pedidos Activos",  raw: pedidos.total_activos, isKg: false,
-              sub: pedidos.settled > 0 ? `${pedidos.settled} liquidados` : "Ninguno liquidado",
-              fmt: n => n.toLocaleString("es-PE"),
-              icon: "fa-clipboard-list", c: "#6366f1", bg: "#eef2ff", bgdk: "#312e81" },
-            { lbl: "A Tiempo",         raw: pedidos.on_time,        isKg: false,
-              sub: `${pedidos.pct_on_time}% cumplimiento`,
-              fmt: n => n.toLocaleString("es-PE"),
-              icon: "fa-check-circle",   c: "#16a34a", bg: "#dcfce7", bgdk: "#14532d" },
-            { lbl: "Demorados",        raw: pedidos.delayed,        isKg: false,
-              sub: pedidos.avg_delay > 0 ? `Prom. ${pedidos.avg_delay}d de retraso` : "",
-              fmt: n => n.toLocaleString("es-PE"),
-              icon: "fa-clock-o",        c: "#ef4444", bg: "#fee2e2", bgdk: "#7f1d1d" },
-            { lbl: "Kg en Producción", raw: pedidos.kilos_activos,  isKg: true,
-              sub: `Terminados: ${kgDone}`,
-              fmt: n => n >= 1000 ? (n / 1000).toFixed(1) + "k kg" : n + " kg",
-              icon: "fa-balance-scale",  c: "#7c3aed", bg: "#f5f3ff", bgdk: "#3b0764" },
-            { lbl: "Partidas Activas", raw: partidas.total_activas, isKg: false,
-              sub: `${partidas.por_area.length} áreas · ${partidas.por_proceso.length} procesos`,
-              fmt: n => n.toLocaleString("es-PE"),
-              icon: "fa-th-list",        c: "#0891b2", bg: "#e0f9fe", bgdk: "#164e63" },
-            { lbl: "Vencen en 7 días", raw: pedidos.proximos_7d,    isKg: false,
-              sub: prox14 > 0 ? `${prox14} en próximos 14 días` : "Sin urgentes en 14d",
-              fmt: n => n.toLocaleString("es-PE"),
-              icon: "fa-calendar-times-o", c: "#d97706", bg: "#fef3c7", bgdk: "#78350f" },
+            { lbl: "Pedidos de Venta", raw: pedidos.confirmados, isKg: false,
+              sub: `${fmtN(Math.round(pedidos.kilos_produccion))} kg confirmados`,
+              fmt: fmtN, icon: "fa-check-circle", c: "#16a34a", bg: "#dcfce7", bgdk: "#14532d" },
+            { lbl: "Cotizaciones", raw: pedidos.cotizaciones, isKg: false,
+              sub: `${pedidos.borrador} borrador · ${pedidos.enviadas} enviadas`,
+              fmt: fmtN, icon: "fa-file-text-o", c: "#6366f1", bg: "#eef2ff", bgdk: "#312e81" },
+            { lbl: "Kg en Producción", raw: pedidos.kilos_produccion, isKg: true,
+              sub: `Cotizado: ${fmtKgC(pedidos.kilos_cotizado)}`,
+              fmt: fmtKgC, icon: "fa-balance-scale", c: "#7c3aed", bg: "#f5f3ff", bgdk: "#3b0764" },
+            { lbl: "Kg Pendientes", raw: pedidos.kilos_pendientes, isKg: true,
+              sub: `Entregado: ${fmtKgC(pedidos.kilos_entregado)}`,
+              fmt: fmtKgC, icon: "fa-hourglass-half", c: "#d97706", bg: "#fef3c7", bgdk: "#78350f" },
+            { lbl: "Monto Producción (S/)", raw: pedidos.monto_produccion, isKg: false,
+              sub: `Cotizado: S/ ${fmtN(Math.round(pedidos.monto_cotizado))}`,
+              fmt: fmtN, icon: "fa-money", c: "#0891b2", bg: "#e0f9fe", bgdk: "#164e63" },
+            { lbl: "Total Pedidos", raw: pedidos.total, isKg: false,
+              sub: `${pedidos.cancelados} cancelados`,
+              fmt: fmtN, icon: "fa-clipboard-list", c: "#ef4444", bg: "#fee2e2", bgdk: "#7f1d1d" },
         ];
     }
 

@@ -21,7 +21,12 @@ Localización peruana para trabajar planillas de todo tipo
     # any module necessary for this one to work correctly
     'depends': [
         'base',
-        'hr_payroll'
+        'hr_payroll',
+        # hr.leave.type model (data/hr_leave_type.xml) comes from hr_holidays;
+        # its work_entry_type_id field comes from hr_work_entry_holidays, which
+        # depends on hr_holidays + hr_work_entry. Depending on the bridge here
+        # guarantees both the model and the field load before this module's data.
+        'hr_work_entry_holidays',
     ],
 
     'post_init_hook': 'post_init_hook',
