@@ -67,25 +67,25 @@ class ControlEstabilidadReviradoEval(models.Model):
     est_l5_largo_done = fields.Boolean(string="5to Lavado Largo Completado", default=False)
     est_l5_done = fields.Boolean(string="5to Lavado Completado", default=False)
 
-    est_ancho_avg = fields.Float(string="% Ancho Promedio", compute="_compute_avgs", store=True)
-    est_largo_avg = fields.Float(string="% Largo Promedio", compute="_compute_avgs", store=True)
+    est_ancho_avg = fields.Float(string="% Ancho Promedio", compute="_compute_avgs", store=True, digits=(16, 1))
+    est_largo_avg = fields.Float(string="% Largo Promedio", compute="_compute_avgs", store=True, digits=(16, 1))
 
-    revirado_m1_result = fields.Float(string="Revirado M1", compute="_compute_revirado", store=True)
-    revirado_m2_result = fields.Float(string="Revirado M2", compute="_compute_revirado", store=True)
-    revirado_promedio = fields.Float(string="Revirado Promedio", compute="_compute_revirado", store=True)
-    tilt_before = fields.Float(string="Inclinacion Antes de Lavar", compute="_compute_tilt", store=True)
-    tilt_after = fields.Float(string="Inclinacion Despues de Lavar", compute="_compute_tilt", store=True)
-    tilt_before_m1 = fields.Float(string="Inclinacion Antes de Lavar M1", compute="_compute_tilt", store=True)
-    tilt_before_m2 = fields.Float(string="Inclinacion Antes de Lavar M2", compute="_compute_tilt", store=True)
-    tilt_after_m1 = fields.Float(string="Inclinacion Despues de Lavar M1", compute="_compute_tilt", store=True)
-    tilt_after_m2 = fields.Float(string="Inclinacion Despues de Lavar M2", compute="_compute_tilt", store=True)
+    revirado_m1_result = fields.Float(string="Revirado M1", compute="_compute_revirado", store=True, digits=(16, 1))
+    revirado_m2_result = fields.Float(string="Revirado M2", compute="_compute_revirado", store=True, digits=(16, 1))
+    revirado_promedio = fields.Float(string="Revirado Promedio", compute="_compute_revirado", store=True, digits=(16, 1))
+    tilt_before = fields.Float(string="Inclinacion Antes de Lavar", compute="_compute_tilt", store=True, digits=(16, 1))
+    tilt_after = fields.Float(string="Inclinacion Despues de Lavar", compute="_compute_tilt", store=True, digits=(16, 1))
+    tilt_before_m1 = fields.Float(string="Inclinacion Antes de Lavar M1", compute="_compute_tilt", store=True, digits=(16, 1))
+    tilt_before_m2 = fields.Float(string="Inclinacion Antes de Lavar M2", compute="_compute_tilt", store=True, digits=(16, 1))
+    tilt_after_m1 = fields.Float(string="Inclinacion Despues de Lavar M1", compute="_compute_tilt", store=True, digits=(16, 1))
+    tilt_after_m2 = fields.Float(string="Inclinacion Despues de Lavar M2", compute="_compute_tilt", store=True, digits=(16, 1))
     tilt_before_dir_m1 = fields.Selection([("z", "Z"), ("s", "S")], string="Sentido Antes M1", compute="_compute_tilt", store=True)
     tilt_before_dir_m2 = fields.Selection([("z", "Z"), ("s", "S")], string="Sentido Antes M2", compute="_compute_tilt", store=True)
     tilt_after_dir_m1 = fields.Selection([("z", "Z"), ("s", "S")], string="Sentido Despues M1", compute="_compute_tilt", store=True)
     tilt_after_dir_m2 = fields.Selection([("z", "Z"), ("s", "S")], string="Sentido Despues M2", compute="_compute_tilt", store=True)
 
-    densidad_promedio = fields.Float(string="Densidad Promedio", compute="_compute_densidad_ancho", store=True)
-    ancho_promedio = fields.Float(string="Ancho Promedio", compute="_compute_densidad_ancho", store=True)
+    densidad_promedio = fields.Float(string="Densidad Promedio", compute="_compute_densidad_ancho", store=True, digits=(16, 1))
+    ancho_promedio = fields.Float(string="Ancho Promedio", compute="_compute_densidad_ancho", store=True, digits=(16, 1))
 
     bool_est_ancho_avg = fields.Boolean()
     bool_est_largo_avg = fields.Boolean()
@@ -94,6 +94,20 @@ class ControlEstabilidadReviradoEval(models.Model):
     bool_densidad_promedio = fields.Boolean()
     bool_ancho_promedio = fields.Boolean()
     criteria_force_pass = fields.Boolean(string="Forzar Pass por Criterio", default=False)
+    repeat_kind = fields.Selection(
+        [
+            ("original", "Original"),
+            ("reproceso", "Reproceso"),
+            ("test", "Test"),
+        ],
+        string="Tipo de Repeticion",
+        default="original",
+        required=True,
+        index=True,
+        tracking=True,
+        help="Original: primera evaluacion del lavado. Reproceso: repeticion oficial que "
+             "reemplaza el resultado. Test: repeticion no oficial, no afecta el resultado.",
+    )
 
     state = fields.Selection([
         ('pass', 'Pass'),
@@ -299,6 +313,10 @@ class ControlEstabilidadReviradoEval(models.Model):
             return
         line = self.detail_line_ids.filtered(lambda l: l.measure_key == canonical_key)[:1]
         numeric_value = float(value or 0.0)
+        # Un solo decimal en todas las mediciones. Las claves de sentido
+        # (tilt_*_dir_*) guardan +/-1 y el redondeo no las altera.
+        if not (canonical_key.startswith("tilt_") and "_dir_" in canonical_key):
+            numeric_value = round(numeric_value, 1)
         vals = {
             "sequence": meta["sequence"],
             "measure_key": canonical_key,
@@ -406,6 +424,10 @@ class ControlEstabilidadReviradoEval(models.Model):
         for rec in records:
             if not rec.pedido_line_id:
                 continue
+            # Un "test" es una repeticion NO oficial: no genera registro de
+            # laboratorio ni afecta el resultado de la partida.
+            if rec.repeat_kind == "test":
+                continue
             exists = laboratorio_model.search([("est_revirado_eval_id", "=", rec.id)], limit=1)
             if exists:
                 continue
@@ -473,12 +495,11 @@ class ControlEstabilidadReviradoEval(models.Model):
 
     def _is_tilt_required(self):
         self.ensure_one()
-        analysis = self.pedido_line_id.product_id.analysis_id
-        tilt_standard = float(analysis.tilt or 0.0) if analysis else 0.0
-        return bool(
-            int(self.wash_number or 0) == 1
-            and tilt_standard > 0.0
-        )
+        # La inclinacion antes de lavar se captura SIEMPRE en el 1er lavado,
+        # aunque el producto no tenga estandar (o no tenga producto). El
+        # criterio pass/fail solo se aplica cuando existe estandar
+        # (ver _compute_result_state).
+        return bool(int(self.wash_number or 0) == 1)
 
     @staticmethod
     def _raw_has_value(raw):
@@ -517,6 +538,7 @@ class ControlEstabilidadReviradoEval(models.Model):
             "name": self.name,
             "pedido_line_id": self.pedido_line_id.id,
             "wash_number": int(self.wash_number or 0),
+            "repeat_kind": self.repeat_kind or "original",
             "values": self._get_measure_values(),
             "stability": {
                 "l1_ancho_done": bool(self.est_l1_ancho_done),
@@ -725,25 +747,27 @@ class ControlEstabilidadReviradoEval(models.Model):
         if sample_type not in valid_sample_types:
             raise UserError(_("Tipo de muestra invalido."))
 
+        # Los tests son no oficiales: no cuentan para el estado del 1er lavado.
+        official = [("repeat_kind", "!=", "test")]
         first_eval_incomplete = self.search([
             ("pedido_line_id", "=", pedido_line.id),
             ("wash_number", "=", 1),
             ("sample_type", "=", sample_type),
             ("est_l1_done", "=", False),
-        ], order="fecha_eval desc, id desc", limit=1)
+        ] + official, order="fecha_eval desc, id desc", limit=1)
         first_eval_done_latest = self.search([
             ("pedido_line_id", "=", pedido_line.id),
             ("wash_number", "=", 1),
             ("sample_type", "=", sample_type),
             ("est_l1_done", "=", True),
-        ], order="fecha_eval desc, id desc", limit=1)
+        ] + official, order="fecha_eval desc, id desc", limit=1)
         first_eval_pass_latest = self.search([
             ("pedido_line_id", "=", pedido_line.id),
             ("wash_number", "=", 1),
             ("sample_type", "=", sample_type),
             ("est_l1_done", "=", True),
             ("state", "=", "pass"),
-        ], order="fecha_eval desc, id desc", limit=1)
+        ] + official, order="fecha_eval desc, id desc", limit=1)
 
         has_first_record = bool(first_eval_pass_latest)
         requires_first_wash_decision = bool(first_eval_done_latest and not first_eval_pass_latest and not first_eval_incomplete)
@@ -753,6 +777,21 @@ class ControlEstabilidadReviradoEval(models.Model):
         analysis = pedido_line.product_id.analysis_id
         tilt_standard = float(analysis.tilt or 0.0) if analysis else 0.0
         standards = self._tablet_evaluation_standards(pedido_line)
+        # Datos del ultimo 1er lavado oficial, para el modo Editar en sitio.
+        editable_first = first_eval_incomplete or first_eval_done_latest
+
+        # Lavados que YA tienen una evaluacion oficial completa: al re-seleccionar
+        # ese lavado, la pantalla ofrece Editar / Reproceso / Test.
+        completed_wash_numbers = []
+        official_recs = self.search([
+            ("pedido_line_id", "=", pedido_line.id),
+            ("sample_type", "=", sample_type),
+        ] + official)
+        for rec in official_recs:
+            wn = int(rec.wash_number or 0)
+            if rec._mode_is_complete(self._wash_code_from_number(wn)):
+                completed_wash_numbers.append(wn)
+        completed_wash_numbers = sorted(set(completed_wash_numbers))
         return {
             "sample_type": sample_type,
             "has_first_record": has_first_record,
@@ -760,15 +799,34 @@ class ControlEstabilidadReviradoEval(models.Model):
             "available_modes": available_modes,
             "requires_first_wash_decision": requires_first_wash_decision,
             "first_wash_status": (first_eval_done_latest.state if first_eval_done_latest else "nodata"),
-            "tilt_required": bool((required_mode == "l1") and tilt_standard > 0.0),
+            # La inclinacion antes de lavar se pide SIEMPRE en 1er lavado.
+            "tilt_required": bool(required_mode == "l1"),
             "tilt_standard": tilt_standard,
             "standards": standards,
             "recent_density_width": self._tablet_recent_density_width(pedido_line, limit=10),
             "existing_eval": first_eval_incomplete._to_tablet_payload() if first_eval_incomplete else False,
+            "editable_first_eval": editable_first._to_tablet_payload() if editable_first else False,
+            "completed_wash_numbers": completed_wash_numbers,
         }
 
     @api.model
-    def action_tablet_finalize(self, pedido_line_id, eval_mode, values, sample_type=False, criteria_override=False, is_progress=False):
+    def action_tablet_get_wash_payload(self, pedido_line_id, wash_number, sample_type=False):
+        """Ultimo registro OFICIAL de un lavado dado (para el modo Editar de
+        lavados posteriores al primero)."""
+        pedido_line = self.env["control.pedido.line"].browse(int(pedido_line_id or 0))
+        if not pedido_line.exists():
+            raise UserError(_("Seleccione una partida valida."))
+        sample_type = sample_type or "acabado"
+        rec = self.search([
+            ("pedido_line_id", "=", pedido_line.id),
+            ("sample_type", "=", sample_type),
+            ("wash_number", "=", int(wash_number or 0)),
+            ("repeat_kind", "!=", "test"),
+        ], order="fecha_eval desc, id desc", limit=1)
+        return rec._to_tablet_payload() if rec else False
+
+    @api.model
+    def action_tablet_finalize(self, pedido_line_id, eval_mode, values, sample_type=False, criteria_override=False, is_progress=False, repeat_mode=""):
         pedido_line = self.env["control.pedido.line"].browse(int(pedido_line_id or 0))
         if not pedido_line.exists():
             raise UserError(_("Seleccione una partida valida."))
@@ -782,19 +840,25 @@ class ControlEstabilidadReviradoEval(models.Model):
         if eval_mode not in self._MODE_STEP_KEYS:
             raise UserError(_("Modo de evaluacion invalido."))
 
+        repeat_mode = (repeat_mode or "").strip()
+        if repeat_mode not in ("", "reproceso", "test", "editar"):
+            raise UserError(_("Modo de repeticion invalido."))
+
+        # Los tests son no oficiales: no cuentan para el estado del 1er lavado.
+        official = [("repeat_kind", "!=", "test")]
         first_eval_pass_latest = self.search([
             ("pedido_line_id", "=", pedido_line.id),
             ("wash_number", "=", 1),
             ("sample_type", "=", sample_type),
             ("est_l1_done", "=", True),
             ("state", "=", "pass"),
-        ], order="fecha_eval desc, id desc", limit=1)
+        ] + official, order="fecha_eval desc, id desc", limit=1)
         first_eval_done_latest = self.search([
             ("pedido_line_id", "=", pedido_line.id),
             ("wash_number", "=", 1),
             ("sample_type", "=", sample_type),
             ("est_l1_done", "=", True),
-        ], order="fecha_eval desc, id desc", limit=1)
+        ] + official, order="fecha_eval desc, id desc", limit=1)
 
         if eval_mode != "l1" and not first_eval_pass_latest:
             if not criteria_override:
@@ -817,29 +881,34 @@ class ControlEstabilidadReviradoEval(models.Model):
         if int(wash_number or 0) < 1:
             raise UserError(_("Debe indicar un numero de lavado valido."))
 
-        if eval_mode == "l1":
-            rec = self.search([
-                ("pedido_line_id", "=", pedido_line.id),
-                ("wash_number", "=", 1),
-                ("sample_type", "=", sample_type),
-                ("est_l1_done", "=", False),
-            ], order="fecha_eval desc, id desc", limit=1)
+        base_domain = [
+            ("pedido_line_id", "=", pedido_line.id),
+            ("wash_number", "=", int(wash_number)),
+            ("sample_type", "=", sample_type),
+        ]
+        if repeat_mode == "editar":
+            # Editar en sitio: reutiliza el ultimo registro OFICIAL de ese
+            # lavado y sobrescribe sus datos (no crea uno nuevo).
+            rec = self.search(base_domain + official, order="fecha_eval desc, id desc", limit=1)
+        elif repeat_mode in ("reproceso", "test"):
+            # Repeticion: siempre crea un registro nuevo.
+            rec = self.browse()
+        elif eval_mode == "l1":
+            rec = self.search(base_domain + [("est_l1_done", "=", False)] + official, order="fecha_eval desc, id desc", limit=1)
         else:
-            # For post-first washes, allow true repetitions.
             # Reuse only an in-progress eval; if latest is complete, create a new one.
-            rec = self.search([
-                ("pedido_line_id", "=", pedido_line.id),
-                ("wash_number", "=", int(wash_number)),
-                ("sample_type", "=", sample_type),
-            ], order="fecha_eval desc, id desc", limit=1)
+            rec = self.search(base_domain, order="fecha_eval desc, id desc", limit=1)
             if rec and rec._mode_is_complete(eval_mode):
                 rec = self.browse()
         if not rec:
-            rec = self.create({
+            create_vals = {
                 "pedido_line_id": pedido_line.id,
                 "wash_number": int(wash_number),
                 "sample_type": sample_type,
-            })
+            }
+            if repeat_mode in ("reproceso", "test"):
+                create_vals["repeat_kind"] = repeat_mode
+            rec = self.create(create_vals)
         rec._append_stage_user(self.env.user)
 
         if eval_mode == "l1":
@@ -918,7 +987,7 @@ class ControlEstabilidadReviradoEval(models.Model):
         if laboratorio_records:
             laboratorio_records._sync_result_lines()
 
-        return {"ok": True, "id": rec.id, "name": rec.name, "completed": bool(is_complete)}
+        return {"ok": True, "id": rec.id, "name": rec.name, "completed": bool(is_complete), "repeat_kind": rec.repeat_kind or "original"}
 
     @api.model
     def action_tablet_get_or_create(self, pedido_line_id, sample_type=False):
@@ -971,6 +1040,8 @@ class ControlEstabilidadReviradoEval(models.Model):
             "color_name": line.colorname or "",
             "color_code": line.colorcode or "",
             "kilograms": float(line.kilograms or 0.0),
+            "oc_cliente": line.pedido_id.oc_cliente or "",
+            "observaciones": line.pedido_id.observaciones or "",
         } for line in lines]
 
     def action_print_report(self):
@@ -1212,7 +1283,7 @@ class ControlEstabilidadReviradoEvalDetail(models.Model):
     measure_key = fields.Char(string="Clave", required=True, index=True)
     muestra = fields.Selection([("m1", "M1"), ("m2", "M2"), ("na", "N/A")], string="Muestra", default="na", required=True, index=True)
     evaluacion = fields.Char(string="Item Evaluacion", required=True)
-    dato = fields.Float(string="Dato", digits=(16, 4), required=True)
+    dato = fields.Float(string="Dato", digits=(16, 1), required=True)
     user_id = fields.Many2one("res.users", string="Usuario", default=lambda self: self.env.user, index=True)
     fecha_registro = fields.Datetime(string="Fecha Registro", default=fields.Datetime.now, index=True)
 

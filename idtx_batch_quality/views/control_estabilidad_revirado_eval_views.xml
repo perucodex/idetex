@@ -10,6 +10,9 @@
                 <field name="pedido_line_id"/>
                 <field name="sample_type"/>
                 <field name="wash_number"/>
+                <field name="repeat_kind" widget="badge"
+                       decoration-info="repeat_kind == 'reproceso'"
+                       decoration-muted="repeat_kind == 'test'"/>
                 <field name="est_ancho_avg"/>
                 <field name="est_largo_avg"/>
                 <field name="revirado_promedio"/>
@@ -39,6 +42,10 @@
                             <field name="pedido_line_id" readonly="1"/>
                             <field name="sample_type" readonly="1"/>
                             <field name="wash_number" readonly="1"/>
+                            <field name="repeat_kind" readonly="1"
+                                   decoration-info="repeat_kind == 'reproceso'"
+                                   decoration-muted="repeat_kind == 'test'"
+                                   widget="badge"/>
                         </group>
                     </group>
                     <group string="Resultados Resumen">

@@ -85,6 +85,10 @@
                                 <div><b>Cliente:</b> <span t-esc="state.selectedPartidaData.customer || '-'"/></div>
                                 <div><b>Articulo:</b> <span t-esc="state.selectedPartidaData.article || '-'"/></div>
                                 <div><b>Color:</b> <span t-esc="state.selectedPartidaData.color_name || '-'"/></div>
+                                <div class="o_qdr_order_info mt-2 pt-2 border-top">
+                                    <div><b>O/C Cliente:</b> <span t-esc="state.selectedPartidaData.oc_cliente || '-'"/></div>
+                                    <div><b>Observaciones:</b> <span style="white-space: pre-wrap;" t-esc="state.selectedPartidaData.observaciones || '-'"/></div>
+                                </div>
                                 <div class="mt-2">
                                     <label class="form-label fw-bold">Tipo de Muestra</label>
                                     <select class="form-select"
@@ -121,7 +125,12 @@
                     <div t-if="state.inEvaluation" class="card o_qdr_card o_qdr_eval_card">
                         <div class="card-body o_qdr_eval_body">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h5 class="mb-0">Captura manual / revision</h5>
+                                <h5 class="mb-0 d-flex align-items-center gap-2">
+                                    <span>Captura manual / revision</span>
+                                    <span t-if="state.repeatKind === 'reproceso'" class="badge text-bg-info">Reproceso</span>
+                                    <span t-if="state.repeatKind === 'test'" class="badge text-bg-secondary">Test</span>
+                                    <span t-if="state.pendingRepeatMode === 'editar'" class="badge text-bg-warning">Editando</span>
+                                </h5>
                                 <div class="btn-group">
                                     <button class="btn btn-dark btn-sm"
                                             t-att-class="state.voiceActive ? 'btn-danger btn-sm' : 'btn-dark btn-sm'"
@@ -130,28 +139,43 @@
                                         <t t-esc="state.voiceActive ? 'Escuchando' : 'Dictado'"/>
                                     </button>
                                     <button class="btn btn-outline-secondary btn-sm"
-                                            t-if="!state.needsModeSelection"
+                                            t-if="!state.needsModeSelection and !state.repeatDecision.active"
                                             t-on-click="previousStep">Anterior</button>
                                     <button class="btn btn-outline-secondary btn-sm"
-                                            t-if="!state.needsModeSelection and !isLastStep"
+                                            t-if="!state.needsModeSelection and !state.repeatDecision.active and !state.reviewing and !isLastStep"
                                             t-on-click="nextStep">Siguiente</button>
                                         <button class="btn btn-primary btn-sm"
-                                            t-if="canShowSaveProgress"
+                                            t-if="canShowSaveProgress and !state.reviewing"
                                             t-att-disabled="!canFinalizeEvaluation"
                                             t-on-click="saveProgressEvaluation">Guardar avance</button>
                                     <button class="btn btn-success btn-sm"
-                                            t-if="!state.needsModeSelection and isLastStep"
+                                            t-if="!state.needsModeSelection and !state.repeatDecision.active and !state.reviewing and isLastStep"
                                             t-att-disabled="!canFinalizeEvaluation"
-                                            t-on-click="finalizeEvaluation">Finalizar</button>
+                                            t-on-click="finalizeEvaluation">Revisar y Finalizar</button>
                                 </div>
                             </div>
 
-                            <div t-if="state.needsModeSelection" class="o_qdr_voice_box mb-3">
+                            <div t-if="state.repeatDecision.active" class="o_qdr_voice_box mb-3">
+                                <div class="small"><b>Ya existe una evaluacion completa de este lavado.</b></div>
+                                <div class="small text-muted">Elija que desea hacer:</div>
+                                <div class="mt-2 d-flex flex-wrap gap-2">
+                                    <button class="btn btn-outline-warning btn-sm" t-on-click="chooseRepeatEdit">Editar (corregir)</button>
+                                    <button class="btn btn-outline-info btn-sm" t-on-click="chooseRepeatReproceso">Reproceso</button>
+                                    <button class="btn btn-outline-secondary btn-sm" t-on-click="chooseRepeatTest">Test</button>
+                                    <button class="btn btn-link btn-sm text-muted" t-on-click="cancelRepeatDecision">Cancelar</button>
+                                </div>
+                                <div class="small text-muted mt-2">
+                                    <b>Editar</b>: corrige el ultimo registro. <b>Reproceso</b>: repeticion oficial (reemplaza el resultado). <b>Test</b>: repeticion no oficial (no afecta el resultado).
+                                </div>
+                            </div>
+
+                            <div t-if="state.needsModeSelection and !state.repeatDecision.active" class="o_qdr_voice_box mb-3">
                                 <div t-if="state.requiresFirstWashDecision">
                                     <div class="small"><b>El 1er lavado esta en FAIL.</b></div>
-                                    <div class="small text-muted">Puede repetir 1er lavado o continuar bajo criterio para habilitar 3er/5to/N.</div>
+                                    <div class="small text-muted">Puede editar, repetir el 1er lavado o continuar bajo criterio para habilitar 3er/5to/N.</div>
                                     <div class="mt-2 d-flex flex-wrap gap-2">
-                                        <button class="btn btn-outline-warning btn-sm" t-on-click="chooseRepeatFirstWash">Repetir 1er Lavado</button>
+                                        <button class="btn btn-outline-warning btn-sm" t-if="state.editableFirstEval" t-on-click="chooseEditFirstWash">Editar 1er Lavado</button>
+                                        <button class="btn btn-outline-primary btn-sm" t-on-click="chooseRepeatFirstWash">Repetir 1er Lavado</button>
                                         <button class="btn btn-outline-primary btn-sm" t-on-click="chooseContinueByCriteria">Continuar Bajo Criterio</button>
                                     </div>
                                 </div>
@@ -178,31 +202,31 @@
                                 </div>
                             </div>
 
-                            <div class="row g-3 mb-3" t-if="!state.needsModeSelection">
+                            <div class="row g-3 mb-3" t-if="!state.needsModeSelection and !state.repeatDecision.active and !state.reviewing">
                                 <div class="col-12">
                                     <div class="o_qdr_summary_block">
                                         <h6>Estandares de Evaluacion</h6>
                                         <div class="row g-2">
                                             <div class="col-12 col-md-4">
-                                                <div>Densidad estandar: <b t-esc="standards.density_standard.toFixed(2)"/></div>
-                                                <div>Tolerancia densidad: <b t-esc="standards.density_tolerance.toFixed(2)"/></div>
+                                                <div>Densidad estandar: <b t-esc="standards.density_standard.toFixed(1)"/></div>
+                                                <div>Tolerancia densidad: <b t-esc="standards.density_tolerance.toFixed(1)"/></div>
                                             </div>
                                             <div class="col-12 col-md-4">
-                                                <div>Ancho estandar: <b t-esc="standards.width_standard.toFixed(2)"/></div>
-                                                <div>Tolerancia ancho: <b t-esc="standards.width_tolerance.toFixed(2)"/></div>
+                                                <div>Ancho estandar: <b t-esc="standards.width_standard.toFixed(1)"/></div>
+                                                <div>Tolerancia ancho: <b t-esc="standards.width_tolerance.toFixed(1)"/></div>
                                             </div>
                                             <div class="col-12 col-md-4">
-                                                <div>Inclinacion estandar: <b t-esc="standards.tilt_standard.toFixed(2)"/></div>
-                                                <div>Tolerancia inclinacion: <b t-esc="standards.tilt_wash_tolerance.toFixed(2)"/></div>
+                                                <div>Inclinacion estandar: <b t-esc="standards.tilt_standard.toFixed(1)"/></div>
+                                                <div>Tolerancia inclinacion: <b t-esc="standards.tilt_wash_tolerance.toFixed(1)"/></div>
                                             </div>
                                             <div class="col-12 col-md-4">
-                                                <div>% Ancho permitido: <b t-esc="standards.width_shrinkage_from.toFixed(2)"/> a <b t-esc="standards.width_shrinkage_to.toFixed(2)"/></div>
+                                                <div>% Ancho permitido: <b t-esc="standards.width_shrinkage_from.toFixed(1)"/> a <b t-esc="standards.width_shrinkage_to.toFixed(1)"/></div>
                                             </div>
                                             <div class="col-12 col-md-4">
-                                                <div>% Largo permitido: <b t-esc="standards.length_shrinkage_from.toFixed(2)"/> a <b t-esc="standards.length_shrinkage_to.toFixed(2)"/></div>
+                                                <div>% Largo permitido: <b t-esc="standards.length_shrinkage_from.toFixed(1)"/> a <b t-esc="standards.length_shrinkage_to.toFixed(1)"/></div>
                                             </div>
                                             <div class="col-12 col-md-4">
-                                                <div>Limite revirado: <b t-esc="standards.twist_limit.toFixed(2)"/></div>
+                                                <div>Limite revirado: <b t-esc="standards.twist_limit.toFixed(1)"/></div>
                                             </div>
                                         </div>
                                         <div class="small text-muted mt-2" t-if="!standards.has_thresholds">
@@ -212,7 +236,7 @@
                                 </div>
                             </div>
 
-                            <div class="row g-2" t-if="!state.needsModeSelection and !(activeStep and (activeStep.key === 'inclinacion' or activeStep.key === 'inclinacion_after'))">
+                            <div class="row g-2" t-if="!state.needsModeSelection and !state.repeatDecision.active and !state.reviewing and !(activeStep and (activeStep.key === 'inclinacion' or activeStep.key === 'inclinacion_after'))">
                                 <t t-foreach="activeStep.fields" t-as="fieldName" t-key="fieldName">
                                     <div class="col-12 col-md-4" t-if="!(state.evalMode === 'ln' and fieldName === 'rvn_n')">
                                         <label class="form-label small" t-esc="getStepFieldLabel(fieldName)"/>
@@ -226,7 +250,7 @@
                                 </t>
                             </div>
 
-                            <div class="row g-2" t-if="!state.needsModeSelection and activeStep and (activeStep.key === 'inclinacion' or activeStep.key === 'inclinacion_after')">
+                            <div class="row g-2" t-if="!state.needsModeSelection and !state.repeatDecision.active and !state.reviewing and activeStep and (activeStep.key === 'inclinacion' or activeStep.key === 'inclinacion_after')">
                                 <t t-foreach="activeStep.fields" t-as="fieldName" t-key="fieldName">
                                     <div class="col-12 col-md-6">
                                         <label class="form-label small" t-esc="getStepFieldLabel(fieldName)"/>
@@ -251,7 +275,7 @@
                             </div>
 
                             <div class="o_qdr_history_block mt-3"
-                                 t-if="!state.needsModeSelection and state.evalMode === 'l1' and activeStep and activeStep.key === 'ancho'">
+                                 t-if="!state.needsModeSelection and !state.repeatDecision.active and !state.reviewing and state.evalMode === 'l1' and activeStep and activeStep.key === 'ancho'">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <h6 class="mb-0">Ultimas 10 mediciones (mismo articulo y color)</h6>
                                     <span class="small text-muted" t-esc="state.recentDensityWidth.length + ' registros'"/>
@@ -274,8 +298,8 @@
                                                 <tr>
                                                     <td t-esc="row.fecha_eval || '-'"/>
                                                     <td t-esc="row.batch || '-'"/>
-                                                    <td t-esc="row.densidad_promedio != null ? row.densidad_promedio.toFixed(2) : '-'"/>
-                                                    <td t-esc="row.ancho_promedio != null ? row.ancho_promedio.toFixed(2) : '-'"/>
+                                                    <td t-esc="row.densidad_promedio != null ? row.densidad_promedio.toFixed(1) : '-'"/>
+                                                    <td t-esc="row.ancho_promedio != null ? row.ancho_promedio.toFixed(1) : '-'"/>
                                                 </tr>
                                             </t>
                                         </tbody>
@@ -283,7 +307,7 @@
                                 </div>
                             </div>
 
-                            <div class="o_qdr_voice_box mt-3" t-if="!state.needsModeSelection">
+                            <div class="o_qdr_voice_box mt-3" t-if="!state.needsModeSelection and !state.repeatDecision.active and !state.reviewing">
                                 <div class="small"><b>Paso actual:</b> <span t-esc="activeStep.label"/></div>
                                 <div class="small text-danger" t-if="state.voiceError" t-esc="state.voiceError"/>
                                 <div class="small text-muted">Resultados mostrados para el lavado actual.</div>
@@ -293,105 +317,138 @@
                                 </div>
                             </div>
 
-                            <hr/>
+                            <hr t-if="!state.needsModeSelection and !state.repeatDecision.active and !state.reviewing"/>
 
-                            <div class="row g-3" t-if="state.evalMode === 'l1'">
+                            <div class="row g-3" t-if="state.evalMode === 'l1' and !state.reviewing and !state.repeatDecision.active">
                                 <div class="col-12 col-md-4">
                                     <div class="o_qdr_summary_block">
                                         <h6>% Ancho</h6>
-                                        <div>1er Lavado: <b t-esc="estAnchoAvgL1.toFixed(2)"/></div>
+                                        <div>1er Lavado: <b t-esc="estAnchoAvgL1.toFixed(1)"/></div>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-4">
                                     <div class="o_qdr_summary_block">
                                         <h6>% Largo</h6>
-                                        <div>1er Lavado: <b t-esc="estLargoAvgL1.toFixed(2)"/></div>
+                                        <div>1er Lavado: <b t-esc="estLargoAvgL1.toFixed(1)"/></div>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-4">
                                     <div class="o_qdr_summary_block">
                                         <h6>Revirado 1er</h6>
-                                        <div>1er Lavado M1: <b t-esc="reviradoM1.toFixed(2)"/></div>
-                                        <div>1er Lavado M2: <b t-esc="reviradoM2.toFixed(2)"/></div>
-                                        <div>1er Lavado Promedio: <b t-esc="reviradoPromedio.toFixed(2)"/></div>
+                                        <div>1er Lavado M1: <b t-esc="reviradoM1.toFixed(1)"/></div>
+                                        <div>1er Lavado M2: <b t-esc="reviradoM2.toFixed(1)"/></div>
+                                        <div>1er Lavado Promedio: <b t-esc="reviradoPromedio.toFixed(1)"/></div>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-6">
                                     <div class="o_qdr_summary_block">
                                         <h6>Densidad y Ancho</h6>
-                                        <div>Densidad promedio: <b t-esc="densidadPromedio.toFixed(2)"/></div>
-                                        <div>Ancho promedio: <b t-esc="anchoPromedio.toFixed(2)"/></div>
+                                        <div>Densidad promedio: <b t-esc="densidadPromedio.toFixed(1)"/></div>
+                                        <div>Ancho promedio: <b t-esc="anchoPromedio.toFixed(1)"/></div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="row g-3" t-if="state.evalMode === 'l3'">
+                            <div class="row g-3" t-if="state.evalMode === 'l3' and !state.reviewing and !state.repeatDecision.active">
                                 <div class="col-12 col-md-4">
                                     <div class="o_qdr_summary_block">
                                         <h6>% Ancho</h6>
-                                        <div>3er Lavado: <b t-esc="estAnchoAvgL3.toFixed(2)"/></div>
+                                        <div>3er Lavado: <b t-esc="estAnchoAvgL3.toFixed(1)"/></div>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-4">
                                     <div class="o_qdr_summary_block">
                                         <h6>% Largo</h6>
-                                        <div>3er Lavado: <b t-esc="estLargoAvgL3.toFixed(2)"/></div>
+                                        <div>3er Lavado: <b t-esc="estLargoAvgL3.toFixed(1)"/></div>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-4">
                                     <div class="o_qdr_summary_block">
                                         <h6>Revirado 3er</h6>
-                                        <div>M1: <b t-esc="revirado3M1.toFixed(2)"/></div>
-                                        <div>M2: <b t-esc="revirado3M2.toFixed(2)"/></div>
-                                        <div>Promedio: <b t-esc="revirado3Promedio.toFixed(2)"/></div>
+                                        <div>M1: <b t-esc="revirado3M1.toFixed(1)"/></div>
+                                        <div>M2: <b t-esc="revirado3M2.toFixed(1)"/></div>
+                                        <div>Promedio: <b t-esc="revirado3Promedio.toFixed(1)"/></div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="row g-3" t-if="state.evalMode === 'l5'">
+                            <div class="row g-3" t-if="state.evalMode === 'l5' and !state.reviewing and !state.repeatDecision.active">
                                 <div class="col-12 col-md-4">
                                     <div class="o_qdr_summary_block">
                                         <h6>% Ancho</h6>
-                                        <div>5to Lavado: <b t-esc="estAnchoAvgL5.toFixed(2)"/></div>
+                                        <div>5to Lavado: <b t-esc="estAnchoAvgL5.toFixed(1)"/></div>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-4">
                                     <div class="o_qdr_summary_block">
                                         <h6>% Largo</h6>
-                                        <div>5to Lavado: <b t-esc="estLargoAvgL5.toFixed(2)"/></div>
+                                        <div>5to Lavado: <b t-esc="estLargoAvgL5.toFixed(1)"/></div>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-4">
                                     <div class="o_qdr_summary_block">
                                         <h6>Revirado 5to</h6>
-                                        <div>M1: <b t-esc="revirado5M1.toFixed(2)"/></div>
-                                        <div>M2: <b t-esc="revirado5M2.toFixed(2)"/></div>
-                                        <div>Promedio: <b t-esc="revirado5Promedio.toFixed(2)"/></div>
+                                        <div>M1: <b t-esc="revirado5M1.toFixed(1)"/></div>
+                                        <div>M2: <b t-esc="revirado5M2.toFixed(1)"/></div>
+                                        <div>Promedio: <b t-esc="revirado5Promedio.toFixed(1)"/></div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="row g-3" t-if="state.evalMode === 'ln'">
+                            <div class="row g-3" t-if="state.evalMode === 'ln' and !state.reviewing and !state.repeatDecision.active">
                                 <div class="col-12 col-md-4">
                                     <div class="o_qdr_summary_block">
                                         <h6>% Ancho</h6>
-                                        <div>Lavado N: <b t-esc="estAnchoAvgLN.toFixed(2)"/></div>
+                                        <div>Lavado N: <b t-esc="estAnchoAvgLN.toFixed(1)"/></div>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-4">
                                     <div class="o_qdr_summary_block">
                                         <h6>% Largo</h6>
-                                        <div>Lavado N: <b t-esc="estLargoAvgLN.toFixed(2)"/></div>
+                                        <div>Lavado N: <b t-esc="estLargoAvgLN.toFixed(1)"/></div>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-4">
                                     <div class="o_qdr_summary_block">
                                         <h6>Revirado N</h6>
                                         <div>Lavado N: <b t-esc="reviradoNLavado || 0"/></div>
-                                        <div>M1: <b t-esc="reviradoNM1.toFixed(2)"/></div>
-                                        <div>M2: <b t-esc="reviradoNM2.toFixed(2)"/></div>
-                                        <div>Promedio: <b t-esc="reviradoNPromedio.toFixed(2)"/></div>
+                                        <div>M1: <b t-esc="reviradoNM1.toFixed(1)"/></div>
+                                        <div>M2: <b t-esc="reviradoNM2.toFixed(1)"/></div>
+                                        <div>Promedio: <b t-esc="reviradoNPromedio.toFixed(1)"/></div>
                                     </div>
+                                </div>
+                            </div>
+
+                            <!-- Pantalla de revision (Req 5): resumen con puntos verde/rojo antes de finalizar -->
+                            <div t-if="state.reviewing" class="o_qdr_review">
+                                <div class="alert" t-att-class="reviewAllPass ? 'alert-success' : 'alert-warning'">
+                                    <b>Revise los datos antes de finalizar.</b>
+                                    <span t-if="state.repeatKind === 'reproceso'" class="badge text-bg-info ms-2">Reproceso</span>
+                                    <span t-if="state.repeatKind === 'test'" class="badge text-bg-secondary ms-2">Test</span>
+                                    <div class="small text-muted">Verde: cumple el estandar. Rojo: no cumple. Gris: sin estandar (dato capturado, no validado).</div>
+                                </div>
+                                <div class="row g-2">
+                                    <t t-foreach="reviewMetrics" t-as="metric" t-key="metric.key">
+                                        <div class="col-12 col-md-6">
+                                            <div class="o_qdr_summary_block d-flex justify-content-between align-items-center">
+                                                <span t-esc="metric.label"/>
+                                                <span class="d-inline-flex align-items-center gap-2">
+                                                    <b t-esc="metric.value.toFixed(1)"/>
+                                                    <i class="fa fa-circle" t-att-class="metric.ok === true ? 'text-success' : (metric.ok === false ? 'text-danger' : 'text-muted')"/>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </t>
+                                </div>
+                                <div class="mt-3 d-flex gap-2">
+                                    <button class="btn btn-outline-secondary" t-on-click="backToEdit">
+                                        <i class="fa fa-pencil me-1"/>Volver a editar
+                                    </button>
+                                    <button class="btn btn-success"
+                                            t-att-disabled="state.submitting"
+                                            t-on-click="confirmFinalize">
+                                        <i class="fa fa-check me-1"/>Confirmar y Finalizar
+                                    </button>
                                 </div>
                             </div>
                         </div>

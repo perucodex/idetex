@@ -120,6 +120,8 @@ class ControlPedido(models.Model):
     # cdgven = fields.Char('Salesman Code')
     user_id = fields.Many2one('res.users', string='Salesman')
     tipoventa = fields.Char(string="Type of Sale")
+    oc_cliente = fields.Char(string="O/C Cliente", help="Orden de compra del cliente (OCC en vta_cab_pedido).")
+    observaciones = fields.Text(string="Observaciones", help="Observaciones del pedido (OBSERV en vta_cab_pedido).")
     total_weight = fields.Float('Total Weight')
     produced_weight = fields.Float('Produced Weight')
     wish_date = fields.Date('Fecha Deseada',
@@ -631,6 +633,8 @@ class ControlPedido(models.Model):
                 "customer": _safe_str(rec["RAZSOC"]),
                 "user_id": self.env['res.users'].search([('vendor_code_sitpro', '=', _safe_str(rec["CDGVEN"]))], limit=1).id,
                 "tipoventa": _safe_str(rec["TIPOVENTA"]),
+                "oc_cliente": _safe_str(rec["OCC"]),
+                "observaciones": _safe_str(rec["OBSERV"]),
                 "total_weight": _safe_float(rec["TOTKIL"]),
                 "is_active": is_active,
             }

@@ -486,6 +486,12 @@ export class QualityDimrevScreen extends Component {
             firstWashStatus: "nodata",
             criteriaOverride: false,
             isFirstRecord: false,
+            repeatKind: "original",
+            pendingRepeatMode: "",
+            editableFirstEval: null,
+            completedWashNumbers: [],
+            repeatDecision: { active: false, mode: "", washN: 0 },
+            reviewing: false,
             tiltRequired: false,
             tiltStandard: 0,
             standards: getInitialStandards(),
@@ -723,6 +729,93 @@ export class QualityDimrevScreen extends Component {
         return this.state.standards || getInitialStandards();
     }
 
+    get repeatKindLabel() {
+        if (this.state.repeatKind === "test") return "Test";
+        if (this.state.repeatKind === "reproceso") return "Reproceso";
+        return "Original";
+    }
+
+    get reviewAnchoAvg() {
+        return washAvg(this.state.values, this.state.evalMode, "ancho");
+    }
+
+    get reviewLargoAvg() {
+        return washAvg(this.state.values, this.state.evalMode, "largo");
+    }
+
+    get reviewReviradoProm() {
+        const map = {
+            l1: this.reviradoPromedio,
+            l3: this.revirado3Promedio,
+            l5: this.revirado5Promedio,
+            ln: this.reviradoNPromedio,
+        };
+        return map[this.state.evalMode] || 0;
+    }
+
+    get reviewMetrics() {
+        // Indicadores pass/fail (verde/rojo) para la pantalla de revision.
+        // Replica el criterio del backend _compute_result_state; ok=null cuando
+        // no hay estandar (se muestra en gris, dato capturado pero no validado).
+        const s = this.standards;
+        const has = Boolean(s.has_thresholds);
+        const tolRatio = (v) => (Math.abs(v) > 1 ? Math.abs(v) / 100 : Math.abs(v));
+        const metrics = [];
+
+        const anchoAvg = this.reviewAnchoAvg;
+        let anchoOk = null;
+        if (has && (s.width_shrinkage_from || s.width_shrinkage_to)) {
+            anchoOk = !(s.width_shrinkage_from && anchoAvg < s.width_shrinkage_from)
+                && !(s.width_shrinkage_to && anchoAvg > s.width_shrinkage_to);
+        }
+        metrics.push({ key: "ancho_avg", label: "% Ancho Promedio", value: anchoAvg, ok: anchoOk });
+
+        const largoAvg = this.reviewLargoAvg;
+        let largoOk = null;
+        if (has && (s.length_shrinkage_from || s.length_shrinkage_to)) {
+            largoOk = !(s.length_shrinkage_from && largoAvg < s.length_shrinkage_from)
+                && !(s.length_shrinkage_to && largoAvg > s.length_shrinkage_to);
+        }
+        metrics.push({ key: "largo_avg", label: "% Largo Promedio", value: largoAvg, ok: largoOk });
+
+        const revProm = this.reviewReviradoProm;
+        let revOk = null;
+        if (has && s.twist_limit) {
+            revOk = revProm <= s.twist_limit;
+        }
+        metrics.push({ key: "revirado", label: "Revirado Promedio", value: revProm, ok: revOk });
+
+        if (this.state.evalMode === "l1") {
+            const dens = this.densidadPromedio;
+            let densOk = null;
+            if (has && s.density_standard > 0) {
+                const tol = tolRatio(s.density_tolerance);
+                densOk = dens >= s.density_standard * (1 - tol) && dens <= s.density_standard * (1 + tol);
+            }
+            metrics.push({ key: "densidad", label: "Densidad Promedio", value: dens, ok: densOk });
+
+            const ancho = this.anchoPromedio;
+            let anchoCmOk = null;
+            if (has && s.width_standard > 0) {
+                anchoCmOk = ancho >= s.width_standard - s.width_tolerance && ancho <= s.width_standard + s.width_tolerance;
+            }
+            metrics.push({ key: "ancho_cm", label: "Ancho Promedio", value: ancho, ok: anchoCmOk });
+
+            const tilt = this.tiltBefore;
+            let tiltOk = null;
+            if (has && s.tilt_standard > 0) {
+                tiltOk = Math.abs(tilt - s.tilt_standard) <= s.tilt_wash_tolerance;
+            }
+            metrics.push({ key: "tilt", label: "Inclinacion Antes de Lavar", value: tilt, ok: tiltOk });
+        }
+
+        return metrics;
+    }
+
+    get reviewAllPass() {
+        return this.reviewMetrics.every((m) => m.ok !== false);
+    }
+
     getTiltDirection(valueFieldName) {
         const dirField = TILT_DIRECTION_FIELD_BY_VALUE_FIELD[valueFieldName];
         const raw = this.state.values[dirField];
@@ -777,6 +870,8 @@ export class QualityDimrevScreen extends Component {
             needsModeSelection: this.state.needsModeSelection,
             requiresFirstWashDecision: this.state.requiresFirstWashDecision,
             criteriaOverride: this.state.criteriaOverride,
+            pendingRepeatMode: this.state.pendingRepeatMode,
+            repeatKind: this.state.repeatKind,
             values: this.state.values,
             currentStep: this.state.currentStep,
             awaitingOk: this.state.awaitingOk,
@@ -803,6 +898,8 @@ export class QualityDimrevScreen extends Component {
             this.state.needsModeSelection = Boolean(draft.needsModeSelection);
             this.state.requiresFirstWashDecision = Boolean(draft.requiresFirstWashDecision);
             this.state.criteriaOverride = Boolean(draft.criteriaOverride);
+            this.state.pendingRepeatMode = typeof draft.pendingRepeatMode === "string" ? draft.pendingRepeatMode : "";
+            this.state.repeatKind = typeof draft.repeatKind === "string" ? draft.repeatKind : "original";
             this.state.values = { ...getInitialValues(), ...(draft.values || {}) };
             this.state.currentStep = Number.isInteger(draft.currentStep)
                 ? Math.max(0, Math.min(draft.currentStep, STEPS.length - 1))
@@ -921,6 +1018,12 @@ export class QualityDimrevScreen extends Component {
         this.state.standards = getInitialStandards();
         this.state.recentDensityWidth = [];
         this.state.stabilityDone = this._defaultStabilityState();
+        this.state.repeatKind = "original";
+        this.state.pendingRepeatMode = "";
+        this.state.editableFirstEval = null;
+        this.state.completedWashNumbers = [];
+        this.state.repeatDecision = { active: false, mode: "", washN: 0 };
+        this.state.reviewing = false;
         this._saveDraft();
     }
 
@@ -943,6 +1046,14 @@ export class QualityDimrevScreen extends Component {
             this.state.recentDensityWidth = Array.isArray(payload?.recent_density_width)
                 ? payload.recent_density_width
                 : [];
+            this.state.completedWashNumbers = Array.isArray(payload?.completed_wash_numbers)
+                ? payload.completed_wash_numbers
+                : [];
+            this.state.editableFirstEval = payload?.editable_first_eval || null;
+            this.state.repeatKind = "original";
+            this.state.pendingRepeatMode = "";
+            this.state.reviewing = false;
+            this.state.repeatDecision = { active: false, mode: "", washN: 0 };
             const existingEval = payload?.existing_eval || null;
             if (existingEval) {
                 this.state.values = { ...getInitialValues(), ...(existingEval.values || {}) };
@@ -951,6 +1062,7 @@ export class QualityDimrevScreen extends Component {
                     ...(existingEval.stability || {}),
                 };
                 this.state.evalId = Number(existingEval.id || 0);
+                this.state.repeatKind = existingEval.repeat_kind || "original";
             }
             const requiredMode = payload?.required_mode || "";
             this.state.evalMode = requiredMode;
@@ -964,6 +1076,28 @@ export class QualityDimrevScreen extends Component {
         }
     }
 
+    _enterMode(mode, repeatMode) {
+        // repeatMode: "" (normal) | "reproceso" | "test" | "editar".
+        // No toca state.values (el llamador decide cargar o limpiar).
+        this.state.modeSelectionTarget = "";
+        this.state.evalMode = mode;
+        this.state.needsModeSelection = false;
+        this.state.requiresFirstWashDecision = false;
+        this.state.repeatDecision = { active: false, mode: "", washN: 0 };
+        this.state.pendingRepeatMode = repeatMode || "";
+        if (repeatMode === "test") {
+            this.state.repeatKind = "test";
+        } else if (repeatMode === "reproceso") {
+            this.state.repeatKind = "reproceso";
+        } else if (repeatMode !== "editar") {
+            this.state.repeatKind = "original";
+        }
+        this.state.currentStep = 0;
+        this.state.reviewing = false;
+        this.state.error = "";
+        this._saveDraft();
+    }
+
     selectEvaluationMode(mode) {
         if (this.state.requiresFirstWashDecision) return;
         if (!MODE_STEP_KEYS[mode]) return;
@@ -972,25 +1106,88 @@ export class QualityDimrevScreen extends Component {
             this.state.selectedLavadoN = "";
             return;
         }
+        const washN = mode === "l3" ? 3 : 5;
+        if ((this.state.completedWashNumbers || []).includes(washN)) {
+            this._openRepeatDecision(mode, washN);
+            return;
+        }
+        this.state.values = getInitialValues();
+        this._enterMode(mode, "");
+    }
+
+    _openRepeatDecision(mode, washN) {
+        this.state.repeatDecision = { active: true, mode, washN };
         this.state.modeSelectionTarget = "";
-        this.state.evalMode = mode;
-        this.state.needsModeSelection = false;
-        this.state.currentStep = 0;
-        this.state.error = "";
         this._saveDraft();
     }
 
-    chooseRepeatFirstWash() {
-        this.state.requiresFirstWashDecision = false;
-        this.state.criteriaOverride = false;
-        this.state.evalMode = "l1";
-        this.state.needsModeSelection = false;
-        this.state.modeSelectionTarget = "";
-        this.state.selectedLavadoN = "";
-        this.state.values = getInitialValues();
-        this.state.currentStep = 0;
-        this.state.error = "";
+    cancelRepeatDecision() {
+        this.state.repeatDecision = { active: false, mode: "", washN: 0 };
         this._saveDraft();
+    }
+
+    async chooseRepeatEdit() {
+        const { mode, washN } = this.state.repeatDecision;
+        let payload = null;
+        if (mode === "l1") {
+            payload = this.state.editableFirstEval;
+        } else {
+            try {
+                payload = await this.orm.call("control.estabilidad.revirado.eval", "action_tablet_get_wash_payload", [
+                    Number(this.state.selectedPartidaId),
+                    washN,
+                    this.state.sampleType,
+                ]);
+            } catch (error) {
+                this.notification.add(extractRpcMessage(error, "No se pudo cargar el registro a editar."), { type: "warning" });
+                return;
+            }
+        }
+        if (payload && payload.values) {
+            this.state.values = { ...getInitialValues(), ...(payload.values || {}) };
+            this.state.repeatKind = payload.repeat_kind || "original";
+        } else {
+            this.state.values = getInitialValues();
+        }
+        if (mode === "ln") {
+            this.state.values.rvn_n = `${washN}`;
+        }
+        this._enterMode(mode, "editar");
+    }
+
+    chooseRepeatReproceso() {
+        this._startRepeat("reproceso");
+    }
+
+    chooseRepeatTest() {
+        this._startRepeat("test");
+    }
+
+    _startRepeat(kind) {
+        const { mode, washN } = this.state.repeatDecision;
+        this.state.values = getInitialValues();
+        if (mode === "ln") {
+            this.state.values.rvn_n = `${washN}`;
+        }
+        this._enterMode(mode, kind);
+    }
+
+    chooseEditFirstWash() {
+        const payload = this.state.editableFirstEval;
+        if (payload && payload.values) {
+            this.state.values = { ...getInitialValues(), ...(payload.values || {}) };
+            this.state.repeatKind = payload.repeat_kind || "original";
+        }
+        this._enterMode("l1", "editar");
+    }
+
+    chooseRepeatFirstWash() {
+        // Repetir el 1er lavado es una repeticion: preguntar Reproceso o Test.
+        // No se limpia requiresFirstWashDecision aun; si el usuario cancela la
+        // decision, vuelve a verse el panel de FAIL (_enterMode la limpia al
+        // confirmar).
+        this.state.criteriaOverride = false;
+        this._openRepeatDecision("l1", 1);
     }
 
     chooseContinueByCriteria() {
@@ -1016,13 +1213,14 @@ export class QualityDimrevScreen extends Component {
             this.notification.add("El lavado N debe ser mayor a 1.", { type: "warning" });
             return;
         }
+        if ((this.state.completedWashNumbers || []).includes(n)) {
+            this.state.values.rvn_n = `${n}`;
+            this._openRepeatDecision("ln", n);
+            return;
+        }
+        this.state.values = getInitialValues();
         this.state.values.rvn_n = `${n}`;
-        this.state.evalMode = "ln";
-        this.state.needsModeSelection = false;
-        this.state.modeSelectionTarget = "";
-        this.state.currentStep = 0;
-        this.state.error = "";
-        this._saveDraft();
+        this._enterMode("ln", "");
     }
 
     _setStepFromProgress() {
@@ -1104,6 +1302,10 @@ export class QualityDimrevScreen extends Component {
     }
 
     async previousStep() {
+        if (this.state.reviewing) {
+            this.state.reviewing = false;
+            return;
+        }
         if (this.state.currentStep > 0) {
             this.goToStep(this.state.currentStep - 1);
             return;
@@ -1113,9 +1315,15 @@ export class QualityDimrevScreen extends Component {
             return;
         }
         if (this.state.evalMode === "ln" || this.state.evalMode === "l3" || this.state.evalMode === "l5") {
+            if (!this._confirmDiscardUnsaved()) {
+                return;
+            }
             this.state.needsModeSelection = true;
             this.state.evalMode = "";
             this.state.modeSelectionTarget = "";
+            this.state.pendingRepeatMode = "";
+            this.state.repeatKind = "original";
+            this.state.values = getInitialValues();
             this.state.currentStep = 0;
             this._saveDraft();
             return;
@@ -1123,6 +1331,26 @@ export class QualityDimrevScreen extends Component {
         if (this.state.isFirstRecord) {
             await this.onBackToSearch();
         }
+    }
+
+    _hasUnsavedData() {
+        if (!this.state.inEvaluation) {
+            return false;
+        }
+        const vals = this.state.values || {};
+        return Object.keys(vals).some((key) => {
+            if (key === "rvn_n" || key.endsWith("_dir_m1") || key.endsWith("_dir_m2")) {
+                return false;
+            }
+            return `${vals[key] ?? ""}`.trim() !== "";
+        });
+    }
+
+    _confirmDiscardUnsaved() {
+        if (!this._hasUnsavedData()) {
+            return true;
+        }
+        return window.confirm("Tiene datos capturados sin guardar. ¿Desea salir y perder los datos no guardados?");
     }
 
     _initVoiceRecognition() {
@@ -1291,6 +1519,9 @@ export class QualityDimrevScreen extends Component {
     async _processVoiceCommand(rawText) {
         const text = normalizeSpeechText(rawText);
 
+        if (this.state.reviewing || this.state.repeatDecision.active) {
+            return;
+        }
         if (this.state.needsModeSelection) {
             this.state.voiceError = "Seleccione primero el lavado a evaluar.";
             return;
@@ -1537,15 +1768,29 @@ export class QualityDimrevScreen extends Component {
         tone(190, now + 0.19, 0.2, 0.05, "square");
     }
 
-    async finalizeEvaluation() {
+    finalizeEvaluation() {
+        // Antes de finalizar se muestra la pantalla de revision con los
+        // indicadores pass/fail para que el usuario verifique/corrija.
         if (!this.canFinalizeEvaluation) {
             this.notification.add("Complete todos los campos antes de finalizar.", { type: "warning" });
             return;
         }
-        if (!window.confirm("Desea finalizar y registrar esta evaluación?")) {
+        const hasTiltAfter = `${this.state.values.tilt_after_m1 || ""}`.trim() !== ""
+            && `${this.state.values.tilt_after_m2 || ""}`.trim() !== "";
+        if (!hasTiltAfter) {
+            this.notification.add("Ingrese la inclinacion despues de lavar antes de finalizar.", { type: "warning" });
             return;
         }
+        this.state.reviewing = true;
+        this._saveDraft();
+    }
 
+    backToEdit() {
+        this.state.reviewing = false;
+        this._saveDraft();
+    }
+
+    async confirmFinalize() {
         const payload = {};
         const fields = this.activeSteps.flatMap((s) => s.fields || []);
         for (const fname of fields) {
@@ -1574,13 +1819,18 @@ export class QualityDimrevScreen extends Component {
                 this.state.sampleType,
                 this.state.criteriaOverride,
                 false,
+                this.state.pendingRepeatMode || "",
             ]);
+            const kindLabel = result?.repeat_kind === "test"
+                ? " (Test)"
+                : (result?.repeat_kind === "reproceso" ? " (Reproceso)" : "");
             if (result?.completed) {
-                this.notification.add(`Evaluacion finalizada en ${result?.name || "evaluacion"}.`, { type: "success" });
+                this.notification.add(`Evaluacion finalizada en ${result?.name || "evaluacion"}${kindLabel}.`, { type: "success" });
             } else {
-                this.notification.add(`Avance guardado en ${result?.name || "evaluacion"}.`, { type: "success" });
+                this.notification.add(`Avance guardado en ${result?.name || "evaluacion"}${kindLabel}.`, { type: "success" });
             }
-            await this.onBackToSearch();
+            this.state.reviewing = false;
+            await this.onBackToSearch(true);
         } catch (error) {
             this.state.error = extractRpcMessage(error, "No se pudo finalizar la evaluación.");
             this.notification.add(this.state.error, { type: "warning" });
@@ -1618,9 +1868,10 @@ export class QualityDimrevScreen extends Component {
                 this.state.sampleType,
                 this.state.criteriaOverride,
                 true,
+                this.state.pendingRepeatMode || "",
             ]);
             this.notification.add(`Avance guardado en ${result?.name || "evaluacion"}.`, { type: "success" });
-            await this.onBackToSearch();
+            await this.onBackToSearch(true);
         } catch (error) {
             this.state.error = extractRpcMessage(error, "No se pudo guardar el avance.");
             this.notification.add(this.state.error, { type: "warning" });
@@ -1629,7 +1880,10 @@ export class QualityDimrevScreen extends Component {
         }
     }
 
-    async onBackToSearch() {
+    async onBackToSearch(skipConfirm = false) {
+        if (skipConfirm !== true && !this._confirmDiscardUnsaved()) {
+            return;
+        }
         this._stopVoiceRecognition();
         this.clearPartida();
         this.state.error = "";
@@ -1639,6 +1893,9 @@ export class QualityDimrevScreen extends Component {
     }
 
     async close() {
+        if (!this._confirmDiscardUnsaved()) {
+            return;
+        }
         this._stopVoiceRecognition();
         this._saveDraft();
         if (window.history.length > 1) {
