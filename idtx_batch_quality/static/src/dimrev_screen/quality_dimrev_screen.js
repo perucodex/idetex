@@ -1083,6 +1083,11 @@ export class QualityDimrevScreen extends Component {
         this.state.evalMode = mode;
         this.state.needsModeSelection = false;
         this.state.requiresFirstWashDecision = false;
+        // La inclinacion antes de lavar SIEMPRE se pide en 1er lavado, sea
+        // original, reproceso, test o edicion. tilt_required se recalculo al
+        // cargar la partida (cuando required_mode podia no ser 'l1'), asi que
+        // aqui lo derivamos del modo actual.
+        this.state.tiltRequired = mode === "l1";
         this.state.repeatDecision = { active: false, mode: "", washN: 0 };
         this.state.pendingRepeatMode = repeatMode || "";
         if (repeatMode === "test") {
