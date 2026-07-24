@@ -12,7 +12,7 @@
                     <button name="unbuild_batch" class="oe_highlight" string="Unbuild Batch" type="object" invisible="state != 'batch'"/>
                     <button name="action_back_to_draft" string="Regresar a Borrador" type="object" invisible="state != 'batch'"
                             confirm="La partida volverá a borrador y sus rollos quedarán libres para corregir la composición. ¿Continuar?"/>
-                    <button name="action_open_split_wizard" string="Dividir Partida" type="object" invisible="state != 'batch'"/>
+                    <button name="action_open_split_wizard" class="oe_highlight" string="Dividir Partida" type="object" invisible="state != 'batch'"/>
                     <button name="rebuild_batch" class="oe_highlight" string="Rebuild Batch" type="object" invisible="state != 'unbuild'" groups="mrp.group_mrp_manager"/>
                     <field name="state" widget="statusbar"/>
                 </header>
@@ -54,20 +54,21 @@
                                     <field name="name"/>
                                     <field name="product_id"/>
                                     <field name="uom_id"/>
-                                    <field name="quantity" sum="Total"/>
+                                    <field name="quantity" sum="Total" optional="hide"/>
                                     <field name="net_weight" sum="Total"/>
-                                    <field name="gross_weight" sum="Total"/>
+                                    <field name="gross_weight" sum="Total" column_invisible="1"/>
                                 </list>
                             </field>
-                            <field name="wo_roll_ids" domain="[('in_batch','=',False)]" readonly="state != 'draft'" invisible="state == 'split'">
-                                <list create="0">
+                            <field name="wo_roll_ids" domain="[('in_batch','=',False), ('transfer_state','!=','transferido')]" readonly="state != 'draft'" invisible="state == 'split'">
+                                <list create="0" decoration-info="transfer_state == 'recibido'">
+                                    <field name="transfer_state" column_invisible="1"/>
                                     <field name="workorder_id"/>
                                     <field name="name"/>
                                     <field name="product_id"/>
                                     <field name="uom_id"/>
-                                    <field name="quantity" sum="Total"/>
+                                    <field name="quantity" sum="Total" optional="hide"/>
                                     <field name="net_weight" sum="Total"/>
-                                    <field name="gross_weight" sum="Total"/>
+                                    <field name="gross_weight" sum="Total" column_invisible="1"/>
                                 </list>
                                 <form>
                                     <group>

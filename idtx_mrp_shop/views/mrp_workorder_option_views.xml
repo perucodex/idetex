@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Al crear una opción, los empleados elegibles se limitan al
+         DEPARTAMENTO DE OPERARIOS del centro de trabajo de la operación. -->
+    <record id="mrp_workorder_option_form_dept" model="ir.ui.view">
+        <field name="name">mrp.workorder.option.form.department</field>
+        <field name="model">mrp.workorder.option</field>
+        <field name="inherit_id" ref="idtx_mrp.mrp_workorder_option_form"/>
+        <field name="arch" type="xml">
+            <field name="employee_ids" position="before">
+                <field name="operator_department_id" invisible="1"/>
+            </field>
+            <field name="employee_ids" position="attributes">
+                <attribute name="domain">[('department_id', '=', operator_department_id)]</attribute>
+            </field>
+        </field>
+    </record>
+
+</odoo>

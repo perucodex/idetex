@@ -748,3 +748,14 @@ class MrpWorkorder(models.Model):
             'message': _('Operación %(op)s registrada para la partida %(batch)s.',
                          op=self.name, batch=batch.name),
         }
+
+
+class MrpWorkorderOption(models.Model):
+    _inherit = 'mrp.workorder.option'
+
+    # Departamento de operarios del centro de trabajo de la operación: se usa
+    # para filtrar los empleados elegibles al crear la opción (solo los de ese
+    # departamento).
+    operator_department_id = fields.Many2one(
+        'hr.department', related='workcenter_id.operator_department_id',
+        string='Departamento de Operarios')

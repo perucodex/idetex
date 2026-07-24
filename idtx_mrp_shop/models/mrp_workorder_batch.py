@@ -395,6 +395,34 @@ class MrpWorkorderBatch(models.Model):
             if excluded:
                 parts.append(Domain('id', 'not in', excluded.ids))
 
+            # La partida debe haber COMPLETADO la operación de partida ANTERIOR
+            # de la ruta: no se registra esta operación sobre una partida que
+            # aún no pasó el paso previo (p.ej. ABIERTO TINTO exige TEÑIDO
+            # hecho). workorder_ids ya viene en orden de ruta; el predecesor es
+            # la operación de partida inmediatamente anterior a la llamante. La
+            # PRIMERA operación de partida de la ruta no tiene predecesora (no
+            # exige nada).
+            route_ops = list(caller_wo.production_id.workorder_ids.filtered(
+                lambda w: w.operation_type in caller_wo.BATCH_OPERATION_TYPES))
+            predecessor = False
+            if caller_wo in route_ops:
+                pos = route_ops.index(caller_wo)
+                if pos > 0:
+                    predecessor = route_ops[pos - 1]
+            if predecessor and predecessor.mrwo_id:
+                done = self.env['batch.registry'].search(
+                    [('workorder_id.mrwo_id', '=', predecessor.mrwo_id.id)]
+                ).mapped('batch_id')
+                # Las SUB-PARTIDAS heredan el avance del ancestro: si un padre
+                # completó el paso previo antes de dividirse, las hijas también
+                # lo cumplen.
+                eligible = done
+                frontier = done
+                while frontier:
+                    frontier = frontier.child_batch_ids
+                    eligible |= frontier
+                parts.append(Domain('id', 'in', eligible.ids))
+
         if query_terms:
             term_domains = []
             for term in query_terms:

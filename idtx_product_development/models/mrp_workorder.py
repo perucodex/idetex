@@ -23,9 +23,9 @@ class MrpWorkorder(models.Model):
     def _compute_progress(self):
         for rec in self:
             if rec.operation_type == 'weaving':
-                # Los rollos RECIBIDOS (copia de transferencia) no se tejieron
-                # aquí -> no cuentan en el avance/cantidad de esta OT.
-                wrolls = rec.roll_ids.filtered(lambda r: r.transfer_state != 'recibido')
+                # AVANCE = salida de esta OT: EXCLUYE los TRANSFERIDOS (se fueron
+                # a otra OT) e INCLUYE los RECIBIDOS (el destino sí los produce).
+                wrolls = rec.roll_ids.filtered(lambda r: r.transfer_state != 'transferido')
                 if rec.state == 'done':
                     rec.quantity = sum(wrolls.mapped('quantity'))
                     rec.roll_weight = sum(wrolls.mapped('gross_weight'))

@@ -24,6 +24,15 @@ class SplitRoll(models.TransientModel):
 
     def split_roll(self):
         roll = self.env['mrp.workorder.roll'].browse(self.env.context.get('active_id'))
+        # Un rollo transferido/recibido dividido mantiene su estado de
+        # transferencia (esos campos son copy=False): un recibido genera otro
+        # recibido (no cuenta consumo, sigue apuntando a su rollo de origen) y
+        # un transferido genera otro transferido.
+        transfer_vals = {
+            'transfer_state': roll.transfer_state or False,
+            'dest_workorder_id': roll.dest_workorder_id.id or False,
+            'transfer_origin_roll_id': roll.transfer_origin_roll_id.id or False,
+        }
         if roll.weave_type == 'rect':
             if self.old_quantity <= self.new_quantity:
                 raise UserError(_('New quantity can\'t be greather than old quantity.'))
@@ -43,6 +52,7 @@ class SplitRoll(models.TransientModel):
                 'quantity': new_quantity,
                 'equipment_id': roll.equipment_id.id,
                 'employee_id': roll.employee_id.id,
+                **transfer_vals,
             })
             new_roll.name = f'{prefix}-{str(next_number).zfill(3)}'
             roll.quantity = self.new_quantity
@@ -66,6 +76,7 @@ class SplitRoll(models.TransientModel):
                 'gross_weight': new_weight,
                 'equipment_id': roll.equipment_id.id,
                 'employee_id': roll.employee_id.id,
+                **transfer_vals,
             })
             new_roll.name = f'{prefix}-{str(next_number).zfill(3)}'
             roll.net_weight = self.new_weight

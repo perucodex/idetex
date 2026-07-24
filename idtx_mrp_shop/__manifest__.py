@@ -36,6 +36,7 @@ luego armar las partidas
         'report/report_batch.xml',
         'views/batch_registry_views.xml',
         'views/quality_alert_views.xml',
+        'views/mrp_workorder_option_views.xml',
         'views/mrp_production_views.xml',
         'views/mrp_workorder_views.xml',
         'views/maintenance_equipment_views.xml',

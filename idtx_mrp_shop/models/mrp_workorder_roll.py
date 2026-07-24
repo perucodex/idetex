@@ -32,7 +32,9 @@ class MrpWorkorderRoll(models.Model):
         res = super().write(vals)
 
         workorders = old_workorders | self.mapped('workorder_id')
-        fields_that_change_qty = {'gross_weight', 'quantity', 'workorder_id'}
+        # transfer_state cambia el AVANCE (un transferido deja de contar en su
+        # OT, un recibido cuenta en la suya) -> hay que resincronizar cantidad.
+        fields_that_change_qty = {'gross_weight', 'quantity', 'workorder_id', 'transfer_state'}
         if {'gross_weight', 'option_id', 'workorder_id'} & set(vals.keys()):
             workorders._sync_thread_consumption_from_rolls()
         if fields_that_change_qty & set(vals.keys()):

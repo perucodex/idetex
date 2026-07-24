@@ -30,14 +30,45 @@
             <xpath expr="//field[@name='name']" position="attributes">
                 <attribute name="invisible">1</attribute>
             </xpath>
-            <xpath expr="//field[@name='qty_remaining']" position="after">
-                <field name="operation_type"/>
-                <field name="estimated_rate_kg_h" invisible="operation_type != 'weaving'"/>
-                <field name="estimated_roll_count" invisible="operation_type != 'weaving'"/>
-                <field name="weaving_estimate_warning" invisible="operation_type != 'weaving' or not weaving_estimate_warning"/>
-            </xpath>
+            <!-- Cantidad producida: siempre readonly y visible a todos (quita
+                 la restricción group_no_one de la vista base). -->
             <xpath expr="//field[@name='qty_produced']" position="attributes">
                 <attribute name="readonly">1</attribute>
+                <attribute name="groups"></attribute>
+            </xpath>
+            <!-- No se usa serie/lote en textil: ocultar "Números de serie/lote"
+                 (el del grupo superior; hay otro igual dentro de una lista de
+                 la vista de calidad que no se debe tocar). -->
+            <xpath expr="//group//field[@name='finished_lot_ids'][@widget='many2many_tags']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <!-- Junto a la Orden de fabricación: cuántos rollos cuentan como
+                 producción de esta OT (avance; excluye transferidos). -->
+            <xpath expr="//field[@name='production_id']" position="after">
+                <field name="produced_roll_count" invisible="operation_type != 'weaving'"/>
+            </xpath>
+            <!-- Tipo de operación / estimaciones (izq) y cantidad producida +
+                 planificación de rollos (der) bajan a su propio grupo, debajo
+                 de fecha inicio / OF. -->
+            <xpath expr="//field[@name='production_id']/../.." position="after">
+                <group>
+                    <group>
+                        <field name="operation_type"/>
+                        <field name="estimated_rate_kg_h" invisible="operation_type != 'weaving'"/>
+                        <field name="estimated_roll_count" invisible="operation_type != 'weaving'"/>
+                        <field name="weaving_estimate_warning" invisible="operation_type != 'weaving' or not weaving_estimate_warning"/>
+                    </group>
+                    <group name="idtx_produced_group">
+                        <field name="estimated_weight_per_roll" invisible="operation_type != 'weaving'"/>
+                        <field name="rolls_to_produce" invisible="operation_type != 'weaving'"/>
+                    </group>
+                </group>
+            </xpath>
+            <!-- Mover la cantidad producida (base) al grupo nuevo, encima del
+                 peso estimado (move como hijo directo del xpath; anidado en
+                 contenido nuevo NO se procesa). -->
+            <xpath expr="//group[@name='idtx_produced_group']/field[@name='estimated_weight_per_roll']" position="before">
+                <xpath expr="//field[@name='qty_produced']" position="move"/>
             </xpath>
             <xpath expr="//notebook" position="inside">
                 <page string="Options" name="options" invisible="operation_type != 'weaving'">
@@ -53,8 +84,9 @@
                 </page>
                 <page string="Rolls" name="rolls" invisible="operation_type != 'weaving'">
                     <field name="roll_ids" readonly="state != 'progress'">
-                        <list editable="bottom">
+                        <list editable="bottom" decoration-success="transfer_state == 'transferido'" decoration-info="transfer_state == 'recibido'">
                             <field name="sequence" widget="handle"/>
+                            <field name="transfer_state" string="Transf." readonly="1" optional="show"/>
                             <field name="name"/>
                             <field name="option_id" required="1"/>
                             <field name="equipment_ids" column_invisible="1"/>

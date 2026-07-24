@@ -61,6 +61,34 @@ class MrpWorkorderRoll(models.Model):
         for roll in self:
             roll.is_transferred = bool(roll.transfer_state)
 
+    def action_revert_transfer(self):
+        """Revierte transferencias (devuelve los rollos a su OT original): borra
+        los registros RECIBIDOS y quita el estado 'transferido' de los
+        originales. Sirve seleccionando el original (transferido) o la copia
+        (recibido). Bloquea si algún rollo está en una partida activa."""
+        Roll = self.env['mrp.workorder.roll']
+        originals = Roll
+        for roll in self:
+            if roll.transfer_state == 'recibido' and roll.transfer_origin_roll_id:
+                originals |= roll.transfer_origin_roll_id
+            elif roll.transfer_state == 'transferido':
+                originals |= roll
+        if not originals:
+            raise UserError(_(
+                'Selecciona rollos transferidos o recibidos para revertir la '
+                'transferencia.'))
+        copies = Roll.search([('transfer_origin_roll_id', 'in', originals.ids)])
+        blocked = (originals | copies).filtered(lambda r: r.current_batch_id)
+        if blocked:
+            raise UserError(_(
+                'No se puede revertir la transferencia: hay rollos en una '
+                'partida activa (estado "Partida"):\n%s'
+            ) % '\n'.join('- %s (partida %s)' % (r.name, r.current_batch_id.name)
+                          for r in blocked))
+        copies.unlink()
+        originals.write({'transfer_state': False, 'dest_workorder_id': False})
+        return True
+
     def _compute_current_batch_id(self):
         Batch = self.env['mrp.workorder.batch']
         for roll in self:

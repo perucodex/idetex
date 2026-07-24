@@ -36,6 +36,8 @@ class RollTransfer(models.TransientModel):
             # No se pueden transferir rollos que ya están en una partida activa
             # (estado "Partida"): romperían la composición de la partida.
             self._check_rolls_not_in_batch(rolls)
+            # Tampoco los que ya están transferidos o recibidos.
+            self._check_rolls_transferable(rolls)
             # Todos los rollos deben ser del MISMO producto.
             tmpls = rolls.mapped('product_id')
             if len(tmpls) > 1:
@@ -45,6 +47,18 @@ class RollTransfer(models.TransientModel):
                 ) % '\n'.join('- %s' % t.display_name for t in tmpls))
             res['roll_ids'] = [(6, 0, rolls.ids)]
         return res
+
+    @api.model
+    def _check_rolls_transferable(self, rolls):
+        already = rolls.filtered(lambda r: r.transfer_state)
+        if already:
+            labels = dict(rolls._fields['transfer_state'].selection)
+            raise UserError(_(
+                'Estos rollos ya están transferidos/recibidos y no se pueden '
+                'transferir de nuevo:\n%s'
+            ) % '\n'.join(
+                '- %s (%s)' % (r.name, labels.get(r.transfer_state, r.transfer_state))
+                for r in already))
 
     @api.model
     def _check_rolls_not_in_batch(self, rolls):
@@ -64,13 +78,10 @@ class RollTransfer(models.TransientModel):
         if not rolls:
             raise UserError(_('No hay rollos a transferir.'))
         self._check_rolls_not_in_batch(rolls)
+        self._check_rolls_transferable(rolls)
         if dest in rolls.mapped('workorder_id'):
             raise UserError(_('La OT de destino no puede ser la misma OT del rollo.'))
         for roll in rolls:
-            if roll.transfer_state == 'recibido':
-                raise UserError(_(
-                    'El rollo %s ya es un registro RECIBIDO; no se puede volver '
-                    'a transferir.') % roll.name)
             # Original en la OT de tejido: queda TRANSFERIDO (sigue contando su
             # consumo). Copia en la OT destino: RECIBIDO (no cuenta consumo),
             # mismo número de rollo, enlazada al original.

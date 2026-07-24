@@ -25,6 +25,48 @@ class MrpWorkorder(models.Model):
     weaving_estimate_warning = fields.Char(
         'Aviso de Estimación', compute='_compute_weaving_aggregate',
         help="Motivo por el que no se pudo estimar la duración (datos faltantes).")
+    produced_roll_count = fields.Integer(
+        'Cantidad de rollos producidos', compute='_compute_produced_roll_count',
+        help="Rollos que cuentan como producción de esta OT (excluye los "
+             "transferidos a otra OT).")
+
+    @api.depends('roll_ids', 'roll_ids.transfer_state')
+    def _compute_produced_roll_count(self):
+        for wo in self:
+            wo.produced_roll_count = len(wo.roll_ids.filtered(
+                lambda r: r.transfer_state != 'transferido'))
+
+    # Planificación de rollos: peso estimado por rollo (editable) y la cantidad
+    # de rollos a producir que se deriva de él (kilos a producir / peso, techo).
+    estimated_weight_per_roll = fields.Float(
+        'Peso Estimado por Rollo', digits=(16, 2),
+        compute='_compute_estimated_weight_per_roll', store=True, readonly=False,
+        help="Peso estimado de cada rollo (kg). Editable; se inicializa con el "
+             "valor de la configuración de la empresa. Base para la cantidad de "
+             "rollos a producir.")
+    rolls_to_produce = fields.Integer(
+        'Cantidad de Rollos a Producir', compute='_compute_rolls_to_produce',
+        store=True, readonly=True,
+        help="Kilos a producir entre el peso estimado por rollo, redondeado "
+             "siempre hacia arriba.")
+
+    @api.depends('company_id')
+    def _compute_estimated_weight_per_roll(self):
+        # Editable-computado: inicializa desde la config de la empresa; una vez
+        # con valor (por defecto o editado por el usuario) no lo pisa.
+        for wo in self:
+            if not wo.estimated_weight_per_roll:
+                wo.estimated_weight_per_roll = (
+                    wo.company_id.weaving_weight_per_roll or 0.0)
+
+    @api.depends('qty_production', 'estimated_weight_per_roll', 'operation_type')
+    def _compute_rolls_to_produce(self):
+        for wo in self:
+            wo.rolls_to_produce = 0
+            if (wo.operation_type == 'weaving'
+                    and wo.estimated_weight_per_roll > 0 and wo.qty_production > 0):
+                wo.rolls_to_produce = int(
+                    math.ceil(wo.qty_production / wo.estimated_weight_per_roll))
 
     # ------------------------------------------------------------------
     # Cálculo de tiempo de tejido de punto en máquinas circulares.
@@ -168,9 +210,10 @@ class MrpWorkorder(models.Model):
     def _get_textile_produced_qty(self):
         self.ensure_one()
         if self.operation_type == 'weaving':
-            # Los rollos RECIBIDOS (copia de una transferencia) no se tejieron
-            # aquí -> no cuentan en la cantidad producida de esta OT.
-            weaving_rolls = self.roll_ids.filtered(lambda r: r.transfer_state != 'recibido')
+            # AVANCE/producción = salida de esta OT: EXCLUYE los TRANSFERIDOS
+            # (el origen ya no los produce, se fueron a otra OT) e INCLUYE los
+            # RECIBIDOS (el destino sí los produce). El consumo va al revés.
+            weaving_rolls = self.roll_ids.filtered(lambda r: r.transfer_state != 'transferido')
             if getattr(self, 'weave_type', False) == 'rect':
                 return float(sum(weaving_rolls.mapped('quantity')))
             total_weight = float(sum(weaving_rolls.mapped('gross_weight')))

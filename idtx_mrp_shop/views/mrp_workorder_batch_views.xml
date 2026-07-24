@@ -11,6 +11,15 @@
             <button name="action_back_to_draft" position="attributes">
                 <attribute name="invisible">state != 'batch' or registry_ids</attribute>
             </button>
+            <!-- Desarmar: solo SIN registros. Dividir: solo CON registros
+                 (y en morado). Una partida con operación registrada no se puede
+                 desarmar, pero sí dividir en sub-partidas. -->
+            <button name="unbuild_batch" position="attributes">
+                <attribute name="invisible">state != 'batch' or registry_ids</attribute>
+            </button>
+            <button name="action_open_split_wizard" position="attributes">
+                <attribute name="invisible">state != 'batch' or not registry_ids</attribute>
+            </button>
             <sheet position="before">
                 <div class="alert alert-warning d-flex justify-content-between align-items-center" role="alert" invisible="not recipe_lot_warning">
                     <field name="recipe_lot_warning" readonly="1" class="w-auto mb-0"/>

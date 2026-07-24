@@ -10,7 +10,10 @@
                 <xpath expr="//field[@name='partner_id']" position="after">
                     <field name="code"/>
                 </xpath>
-                <xpath expr="//field[@name='serial_no']" position="after">
+                <!-- Calificado a la página Product Information: stock_maintenance
+                     agrega otro serial_no (widget statinfo, oculto) en el button
+                     box que aparece antes en el árbol y capturaba el xpath. -->
+                <xpath expr="//page[@name='product_information']//field[@name='serial_no']" position="after">
                     <field name="capacity_power"/>
                     <field name="manufacture_year"/>
                     <field name="rpm"/>

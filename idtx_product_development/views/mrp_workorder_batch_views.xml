@@ -10,10 +10,10 @@
                 <button name="split" type="object" class="oe_highlight" string="Split" column_invisible="parent.state != 'draft'"/>
             </xpath>
             <xpath expr="//notebook/page/field[@name='wo_roll_ids']/list/field[@name='uom_id']" position="after">
-                <field name="size_id"/>
+                <field name="size_id" optional="hide"/>
             </xpath>
             <xpath expr="//notebook/page/field[@name='wo_roll_ids']/form//field[@name='uom_id']" position="after">
-                <field name="size_id"/>
+                <field name="size_id" optional="hide"/>
             </xpath>
         </field>
     </record>

@@ -133,6 +133,9 @@ class MrpWorkorderBatch(models.Model):
         for rec in self:
             if any(roll.in_batch for roll in rec.wo_roll_ids):
                 raise UserError(_('Some rolls are in other batch, please select rolls again.'))
+            # Verifica que todos los rollos compartan color a procesar (los
+            # transferidos usan el color de su nueva OF).
+            rec._check_same_color_recipe()
             rec.wo_roll_ids.write({'in_batch': True})
             rec.state = 'batch'
             rec.wo_roll_ids.mapped('workorder_id')._sync_textile_qty_produced()
@@ -178,6 +181,12 @@ class MrpWorkorderBatch(models.Model):
         # if self.workorder_id:
         #     raise UserError(_('Can\'t unbild a batch already in use, production %s.') %self.workorder_id.production_id.name)
         for rec in self:
+            # Con registros de operación no se puede desarmar (solo dividir).
+            if 'batch.registry' in self.env and self.env['batch.registry'].search_count(
+                    [('batch_id', '=', rec.id)]):
+                raise UserError(_(
+                    'La partida %s ya tiene registros de operación; no se puede '
+                    'desarmar (solo dividir en sub-partidas).') % rec.name)
             rec.wo_roll_ids.write({'in_batch': False})
             rec.state = 'unbuild'
             rec.wo_roll_ids.mapped('workorder_id')._sync_textile_qty_produced()
@@ -186,6 +195,10 @@ class MrpWorkorderBatch(models.Model):
         for rec in self:
             if any(roll.in_batch for roll in rec.wo_roll_ids):
                 raise UserError(_('Some rolls are in other batch, can\'t rebuild batch.'))
+            # Re-verifica el color a procesar: rollos transferidos usan el color
+            # de su NUEVA OF, así que al rearmar hay que revalidar que todos los
+            # rollos (aunque sean de productos distintos) compartan color.
+            rec._check_same_color_recipe()
             rec.wo_roll_ids.write({'in_batch': True})
             rec.state = 'batch'
             rec.wo_roll_ids.mapped('workorder_id')._sync_textile_qty_produced()
@@ -197,6 +210,12 @@ class MrpWorkorderBatch(models.Model):
         self.ensure_one()
         if self.state != 'batch':
             raise UserError(_('Solo se puede dividir una partida confirmada.'))
+        # Solo se puede dividir una partida que YA tiene registros de operación.
+        if 'batch.registry' in self.env and not self.env['batch.registry'].search_count(
+                [('batch_id', '=', self.id)]):
+            raise UserError(_(
+                'La partida %s aún no tiene registros de operación; no se puede '
+                'dividir todavía (por ahora solo desarmar).') % self.name)
         if len(self.wo_roll_ids) < 2:
             raise UserError(_('La partida necesita al menos 2 rollos para dividirse.'))
         return {
