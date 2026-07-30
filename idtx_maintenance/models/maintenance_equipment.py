@@ -25,4 +25,4 @@ class MaintenanceEquipment(models.Model):
         ('malograda',     'Malograda'),
         ('mantenimiento', 'Mantenimiento'),
         ('apagada',       'Apagada'),
-    ], string='Estado de Máquina', default='apagada', index=True)
+    ], string='Estado de Máquina', default='operativa', index=True)

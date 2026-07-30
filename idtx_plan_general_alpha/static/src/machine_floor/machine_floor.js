@@ -83,7 +83,7 @@ export class MachineFloor extends Component {
             machines:   [],
             filterStatus: "all",
             filterType:   "all",
-            panel: { open: false, loading: false, machine: null, pedidos: [] },
+            panel: { open: false, loading: false, machine: null, tejiendo: [], historial: [] },
         });
 
         this._dragId   = null;
@@ -240,6 +240,11 @@ export class MachineFloor extends Component {
 
     onMachineDragStart(ev) {
         const card = ev.currentTarget;
+        // Una máquina EJECUTANDO no se puede mover de sitio.
+        if (card.dataset.status === "ejecutando") {
+            ev.preventDefault();
+            return;
+        }
         this._dragId   = parseInt(card.dataset.machineId);
         this._dragSlot = parseInt(card.dataset.slot);
         ev.dataTransfer.effectAllowed = "move";
@@ -265,13 +270,13 @@ export class MachineFloor extends Component {
         if (this._dragged) return;
         const machineId = parseInt(ev.currentTarget.dataset.machineId);
         if (!machineId) return;
-        this.state.panel = { open: true, loading: true, machine: null, pedidos: [] };
+        this.state.panel = { open: true, loading: true, machine: null, tejiendo: [], historial: [] };
         try {
             const data = await rpc("/idtx_plan_alpha/machine_detail", { equipment_id: machineId });
-            this.state.panel = { open: true, loading: false, machine: data.machine, pedidos: data.pedidos || [] };
+            this.state.panel = { open: true, loading: false, machine: data.machine, tejiendo: data.tejiendo || [], historial: data.historial || [] };
         } catch (e) {
             console.error("[MachineFloor] Error cargando detalle:", e);
-            this.state.panel = { open: true, loading: false, machine: null, pedidos: [] };
+            this.state.panel = { open: true, loading: false, machine: null, tejiendo: [], historial: [] };
         }
     }
 
@@ -317,6 +322,8 @@ export class MachineFloor extends Component {
         // Swap positions if target slot is occupied
         const targetIdx = machines.findIndex(m => m.slot_index === targetSlot);
         if (targetIdx !== -1) {
+            // Una máquina EJECUTANDO no puede ser desplazada de su sitio.
+            if (machineStatus(machines[targetIdx]) === "ejecutando") return;
             machines[targetIdx].slot_index = fromSlot;
             this._savePosition(machines[targetIdx].id, fromSlot);
         }

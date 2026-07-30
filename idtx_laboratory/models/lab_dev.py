@@ -158,13 +158,16 @@ class LabDev(models.Model):
         self.state = 'dev'
 
     def action_done(self):
-        if any(line.state != 'done' for line in self.lab_dev_line_ids):
-            raise UserError(_('All lab dev lines must be done before marking the lab dev as done.'))
+        # El estado terminal de una lab.dev.line es 'approved' (test -> color ->
+        # approved); NO existe 'done' en su selection. Comparar contra 'done'
+        # hacia que action_done fallara SIEMPRE que hubiera lineas (bug).
+        if any(line.state != 'approved' for line in self.lab_dev_line_ids):
+            raise UserError(_('All lab dev lines must be approved before marking the lab dev as done.'))
         self.state = 'done'
 
     def action_cancel(self):
-        if any(line.state == 'done' for line in self.lab_dev_line_ids):
-            raise UserError(_('Can\'t cancel a lab dev with lines in done state.'))
+        if any(line.state == 'approved' for line in self.lab_dev_line_ids):
+            raise UserError(_('Can\'t cancel a lab dev with lines in approved state.'))
         self.state = 'cancel'
 
     def action_reset(self):

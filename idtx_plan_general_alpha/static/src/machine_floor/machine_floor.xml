@@ -151,18 +151,20 @@
                         <!-- Machine card -->
                         <div t-if="slot.machine"
                              class="mf-card"
-                             t-att-class="'mf-card--' + slot.machine.status"
+                             t-att-class="'mf-card--' + slot.machine.status + (slot.machine.status === 'ejecutando' ? ' mf-card--locked' : '')"
                              t-att-style="'--tc:' + slot.machine.tcfg.color"
-                             draggable="true"
+                             t-att-draggable="slot.machine.status === 'ejecutando' ? 'false' : 'true'"
+                             t-att-data-status="slot.machine.status"
                              t-att-data-machine-id="slot.machine.id"
                              t-att-data-slot="slot.index"
-                             t-att-title="slot.machine.name"
+                             t-att-title="slot.machine.status === 'ejecutando' ? slot.machine.name + ' — Ejecutando (no se puede mover)' : slot.machine.name"
                              t-on-dragstart="onMachineDragStart"
                              t-on-dragend="onMachineDragEnd"
                              t-on-click="onMachineCardClick">
 
                             <div class="mf-card-row1">
                                 <span class="mf-card-num">#<t t-esc="slot.machine.num"/></span>
+                                <i t-if="slot.machine.status === 'ejecutando'" class="fa fa-lock mf-card-lock"/>
                                 <span class="mf-card-dot"
                                       t-att-class="'mf-card-dot--' + slot.machine.status"/>
                             </div>
@@ -262,42 +264,66 @@
                     </div>
                 </div>
 
-                <!-- Pedidos asignados -->
-                <div class="mf-panel-section">
+                <!-- Tejiendo ahora (órdenes de trabajo en progreso en esta máquina) -->
+                <div class="mf-panel-section" t-if="state.panel.tejiendo.length">
                     <div class="mf-panel-section-title">
-                        <i class="fa fa-list-alt"/>
-                        Partidas activas en este piso
-                        <span class="mf-panel-badge" t-esc="state.panel.pedidos.length"/>
+                        <i class="fa fa-cogs"/> Tejiendo ahora
+                        <span class="mf-panel-badge" t-esc="state.panel.tejiendo.length"/>
                     </div>
-                    <div t-if="state.panel.pedidos.length === 0" class="mf-panel-empty">
-                        <i class="fa fa-inbox"/>
-                        <span>Sin partidas activas asignadas</span>
-                    </div>
-                    <div class="mf-panel-pedidos" t-else="">
-                        <t t-foreach="state.panel.pedidos" t-as="p" t-key="p.id">
-                            <div class="mf-panel-pedido" t-att-class="p.num_days > 30 ? 'mf-panel-pedido--delayed' : ''">
-                                <div class="mf-panel-pedido-top">
-                                    <span class="mf-panel-pedido-batch" t-esc="p.batch or '—'"/>
-                                    <span class="mf-panel-pedido-kg">
-                                        <i class="fa fa-balance-scale"/> <t t-esc="p.kilograms"/> kg
-                                    </span>
-                                </div>
-                                <div class="mf-panel-pedido-customer" t-esc="p.customer or '—'"/>
-                                <div class="mf-panel-pedido-meta">
-                                    <span t-if="p.process">
-                                        <i class="fa fa-cogs"/> <t t-esc="p.process"/>
-                                    </span>
-                                    <span t-if="p.wish_date">
-                                        <i class="fa fa-calendar"/>
-                                        <t t-esc="p.wish_date"/>
-                                        <span t-if="p.num_days > 0" class="mf-panel-pedido-delay">
-                                            +<t t-esc="p.num_days"/>d
-                                        </span>
-                                    </span>
-                                </div>
+                    <t t-foreach="state.panel.tejiendo" t-as="job" t-key="job.id">
+                        <div class="mf-panel-job">
+                            <div class="mf-panel-job-top">
+                                <span class="mf-panel-job-prod" t-esc="job.product or '—'"/>
+                                <span class="mf-panel-job-qty" t-if="job.qty">
+                                    <i class="fa fa-balance-scale"/>
+                                    <t t-esc="job.produced"/>/<t t-esc="job.qty"/> <t t-esc="job.uom"/>
+                                </span>
                             </div>
-                        </t>
+                            <div class="mf-panel-job-wo" t-if="job.workorder" t-esc="job.workorder"/>
+                            <div class="mf-panel-job-meta">
+                                <span t-if="job.rate">
+                                    <i class="fa fa-tachometer"/> <t t-esc="job.rate"/> kg/h
+                                </span>
+                                <span t-if="job.date_start">
+                                    <i class="fa fa-clock-o"/> Inicio: <t t-esc="job.date_start"/>
+                                </span>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+
+                <!-- Historial: órdenes de trabajo ya terminadas en esta máquina -->
+                <div class="mf-panel-section" t-if="state.panel.historial.length">
+                    <div class="mf-panel-section-title">
+                        <i class="fa fa-history"/> Historial de tejido
+                        <span class="mf-panel-badge" t-esc="state.panel.historial.length"/>
                     </div>
+                    <t t-foreach="state.panel.historial" t-as="h" t-key="h.id">
+                        <div class="mf-panel-job mf-panel-job--done">
+                            <div class="mf-panel-job-top">
+                                <span class="mf-panel-job-prod" t-esc="h.product or '—'"/>
+                                <span class="mf-panel-job-qty" t-if="h.produced">
+                                    <i class="fa fa-balance-scale"/>
+                                    <t t-esc="h.produced"/>/<t t-esc="h.qty"/> <t t-esc="h.uom"/>
+                                </span>
+                            </div>
+                            <div class="mf-panel-job-wo" t-if="h.workorder">
+                                <t t-esc="h.workorder"/>
+                                <t t-if="h.production"> · <t t-esc="h.production"/></t>
+                            </div>
+                            <div class="mf-panel-job-meta">
+                                <span t-if="h.date_start">
+                                    <i class="fa fa-play-circle-o"/> Inicio: <t t-esc="h.date_start"/>
+                                </span>
+                                <span t-if="h.date_finished">
+                                    <i class="fa fa-check-circle-o"/> Fin: <t t-esc="h.date_finished"/>
+                                </span>
+                                <span t-if="h.duration">
+                                    <i class="fa fa-hourglass-half"/> <t t-esc="h.duration"/> min
+                                </span>
+                            </div>
+                        </div>
+                    </t>
                 </div>
             </div>
 

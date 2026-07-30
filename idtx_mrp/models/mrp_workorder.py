@@ -231,7 +231,7 @@ class MrpWorkorder(models.Model):
             workorder.qty_produced = workorder._get_textile_produced_qty()
 
     def write(self, vals):
-        if 'state' in vals and vals['state'] in ('progress', 'done') and not self.env.context.get('skip_textile_qty') and self.filtered(lambda wo: wo.operation_type in (('weaving',) + wo.BATCH_OPERATION_TYPES)):
+        if 'state' in vals and vals['state'] in ('progress', 'done') and self.filtered(lambda wo: wo.operation_type in (('weaving',) + wo.BATCH_OPERATION_TYPES)):
             result = True
             for workorder in self:
                 current_vals = dict(vals)
@@ -241,8 +241,12 @@ class MrpWorkorder(models.Model):
                 elif 'qty_produced' not in current_vals and produced_qty > 0:
                     current_vals['qty_produced'] = produced_qty
                 result = super(MrpWorkorder, workorder).write(current_vals) and result
-            return result
-        return super().write(vals)
+        else:
+            result = super().write(vals)
+
+        if equipos_a_resync:
+            self._resync_equipment_state(equipos_a_resync)
+        return result
 
     def unlink(self):
         for rec in self:
@@ -278,7 +282,111 @@ class MrpWorkorder(models.Model):
                 invalid_options = wo.option_ids.filtered(lambda opt: not opt.employee_ids or not opt.equipment_ids)
                 if invalid_options:
                     raise UserError(_('All options must have assigned employees and equipments before starting.'))
-        return super().button_start(raise_on_invalid_state=raise_on_invalid_state)
+                # La orden de trabajo debe estar enlazada a máquinas de su misma
+                # área (mismo nombre de centro de trabajo, p. ej. TEJEDURIA) y que
+                # estén OPERATIVAS: no se puede iniciar con máquinas de otra área ni
+                # en otro estado (apagada, malograda, mantenimiento, ejecutando).
+                # Se compara por NOMBRE de centro porque los equipos y las órdenes
+                # pueden estar en centros de trabajo homónimos de distinta compañía.
+                all_equipment = wo.option_ids.equipment_ids
+                wc_name = wo.workcenter_id.name
+                wrong_wc = all_equipment.filtered(
+                    lambda e: not e.workcenter_id or e.workcenter_id.name != wc_name
+                )
+                if wrong_wc:
+                    raise UserError(_(
+                        'No se puede iniciar: las siguientes máquinas no pertenecen '
+                        'al área "%(wc)s": %(maqs)s',
+                        wc=wc_name or '—',
+                        maqs=', '.join(wrong_wc.mapped('name')),
+                    ))
+                not_operativa = all_equipment.filtered(lambda e: e.machine_state != 'operativa')
+                if not_operativa:
+                    estados = dict(
+                        self.env['maintenance.equipment']._fields['machine_state'].selection
+                    )
+                    detalle = ', '.join(
+                        '%s (%s)' % (e.name, estados.get(e.machine_state, e.machine_state or '—'))
+                        for e in not_operativa
+                    )
+                    raise UserError(_(
+                        'No se puede iniciar: solo se permiten máquinas en estado '
+                        'OPERATIVA. Máquinas no operativas: %s', detalle))
+        res = super().button_start(raise_on_invalid_state=raise_on_invalid_state)
+        self._set_equipment_running(True)
+        self._purge_zero_duration_times()
+        return res
+
+    def button_finish(self):
+        res = super().button_finish()
+        self._set_equipment_running(False)
+        self._purge_zero_duration_times()
+        return res
+
+    def _purge_zero_duration_times(self):
+        """Elimina registros de 'Seguimiento de tiempo' VACÍOS (0 min reales:
+        date_start == date_end). El flujo estándar de Odoo, al arrancar el
+        cronómetro de tejido, crea de más un registro cerrado de duración 0
+        (probablemente por el inverse `_set_duration` con un delta ínfimo que,
+        tras truncar microsegundos, queda en 0), que se veía como una línea
+        DUPLICADA junto al registro real. Un registro de 0 min no aporta a la
+        duración total, así que borrarlo no altera el tiempo real registrado.
+        Solo se aplica a OT de tejido y nunca toca un cronómetro ABIERTO
+        (date_end vacío)."""
+        for wo in self.filtered(lambda w: w.workcenter_id.operation_type == 'weaving'):
+            phantom = wo.time_ids.filtered(
+                lambda t: t.date_start and t.date_end
+                and (t.date_end - t.date_start).total_seconds() < 1
+            )
+            if phantom:
+                phantom.sudo().unlink()
+
+    def _set_equipment_running(self, running):
+        """Sincroniza el estado de las máquinas de tejido con la ejecución de la OT:
+        al INICIAR pasan de 'operativa' a 'ejecutando'; al TERMINAR vuelven de
+        'ejecutando' a 'operativa'. No pisa estados manuales (malograda,
+        mantenimiento, apagada). Se usa sudo porque el equipo puede ser de otra
+        compañía que la OT."""
+        for wo in self:
+            if wo.workcenter_id.operation_type != 'weaving':
+                continue
+            equipos = wo.option_ids.equipment_ids.sudo()
+            if not equipos:
+                continue
+            if running:
+                equipos.filtered(lambda e: e.machine_state == 'operativa').write(
+                    {'machine_state': 'ejecutando'})
+            else:
+                equipos.filtered(lambda e: e.machine_state == 'ejecutando').write(
+                    {'machine_state': 'operativa'})
+
+    @api.model
+    def _resync_equipment_state(self, equipos):
+        """Recalcula el estado de un conjunto de máquinas de tejido según la
+        realidad actual: una máquina está 'ejecutando' si y solo si sigue
+        enlazada a al menos una orden de trabajo de tejido EN PROGRESO; en caso
+        contrario vuelve a 'operativa'. No pisa los estados fijados a mano
+        (malograda, mantenimiento, apagada). Es idempotente, así que puede
+        llamarse tras cualquier cambio de asignación de máquinas (quitar/añadir
+        equipos en una opción, borrar opciones, etc.). Se usa sudo porque los
+        equipos pueden pertenecer a otra compañía que la OT."""
+        equipos = equipos.sudo()
+        if not equipos:
+            return
+        Workorder = self.env['mrp.workorder'].sudo()
+        for eq in equipos:
+            # Solo se autogestiona el par operativa/ejecutando; un estado puesto
+            # manualmente (malograda, mantenimiento, apagada) no se toca.
+            if eq.machine_state not in ('operativa', 'ejecutando'):
+                continue
+            en_uso = Workorder.search_count([
+                ('state', '=', 'progress'),
+                ('workcenter_id.operation_type', '=', 'weaving'),
+                ('option_ids.equipment_ids', 'in', eq.id),
+            ]) > 0
+            objetivo = 'ejecutando' if en_uso else 'operativa'
+            if eq.machine_state != objetivo:
+                eq.write({'machine_state': objetivo})
 
 class MrpWorkorderOption(models.Model):
     _name = 'mrp.workorder.option'
@@ -295,6 +403,17 @@ class MrpWorkorderOption(models.Model):
         'product.product',
         compute='_compute_available_thread_products',
         string='Available Thread Products'
+    )
+    # Máquinas seleccionables: solo las OPERATIVAS del mismo área (nombre de
+    # centro de trabajo) que la orden de trabajo. Se empareja por nombre porque
+    # los equipos y las órdenes pueden vivir en centros homónimos de distinta
+    # compañía (p. ej. TEJEDURIA de IDETEX vs. TEJEDURIA de FULL PIMA).
+    available_equipment_ids = fields.Many2many(
+        'maintenance.equipment',
+        relation='mrp_wo_option_avail_equipment_rel',
+        column1='option_id', column2='equipment_id',
+        compute='_compute_available_equipment',
+        string='Máquinas Disponibles',
     )
 
     # --- Estimación de tejido por opción ---
@@ -402,11 +521,60 @@ class MrpWorkorderOption(models.Model):
             else:
                 record.available_thread_product_ids = False
 
+    @api.depends('workorder_id', 'workorder_id.workcenter_id',
+                 'workorder_id.workcenter_id.name')
+    def _compute_available_equipment(self):
+        """Máquinas OPERATIVAS del mismo área (nombre de centro) que la OT."""
+        Equipment = self.env['maintenance.equipment']
+        for opt in self:
+            wc = opt.workorder_id.workcenter_id
+            if wc and wc.name:
+                opt.available_equipment_ids = Equipment.search([
+                    ('active', '=', True),
+                    ('workcenter_id.name', '=', wc.name),
+                    ('machine_state', '=', 'operativa'),
+                ])
+            else:
+                opt.available_equipment_ids = Equipment.browse()
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        options = super().create(vals_list)
+        # Si se crea una opción CON máquinas sobre una OT de tejido que ya está
+        # EN PROGRESO, esas máquinas deben reflejar 'ejecutando'.
+        afectadas = options.filtered(
+            lambda o: o.equipment_ids
+            and o.workorder_id.state == 'progress'
+            and o.workorder_id.workcenter_id.operation_type == 'weaving'
+        ).equipment_ids
+        if afectadas:
+            self.env['mrp.workorder']._resync_equipment_state(afectadas)
+        return options
+
+    def write(self, vals):
+        # Al cambiar las máquinas asignadas hay que resincronizar el estado de
+        # las máquinas QUITADAS (vuelven a 'operativa' si ya no las usa ninguna
+        # OT en progreso) y de las AÑADIDAS (pasan a 'ejecutando' si la OT está
+        # en progreso). Sin esto, quitar una máquina de una OT en curso la dejaba
+        # colgada en 'ejecutando'.
+        if 'equipment_ids' not in vals:
+            return super().write(vals)
+        afectadas = self.equipment_ids            # máquinas ANTES del cambio
+        res = super().write(vals)
+        afectadas |= self.equipment_ids           # ∪ máquinas DESPUÉS del cambio
+        self.env['mrp.workorder']._resync_equipment_state(afectadas)
+        return res
+
     def unlink(self):
         for rec in self:
             if any(roll.option_id == rec for roll in rec.workorder_id.roll_ids):
                 raise UserError(_('You can\'t delete options of a workorder used in any roll'))
-        return super().unlink()
+        # Al borrar opciones, sus máquinas deben resincronizarse: si ya no las
+        # usa ninguna OT en progreso, vuelven a 'operativa'.
+        afectadas = self.equipment_ids
+        res = super().unlink()
+        self.env['mrp.workorder']._resync_equipment_state(afectadas)
+        return res
 
     @api.constrains('option_line_ids', 'workorder_id')
     def _check_option_lines_complete_unique(self):

@@ -76,7 +76,8 @@
                         <list>
                             <field name="name" readonly="1" force_save="1"/>
                             <field name="employee_ids" widget="many2many_tags"/>
-                            <field name="equipment_ids" widget="many2many_tags" domain="[('workcenter_id','=',parent.workcenter_id)]"/>
+                            <field name="available_equipment_ids" column_invisible="1"/>
+                            <field name="equipment_ids" widget="many2many_tags" domain="[('id','in',available_equipment_ids)]"/>
                             <field name="estimated_rate_kg_h" readonly="1"/>
                             <!-- <field name="option_line_ids" widget="many2many_tags" readonly="1" force_save="1"/> -->
                         </list>

@@ -278,6 +278,35 @@ def _create_floor_layouts(env):
     )
 
 
+def _set_tejeduria_operativa(env):
+    """Fuerza a 'operativa' el estado de todas las máquinas del centro de trabajo TEJEDURIA."""
+    Equipment = env['maintenance.equipment']
+    if 'machine_state' not in Equipment._fields:
+        return
+
+    domain = [('active', '=', True)]
+    if 'workcenter_id' in Equipment._fields:
+        wc = env['mrp.workcenter'].search([('name', '=', 'TEJEDURIA')], limit=1)
+        if not wc:
+            _logger.info('Plan General Alpha: centro de trabajo TEJEDURIA no encontrado.')
+            return
+        domain.append(('workcenter_id', '=', wc.id))
+    else:
+        dept = env['hr.department'].search([('name', 'ilike', 'Tejed')], limit=1)
+        if not dept:
+            return
+        domain.append(('department_id', '=', dept.id))
+
+    maquinas = Equipment.search(domain)
+    por_cambiar = maquinas.filtered(lambda m: m.machine_state != 'operativa')
+    if por_cambiar:
+        por_cambiar.write({'machine_state': 'operativa'})
+    _logger.info(
+        'Plan General Alpha: TEJEDURIA operativa — %d máquinas actualizadas de %d totales.',
+        len(por_cambiar), len(maquinas),
+    )
+
+
 def post_init_hook(env):
     try:
         estados_id = env.ref('idtx_plan_general_alpha.action_plan_alpha_dash_estados').id
@@ -308,3 +337,4 @@ def post_init_hook(env):
 
     _create_initial_equipment(env)
     _create_floor_layouts(env)
+    _set_tejeduria_operativa(env)

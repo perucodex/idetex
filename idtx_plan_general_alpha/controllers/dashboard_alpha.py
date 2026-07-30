@@ -1,5 +1,6 @@
 import datetime
 import logging
+import pytz
 from collections import defaultdict
 from odoo import http
 from odoo.http import request
@@ -152,7 +153,6 @@ class PlanAlphaDashboard(http.Controller):
 
         equipments = Equipment.search(domain, order="name asc")
 
-        # ── Grid slot positions ──────────────────────────────────────────────
         GRID_COLS_OLD = 20
         GRID_COLS_NEW = 24
 
@@ -161,9 +161,6 @@ class PlanAlphaDashboard(http.Controller):
         layout_map = {l.equipment_id.id: l.slot_index for l in existing}
         occupied = set(layout_map.values())
 
-        # One-time import from old idtx.machine.layout (if exists)
-        # Sort by old slot_index to preserve physical order, then assign
-        # sequential slots without gaps.
         if not layout_map and "idtx.machine.layout" in env.registry.models:
             OldLayout = env["idtx.machine.layout"].sudo()
             area_kw = workcenter.lower()
@@ -229,13 +226,13 @@ class PlanAlphaDashboard(http.Controller):
         methods=["POST"],
     )
     def machine_detail(self, equipment_id=None):
-        """Devuelve datos completos de una máquina y sus pedidos activos en su workcenter."""
+        """Devuelve la ficha técnica completa de una máquina."""
         if not equipment_id:
-            return {"machine": None, "pedidos": []}
+            return {"machine": None}
         env = request.env
         eq = env["maintenance.equipment"].sudo().browse(int(equipment_id))
         if not eq.exists():
-            return {"machine": None, "pedidos": []}
+            return {"machine": None}
 
         fields_eq = eq._fields
         machine = {
@@ -256,33 +253,64 @@ class PlanAlphaDashboard(http.Controller):
             "year":        eq.manufacture_year if "manufacture_year" in fields_eq else "",
         }
 
-        # Pedidos activos cuyo proceso o siguiente proceso apunta al workcenter de la máquina
-        pedidos = []
-        wc_name = machine["workcenter"]
-        if wc_name and "control.pedido.line" in env.registry.models:
+        # Los datetime del ORM son naive en UTC; para mostrarlos hay que
+        # convertirlos a la zona horaria del USUARIO logueado (no del sudo).
+        _tz = pytz.timezone(request.env.user.tz or "UTC")
+
+        def _fmt_local(dt):
+            if not dt:
+                return ""
+            return pytz.utc.localize(dt).astimezone(_tz).strftime("%Y-%m-%d %H:%M")
+
+        # Lo que se está TEJIENDO ahora en esta máquina: órdenes de trabajo en
+        # progreso cuya opción usa este equipo. Se usa sudo porque las OT pueden
+        # ser de otra compañía (FULL PIMA) mientras la máquina es de IDETEX.
+        tejiendo = []
+        # Historial de lo ya tejido en esta máquina: OT terminadas, con sus
+        # fechas de inicio/fin y duración real.
+        historial = []
+        if "mrp.workorder" in env.registry.models:
             try:
-                Line = env["control.pedido.line"].sudo()
-                lines = Line.search([
-                    ("state", "=", "active"),
-                    "|",
-                    ("area", "ilike", wc_name),
-                    ("process", "ilike", wc_name),
-                ], limit=30, order="wish_date asc")
-                for l in lines:
-                    pedidos.append({
-                        "id":         l.id,
-                        "batch":      l.batch or "",
-                        "process":    l.process or "",
-                        "customer":   (l.customer or "")[:30],
-                        "kilograms":  round(l.kilograms or 0, 1),
-                        "area":       l.area or "",
-                        "wish_date":  str(l.wish_date) if l.wish_date else "",
-                        "num_days":   l.num_days or 0,
+                Workorder = env["mrp.workorder"].sudo()
+                wos = Workorder.search([
+                    ("option_ids.equipment_ids", "in", eq.id),
+                    ("state", "=", "progress"),
+                ], order="date_start desc", limit=20)
+                for wo in wos:
+                    tejiendo.append({
+                        "id":         wo.id,
+                        "workorder":  wo.display_name or wo.name or "",
+                        "production": wo.production_id.name or "",
+                        "product":    wo.product_id.display_name or "",
+                        "qty":        round(wo.qty_production or 0, 2),
+                        "produced":   round(wo.qty_produced or 0, 2),
+                        "uom":        wo.production_id.product_uom_id.name if wo.production_id.product_uom_id else "",
+                        "workcenter": wo.workcenter_id.name or "",
+                        "rate":       round(wo.estimated_rate_kg_h or 0, 1) if "estimated_rate_kg_h" in wo._fields else 0,
+                        "date_start": _fmt_local(wo.date_start),
+                    })
+
+                done_wos = Workorder.search([
+                    ("option_ids.equipment_ids", "in", eq.id),
+                    ("state", "=", "done"),
+                ], order="date_finished desc, date_start desc", limit=30)
+                for wo in done_wos:
+                    historial.append({
+                        "id":            wo.id,
+                        "workorder":     wo.display_name or wo.name or "",
+                        "production":    wo.production_id.name or "",
+                        "product":       wo.product_id.display_name or "",
+                        "qty":           round(wo.qty_production or 0, 2),
+                        "produced":      round(wo.qty_produced or 0, 2),
+                        "uom":           wo.production_id.product_uom_id.name if wo.production_id.product_uom_id else "",
+                        "date_start":    _fmt_local(wo.date_start),
+                        "date_finished": _fmt_local(wo.date_finished),
+                        "duration":      round(wo.duration or 0, 1),
                     })
             except Exception:
-                _logger.warning("machine_detail: error cargando pedidos", exc_info=True)
+                _logger.warning("machine_detail: error cargando tejido/historial", exc_info=True)
 
-        return {"machine": machine, "pedidos": pedidos}
+        return {"machine": machine, "tejiendo": tejiendo, "historial": historial}
 
     @http.route(
         "/idtx_plan_alpha/save_floor_position",
