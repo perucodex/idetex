@@ -12,8 +12,12 @@ class Mrp_ProductionAdditionalWorkorder(models.TransientModel):
             rec.name = rec.add_mrwo_id.name
 
     def add_workorder(self):
-        # 1. Guardamos el ID del último workorder antes de crear
-        last_ids = set(self.production_id.workorder_ids.ids)
+        # 1. Guardamos los IDs previos con un search directo: leer
+        # production_id.workorder_ids aquí prima la caché del one2many y el
+        # _resequence_workorders del create dejaría la OT nueva al final
+        # (secuencia última) → dependencia cíclica al enlazar la siguiente OT.
+        last_ids = set(self.env['mrp.workorder'].search(
+            [('production_id', '=', self.production_id.id)]).ids)
         # 2. Ejecutamos el original (crea el workorder)
         res = super().add_workorder()
         # 3. Capturamos el workorder nuevo

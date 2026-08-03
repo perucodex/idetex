@@ -24,6 +24,14 @@
         <field name="model">mrp.workorder</field>
         <field name="inherit_id" ref="mrp.mrp_production_workorder_form_view_inherit"/>
         <field name="arch" type="xml">
+            <!-- Banner superior (solo tejido): rollos que faltan por tejer,
+                 descontando los ya tejidos, con el rollo del sobrante. -->
+            <xpath expr="//sheet" position="before">
+                <div class="alert alert-info m-0" role="alert"
+                     invisible="operation_type != 'weaving' or not rolls_pending_message">
+                    <field name="rolls_pending_message" readonly="1" nolabel="1" class="mb-0"/>
+                </div>
+            </xpath>
             <xpath expr="//field[@name='name']" position="after">
                 <field name="mrwo_id" required="1"/>
             </xpath>
@@ -60,7 +68,7 @@
                     </group>
                     <group name="idtx_produced_group">
                         <field name="estimated_weight_per_roll" invisible="operation_type != 'weaving'"/>
-                        <field name="rolls_to_produce" invisible="operation_type != 'weaving'"/>
+                        <field name="rolls_to_produce_summary" invisible="operation_type != 'weaving'"/>
                     </group>
                 </group>
             </xpath>

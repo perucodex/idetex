@@ -3,7 +3,8 @@ import logging
 
 import dbf
 
-from odoo import api, models
+from odoo import api, fields, models
+from odoo.tools import sql
 
 from .technical_sheet import _dbf_char
 
@@ -85,6 +86,58 @@ def _build_sysproceso_memo(op_names, max_len=_SYSPROCESO_MEMO_MAX,
 
 class ProductAnalysis(models.Model):
     _inherit = 'product.analysis'
+
+    # La composicion es propiedad del articulo, no de cada ficha: se define
+    # una sola vez aqui y las fichas tecnicas la heredan (related).
+    fabric_composition_id = fields.Many2one(
+        'texplus.tipart', string='Composicion',
+        default=lambda self: self.env['texplus.tipart']._get_default_tipart().id,
+        help="Tipo de articulo del catalogo TIPART de TEXPLUS. Se ingresa una "
+             "sola vez en el analisis; todas las fichas tecnicas lo heredan.")
+
+    def init(self):
+        self._seed_fabric_composition_from_sheets()
+
+    def _seed_fabric_composition_from_sheets(self):
+        """Migracion idempotente: puebla la composicion del analisis desde su
+        ficha tecnica mas reciente (antes vivia en cada ficha) y luego alinea
+        todas las fichas con el valor del analisis."""
+        cr = self.env.cr
+        if (
+            not sql.column_exists(cr, self._table, 'fabric_composition_id')
+            or not sql.table_exists(cr, 'technical_sheet')
+            or not sql.column_exists(cr, 'technical_sheet', 'fabric_composition_id')
+        ):
+            return
+
+        cr.execute("""
+            UPDATE product_analysis pa
+               SET fabric_composition_id = s.fabric_composition_id
+              FROM (
+                   SELECT DISTINCT ON (analysis_id) analysis_id, fabric_composition_id
+                     FROM technical_sheet
+                    WHERE analysis_id IS NOT NULL
+                      AND fabric_composition_id IS NOT NULL
+                    ORDER BY analysis_id, id DESC
+                   ) s
+             WHERE s.analysis_id = pa.id
+               AND pa.fabric_composition_id IS NULL
+        """)
+        default_tipart = self.env['texplus.tipart']._get_default_tipart()
+        cr.execute(
+            "UPDATE product_analysis SET fabric_composition_id = %s "
+            "WHERE fabric_composition_id IS NULL",
+            [default_tipart.id],
+        )
+        # Alinear las fichas (el campo en la ficha es related almacenado; el
+        # upgrade no recomputa filas existentes, se hace por SQL una vez).
+        cr.execute("""
+            UPDATE technical_sheet ts
+               SET fabric_composition_id = pa.fabric_composition_id
+              FROM product_analysis pa
+             WHERE ts.analysis_id = pa.id
+               AND ts.fabric_composition_id IS DISTINCT FROM pa.fabric_composition_id
+        """)
 
     def write(self, vals):
         # Cambio de descripcion (editable por el grupo manager incluso fuera

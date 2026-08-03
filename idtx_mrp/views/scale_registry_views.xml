@@ -5,7 +5,9 @@
         <field name="arch" type="xml">
             <list editable="top">
                 <field name="equipment_id"/>
-                <field name="ip"/>
+                <field name="read_mode"/>
+                <field name="ip" required="read_mode == 'ip'" readonly="read_mode != 'ip'"/>
+                <field name="serial_baudrate" column_invisible="0" readonly="read_mode != 'serial'"/>
                 <field name="printer_id"/>
                 <field name="printer_ip"/>
             </list>

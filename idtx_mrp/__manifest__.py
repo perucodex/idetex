@@ -55,10 +55,10 @@ Módulo base para los desarrollos de producción para empresas textiles
     'demo': [
         'demo/mrp.routing.workcenter.operation.csv',
     ],
-    # "assets": {
-    #     "web.assets_backend": [
-    #         "idtx_mrp/static/src/js/print_zpl_simple.js",
-    #     ],
-    # },
+    "assets": {
+        "web.assets_backend": [
+            "idtx_mrp/static/src/js/print_zpl_simple.js",
+        ],
+    },
 }
 

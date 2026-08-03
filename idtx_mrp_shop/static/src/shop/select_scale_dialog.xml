@@ -3,6 +3,11 @@
     <t t-name="idtx_mrp_shop.SelectScaleDialog">
         <Dialog size="'md'" title="props.title" modalRef="modalRef">
 
+            <!-- Rollos pendientes por tejer (suma de pesos reales ya tejidos). -->
+            <div t-if="pendingRollsMessage" class="alert alert-info fs-5 mb-0" role="alert">
+                <t t-esc="pendingRollsMessage"/>
+            </div>
+
             <!-- Option -->
             <div class="mt-4" t-if="options and options.length">
                 <h5 class="fw-bold">Option</h5>
@@ -50,29 +55,34 @@
 
             <div class="o_select_scale_dialog w-100 mt-3">
 
-                <!-- Lista de balanzas -->
-                <t t-foreach="scales" t-as="scale" t-key="scale.id">
-                    <div class="form-check py-2 fs-3 pointer-cursor"
-                         t-on-click="() => this.selectScale(scale)">
-                        <input t-att-type="props.radioMode ? 'radio' : 'checkbox'"
-                               t-att-name="'scaleChoice'"
-                               class="form-check-input"
-                               t-att-checked="state.selectedMode === 'scale' and state.selectedScaleId === scale.id"/>
-                        <label class="form-check-label">
-                            <t t-out="scale.equipment_name"/>
-                        </label>
-                    </div>
-                </t>
-
-                <!-- Manual -->
-                <div class="form-check py-2 fs-3 pointer-cursor" t-on-click="() => this.selectManual()">
-                    <input type="radio" name="scaleChoice" class="form-check-input"
-                           t-att-checked="state.selectedMode === 'manual'"/>
-                    <label class="form-check-label">Manual</label>
+                <!-- Balanza (selección única, igual que Empleado/Equipo; incluye Manual) -->
+                <div class="mt-1">
+                    <h5 class="fw-bold">Balanza</h5>
+                    <select class="form-select fs-4" t-on-change="onScaleSelectChange">
+                        <t t-foreach="scales" t-as="scale" t-key="scale.id">
+                            <option t-att-value="'' + scale.id"
+                                    t-att-selected="(state.selectedMode === 'scale' or state.selectedMode === 'serial') and state.selectedScaleId === scale.id"
+                                    t-esc="scale.equipment_name"/>
+                        </t>
+                        <option value="manual" t-att-selected="state.selectedMode === 'manual'">Manual</option>
+                    </select>
                 </div>
 
-                <!-- Peso Balanza -->
-                <div t-if="state.selectedMode === 'scale'" class="mt-3">
+                <!-- Conectar puerto COM (Web Serial) cuando la balanza lee por navegador -->
+                <div t-if="state.selectedMode === 'serial' and !state.serialConnected" class="mt-3">
+                    <button class="btn btn-primary fs-4" t-on-click="connectSerial">
+                        Conectar puerto COM
+                    </button>
+                    <div class="mt-2 text-muted fs-6">
+                        Elige el puerto de la balanza (p.ej. COM1). El navegador lo recuerda para la próxima vez.
+                    </div>
+                    <div class="mt-1 text-danger fs-6" t-if="state.scaleReadError">
+                        <t t-esc="state.scaleReadError"/>
+                    </div>
+                </div>
+
+                <!-- Peso Balanza (IP o COM del navegador) -->
+                <div t-if="(state.selectedMode === 'scale') or (state.selectedMode === 'serial' and state.serialConnected)" class="mt-3">
                     <label class="form-label fs-4">Peso Balanza</label>
 
                     <input type="text"

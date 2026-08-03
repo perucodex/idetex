@@ -17,6 +17,18 @@
                     <field name="product_description" required="1"
                            groups="idtx_product_development.group_module_product_development_manager"/>
                 </xpath>
+                <!-- Composicion (TIPART de TEXPLUS): se ingresa una sola vez
+                     aqui; todas las fichas tecnicas la heredan. Managers la
+                     pueden corregir en cualquier estado. -->
+                <xpath expr="//field[@name='product_fiber_id']" position="after">
+                    <field name="fabric_composition_id" required="1"
+                           options="{'no_create': True, 'no_open': True}"
+                           readonly="state != 'test'"
+                           groups="!idtx_product_development.group_module_product_development_manager"/>
+                    <field name="fabric_composition_id" required="1"
+                           options="{'no_create': True, 'no_open': True}"
+                           groups="idtx_product_development.group_module_product_development_manager"/>
+                </xpath>
             </field>
         </record>
     </data>

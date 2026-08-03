@@ -213,40 +213,23 @@ class TechnicalSheet(models.Model):
     foxpro_export_date = fields.Datetime('FoxPro Export Date', copy=False, readonly=True)
     fabric_composition_id = fields.Many2one(
         'texplus.tipart', string='Composicion',
-        default=lambda self: self._default_fabric_composition_id(),
-        help="Tipo de articulo del catalogo TIPART de TEXPLUS.")
+        related='analysis_id.fabric_composition_id', store=True, readonly=True,
+        help="Composicion definida en el analisis de producto (TIPART de "
+             "TEXPLUS); se ingresa una sola vez a nivel de analisis.")
     clipboard_summary = fields.Char(compute='_compute_clipboard_summary')
 
-    @api.model
-    def _default_fabric_composition_id(self):
-        return self.env['texplus.tipart']._get_default_tipart().id
-
     def init(self):
-        self._sanitize_fabric_composition_column()
-        self._apply_fabric_composition_required_constraint()
+        self._relax_fabric_composition_column()
 
-    def _sanitize_fabric_composition_column(self):
-        cr = self.env.cr
-        if (
-            not sql.table_exists(cr, self._table)
-            or not sql.column_exists(cr, self._table, 'fabric_composition_id')
-        ):
-            return
-
-        default_tipart = self.env['texplus.tipart']._get_default_tipart()
-        cr.execute(
-            "UPDATE technical_sheet SET fabric_composition_id = %s WHERE fabric_composition_id IS NULL",
-            [default_tipart.id],
-        )
-
-    def _apply_fabric_composition_required_constraint(self):
+    def _relax_fabric_composition_column(self):
+        # El campo ahora es related al analisis: la columna ya no puede ser
+        # NOT NULL (fichas sin analisis quedan sin valor).
         cr = self.env.cr
         if not sql.table_exists(cr, self._table):
             return
-
         column = sql.table_columns(cr, self._table).get('fabric_composition_id')
-        if column and column['is_nullable'] == 'YES':
-            sql.set_not_null(cr, self._table, 'fabric_composition_id')
+        if column and column['is_nullable'] == 'NO':
+            sql.drop_not_null(cr, self._table, 'fabric_composition_id')
 
     @api.depends('product_code', 'foxpro_article_prefix')
     def _compute_foxpro_article_code(self):
@@ -320,39 +303,43 @@ class TechnicalSheet(models.Model):
         return {code: tipart_cod for code, (tipart_cod, _date_value) in best_by_code.items()}
 
     def _sync_fabric_compositions_from_texplus(self):
+        # La composicion vive en el analisis (la ficha es related): se
+        # resuelve el TipArtCod de ARTICU por analisis y se escribe ahi; las
+        # fichas se actualizan solas via el related almacenado.
         Tipart = self.env['texplus.tipart']
         Tipart._sync_from_texplus()
         default_tipart = Tipart._get_default_tipart()
 
         sheets = (self or self.search([])).sudo()
-        code_by_sheet = {
-            sheet.id: sheet._get_texplus_articu_lookup_code()
-            for sheet in sheets
-        }
-        tipart_by_code = self._get_texplus_articu_tipart_map(code_by_sheet.values())
+        code_by_analysis = {}
+        for sheet in sheets:
+            if sheet.analysis_id and sheet.analysis_id.id not in code_by_analysis:
+                code_by_analysis[sheet.analysis_id.id] = sheet._get_texplus_articu_lookup_code()
+        tipart_by_code = self._get_texplus_articu_tipart_map(code_by_analysis.values())
         tipart_records_by_code = Tipart._ensure_tipart_codes(tipart_by_code.values())
 
-        sheet_ids_by_tipart_id = {}
+        Analysis = self.env['product.analysis'].sudo()
+        analysis_ids_by_tipart_id = {}
         matched = 0
         defaulted = 0
-        for sheet in sheets:
-            tipart_cod = tipart_by_code.get(code_by_sheet.get(sheet.id))
+        for analysis in Analysis.browse(code_by_analysis.keys()):
+            tipart_cod = tipart_by_code.get(code_by_analysis[analysis.id])
             tipart = tipart_records_by_code.get(tipart_cod) or default_tipart
             if tipart == default_tipart and not tipart_cod:
                 defaulted += 1
             else:
                 matched += 1
-            if sheet.fabric_composition_id != tipart:
-                sheet_ids_by_tipart_id.setdefault(tipart.id, []).append(sheet.id)
+            if analysis.fabric_composition_id != tipart:
+                analysis_ids_by_tipart_id.setdefault(tipart.id, []).append(analysis.id)
 
-        for tipart_id, sheet_ids in sheet_ids_by_tipart_id.items():
-            self.browse(sheet_ids).sudo().write({'fabric_composition_id': tipart_id})
+        for tipart_id, analysis_ids in analysis_ids_by_tipart_id.items():
+            Analysis.browse(analysis_ids).write({'fabric_composition_id': tipart_id})
 
         return {
-            'total': len(sheets),
+            'total': len(code_by_analysis),
             'matched': matched,
             'defaulted': defaulted,
-            'updated': sum(len(sheet_ids) for sheet_ids in sheet_ids_by_tipart_id.values()),
+            'updated': sum(len(ids) for ids in analysis_ids_by_tipart_id.values()),
         }
 
     def action_sync_fabric_compositions_from_texplus(self):
@@ -363,7 +350,7 @@ class TechnicalSheet(models.Model):
             'params': {
                 'title': _('TEXPLUS'),
                 'message': _(
-                    'Composiciones actualizadas: %(updated)s de %(total)s fichas. '
+                    'Composiciones actualizadas: %(updated)s de %(total)s analisis. '
                     'Coincidencias ARTICU: %(matched)s. Por defecto: %(defaulted)s.'
                 ) % stats,
                 'sticky': False,

@@ -232,10 +232,18 @@ class MrpWorkorder(models.Model):
                 else:
                     line.unlink()
 
-    def _compute_registry_recipe_components(self):
+    def _compute_registry_recipe_components(self, batch=False):
+        """Sal/carbonato/soda de la receta. La PARTIDA es la dueña de la
+        resolución: primero los procesos de su SUB-RECETA (factores ajustados
+        a la combinación de lotes), luego la receta de la partida y recién
+        como fallback la receta de la OF."""
         self.ensure_one()
-        prd = self.production_id
-        recipe = prd.color_recipe_id
+        recipe = (batch.color_recipe_id if batch and batch.exists() else False) \
+            or self.production_id.color_recipe_id
+        sub = batch.recipe_lot_id if batch and batch.exists() else self.env['color.recipe.lot']
+        processes = (sub.process_ids if sub and sub.process_ids
+                     else (recipe.color_recipe_process_ids if recipe
+                           else self.env['color.recipe.process']))
         salt = 0
         carbonate = 0
         soda = 0
@@ -243,7 +251,7 @@ class MrpWorkorder(models.Model):
         categ_carbonate = self.env.ref('idtx_laboratory.product_categ_5', raise_if_not_found=False)
         categ_soda = self.env.ref('idtx_laboratory.product_categ_6', raise_if_not_found=False)
 
-        for crpl in recipe.color_recipe_process_ids.color_recipe_process_line_ids:
+        for crpl in processes.color_recipe_process_line_ids:
             if categ_salt and crpl.product_id.categ_id == categ_salt:
                 salt += crpl.factor
             elif categ_carbonate and crpl.product_id.categ_id == categ_carbonate:
@@ -268,7 +276,7 @@ class MrpWorkorder(models.Model):
         sub = batch.recipe_lot_id if batch and batch.exists() else self.env['color.recipe.lot']
         ldl = recipe.lab_dev_line_id if recipe else False
         equipment = self.env['maintenance.equipment'].browse(int(equipment_id)) if equipment_id else False
-        recipe_components = self._compute_registry_recipe_components()
+        recipe_components = self._compute_registry_recipe_components(batch)
 
         return {
             'workorder_id': self.id,
@@ -626,8 +634,9 @@ class MrpWorkorder(models.Model):
         # Ademas, control de secuencia: la partida debe haber pasado por la
         # operación anterior de la ruta (considerando partidas padre).
         sibling_workorders = self.env['mrp.workorder']
-        if defaults.get('batch_id'):
-            batch = self.env['mrp.workorder.batch'].browse(defaults['batch_id'])
+        batch = self.env['mrp.workorder.batch'].browse(defaults['batch_id']) \
+            if defaults.get('batch_id') else False
+        if batch:
             error = self._check_batch_previous_operation(batch)
             if error:
                 return error
@@ -635,7 +644,7 @@ class MrpWorkorder(models.Model):
             if error:
                 return error
 
-        recipe_components = self._compute_registry_recipe_components()
+        recipe_components = self._compute_registry_recipe_components(batch)
 
         vals = {
             'batch_id': defaults.get('batch_id'),

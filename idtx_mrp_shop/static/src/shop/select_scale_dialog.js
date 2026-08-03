@@ -49,6 +49,9 @@ export class SelectScaleDialog extends ConfirmationDialog {
             triedConfirm: false,
             employees: this.props.employees || [],
 
+            // Plan de rollos de la OT (para el mensaje de rollos pendientes).
+            woPlan: null,
+
             selectedMode: "manual",
             selectedScaleId: null,
 
@@ -71,6 +74,9 @@ export class SelectScaleDialog extends ConfirmationDialog {
             isScaleReading: false,
             scaleStable: null,
             scaleAgeS: null,
+
+            // lectura por puerto COM del navegador (Web Serial)
+            serialConnected: false,
         });
 
         this.isDisplayStandalone = isDisplayStandalone();
@@ -83,6 +89,15 @@ export class SelectScaleDialog extends ConfirmationDialog {
         this._scalePollInProgress = false;
         this._autoCloseTimer = null;
         this._isConfirmed = false;
+        // true si la balanza se restauró desde localStorage (evita que el
+        // default "primera balanza" pise una restauración a Manual).
+        this._scaleRestored = false;
+
+        // Web Serial (puerto COM leído por el navegador)
+        this._serialPort = null;
+        this._serialReader = null;
+        this._serialStop = false;
+        this._serialBaudrate = 9600;
 
         onMounted(() => {
             this._startAutoCloseTimer();
@@ -95,6 +110,7 @@ export class SelectScaleDialog extends ConfirmationDialog {
         onWillUnmount(() => {
             this._clearAutoCloseTimer();
             this._stopScalePolling();
+            this._stopSerial();
         });
 
         onWillStart(async () => {
@@ -113,10 +129,16 @@ export class SelectScaleDialog extends ConfirmationDialog {
             await this._syncResourcesFromOption(this.state.selectedOption, { preserveSelection: true });
 
             // Si hay opción seleccionada, sincroniza equipment SOLO si no hay equipment ya seleccionado
-            // Primera balanza por defecto
-            if (this.scales.length && !this.state.selectedScaleId) {
-                this.state.selectedMode = "scale";
-                this.state.selectedScaleId = this.scales[0].id;
+            // Primera balanza por defecto (respeta su modo de lectura)
+            if (this.scales.length && !this.state.selectedScaleId && !this._scaleRestored) {
+                const first = this.scales[0];
+                this.state.selectedScaleId = first.id;
+                if (first.read_mode === "serial") {
+                    this.state.selectedMode = "serial";
+                    this._serialBaudrate = first.serial_baudrate || 9600;
+                } else {
+                    this.state.selectedMode = "scale";
+                }
             }
 
             // auth manual persistida en sesión
@@ -129,8 +151,56 @@ export class SelectScaleDialog extends ConfirmationDialog {
 
             if (this.state.selectedMode === "scale" && this.state.selectedScaleId) {
                 await this._startScalePolling();
+            } else if (this.state.selectedMode === "serial" && this.state.selectedScaleId) {
+                await this._autoConnectSerial();
             }
         });
+
+        // Plan de rollos de la OT: se lee para calcular en vivo cuántos rollos
+        // faltan por tejer (sumando los PESOS REALES ya tejidos, no un conteo).
+        onWillStart(async () => {
+            const woId = this._getWorkorderId();
+            if (!woId) return;
+            try {
+                const [wo] = await this.ormService.read(
+                    "mrp.workorder", [woId],
+                    ["operation_type", "weave_type", "qty_production",
+                     "estimated_weight_per_roll", "qty_produced"]
+                );
+                this.state.woPlan = wo || null;
+            } catch (e) {
+                this.state.woPlan = null;
+            }
+        });
+    }
+
+    // Mensaje de rollos pendientes: descuenta la SUMA de pesos reales ya
+    // tejidos (qty_produced) del total a producir, y parte el resto en rollos
+    // completos del peso estimado + un rollo final con el sobrante (cuyo valor
+    // va cambiando según los pesos reales acumulados).
+    get pendingRollsMessage() {
+        const wo = this.state.woPlan;
+        if (!wo || wo.operation_type !== "weaving" || wo.weave_type === "rect") {
+            return "";
+        }
+        const peso = wo.estimated_weight_per_roll || 0;
+        const qty = wo.qty_production || 0;
+        if (peso <= 0 || qty <= 0) return "";
+        const sumWoven = wo.qty_produced || 0;
+        const remaining = qty - sumWoven;
+        if (remaining <= 0.001) {
+            return "Producción de rollos completa.";
+        }
+        const full = Math.floor(remaining / peso);
+        const leftover = remaining - full * peso;
+        const parts = [];
+        if (full > 0) {
+            parts.push(`${full} ${full === 1 ? "rollo" : "rollos"} de ${peso.toFixed(2)} kg`);
+        }
+        if (leftover > 0.001) {
+            parts.push(`1 rollo de ${leftover.toFixed(2)} kg`);
+        }
+        return `Faltan por tejer ${parts.join(" + ")} (faltan ${remaining.toFixed(2)} kg).`;
     }
 
     // =========================
@@ -149,9 +219,9 @@ export class SelectScaleDialog extends ConfirmationDialog {
         try {
             const LS_KEY = this._getLSKey();
             const raw = window.localStorage.getItem(LS_KEY);
-            if (!raw) return;
-
-            const parsed = JSON.parse(raw);
+            // Sin registro de esta OT igual se sigue: la balanza tiene
+            // fallback global (última usada en la estación).
+            const parsed = raw ? JSON.parse(raw) : {};
 
             // Employee
             if (!this.state.selectedEmployee && parsed.employee_id) {
@@ -173,6 +243,54 @@ export class SelectScaleDialog extends ConfirmationDialog {
                     this.state.optionTouched = true;
                 }
             }
+
+            // Balanza: la del workorder; si esta OT aún no tiene, la última
+            // usada en esta estación (clave global).
+            this._restoreScaleSelection(parsed);
+        } catch (e) {
+            // ignore
+        }
+    }
+
+    _restoreScaleSelection(parsed) {
+        let scaleVal = parsed.scale_id || "";
+        if (!scaleVal) {
+            scaleVal = window.localStorage.getItem("idtx_mrp.last_scale") || "";
+        }
+        if (scaleVal === "manual") {
+            this.state.selectedMode = "manual";
+            this.state.selectedScaleId = null;
+            this._scaleRestored = true;
+        } else if (scaleVal) {
+            const scale = (this.scales || []).find(s => String(s.id) === String(scaleVal));
+            if (scale) {
+                this.state.selectedScaleId = scale.id;
+                if (scale.read_mode === "serial") {
+                    this.state.selectedMode = "serial";
+                    this._serialBaudrate = scale.serial_baudrate || 9600;
+                } else {
+                    this.state.selectedMode = "scale";
+                }
+                this._scaleRestored = true;
+            }
+        }
+    }
+
+    _persistScaleSelection() {
+        // La balanza es de la estación física: se guarda por workorder (como
+        // empleado/equipo) y además en una clave global como default para
+        // workorders nuevos.
+        try {
+            const scaleVal = this.state.selectedMode === "manual"
+                ? "manual"
+                : (this.state.selectedScaleId ? String(this.state.selectedScaleId) : "");
+            if (!scaleVal) return;
+            const key = this._getLSKey();
+            const raw = window.localStorage.getItem(key);
+            const parsed = raw ? JSON.parse(raw) : {};
+            parsed.scale_id = scaleVal;
+            window.localStorage.setItem(key, JSON.stringify(parsed));
+            window.localStorage.setItem("idtx_mrp.last_scale", scaleVal);
         } catch (e) {
             // ignore
         }
@@ -213,8 +331,9 @@ export class SelectScaleDialog extends ConfirmationDialog {
 
         const w = parseFloat(this.state.manualWeight || "");
 
-        if (this.state.selectedMode === "scale") {
-            if (!this.state.selectedScaleId) return false;
+        if (this.state.selectedMode === "scale" || this.state.selectedMode === "serial") {
+            if (this.state.selectedMode === "scale" && !this.state.selectedScaleId) return false;
+            if (this.state.selectedMode === "serial" && !this.state.serialConnected) return false;
             if (this.state.scaleReadError) return false;
             if (isNaN(w) || w <= 0) return false;
             if (this.state.scaleStable === false) return false;
@@ -245,7 +364,7 @@ export class SelectScaleDialog extends ConfirmationDialog {
         if (!this.state.triedConfirm) return false;
         const w = parseFloat(this.state.manualWeight || "");
         if (isNaN(w) || w <= 0) return true;
-        if (this.state.selectedMode === "scale") {
+        if (this.state.selectedMode === "scale" || this.state.selectedMode === "serial") {
             return !!this.state.scaleReadError || this.state.scaleStable === false;
         }
         return !this.state.isManualAuthorized;
@@ -262,6 +381,19 @@ export class SelectScaleDialog extends ConfirmationDialog {
     onEquipmentChange(ev) {
         this.state.selectedEquipment = ev?.target?.value || "";
         this._persistSelectionPartial(); // NO borra si está vacío
+    }
+
+    async onScaleSelectChange(ev) {
+        const val = ev?.target?.value || "";
+        if (val === "manual") {
+            await this.selectManual();
+        } else {
+            const scale = (this.scales || []).find(s => String(s.id) === val);
+            if (scale) {
+                await this.selectScale(scale);
+            }
+        }
+        this._persistScaleSelection();
     }
 
     // =========================
@@ -356,6 +488,7 @@ export class SelectScaleDialog extends ConfirmationDialog {
     // =========================
     async selectManual() {
         this._stopScalePolling();
+        await this._stopSerial();
 
         this.state.selectedMode = "manual";
         this.state.selectedScaleId = null;
@@ -381,8 +514,11 @@ export class SelectScaleDialog extends ConfirmationDialog {
         }, 0);
     }
 
-    selectScale(scale) {
-        this.state.selectedMode = "scale";
+    async selectScale(scale) {
+        // Al cambiar de balanza, cortar cualquier lectura previa (IP o COM).
+        this._stopScalePolling();
+        await this._stopSerial();
+
         this.state.selectedScaleId = scale.id;
 
         this.state.authError = "";
@@ -392,8 +528,154 @@ export class SelectScaleDialog extends ConfirmationDialog {
         this.state.scaleReadError = "";
         this.state.scaleStable = null;
         this.state.scaleAgeS = null;
+        this.state.manualWeight = "";
 
-        this._startScalePolling();
+        if (scale.read_mode === "serial") {
+            this.state.selectedMode = "serial";
+            this._serialBaudrate = scale.serial_baudrate || 9600;
+            this._autoConnectSerial();
+        } else {
+            this.state.selectedMode = "scale";
+            this._startScalePolling();
+        }
+    }
+
+    // =========================
+    // Web Serial (puerto COM leído por el navegador)
+    // =========================
+    // Reconecta sin diálogo si ya se autorizó el puerto en este origen.
+    async _autoConnectSerial() {
+        if (!navigator.serial) {
+            this.state.scaleReadError = _t(
+                "Este navegador no soporta lectura de puerto COM. Usa Chrome o Edge de escritorio.");
+            return;
+        }
+        try {
+            const ports = await navigator.serial.getPorts();
+            if (ports && ports.length) {
+                await this._openSerialPort(ports[0]);
+            }
+        } catch (e) {
+            // Sin puerto autorizado aún: el usuario debe pulsar "Conectar".
+        }
+    }
+
+    // Requiere gesto del usuario (click): muestra el selector de puertos.
+    async connectSerial() {
+        if (!navigator.serial) {
+            this.state.scaleReadError = _t(
+                "Este navegador no soporta lectura de puerto COM. Usa Chrome o Edge de escritorio.");
+            return;
+        }
+        try {
+            const port = await navigator.serial.requestPort();
+            await this._openSerialPort(port);
+        } catch (e) {
+            // El usuario canceló el selector o el puerto no se pudo abrir.
+            this.state.scaleReadError = _t("No se pudo abrir el puerto COM.");
+        }
+    }
+
+    async _openSerialPort(port) {
+        try {
+            await port.open({
+                baudRate: this._serialBaudrate || 9600,
+                dataBits: 8,
+                parity: "none",
+                stopBits: 1,
+            });
+        } catch (e) {
+            this.state.scaleReadError = _t("No se pudo abrir el puerto COM.");
+            return;
+        }
+        this._serialPort = port;
+        this._serialStop = false;
+        this.state.serialConnected = true;
+        this.state.scaleReadError = "";
+        this.state.scaleUnit = "kg";
+        this._serialReadLoop();
+    }
+
+    async _serialReadLoop() {
+        const decoder = new TextDecoder();
+        let reader;
+        try {
+            reader = this._serialPort.readable.getReader();
+        } catch (e) {
+            this.state.scaleReadError = _t("Error leyendo el puerto COM.");
+            return;
+        }
+        this._serialReader = reader;
+        let buffer = "";
+        try {
+            while (!this._serialStop) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                if (value) {
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split(/\r\n|\r|\n/);
+                    buffer = lines.pop(); // la última puede estar incompleta
+                    for (const line of lines) {
+                        this._handleSerialLine(line);
+                    }
+                }
+            }
+        } catch (e) {
+            if (!this._serialStop) {
+                this.state.scaleReadError = _t("Error leyendo el puerto COM.");
+            }
+        } finally {
+            try { reader.releaseLock(); } catch (e) {}
+        }
+    }
+
+    _handleSerialLine(line) {
+        const weight = this._parseSerialWeight(line);
+        const stable = this._parseSerialStability(line);
+        if (stable !== null) {
+            this.state.scaleStable = stable;
+        }
+        if (weight !== null) {
+            this.state.manualWeight = weight.toFixed(2);
+            this.state.scaleUnit = "kg";
+            this.state.scaleReadError = "";
+        }
+    }
+
+    // Mismo parseo que script_balanza/balanza.py (varios formatos con KG).
+    _parseSerialWeight(line) {
+        if (!line) return null;
+        const clean = line.replace(/\x00/g, "").replace(/,/g, ".").trim();
+        const m = clean.match(/(-?\d+(?:\.\d+)?)\s*KG/i);
+        if (!m) return null;
+        const v = parseFloat(m[1]);
+        return isNaN(v) ? null : v;
+    }
+
+    _parseSerialStability(line) {
+        if (!line) return null;
+        const up = line.trim().toUpperCase();
+        if (up.startsWith("ST")) return true;   // estable
+        if (up.startsWith("US")) return false;  // inestable
+        return null;
+    }
+
+    async _stopSerial() {
+        this._serialStop = true;
+        this.state.serialConnected = false;
+        try {
+            if (this._serialReader) {
+                await this._serialReader.cancel();
+                try { this._serialReader.releaseLock(); } catch (e) {}
+            }
+        } catch (e) {}
+        this._serialReader = null;
+        try {
+            if (this._serialPort) {
+                await this._serialPort.close();
+            }
+        } catch (e) {}
+        this._serialPort = null;
     }
 
     // =========================
@@ -471,7 +753,10 @@ export class SelectScaleDialog extends ConfirmationDialog {
     // p.ej. SelectSizeDialog agrega talla y cantidad).
     _getConfirmPayload(w) {
         return {
-            scale_id: this.state.selectedMode === "scale" ? this.state.selectedScaleId : false,
+            // En serial también se envía la balanza: el peso viaja como
+            // manual_weight y el backend usa scale.printer_ip para imprimir.
+            scale_id: (this.state.selectedMode === "scale" || this.state.selectedMode === "serial")
+                ? this.state.selectedScaleId : false,
             employee_id: this.state.selectedEmployee || false,
             equipment_id: this.state.selectedEquipment || false,
             option_id: this.state.selectedOption || false,
@@ -502,7 +787,12 @@ export class SelectScaleDialog extends ConfirmationDialog {
 
         const w = parseFloat(this.state.manualWeight || "");
 
-        if (this.state.selectedMode === "scale") {
+        if (this.state.selectedMode === "serial" && !this.state.serialConnected) {
+            this.notification.add(_t("Conecta el puerto COM primero."), { type: "danger" });
+            return;
+        }
+
+        if (this.state.selectedMode === "scale" || this.state.selectedMode === "serial") {
             if (this.state.scaleReadError) {
                 this.notification.add(_t("Scale is not available."), { type: "danger" });
                 return;
@@ -532,6 +822,7 @@ export class SelectScaleDialog extends ConfirmationDialog {
 
         // ✅ Persistir full (aquí sí permitimos vacíos si quieres, pero normalmente ya no estarán vacíos)
         this._persistSelectionPartial({ includeEmpty: true });
+        this._persistScaleSelection();
 
         this._isConfirmed = true;
         this._clearAutoCloseTimer();
@@ -544,7 +835,8 @@ export class SelectScaleDialog extends ConfirmationDialog {
     // Loaders
     // =========================
     async _loadScales() {
-        const scales = await this.ormService.searchRead("scale.registry", [], ["equipment_id"]);
+        const scales = await this.ormService.searchRead(
+            "scale.registry", [], ["equipment_id", "read_mode", "serial_baudrate"]);
         const equipmentIds = scales.map(s => s.equipment_id?.[0]).filter(Boolean);
 
         const equipments = equipmentIds.length
@@ -554,6 +846,8 @@ export class SelectScaleDialog extends ConfirmationDialog {
 
         this.scales = scales.map(s => ({
             ...s,
+            read_mode: s.read_mode || "ip",
+            serial_baudrate: s.serial_baudrate || 9600,
             equipment_name: equipmentMap[s.equipment_id?.[0]] || "",
         }));
 

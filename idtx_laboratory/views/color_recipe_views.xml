@@ -56,6 +56,10 @@
                                                              regresa facil a la pila de dialogos. -->
                                                         <list decoration-info="has_table" decoration-primary="line_type == 'colorants'">
                                                             <field name="sequence" widget="handle"/>
+                                                            <!-- base_line_id en el spec: sin él, el onchange de la
+                                                                 plantilla crea las líneas SIN enlace a la línea base
+                                                                 (se filtra de la respuesta) y las tablas CF no operan. -->
+                                                            <field name="base_line_id" column_invisible="1"/>
                                                             <field name="line_type" string="Tipo"/>
                                                             <field name="product_id" domain="[('is_chemical','=', True)]" required="line_type != 'colorants'" readonly="line_type == 'colorants'"/>
                                                             <field name="order_number"/>
@@ -133,7 +137,9 @@
                                 <field name="process_ids" nolabel="1" readonly="state == 'validated'">
                                     <list>
                                         <field name="sequence" widget="handle"/>
-                                        <field name="base_process_id" readonly="1"/>
+                                        <!-- force_save: sin él, el cliente descarta al guardar el valor
+                                             elegido en el modal (readonly en la lista gana al form). -->
+                                        <field name="base_process_id" readonly="1" force_save="1"/>
                                     </list>
                                     <form>
                                         <sheet>
@@ -146,6 +152,10 @@
                                                 <!-- Sin edicion en linea: el clic en la fila abre el form en MODAL. -->
                                                 <list decoration-info="has_table" decoration-primary="line_type == 'colorants'">
                                                     <field name="sequence" widget="handle"/>
+                                                    <!-- base_line_id en el spec: sin él, el onchange de la
+                                                         plantilla crea las líneas SIN enlace a la línea base
+                                                         (se filtra de la respuesta) y las tablas CF no operan. -->
+                                                    <field name="base_line_id" column_invisible="1"/>
                                                     <field name="line_type" string="Tipo"/>
                                                     <field name="product_id" domain="[('is_chemical','=', True)]" required="line_type != 'colorants'" readonly="line_type == 'colorants'"/>
                                                     <field name="order_number"/>

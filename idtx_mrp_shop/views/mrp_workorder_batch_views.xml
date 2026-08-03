@@ -60,6 +60,7 @@
                             <field name="create_date"/>
                             <field name="workorder_id" string="Operación"/>
                             <field name="reason_id" string="Causa Raíz"/>
+                            <field name="tipo" widget="badge" decoration-warning="tipo == 'reproceso'" decoration-danger="tipo == 'reposicion'"/>
                             <field name="stage_id"/>
                         </list>
                     </field>

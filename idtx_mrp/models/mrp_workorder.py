@@ -21,7 +21,7 @@ class MrpWorkorder(models.Model):
         help="Suma de la producción estimada de todas las máquinas de las opciones (corren en paralelo).")
     estimated_roll_count = fields.Integer(
         'Rollos Estimados', compute='_compute_weaving_aggregate',
-        help="Cantidad de rollos = techo(kg a producir / peso por rollo de la configuración).")
+        help="Cantidad de rollos = techo(kg a producir / peso estimado por rollo de la OT).")
     weaving_estimate_warning = fields.Char(
         'Aviso de Estimación', compute='_compute_weaving_aggregate',
         help="Motivo por el que no se pudo estimar la duración (datos faltantes).")
@@ -44,11 +44,16 @@ class MrpWorkorder(models.Model):
         help="Peso estimado de cada rollo (kg). Editable; se inicializa con el "
              "valor de la configuración de la empresa. Base para la cantidad de "
              "rollos a producir.")
-    rolls_to_produce = fields.Integer(
-        'Cantidad de Rollos a Producir', compute='_compute_rolls_to_produce',
-        store=True, readonly=True,
-        help="Kilos a producir entre el peso estimado por rollo, redondeado "
-             "siempre hacia arriba.")
+    rolls_to_produce_summary = fields.Char(
+        'Cantidad de Rollos a Producir',
+        compute='_compute_rolls_to_produce_summary',
+        help="Rollos completos del peso estimado más un rollo final con el "
+             "sobrante (kilos a producir ÷ peso estimado). Ej.: 500 kg / 22 kg "
+             "= 22 rollos de 22 kg + 1 rollo de 16 kg.")
+    rolls_pending_message = fields.Char(
+        'Rollos Pendientes', compute='_compute_rolls_pending_message',
+        help="Rollos que faltan por tejer (plan menos los ya tejidos), "
+             "indicando el rollo del sobrante si aún falta.")
 
     @api.depends('company_id')
     def _compute_estimated_weight_per_roll(self):
@@ -60,13 +65,68 @@ class MrpWorkorder(models.Model):
                     wo.company_id.weaving_weight_per_roll or 0.0)
 
     @api.depends('qty_production', 'estimated_weight_per_roll', 'operation_type')
-    def _compute_rolls_to_produce(self):
+    def _compute_rolls_to_produce_summary(self):
+        # Composición de rollos a tejer: N rollos COMPLETOS del peso estimado y
+        # un último rollo con el sobrante (no se redondea el peso hacia arriba;
+        # el resto va en un rollo más pequeño).
         for wo in self:
-            wo.rolls_to_produce = 0
-            if (wo.operation_type == 'weaving'
-                    and wo.estimated_weight_per_roll > 0 and wo.qty_production > 0):
-                wo.rolls_to_produce = int(
-                    math.ceil(wo.qty_production / wo.estimated_weight_per_roll))
+            summary = ''
+            peso = wo.estimated_weight_per_roll
+            qty = wo.qty_production or 0.0
+            if wo.operation_type == 'weaving' and peso > 0 and qty > 0:
+                full = int(qty // peso)
+                remainder = qty - full * peso
+                peso_s = '%.2f' % peso
+                if remainder < 1e-6:
+                    summary = _('%(n)s rollos de %(w)s kg', n=full, w=peso_s)
+                elif full == 0:
+                    summary = _('1 rollo de %(r)s kg', r='%.2f' % remainder)
+                else:
+                    summary = _('%(n)s rollos de %(w)s kg + 1 rollo de %(r)s kg',
+                                n=full, w=peso_s, r='%.2f' % remainder)
+            wo.rolls_to_produce_summary = summary
+
+    @api.depends('qty_production', 'estimated_weight_per_roll', 'operation_type',
+                 'roll_ids', 'roll_ids.transfer_state')
+    def _compute_rolls_pending_message(self):
+        # Rollos que faltan = plan (rollos completos + rollo del sobrante) menos
+        # los ya tejidos (produced_roll_count, que descuenta transferidos).
+        for wo in self:
+            msg = ''
+            peso = wo.estimated_weight_per_roll
+            qty = wo.qty_production or 0.0
+            if wo.operation_type == 'weaving' and peso > 0 and qty > 0:
+                full = int(qty // peso)
+                remainder = qty - full * peso
+                has_rem = remainder > 1e-6
+                planned_total = full + (1 if has_rem else 0)
+                woven = wo.produced_roll_count
+                pending = planned_total - woven
+                if pending <= 0:
+                    extra = woven - planned_total
+                    if extra > 0:
+                        msg = _(
+                            'Producción de rollos completa: %(w)s tejidos '
+                            '(%(e)s adicional(es) sobre los %(p)s planificados).',
+                            w=woven, e=extra, p=planned_total)
+                    else:
+                        msg = _(
+                            'Producción de rollos completa: se tejieron los '
+                            '%(p)s rollos planificados.', p=planned_total)
+                else:
+                    remaining_full = max(0, full - woven)
+                    parts = []
+                    if remaining_full > 0:
+                        unidad = _('rollo') if remaining_full == 1 else _('rollos')
+                        parts.append('%(n)s %(u)s de %(w)s kg' % {
+                            'n': remaining_full, 'u': unidad, 'w': '%.2f' % peso})
+                    if has_rem:
+                        parts.append(_('1 rollo de %(r)s kg', r='%.2f' % remainder))
+                    msg = _(
+                        'Faltan por tejer %(detail)s (de %(p)s planificados, '
+                        '%(w)s ya tejidos).',
+                        detail=' + '.join(parts), p=planned_total, w=woven)
+            wo.rolls_pending_message = msg
 
     # ------------------------------------------------------------------
     # Cálculo de tiempo de tejido de punto en máquinas circulares.
@@ -136,7 +196,7 @@ class MrpWorkorder(models.Model):
     @api.depends('operation_type', 'qty_production',
                  'option_ids', 'option_ids.estimated_rate_kg_h',
                  'option_ids.weaving_estimate_warning',
-                 'company_id.weaving_weight_per_roll')
+                 'estimated_weight_per_roll')
     def _compute_weaving_aggregate(self):
         for wo in self:
             wo.estimated_rate_kg_h = 0.0
@@ -145,8 +205,9 @@ class MrpWorkorder(models.Model):
             if wo.operation_type != 'weaving':
                 continue
             wo.estimated_rate_kg_h = sum(wo.option_ids.mapped('estimated_rate_kg_h'))
-            company = wo.company_id or self.env.company
-            per_roll = company.weaving_weight_per_roll or 0.0
+            # Cantidad de rollos = techo(kg a producir / peso estimado por rollo
+            # de la OT), no de la configuración de la empresa.
+            per_roll = wo.estimated_weight_per_roll or 0.0
             qty = wo.qty_production or 0.0
             if per_roll > 0 and qty > 0:
                 wo.estimated_roll_count = int(math.ceil(qty / per_roll))

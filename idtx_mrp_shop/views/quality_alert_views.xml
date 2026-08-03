@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <record id="quality_alert_view_tree_reprocess" model="ir.ui.view">
+        <field name="name">quality.alert.list.reprocess.partida</field>
+        <field name="model">quality.alert</field>
+        <field name="inherit_id" ref="quality.quality_alert_view_tree"/>
+        <field name="arch" type="xml">
+            <field name="reason_id" position="after">
+                <field name="tipo" optional="show"/>
+            </field>
+        </field>
+    </record>
+
     <record id="quality_alert_view_form_reprocess" model="ir.ui.view">
         <field name="name">quality.alert.form.reprocess.partida</field>
         <field name="model">quality.alert</field>
