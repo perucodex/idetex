@@ -636,13 +636,24 @@ class MrpWorkorder(models.Model):
         sibling_workorders = self.env['mrp.workorder']
         batch = self.env['mrp.workorder.batch'].browse(defaults['batch_id']) \
             if defaults.get('batch_id') else False
-        if batch:
-            error = self._check_batch_previous_operation(batch)
-            if error:
-                return error
-            sibling_workorders, error = self._check_batch_sibling_operations(batch)
-            if error:
-                return error
+        if not batch or not batch.exists():
+            return {'status': 'danger',
+                    'message': _('Debes seleccionar una partida.')}
+        # La sub-receta ya no se calcula sola: la selecciona el usuario en la
+        # partida. Sin ella no se registra el teñido (los factores de tintorería
+        # dependen de la combinación de lotes de hilo).
+        if not batch.recipe_lot_id:
+            return {'status': 'danger', 'message': _(
+                'La partida %s no tiene sub-receta seleccionada: elígela en '
+                'la partida (pestaña de receta) antes de registrar el teñido. '
+                'Si la combinación de lotes aún no tiene sub-receta, debe '
+                'validarse en laboratorio.') % batch.name}
+        error = self._check_batch_previous_operation(batch)
+        if error:
+            return error
+        sibling_workorders, error = self._check_batch_sibling_operations(batch)
+        if error:
+            return error
 
         recipe_components = self._compute_registry_recipe_components(batch)
 

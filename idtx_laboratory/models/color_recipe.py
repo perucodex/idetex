@@ -69,11 +69,15 @@ class ColorRecipe(models.Model):
         con `lots` (recordset de stock.lot). Devuelve recordset vacío si la
         combinación no está registrada. Compara contra los lotes REALES de
         cada sub-receta (no contra lot_key almacenado) para ser inmune a
-        claves desactualizadas."""
+        claves desactualizadas. Puede haber VARIAS sub-recetas con la misma
+        combinación (opciones de OF y versiones): se prefiere la validada y
+        se ignoran las obsoletas."""
         self.ensure_one()
         key = self.env['color.recipe.lot']._make_lot_key(lots.ids)
-        return self.recipe_lot_ids.filtered(
-            lambda r: self.env['color.recipe.lot']._make_lot_key(r.lot_ids.ids) == key)[:1]
+        matches = self.recipe_lot_ids.filtered(
+            lambda r: r.state != 'obsolete'
+            and self.env['color.recipe.lot']._make_lot_key(r.lot_ids.ids) == key)
+        return matches.sorted(key=lambda r: (r.state != 'validated', r.id))[:1]
 
     def _product_key(self):
         """Clave canónica de la combinación de productos de la receta."""

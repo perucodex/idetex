@@ -17,11 +17,31 @@ class ColorRecipeLot(models.Model):
     _name = 'color.recipe.lot'
     _description = 'Sub-receta por combinación de lotes'
     _rec_name = 'lot_summary'
+    # Búsqueda por texto del m2o (dropdown/Buscar más): por lotes, OF u opción.
+    _rec_names_search = ['lot_summary', 'production_id.name',
+                         'workorder_option_id.name']
     _order = 'id'
 
     color_recipe_id = fields.Many2one(
         'color.recipe', string='Receta de Color', required=True,
         ondelete='cascade', index=True)
+    # La combinación de lotes ya no se digita: se toma de la OF. La OF tiene
+    # una OT de tejido con OPCIONES (mrp.workorder.option) y cada opción lleva
+    # sus líneas hilo+lote; al elegir OF y opción, los lotes se completan solos.
+    production_id = fields.Many2one(
+        'mrp.production', string='Orden de Fabricación', ondelete='set null',
+        help='OF cuya OT de tejido tiene opciones con los lotes de hilo. '
+             'Al elegir la opción, los lotes se completan automáticamente.')
+    available_production_ids = fields.Many2many(
+        'mrp.production', compute='_compute_available_productions',
+        string='OFs Disponibles')
+    workorder_option_id = fields.Many2one(
+        'mrp.workorder.option', string='Opción', ondelete='set null',
+        help='Opción de la OT de tejido de la OF; sus líneas hilo+lote '
+             'definen la combinación de esta sub-receta.')
+    available_option_ids = fields.Many2many(
+        'mrp.workorder.option', compute='_compute_available_options',
+        string='Opciones Disponibles')
     lot_ids = fields.Many2many(
         'stock.lot', 'color_recipe_lot_stock_lot_rel', 'recipe_lot_id', 'lot_id',
         string='Lotes de Hilo', required=True,
@@ -31,7 +51,9 @@ class ColorRecipeLot(models.Model):
         help='Identificador normalizado de la combinación (ids de lote '
              'ordenados). Permite buscar la combinación exacta desde las '
              'partidas.')
-    lot_summary = fields.Char('Lotes', compute='_compute_lot_summary')
+    # Almacenado para que el name_search del m2o (partida, Buscar más) pueda
+    # buscar por el texto de los lotes.
+    lot_summary = fields.Char('Lotes', compute='_compute_lot_summary', store=True)
     # Lotes elegibles: solo los de los hilos que consumen las LdM de los
     # productos de la receta. Evita elegir un lote homónimo de otro hilo
     # (pueden existir varios lotes llamados "123" de hilos distintos).
@@ -52,31 +74,142 @@ class ColorRecipeLot(models.Model):
                 # Sin LdM conocida: cualquier lote de hilo.
                 rec.available_thread_lot_ids = Lot.search(
                     [('product_id.product_tmpl_id.is_thread', '=', True)])
+
+    @api.depends('color_recipe_id.product_ids')
+    def _compute_available_productions(self):
+        """OFs elegibles: fabrican un producto de la receta y su OT de tejido
+        tiene opciones (la OF se empareja con la receta por product_tmpl_id,
+        igual que _compute_color_recipe de la OF)."""
+        Option = self.env['mrp.workorder.option']
+        for rec in self:
+            templates = rec.color_recipe_id.product_ids
+            if templates:
+                options = Option.search([
+                    ('workorder_id.operation_type', '=', 'weaving'),
+                    ('workorder_id.production_id.state', '!=', 'cancel'),
+                    ('workorder_id.production_id.product_id.product_tmpl_id',
+                     'in', templates.ids),
+                ])
+                rec.available_production_ids = \
+                    options.workorder_id.production_id
+            else:
+                # Sin productos en la receta no hay OF que emparejar.
+                rec.available_production_ids = False
+
+    @api.depends('production_id')
+    def _compute_available_options(self):
+        for rec in self:
+            weaving_wos = rec.production_id.workorder_ids.filtered(
+                lambda w: w.operation_type == 'weaving')
+            rec.available_option_ids = weaving_wos.option_ids
+
+    @api.onchange('production_id')
+    def _onchange_production_id(self):
+        for rec in self:
+            if rec.workorder_option_id not in rec.available_option_ids:
+                rec.workorder_option_id = False
+            if not rec.workorder_option_id and len(rec.available_option_ids) == 1:
+                rec.workorder_option_id = rec.available_option_ids
+            rec._apply_option_lots()
+
+    @api.onchange('workorder_option_id')
+    def _onchange_workorder_option_id(self):
+        self._apply_option_lots()
+
+    def _apply_option_lots(self):
+        """Vuelca los lotes de las líneas de la opción a la sub-receta."""
+        for rec in self:
+            if rec.workorder_option_id:
+                rec.lot_ids = [(6, 0, rec.workorder_option_id.option_line_ids.lot_id.ids)]
+
+    @api.depends('lot_summary', 'production_id.name', 'workorder_option_id.name',
+                 'version')
+    def _compute_display_name(self):
+        # Varias sub-recetas pueden compartir la misma combinación de lotes
+        # (una por opción de OF, y N versiones por opción): el nombre lleva la
+        # OF/opción y la versión para distinguirlas, p.ej. al seleccionarla en
+        # la partida. sudo: el nombre de la OF se lee saltando las reglas
+        # multiempresa — sin él, a un usuario sin acceso a la compañía de la
+        # OF le revienta cualquier pantalla que muestre la sub-receta.
+        for rec in self:
+            rec_s = rec.sudo()
+            name = rec_s.lot_summary or _('(sin lotes)')
+            if rec_s.production_id:
+                option = ' · %s' % rec_s.workorder_option_id.name \
+                    if rec_s.workorder_option_id.name else ''
+                name = '%s (%s%s)' % (name, rec_s.production_id.name, option)
+            if rec_s.version and rec_s.version > 1:
+                name = '%s v%s' % (name, rec_s.version)
+            rec.display_name = name
+
     state = fields.Selection([
         ('pending', 'Pendiente'),
         ('validated', 'Validada'),
+        ('obsolete', 'Obsoleta'),
     ], string='Estado', default='pending', required=True)
+    # Versionado tipo estampado (printing.design.rotary.line): se pueden
+    # registrar N sub-recetas del MISMO hilo de versiones (misma opción de OF;
+    # sin opción, misma combinación de lotes) sin restricción; al VALIDAR una,
+    # las versiones anteriores del hilo quedan obsoletas.
+    version = fields.Integer(
+        'Versión', default=1, readonly=True, copy=False,
+        help='Correlativo dentro del hilo de versiones (misma opción de OF; '
+             'para filas sin opción, misma combinación de lotes). Al validar '
+             'una versión, las anteriores quedan obsoletas.')
 
-    # Una sub-receta VALIDADA es intocable: para modificarla o borrarla hay
-    # que reabrirla primero (action_reset, grupo manager).
-    _PROTECTED_WHEN_VALIDATED = {'lot_ids', 'absorption_factor', 'bath_ratio',
+    # Una sub-receta VALIDADA u OBSOLETA es intocable: la validada se puede
+    # reabrir (action_reset, grupo manager); la obsoleta es histórico.
+    _PROTECTED_WHEN_VALIDATED = {'lot_ids', 'production_id', 'workorder_option_id',
+                                 'absorption_factor', 'bath_ratio',
                                  'tipo_proceso', 'process_ids'}
 
     def write(self, vals):
         if self._PROTECTED_WHEN_VALIDATED & set(vals.keys()) \
                 and 'state' not in vals:
-            locked = self.filtered(lambda r: r.state == 'validated')
+            locked = self.filtered(lambda r: r.state in ('validated', 'obsolete'))
             if locked:
                 raise UserError(_(
-                    'La sub-receta %s está validada: reábrela para modificarla.',
-                    locked[0].lot_summary or locked[0].id))
-        return super().write(vals)
+                    'La sub-receta %s está validada u obsoleta: no se puede '
+                    'modificar (crea una nueva versión o reábrela).',
+                    locked[0].display_name or locked[0].id))
+        res = super().write(vals)
+        # Si una fila PENDIENTE cambia de opción/lotes, cambia de hilo de
+        # versiones: se le reasigna el correlativo del hilo nuevo.
+        if {'workorder_option_id', 'lot_ids'} & set(vals):
+            for rec in self.filtered(lambda r: r.state == 'pending'):
+                rec.version = rec._next_version()
+        return res
 
     def unlink(self):
-        if any(r.state == 'validated' for r in self):
+        if any(r.state in ('validated', 'obsolete') for r in self):
             raise UserError(_(
-                'No se puede eliminar una sub-receta validada: reábrela primero.'))
+                'No se puede eliminar una sub-receta validada u obsoleta: '
+                'es el histórico de versiones.'))
         return super().unlink()
+
+    def _version_group(self):
+        """Hermanas del mismo hilo de versiones dentro de la receta: misma
+        OPCIÓN de OF; para filas manuales (sin opción), misma combinación de
+        lotes. No incluye a self."""
+        self.ensure_one()
+        siblings = self.color_recipe_id.recipe_lot_ids - self
+        if self.workorder_option_id:
+            return siblings.filtered(
+                lambda r: r.workorder_option_id == self.workorder_option_id)
+        return siblings.filtered(
+            lambda r: not r.workorder_option_id and r.lot_key == self.lot_key)
+
+    def _next_version(self):
+        self.ensure_one()
+        return max(self._version_group().mapped('version'), default=0) + 1
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        for rec, vals in zip(records, vals_list):
+            if not vals.get('version'):
+                rec.version = rec._next_version()
+        return records
     validated_date = fields.Date('Fecha Validación', readonly=True, copy=False)
     validated_by_id = fields.Many2one('res.users', 'Validada por', readonly=True, copy=False)
     # Procesos propios de la combinación: los factores pueden variar según
@@ -132,10 +265,9 @@ class ColorRecipeLot(models.Model):
             if recipe and not rec.bath_ratio:
                 rec.bath_ratio = recipe.bath_ratio
 
-    _lot_combination_unique = models.Constraint(
-        'unique(color_recipe_id, lot_key)',
-        'Esta combinación de lotes ya está registrada en la receta.',
-    )
+    # SIN restricción de unicidad: la misma opción de OF (y la misma
+    # combinación de lotes) puede registrarse N veces; el versionado se
+    # encarga de que solo una versión del hilo quede vigente al validar.
 
     @staticmethod
     def _make_lot_key(lot_ids):
@@ -177,8 +309,18 @@ class ColorRecipeLot(models.Model):
 
     def action_validate(self):
         for rec in self:
+            if rec.state == 'obsolete':
+                raise UserError(_(
+                    'Una sub-receta obsoleta no se puede validar: crea una '
+                    'nueva versión.'))
             if not rec.lot_ids:
                 raise UserError(_('La sub-receta no tiene lotes de hilo.'))
+            # Al validar, las versiones ANTERIORES del mismo hilo quedan
+            # obsoletas (las posteriores pendientes son borradores futuros).
+            previous = rec._version_group().filtered(
+                lambda r: r.version < rec.version and r.state != 'obsolete')
+            if previous:
+                previous.write({'state': 'obsolete'})
             rec.write({
                 'state': 'validated',
                 'validated_date': fields.Date.context_today(rec),
@@ -186,8 +328,29 @@ class ColorRecipeLot(models.Model):
             })
 
     def action_reset(self):
-        self.write({
-            'state': 'pending',
-            'validated_date': False,
-            'validated_by_id': False,
-        })
+        for rec in self:
+            if rec.state == 'obsolete':
+                raise UserError(_(
+                    'Una sub-receta obsoleta no se puede reabrir: la versión '
+                    'vigente de su hilo es otra.'))
+            group = rec._version_group()
+            rec.write({
+                'state': 'pending',
+                'validated_date': False,
+                'validated_by_id': False,
+            })
+            # Como en estampado: al reabrir la versión vigente se restaura la
+            # última versión del hilo que estuvo validada (conserva su
+            # validated_date histórico) y vuelven a pendiente los borradores
+            # posteriores a ella que quedaron obsoletos.
+            previous = group.filtered(
+                lambda r: r.state == 'obsolete' and r.validated_date).sorted(
+                key=lambda r: (r.version, r.id))
+            if previous:
+                restored = previous[-1]
+                restored.write({'state': 'validated'})
+                reopen = group.filtered(
+                    lambda r: r.state == 'obsolete' and not r.validated_date
+                    and r.version > restored.version)
+                if reopen:
+                    reopen.write({'state': 'pending'})

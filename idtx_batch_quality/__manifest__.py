@@ -40,6 +40,7 @@
         'views/control_sample_reception_views.xml',
         'report/dimrev_report.xml',
         'report/solidez_lavado_report.xml',
+        'report/tono_eval_produccion_report.xml',
         'report/pedido_line_laboratorio_summary_report.xml',
         'report/apariencia_eval_report.xml',
         'data/mail_template_data.xml',

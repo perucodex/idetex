@@ -238,6 +238,174 @@ class ControlTonoEvalLog(models.Model):
 
         return result
     
+    # =========================
+    # Reporte "Evaluación de Tono en Producción" (FULL-SGCC-FO-09)
+    # =========================
+    def _get_print_header(self):
+        """Cabecera del formato para el conjunto de registros seleccionados:
+        auditor(es), fecha (o rango) en tz del usuario y la etiqueta del grupo
+        de columnas (TACHO / ACABADO según los tipos seleccionados)."""
+        fechas = sorted({
+            fields.Datetime.context_timestamp(rec, rec.fecha_eval).date()
+            for rec in self if rec.fecha_eval})
+        if not fechas:
+            fecha = ''
+        elif fechas[0] == fechas[-1]:
+            fecha = fechas[0].strftime('%d/%m/%Y')
+        else:
+            fecha = '%s - %s' % (fechas[0].strftime('%d/%m/%Y'),
+                                 fechas[-1].strftime('%d/%m/%Y'))
+        labels = dict(self._fields['tono'].selection)
+        tonos = [labels[t].upper() for t in ('tacho', 'secado', 'acabado')
+                 if t in set(self.mapped('tono'))]
+        return {
+            'auditor': ', '.join(self.user_id.sorted('name').mapped('name')),
+            'fecha': fecha,
+            'grupo': ' / '.join(tonos) or 'TACHO',
+        }
+
+    def _get_observacion(self):
+        """Texto de la columna OBSERVACIÓN: motivos marcados (concesionado),
+        reproceso y si está pendiente de respuesta del cliente."""
+        self.ensure_one()
+        partes = []
+        if self.resultado == 'pendiente':
+            partes.append(_('Pendiente respuesta cliente'))
+        motivos = [label for flag, label in (
+            (self.motivo_tono, _('Tono')),
+            (self.motivo_tacto, _('Tacto')),
+            (self.motivo_apariencia, _('Apariencia')),
+        ) if flag]
+        if motivos:
+            partes.append(_('Motivo: %s') % ', '.join(motivos))
+        # BarCodReo '0' = sin reproceso (convención TEXPLUS): no se imprime.
+        if self.barcodreo and self.barcodreo.strip() not in ('0', ''):
+            partes.append(_('Reproceso: %s') % self.barcodreo)
+        return ' — '.join(partes)
+
+    def _build_tono_eval_xlsx(self):
+        """Excel del formato 'Evaluación de Tono en Producción' (misma
+        estructura que el PDF) para los registros seleccionados. Devuelve los
+        bytes del .xlsx."""
+        import io
+        import xlsxwriter
+
+        header = self._get_print_header()
+        output = io.BytesIO()
+        wb = xlsxwriter.Workbook(output, {'in_memory': True})
+        ws = wb.add_worksheet('Evaluación de Tono')
+
+        borde = {'border': 1, 'valign': 'vcenter'}
+        f_title = wb.add_format({**borde, 'bold': True, 'align': 'center',
+                                 'font_size': 12, 'text_wrap': True})
+        f_label = wb.add_format({**borde, 'bold': True, 'font_size': 8})
+        f_meta = wb.add_format({**borde, 'align': 'center', 'font_size': 8})
+        f_th = wb.add_format({**borde, 'bold': True, 'align': 'center',
+                              'text_wrap': True, 'font_size': 9})
+        f_td = wb.add_format({**borde, 'font_size': 9})
+        f_check = wb.add_format({**borde, 'bold': True, 'align': 'center',
+                                 'font_size': 10})
+        f_fecha = wb.add_format({**borde, 'align': 'center', 'font_size': 9,
+                                 'num_format': 'dd/mm/yyyy hh:mm'})
+
+        ws.set_column('A:A', 16)   # Fecha
+        ws.set_column('B:B', 12)   # Partida
+        ws.set_column('C:C', 28)   # Cliente
+        ws.set_column('D:D', 22)   # Color
+        ws.set_column('E:G', 12)   # Aprobado / Rechazado / Concesionado
+        ws.set_column('H:H', 12)   # Receta
+        ws.set_column('I:I', 32)   # Observación
+
+        # Cabecera del formato: logo de la compañía (como el PDF); si no
+        # tiene logo, su nombre.
+        company = self.env.company
+        logo_puesto = False
+        if company.logo:
+            try:
+                import base64
+                from PIL import Image
+                raw = base64.b64decode(company.logo)
+                img = Image.open(io.BytesIO(raw))
+                # Área combinada A1:B4 ≈ 280x76 px: escalar para que quepa.
+                escala = min(240.0 / img.width, 62.0 / img.height, 1.0)
+                ws.merge_range('A1:B4', '', f_title)
+                ws.insert_image('A1', 'logo.png', {
+                    'image_data': io.BytesIO(raw),
+                    'x_scale': escala, 'y_scale': escala,
+                    'x_offset': 10, 'y_offset': 8,
+                })
+                logo_puesto = True
+            except Exception:
+                pass
+        if not logo_puesto:
+            ws.merge_range('A1:B4', company.name, f_title)
+        ws.merge_range('C1:G4', 'FORMATO\nEVALUACION DE TONO EN PRODUCCION', f_title)
+        for row, (label, value) in enumerate([
+                ('codigo:', 'FULL-SGCC-FO-09'),
+                ('fecha:', header['fecha']),
+                ('vision:', '2'),
+                ('pagina:', '')]):
+            ws.write(row, 7, label, f_label)
+            ws.write(row, 8, value, f_meta)
+
+        ws.merge_range('A5:C5', 'AUDITOR: %s' % header['auditor'], f_label)
+        ws.merge_range('D5:G5', 'TURNO:', f_label)
+        ws.merge_range('H5:I5', 'FECHA: %s' % header['fecha'], f_label)
+
+        # Cabecera de la tabla
+        ws.merge_range('A6:A7', 'FECHA', f_th)
+        ws.merge_range('B6:B7', 'PARTIDA', f_th)
+        ws.merge_range('C6:C7', 'CLIENTE', f_th)
+        ws.merge_range('D6:D7', 'COLOR', f_th)
+        ws.merge_range('E6:H6', header['grupo'], f_th)
+        ws.write('E7', 'APROBADO', f_th)
+        ws.write('F7', 'RECHAZADO', f_th)
+        ws.write('G7', 'CONCESIONADO', f_th)
+        ws.write('H7', 'RECETA', f_th)
+        ws.merge_range('I6:I7', 'OBSERVACION', f_th)
+
+        row = 7
+        col_por_resultado = {'aprobado': 4, 'rechazado': 5, 'concesionado': 6}
+        for rec in self.sorted('fecha_eval'):
+            if rec.fecha_eval:
+                # Datetime real (ordenable en Excel) en hora local del usuario.
+                local = fields.Datetime.context_timestamp(
+                    rec, rec.fecha_eval).replace(tzinfo=None)
+                ws.write_datetime(row, 0, local, f_fecha)
+            else:
+                ws.write(row, 0, '', f_fecha)
+            ws.write(row, 1, rec.partida or '', f_td)
+            ws.write(row, 2, rec.cliente or '', f_td)
+            ws.write(row, 3, rec.color or '', f_td)
+            for col in (4, 5, 6):
+                ws.write(row, col, '', f_check)
+            check_col = col_por_resultado.get(rec.resultado)
+            if check_col is not None:
+                ws.write(row, check_col, '✔', f_check)
+            ws.write(row, 7, rec.receta_tono or rec.receta or '', f_meta)
+            ws.write(row, 8, rec._get_observacion(), f_td)
+            row += 1
+        # Filas en blanco para completar a mano, como el formato en papel.
+        for _i in range(max(0, 18 - len(self))):
+            for col in range(9):
+                ws.write(row, col, '', f_td)
+            row += 1
+
+        wb.close()
+        return output.getvalue()
+
+    def action_export_tono_eval_xlsx(self):
+        """Descarga el Excel del formato con los registros seleccionados
+        (acción de servidor del menú de la lista). La compañía ACTIVA viaja en
+        la URL: el GET del controller no hereda la compañía elegida en el
+        cliente web y caería en la compañía por defecto del usuario."""
+        return {
+            'type': 'ir.actions.act_url',
+            'url': '/idtx_batch_quality/tono_eval_xlsx?ids=%s&company_id=%s'
+                   % (','.join(map(str, self.ids)), self.env.company.id),
+            'target': 'self',
+        }
+
     def action_approve(self):
         self.write({
             "motivo_tono": False,

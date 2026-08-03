@@ -68,7 +68,7 @@
                                                             <field name="has_table" column_invisible="1"/>
                                                             <field name="factor_manual" string="Manual" optional="hide"/>
                                                             <field name="recipe_lot_state" column_invisible="1"/>
-                                                            <button name="action_reset_table_factor" type="object" icon="fa-undo" title="Volver al valor de la tabla" invisible="not factor_manual or recipe_lot_state == 'validated'"/>
+                                                            <button name="action_reset_table_factor" type="object" icon="fa-undo" title="Volver al valor de la tabla" invisible="not factor_manual or recipe_lot_state in ('validated', 'obsolete')"/>
                                                         </list>
                                                     </field>
                                                 </page>
@@ -79,14 +79,21 @@
                             </page>
                             <page name="lot_page" string="Recetas x Lote" invisible="state != 'approved'">
                                 <field name="recipe_lot_ids" nolabel="1">
-                                    <list editable="bottom" decoration-success="state == 'validated'" decoration-warning="state == 'pending'">
+                                    <list editable="bottom" decoration-success="state == 'validated'" decoration-warning="state == 'pending'" decoration-muted="state == 'obsolete'">
+                                        <field name="available_production_ids" column_invisible="1"/>
+                                        <field name="available_option_ids" column_invisible="1"/>
                                         <field name="available_thread_lot_ids" column_invisible="1"/>
-                                        <field name="lot_ids" widget="many2many_tags" options="{'no_create': True}" domain="[('id', 'in', available_thread_lot_ids)]" context="{'display_thread_product': True}" readonly="state == 'validated'"/>
+                                        <field name="production_id" options="{'no_create': True}" domain="[('id', 'in', available_production_ids)]" readonly="state in ('validated', 'obsolete')"/>
+                                        <field name="workorder_option_id" options="{'no_create': True}" domain="[('id', 'in', available_option_ids)]" readonly="state in ('validated', 'obsolete') or not production_id"/>
+                                        <!-- force_save: los lotes los escribe el onchange de la opción
+                                             estando el campo readonly; sin él, el cliente los descarta. -->
+                                        <field name="lot_ids" widget="many2many_tags" options="{'no_create': True}" domain="[('id', 'in', available_thread_lot_ids)]" context="{'display_thread_product': True}" readonly="state in ('validated', 'obsolete') or workorder_option_id" force_save="1"/>
+                                        <field name="version" readonly="1"/>
                                         <field name="validated_date" optional="show" readonly="1"/>
                                         <field name="validated_by_id" optional="hide"/>
                                         <field name="state" widget="badge" decoration-success="state == 'validated'" decoration-warning="state == 'pending'"/>
                                         <button name="action_open_subrecipe" type="object" string="Vista" class="btn btn-link" title="Abrir sub-receta (procesos y factores por hilado)"/>
-                                        <button name="action_validate" type="object" string="Validar" icon="fa-check" invisible="state == 'validated'"/>
+                                        <button name="action_validate" type="object" string="Validar" icon="fa-check" invisible="state != 'pending'"/>
                                         <button name="action_reset" type="object" string="Reabrir" icon="fa-undo" invisible="state != 'validated'" groups="idtx_laboratory.group_module_laboratory_manager"/>
                                     </list>
                                 </field>
@@ -101,13 +108,49 @@
             </field>
         </record>
 
+        <!-- Lista independiente: la usa el diálogo "Buscar más" del m2o de
+             sub-receta (p.ej. en la partida). Sin ella Odoo genera una lista
+             con solo el rec_name (los lotes) y no se distinguen OF/opción/versión. -->
+        <record id="color_recipe_lot_list_view" model="ir.ui.view">
+            <field name="name">color.recipe.lot.list</field>
+            <field name="model">color.recipe.lot</field>
+            <field name="arch" type="xml">
+                <list decoration-success="state == 'validated'" decoration-warning="state == 'pending'" decoration-muted="state == 'obsolete'">
+                    <field name="color_recipe_id" optional="hide"/>
+                    <field name="production_id"/>
+                    <field name="workorder_option_id"/>
+                    <field name="lot_ids" widget="many2many_tags"/>
+                    <field name="version"/>
+                    <field name="validated_date" optional="show"/>
+                    <field name="state" widget="badge" decoration-success="state == 'validated'" decoration-warning="state == 'pending'"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="color_recipe_lot_search_view" model="ir.ui.view">
+            <field name="name">color.recipe.lot.search</field>
+            <field name="model">color.recipe.lot</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="production_id"/>
+                    <field name="workorder_option_id"/>
+                    <field name="lot_ids"/>
+                    <field name="lot_summary"/>
+                    <field name="color_recipe_id"/>
+                    <filter name="filter_validated" string="Validadas" domain="[('state', '=', 'validated')]"/>
+                    <filter name="filter_pending" string="Pendientes" domain="[('state', '=', 'pending')]"/>
+                    <filter name="filter_obsolete" string="Obsoletas" domain="[('state', '=', 'obsolete')]"/>
+                </search>
+            </field>
+        </record>
+
         <record id="color_recipe_lot_form_view" model="ir.ui.view">
             <field name="name">color.recipe.lot.form</field>
             <field name="model">color.recipe.lot</field>
             <field name="arch" type="xml">
                 <form string="Sub-receta por Lote">
                     <header>
-                        <button name="action_validate" type="object" string="Validar" class="oe_highlight" invisible="state == 'validated'"/>
+                        <button name="action_validate" type="object" string="Validar" class="oe_highlight" invisible="state != 'pending'"/>
                         <button name="action_reset" type="object" string="Reabrir" invisible="state != 'validated'" groups="idtx_laboratory.group_module_laboratory_manager"/>
                         <field name="state" widget="statusbar"/>
                     </header>
@@ -115,11 +158,18 @@
                         <group>
                             <group>
                                 <field name="color_recipe_id" readonly="1" force_save="1"/>
+                                <field name="available_production_ids" invisible="1"/>
+                                <field name="available_option_ids" invisible="1"/>
                                 <field name="available_thread_lot_ids" invisible="1"/>
-                                <field name="lot_ids" widget="many2many_tags" options="{'no_create': True}" readonly="state == 'validated'" domain="[('id', 'in', available_thread_lot_ids)]" context="{'display_thread_product': True}"/>
-                                <field name="absorption_factor" readonly="state == 'validated'"/>
-                                <field name="bath_ratio" readonly="state == 'validated'"/>
-                                <field name="tipo_proceso" readonly="state == 'validated'"/>
+                                <field name="production_id" options="{'no_create': True}" domain="[('id', 'in', available_production_ids)]" readonly="state in ('validated', 'obsolete')"/>
+                                <field name="workorder_option_id" options="{'no_create': True}" domain="[('id', 'in', available_option_ids)]" readonly="state in ('validated', 'obsolete') or not production_id"/>
+                                <!-- force_save: los lotes los escribe el onchange de la opción
+                                     estando el campo readonly; sin él, el cliente los descarta. -->
+                                <field name="lot_ids" widget="many2many_tags" options="{'no_create': True}" readonly="state in ('validated', 'obsolete') or workorder_option_id" force_save="1" domain="[('id', 'in', available_thread_lot_ids)]" context="{'display_thread_product': True}"/>
+                                <field name="version" readonly="1"/>
+                                <field name="absorption_factor" readonly="state in ('validated', 'obsolete')"/>
+                                <field name="bath_ratio" readonly="state in ('validated', 'obsolete')"/>
+                                <field name="tipo_proceso" readonly="state in ('validated', 'obsolete')"/>
                             </group>
                             <group>
                                 <field name="validated_date" readonly="1"/>
@@ -134,7 +184,7 @@
                                      AGREGAR procesos nuevos si la combinación lo requiere
                                      (la plantilla solo se elige al crear; en los existentes
                                      no se muestra ni se cambia). -->
-                                <field name="process_ids" nolabel="1" readonly="state == 'validated'">
+                                <field name="process_ids" nolabel="1" readonly="state in ('validated', 'obsolete')">
                                     <list>
                                         <field name="sequence" widget="handle"/>
                                         <!-- force_save: sin él, el cliente descarta al guardar el valor
@@ -164,7 +214,7 @@
                                                     <field name="has_table" column_invisible="1"/>
                                                     <field name="factor_manual" string="Manual"/>
                                                     <field name="recipe_lot_state" column_invisible="1"/>
-                                                    <button name="action_reset_table_factor" type="object" icon="fa-undo" title="Volver al valor de la tabla" invisible="not factor_manual or recipe_lot_state == 'validated'"/>
+                                                    <button name="action_reset_table_factor" type="object" icon="fa-undo" title="Volver al valor de la tabla" invisible="not factor_manual or recipe_lot_state in ('validated', 'obsolete')"/>
                                                 </list>
                                             </field>
                                         </sheet>

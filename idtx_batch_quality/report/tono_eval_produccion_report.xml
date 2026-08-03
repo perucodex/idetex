@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="paperformat_tono_eval_landscape" model="report.paperformat">
+        <field name="name">Evaluación de Tono (A4 horizontal)</field>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">6</field>
+        <field name="margin_bottom">6</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_tono_eval_produccion" model="ir.actions.report">
+        <field name="name">Evaluación de Tono en Producción</field>
+        <field name="model">control.tono.eval.log</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">idtx_batch_quality.report_tono_eval_produccion</field>
+        <field name="report_file">idtx_batch_quality.report_tono_eval_produccion</field>
+        <field name="binding_model_id" ref="model_control_tono_eval_log"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_tono_eval_landscape"/>
+        <field name="print_report_name">'Evaluacion de Tono en Produccion'</field>
+    </record>
+
+    <!-- Variante Excel del mismo formato: acción de servidor con binding tipo
+         "report" para que aparezca junto al PDF en el menú de imprimir de la
+         lista al seleccionar registros. -->
+    <record id="action_server_tono_eval_xlsx" model="ir.actions.server">
+        <field name="name">Evaluación de Tono en Producción (Excel)</field>
+        <field name="model_id" ref="model_control_tono_eval_log"/>
+        <field name="binding_model_id" ref="model_control_tono_eval_log"/>
+        <field name="binding_type">report</field>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    action = records.action_export_tono_eval_xlsx()
+        </field>
+    </record>
+
+    <!-- Un solo formato (una hoja) con TODOS los registros seleccionados,
+         réplica del formato en papel FULL-SGCC-FO-09. -->
+    <template id="report_tono_eval_produccion">
+        <t t-call="web.html_container">
+            <t t-set="header" t-value="docs._get_print_header()"/>
+            <t t-set="company" t-value="docs.env.company"/>
+            <div class="page">
+                <meta charset="utf-8"/>
+                <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+                <style>
+                    .te-wrap { font-family: 'DejaVu Sans', sans-serif; color: #111; }
+                    .te-grid { width: 100%; border-collapse: collapse; }
+                    .te-grid th, .te-grid td {
+                        border: 1px solid #111;
+                        padding: 3px 5px;
+                        font-size: 10px;
+                        vertical-align: middle;
+                    }
+                    .te-grid th { text-transform: uppercase; text-align: center; }
+                    .te-title { text-align: center; font-weight: 700; font-size: 13px; }
+                    .te-subtitle { text-align: center; font-weight: 700; font-size: 12px; }
+                    .te-meta td { font-size: 9px; padding: 2px 5px; }
+                    .te-check { text-align: center; font-size: 12px; font-weight: 700; }
+                    .te-label { font-weight: 700; text-transform: uppercase; }
+                    .te-filler td { height: 16px; }
+                </style>
+                <div class="te-wrap">
+                    <!-- Cabecera del formato: logo | título | caja de control -->
+                    <table class="te-grid">
+                        <tr>
+                            <td rowspan="2" style="width: 18%; text-align: center;">
+                                <img t-if="company.logo" t-att-src="image_data_uri(company.logo)"
+                                     style="max-height: 46px; max-width: 150px;"/>
+                                <div t-else="" class="te-label" t-esc="company.name"/>
+                            </td>
+                            <td rowspan="2" style="width: 57%;">
+                                <div class="te-title">FORMATO</div>
+                                <div class="te-subtitle">EVALUACION DE TONO EN PRODUCCION</div>
+                            </td>
+                            <td style="width: 25%; padding: 0;">
+                                <table class="te-grid te-meta" style="border: 0;">
+                                    <tr>
+                                        <td class="te-label" style="width: 40%; border-top: 0; border-left: 0;">codigo:</td>
+                                        <td style="text-align: center; border-top: 0; border-right: 0;">FULL-SGCC-FO-09</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="te-label" style="border-left: 0;">fecha:</td>
+                                        <td style="border-right: 0;"><t t-esc="header['fecha']"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="te-label" style="border-left: 0;">vision:</td>
+                                        <td style="text-align: center; border-right: 0;">2</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="te-label" style="border-bottom: 0; border-left: 0;">pagina:</td>
+                                        <td style="border-bottom: 0; border-right: 0;"/>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr><td style="padding: 0; border: 0;"/></tr>
+                        <tr>
+                            <td><span class="te-label">Auditor: </span><t t-esc="header['auditor']"/></td>
+                            <td><span class="te-label">Turno: </span></td>
+                            <td><span class="te-label">Fecha: </span><t t-esc="header['fecha']"/></td>
+                        </tr>
+                    </table>
+                    <!-- Tabla de evaluaciones -->
+                    <table class="te-grid" style="margin-top: -1px;">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" style="width: 11%;">Fecha</th>
+                                <th rowspan="2" style="width: 9%;">Partida</th>
+                                <th rowspan="2" style="width: 14%;">Cliente</th>
+                                <th rowspan="2" style="width: 13%;">Color</th>
+                                <th colspan="4"><t t-esc="header['grupo']"/></th>
+                                <th rowspan="2" style="width: 20%;">Observacion</th>
+                            </tr>
+                            <tr>
+                                <th style="width: 7%;">Aprobado</th>
+                                <th style="width: 7%;">Rechazado</th>
+                                <th style="width: 9%;">Concesionado</th>
+                                <th style="width: 10%;">Receta</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="docs.sorted('fecha_eval')" t-as="doc">
+                                <tr>
+                                    <td style="text-align: center;"><span t-field="doc.fecha_eval" t-options='{"format": "dd/MM/yyyy HH:mm"}'/></td>
+                                    <td t-esc="doc.partida or ''"/>
+                                    <td t-esc="doc.cliente or ''"/>
+                                    <td t-esc="doc.color or ''"/>
+                                    <td class="te-check"><t t-if="doc.resultado == 'aprobado'">&#10004;</t></td>
+                                    <td class="te-check"><t t-if="doc.resultado == 'rechazado'">&#10004;</t></td>
+                                    <td class="te-check"><t t-if="doc.resultado == 'concesionado'">&#10004;</t></td>
+                                    <td style="text-align: center;" t-esc="doc.receta_tono or doc.receta or ''"/>
+                                    <td t-esc="doc._get_observacion()"/>
+                                </tr>
+                            </t>
+                            <!-- Filas en blanco para completar a mano, como el formato en papel -->
+                            <t t-foreach="range(max(0, 18 - len(docs)))" t-as="i">
+                                <tr class="te-filler">
+                                    <td/><td/><td/><td/><td/><td/><td/><td/><td/>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

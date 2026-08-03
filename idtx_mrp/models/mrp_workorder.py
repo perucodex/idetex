@@ -292,6 +292,14 @@ class MrpWorkorder(models.Model):
             workorder.qty_produced = workorder._get_textile_produced_qty()
 
     def write(self, vals):
+        # Máquinas de las OTs de TEJIDO cuyo estado cambia: se resincronizan
+        # tras el write (ejecutando <-> operativa según OTs en progreso). Cubre
+        # los cambios de estado que no pasan por button_start/button_finish.
+        equipos_a_resync = self.env['maintenance.equipment']
+        if 'state' in vals:
+            equipos_a_resync = self.filtered(
+                lambda wo: wo.workcenter_id.operation_type == 'weaving'
+            ).option_ids.equipment_ids
         if 'state' in vals and vals['state'] in ('progress', 'done') and self.filtered(lambda wo: wo.operation_type in (('weaving',) + wo.BATCH_OPERATION_TYPES)):
             result = True
             for workorder in self:

@@ -28,6 +28,14 @@
             <button name="action_open_split_wizard" position="after">
                 <button name="action_print_dye_recipe" string="Imprimir Receta de Tinte" type="object" invisible="state == 'draft'"/>
                 <button name="%(idtx_mrp_shop.action_report_batch_partida)d" string="Imprimir Partida" type="action"/>
+                <!-- Candado de laboratorio sobre la sub-receta asignada -->
+                <button name="action_lock_recipe_lot" string="Bloquear Sub-receta" type="object" icon="fa-lock"
+                        groups="idtx_laboratory.group_module_laboratory_manager"
+                        invisible="not recipe_lot_id or recipe_lot_locked"/>
+                <button name="action_unlock_recipe_lot" string="Revertir Sub-receta" type="object" icon="fa-unlock"
+                        groups="idtx_laboratory.group_module_laboratory_manager"
+                        invisible="not recipe_lot_locked"
+                        confirm="Se quitará la sub-receta asignada y el campo volverá a ser editable. ¿Continuar?"/>
             </button>
             <div name="button_box" position="inside">
                 <button name="action_show_dye_recipe" type="object" class="oe_stat_button" icon="fa-flask" invisible="state == 'draft'">
@@ -45,7 +53,11 @@
                     <field name="color_code" readonly="1"/>
                     <field name="color_name" readonly="1"/>
                     <field name="color_recipe_id" readonly="1"/>
-                    <field name="recipe_lot_id" readonly="1"/>
+                    <!-- La sub-receta la elige el usuario (ya no se calcula por
+                         lot_key); sin ella el Taller no deja registrar el teñido.
+                         Con el candado de laboratorio puesto, nadie la edita. -->
+                    <field name="recipe_lot_locked" invisible="1"/>
+                    <field name="recipe_lot_id" options="{'no_create': True}" readonly="state in ('split', 'unbuild') or recipe_lot_locked"/>
                     <field name="reprocess_count" readonly="1"/>
                 </group>
             </group>

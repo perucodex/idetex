@@ -1,4 +1,5 @@
 from odoo import fields, models, api, _
+from odoo.exceptions import AccessError, UserError
 from odoo.fields import Domain
 import re
 
@@ -12,11 +13,79 @@ class MrpWorkorderBatch(models.Model):
         help='Receta con la que se tiñe la partida: la aprobada cuya '
              'combinación de productos coincide con los productos de los '
              'rollos (exacta primero; si no, la combinada que los contenga).')
+    # La sub-receta ya NO se resuelve sola por lot_key: la selecciona el
+    # usuario en la partida (entre las sub-recetas de su receta de color).
+    # Sin sub-receta seleccionada el Taller no deja registrar el teñido.
     recipe_lot_id = fields.Many2one(
         'color.recipe.lot', string='Sub-receta (Lotes)',
-        compute='_compute_recipe_lot', store=True,
-        help='Sub-receta de la receta cuya combinación de lotes de hilo '
-             'coincide con los lotes de los rollos de la partida.')
+        domain="[('color_recipe_id', '=', color_recipe_id), ('state', '=', 'validated')]",
+        help='Sub-receta (combinación de lotes de hilo) con la que se tiñe '
+             'la partida. La selecciona el usuario; sin ella no se puede '
+             'registrar el teñido en el Taller. Solo se pueden elegir '
+             'versiones VALIDADAS por laboratorio (ni pendientes ni '
+             'obsoletas).')
+    # Candado de laboratorio: un responsable (group_module_laboratory_manager)
+    # bloquea la sub-receta asignada y ya nadie puede cambiarla; solo él puede
+    # revertir la asignación (quita la sub-receta y desbloquea).
+    recipe_lot_locked = fields.Boolean(
+        'Sub-receta Bloqueada', copy=False,
+        help='Bloqueada por laboratorio: la sub-receta asignada ya no se '
+             'puede cambiar hasta que un responsable de laboratorio revierta '
+             'la asignación.')
+
+    _LAB_MANAGER_GROUP = 'idtx_laboratory.group_module_laboratory_manager'
+
+    def _es_lab_manager(self):
+        # su: sudo/superuser (shell, scripts, flujos de sistema) no se bloquea.
+        return self.env.su or self.env.user.has_group(self._LAB_MANAGER_GROUP)
+
+    def _check_lab_manager(self):
+        if not self._es_lab_manager():
+            raise AccessError(_(
+                'Solo un responsable de laboratorio puede bloquear o '
+                'revertir la sub-receta de la partida.'))
+
+    def write(self, vals):
+        # Guardas del candado (bypass_recipe_lot_lock: flujos internos como
+        # la división de partidas).
+        if not self.env.context.get('bypass_recipe_lot_lock') \
+                and {'recipe_lot_id', 'recipe_lot_locked'} & set(vals):
+            es_manager = self._es_lab_manager()
+            if 'recipe_lot_locked' in vals and not es_manager:
+                raise AccessError(_(
+                    'Solo un responsable de laboratorio puede bloquear o '
+                    'revertir la sub-receta de la partida.'))
+            if 'recipe_lot_id' in vals:
+                desbloqueando = es_manager and vals.get('recipe_lot_locked') is False
+                locked = self.filtered('recipe_lot_locked')
+                if locked and not desbloqueando:
+                    raise UserError(_(
+                        'La sub-receta de %s está bloqueada por laboratorio: '
+                        'pide a un responsable de laboratorio revertir la '
+                        'asignación.') % locked[0].name)
+        return super().write(vals)
+
+    def action_lock_recipe_lot(self):
+        self._check_lab_manager()
+        for rec in self:
+            if not rec.recipe_lot_id:
+                raise UserError(_(
+                    'La partida %s no tiene sub-receta seleccionada.') % rec.name)
+            if rec.recipe_lot_locked:
+                continue
+            rec.recipe_lot_locked = True
+            rec.message_post(body=_(
+                'Sub-receta %s bloqueada por laboratorio.')
+                % rec.recipe_lot_id.display_name)
+
+    def action_unlock_recipe_lot(self):
+        self._check_lab_manager()
+        for rec in self.filtered('recipe_lot_locked'):
+            sub = rec.recipe_lot_id.display_name
+            rec.write({'recipe_lot_id': False, 'recipe_lot_locked': False})
+            rec.message_post(body=_(
+                'Asignación de sub-receta revertida por laboratorio '
+                '(era %s).') % sub)
     color_code = fields.Char(related='color_recipe_id.color_code', string='Código de Color')
     color_name = fields.Char(related='color_recipe_id.color_name', string='Nombre de Color')
     registry_ids = fields.One2many('batch.registry', 'batch_id', string='Registers')
@@ -49,7 +118,7 @@ class MrpWorkorderBatch(models.Model):
              'la partida no tiene sub-receta validada en la receta de color.')
 
     @api.depends('wo_roll_ids.thread_lot_ids', 'color_recipe_id',
-                 'recipe_lot_id', 'recipe_lot_id.state',
+                 'recipe_lot_id', 'recipe_lot_id.state', 'recipe_lot_id.lot_key',
                  'color_recipe_id.product_ids',
                  'color_recipe_id.recipe_lot_ids.lot_key',
                  'color_recipe_id.recipe_lot_ids.state')
@@ -88,17 +157,47 @@ class MrpWorkorderBatch(models.Model):
                 lot_names = ', '.join(lots.mapped('name'))
                 sub = batch.recipe_lot_id
                 if not sub:
-                    msgs.append(_(
-                        'La combinación de lotes de hilado [%(lots)s] aún no '
-                        'tiene receta para %(recipe)s (%(color)s): se debe '
-                        'realizar la validación en laboratorio.',
-                        lots=lot_names, recipe=recipe.name,
-                        color=recipe.color_name or ''))
-                elif sub.state != 'validated':
-                    msgs.append(_(
-                        'La combinación de lotes [%(lots)s] está registrada '
-                        'en %(recipe)s pero sigue PENDIENTE de validación de '
-                        'laboratorio.', lots=lot_names, recipe=recipe.name))
+                    # La sub-receta la elige el usuario; se le orienta según
+                    # exista o no una para la combinación de lotes de los rollos.
+                    match = recipe._find_lot_subrecipe(lots)
+                    if match:
+                        msgs.append(_(
+                            'La partida no tiene sub-receta seleccionada: '
+                            'elígela en este formulario (existe [%(match)s] '
+                            'para la combinación de lotes [%(lots)s]). Sin '
+                            'sub-receta no se puede registrar el teñido en '
+                            'el Taller.',
+                            match=match.display_name, lots=lot_names))
+                    else:
+                        msgs.append(_(
+                            'La combinación de lotes de hilado [%(lots)s] aún '
+                            'no tiene sub-receta en %(recipe)s (%(color)s): se '
+                            'debe validar en laboratorio y luego seleccionarla '
+                            'en la partida. Sin sub-receta no se puede '
+                            'registrar el teñido en el Taller.',
+                            lots=lot_names, recipe=recipe.name,
+                            color=recipe.color_name or ''))
+                else:
+                    if sub.state == 'obsolete':
+                        current = sub._version_group().filtered(
+                            lambda r: r.state == 'validated')[:1]
+                        detail = _(' (la vigente es [%s])') % current.display_name \
+                            if current else ''
+                        msgs.append(_(
+                            'La sub-receta seleccionada [%(sub)s] está '
+                            'OBSOLETA%(detail)s: selecciona la versión '
+                            'vigente.', sub=sub.display_name, detail=detail))
+                    elif sub.state != 'validated':
+                        msgs.append(_(
+                            'La sub-receta seleccionada [%(sub)s] de %(recipe)s '
+                            'sigue PENDIENTE de validación de laboratorio.',
+                            sub=sub.display_name, recipe=recipe.name))
+                    if sub.lot_key != sub._make_lot_key(lots.ids):
+                        msgs.append(_(
+                            'La sub-receta seleccionada [%(sub)s] no coincide '
+                            'con los lotes de hilo de los rollos de la partida '
+                            '[%(lots)s]: revisa la selección.',
+                            sub=sub.display_name, lots=lot_names))
             batch.recipe_lot_warning = '\n'.join(msgs) if msgs else False
 
     @api.depends('wo_roll_ids')
@@ -136,17 +235,17 @@ class MrpWorkorderBatch(models.Model):
                 recipe = productions.color_recipe_id[:1]
             rec.color_recipe_id = recipe
 
-    @api.depends('color_recipe_id', 'wo_roll_ids.thread_lot_ids',
-                 'child_batch_ids.wo_roll_ids.thread_lot_ids',
-                 'color_recipe_id.recipe_lot_ids.lot_key')
-    def _compute_recipe_lot(self):
-        for rec in self:
-            recipe = rec.color_recipe_id
-            # Partida dividida: ya no tiene rollos propios (viven en las hijas);
-            # se usan los rollos ACTUALES (origin_roll_ids resuelve el split)
-            # para no perder la sub-receta al dividir.
-            lots = rec.origin_roll_ids.thread_lot_ids
-            rec.recipe_lot_id = recipe._find_lot_subrecipe(lots) if recipe and lots else False
+    def _apply_split(self, groups):
+        # Las sub-partidas heredan la sub-receta elegida en el padre (se tiñeron
+        # juntas con ella) y su candado; sin esto, dividir obligaría a
+        # re-seleccionarla. bypass: el que divide no es de laboratorio.
+        children = super()._apply_split(groups)
+        if self.recipe_lot_id:
+            children.with_context(bypass_recipe_lot_lock=True).write({
+                'recipe_lot_id': self.recipe_lot_id.id,
+                'recipe_lot_locked': self.recipe_lot_locked,
+            })
+        return children
 
     @api.depends('registry_ids.reprocess_number')
     def _compute_reprocess_count(self):

@@ -167,7 +167,8 @@ class ColorRecipeProcessLine(models.Model):
 
     def action_reset_table_factor(self):
         """Quita el ajuste manual y vuelve al valor de la tabla."""
-        if any(l.recipe_lot_state == 'validated' for l in self):
-            raise UserError(_('La sub-receta está validada: reábrela para modificar factores.'))
+        if any(l.recipe_lot_state in ('validated', 'obsolete') for l in self):
+            raise UserError(_('La sub-receta está validada u obsoleta: no se '
+                              'pueden modificar sus factores.'))
         self.write({'factor_manual': False})
         self._recompute_table_factors()
