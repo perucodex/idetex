@@ -12,7 +12,7 @@ class AlphaFloorLayout(models.Model):
     workcenter = fields.Char(required=True, index=True)
     slot_index = fields.Integer(default=0)
 
-    _sql_constraints = [
-        ('unique_eq_wc', 'unique(equipment_id, workcenter)',
-         'Una máquina solo puede ocupar una posición por centro de trabajo.'),
-    ]
+    _unique_eq_wc = models.Constraint(
+        'unique(equipment_id, workcenter)',
+        'Una máquina solo puede ocupar una posición por centro de trabajo.',
+    )

@@ -11,6 +11,7 @@ class BaseProcess(models.Model):
     así que la homologación inicial se puede sembrar automáticamente y el
     laboratorio completa el resto a mano.
     """
+    _name = 'base.process'
     _inherit = ['base.process', 'orgatex.connection.mixin']
 
     orgatex_treatment_no = fields.Integer(
@@ -86,6 +87,7 @@ class BaseProcess(models.Model):
 
 class MaintenanceEquipment(models.Model):
     """Homologación máquina de tintorería Odoo -> máquina ORGATEX."""
+    _name = 'maintenance.equipment'
     _inherit = ['maintenance.equipment', 'orgatex.connection.mixin']
 
     orgatex_machine_no = fields.Char(

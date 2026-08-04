@@ -16,6 +16,7 @@ class MrpWorkorderBatch(models.Model):
     (combinación de lotes de hilo), con sus procesos y factores ya ajustados
     por hilado — la misma fuente del reporte 'Receta de Tinte'.
     """
+    _name = 'mrp.workorder.batch'
     _inherit = ['mrp.workorder.batch', 'orgatex.connection.mixin']
 
     orgatex_dyelot = fields.Char(

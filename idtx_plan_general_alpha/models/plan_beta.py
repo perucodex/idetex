@@ -178,6 +178,15 @@ class PlanBeta(models.Model):
     _auto = False
     _log_access = False
 
+    def init(self):
+        # Vista vacía solo para que el registry tenga el objeto de tabla
+        # (evita "Model plan.beta has no table" en cada arranque): los datos
+        # reales vienen de SITPRO vía search_fetch/web_search_read.
+        self.env.cr.execute(
+            'CREATE OR REPLACE VIEW "%s" AS SELECT 1 AS id WHERE FALSE'
+            % self._table
+        )
+
     nro          = fields.Integer(string='Nro',          readonly=True)
     talm         = fields.Integer(string='T.Alm',        readonly=True)
     item         = fields.Integer(string='Item',          readonly=True)
