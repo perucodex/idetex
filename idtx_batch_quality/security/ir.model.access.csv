@@ -15,3 +15,4 @@ access_control_solidez_lavado_eval_user,control.solidez.lavado.eval.user,model_c
 access_control_laboratorio_record_user,control.laboratorio.record.user,model_control_laboratorio_record,base.group_user,1,1,1,1
 access_control_laboratorio_record_result_user,control.laboratorio.record.result.user,model_control_laboratorio_record_result,base.group_user,1,1,1,1
 access_control_sample_reception_user,control.sample.reception.user,model_control_sample_reception,base.group_user,1,1,1,1
+access_control_tono_eval_report_wizard_user,access.control.tono.eval.report.wizard.user,model_control_tono_eval_report_wizard,base.group_user,1,1,1,1

@@ -1,10 +1,10 @@
-import pyodbc
 from odoo import models, fields
 from odoo.exceptions import UserError
 
 
 class IntegrationOrgatex(models.Model):
     _name = "integration.orgatex"
+    _inherit = ["orgatex.connection.mixin"]
     _description = "Dyelot Header"
 
     # =============================
@@ -50,13 +50,11 @@ class IntegrationOrgatex(models.Model):
     # CONEXION SQL SERVER
     # =============================
     def _get_sql_connection(self):
-        return pyodbc.connect(
-            "DSN=ORGATEX_DSN;"
-            "DATABASE=ORGATEX-INTEG;"
-            "UID=orgatex;"
-            "PWD=orgatex;"
-            "TDS_Version=7.3;"
-        )
+        # El DSN ORGATEX_DSN de /etc/odbc.ini apunta al puerto 1433, que en
+        # este servidor está CERRADO (las instancias usan puertos dinámicos:
+        # SQLEXPRESS=49264 con la base ORGATEX-INTEG). La conexión ahora es
+        # parametrizable por ir.config_parameter (ver orgatex.connection.mixin).
+        return self._orgatex_connect()
 
     # =============================
     # INSERT COMPLETO (1 + N + N)

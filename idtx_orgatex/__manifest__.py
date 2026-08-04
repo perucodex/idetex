@@ -20,14 +20,16 @@ Gestión de recetas e integración con sistema textil Orgatex, proyecciones y kp
     'sequence': 0,
 
     # any module necessary for this one to work correctly
-    'depends': ['idtx_laboratory'],
+    'depends': ['idtx_laboratory', 'idtx_mrp_shop', 'maintenance'],
 
     # always loaded
     'data': [
         'security/group_orgatex.xml',
         'security/ir.model.access.csv',
-        'views/orgatex_menu.xml',
+        'data/orgatex_config_parameters.xml',
         'views/integration_orgatex_view.xml',
+        'views/orgatex_batch_views.xml',
+        'views/orgatex_menu.xml',
     ],
 }
 

@@ -20,27 +20,14 @@
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">idtx_batch_quality.report_tono_eval_produccion</field>
         <field name="report_file">idtx_batch_quality.report_tono_eval_produccion</field>
-        <field name="binding_model_id" ref="model_control_tono_eval_log"/>
-        <field name="binding_type">report</field>
+        <field name="binding_model_id" eval="False"/>
         <field name="paperformat_id" ref="paperformat_tono_eval_landscape"/>
         <field name="print_report_name">'Evaluacion de Tono en Produccion'</field>
     </record>
 
-    <!-- Variante Excel del mismo formato: acción de servidor con binding tipo
-         "report" para que aparezca junto al PDF en el menú de imprimir de la
-         lista al seleccionar registros. -->
-    <record id="action_server_tono_eval_xlsx" model="ir.actions.server">
-        <field name="name">Evaluación de Tono en Producción (Excel)</field>
-        <field name="model_id" ref="model_control_tono_eval_log"/>
-        <field name="binding_model_id" ref="model_control_tono_eval_log"/>
-        <field name="binding_type">report</field>
-        <field name="binding_view_types">list</field>
-        <field name="state">code</field>
-        <field name="code">
-if records:
-    action = records.action_export_tono_eval_xlsx()
-        </field>
-    </record>
+    <!-- El PDF y el Excel se imprimen desde el wizard del menú
+         Calidad → Informes (wizards/tono_eval_report_wizard.xml), no desde
+         la vista lista. -->
 
     <!-- Un solo formato (una hoja) con TODOS los registros seleccionados,
          réplica del formato en papel FULL-SGCC-FO-09. -->

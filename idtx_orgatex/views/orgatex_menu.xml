@@ -11,6 +11,13 @@
                 <menuitem id="orga_operations_menu" name="Operations" sequence="10">
                     <!-- <menuitem id="orga_dev_menu" name="Lab Dev" action="idtx_laboratory.lab_dev_action" sequence="10"/> -->
                 </menuitem>
+                <menuitem id="orga_config_menu" name="Configuración" sequence="90"
+                          groups="idtx_orgatex.group_module_orga_manager">
+                    <menuitem id="orga_menu_machines" name="Homologación de Máquinas"
+                              action="idtx_orgatex.action_orgatex_machine_homologation" sequence="10"/>
+                    <menuitem id="orga_menu_processes" name="Homologación de Procesos"
+                              action="idtx_orgatex.action_orgatex_process_homologation" sequence="20"/>
+                </menuitem>
         </menuitem>
 
     </data>

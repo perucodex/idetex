@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- noupdate: cada servidor ajusta sus valores y un upgrade no los pisa.
+         El puerto NO es 1433: la base de integración vive en la instancia
+         SQLEXPRESS del servidor ORGATEX, con puerto dinámico 49264. -->
+    <data noupdate="1">
+        <record id="param_orgatex_host" model="ir.config_parameter">
+            <field name="key">idtx_orgatex.host</field>
+            <field name="value">182.16.60.1</field>
+        </record>
+        <record id="param_orgatex_port" model="ir.config_parameter">
+            <field name="key">idtx_orgatex.port</field>
+            <field name="value">49264</field>
+        </record>
+        <record id="param_orgatex_database" model="ir.config_parameter">
+            <field name="key">idtx_orgatex.database</field>
+            <field name="value">ORGATEX-INTEG</field>
+        </record>
+        <record id="param_orgatex_user" model="ir.config_parameter">
+            <field name="key">idtx_orgatex.user</field>
+            <field name="value">orgatex</field>
+        </record>
+        <record id="param_orgatex_password" model="ir.config_parameter">
+            <field name="key">idtx_orgatex.password</field>
+            <field name="value">orgatex</field>
+        </record>
+        <!-- Guarda de escritura: en dev queda en False para no insertar
+             dyelots reales en la planta. Ponerlo en True en producción. -->
+        <record id="param_orgatex_enabled" model="ir.config_parameter">
+            <field name="key">idtx_orgatex.enabled</field>
+            <field name="value">False</field>
+        </record>
+    </data>
+</odoo>

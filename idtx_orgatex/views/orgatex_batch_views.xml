@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Partida: envío de la receta a ORGATEX -->
+    <record id="mrp_workorder_batch_form_orgatex" model="ir.ui.view">
+        <field name="name">mrp.workorder.batch.form.orgatex</field>
+        <field name="model">mrp.workorder.batch</field>
+        <field name="inherit_id" ref="idtx_mrp_shop.mrp_workorder_batch_form_inherit"/>
+        <field name="arch" type="xml">
+            <button name="action_print_dye_recipe" position="after">
+                <button name="action_send_to_orgatex" type="object" class="btn-primary"
+                        string="Enviar Receta a ORGATEX" icon="fa-paper-plane"
+                        groups="idtx_orgatex.group_module_orga_user"
+                        invisible="not recipe_lot_id or orgatex_state == 'sent'"
+                        confirm="Se insertará la receta de esta partida en ORGATEX. ¿Continuar?"/>
+                <button name="action_send_to_orgatex" type="object"
+                        string="Reenviar a ORGATEX" icon="fa-refresh"
+                        groups="idtx_orgatex.group_module_orga_user"
+                        invisible="orgatex_state != 'sent'"
+                        confirm="La receta ya fue enviada. Se reemplazará en ORGATEX (solo si el dyelot aún no arrancó). ¿Continuar?"/>
+                <button name="action_preview_orgatex_payload" type="object"
+                        string="Previsualizar Envío" icon="fa-eye"
+                        groups="idtx_orgatex.group_module_orga_user"
+                        invisible="not recipe_lot_id"/>
+            </button>
+            <field name="recipe_lot_id" position="after">
+                <field name="orgatex_machine_id" options="{'no_create': True}"
+                       groups="idtx_orgatex.group_module_orga_user"
+                       readonly="orgatex_state == 'sent'"/>
+                <field name="orgatex_state" widget="badge"
+                       groups="idtx_orgatex.group_module_orga_user"
+                       decoration-success="orgatex_state == 'sent'"
+                       decoration-danger="orgatex_state == 'error'"/>
+                <field name="orgatex_dyelot" readonly="1"
+                       groups="idtx_orgatex.group_module_orga_user"
+                       invisible="not orgatex_dyelot"/>
+                <field name="orgatex_sent_date" readonly="1"
+                       groups="idtx_orgatex.group_module_orga_user"
+                       invisible="not orgatex_sent_date"/>
+                <field name="orgatex_message" readonly="1"
+                       groups="idtx_orgatex.group_module_orga_user"
+                       invisible="not orgatex_message"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Homologación: máquina de tintorería -> máquina ORGATEX -->
+    <record id="maintenance_equipment_form_orgatex" model="ir.ui.view">
+        <field name="name">maintenance.equipment.form.orgatex</field>
+        <field name="model">maintenance.equipment</field>
+        <field name="inherit_id" ref="maintenance.hr_equipment_view_form"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="orgatex_machine_no" groups="idtx_orgatex.group_module_orga_user"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="action_orgatex_machine_homologation" model="ir.actions.act_window">
+        <field name="name">Homologación de Máquinas ORGATEX</field>
+        <field name="res_model">maintenance.equipment</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('workcenter_id.operation_type', '=', 'dyeing')]</field>
+        <field name="context">{'create': False}</field>
+    </record>
+
+    <record id="maintenance_equipment_list_orgatex" model="ir.ui.view">
+        <field name="name">maintenance.equipment.list.orgatex</field>
+        <field name="model">maintenance.equipment</field>
+        <field name="arch" type="xml">
+            <list editable="bottom" create="false">
+                <field name="name" readonly="1"/>
+                <field name="workcenter_id" readonly="1" optional="show"/>
+                <field name="company_id" readonly="1" optional="show" groups="base.group_multi_company"/>
+                <field name="orgatex_machine_no" placeholder="MC29"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Homologación: proceso base -> tratamiento ORGATEX -->
+    <record id="base_process_list_orgatex" model="ir.ui.view">
+        <field name="name">base.process.list.orgatex</field>
+        <field name="model">base.process</field>
+        <field name="arch" type="xml">
+            <list editable="bottom" create="false">
+                <field name="code" readonly="1"/>
+                <field name="name" readonly="1"/>
+                <field name="orgatex_treatment_no"/>
+                <field name="orgatex_treatment_name" readonly="1" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="base_process_search_orgatex" model="ir.ui.view">
+        <field name="name">base.process.search.orgatex</field>
+        <field name="model">base.process</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="orgatex_treatment_no"/>
+                <filter name="homologados" string="Homologados"
+                        domain="[('orgatex_treatment_no', '!=', 0)]"/>
+                <filter name="sin_homologar" string="Sin homologar"
+                        domain="[('orgatex_treatment_no', '=', 0)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_orgatex_process_homologation" model="ir.actions.act_window">
+        <field name="name">Homologación de Procesos ORGATEX</field>
+        <field name="res_model">base.process</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="base_process_list_orgatex"/>
+        <field name="search_view_id" ref="base_process_search_orgatex"/>
+    </record>
+
+    <!-- Acciones de servidor: probar conexión y sembrar homologaciones -->
+    <record id="action_server_orgatex_test_connection" model="ir.actions.server">
+        <field name="name">Probar conexión ORGATEX</field>
+        <field name="model_id" ref="model_integration_orgatex"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_test_orgatex_connection()</field>
+    </record>
+
+    <record id="action_server_orgatex_match_treatments" model="ir.actions.server">
+        <field name="name">Homologar tratamientos automáticamente</field>
+        <field name="model_id" ref="idtx_laboratory.model_base_process"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_match_orgatex_treatments()</field>
+    </record>
+
+    <record id="action_server_orgatex_show_machines" model="ir.actions.server">
+        <field name="name">Ver máquinas de ORGATEX</field>
+        <field name="model_id" ref="maintenance.model_maintenance_equipment"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_show_orgatex_machines()</field>
+    </record>
+
+</odoo>

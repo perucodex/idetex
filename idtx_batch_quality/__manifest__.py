@@ -52,6 +52,7 @@
         'views/quality_menu.xml',
 
         'wizards/control_tono_wizard.xml',
+        'wizards/tono_eval_report_wizard.xml',
 
     ],
 
