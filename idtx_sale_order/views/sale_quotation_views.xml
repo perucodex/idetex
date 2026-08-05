@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <!-- La acción core tenía `path='sales'`: por eso, aunque su menú esté
+         eliminado, seguía siendo la pantalla de entrada de la app Ventas (sin
+         filtrar por is_quote). Se limpia el path ANTES de asignarlo abajo a
+         `sale_quotation_action` — `path` tiene unique constraint en BD, no
+         puede estar en dos acciones a la vez ni de forma transitoria. -->
+    <record id="sale.action_quotations_with_onboarding" model="ir.actions.act_window">
+        <field name="path"></field>
+    </record>
+
     <record id="sale_quotation_action" model="ir.actions.act_window">
         <field name="name">Quotations</field>
         <field name="res_model">sale.order</field>
@@ -8,6 +17,10 @@
         <field name="search_view_id" ref="sale.sale_order_view_search_inherit_quotation"/>
         <field name="context">{'search_default_my_quotation': 1, 'default_is_quote': True}</field>
         <field name="domain">[('is_quote','=', True)]</field>
+        <!-- `path='sales'` es lo que hace que esta acción (no el árbol de
+             menús) sea la pantalla de entrada al hacer clic en el ícono de la
+             app Ventas. -->
+        <field name="path">sales</field>
     </record>
 
     <record id="sale_order_action" model="ir.actions.act_window">
@@ -25,12 +38,12 @@
         <menuitem id="sale_product_color_menu" name="Product Color" action="product_color_action" sequence="30" parent="sale.sale_order_menu" groups="sales_team.group_sale_salesman_all_leads"/>
         <menuitem id="sale_quality_tone_pending_menu" name="Evaluaciones Tono Pendientes" action="idtx_batch_quality.action_quality_tone_pending_list" sequence="50" parent="sale.sale_order_menu" groups="sales_team.group_sale_salesman"/>
         
-        <record id="sale.menu_sale_quotations" model="ir.ui.menu">
-            <field name="active" eval="False"/>
-        </record>
-        <record id="sale.menu_sale_order" model="ir.ui.menu">
-            <field name="active" eval="False"/>
-        </record>
+        <!-- `active=False` solo los oculta del árbol de menús; se eliminan
+             del todo para que no queden alcanzables por ninguna otra vía
+             (búsqueda, breadcrumbs, etc). El fix real de la pantalla de
+             entrada de la app está arriba (campo `path`). -->
+        <delete id="sale.menu_sale_quotations" model="ir.ui.menu"/>
+        <delete id="sale.menu_sale_order" model="ir.ui.menu"/>
     </data>
 
 </odoo>

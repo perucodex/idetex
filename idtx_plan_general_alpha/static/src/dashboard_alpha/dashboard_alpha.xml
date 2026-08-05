@@ -91,6 +91,47 @@
                 </section>
             </t>
 
+            <!-- ── Sección: Pedidos por Vendedor ─────────────────────────── -->
+            <!-- Los KPIs de arriba suman TODOS los vendedores. La vista
+                 "Cotizaciones" de Ventas filtra por defecto a "Mis Cotizaciones"
+                 (solo el vendedor logueado), por eso esta tabla puede no
+                 coincidir con lo que ves ahí a simple vista — usa esta tabla
+                 para reconciliar por vendedor. -->
+            <section class="pad__section" t-if="state.data.pedidos.por_vendedor and state.data.pedidos.por_vendedor.length">
+                <h2 class="pad__section-title">Pedidos por Vendedor</h2>
+                <div class="pad__card">
+                    <div class="pad__card-hd">
+                        <i class="fa fa-user-o pad__ic--indigo"/>
+                        Cotizaciones y Pedidos de Venta, por vendedor
+                        <span class="pad__pill">Total arriba = suma de todos</span>
+                    </div>
+                    <div class="pad__table-wrap">
+                        <table class="pad__table">
+                            <thead>
+                                <tr>
+                                    <th>Vendedor</th>
+                                    <th style="text-align:right">Cotizaciones</th>
+                                    <th style="text-align:right">Kg Cotizado</th>
+                                    <th style="text-align:right">Pedidos de Venta</th>
+                                    <th style="text-align:right">Kg Confirmado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="state.data.pedidos.por_vendedor" t-as="v" t-key="v.vendedor">
+                                    <tr>
+                                        <td t-esc="v.vendedor"/>
+                                        <td style="text-align:right" t-esc="v.cotizaciones"/>
+                                        <td style="text-align:right" t-esc="v.kg_cotizado.toLocaleString('es-PE') + ' kg'"/>
+                                        <td style="text-align:right" t-esc="v.confirmados"/>
+                                        <td style="text-align:right" t-esc="v.kg_confirmado.toLocaleString('es-PE') + ' kg'"/>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
             <!-- ── Sección 1: Visión General ────────────────────────────── -->
             <section class="pad__section">
                 <h2 class="pad__section-title">Visión General</h2>

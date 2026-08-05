@@ -341,7 +341,11 @@ class PlanAlphaDashboard(http.Controller):
     )
     def dashboard_data(self):
         # ── Fuente: PEDIDOS DE VENTA (sale.order) ─────────────────────────────
-        # Cotizaciones = draft/sent · Pedidos de venta = sale · Cancelados = cancel
+        # Confirmados/Cotizaciones se clasifican por `is_quote` (NO por `state`):
+        # es el mismo campo que usan los menús reales de Ventas de idtx_sale_order
+        # ("Cotizaciones" = is_quote=True, "Pedidos de Venta" = is_quote=False —
+        # ver sale_quotation_views.xml). `state` sigue determinando Cancelados y
+        # el sub-desglose Borrador/Enviada dentro de las cotizaciones.
         # Kilos = suma de product_uom_qty (líneas en kg) · Monto = amount_total.
         env = request.env
         SO = env["sale.order"].sudo()
@@ -357,8 +361,8 @@ class PlanAlphaDashboard(http.Controller):
                              for o in orders for l in o.order_line
                              if not l.display_type), 1)
 
-        confirmados  = SO.search([("state", "=", "sale")])
-        cotizaciones = SO.search([("state", "in", ["draft", "sent"])])
+        confirmados  = SO.search([("is_quote", "=", False), ("state", "!=", "cancel")])
+        cotizaciones = SO.search([("is_quote", "=", True), ("state", "!=", "cancel")])
         borrador     = cotizaciones.filtered(lambda o: o.state == "draft")
         enviadas     = cotizaciones.filtered(lambda o: o.state == "sent")
         cancelados   = SO.search([("state", "=", "cancel")])
@@ -415,13 +419,13 @@ class PlanAlphaDashboard(http.Controller):
         recientes = SO.search([("date_order", ">=", six_ago)])
         monthly = defaultdict(lambda: {"cotizaciones": 0, "confirmados": 0})
         for o in recientes:
-            if not o.date_order:
+            if not o.date_order or o.state == "cancel":
                 continue
             key = o.date_order.strftime("%b %Y")
-            if o.state == "sale":
-                monthly[key]["confirmados"] += 1
-            elif o.state in ("draft", "sent"):
+            if o.is_quote:
                 monthly[key]["cotizaciones"] += 1
+            else:
+                monthly[key]["confirmados"] += 1
         months_order = []
         d = datetime.date(six_ago.year, six_ago.month, 1)
         while d <= today:
@@ -464,6 +468,28 @@ class PlanAlphaDashboard(http.Controller):
              for o in vigentes],
             key=lambda x: x["kg"], reverse=True)[:15]
 
+        # ── Desglose por vendedor ──────────────────────────────────────────────
+        # Este dashboard agrega TODOS los vendedores; la vista "Cotizaciones" de
+        # Ventas filtra por defecto a "Mis Cotizaciones" (user_id = uid). Esta
+        # tabla permite reconciliar el total de arriba contra lo que cada
+        # vendedor ve en su propia vista.
+        vend = defaultdict(lambda: {"cotizaciones": 0, "kg_cotizado": 0.0,
+                                     "confirmados": 0, "kg_confirmado": 0.0})
+        for o in cotizaciones:
+            v = vend[o.user_id.name or "Sin vendedor"]
+            v["cotizaciones"] += 1
+            v["kg_cotizado"] += _kg(o)
+        for o in confirmados:
+            v = vend[o.user_id.name or "Sin vendedor"]
+            v["confirmados"] += 1
+            v["kg_confirmado"] += _kg(o)
+        por_vendedor = sorted(
+            [{"vendedor": k,
+              "cotizaciones": v["cotizaciones"], "kg_cotizado": round(v["kg_cotizado"], 1),
+              "confirmados": v["confirmados"], "kg_confirmado": round(v["kg_confirmado"], 1)}
+             for k, v in vend.items()],
+            key=lambda x: x["kg_cotizado"] + x["kg_confirmado"], reverse=True)
+
         maquinas = self._get_maquinas_data()
 
         return {
@@ -487,6 +513,7 @@ class PlanAlphaDashboard(http.Controller):
                 "top_pedidos":      top_pedidos,
                 "tendencia":        tendencia,
                 "detalle":          detalle,
+                "por_vendedor":     por_vendedor,
             },
             "productos": {
                 "por_producto": por_producto,

@@ -313,8 +313,12 @@ class MrpWorkorder(models.Model):
         else:
             result = super().write(vals)
 
-        if equipos_a_resync:
-            self._resync_equipment_state(equipos_a_resync)
+        if 'state' in vals:
+            equipos_a_resync = self.filtered(
+                lambda wo: wo.workcenter_id.operation_type == 'weaving'
+            ).option_ids.equipment_ids
+            if equipos_a_resync:
+                self._resync_equipment_state(equipos_a_resync)
         return result
 
     def unlink(self):
