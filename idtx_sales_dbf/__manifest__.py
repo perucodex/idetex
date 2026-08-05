@@ -6,6 +6,7 @@
                '(dp1_estadis / dp1_notacreditod / dp1_estadis_nd)',
     'description': """
 Importa las ventas de SITPRO (FoxPro DBF) a un modelo consultable en Odoo:
+
 - Ventas (dp1_estadis + dp1_estadis2), notas de crédito (dp1_notacreditod,
   restan) y notas de débito (dp1_estadis_nd, suman).
 - Monto sin IGV; si la moneda es dólares se convierte a soles con el TC del
