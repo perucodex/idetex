@@ -1,0 +1,10 @@
+/* Ensure Orden de Compra column text and header are fully visible without truncation */
+.o_list_view .o_list_table th[data-name="order_id"],
+.o_list_view .o_list_table td[name="order_id"],
+.o_list_view .o_list_table td[name="order_id"] span,
+.o_list_view .o_list_table td[name="order_id"] a {
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    min-width: 175px !important;
+}

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Detailed Purchase Report List View (Flat list without default grouping) -->
+    <record id="view_purchase_order_line_detailed_list" model="ir.ui.view">
+        <field name="name">purchase.order.line.detailed.list</field>
+        <field name="model">purchase.order.line</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <list string="Reporte detallado de compras" create="false" edit="false" delete="false">
+                <field name="date_order" string="Fecha de Orden" optional="show"/>
+                <field name="order_id" widget="many2one" string="Orden de Compra" optional="show"/>
+                <field name="partner_id" string="Proveedor" optional="show"/>
+                <field name="user_id" widget="many2one_avatar_user" string="Comprador" optional="show"/>
+                <field name="product_id" string="Producto" optional="show"/>
+                <field name="name" string="Descripción" optional="show"/>
+                <field name="categ_id" string="Categoría" optional="hide"/>
+                <field name="product_qty" string="Cant. Pedida" sum="Total Cantidad" optional="show"/>
+                <field name="qty_received" string="Cant. Recibida" sum="Total Recibido" optional="show"/>
+                <field name="qty_invoiced" string="Cant. Facturada" sum="Total Facturado" optional="show"/>
+                <field name="product_uom_id" string="UdM" optional="show"/>
+                <field name="price_unit" string="Precio Unit." optional="show"/>
+                <field name="discount" string="Desc. (%)" optional="show"/>
+                <field name="price_unit_discounted" string="Precio Neto" optional="show"/>
+                <field name="price_subtotal" string="Subtotal" sum="Total Subtotal" widget="monetary" optional="show"/>
+                <field name="price_total" string="Total" sum="Total General" widget="monetary" optional="show"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="state" widget="badge" decoration-success="state in ('purchase', 'done')" decoration-info="state in ('draft', 'sent')" decoration-warning="state == 'to approve'" string="Estado OC" optional="show"/>
+                <field name="company_id" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Detailed Purchase Report Pivot View -->
+    <record id="view_purchase_order_line_detailed_pivot" model="ir.ui.view">
+        <field name="name">purchase.order.line.detailed.pivot</field>
+        <field name="model">purchase.order.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Reporte detallado de compras" sample="1">
+                <field name="order_id" type="row"/>
+                <field name="product_id" type="row"/>
+                <field name="product_qty" type="measure"/>
+                <field name="qty_received" type="measure"/>
+                <field name="qty_invoiced" type="measure"/>
+                <field name="price_subtotal" type="measure"/>
+                <field name="price_total" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- Detailed Purchase Report Search View -->
+    <record id="view_purchase_order_line_detailed_search" model="ir.ui.view">
+        <field name="name">purchase.order.line.detailed.search</field>
+        <field name="model">purchase.order.line</field>
+        <field name="arch" type="xml">
+            <search string="Reporte detallado de compras">
+                <field name="order_id" string="Orden de Compra"/>
+                <field name="partner_id" string="Proveedor"/>
+                <field name="product_id" string="Producto"/>
+                <field name="user_id" string="Comprador"/>
+                <field name="categ_id" string="Categoría de Producto"/>
+                
+                <separator/>
+                <filter name="confirmed" string="Órdenes Confirmadas" domain="[('state', 'in', ('purchase', 'done'))]"/>
+                <filter name="draft" string="Solicitudes de Cotización" domain="[('state', 'in', ('draft', 'sent', 'to approve'))]"/>
+                <separator/>
+                <filter name="to_receive" string="Pendiente de Recepción" domain="[('qty_to_receive', '&gt;', 0), ('state', 'in', ('purchase', 'done'))]"/>
+                <filter name="to_bill" string="Pendiente de Facturación" domain="[('qty_to_invoice', '&gt;', 0), ('state', 'in', ('purchase', 'done'))]"/>
+                
+                <group>
+                    <filter name="group_order" string="Orden de Compra" domain="[]" context="{'group_by':'order_id'}"/>
+                    <filter name="group_partner" string="Proveedor" domain="[]" context="{'group_by':'partner_id'}"/>
+                    <filter name="group_buyer" string="Comprador" domain="[]" context="{'group_by':'user_id'}"/>
+                    <filter name="group_product" string="Producto" domain="[]" context="{'group_by':'product_id'}"/>
+                    <filter name="group_category" string="Categoría" domain="[]" context="{'group_by':'categ_id'}"/>
+                    <filter name="group_state" string="Estado" domain="[]" context="{'group_by':'state'}"/>
+                    <filter name="group_date" string="Fecha de Orden" domain="[]" context="{'group_by':'date_order:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action for Detailed Report (Flat view without default grouping) -->
+    <record id="action_purchase_order_line_detailed_report" model="ir.actions.act_window">
+        <field name="name">Reporte detallado</field>
+        <field name="res_model">purchase.order.line</field>
+        <field name="view_mode">list,pivot,graph,form</field>
+        <field name="domain">[('display_type', '=', False)]</field>
+        <field name="search_view_id" ref="view_purchase_order_line_detailed_search"/>
+        <field name="context">{'search_default_confirmed': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No se encontraron líneas de órdenes de compra.
+            </p>
+            <p>
+                Este reporte le permite visualizar a detalle todos los ítems comprados en cada Orden de Compra.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_purchase_order_line_detailed_report_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_purchase_order_line_detailed_list"/>
+        <field name="act_window_id" ref="action_purchase_order_line_detailed_report"/>
+    </record>
+
+    <record id="action_purchase_order_line_detailed_report_pivot" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">pivot</field>
+        <field name="view_id" ref="view_purchase_order_line_detailed_pivot"/>
+        <field name="act_window_id" ref="action_purchase_order_line_detailed_report"/>
+    </record>
+
+    <!-- MenuItem under Reportes (purchase.purchase_report_main) -->
+    <menuitem id="menu_purchase_order_line_detailed_report"
+              name="Reporte detallado"
+              parent="purchase.purchase_report_main"
+              action="action_purchase_order_line_detailed_report"
+              sequence="15"/>
+
+</odoo>

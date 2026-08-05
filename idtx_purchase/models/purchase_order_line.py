@@ -16,6 +16,16 @@ class PurchaseOrderLine(models.Model):
     qty_invoiced_at_date = fields.Float(digits='Product Quantity Custom Purchase')
     product_uom_qty = fields.Float(digits='Product Quantity Custom Purchase')
 
+    user_id = fields.Many2one('res.users', related='order_id.user_id', string='Comprador', store=True, readonly=True)
+    date_order = fields.Datetime(related='order_id.date_order', string='Fecha de la orden', store=True, readonly=True)
+    categ_id = fields.Many2one('product.category', related='product_id.categ_id', string='Categoría de producto', store=True, readonly=True)
+    qty_to_receive = fields.Float(string='Cant. por recibir', compute='_compute_qty_to_receive', store=True)
+
+    @api.depends('product_qty', 'qty_received')
+    def _compute_qty_to_receive(self):
+        for line in self:
+            line.qty_to_receive = max(0.0, line.product_qty - line.qty_received)
+
     def format_num_custom(self, value):
         """ Formats a float value stripping trailing zeros and the decimal point if it's an integer. """
         if not value:
