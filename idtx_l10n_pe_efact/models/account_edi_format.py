@@ -33,7 +33,7 @@ class AccountEdiFormat(models.Model):
             })
         else:
             res.update({
-                'wsdl': 'https://ose-gw1.efact.pe/ol-ti-itcpe/billService?wsdl',
+                'wsdl': 'https://ose.efact.pe/ol-ti-itcpe/billService?wsdl',
                 'token': UsernameToken(company.sudo().l10n_pe_edi_provider_username, company.sudo().l10n_pe_edi_provider_password),
             })
         return res
