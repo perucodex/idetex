@@ -171,7 +171,7 @@
                                 <br/>
                                 <div>REPRESENTACION IMPRESA DEL DOCUMENTO ELECTRONICO</div>
                                 <div>R. Superintendencia Nº 0180050002244-SUNAT</div>
-                                <!-- <div>Consultar el documento en http://www.comprobante-digital.com/?ruc=<t t-esc="o.company_id.vat"/></div> -->
+                                <div>Consultar el documento en http://www.comprobante-digital.com/?ruc=<t t-esc="o.company_id.vat"/></div>
                             </div>
                             <!-- Amounts block -->
                             <div class="col-4 p-1" style="font-size: 11px;">

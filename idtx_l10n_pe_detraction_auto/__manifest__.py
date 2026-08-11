@@ -21,6 +21,9 @@ Este módulo lo calcula solo:
     'version': '19.0.1.0.0',
     'license': 'LGPL-3',
     'depends': ['l10n_pe_edi'],
-    'data': [],
+    'data': [
+        'views/account_move_views.xml',
+        'data/mail_template_data.xml',
+    ],
     'installable': True,
 }

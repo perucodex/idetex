@@ -10,6 +10,44 @@ DETRACTION_THRESHOLD_PEN = 700.0
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
+    # ------------------------------------------------------------------
+    # Totales de detracción en el FORM: Total → Detracción (negativa, con
+    # su %) → Cantidad por pagar neta. Valores del cálculo oficial
+    # _l10n_pe_edi_get_spot (spot_amount = detracción en la moneda de la
+    # factura).
+    # ------------------------------------------------------------------
+    l10n_pe_dt_percent = fields.Float(
+        'Detracción %', compute='_compute_l10n_pe_dt_totals')
+    # La detracción SIEMPRE se deposita en SOLES (igual que el 'amount' de
+    # _l10n_pe_edi_get_spot: PEN redondeado a soles enteros), aunque la
+    # factura esté en otra moneda.
+    l10n_pe_dt_currency_id = fields.Many2one(
+        'res.currency', compute='_compute_l10n_pe_dt_totals')
+    l10n_pe_dt_amount = fields.Monetary(
+        'Detracción', compute='_compute_l10n_pe_dt_totals',
+        currency_field='l10n_pe_dt_currency_id',
+        help='Depósito de detracción en PEN, en NEGATIVO (se resta del total).')
+    l10n_pe_dt_net_to_pay = fields.Monetary(
+        'Cantidad por pagar', compute='_compute_l10n_pe_dt_totals',
+        currency_field='currency_id',
+        help='Total de la factura menos la detracción (en la moneda de la '
+             'factura).')
+
+    @api.depends('amount_total', 'invoice_line_ids.product_id',
+                 'l10n_pe_edi_operation_type', 'move_type', 'currency_id')
+    def _compute_l10n_pe_dt_totals(self):
+        pen = self.env.ref('base.PEN', raise_if_not_found=False)
+        for move in self:
+            spot = move._l10n_pe_edi_get_spot() if move.is_sale_document() else {}
+            move.l10n_pe_dt_currency_id = pen
+            move.l10n_pe_dt_percent = (spot.get('payment_percent') or 0.0) if spot else 0.0
+            # Fila Detracción: el depósito real en PEN.
+            move.l10n_pe_dt_amount = -((spot.get('amount') or 0.0) if spot else 0.0)
+            # Neto por pagar: en la moneda de la factura (spot_amount es la
+            # detracción expresada en esa moneda).
+            move.l10n_pe_dt_net_to_pay = move.amount_total \
+                - ((spot.get('spot_amount') or 0.0) if spot else 0.0)
+
     @api.depends('invoice_line_ids.product_id', 'invoice_line_ids.price_total',
                  'currency_id')
     def _compute_l10n_pe_edi_operation_type(self):
