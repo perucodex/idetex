@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Proceso (tipo de servicio) en el pedido/suscripción: las facturas
+         generadas lo heredan y lo imprimen en el formato efact. Aplica
+         también a las suscripciones (su form primario deriva de este). -->
+    <record id="idtx_view_order_form_proceso" model="ir.ui.view">
+        <field name="name">sale.order.form.proceso.efact</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='payment_term_id']" position="after">
+                <field name="proceso"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Proceso por defecto en la PLANTILLA de cotización (alquileres):
+         al aplicar la plantilla, el pedido/suscripción lo hereda. -->
+    <record id="idtx_view_order_template_form_proceso" model="ir.ui.view">
+        <field name="name">sale.order.template.form.proceso.efact</field>
+        <field name="model">sale.order.template</field>
+        <field name="inherit_id" ref="sale_management.sale_order_template_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='mail_template_id']" position="after">
+                <field name="proceso"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

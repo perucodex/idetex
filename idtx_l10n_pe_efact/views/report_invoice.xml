@@ -79,7 +79,7 @@
                         <tr>
                             <td style="font-weight: bold; border: none; padding: 2px;">PROCESO</td>
                             <td style="border: none; padding: 2px;">:</td>
-                            <td style="border: none; padding: 2px;"><!-- Custom process field if any --></td>
+                            <td style="border: none; padding: 2px;"><span t-field="o.proceso"/></td>
                             <td style="font-weight: bold; border: none; padding: 2px;">T.C.</td>
                             <td style="border: none; padding: 2px;">:</td>
                             <td style="border: none; padding: 2px;"><t t-esc="abs(o.amount_total_signed / o.amount_total) if o.amount_total and o.currency_id != o.company_id.currency_id else 1.000" t-options='{"widget": "float", "precision": 3}'/></td>
@@ -147,7 +147,9 @@
                             </tr>
                             <tr style="border-top: 1px solid black; border-bottom: 1px solid black;">
                                 <td colspan="7" class="text-center" style="font-size: 9px; padding: 4px; border-left: 1px solid black; border-right: 1px solid black;">
+                                    <t t-set="spot" t-value="o._l10n_pe_edi_get_spot()"/>
                                     OPERACION SUJETA AL SPOT CON EL GOBIERNO CENTRAL CTA CTE 00019002705 BANCO DE LA NACION.
+                                    <t t-if="spot"> DETRACCION <t t-esc="'%g' % spot['payment_percent']"/>%</t>
                                 </td>
                             </tr>
                         </tbody>
@@ -169,7 +171,7 @@
                                 <br/>
                                 <div>REPRESENTACION IMPRESA DEL DOCUMENTO ELECTRONICO</div>
                                 <div>R. Superintendencia Nº 0180050002244-SUNAT</div>
-                                <div>Consultar el documento en http://www.comprobante-digital.com/?ruc=<t t-esc="o.company_id.vat"/></div>
+                                <!-- <div>Consultar el documento en http://www.comprobante-digital.com/?ruc=<t t-esc="o.company_id.vat"/></div> -->
                             </div>
                             <!-- Amounts block -->
                             <div class="col-4 p-1" style="font-size: 11px;">
@@ -213,9 +215,12 @@
                                     <tr>
                                         <td style="border: 1px solid black;">Detracción:</td>
                                         <t t-set="spot" t-value="o._l10n_pe_edi_get_spot()"/>
+                                        <!-- Neto de detracción: total menos el depósito SPOT
+                                             (spot_amount viene en la moneda de la factura). -->
+                                        <t t-set="net_total" t-value="o.amount_total - ((spot.get('spot_amount') or 0.0) if spot else 0.0)"/>
                                         <td style="border: 1px solid black;"><t t-if="spot and 'amount' in spot">S/ <t t-esc="spot['amount']"/></t></td>
                                         <td style="border: 1px solid black;">Importe a Cobrar:</td>
-                                        <td style="border: 1px solid black;"><t t-esc="o.amount_total"/></td>
+                                        <td style="border: 1px solid black;"><t t-esc="net_total" t-options='{"widget": "float", "precision": 2}'/></td>
                                     </tr>
                                     <tr style="font-weight: bold;">
                                         <td style="border: 1px solid black;">Cuota</td>
@@ -223,14 +228,21 @@
                                         <td style="border: 1px solid black;">Moneda</td>
                                         <td style="border: 1px solid black;">Monto</td>
                                     </tr>
-                                    <!-- Only show installments if there are multiple receivables -->
+                                    <!-- Cuotas NETAS de detracción: se reparte el neto en
+                                         proporción a cada cuota original; la última absorbe
+                                         el ajuste de redondeo para cerrar exacto. -->
+                                    <t t-set="terms" t-value="o.line_ids.filtered(lambda l: l.account_id.account_type == 'asset_receivable').sorted(lambda l: (str(l.date_maturity or ''), l.id))"/>
+                                    <t t-set="gross_terms" t-value="sum(abs(t.amount_currency) for t in terms) or 1.0"/>
+                                    <t t-set="cuota_acc" t-value="0.0"/>
                                     <t t-set="cuota_idx" t-value="1"/>
-                                    <t t-foreach="o.line_ids.filtered(lambda l: l.account_id.account_type == 'asset_receivable')" t-as="term">
+                                    <t t-foreach="terms" t-as="term">
+                                        <t t-set="cuota_monto" t-value="round(net_total - cuota_acc, 2) if term_last else round(abs(term.amount_currency) * net_total / gross_terms, 2)"/>
+                                        <t t-set="cuota_acc" t-value="cuota_acc + cuota_monto"/>
                                         <tr>
                                             <td style="border: 1px solid black;"><t t-esc="cuota_idx"/></td>
                                             <td style="border: 1px solid black;"><t t-esc="term.date_maturity.strftime('%d/%m/%Y') if term.date_maturity else ''"/></td>
                                             <td style="border: 1px solid black;"><t t-esc="o.currency_id.name"/></td>
-                                            <td style="border: 1px solid black;"><t t-esc="abs(term.amount_currency)" t-options='{"widget": "float", "precision": 2}'/></td>
+                                            <td style="border: 1px solid black;"><t t-esc="cuota_monto" t-options='{"widget": "float", "precision": 2}'/></td>
                                         </tr>
                                         <t t-set="cuota_idx" t-value="cuota_idx + 1"/>
                                     </t>

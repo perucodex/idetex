@@ -35,10 +35,25 @@
         <field name="target">new</field>
     </record>
 
+    <!-- El menú Reportes de Calidad es SOLO manager en el core: se abre a
+         los USUARIOS de calidad para que vean la Evaluación de Tono, y los
+         dos reportes del core se fijan explícitamente a manager para que
+         conserven su visibilidad de siempre. -->
+    <record id="quality_control.menu_quality_reporting" model="ir.ui.menu">
+        <field name="group_ids" eval="[(4, ref('quality.group_quality_user'))]"/>
+    </record>
+    <record id="quality_control.menu_quality_check_report" model="ir.ui.menu">
+        <field name="group_ids" eval="[(4, ref('quality.group_quality_manager'))]"/>
+    </record>
+    <record id="quality_control.menu_quality_alert_report" model="ir.ui.menu">
+        <field name="group_ids" eval="[(4, ref('quality.group_quality_manager'))]"/>
+    </record>
+
     <menuitem id="menu_control_tono_eval_report"
               name="Evaluación de Tono en Producción"
               parent="quality_control.menu_quality_reporting"
               action="action_control_tono_eval_report_wizard"
+              groups="quality.group_quality_user"
               sequence="50"/>
 
 </odoo>

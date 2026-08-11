@@ -32,6 +32,7 @@ Facturación electrónica con OSE Efact
          'views/report_invoice.xml',
         'views/account_move_views.xml',
         'views/account_payment_term_views.xml',
+        'views/sale_order_views.xml',
         # 'security/ir.model.access.csv',
         # 'views/views.xml',
         # 'views/templates.xml',

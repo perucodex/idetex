@@ -26,6 +26,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='partner_shipping_id']" position="after">
                 <field name="idtx_oc_ref" string="N° O. Compra" invisible="move_type not in ('out_invoice', 'out_refund')" readonly="state != 'draft'"/>
+                <field name="proceso" invisible="move_type not in ('out_invoice', 'out_refund')" readonly="state != 'draft'"/>
             </xpath>
         </field>
     </record>
