@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inyecta el bloque de detracción/saldo a pagar en el correo estándar
+         de factura, en todos los idiomas instalados (idempotente). -->
+    <function model="mail.template" name="_idtx_inject_detraction_block" eval="[[]]"/>
+</odoo>
