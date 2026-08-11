@@ -29,7 +29,7 @@ Facturación electrónica con OSE Efact
     # always loaded
     'data': [
         'data/paperformat.xml',
-        # 'views/report_invoice.xml',
+         'views/report_invoice.xml',
         'views/account_move_views.xml',
         'views/account_payment_term_views.xml',
         # 'security/ir.model.access.csv',
