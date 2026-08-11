@@ -225,7 +225,7 @@ class ColorRecipeLot(models.Model):
     # Parámetros de teñido de la combinación (por defecto heredan los de la
     # receta madre; cada combinación puede ajustarlos).
     absorption_factor = fields.Float(
-        'Factor de Absorción (L/kg)', digits=(12, 2),
+        'Factor de Absorción (L/kg)', digits=(12, 2), default=3.00,
         help='Litros de baño absorbidos por kilogramo de tela.')
     bath_ratio = fields.Integer(
         'Relación de Baño 1:',
@@ -260,7 +260,9 @@ class ColorRecipeLot(models.Model):
     def _onchange_recipe_defaults(self):
         for rec in self:
             recipe = rec.color_recipe_id
-            if recipe and not rec.absorption_factor:
+            # El factor de la receta madre prima sobre el default del campo
+            # (3.00); si la madre no tiene, se queda el default.
+            if recipe and recipe.absorption_factor:
                 rec.absorption_factor = recipe.absorption_factor
             if recipe and not rec.bath_ratio:
                 rec.bath_ratio = recipe.bath_ratio
@@ -315,6 +317,10 @@ class ColorRecipeLot(models.Model):
                     'nueva versión.'))
             if not rec.lot_ids:
                 raise UserError(_('La sub-receta no tiene lotes de hilo.'))
+            if rec.absorption_factor <= 0 or rec.bath_ratio <= 0:
+                raise UserError(_(
+                    'Para validar la sub-receta, el Factor de Absorción y la '
+                    'Relación de Baño deben ser mayores a 0.'))
             # Al validar, las versiones ANTERIORES del mismo hilo quedan
             # obsoletas (las posteriores pendientes son borradores futuros).
             previous = rec._version_group().filtered(

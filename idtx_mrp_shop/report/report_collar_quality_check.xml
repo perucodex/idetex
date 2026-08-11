@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Réplica imprimible del formato papel FULL-SGCC-FO-01
+         (CONTROL DE CUELLOS Y PUÑOS - RECTILINEOS EN ACABADOS).
+         Agrupa los controles seleccionados por PARTIDA: una hoja por partida,
+         una fila por rollo/talla chequeado. -->
+
+    <record id="paperformat_collar_quality" model="report.paperformat">
+        <field name="name">Control de Cuellos (A4 horizontal)</field>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">8</field>
+        <field name="margin_bottom">8</field>
+        <field name="margin_left">6</field>
+        <field name="margin_right">6</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <template id="report_collar_quality_check">
+        <t t-call="web.basic_layout">
+            <t t-foreach="docs.mapped('batch_id')" t-as="batch">
+                <t t-set="checks" t-value="docs.filtered(lambda c: c.batch_id == batch)"/>
+                <t t-set="production" t-value="checks[:1].production_id"/>
+                <t t-set="sale_order" t-value="production.sudo().sale_order_line_id.order_id"/>
+                <div class="page" style="font-size: 11px;">
+
+                    <!-- Cabecera del formato -->
+                    <table class="table table-sm table-bordered mb-1" style="border: 1.5px solid #000;">
+                        <tr>
+                            <td rowspan="4" style="width: 16%; text-align: center; vertical-align: middle;">
+                                <img t-if="checks[:1].production_id.company_id.logo"
+                                     t-att-src="image_data_uri(checks[:1].production_id.company_id.logo)"
+                                     style="max-height: 55px; max-width: 140px;"/>
+                            </td>
+                            <td rowspan="4" style="width: 60%; text-align: center; vertical-align: middle;">
+                                <div style="font-weight: bold;">FORMATO</div>
+                                <div style="font-weight: bold; font-size: 14px;">
+                                    CONTROL DE CUELLOS Y PUÑOS - RECTILINEOS EN ACABADOS
+                                </div>
+                            </td>
+                            <td style="width: 10%; font-weight: bold;">Código:</td>
+                            <td style="width: 14%;">FULL-SGCC-FO-01</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold;">Fecha:</td>
+                            <td><span t-esc="(checks[:1].check_date or '')" t-options='{"widget": "date"}'/></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold;">Auditor:</td>
+                            <td><span t-esc="', '.join(sorted(set(checks.mapped('user_id.name'))))"/></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold;">Estilo:</td>
+                            <td><span t-esc="production.product_id.default_code or ''"/></td>
+                        </tr>
+                    </table>
+
+                    <table class="table table-sm table-bordered mb-1" style="border: 1.5px solid #000;">
+                        <tr>
+                            <td style="font-weight: bold; width: 8%;">PARTIDA</td>
+                            <td style="width: 12%;"><span t-esc="batch.name"/></td>
+                            <td style="font-weight: bold; width: 8%;">CLIENTE</td>
+                            <td style="width: 22%;"><span t-esc="sale_order.partner_id.name or ''"/></td>
+                            <td style="font-weight: bold; width: 10%;">DESCRIPCION</td>
+                            <td style="width: 18%;"><span t-esc="production.product_id.name or ''"/></td>
+                            <td style="font-weight: bold; width: 6%;">COLOR</td>
+                            <td style="width: 8%;"><span t-esc="production.color_name or ''"/></td>
+                            <td style="font-weight: bold; width: 4%;">OP:</td>
+                            <td style="width: 12%;"><span t-esc="production.name"/></td>
+                        </tr>
+                    </table>
+
+                    <!-- Tabla principal -->
+                    <table class="table table-sm table-bordered" style="border: 1.5px solid #000; text-align: center;">
+                        <thead>
+                            <tr style="background-color: #f0f0f0;">
+                                <th rowspan="3" style="vertical-align: middle;">TALLA</th>
+                                <th colspan="5">LARGO</th>
+                                <th colspan="5">ALTO</th>
+                                <th colspan="5" rowspan="2" style="vertical-align: middle;">DEFECTOS</th>
+                                <th colspan="3" rowspan="2" style="vertical-align: middle;">UNIDADES</th>
+                            </tr>
+                            <tr style="background-color: #f0f0f0;">
+                                <th colspan="2">Requerido</th>
+                                <th colspan="3">Obtenido</th>
+                                <th colspan="2">Requerido</th>
+                                <th colspan="3">Obtenido</th>
+                            </tr>
+                            <tr style="background-color: #f0f0f0;">
+                                <th>STD</th><th>TOL</th>
+                                <th>1</th><th>2</th><th>3</th>
+                                <th>STD</th><th>TOL</th>
+                                <th>1</th><th>2</th><th>3</th>
+                                <th>F/Aguja</th><th>Manchas</th><th>Huecos</th><th>Quebraduras</th><th>Mordedura</th>
+                                <th>Requerido</th><th>1RAS</th><th>2DAS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="checks.sorted(lambda c: (c.size_id.sequence, c.id))" t-as="chk">
+                                <td style="font-weight: bold;"><span t-esc="chk.size_id.size or ''"/></td>
+                                <td><span t-esc="chk.width_req and '%.1f' % chk.width_req or ''"/></td>
+                                <td><span t-esc="chk.width_tol and '±%.1f' % chk.width_tol or ''"/></td>
+                                <td><span t-esc="chk.width_1 and '%.1f' % chk.width_1 or ''"/></td>
+                                <td><span t-esc="chk.width_2 and '%.1f' % chk.width_2 or ''"/></td>
+                                <td><span t-esc="chk.width_3 and '%.1f' % chk.width_3 or ''"/></td>
+                                <td><span t-esc="chk.height_req and '%.1f' % chk.height_req or ''"/></td>
+                                <td><span t-esc="chk.height_tol and '±%.1f' % chk.height_tol or ''"/></td>
+                                <td><span t-esc="chk.height_1 and '%.1f' % chk.height_1 or ''"/></td>
+                                <td><span t-esc="chk.height_2 and '%.1f' % chk.height_2 or ''"/></td>
+                                <td><span t-esc="chk.height_3 and '%.1f' % chk.height_3 or ''"/></td>
+                                <td><span t-esc="chk.defect_needle or ''"/></td>
+                                <td><span t-esc="chk.defect_stain or ''"/></td>
+                                <td><span t-esc="chk.defect_hole or ''"/></td>
+                                <td><span t-esc="chk.defect_crack or ''"/></td>
+                                <td><span t-esc="chk.defect_bite or ''"/></td>
+                                <td><span t-esc="chk.required_qty or ''"/></td>
+                                <td><span t-esc="chk.qty_first or ''"/></td>
+                                <td><span t-esc="chk.qty_second or ''"/></td>
+                            </tr>
+                            <!-- Filas en blanco para anotaciones manuales -->
+                            <t t-foreach="range(3)" t-as="i">
+                                <tr>
+                                    <td style="height: 22px;"> </td>
+                                    <td> </td><td> </td><td> </td><td> </td><td> </td>
+                                    <td> </td><td> </td><td> </td><td> </td><td> </td>
+                                    <td> </td><td> </td><td> </td><td> </td><td> </td>
+                                    <td> </td><td> </td><td> </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+
+                    <!-- Comentarios -->
+                    <table class="table table-sm table-bordered" style="border: 1.5px solid #000;">
+                        <tr>
+                            <td style="height: 55px; vertical-align: top;">
+                                <strong>Comentarios:</strong>
+                                <t t-foreach="checks.filtered('comment')" t-as="chk">
+                                    <div>
+                                        <span t-esc="chk.size_id.size or ''"/>:
+                                        <span t-esc="chk.comment"/>
+                                    </div>
+                                </t>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <p style="page-break-after: always;"/>
+                </div>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_collar_quality_check" model="ir.actions.report">
+        <field name="name">Control de Cuellos y Puños</field>
+        <field name="model">collar.quality.check</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">idtx_mrp_shop.report_collar_quality_check</field>
+        <field name="report_file">idtx_mrp_shop.report_collar_quality_check</field>
+        <field name="print_report_name">'Control de Cuellos - %s' % (object.batch_id.name)</field>
+        <field name="binding_model_id" ref="model_collar_quality_check"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_collar_quality"/>
+    </record>
+
+</odoo>

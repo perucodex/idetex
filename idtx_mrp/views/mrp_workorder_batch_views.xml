@@ -59,7 +59,7 @@
                                     <field name="gross_weight" sum="Total" column_invisible="1"/>
                                 </list>
                             </field>
-                            <field name="wo_roll_ids" domain="[('in_batch','=',False), ('transfer_state','!=','transferido')]" readonly="state != 'draft'" invisible="state == 'split'">
+                            <field name="wo_roll_ids" domain="[('in_batch','=',False), ('transfer_state','!=','transferido')]" context="{'search_default_group_workorder': 1, 'search_default_group_option': 2}" readonly="state != 'draft'" invisible="state == 'split'">
                                 <list create="0" decoration-info="transfer_state == 'recibido'">
                                     <field name="transfer_state" column_invisible="1"/>
                                     <field name="workorder_id"/>
@@ -97,10 +97,9 @@
         <field name="name">mrp.workorder.batch.list</field>
         <field name="model">mrp.workorder.batch</field>
         <field name="arch" type="xml">
+            <!-- "Agregar en lote" se retiró: los rollos terminados ahora se
+                 crean pesándolos en Operaciones → Pesado de rollos. -->
             <list string="Batchs" decoration-success="mrwo_id">
-                <header>
-                    <button name="%(action_batch_add_wizard)d" type="action" string="Agregar en lote"/>
-                </header>
                 <field name="name"/>
                 <field name="batch_date"/>
                 <field name="mrwo_id"/>

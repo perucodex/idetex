@@ -75,6 +75,12 @@ class QualityAlert(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         alerts = super().create(vals_list)
+        # skip_batch_alert_trigger: alertas INFORMATIVAS creadas por código
+        # (p.ej. reposición de CUELLOS desde collar.quality.check, que lleva
+        # la OT de control de calidad): no deben disparar reproceso ni la OF
+        # de reposición automática por kilos.
+        if self.env.context.get('skip_batch_alert_trigger'):
+            return alerts
         batch_ops = self.env['mrp.workorder'].BATCH_OPERATION_TYPES
         for alert in alerts:
             wo = alert.workorder_id

@@ -6,10 +6,24 @@
         <field name="model">mrp.production.roll</field>
         <field name="inherit_id" ref="idtx_mrp.mrp_production_roll_view_tree"/>
         <field name="arch" type="xml">
-            <field name="net_length" position="after"/>
-                <field name="theorical_length"/>
+            <field name="net_length" position="after">
+                <field name="theorical_length" optional="hide"/>
+                <field name="size_id" string="Talla" optional="show"/>
             </field>
         </field>
     </record>
-    
+
+    <record id="mrp_production_roll_form_inherit" model="ir.ui.view">
+        <field name="name">mrp.production.roll.form.inherit</field>
+        <field name="model">mrp.production.roll</field>
+        <field name="inherit_id" ref="idtx_mrp.mrp_production_roll_form"/>
+        <field name="arch" type="xml">
+            <field name="uom_id" position="after">
+                <!-- Solo los rollos rectilíneos manejan talla (mismo criterio
+                     que en el rollo de tejido). -->
+                <field name="size_id" readonly="1" invisible="not size_id"/>
+            </field>
+        </field>
+    </record>
+
 </odoo>

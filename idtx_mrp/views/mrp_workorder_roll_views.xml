@@ -40,6 +40,7 @@
                 <field name="product_id"/>
                 <group>
                     <filter name="group_workorder" string="Orden de Trabajo" context="{'group_by': 'workorder_id'}"/>
+                    <filter name="group_option" string="Opción" context="{'group_by': 'option_id'}"/>
                 </group>
             </search>
         </field>

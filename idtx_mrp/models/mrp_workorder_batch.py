@@ -93,7 +93,38 @@ class MrpWorkorderBatch(models.Model):
                     'de colores distintos:\n%(detail)s',
                     batch=batch.name, detail=detail,
                 ))
-    
+
+    @api.constrains('wo_roll_ids')
+    def _check_same_option_per_production(self):
+        """Dentro de una partida, los rollos de una misma OF deben compartir
+        la OPCIÓN de tejido: la opción define la combinación de lotes de hilo
+        (y por ella la sub-receta), así que con opciones mezcladas la receta
+        de la partida sería ambigua."""
+        for batch in self:
+            by_prod = {}
+            for roll in batch.wo_roll_ids:
+                prod = roll.workorder_id.production_id
+                by_prod.setdefault(prod, {}).setdefault(
+                    roll.option_id, []).append(roll.name or str(roll.id))
+            offending = {prod: opts for prod, opts in by_prod.items()
+                         if len(opts) > 1}
+            if offending:
+                detail = '\n'.join(
+                    '- %s: %s' % (
+                        prod.display_name,
+                        '; '.join('%s (%s)' % (
+                            opt.name or opt.display_name if opt else _('(sin opción)'),
+                            ', '.join(names))
+                            for opt, names in opts.items()),
+                    )
+                    for prod, opts in offending.items()
+                )
+                raise ValidationError(_(
+                    'La partida %(batch)s no puede mezclar rollos de la misma '
+                    'orden de fabricación con opciones distintas:\n%(detail)s',
+                    batch=batch.name, detail=detail,
+                ))
+
     #=== CRUD METHODS ===#
 
     @api.model_create_multi
@@ -136,6 +167,7 @@ class MrpWorkorderBatch(models.Model):
             # Verifica que todos los rollos compartan color a procesar (los
             # transferidos usan el color de su nueva OF).
             rec._check_same_color_recipe()
+            rec._check_same_option_per_production()
             rec.wo_roll_ids.write({'in_batch': True})
             rec.state = 'batch'
             rec.wo_roll_ids.mapped('workorder_id')._sync_textile_qty_produced()
@@ -199,6 +231,7 @@ class MrpWorkorderBatch(models.Model):
             # de su NUEVA OF, así que al rearmar hay que revalidar que todos los
             # rollos (aunque sean de productos distintos) compartan color.
             rec._check_same_color_recipe()
+            rec._check_same_option_per_production()
             rec.wo_roll_ids.write({'in_batch': True})
             rec.state = 'batch'
             rec.wo_roll_ids.mapped('workorder_id')._sync_textile_qty_produced()

@@ -2,6 +2,7 @@
 
 from . import batch_registry
 from . import quality_alert
+from . import collar_quality_check
 from . import mrp_production
 from . import maintenance_equipment
 from . import mrp_workorder_batch

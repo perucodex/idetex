@@ -112,7 +112,9 @@
                                         <field name="sequence" widget="handle"/>
                                         <field name="size"/>
                                         <field name="length"/>
+                                        <field name="length_tol"/>
                                         <field name="width"/>
+                                        <field name="width_tol"/>
                                         <field name="needles"/>
                                         <field name="ne"/>
                                         <field name="plies"/>

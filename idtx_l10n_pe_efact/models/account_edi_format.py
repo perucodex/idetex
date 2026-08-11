@@ -25,16 +25,14 @@ class AccountEdiFormat(models.Model):
 
     def _l10n_pe_edi_get_efact_credentials(self, company):
         self.ensure_one()
-        res = {'fault_ns': 'soap-env'}
+        res = {'fault_ns': 'soap-env', 'token': UsernameToken(company.sudo().l10n_pe_edi_provider_username, company.sudo().l10n_pe_edi_provider_password),}
         if company.l10n_pe_edi_test_env:
             res.update({
                 'wsdl': 'https://ose-gw1.efact.pe/ol-ti-itcpe/billService?wsdl',
-                'token': UsernameToken('20606070579', 'q70qc0J8S6'),
             })
         else:
             res.update({
                 'wsdl': 'https://ose.efact.pe/ol-ti-itcpe/billService?wsdl',
-                'token': UsernameToken(company.sudo().l10n_pe_edi_provider_username, company.sudo().l10n_pe_edi_provider_password),
             })
         return res
 

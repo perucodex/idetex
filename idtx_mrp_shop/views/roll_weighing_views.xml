@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Pantalla "Pesado de rollos": lista de rollos terminados pesados.
+             El botón "Pesar rollo" (js_class) abre el diálogo de balanza; el
+             quant del rollo nace AL PESAR (ya no con Producir de la OF). -->
+        <record id="roll_weighing_list_view" model="ir.ui.view">
+            <field name="name">mrp.production.roll.weighing.list</field>
+            <field name="model">mrp.production.roll</field>
+            <field name="arch" type="xml">
+                <!-- id desc = último rollo pesado arriba (con weighed_date desc
+                     los rollos viejos SIN fecha quedaban primero: PostgreSQL
+                     ordena NULLs al inicio en descendente). -->
+                <list create="0" edit="0" js_class="roll_weighing_list" default_order="id desc">
+                    <header>
+                        <button name="reprint" string="Reimprimir" type="object"/>
+                    </header>
+                    <field name="name"/>
+                    <field name="lot_id" string="Lote"/>
+                    <field name="batch_id" string="Partida"/>
+                    <field name="production_id" optional="show"/>
+                    <field name="product_id"/>
+                    <field name="size_id" string="Talla" optional="show"/>
+                    <field name="gross_weight" sum="Total" string="Peso (kg)"/>
+                    <field name="weighed_date" string="Fecha de Pesado"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="roll_weighing_search_view" model="ir.ui.view">
+            <field name="name">mrp.production.roll.weighing.search</field>
+            <field name="model">mrp.production.roll</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="lot_id"/>
+                    <field name="batch_id"/>
+                    <field name="production_id"/>
+                    <field name="product_id"/>
+                    <filter name="filter_weighed_today" string="Pesados hoy"
+                            domain="[('weighed_date', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0, 0, 0)))]"/>
+                    <filter name="filter_weighed" string="Con pesado registrado"
+                            domain="[('weighed_date', '!=', False)]"/>
+                    <group>
+                        <filter name="group_by_batch" string="Partida" context="{'group_by': 'batch_id'}"/>
+                        <filter name="group_by_product" string="Producto" context="{'group_by': 'product_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="roll_weighing_action" model="ir.actions.act_window">
+            <field name="name">Pesado de rollos</field>
+            <field name="res_model">mrp.production.roll</field>
+            <field name="view_mode">list,form</field>
+            <field name="view_id" ref="roll_weighing_list_view"/>
+            <field name="search_view_id" ref="roll_weighing_search_view"/>
+            <!-- Solo rollos PESADOS en esta pantalla: los históricos sin
+                 fecha de pesado (wizard viejo) viven en "Rollos Terminados"
+                 y, al ordenar por fecha, PostgreSQL los ponía primero
+                 (NULLs al inicio en descendente). -->
+            <field name="domain">[('weighed_date', '!=', False)]</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Pesa los rollos terminados (auditados por calidad) con el botón "Pesar rollo".
+                </p>
+                <p>
+                    Al pesar se crea el lote (partida + correlativo) con su stock
+                    y se imprime el sticker con código de barras.
+                </p>
+            </field>
+        </record>
+
+        <!-- Debajo de Desechar (sequence 25) en Manufactura → Operaciones -->
+        <menuitem id="menu_roll_weighing"
+                  name="Pesado de rollos"
+                  parent="mrp.menu_mrp_manufacturing"
+                  action="roll_weighing_action"
+                  sequence="26"/>
+
+    </data>
+</odoo>

@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <!-- Un menú por tipo de insumo del lab: Químicos (resto) / Colorantes /
+         Auxiliares. El MENÚ pone el default del flag al crear el producto. -->
     <record id="product_product_action_chemical" model="ir.actions.act_window">
-        <field name="name">chemical</field>
+        <field name="name">Químicos</field>
         <field name="res_model">product.template</field>
         <field name="view_mode">kanban,list,form,activity</field>
         <field name="context" eval="{'default_categ_id': ref('product_categ_3'), 'default_is_chemical': True}"/>
@@ -10,7 +12,35 @@
         <field name="domain">[('is_chemical', '=', True)]</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">
-                Create a new chemical product
+                Crea un nuevo producto químico
+            </p>
+        </field>
+    </record>
+
+    <record id="product_product_action_colorant" model="ir.actions.act_window">
+        <field name="name">Colorantes</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">kanban,list,form,activity</field>
+        <field name="context" eval="{'default_is_chemical': True, 'default_is_colorant': True}"/>
+        <field name="view_id" ref="product.product_template_tree_view"/>
+        <field name="domain">[('is_colorant', '=', True)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea un nuevo colorante (asígnale la categoría de colorantes configurada en Ajustes)
+            </p>
+        </field>
+    </record>
+
+    <record id="product_product_action_helper" model="ir.actions.act_window">
+        <field name="name">Auxiliares</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">kanban,list,form,activity</field>
+        <field name="context" eval="{'default_is_chemical': True, 'default_is_helper': True}"/>
+        <field name="view_id" ref="product.product_template_tree_view"/>
+        <field name="domain">[('is_helper', '=', True)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crea un nuevo auxiliar (asígnale la categoría de auxiliares configurada en Ajustes)
             </p>
         </field>
     </record>
@@ -21,7 +51,9 @@
         <field name="inherit_id" ref="product.product_template_search_view"/>
         <field name="arch" type="xml">
             <filter name="filter_to_sell" position="after">
-                <filter string="Chemical" name="filter_chemical" domain="[('is_chemical','=',True)]"/>
+                <filter string="Químicos" name="filter_chemical" domain="[('is_chemical','=',True)]"/>
+                <filter string="Colorantes" name="filter_colorant" domain="[('is_colorant','=',True)]"/>
+                <filter string="Auxiliares" name="filter_helper" domain="[('is_helper','=',True)]"/>
             </filter>
         </field>
     </record>

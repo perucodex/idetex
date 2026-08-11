@@ -10,6 +10,33 @@
                 <field name="color_code" invisible="1"/>
                 <field name="color_name" invisible="1"/>
             </xpath>
+            <!-- Calificación de lotes de insumos del lab: SOLO para el perfil
+                 Validador de Lotes y solo si el producto es químico/colorante/
+                 auxiliar. -->
+            <xpath expr="//group[@name='description']" position="after">
+                <field name="is_lab_supply" invisible="1"/>
+                <notebook groups="idtx_laboratory.group_lab_lot_validator" invisible="not is_lab_supply">
+                    <page name="lab_qualification_page" string="Calificación">
+                        <group>
+                            <group>
+                                <field name="lab_state" widget="badge" readonly="1"
+                                       decoration-success="lab_state == 'validated'"
+                                       decoration-warning="lab_state == 'pending'"/>
+                                <field name="lab_validated_date"/>
+                                <field name="lab_validated_by_id"/>
+                            </group>
+                            <group>
+                                <div colspan="2">
+                                    <button name="action_lab_validate" type="object" string="Validar Lote"
+                                            class="btn btn-primary" invisible="lab_state == 'validated'"/>
+                                    <button name="action_lab_reset" type="object" string="Reabrir"
+                                            class="btn btn-secondary" invisible="lab_state != 'validated'"/>
+                                </div>
+                            </group>
+                        </group>
+                    </page>
+                </notebook>
+            </xpath>
         </field>
     </record>
 

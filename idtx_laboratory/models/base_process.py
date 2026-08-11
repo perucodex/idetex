@@ -97,15 +97,19 @@ class BaseProcessLine(models.Model):
 
 class BaseProcessLineRange(models.Model):
     _name = 'base.process.line.range'
-    _description = 'Rango de tabla de proceso base (CF -> cantidad)'
+    _description = 'Rango de tabla de proceso base (CF -> concentración)'
     _order = 'percent_from'
 
     line_id = fields.Many2one('base.process.line', string='Línea', required=True, ondelete='cascade')
     percent_from = fields.Float('% Desde', digits=(12, 5))
     percent_to = fields.Float('% Hasta', digits=(12, 5), required=True)
-    factor = fields.Float('Cantidad', digits=(12, 5), required=True,
-                          help='Cantidad (en la UdM de la línea) cuando la suma '
+    factor = fields.Float('Concentración', digits=(12, 5), required=True,
+                          help='Concentración (en su unidad) cuando la suma '
                                'de % de colorantes del proceso cae en este rango.')
+    uom = fields.Selection([
+        ('por', '%'),
+        ('gxl', 'Gr/L'),
+    ], string='Unidad de Concentración', default='gxl', required=True)
 
     @api.constrains('percent_from', 'percent_to', 'line_id')
     def _check_ranges(self):

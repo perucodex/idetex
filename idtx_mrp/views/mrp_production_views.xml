@@ -10,6 +10,32 @@
                 <field name="user_id" position="after">
                     <field name="production_type"/>
                 </field>
+                <!-- Sin lote a nivel de OF: cada ROLLO fabricado lleva su
+                     propio lote (N° de partida + secuencia del rollo), así
+                     que el campo Número de serie/lote y sus botones
+                     Generar lote/serie no aplican en esta pantalla. -->
+                <xpath expr="//label[@for='lot_producing_ids']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="//field[@name='lot_producing_ids']/.." position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <!-- Sin botón Producir: el stock de los rollos nace al
+                     pesarlos en Operaciones → Pesado de rollos, no al
+                     producir la OF (button_mark_done además lo bloquea si
+                     hay rollos pesados, para no duplicar stock). -->
+                <xpath expr="(//button[@name='button_mark_done'])[1]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="(//button[@name='button_mark_done'])[2]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="(//button[@name='button_mark_done'])[3]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+                <xpath expr="(//button[@name='button_mark_done'])[4]" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
                 <page name="miscellaneous" position="after">
                     <page name="rolls_page" string="Finished Rolls">
                         <field name="roll_ids"/>

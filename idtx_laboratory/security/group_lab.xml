@@ -18,6 +18,13 @@
             <field name="privilege_id" ref="module_laboratory_user"/>
             <field name="implied_ids" eval="[(4, ref('group_module_laboratory_user'))]"/>
         </record>
+
+        <!-- Perfil especial (checkbox en el usuario, sin privilege para que
+             NO compita con User/Manager): ve la pestaña Calificación de los
+             lotes de químicos/colorantes/auxiliares y puede validarlos. -->
+        <record id="group_lab_lot_validator" model="res.groups">
+            <field name="name">Validador de Lotes de Laboratorio</field>
+        </record>
         
         
         <record id="base.user_admin" model="res.users">

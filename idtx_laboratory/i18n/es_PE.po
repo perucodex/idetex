@@ -1438,10 +1438,11 @@ msgid "Categories"
 msgstr "Categorías"
 
 #. module: idtx_laboratory
+#: model:ir.actions.act_window,name:idtx_laboratory.product_product_action_chemical
 #: model:ir.ui.menu,name:idtx_laboratory.lab_chemical_template_menu
 #: model_terms:ir.ui.view,arch_db:idtx_laboratory.product_template_search_view_inherit_ld
-msgid "Chemical"
-msgstr "Químico"
+msgid "Químicos"
+msgstr "Químicos"
 
 #. module: idtx_laboratory
 #: model:ir.model.fields,field_description:idtx_laboratory.field_res_company__chemical_category_ids
@@ -5125,13 +5126,13 @@ msgstr "Receta de Lote"
 
 #. module: idtx_laboratory
 #: model_terms:ir.ui.view,arch_db:idtx_laboratory.color_recipe_form_view
-msgid "Recetas x Lote"
-msgstr "Recetas x Lote"
+msgid "Recetas Producción"
+msgstr "Recetas Producción"
 
 #. module: idtx_laboratory
 #: model_terms:ir.ui.view,arch_db:idtx_laboratory.color_recipe_form_view
-msgid "Recipe"
-msgstr "Receta"
+msgid "Receta Desarrollo"
+msgstr "Receta Desarrollo"
 
 #. module: idtx_laboratory
 #: model:ir.model.fields,field_description:idtx_laboratory.field_color_recipe__recipe_color_code
@@ -6966,10 +6967,6 @@ msgstr ""
 "No puede aprobar esta receta. Otra receta en el desarrollo de laboratorio "
 "para el producto %(product)s y color %(color)s ya está aprobada."
 
-#. module: idtx_laboratory
-#: model:ir.actions.act_window,name:idtx_laboratory.product_product_action_chemical
-msgid "chemical"
-msgstr "químico"
 
 #. module: idtx_laboratory
 #: model:ir.model.fields,field_description:idtx_laboratory.field_product_category__chemical_company_categ_id

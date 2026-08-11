@@ -57,6 +57,9 @@
                          lot_key); sin ella el Taller no deja registrar el teñido.
                          Con el candado de laboratorio puesto, nadie la edita. -->
                     <field name="recipe_lot_locked" invisible="1"/>
+                    <!-- Necesario para evaluar el domain de recipe_lot_id
+                         en el cliente. -->
+                    <field name="allowed_recipe_lot_ids" invisible="1"/>
                     <field name="recipe_lot_id" options="{'no_create': True}" readonly="state in ('split', 'unbuild') or recipe_lot_locked"/>
                     <field name="reprocess_count" readonly="1"/>
                 </group>

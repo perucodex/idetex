@@ -53,6 +53,7 @@ y ficha técnica
         'views/mrp_production_views.xml',
         'views/mrp_workorder_batch_views.xml',
         'views/mrp_workorder_roll_views.xml',
+        'views/mrp_production_roll_views.xml',
         'views/mrp_workorder_views.xml',
         'views/product_analysis_views.xml',
         'views/product_code_system_views.xml',

@@ -1,101 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
-    <t t-name="idtx_mrp_shop.SelectSizeDialog">
+    <t t-name="idtx_mrp_shop.WeighRollDialog">
         <Dialog size="'md'" title="props.title" modalRef="modalRef">
 
-            <!-- Option -->
-            <div class="mt-4" t-if="options and options.length">
-                <h5 class="fw-bold">Option</h5>
-                <select t-att-class="'form-select fs-4' + (isOptionInvalid ? ' is-invalid' : '')"
-                        t-model="state.selectedOption"
-                        t-on-change="onOptionChange">
+            <!-- Partida -->
+            <div class="mt-2">
+                <h5 class="fw-bold">Partida</h5>
+                <select t-att-class="'form-select fs-4' + (isBatchInvalid ? ' is-invalid' : '')"
+                        t-model="state.selectedBatch"
+                        t-on-change="onBatchChange">
                     <option value=""> </option>
-                    <t t-foreach="options" t-as="opt" t-key="opt.id">
-                        <option t-att-value="'' + opt.id"
-                                t-att-selected="state.selectedOption == ('' + opt.id)"
-                                t-esc="opt.name"/>
+                    <t t-foreach="state.batches" t-as="batch" t-key="batch.id">
+                        <option t-att-value="'' + batch.id"
+                                t-att-selected="state.selectedBatch == ('' + batch.id)"
+                                t-esc="batch.name"/>
                     </t>
                 </select>
             </div>
 
-            <!-- Employee -->
-            <div class="mt-4">
-                <h5 class="fw-bold">Employee</h5>
-                <select t-att-class="'form-select fs-4' + (isEmployeeInvalid ? ' is-invalid' : '')"
-                        t-model="state.selectedEmployee"
-                        t-on-change="onEmployeeChange">
-                    <option value=""></option>
-                    <t t-foreach="state.employees" t-as="emp" t-key="emp.id">
-                        <option t-att-value="'' + emp.id"
-                                t-att-selected="state.selectedEmployee == ('' + emp.id)"
-                                t-esc="emp.name"/>
-                    </t>
-                </select>
-            </div>
-
-            <!-- Equipment -->
-            <div class="mt-4">
-                <h5 class="fw-bold">Equipment</h5>
-                <select t-att-class="'form-select fs-4' + (isEquipmentInvalid ? ' is-invalid' : '')"
-                        t-model="state.selectedEquipment"
-                        t-on-change="onEquipmentChange">
-                    <option value=""></option>
-                    <t t-foreach="state.equipments" t-as="eqp" t-key="eqp.id">
-                        <option t-att-value="'' + eqp.id"
-                                t-att-selected="state.selectedEquipment == ('' + eqp.id)"
-                                t-esc="eqp.name"/>
-                    </t>
-                </select>
-            </div>
-
-            <!-- Talla -->
-            <div class="mt-4">
-                <h5 class="fw-bold">Talla</h5>
-                <select t-att-class="'form-select fs-4' + (isSizeInvalid ? ' is-invalid' : '')" t-model="state.selectedSize">
+            <!-- Producto -->
+            <div class="mt-4" t-if="state.products.length">
+                <h5 class="fw-bold">Producto</h5>
+                <select t-att-class="'form-select fs-4' + (isProductInvalid ? ' is-invalid' : '')"
+                        t-model="state.selectedProduct"
+                        t-on-change="onProductChange">
                     <option value=""> </option>
-                    <t t-foreach="state.sizes" t-as="size" t-key="size.id">
-                        <option t-att-value="'' + size.id"
-                                t-att-selected="state.selectedSize == ('' + size.id)"
-                                t-esc="size.size"/>
+                    <t t-foreach="state.products" t-as="prod" t-key="prod.id">
+                        <option t-att-value="'' + prod.id"
+                                t-att-selected="state.selectedProduct == ('' + prod.id)"
+                                t-esc="prod.name"/>
                     </t>
                 </select>
             </div>
 
-            <!-- Cantidad -->
-            <div class="mt-4">
-                <h5 class="fw-bold">Cantidad</h5>
-                <input type="number" min="1"
-                       t-att-class="'form-control fs-4' + (isQuantityInvalid ? ' is-invalid' : '')"
-                       inputmode="numeric"
-                       t-model="state.quantity"/>
+            <!-- Rollo crudo que se está pesando (opcional): aplica su talla -->
+            <div class="mt-4" t-if="state.rolls.length">
+                <h5 class="fw-bold">Rollo</h5>
+                <select class="form-select fs-4" t-model="state.selectedRoll">
+                    <option value=""> </option>
+                    <t t-foreach="state.rolls" t-as="roll" t-key="roll.id">
+                        <option t-att-value="'' + roll.id"
+                                t-att-selected="state.selectedRoll == ('' + roll.id)"
+                                t-esc="roll.name"/>
+                    </t>
+                </select>
             </div>
 
-            <div class="o_select_size_dialog w-100 mt-3">
+            <div class="o_select_scale_dialog w-100 mt-3">
 
-                <!-- Lista de balanzas -->
-                <t t-foreach="scales" t-as="scale" t-key="scale.id">
-                    <div class="form-check py-2 fs-3 pointer-cursor"
-                         t-on-click="() => this.selectScale(scale)">
-                        <!-- La balanza es selección única: siempre radio (la otra
-                             pantalla lo logra pasando radioMode=true). Las de
-                             puerto COM (serial) también marcan su radio. -->
-                        <input type="radio" name="scaleChoice"
-                               class="form-check-input"
-                               t-att-checked="(state.selectedMode === 'scale' or state.selectedMode === 'serial') and state.selectedScaleId === scale.id"/>
-                        <label class="form-check-label">
-                            <t t-out="scale.equipment_name"/>
-                        </label>
-                    </div>
-                </t>
-
-                <!-- Manual -->
-                <div class="form-check py-2 fs-3 pointer-cursor" t-on-click="() => this.selectManual()">
-                    <input type="radio" name="scaleChoice" class="form-check-input"
-                           t-att-checked="state.selectedMode === 'manual'"/>
-                    <label class="form-check-label">Manual</label>
+                <!-- Balanza (igual que el Taller; incluye Manual) -->
+                <div class="mt-1">
+                    <h5 class="fw-bold">Balanza</h5>
+                    <select class="form-select fs-4" t-on-change="onScaleSelectChange">
+                        <t t-foreach="scales" t-as="scale" t-key="scale.id">
+                            <option t-att-value="'' + scale.id"
+                                    t-att-selected="(state.selectedMode === 'scale' or state.selectedMode === 'serial') and state.selectedScaleId === scale.id"
+                                    t-esc="scale.equipment_name"/>
+                        </t>
+                        <option value="manual" t-att-selected="state.selectedMode === 'manual'">Manual</option>
+                    </select>
                 </div>
 
-                <!-- Conectar puerto COM (Web Serial) cuando la balanza lee por navegador -->
+                <!-- Conectar puerto COM (Web Serial) -->
                 <div t-if="state.selectedMode === 'serial' and !state.serialConnected" class="mt-3">
                     <button class="btn btn-primary fs-4" t-on-click="connectSerial">
                         Conectar puerto COM
@@ -121,7 +87,6 @@
                         <span class="badge rounded-pill bg-secondary">
                             Unidad: <t t-esc="state.scaleUnit"/>
                         </span>
-
                         <span t-if="state.scaleStable === true" class="badge rounded-pill bg-success">
                             Estable
                         </span>
@@ -198,11 +163,35 @@
                            t-ref="manualInput"/>
                 </div>
 
+                <!-- Solo en modo desarrollador: pesar sin gastar etiquetas -->
+                <div class="form-check mt-3" t-if="env.debug">
+                    <input type="checkbox" class="form-check-input" id="weigh_print_sticker"
+                           t-model="state.printSticker"/>
+                    <label class="form-check-label fs-5" for="weigh_print_sticker">
+                        Imprimir sticker
+                    </label>
+                </div>
+
+                <!-- Tras pesar, se espera a DESCARGAR la balanza para rearmar -->
+                <div class="mt-3 alert alert-info fs-6 mb-0"
+                     t-if="state.waitingZero and !state.weighing">
+                    Rollo registrado. Retira el rollo: el botón Pesar se
+                    reactiva cuando la balanza vuelva a 0.
+                </div>
+
                 <t t-set-slot="footer">
+                    <!-- Pesar NO cierra el diálogo: se encadena el pesado de
+                         varios rollos (la balanza sigue leyendo). Campos
+                         faltantes se marcan en rojo (is-invalid). -->
                     <button class="btn btn-primary"
+                            t-att-disabled="isWeighDisabled"
                             data-select-confirm="1"
                             t-on-click="confirm">
-                        Confirm
+                        <t t-if="state.weighing">Pesando...</t>
+                        <t t-else="">Pesar</t>
+                    </button>
+                    <button class="btn btn-secondary" t-on-click="closeDialog">
+                        Cerrar
                     </button>
                 </t>
             </div>

@@ -20,6 +20,15 @@ class MrpProductionRoll(models.Model):
     net_length = fields.Float('Net Length')
     equipment_id = fields.Many2one('maintenance.equipment', string='Equipment')
     employee_id = fields.Many2one('hr.employee', string='Employee')
+    # Fecha/hora del PESADO en la pantalla "Pesado de rollos". Además marca
+    # que el rollo ya generó su quant al pesarse (no debe volver a generar
+    # stock vía Producir de la OF).
+    weighed_date = fields.Datetime('Fecha de Pesado', readonly=True, copy=False)
+    # Rollo CRUDO que se pesó (elegido en el diálogo de pesado): trazabilidad
+    # crudo → terminado; en rectilíneos aporta además la talla.
+    wo_roll_id = fields.Many2one(
+        'mrp.workorder.roll', string='Rollo de Tejido', ondelete='set null',
+        copy=False)
 
     def reprint(self):
         for rec in self:

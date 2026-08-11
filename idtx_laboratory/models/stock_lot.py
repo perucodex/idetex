@@ -1,7 +1,53 @@
-from odoo import api, fields, models
+from odoo import api, fields, models, _
+from odoo.exceptions import UserError
 
 class StockLot(models.Model):
     _inherit = 'stock.lot'
+
+    # ------------------------------------------------------------------
+    # Calificación de lotes de insumos del lab (químicos/colorantes/
+    # auxiliares): pestaña visible solo para el grupo Validador de Lotes.
+    # ------------------------------------------------------------------
+    is_lab_supply = fields.Boolean(compute='_compute_is_lab_supply')
+    lab_state = fields.Selection([
+        ('pending', 'Pendiente'),
+        ('validated', 'Validado'),
+    ], string='Calificación Lab', default='pending', copy=False)
+    lab_validated_date = fields.Date('Fecha Validación Lab', readonly=True, copy=False)
+    lab_validated_by_id = fields.Many2one(
+        'res.users', 'Validado por (Lab)', readonly=True, copy=False)
+
+    @api.depends('product_id.product_tmpl_id.is_chemical',
+                 'product_id.product_tmpl_id.is_colorant',
+                 'product_id.product_tmpl_id.is_helper')
+    def _compute_is_lab_supply(self):
+        for lot in self:
+            tmpl = lot.product_id.product_tmpl_id
+            lot.is_lab_supply = bool(
+                tmpl.is_chemical or tmpl.is_colorant or tmpl.is_helper)
+
+    def _check_lab_validator(self):
+        if not self.env.user.has_group('idtx_laboratory.group_lab_lot_validator'):
+            raise UserError(_(
+                'Solo un Validador de Lotes de Laboratorio puede calificar lotes.'))
+
+    def action_lab_validate(self):
+        self._check_lab_validator()
+        # sudo: el validador puede no tener permisos de escritura de stock;
+        # el grupo propio ya autoriza la operación.
+        self.sudo().write({
+            'lab_state': 'validated',
+            'lab_validated_date': fields.Date.context_today(self),
+            'lab_validated_by_id': self.env.user.id,
+        })
+
+    def action_lab_reset(self):
+        self._check_lab_validator()
+        self.sudo().write({
+            'lab_state': 'pending',
+            'lab_validated_date': False,
+            'lab_validated_by_id': False,
+        })
 
     color_recipe_id = fields.Many2one('color.recipe', string='Color Recipe')
     color_code = fields.Char(related='color_recipe_id.color_code')

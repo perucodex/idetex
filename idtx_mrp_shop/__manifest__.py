@@ -31,9 +31,11 @@ luego armar las partidas
     'data': [
         'data/hr_department.xml',
         'data/quality_reason_data.xml',
+        'data/ir_sequence.xml',
         'security/ir.model.access.csv',
         'report/report_batch_dye_recipe.xml',
         'report/report_batch.xml',
+        'report/report_collar_quality_check.xml',
         'views/batch_registry_views.xml',
         'views/quality_alert_views.xml',
         'views/mrp_workorder_option_views.xml',
@@ -43,12 +45,15 @@ luego armar las partidas
         'views/mrp_menu.xml',
         'views/mrp_workorder_batch_views.xml',
         'views/mrp_workcenter_views.xml',
+        'views/roll_weighing_views.xml',
+        'views/collar_quality_check_views.xml',
     ],
     
     'assets': {
         'web.assets_backend': [
             'idtx_mrp_shop/static/src/shop/**/*',
             'idtx_mrp_shop/static/src/dye_recipe/**/*',
+            'idtx_mrp_shop/static/src/weighing/**/*',
             # 'idtx_mrp_shop/static/src/images/**/*',
         ],
     },

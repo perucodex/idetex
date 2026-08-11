@@ -6,8 +6,11 @@
          filtrar por is_quote). Se limpia el path ANTES de asignarlo abajo a
          `sale_quotation_action` — `path` tiene unique constraint en BD, no
          puede estar en dos acciones a la vez ni de forma transitoria. -->
+    <!-- eval="False" => NULL. Con <field></field> quedaba cadena vacía '',
+         que TAMBIÉN cuenta para el unique constraint y chocaba con cualquier
+         otra acción con path vacío (p.ej. knowledge al instalarse). -->
     <record id="sale.action_quotations_with_onboarding" model="ir.actions.act_window">
-        <field name="path"></field>
+        <field name="path" eval="False"/>
     </record>
 
     <record id="sale_quotation_action" model="ir.actions.act_window">

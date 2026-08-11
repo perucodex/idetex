@@ -99,12 +99,13 @@
                             Hueco de COLORANTES: los productos reales (marca concreta) y sus porcentajes
                             los elige el laboratorio al crear la receta, como sub-líneas de esta línea.
                         </div>
-                        <separator string="Tabla de Rangos (suma % de colorantes del proceso → cantidad)" invisible="line_type != 'range'"/>
-                        <field name="range_ids" nolabel="1" invisible="line_type != 'range'">
+                        <separator string="Tabla de Rangos (suma % de colorantes del proceso → concentración)" invisible="line_type != 'range'"/>
+                        <field name="range_ids" nolabel="1" invisible="line_type != 'range'" context="{'default_uom': uom}">
                             <list editable="bottom">
                                 <field name="percent_from"/>
                                 <field name="percent_to"/>
                                 <field name="factor"/>
+                                <field name="uom" string="Unidad"/>
                             </list>
                         </field>
                     </sheet>

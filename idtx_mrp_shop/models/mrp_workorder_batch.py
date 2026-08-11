@@ -2,6 +2,7 @@ from odoo import fields, models, api, _
 from odoo.exceptions import AccessError, UserError
 from odoo.fields import Domain
 import re
+import requests
 
 class MrpWorkorderBatch(models.Model):
     _inherit = 'mrp.workorder.batch'
@@ -18,12 +19,39 @@ class MrpWorkorderBatch(models.Model):
     # Sin sub-receta seleccionada el Taller no deja registrar el teñido.
     recipe_lot_id = fields.Many2one(
         'color.recipe.lot', string='Sub-receta (Lotes)',
-        domain="[('color_recipe_id', '=', color_recipe_id), ('state', '=', 'validated')]",
+        domain="[('id', 'in', allowed_recipe_lot_ids)]",
         help='Sub-receta (combinación de lotes de hilo) con la que se tiñe '
              'la partida. La selecciona el usuario; sin ella no se puede '
              'registrar el teñido en el Taller. Solo se pueden elegir '
              'versiones VALIDADAS por laboratorio (ni pendientes ni '
-             'obsoletas).')
+             'obsoletas) cuya combinación de lotes coincida con los lotes '
+             'de hilo de los rollos de la partida.')
+    allowed_recipe_lot_ids = fields.Many2many(
+        'color.recipe.lot', compute='_compute_allowed_recipe_lot_ids',
+        string='Sub-recetas Elegibles',
+        help='Sub-recetas validadas de la receta de color cuya combinación '
+             'de lotes coincide EXACTAMENTE con los lotes de hilo de los '
+             'rollos de la partida (los de la opción de tejido elegida). '
+             'Si los rollos aún no tienen lotes registrados, todas las '
+             'validadas de la receta.')
+
+    @api.depends('wo_roll_ids.thread_lot_ids', 'color_recipe_id',
+                 'color_recipe_id.recipe_lot_ids.lot_ids',
+                 'color_recipe_id.recipe_lot_ids.state')
+    def _compute_allowed_recipe_lot_ids(self):
+        Sub = self.env['color.recipe.lot']
+        for batch in self:
+            subs = batch.color_recipe_id.recipe_lot_ids.filtered(
+                lambda r: r.state == 'validated')
+            lots = batch.wo_roll_ids.thread_lot_ids
+            if lots:
+                # Igual que color.recipe._find_lot_subrecipe: compara contra
+                # los lotes REALES de cada sub-receta (inmune a lot_key
+                # desactualizado), con match exacto de la combinación.
+                key = Sub._make_lot_key(lots.ids)
+                subs = subs.filtered(
+                    lambda r: Sub._make_lot_key(r.lot_ids.ids) == key)
+            batch.allowed_recipe_lot_ids = subs
     # Candado de laboratorio: un responsable (group_module_laboratory_manager)
     # bloquea la sub-receta asignada y ya nadie puede cambiarla; solo él puede
     # revertir la asignación (quita la sub-receta y desbloquea).
@@ -367,14 +395,17 @@ class MrpWorkorderBatch(models.Model):
         # base numera desde 1, pero en la receta completa la numeración
         # continúa (proceso 1 usa 1..2 -> el N° 1 del proceso 2 se imprime 3).
         order_offset = 0
+        # CF de la receta completa: fallback para las tablas de los procesos
+        # SIN colorantes propios (p.ej. preparado con sal) — la sal se dosifica
+        # según el colorante del teñido aunque viva en otro proceso.
+        cf_total = process_src._cf_sum()
         for proc in process_src.sorted(lambda p: (p.sequence, p.id)):
             lines, max_local = [], 0
             proc_lines = proc.color_recipe_process_line_ids
             # CF del proceso (suma de % de colorantes, incluye sub-líneas del
             # hueco COLORANTES): resuelve EN VIVO las líneas con TABLA cuyo
             # factor guardado quedó desactualizado (recetas históricas).
-            cf = sum(x.factor for x in (proc_lines | proc_lines.child_ids)
-                     if x.uom == 'por' and x.product_id.is_colorant)
+            cf = proc._cf_sum() or cf_total
             for l in proc_lines:
                 local = l.order_number or 1
                 max_local = max(max_local, local)
@@ -615,3 +646,144 @@ class MrpWorkorderBatch(models.Model):
             })
 
         return res
+
+    # ------------------------------------------------------------------
+    # Pesado de rollos terminados (Operaciones → Pesado de rollos)
+    # ------------------------------------------------------------------
+    def get_weighable_products(self):
+        """Productos de los rollos crudos de la partida (para el selector
+        del diálogo de pesado)."""
+        self.ensure_one()
+        return [{'id': p.id, 'name': p.display_name}
+                for p in self.wo_roll_ids.mapped('product_id')]
+
+    def get_weighable_rolls(self, product_id):
+        """Rollos CRUDOS de la partida para el producto (selector del diálogo
+        de pesado): permite decir QUÉ rollo se está pesando y heredar su
+        talla. SOLO rectilíneos (rollos con talla) — en telas el crudo no se
+        mapea 1:1 con el terminado y el selector no aplica. Excluye los ya
+        enlazados a un rollo terminado."""
+        self.ensure_one()
+        rolls = self.wo_roll_ids.filtered(
+            lambda r: r.size_id and r.product_id.id == int(product_id))
+        used = self.env['mrp.production.roll'].search(
+            [('wo_roll_id', 'in', rolls.ids)]).wo_roll_id
+        result = []
+        for roll in rolls - used:
+            label = roll.name or ''
+            if roll.size_id:
+                label += ' · Talla %s' % (roll.size_id.size or '')
+            if roll.quantity:
+                label += ' · %s und' % roll.quantity
+            result.append({'id': roll.id, 'name': label})
+        return result
+
+    def _next_roll_lot_vals(self, production):
+        """Lote del rollo terminado: nombre de la partida + correlativo por
+        PARTIDA (a diferencia del viejo wizard, que numeraba por OF y podía
+        repetir nombre con partidas multi-OF). Salta nombres ya usados."""
+        self.ensure_one()
+        Lot = self.env['stock.lot']
+        n = self.env['mrp.production.roll'].search_count(
+            [('batch_id', '=', self.id)]) + 1
+        while True:
+            name = '%s-%s' % (self.name, str(n).zfill(3))
+            if not Lot.search_count([('name', '=', name),
+                                     ('product_id', '=', production.product_id.id)]):
+                return {'name': name, 'product_id': production.product_id.id}
+            n += 1
+
+    def action_weigh_finished_roll(self, product_id, scale_id=False, manual_weight=None,
+                                   print_sticker=True, wo_roll_id=False):
+        """Pesa un rollo TERMINADO de la partida: crea el rollo con su lote
+        (partida+correlativo) y su QUANT de inmediato (modo inventario) — el
+        stock ya no nace del botón Producir de la OF. Imprime el sticker en
+        la impresora de la balanza (fallback: impresora de la compañía).
+        El peso llega del diálogo (balanza en vivo o manual autorizado); si
+        no llega, se relee del servidor de la balanza (modo IP)."""
+        self.ensure_one()
+        try:
+            scale = self.env['scale.registry'].browse(int(scale_id)) if scale_id else False
+            product = self.wo_roll_ids.mapped('product_id').filtered(
+                lambda p: p.id == int(product_id))
+            if not product:
+                return {'status': 'danger',
+                        'message': _('El producto no pertenece a los rollos de la partida.')}
+            production = self.wo_roll_ids.filtered(
+                lambda r: r.product_id == product).workorder_id.production_id[:1]
+            if not production:
+                return {'status': 'danger',
+                        'message': _('La partida no tiene OF para el producto elegido.')}
+
+            # Rollo crudo elegido (opcional): trazabilidad y talla heredada.
+            wo_roll = self.env['mrp.workorder.roll'].browse(int(wo_roll_id)) \
+                if wo_roll_id else self.env['mrp.workorder.roll']
+            if wo_roll and wo_roll not in self.wo_roll_ids:
+                return {'status': 'danger',
+                        'message': _('El rollo elegido no pertenece a la partida.')}
+
+            peso = None
+            if manual_weight not in (None, False, ''):
+                peso = round(float(manual_weight), 2)
+            if peso is None:
+                if not scale or not scale.ip:
+                    return {'status': 'danger',
+                            'message': _('Sin balanza seleccionada ni peso válido.')}
+                resp = requests.get('http://%s:5001/peso' % scale.ip, timeout=3)
+                resp.raise_for_status()
+                data = resp.json()
+                if data.get('ok') and data.get('peso') is not None:
+                    peso = round(float(data['peso']), 2)
+                else:
+                    return {'status': 'danger',
+                            'message': _('Sin comunicación con la balanza.')}
+            if not peso or peso <= 0:
+                return {'status': 'danger',
+                        'message': _('No se obtuvo un peso válido.')}
+
+            lot = self.env['stock.lot'].create(self._next_roll_lot_vals(production))
+            roll = self.env['mrp.production.roll'].create({
+                'production_id': production.id,
+                'batch_id': self.id,
+                'lot_id': lot.id,
+                'quantity': 1,
+                'gross_weight': peso,
+                'net_weight': peso,
+                'weighed_date': fields.Datetime.now(),
+                'wo_roll_id': wo_roll.id or False,
+                'size_id': wo_roll.size_id.id or False,
+            })
+            lot.roll_id = roll
+            production._sync_qty_producing_from_production_rolls()
+
+            # Quant INMEDIATO en modo inventario (mismo patrón que
+            # idtx_stock_quant_import): el rollo pesado ya es stock.
+            quant = self.env['stock.quant'].create({
+                'product_id': production.product_id.id,
+                'location_id': production.location_dest_id.id,
+                'inventory_quantity': peso,
+                'lot_id': lot.id,
+            })
+            quant.action_apply_inventory()
+
+            # El sticker no puede tumbar el pesado: rollo/lote/quant ya
+            # existen. SIN fallback entre impresoras (pedido de JP): con
+            # balanza se usa SOLO su impresora — si falla, sale el aviso y se
+            # Reimprime — así el pesado no se cuelga esperando timeouts. Sin
+            # balanza (modo manual) se usa la de la compañía. print_sticker
+            # False = pruebas sin gastar etiquetas (checkbox en modo dev).
+            print_warning = ''
+            if print_sticker:
+                printer_ip = scale.printer_ip if scale else (
+                    self.env.company.zpl_printer_ip if self.env.company.is_printer else False)
+                if printer_ip:
+                    try:
+                        roll._print_zpl_to_network(roll.create_zpl(), printer_ip)
+                    except Exception as e:
+                        print_warning = _(' (sticker NO impreso: %s — usa Reimprimir)') % e
+
+            return {'status': 'success', 'peso': peso, 'lot': lot.name,
+                    'message': _('Rollo %(lot)s pesado: %(peso).2f kg (partida %(batch)s)',
+                                 lot=lot.name, peso=peso, batch=self.name) + print_warning}
+        except Exception as e:
+            return {'status': 'danger', 'message': _('Error: %s') % e}

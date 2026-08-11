@@ -78,6 +78,18 @@
     </record>
 
     <!-- Homologación: proceso base -> tratamiento ORGATEX -->
+    <record id="base_process_form_orgatex" model="ir.ui.view">
+        <field name="name">base.process.form.orgatex</field>
+        <field name="model">base.process</field>
+        <field name="inherit_id" ref="idtx_laboratory.base_process_form_view"/>
+        <field name="arch" type="xml">
+            <field name="codmaq" position="after">
+                <field name="orgatex_treatment_no"/>
+                <field name="orgatex_treatment_name" invisible="not orgatex_treatment_name"/>
+            </field>
+        </field>
+    </record>
+
     <record id="base_process_list_orgatex" model="ir.ui.view">
         <field name="name">base.process.list.orgatex</field>
         <field name="model">base.process</field>

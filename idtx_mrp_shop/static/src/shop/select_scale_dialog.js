@@ -544,6 +544,9 @@ export class SelectScaleDialog extends ConfirmationDialog {
     // Web Serial (puerto COM leído por el navegador)
     // =========================
     // Reconecta sin diálogo si ya se autorizó el puerto en este origen.
+    // Se prueban TODOS los puertos autorizados (puede haber otorgados de
+    // más, p.ej. un ttyS0 sin permisos que falla siempre), empezando por el
+    // que ya está abierto en esta pestaña (reuso de la sesión anterior).
     async _autoConnectSerial() {
         if (!navigator.serial) {
             this.state.scaleReadError = _t(
@@ -551,9 +554,13 @@ export class SelectScaleDialog extends ConfirmationDialog {
             return;
         }
         try {
-            const ports = await navigator.serial.getPorts();
-            if (ports && ports.length) {
-                await this._openSerialPort(ports[0]);
+            const ports = [...(await navigator.serial.getPorts() || [])]
+                .sort((a, b) => (b.readable ? 1 : 0) - (a.readable ? 1 : 0));
+            for (const port of ports) {
+                await this._openSerialPort(port);
+                if (this.state.serialConnected) {
+                    return;
+                }
             }
         } catch (e) {
             // Sin puerto autorizado aún: el usuario debe pulsar "Conectar".
@@ -577,6 +584,33 @@ export class SelectScaleDialog extends ConfirmationDialog {
     }
 
     async _openSerialPort(port) {
+        // El puerto puede haber quedado ABIERTO de una sesión anterior del
+        // diálogo en esta misma pestaña (el cierre de onWillUnmount es
+        // asíncrono y a veces no llega a completarse): open() sobre un
+        // puerto abierto lanza InvalidStateError y obligaba a reconectar a
+        // mano. En ese caso se REUTILIZA el puerto tal cual; si el lector
+        // viejo aún retiene el lock, se le da un momento para soltarlo (su
+        // loop sale solo al llegar la siguiente trama de la balanza).
+        if (port.readable) {
+            for (let i = 0; i < 10 && port.readable && port.readable.locked; i++) {
+                await new Promise((resolve) => setTimeout(resolve, 200));
+            }
+            if (port.readable && !port.readable.locked) {
+                this._serialPort = port;
+                this._serialStop = false;
+                this.state.serialConnected = true;
+                this.state.scaleReadError = "";
+                this.state.scaleUnit = "kg";
+                this._serialReadLoop();
+                return;
+            }
+            // Lock huérfano: último recurso, cerrar e intentar reabrir.
+            try {
+                await port.close();
+            } catch (e) {
+                // sigue al open(); si también falla, se muestra el error
+            }
+        }
         try {
             await port.open({
                 baudRate: this._serialBaudrate || 9600,

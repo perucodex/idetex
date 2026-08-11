@@ -62,6 +62,23 @@ class ColorRecipeProcess(models.Model):
                 if line.sequence != seq:
                     line.with_context(skip_reseq=True).sequence = seq
 
+    def _sibling_processes(self):
+        """Procesos de la misma receta (madre o sub-receta), incluido self."""
+        self.ensure_one()
+        if self.recipe_lot_id:
+            return self.recipe_lot_id.process_ids
+        if self.color_recipe_id:
+            return self.color_recipe_id.color_recipe_process_ids
+        return self
+
+    def _cf_sum(self):
+        """CF del conjunto de procesos `self`: suma de % de las líneas cuyo
+        producto es colorante (incluye las sub-líneas del hueco COLORANTES)."""
+        lines = self.color_recipe_process_line_ids
+        all_lines = lines | lines.child_ids
+        return sum(l.factor for l in all_lines
+                   if l.uom == 'por' and l.product_id.is_colorant)
+
 class ColorRecipeProcessLine(models.Model):
     _name = 'color.recipe.process.line'
     _description = 'Color Recipe Process Line'
@@ -93,6 +110,29 @@ class ColorRecipeProcessLine(models.Model):
         ('por', '%'),
         ('gxl', 'Gr/L'),
     ], string='Uom', default='gxl')
+    # Lote del insumo (químicos/colorantes con seguimiento por lote): solo se
+    # registra en las sub-recetas de producción (recipe_lot_id), donde importa
+    # la partida real del producto usada; la receta desarrollo no lleva lote.
+    lot_id = fields.Many2one(
+        'stock.lot', string='Lote', ondelete='restrict',
+        domain="[('product_id.product_tmpl_id', '=', product_id)]")
+    product_tracking = fields.Selection(related='product_id.tracking')
+    is_subrecipe_line = fields.Boolean(compute='_compute_is_subrecipe_line')
+    # Semáforo de calificación del lote (widget state_selection): verde si el
+    # lote está validado por laboratorio, rojo si no; sin lote no se muestra.
+    lot_qualification = fields.Selection([
+        ('blocked', 'Lote NO validado'),
+        ('done', 'Lote validado'),
+    ], compute='_compute_lot_qualification')
+
+    @api.depends('lot_id.lab_state')
+    def _compute_lot_qualification(self):
+        for rec in self:
+            if not rec.lot_id:
+                rec.lot_qualification = False
+            else:
+                rec.lot_qualification = 'done' \
+                    if rec.lot_id.lab_state == 'validated' else 'blocked'
     # quantity = fields.Float('Quantity', digits=(12,3))
     # Producto con TABLA: enlaza a la línea del proceso base cuyos rangos
     # (CF -> cantidad) resuelven el factor. CF = suma de % de los COLORANTES
@@ -110,6 +150,22 @@ class ColorRecipeProcessLine(models.Model):
             rec.display_name = 'COLORANTES' if rec.line_type == 'colorants' \
                 else (rec.product_id.display_name or _('Línea'))
 
+    @api.depends('color_recipe_process_id.recipe_lot_id',
+                 'parent_line_id.color_recipe_process_id.recipe_lot_id')
+    def _compute_is_subrecipe_line(self):
+        # Las sub-líneas de COLORANTES no llevan color_recipe_process_id:
+        # heredan el contexto (receta madre vs sub-receta) de su línea padre.
+        for rec in self:
+            process = rec.color_recipe_process_id \
+                or rec.parent_line_id.color_recipe_process_id
+            rec.is_subrecipe_line = bool(process.recipe_lot_id)
+
+    @api.onchange('product_id')
+    def _onchange_product_id_clear_lot(self):
+        for rec in self:
+            if rec.lot_id and rec.lot_id.product_id.product_tmpl_id != rec.product_id:
+                rec.lot_id = False
+
     def _get_processes(self):
         """Proceso dueño: directo o a través de la línea padre (sub-líneas)."""
         return self.color_recipe_process_id | self.parent_line_id.color_recipe_process_id
@@ -118,21 +174,26 @@ class ColorRecipeProcessLine(models.Model):
     # Motor de tablas (CF)
     # ------------------------------------------------------------------
     def _recompute_table_factors(self):
-        """Recalcula el factor de las líneas CON TABLA de los procesos de
-        `self`: CF = suma de % de las líneas de COLORANTES del mismo
-        proceso (incluye las sub-líneas del hueco COLORANTES); se busca el
-        rango que contiene el CF y se toma su cantidad. Las líneas con
-        ajuste manual no se tocan."""
-        for process in self._get_processes():
-            lines = process.color_recipe_process_line_ids
-            all_lines = lines | lines.child_ids
-            cf = sum(l.factor for l in all_lines
-                     if l.uom == 'por' and l.product_id.is_colorant)
-            for tl in lines.filtered(lambda l: l.base_line_id.range_ids and not l.factor_manual):
+        """Recalcula el factor de las líneas CON TABLA: CF = suma de % de las
+        líneas de COLORANTES del mismo proceso; si el proceso no tiene
+        colorantes (p.ej. un preparado/lavado con sal), se usa el CF de TODA
+        la receta — la sal se dosifica según el colorante del teñido aunque
+        viva en otro proceso. Se busca el rango que contiene el CF y se toma
+        su concentración. Las líneas con ajuste manual no se tocan."""
+        # Un cambio de colorantes afecta también las tablas de los procesos
+        # HERMANOS sin colorantes propios (dependen del CF de la receta).
+        processes = self._get_processes()
+        for proc in self._get_processes():
+            processes |= proc._sibling_processes()
+        for process in processes:
+            cf = process._cf_sum() or process._sibling_processes()._cf_sum()
+            for tl in process.color_recipe_process_line_ids.filtered(
+                    lambda l: l.base_line_id.range_ids and not l.factor_manual):
                 rng = tl.base_line_id.range_ids.filtered(
                     lambda r: r.percent_from <= cf <= r.percent_to)[:1]
-                if rng and tl.factor != rng.factor:
-                    tl.with_context(table_recompute=True).factor = rng.factor
+                if rng and (tl.factor != rng.factor or tl.uom != rng.uom):
+                    tl.with_context(table_recompute=True).write(
+                        {'factor': rng.factor, 'uom': rng.uom})
 
     @api.model_create_multi
     def create(self, vals_list):

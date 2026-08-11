@@ -152,6 +152,10 @@ class TechnicalSizeLine(models.Model):
     # con technical.sheet.width (Ancho) y no admite dos traducciones.
     length = fields.Float('Largo')
     width = fields.Float('Alto')
+    # Tolerancias de medida (± cm): el Control de cuellos compara lo obtenido
+    # contra Largo/Alto ± tolerancia y avisa si está fuera.
+    length_tol = fields.Float('Tol. Largo (±)')
+    width_tol = fields.Float('Tol. Alto (±)')
     needles = fields.Integer('Needles')
     ne = fields.Char('NE')
     plies = fields.Integer('Plies')

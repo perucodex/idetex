@@ -23,9 +23,13 @@
             <field name="reason_id" position="after">
                 <field name="available_batch_ids" invisible="1" widget="many2many_tags"/>
                 <field name="workorder_id" string="Operación (OT)" readonly="1" invisible="not workorder_id"/>
-                <field name="tipo" invisible="not available_batch_ids"/>
+                <!-- Se muestran también cuando la alerta ya trae partida
+                     (p.ej. reposición generada por el Control de cuellos,
+                     cuya OT es de tejido y no tiene available_batch_ids). -->
+                <field name="tipo" invisible="not available_batch_ids and not batch_id"/>
                 <field name="batch_id"
-                       invisible="not available_batch_ids"
+                       invisible="not available_batch_ids and not batch_id"
+                       readonly="not available_batch_ids"
                        domain="[('id', 'in', available_batch_ids)]"/>
                 <field name="batch_qty" invisible="tipo != 'reposicion' or not available_batch_ids"/>
                 <field name="production_qty" invisible="tipo != 'reposicion' or not available_batch_ids"/>

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="collar_quality_check_form" model="ir.ui.view">
+            <field name="name">collar.quality.check.form</field>
+            <field name="model">collar.quality.check</field>
+            <field name="arch" type="xml">
+                <form string="Control de Cuellos">
+                    <header>
+                        <button name="action_review" type="object" string="Revisar"
+                                class="oe_highlight" invisible="state != 'draft'"
+                                help="Calcula 1ras/2das/faltantes contra el pedido y pasa el control a Revisado. Si hay faltantes, primero decide si habrá reposición."/>
+                        <button name="action_reset_draft" type="object" string="Volver a Borrador"
+                                invisible="state != 'reviewed'"/>
+                        <field name="state" widget="statusbar"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1><field name="name" readonly="1"/></h1>
+                        </div>
+                        <div class="alert alert-warning" role="alert"
+                             invisible="not measure_warning">
+                            <strong>Medidas fuera de tolerancia:</strong>
+                            <field name="measure_warning" readonly="1" nolabel="1" class="mb-0"/>
+                        </div>
+                        <div class="alert alert-danger" role="alert"
+                             invisible="shortage_qty &lt;= 0">
+                            <strong>Reposición:</strong> el pedido requiere
+                            <field name="required_qty" readonly="1" class="oe_inline"/> unidades de esta talla
+                            y solo hay <field name="first_total" readonly="1" class="oe_inline"/> de 1ras acumuladas —
+                            faltan <field name="shortage_qty" readonly="1" class="oe_inline"/>.
+                        </div>
+                        <group>
+                            <group string="Rollo">
+                                <field name="available_roll_ids" invisible="1"/>
+                                <field name="batch_id" options="{'no_create': True}" readonly="state == 'reviewed'"/>
+                                <field name="roll_id" options="{'no_create': True}"
+                                       domain="[('id', 'in', available_roll_ids)]" readonly="state == 'reviewed'"/>
+                                <field name="size_id"/>
+                                <field name="qty_total"/>
+                                <field name="production_id"/>
+                                <field name="sale_order_ref"/>
+                            </group>
+                            <group string="Clasificación">
+                                <field name="check_date" readonly="state == 'reviewed'"/>
+                                <field name="user_id" readonly="state == 'reviewed'"/>
+                                <field name="qty_first" readonly="state == 'reviewed'"/>
+                                <field name="qty_second"/>
+                                <field name="qty_discard"/>
+                                <!-- Decisión del auditor: solo aparece con faltantes,
+                                     ANTES de crear la alerta (botón Revisar). -->
+                                <field name="replenish" invisible="shortage_qty &lt;= 0"
+                                       readonly="state == 'reviewed'"/>
+                                <field name="alert_id" invisible="not alert_id"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page name="measures_page" string="Medidas">
+                                <group>
+                                    <group string="Largo (cm)">
+                                        <field name="width_req" readonly="state == 'reviewed'"/>
+                                        <field name="width_tol"/>
+                                        <field name="width_1" readonly="state == 'reviewed'"/>
+                                        <field name="width_2" readonly="state == 'reviewed'"/>
+                                        <field name="width_3" readonly="state == 'reviewed'"/>
+                                    </group>
+                                    <group string="Alto (cm)">
+                                        <field name="height_req" readonly="state == 'reviewed'"/>
+                                        <field name="height_tol"/>
+                                        <field name="height_1" readonly="state == 'reviewed'"/>
+                                        <field name="height_2" readonly="state == 'reviewed'"/>
+                                        <field name="height_3" readonly="state == 'reviewed'"/>
+                                    </group>
+                                </group>
+                            </page>
+                            <page name="defects_page" string="Defectos">
+                                <group>
+                                    <group>
+                                        <field name="defect_needle" readonly="state == 'reviewed'"/>
+                                        <field name="defect_stain" readonly="state == 'reviewed'"/>
+                                        <field name="defect_hole" readonly="state == 'reviewed'"/>
+                                    </group>
+                                    <group>
+                                        <field name="defect_crack" readonly="state == 'reviewed'"/>
+                                        <field name="defect_bite" readonly="state == 'reviewed'"/>
+                                    </group>
+                                </group>
+                            </page>
+                            <page name="comments_page" string="Comentarios">
+                                <field name="comment" nolabel="1" readonly="state == 'reviewed'"
+                                       placeholder="Comentarios del auditor..."/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+
+        <record id="collar_quality_check_list" model="ir.ui.view">
+            <field name="name">collar.quality.check.list</field>
+            <field name="model">collar.quality.check</field>
+            <field name="arch" type="xml">
+                <list decoration-danger="shortage_qty &gt; 0">
+                    <field name="name"/>
+                    <field name="check_date"/>
+                    <field name="batch_id"/>
+                    <field name="roll_id"/>
+                    <field name="size_id"/>
+                    <field name="production_id" optional="show"/>
+                    <field name="qty_total" sum="Total"/>
+                    <field name="qty_first" sum="Total" string="1ras"/>
+                    <field name="qty_second" sum="Total" string="2das"/>
+                    <field name="qty_discard" sum="Total"/>
+                    <field name="required_qty" optional="show"/>
+                    <field name="shortage_qty" string="Faltante"/>
+                    <field name="user_id" optional="hide"/>
+                    <field name="state" widget="badge"
+                           decoration-success="state == 'reviewed'"
+                           decoration-warning="state == 'draft'"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="collar_quality_check_search" model="ir.ui.view">
+            <field name="name">collar.quality.check.search</field>
+            <field name="model">collar.quality.check</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="batch_id"/>
+                    <field name="roll_id"/>
+                    <field name="production_id"/>
+                    <field name="size_id"/>
+                    <group>
+                        <filter name="group_batch" string="Partida" context="{'group_by': 'batch_id'}"/>
+                        <filter name="group_size" string="Talla" context="{'group_by': 'size_id'}"/>
+                        <filter name="group_production" string="OF" context="{'group_by': 'production_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="collar_quality_check_action" model="ir.actions.act_window">
+            <field name="name">Control de cuellos</field>
+            <field name="res_model">collar.quality.check</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="collar_quality_check_search"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Registra el control de cuellos y puños por rollo
+                </p>
+                <p>
+                    Elige la partida y el rollo (con talla y cantidad de tejeduría),
+                    mide, cuenta defectos y clasifica 1ras y 2das. Si las 1ras
+                    acumuladas no cubren el pedido, se genera la alerta de reposición.
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="menu_collar_quality_check"
+                  name="Control de cuellos"
+                  parent="mrp.menu_mrp_manufacturing"
+                  action="collar_quality_check_action"
+                  sequence="27"/>
+
+    </data>
+</odoo>

@@ -65,6 +65,17 @@ class MrpProduction(models.Model):
             if not production.roll_ids:
                 continue
 
+            # Rollos PESADOS en "Pesado de rollos": su quant ya se creó al
+            # pesar (modo inventario). Volver a producir duplicaría el stock.
+            weighed = production.roll_ids.filtered('weighed_date')
+            if weighed:
+                raise UserError(_(
+                    'La OF %(prod)s tiene rollos pesados en "Pesado de rollos" '
+                    '(su stock ya se generó al pesar): no se puede volver a '
+                    'producir. Rollos: %(rolls)s',
+                    prod=production.name,
+                    rolls=', '.join(weighed.mapped('lot_id.name'))))
+
             # En tejido, el qty_produced de la orden de trabajo puede representar
             # tela intermedia (no rollos finales empacados). Se reinicia para que
             # el cierre final de la MO use solo lotes de rollos.

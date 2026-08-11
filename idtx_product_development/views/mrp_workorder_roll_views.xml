@@ -7,7 +7,9 @@
         <field name="inherit_id" ref="idtx_mrp.mrp_workorder_roll_form"/>
         <field name="arch" type="xml">
             <field name="uom_id" position="after">
-                <field name="size_id" readonly="1"/>
+                <!-- Solo los rollos rectilíneos manejan talla (mismo criterio
+                     que Cantidad: se oculta cuando no aplica). -->
+                <field name="size_id" readonly="1" invisible="not size_id"/>
             </field>
         </field>
     </record>
