@@ -16,7 +16,8 @@ parámetro). El resultado alimenta el input DSCT_COMEDOR del recibo, que la regl
 Al desinstalar este módulo, el concepto "Descuento Comedor" sigue existiendo en
 la planilla y puede cargarse manualmente con el input DSCT_COMEDOR.
     """,
-    'author': "Idetex",
+    'author': "Codex Development",
+    'website': "https://www.perucodex.com",
     'category': 'Payroll',
     'version': '19.0.0.0',
     'license': 'LGPL-3',

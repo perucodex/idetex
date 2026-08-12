@@ -16,7 +16,8 @@ de product.template para los productos is_thread:
   una descripción sugerida (editable).
 - Todo en la pestaña existente "Datos de Hilado" (visible solo si is_thread).
 """,
-    'author': 'IDETEX',
+    'author': "Codex Development",
+    'website': "https://www.perucodex.com",
     'category': 'Producción Textil',
     'version': '19.0.1.3.0',
     'license': 'LGPL-3',

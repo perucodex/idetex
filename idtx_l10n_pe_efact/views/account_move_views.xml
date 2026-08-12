@@ -25,8 +25,10 @@
         <field name="inherit_id" ref="account.view_move_form" />
         <field name="arch" type="xml">
             <xpath expr="//field[@name='partner_shipping_id']" position="after">
-                <field name="idtx_oc_ref" string="N° O. Compra" invisible="move_type not in ('out_invoice', 'out_refund')" readonly="state != 'draft'"/>
-                <field name="proceso" invisible="move_type not in ('out_invoice', 'out_refund')" readonly="state != 'draft'"/>
+                <!-- Solo empresas con "Alquiler / suscripciones" marcado. -->
+                <field name="idtx_rental_company" invisible="1"/>
+                <field name="idtx_oc_ref" string="N° O. Compra" invisible="not idtx_rental_company or move_type not in ('out_invoice', 'out_refund')" readonly="state != 'draft'"/>
+                <field name="proceso" invisible="not idtx_rental_company or move_type not in ('out_invoice', 'out_refund')" readonly="state != 'draft'"/>
             </xpath>
         </field>
     </record>

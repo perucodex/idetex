@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "Efact",
+    'name': "PE: Integración OSE Efact",
 
     'summary': "OSE Efact",
 
@@ -33,6 +33,7 @@ Facturación electrónica con OSE Efact
         'views/account_move_views.xml',
         'views/account_payment_term_views.xml',
         'views/sale_order_views.xml',
+        'views/res_company_views.xml',
         # 'security/ir.model.access.csv',
         # 'views/views.xml',
         # 'views/templates.xml',

@@ -12,6 +12,7 @@ class SaleOrder(models.Model):
     # cada factura generada (incluidas las recurrentes de la suscripción)
     # lo hereda para imprimirlo en la fila PROCESO del formato efact.
     proceso = fields.Selection(PROCESO_SELECTION, string='Proceso')
+    idtx_rental_company = fields.Boolean(related='company_id.idtx_rental_subscriptions')
 
     def _prepare_invoice(self):
         vals = super()._prepare_invoice()

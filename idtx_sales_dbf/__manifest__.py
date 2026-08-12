@@ -18,7 +18,8 @@ Importa las ventas de SITPRO (FoxPro DBF) a un modelo consultable en Odoo:
 - Cron incremental: reprocesa solo desde la última sincronización (con una
   ventana de solape para capturar ediciones tardías).
 """,
-    'author': 'IDETEX',
+    'author': "Codex Development",
+    'website': "https://www.perucodex.com",
     'depends': ['sale'],
     'data': [
         'security/ir.model.access.csv',

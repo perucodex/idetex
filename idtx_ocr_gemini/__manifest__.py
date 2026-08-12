@@ -25,8 +25,8 @@ Free tier (2026):
 Dependencias Python:
   pip install requests pypdf
 """,
-    'author': "Idetex / Codex Development",
-    'website': "https://www.idetex.pe",
+    'author': "Codex Development",
+    'website': "https://www.perucodex.com",
     'category': 'Accounting',
     'version': '19.0.1.0.0',
     'license': 'LGPL-3',

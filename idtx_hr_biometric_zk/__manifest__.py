@@ -12,7 +12,8 @@ usuario del reloj -> empleado se hace por el DNI (User ID = documento).
 Con las asistencias en Odoo, la planilla peruana calcula automáticamente las
 tardanzas y las horas extra (modelo híbrido).
     """,
-    'author': "Idetex",
+    'author': "Codex Development",
+    'website': "https://www.perucodex.com",
     'category': 'Human Resources/Attendances',
     'version': '19.0.0.0',
     'license': 'LGPL-3',

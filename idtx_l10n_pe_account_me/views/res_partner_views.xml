@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_property_form" model="ir.ui.view">
+        <field name="name">res.partner.property.form.inherit.idtx.account.me</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="account.view_partner_property_form"/>
+        <field name="arch" type="xml">
+            <field name="property_account_receivable_id" position="attributes">
+                <attribute name="string">Cuenta por cobrar (MN)</attribute>
+            </field>
+            <field name="property_account_payable_id" position="attributes">
+                <attribute name="string">Cuenta por pagar (MN)</attribute>
+            </field>
+            <field name="property_account_receivable_id" position="after">
+                <field name="property_account_receivable_me_id" groups="account.group_account_user"/>
+            </field>
+            <field name="property_account_payable_id" position="after">
+                <field name="property_account_payable_me_id" groups="account.group_account_user"/>
+            </field>
+        </field>
+    </record>
+</odoo>

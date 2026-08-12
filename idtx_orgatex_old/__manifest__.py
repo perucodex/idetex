@@ -5,7 +5,8 @@
     'license': 'LGPL-3',
     'installable': False,
     'summary': 'Integración de datos con SQL Server',
-    'author': 'Tu Nombre',
+    'author': "Codex Development",
+    'website': "https://www.perucodex.com",
     'depends': ['base'],
     'data': [
         'views/integration_orgatex_view.xml'

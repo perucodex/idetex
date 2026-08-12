@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Totales de detracción en el pie del form de factura:
+         Total (widget core) → Detracción (negativa, con %) → Cantidad por
+         pagar NETA. En borrador con detracción se oculta la fila core de
+         "Cantidad por pagar" (mostraría el total sin descontar); en
+         publicado se conserva porque refleja los pagos reales. -->
+    <record id="view_move_form_detraction_totals" model="ir.ui.view">
+        <field name="name">account.move.form.detraction.totals</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='amount_residual']" position="before">
+                <!-- La moneda (PEN) debe estar en la vista: sin ella el
+                     widget monetario no puede pintar el símbolo S/. -->
+                <field name="l10n_pe_dt_currency_id" invisible="1"/>
+                <!-- Fila con el mismo estilo que las demás del pie de
+                     totales: etiqueta (sin negrita) + " :" pegada al monto,
+                     todo alineado a la derecha como Cantidad por pagar. -->
+                <div class="d-flex justify-content-end align-items-baseline w-100 gap-3"
+                     colspan="2" invisible="not l10n_pe_dt_amount">
+                    <span class="text-nowrap">
+                        <!-- Necesario para la condición del botón Pagar
+                             Detracción (se pagó → botón oculto). -->
+                        <field name="l10n_pe_dt_paid" invisible="1"/>
+                        <field name="l10n_pe_dt_label" nolabel="1" readonly="1"
+                               class="oe_inline"/> :
+                    </span>
+                    <field name="l10n_pe_dt_amount" nolabel="1" readonly="1"
+                           widget="monetary"
+                           options="{'currency_field': 'l10n_pe_dt_currency_id'}"
+                           class="oe_inline"/>
+                </div>
+            </xpath>
+            <xpath expr="//header" position="inside">
+                <button name="action_register_detraction_payment" type="object"
+                        string="Pagar Detracción"
+                        invisible="not l10n_pe_dt_amount or l10n_pe_dt_paid or state != 'posted' or move_type not in ('out_invoice', 'out_refund')"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Filtro "Detracción": facturas con detracción pendiente de depósito -->
+    <record id="view_account_invoice_filter_detraction" model="ir.ui.view">
+        <field name="name">account.move.select.detraction</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <filter string="Detracción" name="l10n_pe_dt_pending"
+                        domain="[('l10n_pe_edi_operation_type', 'in', ('1001', '1002', '1003', '1004')), ('state', '=', 'posted'), ('l10n_pe_dt_paid', '=', False)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Botón de selección múltiple en la lista de facturas -->
+    <record id="action_pay_detraction_multi" model="ir.actions.server">
+        <field name="name">Pagar Detracción</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_register_detraction_payment()</field>
+    </record>
+
+    <!-- Wizard de pago en modo detracción: diario y moneda fijos, monto de
+         la detracción, memo (constancia del depósito) vacío y obligatorio. -->
+    <record id="view_payment_register_form_detraction" model="ir.ui.view">
+        <field name="name">account.payment.register.form.detraction</field>
+        <field name="model">account.payment.register</field>
+        <field name="inherit_id" ref="account.view_account_payment_register_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='journal_id']" position="before">
+                <field name="l10n_pe_dt_payment" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='journal_id']" position="attributes">
+                <attribute name="readonly">l10n_pe_dt_payment</attribute>
+            </xpath>
+            <!-- Se re-declara la condición core de amount añadiendo el modo
+                 detracción (attributes REEMPLAZA el readonly original). -->
+            <xpath expr="//field[@name='amount']" position="attributes">
+                <attribute name="readonly">l10n_pe_dt_payment or not can_edit_wizard or can_group_payments and not group_payment</attribute>
+            </xpath>
+            <xpath expr="//div[@name='amount_div']/field[@name='currency_id']" position="attributes">
+                <attribute name="readonly">l10n_pe_dt_payment</attribute>
+            </xpath>
+            <xpath expr="//field[@name='communication']" position="attributes">
+                <attribute name="required">l10n_pe_dt_payment</attribute>
+                <attribute name="placeholder">Nro. de constancia del depósito</attribute>
+                <!-- El core oculta el memo con varios clientes (varios lotes);
+                     en detracción SIEMPRE visible: ahí va la constancia. -->
+                <attribute name="invisible">not l10n_pe_dt_payment and (not can_edit_wizard or (can_group_payments and not group_payment))</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Diario de detracciones en Ajustes de Contabilidad -->
+    <record id="res_config_settings_view_form_detraction" model="ir.ui.view">
+        <field name="name">res.config.settings.form.detraction</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='account']" position="inside">
+                <block title="Detracciones" name="idtx_detraction_block">
+                    <setting string="Diario de Detracciones"
+                             help="Diario bancario (Banco de la Nación) donde se registran los depósitos de detracción con el botón Pagar Detracción.">
+                        <field name="l10n_pe_dt_journal_id"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

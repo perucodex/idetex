@@ -20,7 +20,8 @@ el cálculo.
 
 Conecta con `idtx_hr_payroll_pe` mediante el hook `_pe_vacacional_seed_for_period`.
 """,
-    'author': 'IDETEX',
+    'author': "Codex Development",
+    'website': "https://www.perucodex.com",
     'depends': ['idtx_hr_payroll_pe'],
     'data': [
         'security/ir.model.access.csv',

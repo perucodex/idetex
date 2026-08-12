@@ -12,3 +12,6 @@ class SaleOrderTemplate(models.Model):
     # plantilla en una cotización/suscripción, el pedido lo hereda y de ahí
     # pasa a cada factura (fila PROCESO del formato efact).
     proceso = fields.Selection(PROCESO_SELECTION, string='Proceso')
+    # Gate por empresa (las plantillas sin empresa quedan con el campo
+    # oculto hasta asignarles una empresa de alquiler).
+    idtx_rental_company = fields.Boolean(related='company_id.idtx_rental_subscriptions')

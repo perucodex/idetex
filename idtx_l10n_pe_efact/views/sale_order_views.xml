@@ -9,7 +9,8 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='payment_term_id']" position="after">
-                <field name="proceso"/>
+                <field name="idtx_rental_company" invisible="1"/>
+                <field name="proceso" invisible="not idtx_rental_company"/>
             </xpath>
         </field>
     </record>
@@ -22,7 +23,8 @@
         <field name="inherit_id" ref="sale_management.sale_order_template_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='mail_template_id']" position="after">
-                <field name="proceso"/>
+                <field name="idtx_rental_company" invisible="1"/>
+                <field name="proceso" invisible="not idtx_rental_company"/>
             </xpath>
         </field>
     </record>

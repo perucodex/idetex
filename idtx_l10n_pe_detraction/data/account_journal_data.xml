@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Diario de detracciones (DETR) por compañía + asignación en la
+         configuración; idempotente en cada instalación/upgrade. -->
+    <function model="res.company" name="_idtx_setup_detraction_journals" eval="[[]]"/>
+</odoo>

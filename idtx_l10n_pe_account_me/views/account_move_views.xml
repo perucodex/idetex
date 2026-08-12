@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_move_form" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.idtx.account.me</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <!-- "1 PEN = 0.296560 USD" -> "1 USD = 3.372 PEN" (formato SUNAT) -->
+            <xpath expr="//div[@name='currency_conversion_div']" position="replace">
+                <div name="currency_conversion_div"
+                     class="d-flex gap-1 text-muted"
+                     invisible="currency_id == company_currency_id">
+                    <!-- invisible: otros nodos de la vista lo usan en sus modifiers -->
+                    <field name="invoice_currency_rate" invisible="1"/>
+                    <span>1</span>
+                    <field name="currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
+                    <span>=</span>
+                    <field name="idtx_inverse_currency_rate" readonly="state != 'draft'" style="max-width: 21ch;"/>
+                    <field name="company_currency_id" readonly="True" options="{'no_open': True}" class="w-auto"/>
+                    <div invisible="show_journal or state != 'draft' or invoice_currency_rate == expected_currency_rate">
+                        <button type="object"
+                                name="refresh_invoice_currency_rate"
+                                icon="fa-refresh"
+                                title="Reset the currency rate to the default accordingly to the invoice date"
+                                class="btn btn-link p-0"/>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

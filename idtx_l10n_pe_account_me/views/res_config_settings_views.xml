@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.idtx.account.me</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='default_accounts']" position="after">
+                <block title="Cuentas por moneda extranjera (ME)" id="idtx_me_accounts"
+                       help="Divisionarias usadas en facturas cuya moneda no es la de la compañía. El cliente/proveedor puede tener las suyas propias en su ficha (pestaña Contabilidad).">
+                    <setting id="idtx_account_me_defaults" string="Documentos en moneda extranjera" company_dependent="1"
+                             help="Defaults por compañía; se aplican a todo cliente/proveedor sin cuenta ME propia.">
+                        <div class="content-group">
+                            <div class="row mt8">
+                                <label for="account_receivable_me_id" class="col-lg-4 o_light_label"/>
+                                <field name="account_receivable_me_id"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="account_payable_me_id" class="col-lg-4 o_light_label"/>
+                                <field name="account_payable_me_id"/>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

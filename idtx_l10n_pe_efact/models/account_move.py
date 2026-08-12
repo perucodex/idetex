@@ -16,8 +16,11 @@ class AccountMove(models.Model):
     # Tipo de servicio del comprobante (alquileres): se hereda de la
     # suscripción/pedido al facturar y se imprime en la fila PROCESO del
     # formato efact.
-    proceso = fields.Selection(
-        PROCESO_SELECTION, string='Proceso', copy=False)
+    proceso = fields.Selection(PROCESO_SELECTION, string='Proceso', copy=False)
+    # Flag de la empresa (Alquiler / suscripciones): condiciona la
+    # visibilidad de N° O. Compra y Proceso en el form.
+    idtx_rental_company = fields.Boolean(
+        related='company_id.idtx_rental_subscriptions')
 
     @api.depends('state', 'move_type')
     def _compute_display_send_button(self):
