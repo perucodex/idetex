@@ -7,7 +7,17 @@ import json
 
 class SaleOrder(models.Model):
     _inherit = 'sale.order'
-    
+
+    def _idtx_remove_core_sale_menus(self):
+        """Elimina (si aún existen) los menús core de Cotizaciones/Órdenes
+        que este módulo reemplaza. Llamado por data en cada instalación/
+        upgrade; idempotente — un <delete> directo borra el xmlid junto con
+        el menú y en los -u siguientes truena con "External ID not found"."""
+        for xmlid in ('sale.menu_sale_quotations', 'sale.menu_sale_order'):
+            menu = self.env.ref(xmlid, raise_if_not_found=False)
+            if menu:
+                menu.unlink()
+
     lab_dev_ids = fields.Many2many('lab.dev', string='Lab Dev', tracking=True)
     weaving_warning = fields.Text('weaving_warning', compute='_compute_weaving_warning')
     dieying_info = fields.Text('dieying_info', compute='_compute_dieying_info')
