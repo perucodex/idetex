@@ -808,6 +808,21 @@ class MrpBaseProcess(models.Model):
                 return _fit_char(operation_name, 28)
         return _fit_char(self.name, 28)
 
+    def _get_texplus_process_description2(self):
+        """ProDsc2 (char 100): concatenación de las fases de la ruta con
+        ', ' —el formato que graba el propio TEXPLUS/VFP al editar un
+        proceso— excluyendo TEJIDO CRUDO (que tampoco va a PROLIN). Sin
+        esto la descripción larga del form PROCESOS DE PRODUCCION quedaba
+        con las fases de la ruta ANTERIOR aunque PROLIN sí se reemplazara."""
+        self.ensure_one()
+        names = []
+        for line in self.process_ids.sorted(key=lambda l: (l.sequence, l.id)):
+            operation = line.operation_id
+            operation_name = (operation.name or '').strip()
+            if operation_name and not _is_tejido_crudo(operation):
+                names.append(operation_name)
+        return _fit_char(', '.join(names), 100)
+
     def _sync_record_to_texplus(self, cursor, old_code=None):
         self.ensure_one()
         process_code = (self.name or '').strip()
@@ -827,6 +842,7 @@ class MrpBaseProcess(models.Model):
                 'EmprCod': TEXPLUS_EMPRCOD,
                 'ProCod': process_code,
                 'ProDsc': process_description,
+                'ProDsc2': self._get_texplus_process_description2(),
                 'ProUltLin': last_line,
             },
         )
