@@ -21,40 +21,7 @@
     flex-shrink: 0;
     z-index: 3;
 
-    &-left {
-        display: flex;
-        align-items: center;
-        gap: 0.65rem;
-        flex: 1;
-        min-width: 0;
-    }
-
-    &-icon-wrap {
-        width: 36px;
-        height: 36px;
-        background: rgba(255,255,255,0.2);
-        border-radius: 9px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        .fa { font-size: 1.05rem; }
-    }
-
-    &-title {
-        font-size: 1rem;
-        font-weight: 700;
-        line-height: 1.2;
-    }
-
-    &-sub {
-        font-size: 0.64rem;
-        opacity: 0.72;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-    }
-
-    &-stats { display: flex; gap: 0.4rem; flex-shrink: 0; }
+    &-stats { display: flex; gap: 0.4rem; flex-shrink: 0; margin-right: auto; }
 }
 
 .mf-stat {

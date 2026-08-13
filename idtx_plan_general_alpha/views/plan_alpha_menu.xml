@@ -12,80 +12,17 @@
               action="action_plan_alpha_dashboard_client"
               sequence="10"/>
 
-    <menuitem id="menu_plan_alpha_tablas"
-              name="Tablas"
-              parent="menu_plan_alpha_app"
-              sequence="20"/>
-
-    <menuitem id="menu_plan_alpha_tablas_pedidos"
-              name="Pedidos"
-              parent="menu_plan_alpha_tablas"
-              action="action_plan_alpha_pedidos_lista"
-              sequence="21"/>
-
-    <menuitem id="menu_plan_alpha_tablas_partidas"
-              name="Partidas"
-              parent="menu_plan_alpha_tablas"
-              action="action_plan_alpha_partidas_lista"
-              sequence="22"/>
-
-    <menuitem id="menu_plan_alpha_tablas_plan_beta"
-              name="Plan Beta"
-              parent="menu_plan_alpha_tablas"
-              action="action_plan_beta_lista"
-              sequence="23"/>
-
     <menuitem id="menu_plan_alpha_programacion"
-              name="Programacion"
+              name="Máquinas"
               parent="menu_plan_alpha_app"
-              sequence="30"/>
-
-    <menuitem id="menu_plan_alpha_prog_kanban"
-              name="Tablero Produccion"
-              parent="menu_plan_alpha_programacion"
-              action="action_plan_alpha_kanban"
-              sequence="31"/>
-
-    <menuitem id="menu_plan_alpha_prog_ordenes"
-              name="Ordenes MRP"
-              parent="menu_plan_alpha_programacion"
-              action="action_plan_alpha_list"
-              sequence="32"/>
-
-    <menuitem id="menu_plan_alpha_prog_operaciones"
-              name="Operaciones"
-              parent="menu_plan_alpha_programacion"
-              action="action_plan_alpha_workorders"
-              sequence="33"/>
-
-    <menuitem id="menu_plan_alpha_prog_floors"
-              name="Pisos de Máquinas"
-              parent="menu_plan_alpha_programacion"
               action="action_plan_alpha_floors"
-              sequence="40"/>
+              sequence="30"/>
 
     <menuitem id="menu_plan_alpha_planning"
               name="Planning"
               parent="menu_plan_alpha_app"
-              sequence="40"/>
-
-    <menuitem id="menu_plan_alpha_plan_calendario"
-              name="Calendario"
-              parent="menu_plan_alpha_planning"
-              action="action_plan_alpha_calendar"
-              sequence="41"/>
-
-    <menuitem id="menu_plan_alpha_plan_pedidos"
-              name="Pedidos de Venta"
-              parent="menu_plan_alpha_planning"
-              action="action_plan_alpha_sales"
-              sequence="42"/>
-
-    <menuitem id="menu_plan_alpha_plan_planner"
-              name="Planner"
-              parent="menu_plan_alpha_planning"
               action="action_plan_alpha_planner"
-              sequence="43"/>
+              sequence="40"/>
 
     <menuitem id="menu_plan_alpha_config"
               name="Configuracion"

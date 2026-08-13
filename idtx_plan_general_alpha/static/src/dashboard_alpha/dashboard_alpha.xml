@@ -24,24 +24,6 @@
         <!-- ── Contenido ────────────────────────────────────────────────── -->
         <t t-else="">
 
-            <!-- Header -->
-            <header class="pad__header">
-                <div class="pad__header-left">
-                    <div class="pad__header-icon">
-                        <i class="fa fa-bar-chart"/>
-                    </div>
-                    <div>
-                        <h1 class="pad__header-title">Dashboard de Planeamiento</h1>
-                        <p class="pad__header-sub">Producción Textil · IDETEX S.A.C.</p>
-                    </div>
-                </div>
-                <div class="pad__header-right">
-                    <span class="pad__badge pad__badge--live">
-                        <i class="fa fa-circle"/> En vivo
-                    </span>
-                </div>
-            </header>
-
             <!-- ── KPIs ─────────────────────────────────────────────────── -->
             <section class="pad__kpis">
                 <t t-foreach="kpis" t-as="k" t-key="k.lbl">

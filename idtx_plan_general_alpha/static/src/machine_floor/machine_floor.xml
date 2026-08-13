@@ -6,15 +6,6 @@
 
     <!-- ── HEADER ──────────────────────────────────────────────────────────── -->
     <div class="mf-header" t-att-style="headerStyle">
-        <div class="mf-header-left">
-            <div class="mf-header-icon-wrap">
-                <i class="fa fa-industry"/>
-            </div>
-            <div class="mf-header-info">
-                <div class="mf-header-title">Pisos de Producción</div>
-                <div class="mf-header-sub" t-esc="state.activeWc or 'Cargando…'"/>
-            </div>
-        </div>
         <div class="mf-header-stats" t-if="!state.loading and !state.wcLoading">
             <div class="mf-stat mf-stat--operativa">
                 <span class="mf-stat-num" t-esc="stats.operativa"/>

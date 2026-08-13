@@ -78,54 +78,6 @@
     }
     &__spinner { font-size: 30px; color: #6366f1; }
 
-    // ── Header (card-style) ───────────────────────────────────────────────
-    &__header {
-        display: flex; align-items: center; justify-content: space-between;
-        background: var(--pd-card);
-        border: 1px solid var(--pd-border);
-        border-radius: 16px;
-        padding: 14px 20px;
-        margin-bottom: 20px;
-        box-shadow: var(--pd-sh-card);
-        transition: background 0.25s ease, border-color 0.25s ease;
-        animation: tremor-in 0.3s ease-out both;
-
-        &-left { display: flex; align-items: center; gap: 12px; }
-
-        &-icon {
-            width: 42px; height: 42px; border-radius: 12px;
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: 16px;
-            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.32);
-            flex-shrink: 0;
-        }
-
-        &-title {
-            font-size: 17px; font-weight: 700;
-            color: var(--pd-text); margin: 0; line-height: 1.2;
-            transition: color 0.25s;
-        }
-        &-sub { font-size: 12px; color: var(--pd-muted); margin: 0; transition: color 0.25s; }
-    }
-
-    &__badge {
-        display: inline-flex; align-items: center; gap: 5px;
-        padding: 4px 12px; border-radius: 20px;
-        font-size: 12px; font-weight: 500;
-        transition: background 0.25s, color 0.25s;
-
-        &--live {
-            background: var(--pd-chip-live-bg);
-            color: var(--pd-chip-live-fg);
-            .fa {
-                font-size: 7px;
-                color: var(--pd-chip-live-dot);
-                animation: pulse-dot 2s ease-in-out infinite;
-            }
-        }
-    }
-
     // ── KPIs ──────────────────────────────────────────────────────────────
     &__kpis {
         display: grid;
