@@ -42,25 +42,34 @@ class AccountMove(models.Model):
         currency_field='currency_id',
         help='Lo que queda por cobrar de la factura descontando la '
              'detracción pendiente de depósito (en la moneda de la factura).')
-    # La detracción está pagada cuando la factura tiene conciliado un pago
-    # del DIARIO DE DETRACCIONES de la compañía (depósito Banco de la Nación)
-    # o cuando ya se cobró COMPLETA (el cliente pagó el total sin detraer:
-    # se hace AUTODETRACCIÓN, no queda nada pendiente en la factura).
+    # DEPÓSITO hecho: hay un pago del DIARIO DE DETRACCIONES enlazado a la
+    # factura (depósito del cliente vía Pagar Detracción) o se registró la
+    # constancia de AUTODETRACCIÓN (la empresa depositó al Banco de la
+    # Nación tras cobrar la factura completa).
+    l10n_pe_dt_deposited = fields.Boolean(
+        'Detracción Depositada', compute='_compute_l10n_pe_dt_deposited',
+        search='_search_l10n_pe_dt_deposited')
+    # Nro. de constancia del depósito de AUTODETRACCIÓN (el depósito en sí
+    # se registra en contabilidad como transferencia banco → Banco de la
+    # Nación, no toca la factura; aquí solo se deja la referencia).
+    l10n_pe_dt_self_ref = fields.Char(
+        'Constancia Autodetracción', copy=False, tracking=True)
+    # "Pagada" para la UI (botón Pagar Detracción): depositada, o cobrada al
+    # 100% (el depósito pasa a ser autodetracción y el wizard ya no aplica).
     l10n_pe_dt_paid = fields.Boolean(
         'Detracción Pagada', compute='_compute_l10n_pe_dt_paid',
         search='_search_l10n_pe_dt_paid')
 
     @api.depends('line_ids.matched_debit_ids', 'line_ids.matched_credit_ids',
-                 'matched_payment_ids.state', 'payment_state',
+                 'matched_payment_ids.state', 'l10n_pe_dt_self_ref',
                  'company_id.l10n_pe_dt_journal_id')
-    def _compute_l10n_pe_dt_paid(self):
+    def _compute_l10n_pe_dt_deposited(self):
         for move in self:
             journal = move.company_id.l10n_pe_dt_journal_id
-            paid = False
+            deposited = False
             if move.state == 'posted' and move.is_sale_document():
-                if move.payment_state in ('in_payment', 'paid', 'reversed'):
-                    # Cobrada al 100%: la detracción se autodetrae.
-                    paid = True
+                if move.l10n_pe_dt_self_ref:
+                    deposited = True
                 elif journal:
                     # matched_payment_ids cubre además pagos sin asiento
                     # (métodos de pago sin cuenta configurada, flujo ligero
@@ -68,35 +77,55 @@ class AccountMove(models.Model):
                     payments = move._get_reconciled_payments() | \
                         move.matched_payment_ids.filtered(
                             lambda p: p.state in ('in_process', 'paid'))
-                    paid = any(p.journal_id == journal for p in payments)
-            move.l10n_pe_dt_paid = paid
+                    deposited = any(p.journal_id == journal for p in payments)
+            move.l10n_pe_dt_deposited = deposited
 
-    def _search_l10n_pe_dt_paid(self, operator, value):
-        """Versión buscable del compute (campo sin store): pagada = factura
-        de venta registrada Y (cobrada al 100% O con un pago del diario de
-        detracciones de alguna compañía enlazado en matched_payment_ids —
-        el wizard siempre crea ese enlace)."""
+    @api.depends('l10n_pe_dt_deposited', 'payment_state')
+    def _compute_l10n_pe_dt_paid(self):
+        for move in self:
+            move.l10n_pe_dt_paid = move.l10n_pe_dt_deposited or (
+                move.state == 'posted' and move.is_sale_document()
+                and move.payment_state in ('in_payment', 'paid', 'reversed'))
+
+    @api.model
+    def _l10n_pe_dt_search_wants_true(self, operator, value):
         if operator in ('in', 'not in') and isinstance(value, (list, tuple, set)):
             vals = set(value)
             if vals == {True}:
-                want_paid = operator == 'in'
-            elif vals == {False}:
-                want_paid = operator == 'not in'
-            else:
-                raise NotImplementedError()
-        elif operator in ('=', '!='):
-            want_paid = (operator == '=') == bool(value)
-        else:
+                return operator == 'in'
+            if vals == {False}:
+                return operator == 'not in'
             raise NotImplementedError()
+        if operator in ('=', '!='):
+            return (operator == '=') == bool(value)
+        raise NotImplementedError()
+
+    @api.model
+    def _l10n_pe_dt_deposited_inner_domain(self):
+        """Depósito de detracción enlazado: pago del diario de detracciones
+        de alguna compañía en matched_payment_ids (el wizard siempre crea el
+        enlace) o constancia de autodetracción registrada."""
         dt_journals = self.env['res.company'].sudo().search(
             []).l10n_pe_dt_journal_id
+        return (Domain('matched_payment_ids', 'any',
+                       Domain('state', 'in', ('in_process', 'paid'))
+                       & Domain('journal_id', 'in', dt_journals.ids))
+                | Domain('l10n_pe_dt_self_ref', '!=', False))
+
+    def _search_l10n_pe_dt_deposited(self, operator, value):
+        want = self._l10n_pe_dt_search_wants_true(operator, value)
+        deposited = Domain('state', '=', 'posted') \
+            & Domain('move_type', 'in', ('out_invoice', 'out_refund')) \
+            & self._l10n_pe_dt_deposited_inner_domain()
+        return deposited if want else ~deposited
+
+    def _search_l10n_pe_dt_paid(self, operator, value):
+        want = self._l10n_pe_dt_search_wants_true(operator, value)
         paid = Domain('state', '=', 'posted') \
             & Domain('move_type', 'in', ('out_invoice', 'out_refund')) \
             & (Domain('payment_state', 'in', ('in_payment', 'paid', 'reversed'))
-               | Domain('matched_payment_ids', 'any',
-                        Domain('state', 'in', ('in_process', 'paid'))
-                        & Domain('journal_id', 'in', dt_journals.ids)))
-        return paid if want_paid else ~paid
+               | self._l10n_pe_dt_deposited_inner_domain())
+        return paid if want else ~paid
 
     def action_register_detraction_payment(self):
         """Abre el wizard de pago FORZADO al modo detracción: diario de

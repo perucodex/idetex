@@ -31,6 +31,18 @@
                            options="{'currency_field': 'l10n_pe_dt_currency_id'}"
                            class="oe_inline"/>
                 </div>
+                <!-- Autodetracción: la factura se cobró completa y el
+                     depósito al Banco de la Nación lo hace la empresa; aquí
+                     se registra la constancia (el asiento del depósito es
+                     una transferencia bancaria, no toca la factura). -->
+                <div class="d-flex justify-content-end align-items-baseline w-100 gap-3"
+                     colspan="2"
+                     invisible="not l10n_pe_dt_amount or payment_state not in ('in_payment', 'paid') or (l10n_pe_dt_deposited and not l10n_pe_dt_self_ref)">
+                    <field name="l10n_pe_dt_deposited" invisible="1"/>
+                    <span class="text-nowrap">Constancia autodetracción :</span>
+                    <field name="l10n_pe_dt_self_ref" nolabel="1"
+                           placeholder="Nro. de constancia"/>
+                </div>
             </xpath>
             <xpath expr="//header" position="inside">
                 <button name="action_register_detraction_payment" type="object"
@@ -50,6 +62,11 @@
                 <separator/>
                 <filter string="Detracción" name="l10n_pe_dt_pending"
                         domain="[('l10n_pe_edi_operation_type', 'in', ('1001', '1002', '1003', '1004')), ('state', '=', 'posted'), ('l10n_pe_dt_paid', '=', False)]"/>
+                <!-- Cobradas al 100% por el cliente: la empresa debe hacer el
+                     depósito al Banco de la Nación (autodetracción). Sale de
+                     la lista al registrar la constancia en la factura. -->
+                <filter string="Autodetracción" name="l10n_pe_dt_self_pending"
+                        domain="[('l10n_pe_edi_operation_type', 'in', ('1001', '1002', '1003', '1004')), ('state', '=', 'posted'), ('payment_state', 'in', ('in_payment', 'paid')), ('l10n_pe_dt_deposited', '=', False)]"/>
             </xpath>
         </field>
     </record>

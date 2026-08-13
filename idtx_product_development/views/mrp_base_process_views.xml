@@ -56,6 +56,8 @@
             <field name="arch" type="xml">
                 <list string="Mrp Base Process" multi_edit="1">
                     <field name="name"/>
+                    <field name="product_count" string="Productos" sum="Total"
+                           optional="show"/>
                 </list>
             </field>
         </record>

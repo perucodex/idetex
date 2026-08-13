@@ -129,7 +129,11 @@ class MrpBaseProcess(models.Model):
         'product.template', string='Products',
         compute='_compute_products', search='_search_products',
     )
-    product_count = fields.Integer(compute='_compute_products')
+    # Almacenado para poder mostrarlo como columna con TOTAL (sum) en la
+    # lista: los agregados del pie requieren campo con columna en BD.
+    product_count = fields.Integer(
+        'Productos', compute='_compute_product_count', store=True,
+        aggregator='sum')
     product_analysis_ids = fields.One2many('product.analysis', 'mrp_base_process_id', string='Product Analyses')
     operation_ids = fields.Many2many(
         'mrp.routing.workcenter.operation', string='Operaciones',
@@ -290,11 +294,9 @@ class MrpBaseProcess(models.Model):
                 return candidate
         return '%s (Copia)' % base_name
     
-    @api.depends('product_analysis_ids.product_id')
-    def _compute_products(self):
+    def _products_by_process(self):
         # Resolve the products via the analyses that reference this base process.
-        Analysis = self.env['product.analysis']
-        analyses = Analysis.search([
+        analyses = self.env['product.analysis'].search([
             ('mrp_base_process_id', 'in', self.ids),
             ('product_id', '!=', False),
         ])
@@ -302,10 +304,19 @@ class MrpBaseProcess(models.Model):
         for a in analyses:
             by_process.setdefault(a.mrp_base_process_id.id, self.env['product.template'])
             by_process[a.mrp_base_process_id.id] |= a.product_id
+        return by_process
+
+    @api.depends('product_analysis_ids.product_id')
+    def _compute_products(self):
+        by_process = self._products_by_process()
         for rec in self:
-            products = by_process.get(rec.id, self.env['product.template'])
-            rec.product_ids = products
-            rec.product_count = len(products)
+            rec.product_ids = by_process.get(rec.id, self.env['product.template'])
+
+    @api.depends('product_analysis_ids.product_id')
+    def _compute_product_count(self):
+        by_process = self._products_by_process()
+        for rec in self:
+            rec.product_count = len(by_process.get(rec.id, ()))
 
     def _search_products(self, operator, value):
         Analysis = self.env['product.analysis']
