@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Grupos SIN privilege: aparecen como checks en "Permisos adicionales"
+         del formulario de usuario (como "Aprobador administrativo de órdenes
+         de venta"). Solo quien tiene el check ve el botón de aprobar y puede
+         ejecutar la acción (guard también en python). -->
+    <record id="group_quality_approve_reposition" model="res.groups">
+        <field name="name">Aprobar reposiciones (alertas de calidad)</field>
+        <field name="comment">Puede aprobar alertas de calidad de tipo Reposición: al aprobar se crea la OF de reposición.</field>
+    </record>
+    <record id="group_quality_approve_reprocess" model="res.groups">
+        <field name="name">Aprobar reprocesos (alertas de calidad)</field>
+        <field name="comment">Puede aprobar alertas de calidad de tipo Reproceso: al aprobar se reabren la operación de la OT y las posteriores ya terminadas de la partida.</field>
+    </record>
+</odoo>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Botón inteligente Partidas en la sub-receta -->
+    <record id="color_recipe_lot_form_view_shop" model="ir.ui.view">
+        <field name="name">color.recipe.lot.form.shop</field>
+        <field name="model">color.recipe.lot</field>
+        <field name="inherit_id" ref="idtx_laboratory.color_recipe_lot_form_view"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_view_batches" type="object"
+                        class="oe_stat_button" icon="fa-cubes"
+                        invisible="batch_count == 0">
+                    <field name="batch_count" widget="statinfo"
+                           string="Partidas"/>
+                </button>
+            </div>
+        </field>
+    </record>
+
+    <!-- Búsqueda de PARTIDAS: candado de laboratorio, teñidos registrados
+         y agrupaciones -->
+    <record id="mrp_workorder_batch_view_search_shop" model="ir.ui.view">
+        <field name="name">mrp.workorder.batch.view.search.shop</field>
+        <field name="model">mrp.workorder.batch</field>
+        <field name="inherit_id" ref="idtx_mrp.mrp_workorder_batch_view_search"/>
+        <field name="arch" type="xml">
+            <field name="mrwo_id" position="after">
+                <field name="recipe_lot_id"/>
+                <field name="color_recipe_id"/>
+                <field name="color_name"/>
+                <field name="partner_ids"/>
+            </field>
+            <filter name="unbuild" position="after">
+                <separator/>
+                <!-- Sub-receta bloqueada por laboratorio (candado) -->
+                <filter name="filter_recipe_locked" string="Bloqueadas"
+                        domain="[('recipe_lot_locked', '=', True)]"/>
+                <filter name="filter_with_registry" string="Con Registro de Operaciones"
+                        domain="[('registry_ids', '!=', False)]"/>
+                <separator/>
+                <filter name="filter_batch_date" string="Fecha de Partida"
+                        date="batch_date"/>
+                <group>
+                    <filter name="group_state" string="Estado"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_color_recipe" string="Receta de Color"
+                            context="{'group_by': 'color_recipe_id'}"/>
+                    <filter name="group_recipe_lot" string="Sub-receta"
+                            context="{'group_by': 'recipe_lot_id'}"/>
+                    <filter name="group_partner" string="Cliente"
+                            context="{'group_by': 'partner_ids'}"/>
+                    <filter name="group_batch_date" string="Mes de Partida"
+                            context="{'group_by': 'batch_date:month'}"/>
+                </group>
+            </filter>
+        </field>
+    </record>
+
+    <!-- Filtro por sub-recetas ya usadas en teñidos registrados -->
+    <record id="color_recipe_lot_search_view_shop" model="ir.ui.view">
+        <field name="name">color.recipe.lot.search.shop</field>
+        <field name="model">color.recipe.lot</field>
+        <field name="inherit_id" ref="idtx_laboratory.color_recipe_lot_search_view"/>
+        <field name="arch" type="xml">
+            <filter name="filter_obsolete" position="after">
+                <separator/>
+                <filter name="filter_with_registry" string="Con Registro de Operaciones"
+                        domain="[('has_batch_registry', '=', True)]"/>
+            </filter>
+        </field>
+    </record>
+</odoo>
