@@ -8,6 +8,11 @@
         <field name="arch" type="xml">
             <field name="reason_id" position="after">
                 <field name="tipo" optional="show"/>
+                <field name="batch_id" optional="show"/>
+                <field name="reposition_production_id" optional="show"/>
+                <field name="state" optional="show" widget="badge"
+                       decoration-success="state == 'approved'"
+                       decoration-warning="state == 'draft'"/>
             </field>
         </field>
     </record>
@@ -17,6 +22,21 @@
         <field name="model">quality.alert</field>
         <field name="inherit_id" ref="quality_control.quality_alert_view_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <!-- Solo el grupo correspondiente (Permisos adicionales) ve
+                     el botón; el guard de python vuelve a validar. -->
+                <button name="action_approve" type="object"
+                        string="Aprobar Reposición" class="oe_highlight"
+                        groups="idtx_mrp_shop.group_quality_approve_reposition"
+                        invisible="state != 'draft' or tipo != 'reposicion' or not batch_id"
+                        confirm="Al aprobar se creará la OF de reposición. ¿Continuar?"/>
+                <button name="action_approve" type="object"
+                        string="Aprobar Reproceso" class="oe_highlight"
+                        groups="idtx_mrp_shop.group_quality_approve_reprocess"
+                        invisible="state != 'draft' or tipo != 'reproceso' or not batch_id"
+                        confirm="Al aprobar se reabrirán la operación de la OT y las posteriores ya terminadas de la partida. ¿Continuar?"/>
+                <field name="state" widget="statusbar"/>
+            </xpath>
             <field name="reason_id" position="attributes">
                 <attribute name="required">1</attribute>
             </field>
@@ -36,6 +56,8 @@
                 <field name="reposition_qty"
                        invisible="tipo != 'reposicion' or not available_batch_ids"
                        required="tipo == 'reposicion' and available_batch_ids and batch_id"/>
+                <field name="reposition_production_id"
+                       invisible="not reposition_production_id"/>
             </field>
         </field>
     </record>

@@ -212,6 +212,19 @@ class ColorRecipeLot(models.Model):
         return records
     validated_date = fields.Date('Fecha Validación', readonly=True, copy=False)
     validated_by_id = fields.Many2one('res.users', 'Validada por', readonly=True, copy=False)
+    # Relacionados ALMACENADOS de la receta madre: el menú "Recetas
+    # Producción" lista las sub-recetas sueltas y necesita filtrar/agrupar
+    # por cliente/color/compañía (read_group requiere columna en BD).
+    partner_id = fields.Many2one(
+        related='color_recipe_id.partner_id', string='Cliente', store=True)
+    color_name = fields.Char(
+        related='color_recipe_id.color_name', string='Nombre de Color',
+        store=True)
+    recipe_color_code = fields.Char(
+        related='color_recipe_id.recipe_color_code',
+        string='Código de Color', store=True)
+    company_id = fields.Many2one(
+        related='color_recipe_id.company_id', string='Compañía', store=True)
     # Procesos propios de la combinación: los factores pueden variar según
     # el hilado. Se copian de la receta madre al abrir la sub-receta por
     # primera vez (copia perezosa) y ahí se ajustan.

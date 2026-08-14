@@ -42,7 +42,12 @@ class SaleOrderLine(models.Model):
     )
     # Campo para guardar los precios
     price_items = fields.Text(string='Price Items', default='{}')
-    production_id = fields.Many2one('mrp.production', string='Production', copy=False)
+    # Antes era Many2one y la reposición "reemplazaba" la OF de la línea.
+    # Ahora la línea lista TODAS sus OFs (la original y sus reposiciones):
+    # inverso de mrp.production.sale_order_line_id.
+    production_ids = fields.One2many(
+        'mrp.production', 'sale_order_line_id',
+        string='Órdenes de Fabricación', copy=False)
     parent_is_quote = fields.Boolean(related='order_id.is_quote')
     parent_is_company_produce = fields.Boolean(related='order_id.is_company_produce')
     has_approved_lab_line = fields.Boolean(
@@ -175,7 +180,9 @@ class SaleOrderLine(models.Model):
             rec.operation_ids = srec.bom_id.operation_ids.filtered(lambda o: o.operation_id.unit_price > 0 or o.operation_id.type_prices == 'col' and sum(o.operation_id.product_color_price_ids.mapped('unit_price')) > 0 or o.operation_id.type_prices == 'col' and o.operation_id.per_title and sum(o.operation_id.product_color_price_ids.color_title_price_ids.mapped('unit_price')) > 0 or o.operation_id.operation_type == 'weaving').sorted(key=lambda r: r.sequence)
             rec.weaving_loss = srec.bom_id.technical_sheet_id.scrap or 0.01
             rec.production_loss = srec.bom_id.technical_sheet_id.prod_scrap or 0.09
-            rec.production_id.bom_id = rec.bom_id
+            for prd in rec.production_ids.filtered(
+                    lambda p: p.state not in ('done', 'cancel')):
+                prd.bom_id = rec.bom_id
 
     def js_compute_price_unit(self):
         for line in self:
@@ -254,11 +261,13 @@ class SaleOrderLine(models.Model):
             if rec.lab_dev_line_id and not rec.color_name:
                 rec.color_name = rec.lab_dev_line_id.color_name
             # Actualiza las ordenes de producción relacionadas con esta línea de venta para que tengan el lab_dev_line_id asignado
-            if rec.lab_dev_line_id and rec.lab_dev_line_id.state == 'approved' and rec.production_id:
-                if any(wo.state == 'progress' for wo in rec.production_id.workorder_ids.filtered(lambda wo: wo.mrwo_id.use_lab_recipe)):
+            prods = rec.production_ids.filtered(lambda p: p.state != 'cancel')
+            if rec.lab_dev_line_id and rec.lab_dev_line_id.state == 'approved' and prods:
+                if any(wo.state == 'progress' for wo in prods.workorder_ids.filtered(lambda wo: wo.mrwo_id.use_lab_recipe)):
                     raise UserError(_('Cannot change recipe because there are workorders in progress using the lab recipe.'))
-                rec.production_id.color_recipe_id = rec.lab_dev_line_id.color_recipe_ids.filtered(
-                    lambda cr: cr.state == 'approved' and rec.production_id.product_tmpl_id in cr.product_ids)[:1]
+                for prd in prods:
+                    prd.color_recipe_id = rec.lab_dev_line_id.color_recipe_ids.filtered(
+                        lambda cr: cr.state == 'approved' and prd.product_tmpl_id in cr.product_ids)[:1]
 
     @api.onchange('product_id')
     def _onchange_product_id(self):
@@ -801,8 +810,10 @@ class SaleOrderLine(models.Model):
     
     def write(self, vals):
         for rec in self:
-            if 'product_uom_qty' in vals and rec.production_id and rec.production_id.state == 'draft':
-                rec.production_id.product_qty = vals.get('product_uom_qty')
+            if 'product_uom_qty' in vals:
+                for prd in rec.production_ids.filtered(
+                        lambda p: p.state == 'draft'):
+                    prd.product_qty = vals.get('product_uom_qty')
         return super().write(vals)
     
     def action_open_size_qty_wizard(self):

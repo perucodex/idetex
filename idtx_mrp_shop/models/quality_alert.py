@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import _, api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import AccessError, UserError, ValidationError
 from markupsafe import Markup
 
 
@@ -36,6 +36,18 @@ class QualityAlert(models.Model):
         'Cantidad a Reponer',
         help='Kilos a producir en la OF de reposición. Por defecto, los kilos '
              'de la partida; editable.')
+    # Aprobación: el reproceso/reposición ya NO se dispara al crear la
+    # alerta sino al APROBARLA (botón visible solo para los grupos
+    # "Aprobar reposiciones/reprocesos" de Permisos adicionales).
+    state = fields.Selection([
+        ('draft', 'Borrador'),
+        ('approved', 'Aprobada'),
+    ], string='Estado', default='draft', required=True, copy=False,
+        tracking=True)
+    reposition_production_id = fields.Many2one(
+        'mrp.production', string='OF de Reposición', readonly=True,
+        copy=False,
+        help='Orden de fabricación creada al aprobar la reposición.')
 
     @api.depends('workorder_id', 'workorder_id.batch_ids')
     def _compute_available_batch_ids(self):
@@ -76,21 +88,57 @@ class QualityAlert(models.Model):
     def create(self, vals_list):
         alerts = super().create(vals_list)
         # skip_batch_alert_trigger: alertas INFORMATIVAS creadas por código
-        # (p.ej. reposición de CUELLOS desde collar.quality.check, que lleva
-        # la OT de control de calidad): no deben disparar reproceso ni la OF
-        # de reposición automática por kilos.
+        # (p.ej. reposición de CUELLOS desde collar.quality.check, cuya OF
+        # la crea la propia pantalla): nacen APROBADAS para que no muestren
+        # el botón de aprobar ni puedan re-disparar nada.
         if self.env.context.get('skip_batch_alert_trigger'):
-            return alerts
+            alerts.write({'state': 'approved'})
+        # El reproceso/reposición ya no se dispara aquí: requiere aprobación
+        # explícita (action_approve) de un usuario autorizado.
+        return alerts
+
+    _APPROVE_GROUPS = {
+        'reposicion': 'idtx_mrp_shop.group_quality_approve_reposition',
+        'reproceso': 'idtx_mrp_shop.group_quality_approve_reprocess',
+    }
+
+    def action_approve(self):
+        """Aprueba la alerta y RECIÉN ahí ejecuta la acción sobre la partida:
+        reposición → crea la OF de reposición; reproceso → reabre la
+        operación de la OT y las posteriores ya terminadas."""
         batch_ops = self.env['mrp.workorder'].BATCH_OPERATION_TYPES
-        for alert in alerts:
+        for alert in self:
+            if alert.state != 'draft':
+                raise UserError(_(
+                    'La alerta %s ya está aprobada.') % (alert.name or ''))
+            group = self._APPROVE_GROUPS.get(alert.tipo)
+            if not group or not self.env.user.has_group(group):
+                raise AccessError(_(
+                    'No tienes el permiso "Aprobar %(tipo)s (alertas de '
+                    'calidad)" (Permisos adicionales del usuario).',
+                    tipo='reposiciones' if alert.tipo == 'reposicion'
+                    else 'reprocesos'))
             wo = alert.workorder_id
             if not (alert.batch_id and wo and wo.operation_type in batch_ops):
-                continue
-            if alert.tipo == 'reproceso':
+                raise UserError(_(
+                    'La alerta %s no tiene partida y OT de una operación de '
+                    'partida (teñido/acabado/estampado/calidad): no hay nada '
+                    'que aprobar.') % (alert.name or ''))
+            if alert.tipo == 'reposicion':
+                new = alert._trigger_reposition()
+                alert.reposition_production_id = new
+                body = _(
+                    'Reposición APROBADA por %(user)s: se creó la OF '
+                    '%(prod)s.', user=self.env.user.name, prod=new.name)
+            else:
                 alert._trigger_reprocess()
-            elif alert.tipo == 'reposicion':
-                alert._trigger_reposition()
-        return alerts
+                body = _(
+                    'Reproceso APROBADO por %(user)s: se reabrieron las '
+                    'operaciones de la partida %(batch)s.',
+                    user=self.env.user.name, batch=alert.batch_id.name)
+            alert.state = 'approved'
+            alert.message_post(body=Markup('<p>%s</p>') % body)
+        return True
 
     def _trigger_reprocess(self):
         """Reabre la operación de la OT y las posteriores ya terminadas de la

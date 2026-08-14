@@ -249,7 +249,8 @@ class SaleOrder(models.Model):
                         'production_type': rec.sale_type,
                         'company_id': production_company.id,
                     })
-                    line.sudo().production_id = prd.id
+                    # La línea "ve" la OF por el o2m inverso de
+                    # sale_order_line_id (ya seteado arriba).
                     self.sudo().production_ids = [(4, prd.id)]
                     # if prd.color_recipe_id and production_state and production_state != 'Sample':
                     if prd.color_recipe_id:

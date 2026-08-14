@@ -36,7 +36,8 @@ class MrpProduction(models.Model):
         - production_type = 'reposicion', en Borrador.
         - arranca desde la primera OT (copy recrea las OTs frescas).
         - guarda la OF de origen.
-        - la línea de venta apunta a la NUEVA OF; la anterior sigue su curso.
+        - la línea de venta la lista junto a la original (production_ids,
+          inverso de sale_order_line_id).
         - el pedido suma la nueva OF al botón inteligente (2 -> 3).
         """
         self.ensure_one()
@@ -55,9 +56,8 @@ class MrpProduction(models.Model):
             'company_id': self.company_id.id,
             'origin': self.name,
         })
-        if line:
-            # La línea "lleva" la OF: se reemplaza por la reposición.
-            line.sudo().production_id = new.id
+        # La línea la ve automáticamente por production_ids (inverso de
+        # sale_order_line_id): la original y la reposición conviven.
         if self.order_id:
             self.order_id.sudo().production_ids = [(4, new.id)]
         body = _(

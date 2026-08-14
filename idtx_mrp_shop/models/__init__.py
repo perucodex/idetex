@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from . import batch_registry
+from . import color_recipe_lot
 from . import quality_alert
 from . import collar_quality_check
 from . import mrp_production

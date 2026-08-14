@@ -116,12 +116,17 @@
             <field name="model">color.recipe.lot</field>
             <field name="arch" type="xml">
                 <list decoration-success="state == 'validated'" decoration-warning="state == 'pending'" decoration-muted="state == 'obsolete'">
-                    <field name="color_recipe_id" optional="hide"/>
+                    <field name="color_recipe_id" optional="show"/>
+                    <field name="color_name" optional="show"/>
+                    <field name="recipe_color_code" optional="hide"/>
+                    <field name="partner_id" optional="show"/>
                     <field name="production_id"/>
                     <field name="workorder_option_id"/>
                     <field name="lot_ids" widget="many2many_tags"/>
                     <field name="version"/>
                     <field name="validated_date" optional="show"/>
+                    <field name="validated_by_id" optional="hide"/>
+                    <field name="company_id" optional="hide" groups="base.group_multi_company"/>
                     <field name="state" widget="badge" decoration-success="state == 'validated'" decoration-warning="state == 'pending'"/>
                 </list>
             </field>
@@ -137,9 +142,31 @@
                     <field name="lot_ids"/>
                     <field name="lot_summary"/>
                     <field name="color_recipe_id"/>
+                    <field name="color_name"/>
+                    <field name="recipe_color_code"/>
+                    <field name="partner_id"/>
                     <filter name="filter_validated" string="Validadas" domain="[('state', '=', 'validated')]"/>
                     <filter name="filter_pending" string="Pendientes" domain="[('state', '=', 'pending')]"/>
                     <filter name="filter_obsolete" string="Obsoletas" domain="[('state', '=', 'obsolete')]"/>
+                    <separator/>
+                    <filter name="filter_validated_date" string="Fecha Validación"
+                            date="validated_date"/>
+                    <group>
+                        <filter name="group_state" string="Estado"
+                                context="{'group_by': 'state'}"/>
+                        <filter name="group_recipe" string="Receta de Color"
+                                context="{'group_by': 'color_recipe_id'}"/>
+                        <filter name="group_partner" string="Cliente"
+                                context="{'group_by': 'partner_id'}"/>
+                        <filter name="group_color" string="Color"
+                                context="{'group_by': 'color_name'}"/>
+                        <filter name="group_production" string="Orden de Fabricación"
+                                context="{'group_by': 'production_id'}"/>
+                        <filter name="group_validated_date" string="Mes de Validación"
+                                context="{'group_by': 'validated_date:month'}"/>
+                        <filter name="group_validated_by" string="Validada por"
+                                context="{'group_by': 'validated_by_id'}"/>
+                    </group>
                 </search>
             </field>
         </record>
@@ -155,6 +182,9 @@
                         <field name="state" widget="statusbar"/>
                     </header>
                     <sheet>
+                        <!-- button_box: idtx_mrp_shop agrega aquí el botón de
+                             Partidas (el campo recipe_lot_id vive allá). -->
+                        <div class="oe_button_box" name="button_box"/>
                         <group>
                             <group>
                                 <field name="color_recipe_id" readonly="1" force_save="1"/>
@@ -337,6 +367,22 @@
             <field name="help" type="html">
               <p class="o_view_nocontent_smiling_face">
                 Create a new color recipe
+              </p>
+            </field>
+        </record>
+
+        <!-- Menú Recetas Producción: las sub-recetas por lote sueltas, con
+             el filtro Validadas activo por defecto (quitable). -->
+        <record id="color_recipe_lot_action" model="ir.actions.act_window">
+            <field name="name">Recetas Producción</field>
+            <field name="res_model">color.recipe.lot</field>
+            <field name="view_mode">list,form</field>
+            <field name="view_id" ref="color_recipe_lot_list_view"/>
+            <field name="search_view_id" ref="color_recipe_lot_search_view"/>
+            <field name="context">{'search_default_filter_validated': 1}</field>
+            <field name="help" type="html">
+              <p class="o_view_nocontent_smiling_face">
+                Aún no hay recetas de producción (sub-recetas por lote)
               </p>
             </field>
         </record>

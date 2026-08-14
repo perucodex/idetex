@@ -32,6 +32,7 @@ luego armar las partidas
         'data/hr_department.xml',
         'data/quality_reason_data.xml',
         'data/ir_sequence.xml',
+        'security/quality_alert_groups.xml',
         'security/ir.model.access.csv',
         'report/report_batch_dye_recipe.xml',
         'report/report_batch.xml',
@@ -47,6 +48,7 @@ luego armar las partidas
         'views/mrp_workcenter_views.xml',
         'views/roll_weighing_views.xml',
         'views/collar_quality_check_views.xml',
+        'views/color_recipe_lot_views.xml',
     ],
     
     'assets': {
