@@ -18,7 +18,7 @@ class SaleOrder(models.Model):
             if menu:
                 menu.unlink()
 
-    lab_dev_ids = fields.Many2many('lab.dev', string='Lab Dev', tracking=True)
+    lab_dev_ids = fields.Many2many('lab.dev', string='Lab Dip', tracking=True)
     weaving_warning = fields.Text('weaving_warning', compute='_compute_weaving_warning')
     dieying_info = fields.Text('dieying_info', compute='_compute_dieying_info')
     sale_order_ids = fields.One2many('sale.order', 'quotation_id', string='Sale Orders')
@@ -36,11 +36,11 @@ class SaleOrder(models.Model):
     is_quote = fields.Boolean('is_quote', default=True)
     # is_manual_lab_dev = fields.Boolean('is_manual_lab_dev', default=False)
     lab_dev_count = fields.Integer(string="Technical Sheet Count", compute='_compute_lab_dev_count')
-    has_order_lab_dev = fields.Boolean('Has Order LabDev', compute='_compute_has_order_lab_dev')
+    has_order_lab_dev = fields.Boolean('Has Order LabDip', compute='_compute_has_order_lab_dev')
     is_company_produce = fields.Boolean(related='company_id.is_company_produce')
     has_weaving_line = fields.Boolean('Has Weaving Line', compute='_compute_has_weaving_line')
-    need_labdev = fields.Boolean('Need LabDev?', compute='_compute_need_labdev', default=False)
-    has_pending_labdev_lines = fields.Boolean('Has Pending LabDev Lines', compute='_compute_need_labdev', default=False)
+    need_labdev = fields.Boolean('Need LabDip?', compute='_compute_need_labdev', default=False)
+    has_pending_labdev_lines = fields.Boolean('Has Pending LabDip Lines', compute='_compute_need_labdev', default=False)
     sale_approval_required = fields.Boolean('Sale Approval Required', compute='_compute_sale_approval_required')
     color_name_warning = fields.Boolean(default=False)
     need_approval = fields.Boolean('need_approval?', compute='_compute_need_approval')
@@ -386,7 +386,7 @@ class SaleOrder(models.Model):
 
     def create_labdev(self):
         if any(not line.color_name for line in self.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.is_lab_color)):
-            raise UserError(_('Can\'t create Lab Dev some lines have no color name.'))
+            raise UserError(_('Can\'t create Lab Dip some lines have no color name.'))
         today = fields.Date.context_today(self)
         production_company = self.company_id._get_production_company()
         lab_dev = self.env['lab.dev'].with_company(production_company).create({
@@ -397,10 +397,10 @@ class SaleOrder(models.Model):
         })
         self.lab_dev_ids = self.lab_dev_ids | lab_dev
 
-        # Se crea UNA línea de Lab Dev por cada color_name pendiente. Su
+        # Se crea UNA línea de Lab Dip por cada color_name pendiente. Su
         # product_ids reúne TODOS los productos de las líneas de la orden con
         # ese color (base + complementos). Todas esas líneas comparten la
-        # misma línea de Lab Dev (los complementos no crean una propia).
+        # misma línea de Lab Dip (los complementos no crean una propia).
         pending = self.order_line.filtered(
             lambda l: l.product_template_id.is_weaving and l.is_lab_color and not l.lab_dev_line_id
         )
@@ -428,7 +428,7 @@ class SaleOrder(models.Model):
         self.open_labdev()
     
     def open_labdev(self):
-        return self.lab_dev_ids._get_records_action(name=_("Lab Dev"))
+        return self.lab_dev_ids._get_records_action(name=_("Lab Dip"))
     
     def open_productions(self):
         productions = self.production_ids

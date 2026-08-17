@@ -3843,25 +3843,25 @@ msgstr "LYOPRINT RG GR"
 #: model_terms:ir.ui.view,arch_db:idtx_laboratory.lab_dev_form_view
 #: model_terms:ir.ui.view,arch_db:idtx_laboratory.lab_dev_line_search_view
 #: model_terms:ir.ui.view,arch_db:idtx_laboratory.lab_dev_tree_view
-msgid "Lab Dev"
-msgstr "Desarrollo Lab"
+msgid "Lab Dip"
+msgstr "Lab Dip"
 
 #. module: idtx_laboratory
 #: model:ir.model.fields,field_description:idtx_laboratory.field_lab_dev__lab_dev_date
-msgid "Lab Dev Date"
-msgstr "Fecha Desarrollo Lab"
+msgid "Lab Dip Date"
+msgstr "Fecha Lab Dip"
 
 #. module: idtx_laboratory
 #: model:ir.model.fields,field_description:idtx_laboratory.field_color_recipe__lab_dev_line_id
 #: model_terms:ir.ui.view,arch_db:idtx_laboratory.lab_dev_line_search_view
 #: model_terms:ir.ui.view,arch_db:idtx_laboratory.lab_dev_line_tree_view
-msgid "Lab Dev Line"
+msgid "Lab Dip Line"
 msgstr "Línea de desarrollo de laboratorio"
 
 #. module: idtx_laboratory
 #: model:ir.model.fields,field_description:idtx_laboratory.field_lab_dev__lab_dev_line_ids
-msgid "Lab Dev Lines"
-msgstr "Líneas de Desarrollo Lab"
+msgid "Lab Dip Lines"
+msgstr "Líneas de Lab Dip"
 
 #. module: idtx_laboratory
 #: model:ir.ui.menu,name:idtx_laboratory.laboratory_menu
@@ -6961,7 +6961,7 @@ msgstr "X"
 #. odoo-python
 #: code:addons/idtx_laboratory/models/color_recipe.py:0
 msgid ""
-"You can't approve this recipe. Another recipe in the Lab Dev for product "
+"You can't approve this recipe. Another recipe in the Lab Dip for product "
 "%(product)s and color %(color)s is already approved."
 msgstr ""
 "No puede aprobar esta receta. Otra receta en el desarrollo de laboratorio "

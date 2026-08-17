@@ -5,7 +5,7 @@ class ProductColor(models.Model):
     _description = 'Product Color'
 
     name = fields.Char('Name')
-    # is_lab_color = fields.Boolean('Require LabDev')
+    # is_lab_color = fields.Boolean('Require LabDip')
     color_range_ids = fields.Many2many('color.range', string='Color Ranges')
     color_intensity_ids = fields.Many2many('color.intensity', string='Color Intensities')
     company_id = fields.Many2one(

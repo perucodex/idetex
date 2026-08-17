@@ -69,7 +69,7 @@ class MrpWorkorderBatch(models.Model):
     @api.constrains('wo_roll_ids')
     def _check_same_color_recipe(self):
         """Una partida solo puede agrupar rollos de órdenes de fabricación del
-        MISMO COLOR (misma línea de Lab Dev): se tiñe todo junto. La receta
+        MISMO COLOR (misma línea de Lab Dip): se tiñe todo junto. La receta
         concreta la resuelve la partida por combinación de productos, así que
         aquí ya no se exige la misma receta sino el mismo color."""
         for batch in self:

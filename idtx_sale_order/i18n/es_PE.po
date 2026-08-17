@@ -230,7 +230,7 @@ msgstr ""
 #. odoo-python
 #: code:addons/idtx_sale_order/models/sale_order.py:0
 msgid "Can't cancel lab dev in %s"
-msgstr "No se puede cancelar el Lab Dev en %s"
+msgstr "No se puede cancelar el Lab Dip en %s"
 
 #. module: idtx_sale_order
 #. odoo-python
@@ -241,7 +241,7 @@ msgstr "No se puede cancelar la producción en %s"
 #. module: idtx_sale_order
 #. odoo-python
 #: code:addons/idtx_sale_order/models/sale_order.py:0
-msgid "Can't create Lab Dev some lines have no color name."
+msgid "Can't create Lab Dip some lines have no color name."
 msgstr "No se puede crear LD algunas líneas no tiene nombre de color."
 
 #. module: idtx_sale_order
@@ -435,7 +435,7 @@ msgstr "Cotizaciones"
 
 #. module: idtx_sale_order
 #: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_order_view_form_inherit_sale
-msgid "Create LabDev"
+msgid "Create LabDip"
 msgstr "Crear LD"
 
 #. module: idtx_sale_order
@@ -612,10 +612,10 @@ msgstr "Empresa Productiva"
 #. module: idtx_sale_order
 #: model_terms:ir.ui.view,arch_db:idtx_sale_order.res_config_settings_view_form
 msgid ""
-"Empresa encargada de fabricar. Los Lab Dev, recetas y órdenes de producción "
+"Empresa encargada de fabricar. Los Lab Dip, recetas y órdenes de producción "
 "se crean en esta empresa en lugar de la empresa que realiza la venta."
 msgstr ""
-"Empresa encargada de fabricar. Los Lab Dev, recetas y órdenes de producción "
+"Empresa encargada de fabricar. Los Lab Dip, recetas y órdenes de producción "
 "se crean en esta empresa en lugar de la empresa que realiza la venta."
 
 #. module: idtx_sale_order
@@ -623,11 +623,11 @@ msgstr ""
 #: model:ir.model.fields,help:idtx_sale_order.field_res_config_settings__production_company_id
 msgid ""
 "Empresa encargada de fabricar. Si se define, los objetos de producción (Lab "
-"Dev, líneas de Lab Dev, recetas y órdenes de producción) se crean en esta "
+"Dev, líneas de Lab Dip, recetas y órdenes de producción) se crean en esta "
 "empresa en lugar de la empresa que realiza la venta."
 msgstr ""
 "Empresa encargada de fabricar. Si se define, los objetos de producción (Lab "
-"Dev, líneas de Lab Dev, recetas y órdenes de producción) se crean en esta "
+"Dev, líneas de Lab Dip, recetas y órdenes de producción) se crean en esta "
 "empresa en lugar de la empresa que realiza la venta."
 
 #. module: idtx_sale_order
@@ -736,13 +736,13 @@ msgstr "Galga"
 
 #. module: idtx_sale_order
 #: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__has_order_lab_dev
-msgid "Has Order LabDev"
-msgstr "Tiene Lab Dev de la orden"
+msgid "Has Order LabDip"
+msgstr "Tiene Lab Dip de la orden"
 
 #. module: idtx_sale_order
 #: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__has_pending_labdev_lines
-msgid "Has Pending LabDev Lines"
-msgstr "Tiene líneas de Lab Dev pendientes"
+msgid "Has Pending LabDip Lines"
+msgstr "Tiene líneas de Lab Dip pendientes"
 
 #. module: idtx_sale_order
 #: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__has_weaving_line
@@ -835,18 +835,18 @@ msgstr "Ítem"
 #. odoo-python
 #: code:addons/idtx_sale_order/models/sale_order.py:0
 #: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__lab_dev_ids
-msgid "Lab Dev"
-msgstr "Lab Dev"
+msgid "Lab Dip"
+msgstr "Lab Dip"
 
 #. module: idtx_sale_order
 #: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__lab_dev_line_id
-msgid "Lab Dev Line"
-msgstr "Línea de Lab Dev"
+msgid "Lab Dip Line"
+msgstr "Línea de Lab Dip"
 
 #. module: idtx_sale_order
 #: model_terms:ir.ui.view,arch_db:idtx_sale_order.sale_order_view_form_inherit_sale
-msgid "Lab Dev's"
-msgstr "Lab Devs"
+msgid "Lab Dip's"
+msgstr "Lab Dips"
 
 #. module: idtx_sale_order
 #: model_terms:ir.ui.view,arch_db:idtx_sale_order.mrp_production_form_view_inherit
@@ -978,7 +978,7 @@ msgstr "Nombre"
 
 #. module: idtx_sale_order
 #: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order__need_labdev
-msgid "Need LabDev?"
+msgid "Need LabDip?"
 msgstr "Necesita LD?"
 
 #. module: idtx_sale_order

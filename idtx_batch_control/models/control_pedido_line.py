@@ -66,7 +66,7 @@ class ControlPedidoLine(models.Model):
     end_date = fields.Datetime('End Date')
     colorcode = fields.Char('Color Code')
     colorname = fields.Char('Color Name')
-    lab_dev_line_id = fields.Many2one('lab.dev.line', string='Lab Dev')
+    lab_dev_line_id = fields.Many2one('lab.dev.line', string='Lab Dip')
     colorfastness_id = fields.Many2one(related='lab_dev_line_id.colorfastness_washing_id')
     density_stability_twisting_id = fields.Many2one(related='product_id.analysis_id.density_stability_twisting_id')
     proceso_ids = fields.One2many(

@@ -5,7 +5,7 @@
             <field name="name">lab.dev.form</field>
             <field name="model">lab.dev</field>
             <field name="arch" type="xml">
-                <form string="Lab Dev">
+                <form string="Lab Dip">
                     <header>
                         <button name="action_development" type="object" string="Develop" class="oe_highlight" invisible="state != 'draft'" confirm="Are you sure you want to develop this colors ?"/>
                         <button name="action_done" type="object" string="Done" class="oe_highlight" invisible="state != 'dev'"/>
@@ -117,7 +117,7 @@
             <field name="name">lab.dev.tree</field>
             <field name="model">lab.dev</field>
             <field name="arch" type="xml">
-                <list string="Lab Dev">
+                <list string="Lab Dip">
                     <field name="name"/>
                     <field name="lab_dev_date"/>
                     <field name="sale_order_id"/>
@@ -161,12 +161,29 @@
             <field name="arch" type="xml">
                 <form>
                     <header>
-                        <!-- <button name="action_update" type="object" string="Update" class="oe_highlight"/> -->
+                        <!-- Flujo de la SOLIDEZ AL LAVADO: laboratorio la deja
+                             lista/ofrecida (se congela) y el comercial la aprueba
+                             con el cliente. Sin esa aprobación no se puede aprobar
+                             ninguna receta (opción) de la línea. -->
+                        <button name="action_colorfastness_offer" type="object"
+                                string="Solidez lista (Laboratorio)" class="oe_highlight"
+                                invisible="colorfastness_state != 'draft'"
+                                groups="idtx_laboratory.group_module_laboratory_user"/>
+                        <button name="action_colorfastness_client_approve" type="object"
+                                string="Aprobar solidez con cliente" class="oe_highlight"
+                                invisible="colorfastness_state != 'offered'"
+                                groups="sales_team.group_sale_salesman"/>
+                        <button name="action_colorfastness_reset" type="object"
+                                string="Reabrir solidez"
+                                invisible="colorfastness_state == 'draft'"
+                                groups="idtx_laboratory.group_module_laboratory_manager"/>
                         <!-- El estado por linea se reemplaza por el color de los
                              tags de producto (verde = receta aprobada). El campo
                              sigue presente (invisible) porque el readonly de las
                              recetas lo referencia. -->
                         <field name="state" invisible="1"/>
+                        <field name="colorfastness_state" widget="statusbar"
+                               statusbar_visible="draft,offered,client_approved"/>
                     </header>
                     <sheet>
                         <group>
@@ -196,7 +213,7 @@
                         </group>
                         <notebook>
                             <page name="recipe_page" string="Recipes">
-                                <field name="color_recipe_ids" readonly="state == 'done' or not color_code" context="{'form_view_ref': 'idtx_laboratory.color_recipe_form_view'}">
+                                <field name="color_recipe_ids" readonly="state in ('done', 'approved') or not color_code" context="{'form_view_ref': 'idtx_laboratory.color_recipe_form_view'}">
                                     <list editable="top" open_form_view="True">
                                         <field name="name" readonly="1"/>
                                         <field name="recipe_date" readonly="1"/>
@@ -211,24 +228,27 @@
                             </page>
                             <page name="colorfastness_tab" string="Solidez al Lavado">
                                 <!-- La solidez al lavado es inherente al COLOR (una por
-                                     línea de Lab Dev), no a la receta ni a la sub-receta. -->
+                                     línea de Lab Dip), no a la receta ni a la sub-receta.
+                                     Se CONGELA en cuanto laboratorio la ofrece: el readonly
+                                     va en CADA campo (en Odoo el readonly de un <group> NO se
+                                     propaga a los hijos, a diferencia de invisible). -->
                                 <group col="2">
                                     <group string="SOLIDEZ AL LAVADO">
-                                        <field name="color_change_degree"/>
-                                        <field name="migration_acetate"/>
-                                        <field name="migration_cotton"/>
-                                        <field name="migration_nylon"/>
-                                        <field name="migration_polyester"/>
-                                        <field name="migration_acrylic"/>
-                                        <field name="migration_wool"/>
+                                        <field name="color_change_degree" readonly="colorfastness_state != 'draft'"/>
+                                        <field name="migration_acetate" readonly="colorfastness_state != 'draft'"/>
+                                        <field name="migration_cotton" readonly="colorfastness_state != 'draft'"/>
+                                        <field name="migration_nylon" readonly="colorfastness_state != 'draft'"/>
+                                        <field name="migration_polyester" readonly="colorfastness_state != 'draft'"/>
+                                        <field name="migration_acrylic" readonly="colorfastness_state != 'draft'"/>
+                                        <field name="migration_wool" readonly="colorfastness_state != 'draft'"/>
                                     </group>
                                     <group>
                                         <group string="SOLIDEZ AL FROTE">
-                                            <field name="colorfastness_to_dry_rubbing" string="Seco"/>
-                                            <field name="colorfastness_to_wet_rubbing" string="Húmedo"/>
+                                            <field name="colorfastness_to_dry_rubbing" string="Seco" readonly="colorfastness_state != 'draft'"/>
+                                            <field name="colorfastness_to_wet_rubbing" string="Húmedo" readonly="colorfastness_state != 'draft'"/>
                                         </group>
                                         <group string="SOLIDEZ A LA LUZ">
-                                            <field name="light_fastness_light"/>
+                                            <field name="light_fastness_light" readonly="colorfastness_state != 'draft'"/>
                                         </group>
                                     </group>
                                 </group>
@@ -244,7 +264,7 @@
             <field name="name">lab.dev.line.tree</field>
             <field name="model">lab.dev.line</field>
             <field name="arch" type="xml">
-                <list string="Lab Dev Line">
+                <list string="Lab Dip Line">
                     <field name="lab_dev_id"/>
                     <field name="color_code" optional="hide"/>
                     <field name="display_name"/>
@@ -259,18 +279,18 @@
             <field name="name">lab.dev.line.search</field>
             <field name="model">lab.dev.line</field>
             <field name="arch" type="xml">
-                <search string="Lab Dev Line">
+                <search string="Lab Dip Line">
                     <field name="color_code"/>
                     <field name="color_name"/>
                     <group>
-                        <filter string="Lab Dev" name="group_by_lab_dev" domain="[]" context="{'group_by': 'lab_dev_id'}"/>
+                        <filter string="Lab Dip" name="group_by_lab_dev" domain="[]" context="{'group_by': 'lab_dev_id'}"/>
                     </group>
                 </search>
             </field>
         </record>
 
         <record id="lab_dev_action" model="ir.actions.act_window">
-            <field name="name">Lab Dev</field>
+            <field name="name">Lab Dip</field>
             <field name="res_model">lab.dev</field>
             <field name="view_mode">list,form</field>
             <field name="view_id" ref="lab_dev_tree_view"/>

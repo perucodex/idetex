@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_idtx_subscription" model="ir.ui.view">
+        <field name="name">res.config.settings.form.idtx.subscription</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Mismo bloque "Facturación" donde va "Consolidar suscripciones". -->
+            <block name="invoicing_setting_container" position="inside">
+                <setting id="idtx_subscription_period_format_setting"
+                         string="Formato de periodo en factura de suscripción"
+                         help="Cómo se describe el periodo en la línea de la factura que genera el cron de suscripciones.">
+                    <field name="idtx_subscription_period_format"/>
+                </setting>
+            </block>
+        </field>
+    </record>
+</odoo>

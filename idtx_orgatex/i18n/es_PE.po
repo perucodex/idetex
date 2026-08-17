@@ -135,8 +135,8 @@ msgstr "Tipo de estación"
 
 #. module: idtx_orgatex
 #: model:ir.ui.menu,name:idtx_orgatex.orga_dev_menu
-msgid "Lab Dev"
-msgstr "Desarrollo Lab"
+msgid "Lab Dip"
+msgstr "Lab Dip"
 
 #. module: idtx_orgatex
 #: model:ir.model.fields,field_description:idtx_orgatex.field_integration_orgatex__write_uid

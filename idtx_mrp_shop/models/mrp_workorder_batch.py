@@ -237,7 +237,7 @@ class MrpWorkorderBatch(models.Model):
     @api.depends('wo_roll_ids', 'child_batch_ids.wo_roll_ids')
     def _compute_colors(self):
         """La PARTIDA resuelve su receta por combinación de productos: la
-        receta aprobada del color (línea de Lab Dev de las OFs) cuya
+        receta aprobada del color (línea de Lab Dip de las OFs) cuya
         combinación coincide EXACTAMENTE con los productos de los rollos;
         si no hay exacta, la combinada que los contenga (la más chica)."""
         for rec in self:
@@ -360,7 +360,7 @@ class MrpWorkorderBatch(models.Model):
     def _get_dye_report_data(self):
         """Datos del reporte Receta de Tinte de la partida:
         - Kilos (peso bruto de los rollos), Piezas (n° de rollos).
-        - Volumen (L) = Kilos x Relación de Baño (sub-receta > receta > línea LabDev).
+        - Volumen (L) = Kilos x Relación de Baño (sub-receta > receta > línea LabDip).
         - Metros = kilos de cada producto x rendimiento (m/kg) de su ficha
           técnica (análisis).
         - Cantidad por químico: Gr/L -> factor x Volumen; % -> factor x Kilos

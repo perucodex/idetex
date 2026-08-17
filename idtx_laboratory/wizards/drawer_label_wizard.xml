@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_lab_drawer_label_wizard_form" model="ir.ui.view">
+        <field name="name">lab.drawer.label.wizard.form</field>
+        <field name="model">lab.drawer.label.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Imprimir etiquetas de cajón">
+                <group>
+                    <field name="drawers" placeholder="A, B, C   o bien   A-F"/>
+                    <field name="copies"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                </group>
+                <div class="text-muted">
+                    Cada etiqueta lleva la letra del cajón en grande y su código
+                    de barras abajo (para escanearlo en el kiosco de ubicaciones).
+                </div>
+                <footer>
+                    <button name="action_print" type="object" string="Imprimir"
+                            class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_lab_drawer_label_wizard" model="ir.actions.act_window">
+        <field name="name">Imprimir etiquetas de cajón</field>
+        <field name="res_model">lab.drawer.label.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="lab_drawer_label_menu"
+              name="Etiquetas de cajones"
+              parent="lab_settings_menu"
+              action="action_lab_drawer_label_wizard"
+              sequence="30"/>
+
+</odoo>

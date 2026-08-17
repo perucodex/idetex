@@ -10,6 +10,7 @@ Odoo estándar usa una sola cuenta por cobrar/pagar por cliente, sin mirar la
 moneda de la factura.
 
 Este módulo agrega:
+
 - Dos campos por compañía en el cliente/proveedor: "Cuenta por cobrar (ME)" y
   "Cuenta por pagar (ME)", con la misma mecánica de herencia que los campos
   estándar (default por compañía vía ir.default, valor explícito solo si se

@@ -29,7 +29,7 @@
                         icon="fa-eyedropper"
                         type="object"
                         invisible="lab_dev_count == 0 or not is_company_produce">
-                        <field name="lab_dev_count" widget="statinfo" string="Lab Dev's"/>
+                        <field name="lab_dev_count" widget="statinfo" string="Lab Dip's"/>
                 </button>
                 <button name="open_productions"
                         class="oe_stat_button"
@@ -62,8 +62,8 @@
                 <field name="lab_dev_ids" widget="many2many_tags" required="state == 'sale'" options="{'no_create': True, 'no_open': True}" invisible="is_quote or not is_company_produce or not need_labdev" readonly="state == 'sale'" force_save="1"/>
             </xpath>
             <xpath expr="//header/button[@name='action_confirm'][1]" position="after">
-                <button name="create_labdev" class="btn-primary" string="Create LabDev" type="object" invisible="is_quote or not is_company_produce or not has_pending_labdev_lines or state == 'cancel'"/>
-                <!-- <button name="manual_labdev" class="btn-secondary" string="Manual LabDev" type="object" invisible="lab_dev_ids or is_quote"/> -->
+                <button name="create_labdev" class="btn-primary" string="Create LabDip" type="object" invisible="is_quote or not is_company_produce or not has_pending_labdev_lines or state == 'cancel'"/>
+                <!-- <button name="manual_labdev" class="btn-secondary" string="Manual LabDip" type="object" invisible="lab_dev_ids or is_quote"/> -->
                 <button name="action_create_sale_order" type="object" string="Sale Order" class="btn-primary" groups="base.group_user" invisible="state != 'sent' or not is_quote or not is_company_produce or need_approval or not signed_on"/>
                 <button name="action_request_approval" type="object" string="Request Approval" class="btn-primary" invisible="not need_approval or state == 'for_app' or not is_company_produce"/>
                 <button name="action_approve" type="object" string="Approve Discount" class="btn-primary" groups="sales_team.group_sale_salesman_all_leads" invisible="state != 'for_app' or not is_company_produce"/>

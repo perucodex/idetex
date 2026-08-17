@@ -14,7 +14,7 @@ class ResCompany(models.Model):
         'res.company',
         string='Empresa Productiva',
         help='Empresa encargada de fabricar. Si se define, los objetos de '
-             'producción (Lab Dev, líneas de Lab Dev, recetas y órdenes de '
+             'producción (Lab Dip, líneas de Lab Dip, recetas y órdenes de '
              'producción) se crean en esta empresa en lugar de la empresa que '
              'realiza la venta.',
     )

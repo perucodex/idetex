@@ -9,7 +9,7 @@
             web_icon="idtx_laboratory,static/description/icon.png"
             groups="idtx_laboratory.group_module_laboratory_manager,idtx_laboratory.group_module_laboratory_user">
                 <menuitem id="lab_operations_menu" name="Operations" sequence="10">
-                    <menuitem id="lab_dev_menu" name="Lab Dev" action="lab_dev_action" sequence="10"/>
+                    <menuitem id="lab_dev_menu" name="Lab Dip" action="lab_dev_action" sequence="10"/>
                     <menuitem id="lab_color_recipe_menu" name="Color Recipe" action="color_recipe_action" sequence="20"/>
                     <menuitem id="lab_color_recipe_lot_menu" name="Recetas Producción" action="color_recipe_lot_action" sequence="30"/>
                 </menuitem>

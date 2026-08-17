@@ -26,7 +26,7 @@
         
         <!-- Reglas para multi-company -->
         <!-- <record id="lab_dev_company_rule" model="ir.rule">
-            <field name="name">LabDev multi-company</field>
+            <field name="name">LabDip multi-company</field>
             <field name="model_id" ref="model_lab_dev"/>
             <field name="domain_force">[('company_id', 'parent_of', company_ids)]</field>
         </record>

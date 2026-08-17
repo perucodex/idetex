@@ -921,8 +921,8 @@ msgstr "Kilos x Pesar"
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_control_pedido_line__lab_dev_line_id
-msgid "Lab Dev"
-msgstr "Desarrollo Lab."
+msgid "Lab Dip"
+msgstr "Lab Dip."
 
 #. module: idtx_batch_control
 #: model:ir.model.fields,field_description:idtx_batch_control.field_btn_inicio_fase_wizard__write_uid

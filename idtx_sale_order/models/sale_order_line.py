@@ -55,7 +55,7 @@ class SaleOrderLine(models.Model):
         compute='_compute_has_approved_lab_line',
         store=False,
     )
-    lab_dev_line_id = fields.Many2one('lab.dev.line', string='Lab Dev Line')
+    lab_dev_line_id = fields.Many2one('lab.dev.line', string='Lab Dip Line')
     diff_days = fields.Float('diff_days')
     is_salesman = fields.Boolean('is_salesman?', compute='_compute_is_salesman')
     # Detalle de producto en cotización ingresado por comercial y Alex
@@ -135,7 +135,7 @@ class SaleOrderLine(models.Model):
                  'lab_dev_line_id.color_recipe_ids.product_ids',
                  'product_template_id')
     def _compute_has_approved_lab_line(self):
-        # El badge del color solo es verde si la línea de Lab Dev tiene una
+        # El badge del color solo es verde si la línea de Lab Dip tiene una
         # receta APROBADA que incluya al PRODUCTO de esta línea de venta
         # (receta individual o de combinación de productos).
         for line in self:

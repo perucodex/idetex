@@ -332,7 +332,7 @@ class ControlPedidoLine(models.Model):
         tilt_from = tilt_std - tilt_tol if tilt_std > 0.0 else 0.0
         tilt_to = tilt_std + tilt_tol if tilt_std > 0.0 else 0.0
 
-        # Always resolve washing standards from Lab Dev, even when there is no solidez eval yet.
+        # Always resolve washing standards from Lab Dip, even when there is no solidez eval yet.
         labdev = self.lab_dev_line_id
         if not labdev and solidez:
             labdev = solidez.pedido_line_id.lab_dev_line_id

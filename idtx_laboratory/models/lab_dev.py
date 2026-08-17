@@ -9,13 +9,13 @@ class LabDev(models.Model):
     _order = 'name desc'
 
     name = fields.Char('Name', copy=False, default=lambda self: _('New'))
-    lab_dev_date = fields.Date('Lab Dev Date', default=fields.Date.context_today)
+    lab_dev_date = fields.Date('Lab Dip Date', default=fields.Date.context_today)
     sale_order_id = fields.Many2one('sale.order', string='Sale Order', ondelete='restrict')
     partner_id = fields.Many2one('res.partner', 'Customer', ondelete='restrict')
     recipe_count = fields.Integer('Recipe Count', compute='_compute_recipe_count')
     volume = fields.Float('Volume')
     kilos = fields.Float('Kilos')
-    lab_dev_line_ids = fields.One2many('lab.dev.line', 'lab_dev_id', string='Lab Dev Lines')
+    lab_dev_line_ids = fields.One2many('lab.dev.line', 'lab_dev_id', string='Lab Dip Lines')
     color_recipe_ids = fields.One2many(related='lab_dev_line_ids.color_recipe_ids')
     company_id = fields.Many2one(
         'res.company',
@@ -202,7 +202,7 @@ class LabDevLine(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _rec_name = 'color_name'
 
-    lab_dev_id = fields.Many2one('lab.dev', string='Lab Dev', ondelete='cascade')
+    lab_dev_id = fields.Many2one('lab.dev', string='Lab Dip', ondelete='cascade')
     product_ids = fields.Many2many(
         'product.template', 'lab_dev_line_product_template_rel',
         'lab_dev_line_id', 'product_template_id', string='Products')
@@ -262,6 +262,18 @@ class LabDevLine(models.Model):
     colorfastness_to_dry_rubbing = fields.Float(related='colorfastness_washing_id.colorfastness_to_dry_rubbing', readonly=False, store=True)
     colorfastness_to_wet_rubbing = fields.Float(related='colorfastness_washing_id.colorfastness_to_wet_rubbing', readonly=False, store=True)
     light_fastness_light = fields.Float(related='colorfastness_washing_id.light_fastness_light', readonly=False, store=True)
+
+    # Flujo de aprobación de la SOLIDEZ AL LAVADO (independiente del estado de
+    # las recetas). Laboratorio la deja "ofrecida" (se congela: ya no se
+    # editan los valores) y el comercial, tras negociarla con el cliente, la
+    # marca "aprobada por el cliente". Sin esa aprobación NO se puede aprobar
+    # ninguna receta (opción) de esta línea.
+    colorfastness_state = fields.Selection([
+        ('draft', 'En laboratorio'),
+        ('offered', 'Ofrecida por laboratorio'),
+        ('client_approved', 'Aprobada por el cliente'),
+    ], string='Estado de la solidez', default='draft', required=True,
+        copy=False, tracking=True)
 
     @api.depends('color_code', 'color_name')
     def _compute_display_name(self):
@@ -333,6 +345,35 @@ class LabDevLine(models.Model):
         if any(r.state == 'approved' for r in self.color_recipe_ids):
             raise UserError(_('Can\'t delete a lab dev with recipes in approved state.'))
         return super().unlink()
+
+    # --- Flujo de la solidez al lavado ---
+    def action_colorfastness_offer(self):
+        """Laboratorio: deja la solidez lista/ofrecida (se congela)."""
+        for rec in self:
+            if rec.colorfastness_state != 'draft':
+                raise UserError(_('La solidez ya fue ofrecida por laboratorio.'))
+            rec.colorfastness_state = 'offered'
+            rec.message_post(body=_(
+                'Solidez al lavado ofrecida por laboratorio (queda a la '
+                'espera de la aprobación del cliente).'))
+
+    def action_colorfastness_client_approve(self):
+        """Comercial: tras negociarla, aprueba la solidez con el cliente."""
+        for rec in self:
+            if rec.colorfastness_state != 'offered':
+                raise UserError(_(
+                    'La solidez debe estar "Ofrecida por laboratorio" antes '
+                    'de aprobarla con el cliente.'))
+            rec.colorfastness_state = 'client_approved'
+            rec.message_post(body=_(
+                'Solidez al lavado APROBADA por el cliente (%s).')
+                % self.env.user.name)
+
+    def action_colorfastness_reset(self):
+        """Reabre la solidez para que laboratorio la vuelva a editar."""
+        for rec in self:
+            rec.colorfastness_state = 'draft'
+            rec.message_post(body=_('Solidez al lavado reabierta para edición.'))
     
     # Funcion escondida para actualizar los registros de laboratorio con un registro de solidez al lavado, para pruebas y desarrollo solamente
     def action_update(self):

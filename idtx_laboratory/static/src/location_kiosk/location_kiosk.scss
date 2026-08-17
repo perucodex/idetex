@@ -1,0 +1,19 @@
+.o_lab_loc_root {
+    max-width: 1200px;
+    margin: 0 auto;
+
+    .o_lab_loc_input {
+        font-size: 1.35rem;
+    }
+
+    .o_lab_loc_drawer {
+        text-transform: uppercase;
+        max-width: 220px;
+        font-weight: 700;
+        letter-spacing: 2px;
+    }
+
+    .o_lab_loc_areas .btn-group .btn {
+        min-width: 150px;
+    }
+}

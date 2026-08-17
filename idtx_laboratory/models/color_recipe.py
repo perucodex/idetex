@@ -1,5 +1,14 @@
+import ipaddress
+import socket
+
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
+
+# Las 3 etiquetas de la opción (receta), en orden de impresión. El título
+# es "LabDip <opción>" y el tipo (Calidad/Tintorería/Laboratorio) va de
+# subtítulo para distinguirlas.
+LABEL_KINDS = ('Calidad', 'Tintorería', 'Laboratorio')
+
 
 class ColorRecipe(models.Model):
     _name = 'color.recipe'
@@ -7,7 +16,7 @@ class ColorRecipe(models.Model):
     _description = 'Color Recipe'
 
     name = fields.Char('Name', copy=False, default=lambda self: _('New'))
-    lab_dev_line_id = fields.Many2one('lab.dev.line', string='Lab Dev Line', ondelete='cascade')
+    lab_dev_line_id = fields.Many2one('lab.dev.line', string='Lab Dip Line', ondelete='cascade')
     lab_dev_id = fields.Many2one(related='lab_dev_line_id.lab_dev_id')
     available_product_ids = fields.Many2many(
         related='lab_dev_line_id.product_ids', string='Available Products')
@@ -63,6 +72,8 @@ class ColorRecipe(models.Model):
     mixing_group_ids = fields.One2many('color.recipe.mixing.group', 'color_recipe_id', string='Grupos de Mezcla')
     recipe_lot_ids = fields.One2many(
         'color.recipe.lot', 'color_recipe_id', string='Sub-recetas por Lote')
+    location_ids = fields.One2many(
+        'color.recipe.location', 'recipe_id', string='Ubicaciones')
 
     def _find_lot_subrecipe(self, lots):
         """Sub-receta cuya combinación de lotes de hilo coincide EXACTAMENTE
@@ -86,7 +97,7 @@ class ColorRecipe(models.Model):
 
     @api.onchange('lab_dev_line_id', 'available_product_ids')
     def _onchange_default_single_product(self):
-        """Si la línea de Lab Dev tiene un único producto, la receta lo toma
+        """Si la línea de Lab Dip tiene un único producto, la receta lo toma
         por defecto. Si tiene varios, se deja en blanco para que el usuario
         elija su combinación. No sobreescribe una selección previa."""
         for rec in self:
@@ -97,7 +108,7 @@ class ColorRecipe(models.Model):
     def _check_recipe_color_code_unique(self):
         # Respaldo contra duplicados: el correlativo es único por combinación
         # de productos dentro de la línea (la asignación además serializa con
-        # un lock FOR UPDATE sobre la línea de Lab Dev).
+        # un lock FOR UPDATE sobre la línea de Lab Dip).
         for rec in self:
             if not rec.recipe_color_code or not rec.lab_dev_line_id:
                 continue
@@ -109,7 +120,7 @@ class ColorRecipe(models.Model):
             if dup:
                 raise UserError(_(
                     'El código %(code)s ya existe para esta combinación de '
-                    'productos en la línea de Lab Dev.',
+                    'productos en la línea de Lab Dip.',
                     code=rec.recipe_color_code))
 
     #=== CRUD METHODS ===#
@@ -119,7 +130,7 @@ class ColorRecipe(models.Model):
         # Números ya usados por línea de lab dev (para reutilizar huecos).
         used_by_line = {}
         for vals in vals_list:
-            # La receta hereda la empresa de su Lab Dev (puede ser la empresa
+            # La receta hereda la empresa de su Lab Dip (puede ser la empresa
             # productiva), de modo que la secuencia y el registro queden en
             # la empresa correcta.
             if vals.get('lab_dev_line_id') and not vals.get('company_id'):
@@ -127,7 +138,7 @@ class ColorRecipe(models.Model):
                 if lab_dev.company_id:
                     vals['company_id'] = lab_dev.company_id.id
 
-            # Si la línea de Lab Dev tiene un único producto, la receta lo toma
+            # Si la línea de Lab Dip tiene un único producto, la receta lo toma
             # por defecto (con varios, el usuario elige la combinación).
             if vals.get('lab_dev_line_id') and not vals.get('product_ids'):
                 products = self.env['lab.dev.line'].browse(vals['lab_dev_line_id']).product_ids
@@ -143,7 +154,7 @@ class ColorRecipe(models.Model):
 
         records = super().create(vals_list)
         # El correlativo es POR COMBINACIÓN DE PRODUCTOS dentro de la línea
-        # de Lab Dev (JERSEY 001,002..., RIB 001,002..., JERSEY+RIB 001...).
+        # de Lab Dip (JERSEY 001,002..., RIB 001,002..., JERSEY+RIB 001...).
         # Se asigna DESPUÉS del create para trabajar con product_ids ya
         # resueltos; la lectura de usados bloquea la línea (FOR UPDATE) para
         # serializar asignaciones concurrentes.
@@ -168,6 +179,10 @@ class ColorRecipe(models.Model):
         return records
     
     def action_approve(self):
+        # No se puede aprobar la opción (receta) si la solidez al lavado de
+        # la línea de desarrollo aún no fue negociada/aprobada con el cliente.
+        if self.lab_dev_line_id.colorfastness_state != 'client_approved':
+            raise UserError(_('Debe primero aprobar la solidez con el cliente.'))
         # Pueden coexistir aprobadas una receta unitaria (JERSEY) y una
         # combinada que incluya el mismo producto (JERSEY+RIB). Lo que NO
         # puede repetirse aprobado es la MISMA combinación exacta.
@@ -192,6 +207,77 @@ class ColorRecipe(models.Model):
         self.state = 'test'
         self.lab_dev_line_id.state = self.state
 
+    # ------------------------------------------------------------------
+    # Impresión de etiquetas (impresora de códigos de barras de la empresa)
+    # ------------------------------------------------------------------
+    def action_print_labels(self):
+        """Imprime 3 etiquetas de esta opción (receta) en la impresora de
+        códigos de barras configurada en la compañía: una para Calidad, otra
+        para Tintorería y otra para Laboratorio."""
+        self.ensure_one()
+        if self.state != 'approved':
+            raise UserError(_('Solo se pueden imprimir etiquetas de una receta aprobada.'))
+        # Impresora de la empresa de la receta (multicompañía); si no tiene,
+        # la de la compañía activa.
+        company = self.company_id or self.env.company
+        ip = (company.zpl_printer_ip or '').strip()
+        if not ip:
+            raise UserError(_(
+                'La compañía "%s" no tiene configurada una impresora de '
+                'códigos de barras (IP). Configúrala en Ajustes.') % company.name)
+        zpl = ''.join(self._build_label_zpl(kind) for kind in LABEL_KINDS)
+        self._print_zpl_to_network(zpl, ip)
+        return True
+
+    def _build_label_zpl(self, kind):
+        self.ensure_one()
+
+        def clean(value, limit=38):
+            # ZPL: ^ y ~ son comandos; se recortan para no romper el formato.
+            text = (str(value or '')).replace('^', ' ').replace('~', ' ')
+            return text[:limit]
+
+        fecha = self.recipe_date.strftime('%d/%m/%Y') if self.recipe_date else ''
+        full_code = clean(self.recipe_color_code, 40)
+        # El código de receta es "<código de color>-<opción>" (ej.
+        # 03726145-003): se separa por el último guion.
+        base_code, _sep, option = full_code.rpartition('-')
+        if not _sep:
+            base_code, option = full_code, ''
+        # Centrado del Code128: se fuerza subset B (prefijo ">:") para que el
+        # ancho sea determinista (11 módulos por carácter + 35 de arranque/
+        # checksum/parada), a BY2 = 2 dots por módulo. Con eso se calcula el
+        # margen izquierdo para centrarlo en los 600 dots. (El ^FB con
+        # justificación central no centra el barcode en la ZD230.)
+        module = 2
+        bar_width = (11 * len(full_code) + 35) * module
+        bar_x = max(0, (600 - bar_width) // 2)
+        return f"""^XA
+^CI28
+^PW600
+^LL440
+^FO20,24^A0N,44,44^FDLabDip {clean(self.name, 16)}^FS
+^FO400,36^A0N,30,30^FD{clean(kind, 16)}^FS
+^FO20,82^GB560,3,3^FS
+^FO20,98^A0N,28,28^FDN° LD: {clean(self.lab_dev_id.name, 20)}^FS
+^FO310,98^A0N,28,28^FDFecha: {fecha}^FS
+^FO20,138^A0N,28,28^FDCódigo: {base_code}^FS
+^FO310,138^A0N,28,28^FDOpción: {option}^FS
+^FO20,178^A0N,28,28^FDColor: {clean(self.color_name, 34)}^FS
+^FO20,218^A0N,28,28^FDCliente: {clean(self.partner_id.name, 34)}^FS
+^FO{bar_x},284^BY{module}^BCN,90,Y,N,N^FD>:{full_code}^FS
+^XZ"""
+
+    def _print_zpl_to_network(self, zpl_code, printer_ip, port=9100):
+        """Envía ZPL a la impresora por socket TCP/IP (mismo patrón que el
+        sticker de rollos)."""
+        try:
+            ip = str(ipaddress.ip_address(printer_ip.strip()))
+            with socket.create_connection((ip, port), timeout=5) as sock:
+                sock.sendall(zpl_code.encode('utf-8'))
+        except (socket.error, UnicodeError, ValueError) as e:
+            raise UserError(_('No se pudo imprimir: %s') % e)
+
     def write(self, vals):
         # Si cambia la combinación de productos de la receta (p.ej. tras
         # "Ajustar receta" y elegir otros productos), el correlativo asignado
@@ -208,7 +294,7 @@ class ColorRecipe(models.Model):
 
     def _get_used_recipe_numbers(self, lab_dev_line_id, prefix, product_key, exclude_ids=None):
         """Correlativos ya usados por las recetas de la MISMA combinación de
-        productos en la línea de Lab Dev. Bloquea la fila de la línea
+        productos en la línea de Lab Dip. Bloquea la fila de la línea
         (FOR UPDATE) para serializar la asignación entre transacciones
         concurrentes: si dos usuarios graban a la vez, el segundo espera el
         commit del primero y ya ve su número tomado. Lee por SQL (post-lock)
@@ -243,7 +329,7 @@ class ColorRecipe(models.Model):
     def _reassign_recipe_color_code(self):
         """Reasigna el correlativo del código de receta según la numeración
         de la combinación de productos actual (menor número libre entre las
-        recetas de la misma combinación de la línea de Lab Dev)."""
+        recetas de la misma combinación de la línea de Lab Dip)."""
         for rec in self:
             line = rec.lab_dev_line_id
             prefix = line.color_code or ''

@@ -10,7 +10,7 @@
     </record>
 
     <record id="seq_lab_dev" model="ir.sequence">
-        <field name="name">Lab Dev</field>
+        <field name="name">Lab Dip</field>
         <field name="code">lab.dev</field>
         <field name="prefix">LD</field>
         <field name="padding">5</field>

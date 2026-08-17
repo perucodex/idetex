@@ -54,6 +54,8 @@ Laboratory  module allows colors for dieying
         'views/product_template_views.xml',
         'views/stock_lot_views.xml',
         'views/lab_menu.xml',
+        'views/color_recipe_location_views.xml',
+        'wizards/drawer_label_wizard.xml',
     ],
 
     'assets': {
