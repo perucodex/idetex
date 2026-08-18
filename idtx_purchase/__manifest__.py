@@ -34,9 +34,9 @@ Muestra fechas de orden y de aprobación en reporte y vista
         'views/purchase_detailed_report_views.xml',
     ],
     'assets': {
-        'web.assets_backend': [
-            'idtx_purchase/static/src/css/purchase_detailed_report.css',
-        ],
+        # 'web.assets_backend': [
+        #     'idtx_purchase/static/src/css/purchase_detailed_report.css',
+        # ],
         'web.report_assets_common': [
             'idtx_purchase/static/src/**/*',
         ],
