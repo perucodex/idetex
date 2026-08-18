@@ -93,7 +93,9 @@ $o-row-stripe:        #fafafa;
         position: relative;
 
         // outside full border + rounded
-        &::before {
+        // (respeta o_ignore_layout_styling: los reportes que no quieren
+        // este marco redondeado pueden excluirse con esa clase estandar)
+        &:not(.o_ignore_layout_styling)::before {
             content: "";
             position: absolute;
             top: 0; right: 0; bottom: 0; left: 0;
