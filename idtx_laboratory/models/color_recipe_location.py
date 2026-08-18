@@ -37,10 +37,10 @@ class ColorRecipeLocation(models.Model):
     lab_dev_name = fields.Char(related='recipe_id.lab_dev_id.name', string='N° LD')
     partner_id = fields.Many2one(related='recipe_id.partner_id', string='Cliente', store=True)
 
-    _sql_constraints = [
-        ('recipe_area_uniq', 'unique(recipe_id, area)',
-         'Ya existe una ubicación registrada para esta receta en esta área.'),
-    ]
+    _recipe_area_uniq = models.Constraint(
+        'UNIQUE(recipe_id, area)',
+        'Ya existe una ubicación registrada para esta receta en esta área.',
+    )
 
     @staticmethod
     def _clean_drawer(value):

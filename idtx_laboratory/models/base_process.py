@@ -55,7 +55,11 @@ class BaseProcessLine(models.Model):
         ('colorants', 'Colorantes'),
         ('range', 'Tabla'),
     ], string='Tipo', default='product', required=True)
-    product_id = fields.Many2one('product.template', string='Product')
+    # Solo insumos de laboratorio: is_chemical es el flag paraguas (lo llevan
+    # tambien los colorantes y auxiliares), el mismo dominio del menu Quimicos.
+    product_id = fields.Many2one(
+        'product.template', string='Product',
+        domain=[('is_chemical', '=', True)])
     # N° de orden de ingreso a maquina dentro del proceso (TEXPLUS LPROFO.ProForNro).
     # Varios productos pueden compartir el mismo N° (entran juntos en la misma tanda).
     order_number = fields.Integer('N°', default=1)

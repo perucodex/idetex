@@ -101,7 +101,11 @@ class ColorRecipeProcessLine(models.Model):
     parent_line_id = fields.Many2one('color.recipe.process.line', string='Línea Padre', ondelete='cascade')
     child_ids = fields.One2many('color.recipe.process.line', 'parent_line_id',
                                 string='Colorantes', copy=True)
-    product_id = fields.Many2one('product.template', string='Product', ondelete='restrict')
+    # Solo insumos de laboratorio: is_chemical es el flag paraguas (lo llevan
+    # tambien los colorantes y auxiliares), el mismo dominio del menu Quimicos.
+    product_id = fields.Many2one(
+        'product.template', string='Product', ondelete='restrict',
+        domain=[('is_chemical', '=', True)])
     factor = fields.Float('Factor', digits=(12,5))
     # N° de orden de ingreso a maquina (heredado del proceso base; en el
     # reporte de receta la numeracion se acumula entre procesos).
