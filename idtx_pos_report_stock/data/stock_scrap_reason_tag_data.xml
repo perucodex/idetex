@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!--
+        Garantiza la existencia del tag 'Muestra' en stock.scrap.reason.tag
+        y le asigna un xml_id estable del módulo para que el método
+        action_scrap_muestra del reporte pueda referenciarlo via env.ref().
+
+        Usamos <function> en lugar de <record> porque el tag puede ya existir
+        en la BD (creado a mano por algún usuario) sin xml_id; un <record>
+        chocaría con la constraint UNIQUE(name). El helper Python es idempotente.
+    -->
+    <function model="stock.scrap.reason.tag" name="_idtx_setup_tag_muestra"/>
+</odoo>

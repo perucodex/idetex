@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!--
+        Extiende el template PaymentScreen del core para deshabilitar el botón
+        "Recibo/Factura" en CUALQUIER devolución, no solo cuando la original
+        tenía comprobante.
+
+        Comportamiento resultante (combinado con el patch JS de onMounted):
+          - Devolución de venta CON comprobante  → botón MARCADO + disabled (NC obligatoria)
+          - Devolución de venta SIN comprobante → botón DESMARCADO + disabled (sin comprobante)
+          - Venta nueva normal                  → botón habilitado (cajero decide)
+
+        El xpath busca el botón con clase 'js_invoice' (identificador estable del
+        botón Invoice del PaymentScreen) y reemplaza su atributo t-att-disabled.
+    -->
+    <!--
+        IMPORTANTE: el botón 'js_invoice' está en el sub-template PaymentScreenButtons,
+        NO en PaymentScreen. Heredar del template equivocado hace que xpath no encuentre
+        el botón y rompe la carga de OWL.
+
+        Referencia: l10n_cl_edi_pos/.../payment_screen.xml usa el mismo patrón.
+    -->
+    <t t-name="idtx_pos_sale_idetex.PaymentScreenButtons" t-inherit="point_of_sale.PaymentScreenButtons" t-inherit-mode="extension" owl="1">
+        <xpath expr="//button[hasclass('js_invoice')]" position="attributes">
+            <!--
+                Condición original: solo disabled si la orden original tenía comprobante.
+                Condición nueva: disabled para CUALQUIER refund (con o sin comprobante).
+                El estado marcado/desmarcado lo controla el patch JS onMounted.
+            -->
+            <attribute name="t-att-disabled">currentOrder.isRefund</attribute>
+        </xpath>
+    </t>
+
+    <!--
+        Pedido del usuario (2026-07-22): en ventas SIN comprobante (botón
+        "Recibo/Factura" desmarcado) solo debe poder cobrarse en EFECTIVO;
+        los demás métodos (Tarjeta, etc.) se ocultan. Con comprobante marcado
+        se ven todos los métodos configurados (comportamiento normal de Odoo).
+
+        NOTA (2026-07-22): la venta al crédito ("Cuenta de cliente" / pay_later)
+        se ELIMINÓ del POS por decisión del usuario — la tienda cobra siempre
+        el total del pedido; no hay cobros pendientes. El método pay_later se
+        quitó de la configuración del POS, por eso aquí ya no se contempla.
+
+        - is_cash_count: campo nativo que marca el/los método(s) Efectivo.
+    -->
+    <t t-name="idtx_pos_sale_idetex.PaymentScreenMethods" t-inherit="point_of_sale.PaymentScreenMethods" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('paymentmethod')]" position="attributes">
+            <attribute name="t-if">!(this.pos.cashier._role === 'minimal' and paymentMethod.type === 'pay_later') and (currentOrder.isToInvoice() or paymentMethod.is_cash_count)</attribute>
+        </xpath>
+    </t>
+</templates>

@@ -98,10 +98,21 @@ class PosOrder(models.Model):
     # IMPORTANTE: pos.order.line se mantiene 1-por-rollo para preservar trazabilidad de stock.
 
     def _idtx_get_pos_line_color_key(self, pos_line):
-        """ Clave para agrupar líneas: (product_id, color_name normalizado). """
+        """ Clave para agrupar líneas: (product_id, color_name, precio_unitario).
+
+        Incluimos el price_unit (redondeado a 4 decimales para evitar ruido de
+        float) como defensa: si dos líneas tienen el MISMO producto+color pero
+        DISTINTO precio (caso edge, pero pasó en algunos reembolsos), NO deben
+        agruparse — agruparlas haría que el total no cuadre con la suma de las
+        líneas individuales, porque mi código toma el precio del primer rollo
+        del grupo y lo multiplica por la cantidad total.
+        """
         # color_name está en pos.order.line (lo guardamos al agregar el rollo al carrito)
         color = (pos_line.color_name or '').strip().upper() or 'NO_COLOR'
-        return (pos_line.product_id.id, color)
+        # Redondear el price_unit a 4 decimales: evita que valores casi iguales
+        # tipo 22.0339... vs 22.0339... pero con float drift queden en grupos separados.
+        price_key = round(pos_line.price_unit or 0.0, 4)
+        return (pos_line.product_id.id, color, price_key)
 
     def _idtx_resolve_lots_for_pos_lines(self, pos_lines):
         """
@@ -121,6 +132,24 @@ class PosOrder(models.Model):
                 if lot:
                     result |= lot
         return result
+
+    def _prepare_invoice_vals(self):
+        """
+        Override: asegurar que la boleta/factura generada desde el POS tenga narration.
+
+        Las facturas creadas por el POS no pasan por los defaults del cliente web,
+        así que narration queda en NULL. El XML UBL de l10n_pe_edi (enterprise,
+        account_edi_xml_ubl_pe.py) hace re.sub sobre cbc:Note asumiendo string y
+        revienta con None → imposible emitir boleta desde el POS. Replicamos aquí
+        el default nativo de account.move: términos de factura de la compañía.
+        """
+        vals = super()._prepare_invoice_vals()
+        if not vals.get('narration'):
+            company = self.company_id or self.env.company
+            use_terms = self.env['ir.config_parameter'].sudo().get_param('account.use_invoice_terms')
+            if use_terms and company.invoice_terms:
+                vals['narration'] = company.invoice_terms
+        return vals
 
     def _prepare_invoice_lines(self, move_type):
         """
@@ -176,6 +205,24 @@ class PosOrder(models.Model):
                     total_qty = sum(lv['quantity'] for lv in group_line_values)
                     aggregated_lv = dict(first_lv)                              # copia superficial
                     aggregated_lv['quantity'] = total_qty                       # cantidad total del grupo
+
+                    # CUADRE AL CÉNTIMO CON EL TICKET (precios con IGV incluido):
+                    # el ticket cobra Σ round(kilos_i × precio) por rollo, pero al agrupar
+                    # el motor de impuestos calcularía round(kilos_total × precio), que
+                    # puede diferir 1 céntimo (ej. 26.66+26.82 kg a 9.99: ticket 534.26,
+                    # agrupado 534.27). Ajustamos el precio unitario del grupo con
+                    # decimales extra para que kilos_total × precio == suma exacta por
+                    # rollo. El PDF sigue mostrando 9.99 (2 decimales) y SUNAT acepta
+                    # hasta 10 decimales en PriceAmount.
+                    currency = order.currency_id or order.company_id.currency_id
+                    target_total = sum(
+                        currency.round((lv['quantity'] or 0.0) * (lv['price_unit'] or 0.0))
+                        for lv in group_line_values
+                    )
+                    if total_qty and currency.compare_amounts(
+                        target_total, currency.round(total_qty * (aggregated_lv.get('price_unit') or 0.0))
+                    ) != 0:
+                        aggregated_lv['price_unit'] = target_total / total_qty
 
                     inv_vals = order._get_invoice_lines_values(aggregated_lv, first_pos_line, move_type)
 

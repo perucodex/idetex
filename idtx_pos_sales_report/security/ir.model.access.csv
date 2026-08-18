@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_idtx_pos_sales_report_pos_user,idtx.pos.sales.report POS,model_idtx_pos_sales_report,point_of_sale.group_pos_user,1,0,0,0
+access_idtx_pos_sales_report_account,idtx.pos.sales.report Contabilidad,model_idtx_pos_sales_report,account.group_account_invoice,1,0,0,0
+access_idtx_pos_product_sales_report_pos_user,idtx.pos.product.sales.report POS,model_idtx_pos_product_sales_report,point_of_sale.group_pos_user,1,0,0,0
+access_idtx_pos_product_sales_report_account,idtx.pos.product.sales.report Contabilidad,model_idtx_pos_product_sales_report,account.group_account_invoice,1,0,0,0

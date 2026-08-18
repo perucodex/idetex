@@ -39,7 +39,7 @@ patch(ProductScreen.prototype, {
             const searchWord = (this.pos.searchProductWord || "").trim().toLowerCase();
 
             if (!searchWord) {
-                return report.slice(0, 100);
+                return report.slice(0, 30);
             }
 
             const words = searchWord.split(/\s+/).filter(w => w.length > 0);
@@ -58,7 +58,7 @@ patch(ProductScreen.prototype, {
                 ].map(v => v ? String(v).toLowerCase() : "").join(" ");
 
                 return words.every(word => searchableText.includes(word));
-            }).slice(0, 100);
+            }).slice(0, 30);
         } catch (error) {
             console.error("Error in quantsToDisplay:", error);
             return [];
@@ -122,26 +122,70 @@ patch(ProductScreen.prototype, {
 
     /*
      * Intercepta escaneos de código de barras tipo lot.
-     * Si el lote escaneado está reservado por otro pedido, rechaza el escaneo con notificación.
+     * Blindaje (2026-07-08): el escaneo solo se acepta si el lote corresponde a un
+     * rollo REAL de Existencias PdV, con stock, no reservado y no repetido en el
+     * pedido. Cualquier otro caso se rechaza con sonido + aviso, en vez de dejar
+     * que el lector genérico agregue una línea a medias (producto+peso sin rollo).
      */
     async _barcodeGS1Action(parsed_results) {
         const lotBarcode = parsed_results.find((element) => element.type === "lot");
         if (lotBarcode && lotBarcode.value) {
-            // Buscar el rollo en el reporte de stock para verificar si está bloqueado
             const reportModel = this.pos.models["idtx.pos.stock.report"];
             if (reportModel) {
-                const quant = reportModel.getAll().find(q => q.lot_name === lotBarcode.value);
-                // Si el rollo está reservado por otro pedido, abortar el escaneo
-                if (quant && this.isQuantReservedByOtherOrder(quant)) {
-                    if (this.sound) this.sound.play("scan-error");              // sonido de error
+                // Normalización: sin espacios y sin distinguir mayúsculas/minúsculas,
+                // para tolerar escáneres que envían "c383604-088" en vez de "C383604-088"
+                const scanned = String(lotBarcode.value).trim().toLowerCase();
+                const quant = reportModel.getAll().find(
+                    q => (q.lot_name || "").trim().toLowerCase() === scanned
+                );
+                // Rechazo 1: el lote no corresponde a NINGÚN rollo conocido
+                if (!quant) {
+                    if (this.sound) this.sound.play("scan-error");                   // sonido de error
                     if (this.notification) {
                         this.notification.add(
-                            `Rollo ${lotBarcode.value} bloqueado por otro pedido guardado. No se puede escanear.`,
-                            { type: "warning", sticky: false }
+                            `Rollo "${lotBarcode.value}" NO encontrado en Existencias PdV. ` +
+                            `Escaneo rechazado: verifique el escáner o refresque el POS (F5) si el rollo es de una carga reciente.`,
+                            { type: "danger", sticky: true }
                         );
                     }
                     return;                                                     // no procesar el escaneo
                 }
+                // Rechazo 2: rollo sin stock disponible (ya vendido o en cero)
+                if (!(quant.quantity > 0)) {
+                    if (this.sound) this.sound.play("scan-error");
+                    if (this.notification) {
+                        this.notification.add(
+                            `Rollo ${quant.lot_name} sin stock disponible. Escaneo rechazado.`,
+                            { type: "danger", sticky: true }
+                        );
+                    }
+                    return;
+                }
+                // Rechazo 3: rollo bloqueado por otro pedido guardado
+                if (this.isQuantReservedByOtherOrder(quant)) {
+                    if (this.sound) this.sound.play("scan-error");
+                    if (this.notification) {
+                        this.notification.add(
+                            `Rollo ${quant.lot_name} bloqueado por otro pedido guardado. No se puede escanear.`,
+                            { type: "warning", sticky: false }
+                        );
+                    }
+                    return;
+                }
+                // Rechazo 4: el rollo ya está en el pedido actual (escaneo repetido)
+                if (this.isQuantInOrder(quant)) {
+                    if (this.sound) this.sound.play("scan-error");
+                    if (this.notification) {
+                        this.notification.add(
+                            `Rollo ${quant.lot_name} ya está en el pedido. Escaneo repetido ignorado.`,
+                            { type: "warning", sticky: false }
+                        );
+                    }
+                    return;
+                }
+                // Canonizar el lote con el nombre EXACTO del sistema (mayúsculas correctas):
+                // así la línea guarda el lote real y la reserva por nombre funciona al guardar.
+                lotBarcode.value = quant.lot_name;
             }
         }
         // Caso normal: delegar al comportamiento original

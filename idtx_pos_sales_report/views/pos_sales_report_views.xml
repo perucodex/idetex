@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ===== Vista LISTA: una fila por venta, con totales por grupo ===== -->
+    <record id="view_idtx_pos_sales_report_list" model="ir.ui.view">
+        <field name="name">idtx.pos.sales.report.list</field>
+        <field name="model">idtx.pos.sales.report</field>
+        <field name="arch" type="xml">
+            <list string="Ventas Tienda" create="false" edit="false" delete="false"
+                  default_order="date_order desc" decoration-danger="total &lt; 0">
+                <!-- Orden solicitado: tipo, serie/número, fecha, RUC/DNI, cliente, kilos, pedido, total -->
+                <field name="tipo_venta"/>
+                <field name="doc_name" string="Serie y Número"/>
+                <field name="date_order" widget="datetime"/>
+                <field name="partner_vat"/>
+                <field name="partner_id"/>
+                <field name="kilos" sum="Total kilos"/>
+                <field name="pos_reference"/>
+                <field name="total" sum="Suma Total"/>
+                <!-- Ocultos por defecto: se activan desde el botón de columnas (⚙) -->
+                <field name="doc_rectificado" optional="hide"/>
+                <field name="subtotal" sum="Suma Subtotal" optional="hide"/>
+                <field name="igv" sum="Suma IGV" optional="hide"/>
+                <field name="estado_sunat" optional="hide" widget="badge"
+                       decoration-success="estado_sunat == 'sent'"
+                       decoration-warning="estado_sunat == 'to_send'"
+                       decoration-danger="estado_sunat in ('to_cancel','cancelled')"/>
+                <field name="session_id" optional="hide"/>
+                <field name="config_id" optional="hide"/>
+                <field name="user_id" optional="hide"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="company_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ===== Vista PIVOT: tipo × período por defecto ===== -->
+    <record id="view_idtx_pos_sales_report_pivot" model="ir.ui.view">
+        <field name="name">idtx.pos.sales.report.pivot</field>
+        <field name="model">idtx.pos.sales.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Ventas Tienda" sample="1">
+                <field name="tipo_venta" type="row"/>
+                <field name="date_order" interval="day" type="col"/>
+                <field name="subtotal" type="measure"/>
+                <field name="igv" type="measure"/>
+                <field name="total" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ===== Vista GRÁFICO: barras por día, coloreadas por tipo ===== -->
+    <record id="view_idtx_pos_sales_report_graph" model="ir.ui.view">
+        <field name="name">idtx.pos.sales.report.graph</field>
+        <field name="model">idtx.pos.sales.report</field>
+        <field name="arch" type="xml">
+            <graph string="Ventas Tienda" type="bar" stacked="True" sample="1">
+                <field name="date_order" interval="day"/>
+                <field name="tipo_venta"/>
+                <field name="total" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ===== Búsqueda: filtros por tipo, fecha (rango libre), cliente, etc. ===== -->
+    <record id="view_idtx_pos_sales_report_search" model="ir.ui.view">
+        <field name="name">idtx.pos.sales.report.search</field>
+        <field name="model">idtx.pos.sales.report</field>
+        <field name="arch" type="xml">
+            <search>
+                <!-- Búsqueda de texto: pedido, comprobante, cliente o su documento -->
+                <field name="pos_reference" string="Pedido"/>
+                <field name="doc_name" string="Serie/Número"/>
+                <field name="partner_id" string="Cliente"/>
+                <field name="partner_vat" string="RUC / DNI"/>
+                <!-- Filtros por tipo de venta -->
+                <filter name="f_sin_comprobante" string="Sin comprobante"
+                        domain="[('tipo_venta', '=', 'sin_comprobante')]"/>
+                <filter name="f_boleta" string="Boletas"
+                        domain="[('tipo_venta', '=', 'boleta')]"/>
+                <filter name="f_factura" string="Facturas"
+                        domain="[('tipo_venta', '=', 'factura')]"/>
+                <filter name="f_nc" string="Notas de crédito"
+                        domain="[('tipo_venta', '=', 'nota_credito')]"/>
+                <filter name="f_nd" string="Notas de débito"
+                        domain="[('tipo_venta', '=', 'nota_debito')]"/>
+                <filter name="f_devolucion" string="Devoluciones"
+                        domain="[('tipo_venta', '=', 'devolucion')]"/>
+                <separator/>
+                <!-- Filtro de fecha con rangos predefinidos y personalizados -->
+                <filter name="f_fecha" string="Fecha" date="date_order"/>
+                <!-- Agrupaciones -->
+                <group>
+                    <filter name="g_tipo" string="Tipo de venta" domain="[]" context="{'group_by': 'tipo_venta'}"/>
+                    <filter name="g_cliente" string="Cliente" domain="[]" context="{'group_by': 'partner_id'}"/>
+                    <filter name="g_dia" string="Día" domain="[]" context="{'group_by': 'date_order:day'}"/>
+                    <filter name="g_mes" string="Mes" domain="[]" context="{'group_by': 'date_order:month'}"/>
+                    <filter name="g_sesion" string="Sesión" domain="[]" context="{'group_by': 'session_id'}"/>
+                    <filter name="g_caja" string="Caja" domain="[]" context="{'group_by': 'config_id'}"/>
+                    <filter name="g_vendedor" string="Vendedor" domain="[]" context="{'group_by': 'user_id'}"/>
+                    <filter name="g_sunat" string="Estado SUNAT" domain="[]" context="{'group_by': 'estado_sunat'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ===== Vista LISTA para notas de crédito/débito ===== -->
+    <record id="view_idtx_pos_notas_list" model="ir.ui.view">
+        <field name="name">idtx.pos.sales.report.notas.list</field>
+        <field name="model">idtx.pos.sales.report</field>
+        <field name="arch" type="xml">
+            <list string="Notas" create="false" edit="false" delete="false"
+                  default_order="date_order desc">
+                <field name="doc_name" string="Serie y Número"/>
+                <field name="date_order" widget="datetime"/>
+                <field name="partner_vat"/>
+                <field name="partner_id"/>
+                <field name="kilos" sum="Total kilos"/>
+                <field name="doc_rectificado"/>
+                <field name="pos_reference"/>
+                <field name="total" sum="Suma Total"/>
+                <!-- Ocultos por defecto -->
+                <field name="tipo_venta" optional="hide"/>
+                <field name="subtotal" sum="Suma Subtotal" optional="hide"/>
+                <field name="igv" sum="Suma IGV" optional="hide"/>
+                <field name="estado_sunat" optional="hide" widget="badge"
+                       decoration-success="estado_sunat == 'sent'"
+                       decoration-warning="estado_sunat == 'to_send'"
+                       decoration-danger="estado_sunat in ('to_cancel','cancelled')"/>
+                <field name="session_id" optional="hide"/>
+                <field name="config_id" optional="hide"/>
+                <field name="user_id" optional="hide"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="company_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ===== Vista LISTA para devoluciones sin comprobante ===== -->
+    <record id="view_idtx_pos_devoluciones_list" model="ir.ui.view">
+        <field name="name">idtx.pos.sales.report.devoluciones.list</field>
+        <field name="model">idtx.pos.sales.report</field>
+        <field name="arch" type="xml">
+            <list string="Devoluciones" create="false" edit="false" delete="false"
+                  default_order="date_order desc">
+                <field name="date_order" widget="datetime"/>
+                <field name="partner_vat"/>
+                <field name="partner_id"/>
+                <field name="kilos" sum="Total kilos"/>
+                <field name="pedido_devuelto"/>
+                <field name="pos_reference"/>
+                <field name="total" sum="Suma Total"/>
+                <!-- Ocultos por defecto -->
+                <field name="tipo_venta" optional="hide"/>
+                <field name="subtotal" sum="Suma Subtotal" optional="hide"/>
+                <field name="igv" sum="Suma IGV" optional="hide"/>
+                <field name="session_id" optional="hide"/>
+                <field name="config_id" optional="hide"/>
+                <field name="user_id" optional="hide"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="company_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ===== Acciones y menús ===== -->
+    <record id="action_idtx_pos_sales_report" model="ir.actions.act_window">
+        <field name="name">Ventas Tienda</field>
+        <field name="res_model">idtx.pos.sales.report</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <!-- Vista explícita: sin esto Odoo puede tomar otra lista del mismo modelo -->
+        <field name="view_id" ref="view_idtx_pos_sales_report_list"/>
+        <field name="search_view_id" ref="view_idtx_pos_sales_report_search"/>
+        <!-- Las notas de crédito/débito y las devoluciones tienen su propio menú -->
+        <field name="domain">[('tipo_venta', 'not in', ['nota_credito', 'nota_debito', 'devolucion'])]</field>
+        <!-- Por defecto: agrupado por tipo de venta (los bloques, como el reporte legado) -->
+        <field name="context">{'search_default_g_tipo': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Sin ventas en el período seleccionado</p>
+            <p>Aquí aparecen todas las ventas del Punto de Venta clasificadas por
+               tipo de comprobante: Factura, Boleta o Sin comprobante (PROFORMA).</p>
+        </field>
+    </record>
+
+    <record id="action_idtx_pos_nc_report" model="ir.actions.act_window">
+        <field name="name">Notas de Crédito</field>
+        <field name="res_model">idtx.pos.sales.report</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="view_id" ref="view_idtx_pos_notas_list"/>
+        <field name="search_view_id" ref="view_idtx_pos_sales_report_search"/>
+        <field name="domain">[('tipo_venta', '=', 'nota_credito')]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Sin notas de crédito en el período seleccionado</p>
+            <p>Devoluciones del Punto de Venta emitidas con nota de crédito electrónica.</p>
+        </field>
+    </record>
+
+    <record id="action_idtx_pos_nd_report" model="ir.actions.act_window">
+        <field name="name">Notas de Débito</field>
+        <field name="res_model">idtx.pos.sales.report</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="view_id" ref="view_idtx_pos_notas_list"/>
+        <field name="search_view_id" ref="view_idtx_pos_sales_report_search"/>
+        <field name="domain">[('tipo_venta', '=', 'nota_debito')]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Sin notas de débito en el período seleccionado</p>
+            <p>Notas de débito electrónicas vinculadas a órdenes del Punto de Venta.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_idtx_pos_sales_report"
+              name="Ventas Tienda"
+              parent="point_of_sale.menu_point_rep"
+              action="action_idtx_pos_sales_report"
+              sequence="1"/>
+
+    <menuitem id="menu_idtx_pos_nc_report"
+              name="Notas de Crédito"
+              parent="point_of_sale.menu_point_rep"
+              action="action_idtx_pos_nc_report"
+              sequence="2"/>
+
+    <menuitem id="menu_idtx_pos_nd_report"
+              name="Notas de Débito"
+              parent="point_of_sale.menu_point_rep"
+              action="action_idtx_pos_nd_report"
+              sequence="3"/>
+
+    <record id="action_idtx_pos_devoluciones_report" model="ir.actions.act_window">
+        <field name="name">Devoluciones</field>
+        <field name="res_model">idtx.pos.sales.report</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="view_id" ref="view_idtx_pos_devoluciones_list"/>
+        <field name="search_view_id" ref="view_idtx_pos_sales_report_search"/>
+        <field name="domain">[('tipo_venta', '=', 'devolucion')]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Sin devoluciones en el período seleccionado</p>
+            <p>Devoluciones del Punto de Venta realizadas SIN comprobante
+               (el pedido original tampoco tenía boleta ni factura).</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_idtx_pos_devoluciones_report"
+              name="Devoluciones"
+              parent="point_of_sale.menu_point_rep"
+              action="action_idtx_pos_devoluciones_report"
+              sequence="4"/>
+
+</odoo>

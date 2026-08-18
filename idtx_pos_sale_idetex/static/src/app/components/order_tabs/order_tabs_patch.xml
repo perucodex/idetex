@@ -7,11 +7,17 @@
             <attribute name="style">min-width: 6.5rem; min-height: 3.5rem; line-height: 1.1;</attribute>
         </xpath>
         <xpath expr="//button" position="inside">
-            <div class="fw-bold" t-esc="order.getName()" />
-            <div t-if="order.getPartnerName()" 
-                 class="w-100 text-truncate text-center mt-1" 
-                 style="font-size: 0.65rem; opacity: 0.9; font-weight: normal;"
-                 t-esc="order.getPartnerName().slice(0, 12)" />
+            <!-- Pedido por operación (2026-07-14): el NOMBRE DEL CLIENTE predomina
+                 (arriba, en negrita) y el número del pedido pasa abajo en chico.
+                 Si el pedido aún no tiene cliente, el número vuelve a ser el
+                 texto principal para que la pestaña nunca quede vacía. -->
+            <t t-set="idtxPartner" t-value="order.getPartnerName()"/>
+            <div t-if="idtxPartner"
+                 class="fw-bold w-100 text-truncate text-center"
+                 t-esc="idtxPartner.slice(0, 14)" />
+            <div t-attf-class="w-100 text-truncate text-center {{ idtxPartner ? 'mt-1' : 'fw-bold' }}"
+                 t-attf-style="{{ idtxPartner ? 'font-size: 0.8rem; opacity: 0.9; font-weight: normal;' : '' }}"
+                 t-esc="order.getName()" />
         </xpath>
     </t>
 </templates>

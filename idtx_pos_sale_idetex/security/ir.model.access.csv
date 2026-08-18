@@ -3,3 +3,5 @@ access_idtx_pos_stock_report_pos_user,idtx.pos.stock.report,idtx_pos_report_stoc
 access_pos_roll_return_pos_user,pos.roll.return,model_pos_roll_return,point_of_sale.group_pos_user,1,1,1,1
 access_pos_roll_return_wizard_pos_user,pos.roll.return.wizard,model_pos_roll_return_wizard,point_of_sale.group_pos_user,1,1,1,1
 access_pos_roll_return_wizard_line_pos_user,pos.roll.return.wizard.line,model_pos_roll_return_wizard_line,point_of_sale.group_pos_user,1,1,1,1
+access_pos_roll_split_wizard_pos_user,pos.roll.split.wizard,model_pos_roll_split_wizard,point_of_sale.group_pos_user,1,1,1,1
+access_pos_roll_split_revert_wizard_pos_user,pos.roll.split.revert.wizard,model_pos_roll_split_revert_wizard,point_of_sale.group_pos_user,1,1,1,1

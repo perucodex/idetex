@@ -18,7 +18,7 @@ Muestra un reporte unificado de existencias que incluye:
     'website': "https://www.perucodex.com",
 
     'category': 'Point of Sale',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.7',
     'license': 'LGPL-3',
 
     'depends': [
@@ -32,6 +32,9 @@ Muestra un reporte unificado de existencias que incluye:
 
     'data': [
         'security/ir.model.access.csv',
+        # Setup idempotente del tag 'Muestra' para stock.scrap (asocia
+        # xml_id estable al record existente, o lo crea si falta).
+        'data/stock_scrap_reason_tag_data.xml',
         'views/pos_stock_report_views.xml',
     ],
     'installable': True,

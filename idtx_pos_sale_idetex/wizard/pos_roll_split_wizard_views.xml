@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Vista form del wizard "Partir rollo".
+
+        Diseño:
+          - Sección INFO con datos del rollo origen (todo readonly)
+          - Sección CORTE con el input editable de kilos del nuevo rollo
+          - Sección PREVIEW con vista previa de los kilos restantes y el
+            nombre que tendrá el nuevo rollo
+          - Footer con botones Cancelar / Confirmar partición
+    -->
+    <record id="view_pos_roll_split_wizard_form" model="ir.ui.view">
+        <field name="name">pos.roll.split.wizard.form</field>
+        <field name="model">pos.roll.split.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Partir rollo">
+                <sheet>
+                    <!-- 1. Información del rollo origen — todo readonly para evitar errores -->
+                    <group string="Rollo origen">
+                        <group>
+                            <field name="lot_id" options="{'no_open': True, 'no_create': True}"/>
+                            <field name="product_id" options="{'no_open': True}"/>
+                            <field name="color_name"/>
+                        </group>
+                        <group>
+                            <field name="parent_qty" widget="float" digits="[16,2]"/>
+                            <field name="location_id" options="{'no_open': True}"/>
+                        </group>
+                    </group>
+
+                    <!-- 2. Entrada editable: cuántos kilos del nuevo rollo -->
+                    <group string="Partición">
+                        <field name="split_qty"
+                               widget="float"
+                               digits="[16,2]"
+                               placeholder="Ej: 5.00"/>
+                    </group>
+
+                    <!-- 3. Vista previa en vivo — readonly, se recalcula al escribir
+                         en split_qty gracias al @api.depends del compute. -->
+                    <group string="Vista previa">
+                        <field name="remaining_qty"
+                               widget="float"
+                               digits="[16,2]"
+                               readonly="1"/>
+                        <field name="new_lot_name" readonly="1"/>
+                    </group>
+
+                    <!-- Aviso visual con la regla principal -->
+                    <div class="alert alert-info" role="alert"
+                         style="margin-top: 1rem;">
+                        <i class="fa fa-info-circle me-2"/>
+                        Al confirmar se creará un rollo nuevo con la cantidad indicada
+                        y el rollo origen quedará con el resto. La trazabilidad al rollo
+                        padre queda registrada en el lote nuevo.
+                    </div>
+                </sheet>
+
+                <footer>
+                    <button name="action_confirm_split"
+                            string="Confirmar partición"
+                            type="object"
+                            class="oe_highlight"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!--
+        ir.actions.act_window con binding al modelo idtx.pos.stock.report.
+
+        binding_model_id + binding_view_types="list" hace que este action
+        aparezca en el menú "Acciones" cuando el usuario está viendo la
+        lista de Existencias PdV (la vista que el usuario mostró en la imagen).
+
+        binding_type="action": la entrada se llama igual que el `name` del action.
+    -->
+    <record id="action_pos_roll_split_wizard" model="ir.actions.act_window">
+        <field name="name">Partir rollo</field>
+        <field name="res_model">pos.roll.split.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <!-- Bind al modelo de la vista list de Existencias PdV -->
+        <field name="binding_model_id"
+               ref="idtx_pos_report_stock.model_idtx_pos_stock_report"/>
+        <field name="binding_view_types">list</field>
+    </record>
+</odoo>

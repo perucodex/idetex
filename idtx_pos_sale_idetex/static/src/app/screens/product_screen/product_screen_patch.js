@@ -23,6 +23,14 @@ patch(ProductScreen.prototype, {
         if (discBtn) {
             discBtn.text = "%";                                  // forzar el símbolo corto
         }
+        // Deshabilitar "Cant.": la cantidad de un rollo NUNCA se edita en el carrito.
+        // Un corte de rollo se hace en Existencias PdV → Partir rollo (crea el lote
+        // hijo -C## y mueve los kg en stock). Si el cajero cambiara los kilos aquí,
+        // vendería una cantidad que no coincide con el rollo físico ni con el kardex.
+        const qtyBtn = buttons.find(b => b.value === "quantity");
+        if (qtyBtn) {
+            qtyBtn.disabled = true;                              // visible pero gris e inerte
+        }
         return buttons;
     }
 });

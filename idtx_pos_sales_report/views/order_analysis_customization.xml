@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+      Ajustes al reporte nativo "Análisis de órdenes" (Reportes > Órdenes,
+      modelo report.pos.order), pedidos por el usuario el 2026-07-21:
+      1) Que abra directo en Tabla dinámica (antes: Gráfico).
+      2) Que "Cliente" aparezca como opción directa de "Agrupar por",
+         justo debajo de "Usuario" (antes solo estaba disponible dentro
+         del desplegable "Grupo personalizado").
+      3) Que ya venga agrupado por Cliente por defecto al abrir el reporte.
+      No se toca el módulo nativo point_of_sale: se hereda su vista de
+      búsqueda y se sobrescriben solo los campos necesarios de su acción
+      (mismo patrón usado en menu_existencias.xml).
+    -->
+
+    <!-- Vista de búsqueda: agrega el filtro "Cliente" al grupo "Agrupar por",
+         inmediatamente después de "Usuario". -->
+    <record id="view_report_pos_order_search_idtx" model="ir.ui.view">
+        <field name="name">report.pos.order.search.idtx.cliente</field>
+        <field name="model">report.pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_report_pos_order_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='User']" position="after">
+                <filter string="Cliente" name="idtx_group_partner" context="{'group_by':'partner_id'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Acción nativa: pivote primero (predeterminado) y agrupado por
+         Cliente desde que se abre. Se declara con el MISMO id externo del
+         módulo point_of_sale para sobrescribir solo estos dos campos; el
+         resto de la acción (dominio, ayuda, etc.) queda igual. -->
+    <record id="point_of_sale.action_report_pos_order_all" model="ir.actions.act_window">
+        <field name="view_mode">pivot,graph</field>
+        <field name="context">{'group_by': ['partner_id'], 'search_default_not_cancelled': 1}</field>
+    </record>
+</odoo>

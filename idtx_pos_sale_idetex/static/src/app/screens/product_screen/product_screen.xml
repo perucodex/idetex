@@ -20,10 +20,10 @@
                                 <t t-esc="idtxState.selectedCount"/> rollos seleccionados
                             </span>
                         </div>
-                        <button class="btn btn-primary btn-lg d-flex align-items-center gap-2 px-4 shadow-sm" 
+                        <button class="btn btn-primary btn-lg d-flex align-items-center gap-2 px-4 shadow-sm"
                                 t-on-click="addSelectedQuants"
                                 t-att-disabled="idtxState.selectedCount == 0">
-                            <i class="fa fa-plus-circle"/> 
+                            <i class="fa fa-plus-circle"/>
                             <span class="fw-bold">AGREGAR AL PEDIDO</span>
                         </button>
                     </div>
