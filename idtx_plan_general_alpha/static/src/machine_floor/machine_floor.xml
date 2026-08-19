@@ -32,6 +32,14 @@
                 <span class="mf-stat-lbl">Total</span>
             </div>
         </div>
+        <button class="mf-btn-edit" t-on-click="resetFactoryOrder"
+                title="Ordenar de fábrica (todas las máquinas, todos los centros de trabajo)">
+            <i class="fa fa-sort-numeric-asc"/>
+        </button>
+        <button class="mf-btn-edit" t-att-class="state.editMode ? 'mf-btn-edit--active' : ''"
+                t-on-click="toggleEditMode" title="Combinar cuadros de máquinas">
+            <i class="fa fa-object-group"/>
+        </button>
         <button class="mf-btn-refresh" t-on-click="onRefresh" title="Actualizar">
             <i class="fa fa-refresh"/>
         </button>
@@ -126,26 +134,35 @@
 
         <!-- ── SLOT GRID (no filter — drag-and-drop) ────────────────────────── -->
         <div class="mf-slot-grid" t-else="">
-            <div class="mf-dnd-hint">
+            <div class="mf-dnd-hint" t-if="!state.editMode">
                 <i class="fa fa-hand-grab-o"/>
-                Arrastra las tarjetas para reorganizar · Haz clic para ver detalles
+                Arrastra las tarjetas para reorganizar · Haz clic para ver detalles ·
+                <i class="fa fa-object-group"/> combina hasta 8 cuadros para agrandar una máquina
+            </div>
+            <div class="mf-dnd-hint mf-dnd-hint--edit" t-if="state.editMode">
+                <i class="fa fa-object-group"/>
+                Modo combinar: elige 2, 4, 6 u 8 cuadros en fila o en columna, luego confirma
+                <span class="mf-edit-count" t-if="state.selection.length" t-esc="state.selection.length + '/8 seleccionados'"/>
             </div>
             <div class="mf-grid-inner">
                 <t t-foreach="gridSlots" t-as="slot" t-key="slot.index">
                     <div class="mf-slot"
-                         t-att-class="slot.machine ? 'mf-slot--filled' : 'mf-slot--empty'"
+                         t-att-class="(slot.machine ? 'mf-slot--filled' : 'mf-slot--empty') + (slot.span > 1 ? ' mf-slot--big' : '') + (slot.selected ? ' mf-slot--selected' : '') + (state.editMode ? ' mf-slot--editable' : '')"
+                         t-att-style="slot.gridStyle"
                          t-att-data-slot="slot.index"
+                         t-on-click="onSlotContainerClick"
                          t-on-dragover="onSlotDragOver"
                          t-on-dragleave="onSlotDragLeave"
                          t-on-drop="onSlotDrop">
 
-                        <!-- Machine card -->
-                        <div t-if="slot.machine"
+                        <!-- Machine card — compact (span 1) -->
+                        <div t-if="slot.machine and slot.span === 1"
                              class="mf-card"
                              t-att-class="'mf-card--' + slot.machine.status + (slot.machine.status === 'ejecutando' ? ' mf-card--locked' : '')"
                              t-att-style="'--tc:' + slot.machine.tcfg.color"
                              t-att-draggable="slot.machine.status === 'ejecutando' ? 'false' : 'true'"
                              t-att-data-status="slot.machine.status"
+                             t-att-data-span="slot.span"
                              t-att-data-machine-id="slot.machine.id"
                              t-att-data-slot="slot.index"
                              t-att-title="slot.machine.status === 'ejecutando' ? slot.machine.name + ' — Ejecutando (no se puede mover)' : slot.machine.name"
@@ -165,7 +182,76 @@
                             <div class="mf-card-type" t-esc="slot.machine.type"/>
                         </div>
 
+                        <!-- Machine card — combinada/agrandada (span 2 o 4) -->
+                        <div t-if="slot.machine and slot.span > 1"
+                             class="mf-card mf-card--big"
+                             t-att-class="'mf-card--' + slot.machine.status + (slot.machine.status === 'ejecutando' ? ' mf-card--locked' : '')"
+                             t-att-style="'--tc:' + slot.machine.tcfg.color"
+                             draggable="false"
+                             t-att-data-status="slot.machine.status"
+                             t-att-data-span="slot.span"
+                             t-att-data-span-rows="slot.spanRows"
+                             t-att-data-orientation="slot.orientation"
+                             t-att-data-machine-id="slot.machine.id"
+                             t-att-data-slot="slot.index"
+                             t-att-title="slot.machine.name"
+                             t-on-click="onMachineCardClick">
+
+                            <button t-if="state.editMode" class="mf-card-unmerge"
+                                    t-on-click.stop="() => this.unmergeMachine(slot.machine)" title="Deshacer combinación">
+                                <i class="fa fa-compress"/>
+                            </button>
+
+                            <span t-att-class="'mf-card-big-status-dot mf-card-dot mf-card-dot--' + slot.machine.status"
+                                  t-att-title="panelStateLabel(slot.machine.status)"/>
+
+                            <div class="mf-card-big-headrow">
+                                <div class="mf-card-big-top">
+                                    <span class="mf-card-big-icon">
+                                        <i t-att-class="'fa ' + slot.machine.tcfg.icon"/>
+                                    </span>
+                                    <div class="mf-card-big-id">
+                                        <span class="mf-card-big-num">#<t t-esc="slot.machine.num"/></span>
+                                        <span class="mf-card-big-type" t-esc="slot.machine.type"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <t t-if="slot.machine.current_job">
+                                <div class="mf-card-big-job">
+                                    <div class="mf-card-big-job-prod" t-esc="slot.machine.current_job.production"/>
+                                    <div class="mf-card-big-job-prod2" t-esc="slot.machine.current_job.product"/>
+                                    <div class="mf-card-big-progress">
+                                        <div class="mf-card-big-progress-bar" t-attf-style="width:#{Math.round(slot.machine.current_job.progress)}%;"/>
+                                    </div>
+                                    <div class="mf-card-big-progress-lbl">Avance: <t t-esc="Math.round(slot.machine.current_job.progress)"/>%</div>
+                                </div>
+                            </t>
+                            <t t-else="">
+                                <div class="mf-card-big-empty">
+                                    <i class="fa fa-moon-o"/> <span>Sin OT en progreso</span>
+                                </div>
+                            </t>
+                        </div>
+
                     </div>
+                </t>
+            </div>
+
+            <!-- Barra flotante de acción del modo edición -->
+            <div class="mf-edit-bar" t-if="state.editMode and editAction">
+                <span t-if="editAction.type === 'invalid'" class="mf-edit-bar-msg mf-edit-bar-msg--error" t-esc="editAction.message"/>
+                <t t-if="editAction.type === 'combine'">
+                    <span class="mf-edit-bar-msg">Combinar <t t-esc="editAction.spanCols + 'x' + editAction.spanRows"/> para <t t-esc="editAction.machine.name"/></span>
+                    <button class="mf-edit-bar-btn" t-on-click="combineSelection">
+                        <i class="fa fa-object-group"/> Combinar
+                    </button>
+                </t>
+                <t t-if="editAction.type === 'unmerge'">
+                    <span class="mf-edit-bar-msg">Deshacer combinación de <t t-esc="editAction.machine.name"/></span>
+                    <button class="mf-edit-bar-btn" t-on-click="unmergeSelection">
+                        <i class="fa fa-compress"/> Deshacer
+                    </button>
                 </t>
             </div>
         </div>

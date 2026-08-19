@@ -4,6 +4,32 @@ import re
 from odoo import _, models, fields, api
 from odoo.exceptions import UserError
 
+# Mapea el nombre del centro de trabajo REAL (de la OT, p.ej. de FULL PIMA)
+# al departamento HR donde viven las máquinas (de IDETEX). Se usa departamento
+# en vez de mrp.workcenter porque un equipo de IDETEX no puede apuntar al
+# centro de trabajo de otra compañía sin romper check_company — ver
+# [[project_workcenter_check_company]]. Departamento sí es único (no hay
+# copias homónimas por compañía), así que no hace falta crear ni tocar
+# ningún mrp.workcenter para este emparejamiento.
+_WORKCENTER_DEPT_KEYWORDS = {
+    'TEJEDURIA':  ['TEJED', 'TEJID'],
+    'TINTORERIA': ['TINTOR', 'TINTE'],
+}
+
+
+def _department_ids_for_workcenter_name(env, wc_name):
+    """IDs de hr.department cuyo nombre coincide con el área de "wc_name"
+    (p.ej. "TEJEDURIA" -> departamento "Tejeduría")."""
+    kws = _WORKCENTER_DEPT_KEYWORDS.get((wc_name or '').upper(), [])
+    if not kws:
+        return []
+    Dept = env['hr.department'].sudo()
+    dept_ids = set()
+    for kw in kws:
+        dept_ids.update(Dept.search([('name', 'ilike', kw)]).ids)
+    return list(dept_ids)
+
+
 class MrpWorkorder(models.Model):
     _inherit = 'mrp.workorder'
 
@@ -356,15 +382,17 @@ class MrpWorkorder(models.Model):
                 if invalid_options:
                     raise UserError(_('All options must have assigned employees and equipments before starting.'))
                 # La orden de trabajo debe estar enlazada a máquinas de su misma
-                # área (mismo nombre de centro de trabajo, p. ej. TEJEDURIA) y que
-                # estén OPERATIVAS: no se puede iniciar con máquinas de otra área ni
+                # área (mismo departamento, p. ej. Tejeduría) y que estén
+                # OPERATIVAS: no se puede iniciar con máquinas de otra área ni
                 # en otro estado (apagada, malograda, mantenimiento, ejecutando).
-                # Se compara por NOMBRE de centro porque los equipos y las órdenes
-                # pueden estar en centros de trabajo homónimos de distinta compañía.
+                # Se compara por DEPARTAMENTO (no por centro de trabajo) porque
+                # las máquinas son de IDETEX y la OT puede ser de otra compañía
+                # — ver [[project_workcenter_check_company]].
                 all_equipment = wo.option_ids.equipment_ids
                 wc_name = wo.workcenter_id.name
+                dept_ids = _department_ids_for_workcenter_name(self.env, wc_name)
                 wrong_wc = all_equipment.filtered(
-                    lambda e: not e.workcenter_id or e.workcenter_id.name != wc_name
+                    lambda e: not e.department_id or e.department_id.id not in dept_ids
                 )
                 if wrong_wc:
                     raise UserError(_(
@@ -477,10 +505,11 @@ class MrpWorkorderOption(models.Model):
         compute='_compute_available_thread_products',
         string='Available Thread Products'
     )
-    # Máquinas seleccionables: solo las OPERATIVAS del mismo área (nombre de
-    # centro de trabajo) que la orden de trabajo. Se empareja por nombre porque
-    # los equipos y las órdenes pueden vivir en centros homónimos de distinta
-    # compañía (p. ej. TEJEDURIA de IDETEX vs. TEJEDURIA de FULL PIMA).
+    # Máquinas seleccionables: solo las OPERATIVAS del mismo área (mismo
+    # departamento, p.ej. Tejeduría) que la orden de trabajo. Se empareja por
+    # departamento (no por centro de trabajo) porque las máquinas son de
+    # IDETEX y la OT puede ser de otra compañía — ver
+    # [[project_workcenter_check_company]].
     available_equipment_ids = fields.Many2many(
         'maintenance.equipment',
         relation='mrp_wo_option_avail_equipment_rel',
@@ -597,14 +626,15 @@ class MrpWorkorderOption(models.Model):
     @api.depends('workorder_id', 'workorder_id.workcenter_id',
                  'workorder_id.workcenter_id.name')
     def _compute_available_equipment(self):
-        """Máquinas OPERATIVAS del mismo área (nombre de centro) que la OT."""
+        """Máquinas OPERATIVAS del mismo área (departamento) que la OT."""
         Equipment = self.env['maintenance.equipment']
         for opt in self:
             wc = opt.workorder_id.workcenter_id
-            if wc and wc.name:
+            dept_ids = _department_ids_for_workcenter_name(self.env, wc.name) if wc else []
+            if dept_ids:
                 opt.available_equipment_ids = Equipment.search([
                     ('active', '=', True),
-                    ('workcenter_id.name', '=', wc.name),
+                    ('department_id', 'in', dept_ids),
                     ('machine_state', '=', 'operativa'),
                 ])
             else:

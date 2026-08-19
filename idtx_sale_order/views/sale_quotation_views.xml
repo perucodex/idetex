@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- La acción core tenía `path='sales'`: por eso, aunque su menú esté
-         eliminado, seguía siendo la pantalla de entrada de la app Ventas (sin
-         filtrar por is_quote). Se limpia el path ANTES de asignarlo abajo a
-         `sale_quotation_action` — `path` tiene unique constraint en BD, no
-         puede estar en dos acciones a la vez ni de forma transitoria. -->
-    <!-- eval="False" => NULL. Con <field></field> quedaba cadena vacía '',
-         que TAMBIÉN cuenta para el unique constraint y chocaba con cualquier
-         otra acción con path vacío (p.ej. knowledge al instalarse). -->
+    <!-- La pantalla de entrada de la app Ventas (ícono / `/odoo/sales`) la
+         decide `ir.actions.act_window.path='sales'`, que pertenece a la
+         acción CORE `action_quotations_with_onboarding`. `path` tiene unique
+         constraint en BD: un fix anterior le quitaba el path a esta acción
+         core para dárselo a `sale_quotation_action` (propia), pero eso rompe
+         en cada `-u all`/`-u sale` posterior — el módulo `sale` vuelve a
+         escribir `path='sales'` en SU PROPIA acción ANTES de que este
+         archivo corra (core siempre carga antes que los módulos que
+         dependen de él), y choca con el valor que dejó la acción propia en
+         la corrida anterior (UniqueViolation, tumba el registro completo).
+         Fix robusto: filtrar la acción core IN SITU (mismo id, mismo path,
+         nunca compite con nadie por el valor) en vez de robarle el path. -->
     <record id="sale.action_quotations_with_onboarding" model="ir.actions.act_window">
-        <field name="path" eval="False"/>
+        <field name="domain">[('is_quote', '=', True)]</field>
+        <field name="context">{'search_default_my_quotation': 1, 'default_is_quote': True}</field>
     </record>
 
     <record id="sale_quotation_action" model="ir.actions.act_window">
@@ -20,10 +25,6 @@
         <field name="search_view_id" ref="sale.sale_order_view_search_inherit_quotation"/>
         <field name="context">{'search_default_my_quotation': 1, 'default_is_quote': True}</field>
         <field name="domain">[('is_quote','=', True)]</field>
-        <!-- `path='sales'` es lo que hace que esta acción (no el árbol de
-             menús) sea la pantalla de entrada al hacer clic en el ícono de la
-             app Ventas. -->
-        <field name="path">sales</field>
     </record>
 
     <record id="sale_order_action" model="ir.actions.act_window">
@@ -44,11 +45,17 @@
         <!-- `active=False` solo los oculta del árbol de menús; se eliminan
              del todo para que no queden alcanzables por ninguna otra vía
              (búsqueda, breadcrumbs, etc). El fix real de la pantalla de
+<<<<<<< HEAD
              entrada de la app está arriba (campo `path`).
              Se usa una función IDEMPOTENTE en vez de <delete>: el delete
              borra el xmlid junto con el menú y en cada -u posterior fallaba
              con "External ID not found: sale.menu_sale_quotations". -->
         <function model="sale.order" name="_idtx_remove_core_sale_menus" eval="[[]]"/>
+=======
+             entrada de la app está arriba (dominio de la acción core). -->
+        <delete id="sale.menu_sale_quotations" model="ir.ui.menu"/>
+        <delete id="sale.menu_sale_order" model="ir.ui.menu"/>
+>>>>>>> 9131037 (Actualizaciones 19/08)
     </data>
 
 </odoo>

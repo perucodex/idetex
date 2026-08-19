@@ -54,22 +54,22 @@ function pad2(n) { return String(n).padStart(2, '0'); }
 // ── Area & status metadata ─────────────────────────────────────────────────
 function areaMeta(area) {
     const key = (area || '').toUpperCase().trim();
-    if (key === 'TEJEDURIA')          return { color: '#1f8a9b', soft: '#e4f2f4' };
-    if (key === 'PRE TINTORERIA')     return { color: '#5b8fd0', soft: '#e8f0fb' };
-    if (key === 'TINTORERIA')         return { color: '#7c4bd0', soft: '#f0e9fb' };
-    if (key === 'PRE ESTAMPADO')      return { color: '#c77b3a', soft: '#faeede' };
-    if (key === 'ESTAMPADO')          return { color: '#d2682f', soft: '#fbeee2' };
-    if (key === 'PRE ACABADO')        return { color: '#3a8c6e', soft: '#e4f4ed' };
-    if (key === 'ACABADO')            return { color: '#4a8f3c', soft: '#ebf3e6' };
-    if (key === 'CONTROL DE CALIDAD') return { color: '#4a8f3c', soft: '#ebf3e6' };
-    if (key === 'CONFECCION')         return { color: '#b03a7c', soft: '#f9e8f2' };
-    return { color: '#5b6472', soft: '#f1f3f6' };
+    if (key === 'TEJEDURIA')          return { color: 'var(--plr-area-tej)',     soft: 'var(--plr-area-tej-soft)' };
+    if (key === 'PRE TINTORERIA')     return { color: 'var(--plr-area-pretin)',  soft: 'var(--plr-area-pretin-soft)' };
+    if (key === 'TINTORERIA')         return { color: 'var(--plr-area-tin)',     soft: 'var(--plr-area-tin-soft)' };
+    if (key === 'PRE ESTAMPADO')      return { color: 'var(--plr-area-preest)',  soft: 'var(--plr-area-preest-soft)' };
+    if (key === 'ESTAMPADO')          return { color: 'var(--plr-area-est)',     soft: 'var(--plr-area-est-soft)' };
+    if (key === 'PRE ACABADO')        return { color: 'var(--plr-area-preacab)', soft: 'var(--plr-area-preacab-soft)' };
+    if (key === 'ACABADO')            return { color: 'var(--plr-area-acab)',    soft: 'var(--plr-area-acab-soft)' };
+    if (key === 'CONTROL DE CALIDAD') return { color: 'var(--plr-area-acab)',    soft: 'var(--plr-area-acab-soft)' };
+    if (key === 'CONFECCION')         return { color: 'var(--plr-area-confec)', soft: 'var(--plr-area-confec-soft)' };
+    return { color: 'var(--plr-area-default)', soft: 'var(--plr-area-default-soft)' };
 }
 
 function statusMeta(end, progress, today) {
-    if (progress >= 100)  return { label: 'Completado', color: '#1f9d6b', soft: '#e6f5ee' };
-    if (end < today)      return { label: 'Retrasado',  color: '#e0712f', soft: '#fdeee2' };
-    return                       { label: 'En proceso', color: '#2f6fed', soft: '#e9f0fe' };
+    if (progress >= 100)  return { label: 'Completado', color: 'var(--plr-status-done)', soft: 'var(--plr-status-done-soft)' };
+    if (end < today)      return { label: 'Retrasado',  color: 'var(--plr-accent)',       soft: 'var(--plr-accent-soft)' };
+    return                       { label: 'En proceso', color: 'var(--plr-status-prog)',  soft: 'var(--plr-status-prog-soft)' };
 }
 
 // ── localStorage helpers ───────────────────────────────────────────────────
@@ -351,18 +351,18 @@ export class PlannerView extends Component {
             for (let d = rs; d < re; d += DAY_MS) {
                 const dt = new Date(d);
                 topTicks.push({ x: xOf(d), w: DAY_MS * pxPerMs, label: DOW[dt.getDay()] + ' ' + dt.getDate() + ' ' + MONTHS[dt.getMonth()] });
-                gridLines.push({ x: xOf(d), color: '#dfe3ea' });
+                gridLines.push({ x: xOf(d), color: 'var(--plr-grid-strong)' });
                 if (isWeekend(d)) weekendBands.push({ x: xOf(d), w: DAY_MS * pxPerMs });
             }
             for (let h = rs; h < re; h += 3 * 3600000) {
                 const dt = new Date(h);
-                bottomTicks.push({ x: xOf(h), w: 3 * hourPx, label: pad2(dt.getHours()) + ':00', color: isWeekend(h) ? '#bbc2cd' : '#5b6472' });
+                bottomTicks.push({ x: xOf(h), w: 3 * hourPx, label: pad2(dt.getHours()) + ':00', color: isWeekend(h) ? 'var(--plr-muted4)' : 'var(--plr-text3)' });
             }
         } else if (zoom === 'dias') {
             for (let d = rs; d < re; d += DAY_MS) {
                 const dt = new Date(d);
-                bottomTicks.push({ x: xOf(d), w: dayPx, label: DOW_SHORT[dt.getDay()] + ' ' + dt.getDate(), color: isWeekend(d) ? '#bbc2cd' : '#5b6472' });
-                gridLines.push({ x: xOf(d), color: dt.getDay() === 1 ? '#dfe3ea' : '#eef0f4' });
+                bottomTicks.push({ x: xOf(d), w: dayPx, label: DOW_SHORT[dt.getDay()] + ' ' + dt.getDate(), color: isWeekend(d) ? 'var(--plr-muted4)' : 'var(--plr-text3)' });
+                gridLines.push({ x: xOf(d), color: dt.getDay() === 1 ? 'var(--plr-grid-strong)' : 'var(--plr-border2)' });
                 if (isWeekend(d)) weekendBands.push({ x: xOf(d), w: dayPx });
             }
             for (let mc = som(rs); mc < re; mc = addMonths(mc, 1)) {
@@ -372,8 +372,8 @@ export class PlannerView extends Component {
         } else if (zoom === 'semanas') {
             for (let w = rs; w < re; w += 7 * DAY_MS) {
                 const dt = new Date(w);
-                bottomTicks.push({ x: xOf(w), w: 7 * dayPx, label: 'Sem · ' + dt.getDate() + ' ' + MONTHS[dt.getMonth()], color: '#5b6472' });
-                gridLines.push({ x: xOf(w), color: '#dfe3ea' });
+                bottomTicks.push({ x: xOf(w), w: 7 * dayPx, label: 'Sem · ' + dt.getDate() + ' ' + MONTHS[dt.getMonth()], color: 'var(--plr-text3)' });
+                gridLines.push({ x: xOf(w), color: 'var(--plr-grid-strong)' });
             }
             for (let mc = som(rs); mc < re; mc = addMonths(mc, 1)) {
                 const next = addMonths(mc, 1);
@@ -383,8 +383,8 @@ export class PlannerView extends Component {
             for (let mc = som(rs); mc < re; mc = addMonths(mc, 1)) {
                 const next = addMonths(mc, 1);
                 const dt   = new Date(mc);
-                bottomTicks.push({ x: xOf(mc), w: (next - mc) * pxPerMs, label: MONTHS[dt.getMonth()], color: '#5b6472' });
-                gridLines.push({ x: xOf(mc), color: dt.getMonth() === 0 ? '#dfe3ea' : '#eef0f4' });
+                bottomTicks.push({ x: xOf(mc), w: (next - mc) * pxPerMs, label: MONTHS[dt.getMonth()], color: 'var(--plr-text3)' });
+                gridLines.push({ x: xOf(mc), color: dt.getMonth() === 0 ? 'var(--plr-grid-strong)' : 'var(--plr-border2)' });
             }
             for (let yc = soy(rs); yc < re; yc = addYears(yc, 1)) {
                 const next = addYears(yc, 1);
@@ -393,8 +393,8 @@ export class PlannerView extends Component {
         } else {
             for (let yc = soy(rs); yc < re; yc = addYears(yc, 1)) {
                 const next = addYears(yc, 1);
-                bottomTicks.push({ x: xOf(yc), w: (next - yc) * pxPerMs, label: '' + new Date(yc).getFullYear(), color: '#5b6472' });
-                gridLines.push({ x: xOf(yc), color: '#dfe3ea' });
+                bottomTicks.push({ x: xOf(yc), w: (next - yc) * pxPerMs, label: '' + new Date(yc).getFullYear(), color: 'var(--plr-text3)' });
+                gridLines.push({ x: xOf(yc), color: 'var(--plr-grid-strong)' });
             }
         }
 
@@ -437,11 +437,11 @@ export class PlannerView extends Component {
 
                 let barBg, fillBg, barTextColor;
                 if (barStyle === 'avance') {
-                    barBg = '#e9ecf2'; fillBg = sm.color; barTextColor = '#2a3142';
+                    barBg = 'var(--plr-bar-track)'; fillBg = sm.color; barTextColor = 'var(--plr-text2b)';
                 } else if (barStyle === 'area') {
-                    barBg = am.color; fillBg = 'rgba(15,22,45,.22)'; barTextColor = '#fff';
+                    barBg = am.color; fillBg = 'var(--plr-bar-fill-overlay)'; barTextColor = '#fff';
                 } else {
-                    barBg = sm.color; fillBg = 'rgba(15,22,45,.22)'; barTextColor = '#fff';
+                    barBg = sm.color; fillBg = 'var(--plr-bar-fill-overlay)'; barTextColor = '#fff';
                 }
 
                 const dateLabel = t.hasDate
@@ -692,24 +692,24 @@ export class PlannerView extends Component {
     }
 
     get zoomBtns() {
-        const accent     = '#e0712f';
-        const accentSoft = '#fdeee2';
+        const accent     = 'var(--plr-accent)';
+        const accentSoft = 'var(--plr-accent-soft)';
         const opts = [['horas','Horas'],['dias','Días'],['semanas','Semanas'],['meses','Meses'],['anios','Años']];
         return opts.map(([key, label]) => {
             const on = key === this.st.zoom;
             return { key, label, onClick: () => this.setZoom(key),
-                bc: on ? accent : '#d8dce3', bg: on ? accentSoft : '#fff', fg: on ? accent : '#3a4252' };
+                bc: on ? accent : 'var(--plr-btn-border)', bg: on ? accentSoft : 'var(--plr-surface)', fg: on ? accent : 'var(--plr-text2)' };
         });
     }
 
     get styleBtns() {
-        const accent     = '#e0712f';
-        const accentSoft = '#fdeee2';
+        const accent     = 'var(--plr-accent)';
+        const accentSoft = 'var(--plr-accent-soft)';
         const opts = [['estado','Por estado'],['avance','Por avance'],['area','Por área']];
         return opts.map(([key, label]) => {
             const on = key === this.st.barStyle;
             return { key, label, onClick: () => this.setBarStyle(key),
-                bc: on ? accent : '#d8dce3', bg: on ? accentSoft : '#fff', fg: on ? accent : '#3a4252' };
+                bc: on ? accent : 'var(--plr-btn-border)', bg: on ? accentSoft : 'var(--plr-surface)', fg: on ? accent : 'var(--plr-text2)' };
         });
     }
 }

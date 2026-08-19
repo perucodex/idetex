@@ -1,5 +1,6 @@
 import datetime
 import logging
+import re
 import pytz
 from collections import defaultdict
 from odoo import http
@@ -7,85 +8,64 @@ from odoo.http import request
 
 _logger = logging.getLogger(__name__)
 
-_TEXPLUS_DSN = "DSN=ENBTEX1_DSN;PORT=1433;UID=sistemas;PWD=idtE#21@IRdc95;TDS_Version=7.3"
+
+def _covered_cells(anchor, span_cols, span_rows, cols):
+    w = max(1, span_cols or 1)
+    h = max(1, span_rows or 1)
+    return {anchor + r * cols + c for r in range(h) for c in range(w)}
 
 
-def _maq_tipo(cod):
-    p = (cod or "")[:2].upper()
-    if p == "TT" or cod.upper() in ("BIANCA", "CEPILL", "TTHD01", "TTHD02"):
-        return "Tintorería"
-    if p == "AC":
-        return "Acabados"
-    if p == "PR":
-        return "Preparado"
-    if p == "ES":
-        return "Estampado"
-    return "Otros"
+def _machine_num(name):
+    """Extrae el número de máquina (ej. 'JERSERA MAQ 12' -> 12); None si el
+    nombre no tiene número. Mismo criterio que machineNum() en machine_floor.js."""
+    n = (name or "").upper()
+    m = re.search(r"MAQ\s+(\d+)", n)
+    if m:
+        return int(m.group(1))
+    nums = re.findall(r"\d+", n)
+    return int(nums[-1]) if nums else None
+
+
+def _factory_sort_key(name):
+    """Orden real de fábrica: por número de máquina. Dentro de un mismo
+    centro de trabajo el número NO se repite entre tipos (es una secuencia
+    única de instalación 1..N que mezcla LISTADORA/JERSERA/RIPERA/etc, no
+    algo agrupado por tipo) — por eso se ordena solo por número, sin agrupar.
+    Las máquinas sin número (p.ej. 'BIANCALANI') van al final, por nombre."""
+    num = _machine_num(name)
+    if num is not None:
+        return (0, num, "")
+    return (1, 0, (name or "").upper())
 
 
 class PlanAlphaDashboard(http.Controller):
 
-    def _get_maquinas_data(self):
-        try:
-            import pyodbc
-            conn = pyodbc.connect(_TEXPLUS_DSN, timeout=5)
-            cursor = conn.cursor()
+    # Nombre de área (TEJEDURIA/TINTORERIA) -> palabras clave del departamento
+    # HR donde viven las máquinas. Se usa departamento (no mrp.workcenter)
+    # porque un equipo de IDETEX no puede apuntar al centro de trabajo real
+    # de otra compañía sin romper check_company — ver
+    # [[project_workcenter_check_company]]. El departamento es único (sin
+    # copias homónimas por compañía), así que no hace falta crear ni tocar
+    # ningún mrp.workcenter para este emparejamiento.
+    _WORKCENTER_DEPT_KEYWORDS = {
+        "TEJEDURIA":  ["TEJED", "TEJID"],
+        "TINTORERIA": ["TINTOR", "TINTE"],
+    }
 
-            cursor.execute("""
-                SELECT TOP 15
-                    c.MaqCod, m.MaqDsc,
-                    SUM(CASE WHEN CAST(c.HisProFec AS DATE) = CAST(GETDATE() AS DATE)
-                             THEN c.HisProULin ELSE 0 END) AS hoy,
-                    SUM(CASE WHEN c.HisProFec >= DATEADD(day, -7, GETDATE())
-                             THEN c.HisProULin ELSE 0 END) AS semana
-                FROM CHIPRO c
-                JOIN MAQUIN m ON m.MaqCod = c.MaqCod AND m.EmprCod = c.EmprCod
-                WHERE c.HisProFec >= DATEADD(day, -7, GETDATE())
-                  AND m.MaqTip = 'E'
-                GROUP BY c.MaqCod, m.MaqDsc
-                HAVING SUM(CASE WHEN c.HisProFec >= DATEADD(day, -7, GETDATE())
-                                THEN c.HisProULin ELSE 0 END) > 0
-                ORDER BY hoy DESC, semana DESC
-            """)
-            top_maquinas = []
-            for row in cursor.fetchall():
-                cod  = str(row[0]).strip()
-                desc = str(row[1]).strip()
-                top_maquinas.append({
-                    "cod": cod, "desc": desc,
-                    "hoy": int(row[2] or 0), "semana": int(row[3] or 0),
-                    "tipo": _maq_tipo(cod),
-                })
-
-            cursor.execute("""
-                SELECT
-                    CAST(c.HisProFec AS DATE) AS dia,
-                    SUM(CASE WHEN LEFT(c.MaqCod,2)='TT' OR c.MaqCod IN ('BIANCA','CEPILL')
-                             THEN c.HisProULin ELSE 0 END) AS tintoreria,
-                    SUM(CASE WHEN LEFT(c.MaqCod,2)='AC' THEN c.HisProULin ELSE 0 END) AS acabados,
-                    SUM(CASE WHEN LEFT(c.MaqCod,2)='PR' THEN c.HisProULin ELSE 0 END) AS preparado,
-                    SUM(CASE WHEN LEFT(c.MaqCod,2)='ES' THEN c.HisProULin ELSE 0 END) AS estampado
-                FROM CHIPRO c
-                WHERE c.HisProFec >= DATEADD(day, -7, GETDATE())
-                  AND c.HisProFec <= GETDATE()
-                GROUP BY CAST(c.HisProFec AS DATE)
-                ORDER BY dia
-            """)
-            tendencia_maq = [
-                {
-                    "dia": str(row[0])[:10],
-                    "tintoreria": int(row[1] or 0),
-                    "acabados":   int(row[2] or 0),
-                    "preparado":  int(row[3] or 0),
-                    "estampado":  int(row[4] or 0),
-                }
-                for row in cursor.fetchall()
-            ]
-            conn.close()
-            return {"top_maquinas": top_maquinas, "tendencia_maq": tendencia_maq, "disponible": True}
-        except Exception as e:
-            _logger.warning("Plan Alpha Dashboard: TEXPLUS no disponible — %s", e)
-            return {"top_maquinas": [], "tendencia_maq": [], "disponible": False}
+    def _equipment_domain_for_workcenter(self, env, workcenter):
+        """Dominio de búsqueda de maintenance.equipment para un área dada,
+        o None si el área no existe / no aplica. Compartido por floor_data
+        y reset_factory_order."""
+        kws = self._WORKCENTER_DEPT_KEYWORDS.get((workcenter or "").upper(), [])
+        if not kws:
+            return None
+        Dept = env["hr.department"].sudo()
+        dept_ids = []
+        for kw in kws:
+            dept_ids += Dept.search([("name", "ilike", kw)]).ids
+        if not dept_ids:
+            return None
+        return [("active", "=", True), ("department_id", "in", dept_ids)]
 
     @http.route(
         "/idtx_plan_alpha/workcenters",
@@ -94,25 +74,15 @@ class PlanAlphaDashboard(http.Controller):
         methods=["POST"],
     )
     def alpha_workcenters(self):
-        """Return all mrp.workcenter that have active equipment, with machine count."""
+        """Return the fixed list of áreas (TEJEDURIA/TINTORERIA) with their
+        active machine count, por departamento — ver _equipment_domain_for_workcenter."""
         env = request.env
         Equipment = env["maintenance.equipment"].sudo()
-        Workcenter = env["mrp.workcenter"].sudo()
-
-        if "workcenter_id" in Equipment._fields:
-            equipments = Equipment.search([("active", "=", True)])
-            wc_counts = {}
-            for eq in equipments:
-                if eq.workcenter_id:
-                    wc_counts[eq.workcenter_id.id] = wc_counts.get(eq.workcenter_id.id, 0) + 1
-            wcs = Workcenter.browse(list(wc_counts)).filtered(lambda w: w.active).sorted("name")
-            workcenters = [{"name": wc.name, "count": wc_counts.get(wc.id, 0)} for wc in wcs]
-        else:
-            # Fallback: fixed list
-            workcenters = [
-                {"name": "TINTORERIA", "count": 0},
-                {"name": "TEJEDURIA",  "count": 0},
-            ]
+        workcenters = []
+        for name in ("TEJEDURIA", "TINTORERIA"):
+            domain = self._equipment_domain_for_workcenter(env, name)
+            count = Equipment.search_count(domain) if domain else 0
+            workcenters.append({"name": name, "count": count})
         return {"workcenters": workcenters}
 
     @http.route(
@@ -127,29 +97,9 @@ class PlanAlphaDashboard(http.Controller):
             return {"machines": [], "workcenter": workcenter}
 
         Equipment = env["maintenance.equipment"].sudo()
-        domain = [("active", "=", True)]
-
-        if "workcenter_id" in Equipment._fields:
-            wc = env["mrp.workcenter"].sudo().search([("name", "=", workcenter)], limit=1)
-            if wc:
-                domain.append(("workcenter_id", "=", wc.id))
-            else:
-                return {"machines": [], "workcenter": workcenter}
-        else:
-            KEYWORDS = {
-                "TEJEDURIA":  ["TEJED", "TEJID"],
-                "TINTORERIA": ["TINTOR", "TINTE"],
-            }
-            kws = KEYWORDS.get(workcenter.upper(), [])
-            if not kws:
-                return {"machines": [], "workcenter": workcenter}
-            Dept = env["hr.department"].sudo()
-            dept_ids = []
-            for kw in kws:
-                dept_ids += Dept.search([("name", "ilike", kw)]).ids
-            if not dept_ids:
-                return {"machines": [], "workcenter": workcenter}
-            domain.append(("department_id", "in", dept_ids))
+        domain = self._equipment_domain_for_workcenter(env, workcenter)
+        if domain is None:
+            return {"machines": [], "workcenter": workcenter}
 
         equipments = Equipment.search(domain, order="name asc")
 
@@ -159,7 +109,11 @@ class PlanAlphaDashboard(http.Controller):
         Layout = env["idtx.alpha.floor.layout"].sudo()
         existing = Layout.search([("workcenter", "=", workcenter)])
         layout_map = {l.equipment_id.id: l.slot_index for l in existing}
-        occupied = set(layout_map.values())
+        span_map = {l.equipment_id.id: (l.span_cols, l.span_rows) for l in existing}
+        occupied = set()
+        for eq_id, anchor in layout_map.items():
+            cols, rows = span_map.get(eq_id, (1, 1))
+            occupied |= _covered_cells(anchor, cols, rows, GRID_COLS_NEW)
 
         if not layout_map and "idtx.machine.layout" in env.registry.models:
             OldLayout = env["idtx.machine.layout"].sudo()
@@ -205,6 +159,26 @@ class PlanAlphaDashboard(http.Controller):
             Layout.create(to_create)
 
         has_state = "machine_state" in Equipment._fields
+
+        # Trabajo actual — solo para las máquinas agrandadas (span > 1), para no
+        # pagar el costo de esta búsqueda en las decenas/cientos de máquinas normales.
+        current_job = {}
+        big_ids = [eq.id for eq in equipments if span_map.get(eq.id, (1, 1)) != (1, 1)]
+        if big_ids and "mrp.workorder" in env.registry.models:
+            Workorder = env["mrp.workorder"].sudo()
+            for eq_id in big_ids:
+                wo = Workorder.search([
+                    ("option_ids.equipment_ids", "in", eq_id),
+                    ("state", "=", "progress"),
+                ], order="date_start desc", limit=1)
+                if wo:
+                    current_job[eq_id] = {
+                        "production": wo.production_id.name or "",
+                        "product":    wo.product_id.display_name or "",
+                        "progress":   round(wo.qty_produced or 0, 1) / (wo.qty_production or 1) * 100
+                                      if wo.qty_production else 0,
+                    }
+
         machines = []
         for eq in equipments:
             machines.append({
@@ -216,6 +190,9 @@ class PlanAlphaDashboard(http.Controller):
                 "oos":           bool(eq.oos) if hasattr(eq, "oos") else False,
                 "machine_state": eq.machine_state if has_state else None,
                 "slot_index":    layout_map.get(eq.id, 0),
+                "span_cols":     span_map.get(eq.id, (1, 1))[0],
+                "span_rows":     span_map.get(eq.id, (1, 1))[1],
+                "current_job":   current_job.get(eq.id),
             })
         return {"machines": machines, "workcenter": workcenter}
 
@@ -318,19 +295,59 @@ class PlanAlphaDashboard(http.Controller):
         auth="user",
         methods=["POST"],
     )
-    def save_floor_position(self, equipment_id=None, workcenter=None, slot_index=None):
-        """Persist a machine's grid slot position."""
+    def save_floor_position(self, equipment_id=None, workcenter=None, slot_index=None,
+                             span_cols=1, span_rows=1):
+        """Persist a machine's grid slot position and combined size (up to 4x4 cells)."""
         if not equipment_id or not workcenter or slot_index is None:
             return {"ok": False}
+        if span_cols not in (1, 2, 3, 4):
+            span_cols = 1
+        if span_rows not in (1, 2, 3, 4):
+            span_rows = 1
         env = request.env
         Layout = env["idtx.alpha.floor.layout"].sudo()
         existing = Layout.search(
             [("equipment_id", "=", equipment_id), ("workcenter", "=", workcenter)], limit=1
         )
+        vals = {"slot_index": slot_index, "span_cols": span_cols, "span_rows": span_rows}
         if existing:
-            existing.slot_index = slot_index
+            existing.write(vals)
         else:
-            Layout.create({"equipment_id": equipment_id, "workcenter": workcenter, "slot_index": slot_index})
+            Layout.create({"equipment_id": equipment_id, "workcenter": workcenter, **vals})
+        return {"ok": True}
+
+    @http.route(
+        "/idtx_plan_alpha/reset_factory_order",
+        type="jsonrpc",
+        auth="user",
+        methods=["POST"],
+    )
+    def reset_factory_order(self):
+        """Reordena TODAS las máquinas de TODOS los centros de trabajo según
+        su numeración de fábrica (orden real de instalación, ver _factory_sort_key)
+        y deshace cualquier combinación de cuadros (vuelve a 1x1)."""
+        env = request.env
+        Equipment = env["maintenance.equipment"].sudo()
+        Layout = env["idtx.alpha.floor.layout"].sudo()
+
+        workcenters = self.alpha_workcenters()["workcenters"]
+
+        to_create = []
+        for wc in workcenters:
+            domain = self._equipment_domain_for_workcenter(env, wc["name"])
+            if domain is None:
+                continue
+            equipments = Equipment.search(domain)
+            ordered = equipments.sorted(key=lambda eq: _factory_sort_key(eq.name))
+            for i, eq in enumerate(ordered):
+                to_create.append({
+                    "equipment_id": eq.id, "workcenter": wc["name"],
+                    "slot_index": i, "span_cols": 1, "span_rows": 1,
+                })
+
+        Layout.search([]).unlink()
+        if to_create:
+            Layout.create(to_create)
         return {"ok": True}
 
     @http.route(
@@ -473,24 +490,35 @@ class PlanAlphaDashboard(http.Controller):
         # Ventas filtra por defecto a "Mis Cotizaciones" (user_id = uid). Esta
         # tabla permite reconciliar el total de arriba contra lo que cada
         # vendedor ve en su propia vista.
-        vend = defaultdict(lambda: {"cotizaciones": 0, "kg_cotizado": 0.0,
-                                     "confirmados": 0, "kg_confirmado": 0.0})
+        vend = defaultdict(lambda: {"vendedor": "Sin vendedor", "cotizaciones": 0,
+                                     "kg_cotizado": 0.0, "confirmados": 0, "kg_confirmado": 0.0})
         for o in cotizaciones:
-            v = vend[o.user_id.name or "Sin vendedor"]
+            v = vend[o.user_id.id]
+            v["vendedor"] = o.user_id.name or "Sin vendedor"
             v["cotizaciones"] += 1
             v["kg_cotizado"] += _kg(o)
         for o in confirmados:
-            v = vend[o.user_id.name or "Sin vendedor"]
+            v = vend[o.user_id.id]
+            v["vendedor"] = o.user_id.name or "Sin vendedor"
             v["confirmados"] += 1
             v["kg_confirmado"] += _kg(o)
         por_vendedor = sorted(
-            [{"vendedor": k,
+            [{"user_id": uid, "vendedor": v["vendedor"],
               "cotizaciones": v["cotizaciones"], "kg_cotizado": round(v["kg_cotizado"], 1),
               "confirmados": v["confirmados"], "kg_confirmado": round(v["kg_confirmado"], 1)}
-             for k, v in vend.items()],
+             for uid, v in vend.items()],
             key=lambda x: x["kg_cotizado"] + x["kg_confirmado"], reverse=True)
 
-        maquinas = self._get_maquinas_data()
+        # ── Variación vs mes anterior (para chips de tendencia en los KPIs) ────
+        # Se reutiliza la serie `tendencia` ya calculada arriba (no requiere
+        # queries adicionales). Compara el último mes cerrado contra el previo.
+        def _mom(campo):
+            vals = [m[campo] for m in tendencia]
+            if len(vals) < 2 or not vals[-2]:
+                return None
+            return round((vals[-1] - vals[-2]) / vals[-2] * 100, 1)
+
+        mom = {"confirmados": _mom("confirmados"), "cotizaciones": _mom("cotizaciones")}
 
         return {
             "pedidos": {
@@ -514,10 +542,10 @@ class PlanAlphaDashboard(http.Controller):
                 "tendencia":        tendencia,
                 "detalle":          detalle,
                 "por_vendedor":     por_vendedor,
+                "mom":              mom,
             },
             "productos": {
                 "por_producto": por_producto,
                 "por_color":    por_color,
             },
-            "maquinas": maquinas,
         }
