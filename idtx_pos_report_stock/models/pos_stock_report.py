@@ -286,13 +286,15 @@ class IdtxPosStockReport(models.Model):
                         WHEN LENGTH(l.name) > 4 THEN LEFT(l.name, LENGTH(l.name) - 4)
                         ELSE l.name
                     END AS partida,
-                    '[' || pt.default_code || '] ' || COALESCE(pt.name->>'es_PE', pt.name->>'en_US', pt.name->>'und') || ' | ' || COALESCE(ldl.color_name, 'S/C') || ' | P:' ||
+                    '[' || pt.default_code || '] ' || COALESCE(pt.name->>'es_PE', pt.name->>'en_US', pt.name->>'und') || ' | ' || COALESCE(ldl.color_name, l.color_description, 'S/C') || ' | P:' ||
                     CASE
                         WHEN LENGTH(l.name) > 4 THEN LEFT(l.name, LENGTH(l.name) - 4)
                         ELSE l.name
                     END AS partida_label,
                     ldl.color_code AS color_code,
-                    ldl.color_name AS color_name,
+                    -- Color mostrado: si el lote tiene receta -> nombre de la receta;
+                    -- si no (rollo tejido con hilo de color) -> descripción libre del lote.
+                    COALESCE(ldl.color_name, l.color_description) AS color_name,
                     r.id AS roll_id,
                     r.name AS roll_name,
                     sub.quantity AS quantity,           -- stock NETO (suma de todos los quants del lote en ubicaciones internas)
@@ -400,7 +402,7 @@ class PosStockBarcodeWizard(models.TransientModel):
                             <div style="margin-bottom: 2px;"><strong>Código:</strong> {rep.product_code or ''}</div>
                             <div style="margin-bottom: 2px;"><strong>Color:</strong> [{rep.color_code or ''}]</div>
                             <div style="font-size: 18px; font-weight: bold; margin-bottom: 4px;">{rep.color_name or ''}</div>
-                            <div style="font-size: 16px; margin-bottom: 12px;"><strong>Lote:</strong> {rep.lot_name or ''}</div>
+                            <div style="font-size: 16px; margin-bottom: 12px;"><strong>Partida:</strong> {rep.lot_name or ''}</div>
                             
                             <div style="text-align: center;">
                                 <div style="font-size: 16px;">Peso</div>

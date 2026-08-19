@@ -15,7 +15,7 @@ Importa los stock quant desde un excel para tener el inventario que se enviará 
     # Check https://github.com/odoo/odoo/blob/15.0/odoo/addons/base/data/ir_module_category_data.xml
     # for the full list
     'category': 'Sales',
-    'version': '0.3',
+    'version': '0.6',
     'license': 'LGPL-3',
     'sequence': 0,
 
@@ -23,7 +23,8 @@ Importa los stock quant desde un excel para tener el inventario que se enviará 
     'depends': [
         'base',
         'stock',
-        'idtx_laboratory'
+        'idtx_laboratory',
+        'idtx_mrp',          # override de create_zpl (etiqueta física del rollo)
         ],
 
     # always loaded

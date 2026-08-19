@@ -111,14 +111,29 @@ class StockQuantImport(models.Model):
 
                 color = self.env['color.recipe'].search([('color_code','=', color_code)], limit=1)
 
+                # Autoasignar la RECETA solo si su nombre COINCIDE con la
+                # descripción importada (comparación tolerante a mayúsculas y
+                # espacios). Los códigos de color no son un identificador
+                # confiable: hay varios genéricos (0XLV0001, etc.) y un mismo
+                # código puede corresponder a colores distintos. Por eso, si el
+                # nombre de la receta encontrada NO coincide con lo que dice el
+                # Excel, se deja SIN receta (color_id vacío) para que el operador
+                # edite la descripción y se migre solo esa (sin código/receta).
+                def _norm(s):
+                    return (s or '').strip().upper()
+                color_ok = bool(color) and _norm(color.color_name) == _norm(color_name)
+
                 # Línea de auditoría
                 vals_list.append({
                     'import_id': rec.id,
                     'product_code': product_code,
                     'product_name': product_name,
-                    'color_id': color.id if color else False,
+                    'color_id': color.id if color_ok else False,
                     'color_code': color_code,
                     'color_name': color_name,
+                    # Copia inmutable del nombre de color tal cual vino del Excel
+                    # (el operador puede editar color_name; esto preserva el original).
+                    'color_name_import': color_name,
                     'ref': refe_interna,
                     'ident_lot': ident_lote,
                     'lot_name': lot_name,
@@ -189,37 +204,19 @@ class StockQuantImport(models.Model):
             else:
                 # Asegurar que esté disponible en PdV aunque ya exista
                 product.product_tmpl_id.available_in_pos = True
-            if row.color_id:
-                color = row.color_id
-            else:
-                # if row.color_name:
-                #     color = Color.search([('color_name','ilike', '%' + row.color_name + '%')], limit=1)
-                if row.color_code:
-                    color = Color.search([('color_code','=', row.color_code)], limit=1)
-                elif row.color_name:
-                    color = Color.search([('color_code','=', row.color_code),('color_name','=', row.color_name)], limit=1)
-                    row.color_code = '00000000'
-            if not color:
-                # raise UserError(_('Color code %s not found') % color_code)
-                cpt = self.env['color.process.type'].search([('code','=',row.color_code[:2])])
-                cr = self.env['color.range'].search([('code','=',row.color_code[2:3])])
-                ci = self.env['color.intensity'].search([('code','=',row.color_code[3:4])])
-                labdev = LabDev.create({
-                    'partner_id': self.env.company.partner_id.id, 
-                    'lab_dev_line_ids': [
-                        Command.create({
-                            # 'product_id':product.id,
-                            'color_name': row.color_name,
-                            'color_process_type_id': cpt.id,
-                            'color_range_id': cr.id,
-                            'color_intensity_id': ci.id,
-                            'color_code': row.color_code,
-                            'color_recipe_ids': [Command.create({'state': 'approved',})],
-                        }),
-                    ]
-                })
-                color = labdev.lab_dev_line_ids.color_recipe_ids
-            
+            # === Resolución de color (flexible, sin auto-crear recetas) ===
+            # Regla acordada:
+            #  - Si la línea tiene RECETA asignada (color_id) -> se usa esa receta.
+            #    (color_id solo se autoasigna cuando el nombre de la receta
+            #     coincide con la descripción del Excel; o el operador la asignó
+            #     a mano en la pantalla de carga.)
+            #  - Si NO hay receta (código genérico o color que no corresponde) ->
+            #    se migra SOLO la descripción de color al lote (color_description),
+            #    sin código ni receta. NO se auto-crea ninguna receta en el
+            #    laboratorio (antes sí se creaba, generando recetas basura).
+            color = row.color_id                        # recordset color.recipe (vacío si no coincide/no asignó)
+            color_desc = (row.color_name or '').strip() # descripción libre (editable por el operador)
+
             batch = Batch.search([('name','=', row.ident_lot)])
             if not batch:
                 # Crear batch
@@ -268,17 +265,25 @@ class StockQuantImport(models.Model):
             
             lot = Lote.search([('name','=', row.lot_name),('product_id','=', product.id)], limit=1)
             if not lot:
-                # Crear lote
-                lot = self.env['stock.lot'].create({
+                # Crear lote. Con receta -> color_recipe_id; sin receta -> se
+                # migra solo la descripción libre (color_description).
+                lot_vals = {
                     'name': row.lot_name,
                     'product_id': product.id,
-                    'color_recipe_id': color.id,
                     'roll_id': roll.id,
-                })
+                }
+                if color:
+                    lot_vals['color_recipe_id'] = color.id
+                else:
+                    lot_vals['color_description'] = color_desc
+                lot = self.env['stock.lot'].create(lot_vals)
             else:
                 lot.roll_id = roll
                 if color:
                     lot.color_recipe_id = color.id
+                else:
+                    # Sin receta: guardar/actualizar la descripción libre.
+                    lot.color_description = color_desc
 
             roll.lot_id = lot
 
@@ -399,6 +404,10 @@ class StockQuantImportLine(models.Model):
     recipe_color_name = fields.Char(related='color_id.color_name')
     color_code = fields.Char('Import Color Code')
     color_name = fields.Char('Import Color Name')
+    # Valor original del nombre de color tal cual vino del Excel. color_name es
+    # editable por el operador (para crear la descripción cuando no hay receta);
+    # este campo preserva el original para auditoría. Oculto en la vista.
+    color_name_import = fields.Char('Descripción original (Excel)', readonly=True)
     ref = fields.Char('Reference')
     ident_lot = fields.Char('Ident Lot')
     lot_name = fields.Char('Lot Name')

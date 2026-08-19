@@ -46,3 +46,25 @@ class MrpProductionRoll(models.Model):
     density = fields.Integer(
         'Densidad (g/m²)',                             # densidad del tejido en g/m²
         help='Densidad del tejido en gramos por metro cuadrado (ej. 347, 460).')
+
+    def create_zpl(self, weight=0):
+        """Etiqueta física (ZPL) del rollo.
+
+        El módulo del EQUIPO (idtx_mrp) genera la etiqueta con el texto
+        'Lote:'. El usuario pidió que diga 'Partida:'. En vez de tocar el
+        módulo del equipo (que se pierde en cada git pull), envolvemos su
+        método y reemplazamos SOLO el texto del caption sobre el ZPL ya
+        generado. El valor y el código de barras no cambian.
+        """
+        zpl = super().create_zpl(weight=weight)
+        # 1) Caption 'Lote:' -> 'Partida:' (aparece una sola vez; no afecta datos ni QR).
+        zpl = zpl.replace('Lote:', 'Partida:')
+        # 2) Rollos SIN receta: el ZPL del equipo imprime self.lot_id.color_name,
+        #    que en un lote sin receta es False -> se imprime el texto literal
+        #    "False". Lo sustituimos por la descripción de color libre del lote
+        #    (o vacío si no tiene). El token del nombre de color es exactamente
+        #    ^FDFalse^FS cuando color_name es False; el reemplazo es puntual.
+        if not self.lot_id.color_recipe_id:
+            desc = self.lot_id.color_description or ''
+            zpl = zpl.replace('^FDFalse^FS', f'^FD{desc}^FS')
+        return zpl

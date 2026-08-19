@@ -18,7 +18,7 @@ Muestra un reporte unificado de existencias que incluye:
     'website': "https://www.perucodex.com",
 
     'category': 'Point of Sale',
-    'version': '19.0.1.0.7',
+    'version': '19.0.1.0.9',
     'license': 'LGPL-3',
 
     'depends': [
