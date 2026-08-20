@@ -31,7 +31,12 @@ class LabDev(models.Model):
         ('cancel', 'Cancelled'),
     ], string='State', default='draft', tracking=True)
     sub_partner_id = fields.Many2one('res.partner', 'Sub-Cliente', ondelete='restrict')
-    user_id = fields.Many2one('res.users', string='Vendedor')
+    user_id = fields.Many2one(
+        'res.users', string='Vendedor',
+        # Mismo dominio que sale.order.user_id
+        domain=lambda self: "[('all_group_ids', 'in', {}), ('share', '=', False), ('company_ids', '=', company_id)]".format(
+            self.env.ref("sales_team.group_sale_salesman").ids
+        ))
     testing = fields.Selection([('si', 'SI'), ('no', 'NO')], string='Testing')
 
     # FICHA TECNICA
@@ -86,67 +91,12 @@ class LabDev(models.Model):
     softening_double_fiber = fields.Boolean('SUAVIZADO DOBLE FIBRA')
     softening_polyester = fields.Boolean('SUAVIZADO POLIESTER')
 
-    # SOLIDECES
-    fastness_washing = fields.Selection([
-        ('1_malo', '1 MALO'),
-        ('1-2_malo', '1-2 MALO'),
-        ('2_malo', '2 MALO'),
-        ('2-3_regular', '2-3 REGULAR'),
-        ('3_regular', '3 REGULAR'),
-        ('3-4_regular', '3-4 REGULAR'),
-        ('4_bueno', '4 BUENO'),
-        ('4-5_bueno', '4-5 BUENO'),
-        ('5_excelente', '5 EXCELENTE'),
-        ('ninguno', 'NINGUNO')
-    ], string='Lavado')
-    fastness_light = fields.Selection([
-        ('1_malo', '1 MALO'),
-        ('1-2_malo', '1-2 MALO'),
-        ('2_malo', '2 MALO'),
-        ('2-3_regular', '2-3 REGULAR'),
-        ('3_regular', '3 REGULAR'),
-        ('3-4_regular', '3-4 REGULAR'),
-        ('4_bueno', '4 BUENO'),
-        ('4-5_bueno', '4-5 BUENO'),
-        ('5_excelente', '5 EXCELENTE'),
-        ('ninguno', 'NINGUNO')
-    ], string='Luz')
-    fastness_dry_rubbing = fields.Selection([
-        ('1_malo', '1 MALO'),
-        ('1-2_malo', '1-2 MALO'),
-        ('2_malo', '2 MALO'),
-        ('2-3_regular', '2-3 REGULAR'),
-        ('3_regular', '3 REGULAR'),
-        ('3-4_regular', '3-4 REGULAR'),
-        ('4_bueno', '4 BUENO'),
-        ('4-5_bueno', '4-5 BUENO'),
-        ('5_excelente', '5 EXCELENTE'),
-        ('ninguno', 'NINGUNO')
-    ], string='Frote Seco')
-    fastness_wet_rubbing = fields.Selection([
-        ('1_malo', '1 MALO'),
-        ('1-2_malo', '1-2 MALO'),
-        ('2_malo', '2 MALO'),
-        ('2-3_regular', '2-3 REGULAR'),
-        ('3_regular', '3 REGULAR'),
-        ('3-4_regular', '3-4 REGULAR'),
-        ('4_bueno', '4 BUENO'),
-        ('4-5_bueno', '4-5 BUENO'),
-        ('5_excelente', '5 EXCELENTE'),
-        ('ninguno', 'NINGUNO')
-    ], string='Frote Humedo')
-    fastness_sublimation = fields.Selection([
-        ('1_malo', '1 MALO'),
-        ('1-2_malo', '1-2 MALO'),
-        ('2_malo', '2 MALO'),
-        ('2-3_regular', '2-3 REGULAR'),
-        ('3_regular', '3 REGULAR'),
-        ('3-4_regular', '3-4 REGULAR'),
-        ('4_bueno', '4 BUENO'),
-        ('4-5_bueno', '4-5 BUENO'),
-        ('5_excelente', '5 EXCELENTE'),
-        ('ninguno', 'NINGUNO')
-    ], string='Sublimación')
+    # SOLIDECES (escala 1-5; 0 = sin dato)
+    fastness_washing = fields.Integer('Lavado')
+    fastness_light = fields.Integer('Luz')
+    fastness_dry_rubbing = fields.Integer('Frote Seco')
+    fastness_wet_rubbing = fields.Integer('Frote Humedo')
+    fastness_sublimation = fields.Integer('Sublimación')
 
     technical_observations = fields.Text('Observaciones')
     

@@ -111,11 +111,11 @@ class CollarQualityCheck(models.Model):
         'quality.alert', string='Alerta de Reposición', readonly=True,
         copy=False)
 
-    _sql_constraints = [
-        ('roll_uniq', 'unique(roll_id)',
-         'Este rollo ya tiene un control de calidad registrado (edítalo en '
-         'lugar de crear otro).'),
-    ]
+    _roll_uniq = models.Constraint(
+        'UNIQUE(roll_id)',
+        'Este rollo ya tiene un control de calidad registrado (edítalo en '
+        'lugar de crear otro).',
+    )
 
     @api.depends('name', 'batch_id', 'roll_id', 'size_id')
     def _compute_display_name(self):

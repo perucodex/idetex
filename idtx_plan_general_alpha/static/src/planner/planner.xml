@@ -58,15 +58,15 @@
     <!-- ── State Legend ───────────────────────────────────────────────────── -->
     <div class="plr__legend">
         <div class="plr__legend-item">
-            <span class="plr__legend-color" style="background:#1f9d6b;"/>
+            <span class="plr__legend-color" style="background:var(--plr-status-done);"/>
             <span class="plr__legend-text">Completado</span>
         </div>
         <div class="plr__legend-item">
-            <span class="plr__legend-color" style="background:#2f6fed;"/>
+            <span class="plr__legend-color" style="background:var(--plr-status-prog);"/>
             <span class="plr__legend-text">En proceso</span>
         </div>
         <div class="plr__legend-item">
-            <span class="plr__legend-color" style="background:#e0712f;"/>
+            <span class="plr__legend-color" style="background:var(--plr-accent);"/>
             <span class="plr__legend-text">Retrasado</span>
         </div>
         
@@ -102,11 +102,11 @@
     <!-- ── Empty state — no selection yet ──────────────────────────────────── -->
     <t t-elif="!st.tasks.length">
         <div class="plr__state-msg plr__state-msg--empty">
-            <i class="fa fa-calendar-o fa-3x" style="color:#cbd2dc; margin-bottom:16px;"/>
-            <p style="font-size:1.1rem; font-weight:600; color:#3a4252; margin-bottom:6px;">
+            <i class="fa fa-calendar-o fa-3x" style="color:var(--plr-empty-icon); margin-bottom:16px;"/>
+            <p style="font-size:1.1rem; font-weight:600; color:var(--plr-text2); margin-bottom:6px;">
                 No hay partidas en el planner
             </p>
-            <p style="color:#6b7585; margin-bottom:20px;">
+            <p style="color:var(--plr-empty-desc); margin-bottom:20px;">
                 Usa el botón <strong>Filtrar Pedidos</strong> para seleccionar las partidas que deseas programar.
             </p>
             <button class="plr__add-btn" t-on-click="openPicker">

@@ -172,23 +172,23 @@
                             <tbody>
                                 <tr>
                                     <td style="width: 40%; border: 1px solid black;">LAVADO</td>
-                                    <td style="border: 1px solid black;"><t t-esc="dict(doc._fields['fastness_washing'].selection).get(doc.fastness_washing, '')"/></td>
+                                    <td style="border: 1px solid black;"><t t-esc="doc.fastness_washing or ''"/></td>
                                 </tr>
                                 <tr>
                                     <td style="border: 1px solid black;">LUZ</td>
-                                    <td style="border: 1px solid black;"><t t-esc="dict(doc._fields['fastness_light'].selection).get(doc.fastness_light, '')"/></td>
+                                    <td style="border: 1px solid black;"><t t-esc="doc.fastness_light or ''"/></td>
                                 </tr>
                                 <tr>
                                     <td style="border: 1px solid black;">FROTE SECO</td>
-                                    <td style="border: 1px solid black;"><t t-esc="dict(doc._fields['fastness_dry_rubbing'].selection).get(doc.fastness_dry_rubbing, '')"/></td>
+                                    <td style="border: 1px solid black;"><t t-esc="doc.fastness_dry_rubbing or ''"/></td>
                                 </tr>
                                 <tr>
                                     <td style="border: 1px solid black;">FROTE HUMEDO</td>
-                                    <td style="border: 1px solid black;"><t t-esc="dict(doc._fields['fastness_wet_rubbing'].selection).get(doc.fastness_wet_rubbing, '')"/></td>
+                                    <td style="border: 1px solid black;"><t t-esc="doc.fastness_wet_rubbing or ''"/></td>
                                 </tr>
                                 <tr>
                                     <td style="border: 1px solid black;">SUBLIMACION</td>
-                                    <td style="border: 1px solid black;"><t t-esc="dict(doc._fields['fastness_sublimation'].selection).get(doc.fastness_sublimation, '')"/></td>
+                                    <td style="border: 1px solid black;"><t t-esc="doc.fastness_sublimation or ''"/></td>
                                 </tr>
                                 <!-- Empty rows -->
                                 <tr><td style="height: 25px; border: 1px solid black;"></td><td style="border: 1px solid black;"></td></tr>

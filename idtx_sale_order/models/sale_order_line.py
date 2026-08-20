@@ -775,7 +775,11 @@ class SaleOrderLine(models.Model):
     def get_product_from_quote(self, product, color, bom, printing_design_id):
         if product and color:
             quote = self.order_id.quotation_id
-            line = quote.order_line.filtered(lambda l: l.product_id == product and l.product_color_id == color)
+            line = self.env['sale.order.line']
+            # Solo se toma la cotización vinculada si es del mismo tipo de
+            # venta; si difiere, se cae al fallback que ya filtra por tipo.
+            if quote.sale_type == self.order_id.sale_type:
+                line = quote.order_line.filtered(lambda l: l.product_id == product and l.product_color_id == color)
             if not line:
                 today = fields.Date.context_today(self)
                 line = self._get_last_quotation_price(today)
@@ -796,6 +800,7 @@ class SaleOrderLine(models.Model):
             ('product_color_id', '=', self.product_color_id.id),
             ('printing_design_id', '=', self.printing_design_id.id),
             ('order_id.is_quote', '=', True),
+            ('order_id.sale_type', '=', self.order_id.sale_type),
             ('operation_ids','=', self.operation_ids.ids),
             ('order_id.state', '=', 'sent'),
             ('order_id.signed_on', '!=', False),

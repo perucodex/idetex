@@ -5,20 +5,43 @@
 <div class="pad">
     <div class="pad__scroll" t-ref="scroll">
 
-        <!-- ── Loading ──────────────────────────────────────────────────── -->
-        <t t-if="state.loading">
-            <div class="pad__state">
-                <span class="pad__spinner"><i class="fa fa-circle-o-notch fa-spin"/></span>
-                <p>Cargando dashboard…</p>
+        <!-- ── Header ───────────────────────────────────────────────────── -->
+        <header class="pad__hd">
+            <div class="pad__hd-left">
+                <h1 class="pad__hd-title">Panel de Planeamiento</h1>
+                <span t-if="state.lastUpdated" class="pad__hd-sub">
+                    Actualizado a las <t t-esc="lastUpdatedLabel"/>
+                </span>
             </div>
-        </t>
+            <button class="pad__hd-refresh" t-on-click="() => this._refresh()" title="Actualizar ahora">
+                <i class="fa fa-refresh"/>
+            </button>
+        </header>
 
         <!-- ── Error ────────────────────────────────────────────────────── -->
-        <t t-elif="state.error">
+        <t t-if="state.error">
             <div class="pad__state pad__state--error">
                 <i class="fa fa-exclamation-triangle fa-2x"/>
                 <p t-esc="state.error"/>
+                <button class="pad__retry" t-on-click="() => this._load()">Reintentar</button>
             </div>
+        </t>
+
+        <!-- ── Skeleton (primera carga) ─────────────────────────────────── -->
+        <t t-elif="state.loading">
+            <section class="pad__kpis">
+                <t t-foreach="[1,2,3,4,5,6]" t-as="i" t-key="i">
+                    <div class="pad__skel pad__skel--kpi"/>
+                </t>
+            </section>
+            <section class="pad__section">
+                <div class="pad__skel pad__skel--title"/>
+                <div class="pad__grid pad__grid--dgt">
+                    <div class="pad__skel pad__skel--card" style="height:280px"/>
+                    <div class="pad__skel pad__skel--card" style="height:280px"/>
+                    <div class="pad__skel pad__skel--card" style="height:280px"/>
+                </div>
+            </section>
         </t>
 
         <!-- ── Contenido ────────────────────────────────────────────────── -->
@@ -34,84 +57,20 @@
                                   t-att-data-cnt="k.raw"
                                   t-att-data-kg="k.isKg ? '1' : '0'"
                                   t-esc="k.fmt(k.raw)"/>
-                            <span t-if="k.sub" class="pad__kpi-sub" t-esc="k.sub"/>
+                            <span class="pad__kpi-sub-row">
+                                <span t-if="k.sub" class="pad__kpi-sub" t-esc="k.sub"/>
+                                <span t-if="k.trend != null"
+                                      t-attf-class="pad__trend #{k.trend >= 0 ? 'pad__trend--up' : 'pad__trend--down'}">
+                                    <i t-attf-class="fa #{k.trend >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'}"/>
+                                    <t t-esc="Math.abs(k.trend)"/>%
+                                </span>
+                            </span>
                         </div>
                         <div class="pad__kpi-ico">
                             <i t-attf-class="fa #{k.icon}"/>
                         </div>
                     </div>
                 </t>
-            </section>
-
-            <!-- ── KPIs Máquinas TEXPLUS (si disponible) ─────────────────── -->
-            <t t-if="kpiMaquinas">
-                <section class="pad__kpis pad__kpis--maq">
-                    <div class="pad__kpi pad__kpi--maq" style="--c:#3b82f6;--bg:#eff6ff;--bgdk:#1e3a5f">
-                        <div class="pad__kpi-left">
-                            <span class="pad__kpi-lbl">Cargas Hoy (TEXPLUS)</span>
-                            <span class="pad__kpi-num" t-esc="kpiMaquinas.totalHoy.toLocaleString('es-PE')"/>
-                            <span class="pad__kpi-sub">cargas procesadas hoy</span>
-                        </div>
-                        <div class="pad__kpi-ico"><i class="fa fa-industry"/></div>
-                    </div>
-                    <div class="pad__kpi pad__kpi--maq" style="--c:#14b8a6;--bg:#f0fdfa;--bgdk:#134e4a">
-                        <div class="pad__kpi-left">
-                            <span class="pad__kpi-lbl">Cargas Esta Semana</span>
-                            <span class="pad__kpi-num" t-esc="kpiMaquinas.totalSem.toLocaleString('es-PE')"/>
-                            <span class="pad__kpi-sub">últimos 7 días</span>
-                        </div>
-                        <div class="pad__kpi-ico"><i class="fa fa-calendar-check-o"/></div>
-                    </div>
-                    <div class="pad__kpi pad__kpi--maq" style="--c:#f59e0b;--bg:#fffbeb;--bgdk:#451a03">
-                        <div class="pad__kpi-left">
-                            <span class="pad__kpi-lbl">Máquinas Activas Hoy</span>
-                            <span class="pad__kpi-num" t-esc="kpiMaquinas.actHoy.toLocaleString('es-PE')"/>
-                            <span class="pad__kpi-sub">de <t t-esc="state.data.maquinas.top_maquinas.length"/> en seguimiento</span>
-                        </div>
-                        <div class="pad__kpi-ico"><i class="fa fa-cog"/></div>
-                    </div>
-                </section>
-            </t>
-
-            <!-- ── Sección: Pedidos por Vendedor ─────────────────────────── -->
-            <!-- Los KPIs de arriba suman TODOS los vendedores. La vista
-                 "Cotizaciones" de Ventas filtra por defecto a "Mis Cotizaciones"
-                 (solo el vendedor logueado), por eso esta tabla puede no
-                 coincidir con lo que ves ahí a simple vista — usa esta tabla
-                 para reconciliar por vendedor. -->
-            <section class="pad__section" t-if="state.data.pedidos.por_vendedor and state.data.pedidos.por_vendedor.length">
-                <h2 class="pad__section-title">Pedidos por Vendedor</h2>
-                <div class="pad__card">
-                    <div class="pad__card-hd">
-                        <i class="fa fa-user-o pad__ic--indigo"/>
-                        Cotizaciones y Pedidos de Venta, por vendedor
-                        <span class="pad__pill">Total arriba = suma de todos</span>
-                    </div>
-                    <div class="pad__table-wrap">
-                        <table class="pad__table">
-                            <thead>
-                                <tr>
-                                    <th>Vendedor</th>
-                                    <th style="text-align:right">Cotizaciones</th>
-                                    <th style="text-align:right">Kg Cotizado</th>
-                                    <th style="text-align:right">Pedidos de Venta</th>
-                                    <th style="text-align:right">Kg Confirmado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <t t-foreach="state.data.pedidos.por_vendedor" t-as="v" t-key="v.vendedor">
-                                    <tr>
-                                        <td t-esc="v.vendedor"/>
-                                        <td style="text-align:right" t-esc="v.cotizaciones"/>
-                                        <td style="text-align:right" t-esc="v.kg_cotizado.toLocaleString('es-PE') + ' kg'"/>
-                                        <td style="text-align:right" t-esc="v.confirmados"/>
-                                        <td style="text-align:right" t-esc="v.kg_confirmado.toLocaleString('es-PE') + ' kg'"/>
-                                    </tr>
-                                </t>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
             </section>
 
             <!-- ── Sección 1: Visión General ────────────────────────────── -->
@@ -208,47 +167,7 @@
                 </div>
             </section>
 
-            <!-- ── Sección 4: Actividad de Máquinas (TEXPLUS) ───────────── -->
-            <t t-if="state.data.maquinas and state.data.maquinas.disponible">
-                <section class="pad__section">
-                    <h2 class="pad__section-title">
-                        Actividad de Máquinas · TEXPLUS
-                        <span class="pad__pill pad__pill--live">En tiempo real</span>
-                    </h2>
-                    <div class="pad__grid pad__grid--1-1">
-
-                        <div class="pad__card">
-                            <div class="pad__card-hd">
-                                <i class="fa fa-industry pad__ic--blue"/>
-                                Máquinas más Activas Hoy
-                            </div>
-                            <div class="pad__chart" style="height:380px">
-                                <div t-ref="c9"/>
-                            </div>
-                            <!-- Leyenda de tipos -->
-                            <div class="pad__maq-legend">
-                                <span class="pad__maq-badge" style="--mc:#3b82f6">Tintorería</span>
-                                <span class="pad__maq-badge" style="--mc:#14b8a6">Acabados</span>
-                                <span class="pad__maq-badge" style="--mc:#f59e0b">Preparado</span>
-                                <span class="pad__maq-badge" style="--mc:#ec4899">Estampado</span>
-                            </div>
-                        </div>
-
-                        <div class="pad__card">
-                            <div class="pad__card-hd">
-                                <i class="fa fa-line-chart pad__ic--teal"/>
-                                Tendencia de Cargas por Área (últimos 7 días)
-                            </div>
-                            <div class="pad__chart" style="height:380px">
-                                <div t-ref="c10"/>
-                            </div>
-                        </div>
-
-                    </div>
-                </section>
-            </t>
-
-            <!-- ── Sección 5: Cronograma Semanal ────────────────────────── -->
+            <!-- ── Sección 4: Kilos por Estado ──────────────────────────── -->
             <section class="pad__section">
                 <h2 class="pad__section-title">Kilos por Estado</h2>
                 <div class="pad__grid pad__grid--full">
@@ -264,7 +183,48 @@
                 </div>
             </section>
 
-            <!-- ── Sección 6: Tabla próximos a vencer ───────────────────── -->
+            <!-- ── Sección 5: Pedidos por Vendedor ───────────────────────── -->
+            <!-- Los KPIs de arriba suman TODOS los vendedores. La vista
+                 "Cotizaciones" de Ventas filtra por defecto a "Mis Cotizaciones"
+                 (solo el vendedor logueado), por eso esta tabla puede no
+                 coincidir con lo que ves ahí a simple vista — usa esta tabla
+                 para reconciliar por vendedor. -->
+            <section class="pad__section" t-if="state.data.pedidos.por_vendedor and state.data.pedidos.por_vendedor.length">
+                <h2 class="pad__section-title">Pedidos por Vendedor</h2>
+                <div class="pad__card">
+                    <div class="pad__card-hd">
+                        <i class="fa fa-user-o pad__ic--indigo"/>
+                        Cotizaciones y Pedidos de Venta, por vendedor
+                        <span class="pad__pill">Total arriba = suma de todos</span>
+                    </div>
+                    <div class="pad__table-wrap">
+                        <table class="pad__table">
+                            <thead>
+                                <tr>
+                                    <th>Vendedor</th>
+                                    <th style="text-align:right">Cotizaciones</th>
+                                    <th style="text-align:right">Kg Cotizado</th>
+                                    <th style="text-align:right">Pedidos de Venta</th>
+                                    <th style="text-align:right">Kg Confirmado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="state.data.pedidos.por_vendedor" t-as="v" t-key="v.user_id">
+                                    <tr class="pad__row-clickable" t-on-click="() => this.openVendedorOrders(v)" title="Ver cotizaciones y pedidos de este vendedor">
+                                        <td t-esc="v.vendedor"/>
+                                        <td style="text-align:right" t-esc="v.cotizaciones"/>
+                                        <td style="text-align:right" t-esc="v.kg_cotizado.toLocaleString('es-PE') + ' kg'"/>
+                                        <td style="text-align:right" t-esc="v.confirmados"/>
+                                        <td style="text-align:right" t-esc="v.kg_confirmado.toLocaleString('es-PE') + ' kg'"/>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── Sección 6: Detalle de Pedidos ────────────────────────── -->
             <section class="pad__section">
                 <h2 class="pad__section-title">Detalle de Pedidos</h2>
                 <div class="pad__card">

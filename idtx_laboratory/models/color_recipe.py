@@ -255,17 +255,16 @@ class ColorRecipe(models.Model):
         return f"""^XA
 ^CI28
 ^PW600
-^LL440
-^FO20,24^A0N,44,44^FDLabDip {clean(self.name, 16)}^FS
-^FO400,36^A0N,30,30^FD{clean(kind, 16)}^FS
-^FO20,82^GB560,3,3^FS
-^FO20,98^A0N,28,28^FDN° LD: {clean(self.lab_dev_id.name, 20)}^FS
-^FO310,98^A0N,28,28^FDFecha: {fecha}^FS
-^FO20,138^A0N,28,28^FDCódigo: {base_code}^FS
-^FO310,138^A0N,28,28^FDOpción: {option}^FS
-^FO20,178^A0N,28,28^FDColor: {clean(self.color_name, 34)}^FS
-^FO20,218^A0N,28,28^FDCliente: {clean(self.partner_id.name, 34)}^FS
-^FO{bar_x},284^BY{module}^BCN,90,Y,N,N^FD>:{full_code}^FS
+^LL420
+^FO0,16^A0N,38,38^FB600,1,0,C,0^FD{clean(kind, 18)}^FS
+^FO20,62^GB560,3,3^FS
+^FO20,74^A0N,38,20^FDCliente: {self.partner_id.name}^FS
+^FO20,124^A0N,38,22^FDColor: {self.color_name}^FS
+^FO20,168^A0N,80,60^FDCódigo: {base_code}^FS
+^FO20,246^A0N,38,38^FDFecha: {fecha}^FS
+^FO360,246^A0N,38,38^FDOpción: {option}^FS
+^FO{bar_x},298^BY{module}^BCN,66,N,N,N^FD>:{full_code}^FS
+^FO0,370^A0N,22,22^FB600,1,0,C,0^FD{full_code}^FS
 ^XZ"""
 
     def _print_zpl_to_network(self, zpl_code, printer_ip, port=9100):

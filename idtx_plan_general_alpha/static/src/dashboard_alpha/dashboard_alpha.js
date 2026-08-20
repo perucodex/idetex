@@ -4,6 +4,7 @@ import { Component, useState, onMounted, onWillUnmount, useRef } from "@odoo/owl
 import { registry } from "@web/core/registry";
 import { rpc } from "@web/core/network/rpc";
 import { cookie } from "@web/core/browser/cookie";
+import { useService } from "@web/core/utils/hooks";
 
 // ── Palette ──────────────────────────────────────────────────────────────────
 const C = {
@@ -18,15 +19,6 @@ const PALETTE = [
     C.green, C.purple, C.orange, C.blue, C.red, C.slate,
     "#a78bfa", "#34d399", "#fbbf24",
 ];
-
-// Machine-type color map
-const MAQ_COLORS = {
-    "Tintorería": C.blue,
-    "Acabados":   C.teal,
-    "Preparado":  C.amber,
-    "Estampado":  C.pink,
-    "Otros":      C.slate,
-};
 
 const FONT = "'Inter','Segoe UI',system-ui,sans-serif";
 
@@ -68,7 +60,10 @@ export class DashboardAlpha extends Component {
     static props = ["*"];
 
     setup() {
-        this.state = useState({ loading: true, error: null, data: null });
+        this.action = useService("action");
+        this.state = useState({
+            loading: true, error: null, data: null, lastUpdated: null,
+        });
         this._charts = {};
 
         this.rScroll = useRef("scroll");
@@ -80,10 +75,8 @@ export class DashboardAlpha extends Component {
         this.r6 = useRef("c6");   // bar area
         this.r7 = useRef("c7");   // hbar proceso
         this.r8 = useRef("c8");   // bar semanas
-        this.r9 = useRef("c9");   // hbar máquinas activas hoy
-        this.r10 = useRef("c10"); // grouped bar tendencia máquinas
 
-        onMounted(async () => { await this._load(); });
+        onMounted(() => { this._refresh(); });
         onWillUnmount(() => {
             Object.values(this._charts).forEach(c => c && c.destroy());
             this._charts = {};
@@ -95,12 +88,32 @@ export class DashboardAlpha extends Component {
         return cookie.get("color_scheme") === "dark";
     }
 
+    // ── Refrescar todo (carga inicial y botón manual) ─────────────────────────
+    _refresh() {
+        this._load();
+    }
+
+    // ── Acceso directo: cotizaciones/pedidos de un vendedor ───────────────────
+    openVendedorOrders(v) {
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: `Cotizaciones y pedidos — ${v.vendedor}`,
+            res_model: "sale.order",
+            view_mode: "list,form",
+            views: [[false, "list"], [false, "form"]],
+            domain: [["user_id", "=", v.user_id || false]],
+            target: "current",
+        });
+    }
+
     // ── Load data ─────────────────────────────────────────────────────────────
     async _load() {
+        this.state.error = null;
         try {
             const data = await rpc("/idtx_plan_alpha/dashboard_data");
             this.state.data = data;
             this.state.loading = false;
+            this.state.lastUpdated = new Date();
             setTimeout(() => {
                 this._renderAll();
                 this._countUp();
@@ -112,10 +125,16 @@ export class DashboardAlpha extends Component {
         }
     }
 
+    get lastUpdatedLabel() {
+        const t = this.state.lastUpdated;
+        if (!t) return "";
+        return t.toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit" });
+    }
+
     // ── Render all charts ─────────────────────────────────────────────────────
     _renderAll() {
-        Object.values(this._charts).forEach(c => c && c.destroy());
-        this._charts = {};
+        ["donut", "gauge", "tendencia", "clientes", "retrasados", "area", "proceso", "semanas"]
+            .forEach(k => { this._charts[k] && this._charts[k].destroy(); delete this._charts[k]; });
         const d = this.state.data;
         if (!d || !window.ApexCharts) return;
         const dk = this._isDark();
@@ -127,10 +146,6 @@ export class DashboardAlpha extends Component {
         this._chartArea(d, dk);
         this._chartProceso(d, dk);
         this._chartSemanas(d, dk);
-        if (d.maquinas && d.maquinas.disponible) {
-            this._chartMaquinas(d, dk);
-            this._chartTendenciaMaq(d, dk);
-        }
     }
 
     // ── Count-up animation ────────────────────────────────────────────────────
@@ -172,8 +187,8 @@ export class DashboardAlpha extends Component {
             plotOptions: { pie: { donut: {
                 size: "72%",
                 labels: { show: true,
-                    name:  { fontSize: "11px", fontFamily: FONT, color: tC, offsetY: 5 },
-                    value: { fontSize: "24px", fontWeight: 800, fontFamily: FONT, color: vC, offsetY: -4 },
+                    name:  { fontSize: "11px", fontFamily: FONT, color: tC, offsetY: -8 },
+                    value: { fontSize: "24px", fontWeight: 800, fontFamily: FONT, color: vC, offsetY: 12 },
                     total: { show: true, label: "Total", color: tC, fontSize: "11px",
                              fontFamily: FONT, fontWeight: 600,
                              formatter: () => total.toLocaleString() },
@@ -422,95 +437,21 @@ export class DashboardAlpha extends Component {
         this._charts.semanas = c; c.render();
     }
 
-    // ── 9 · HBar máquinas activas hoy vs semana (TEXPLUS) ────────────────────
-    _chartMaquinas(d, dk) {
-        const el    = this.r9.el; if (!el) return;
-        const items = (d.maquinas.top_maquinas || []).slice(0, 12);
-        if (!items.length) return;
-        const lblC  = dk ? "#cbd5e1" : "#374151";
-        const colors = items.map(m => MAQ_COLORS[m.tipo] || C.slate);
-        const c = new window.ApexCharts(el, {
-            ...base(dk),
-            chart: { ...base(dk).chart, type: "bar", height: 380 },
-            plotOptions: { bar: { horizontal: true, barHeight: "55%",
-                                  borderRadius: 5, borderRadiusApplication: "end",
-                                  distributed: true } },
-            series: [{ name: "Cargas hoy", data: items.map(m => m.hoy) }],
-            xaxis: {
-                categories: items.map(m => m.desc.substring(0, 22)),
-                labels: { ...axs(dk), formatter: v => Math.round(Number(v)) },
-                axisBorder: { show: false }, axisTicks: { show: false },
-            },
-            yaxis: { labels: { style: { fontSize: "11px", fontFamily: FONT, colors: lblC }, maxWidth: 190 } },
-            colors,
-            legend: { show: false },
-            dataLabels: {
-                enabled: true, textAnchor: "start",
-                style: { fontSize: "11px", fontFamily: FONT, colors: [lblC], fontWeight: 500 },
-                formatter: v => v + " cargas", offsetX: 6,
-            },
-            tooltip: {
-                custom: ({ dataPointIndex: i }) => {
-                    const m = items[i];
-                    const bg = dk ? "#1e293b" : "#ffffff";
-                    const fg = dk ? "#f1f5f9" : "#0f172a";
-                    return `<div style="padding:10px 14px;font-size:12px;font-family:${FONT};background:${bg};color:${fg};border-radius:8px">
-                        <strong>${m.desc}</strong><br>
-                        <span style="color:${MAQ_COLORS[m.tipo] || C.slate}">${m.tipo}</span><br>
-                        Hoy: <strong>${m.hoy}</strong> cargas &nbsp;·&nbsp; Semana: <strong>${m.semana}</strong>
-                    </div>`;
-                },
-            },
-        });
-        this._charts.maquinas = c; c.render();
-    }
-
-    // ── 10 · Grouped bar tendencia de máquinas últimos 7 días (TEXPLUS) ──────
-    _chartTendenciaMaq(d, dk) {
-        const el    = this.r10.el; if (!el) return;
-        const items = d.maquinas.tendencia_maq || [];
-        if (!items.length) return;
-        const labels = items.map(r => {
-            const d = new Date(r.dia + "T00:00:00");
-            return d.toLocaleDateString("es-PE", { weekday: "short", day: "numeric", month: "short" });
-        });
-        const c = new window.ApexCharts(el, {
-            ...base(dk),
-            chart: { ...base(dk).chart, type: "bar", height: 280, stacked: false },
-            series: [
-                { name: "Tintorería", data: items.map(r => r.tintoreria) },
-                { name: "Acabados",   data: items.map(r => r.acabados) },
-                { name: "Preparado",  data: items.map(r => r.preparado) },
-                { name: "Estampado",  data: items.map(r => r.estampado) },
-            ],
-            colors: [C.blue, C.teal, C.amber, C.pink],
-            plotOptions: { bar: { columnWidth: "70%", borderRadius: 4, borderRadiusApplication: "end" } },
-            xaxis: {
-                categories: labels,
-                labels: { ...axs(dk, "11px"), rotate: -20 },
-                axisBorder: { show: false }, axisTicks: { show: false },
-            },
-            yaxis: { labels: axs(dk) },
-            legend: { position: "top", horizontalAlign: "right", ...lgd(dk) },
-            dataLabels: { enabled: false },
-            tooltip: { shared: true, intersect: false,
-                       y: { formatter: v => v + " cargas" } },
-        });
-        this._charts.tendenciaMaq = c; c.render();
-    }
-
     // ── KPIs getter ───────────────────────────────────────────────────────────
     get kpis() {
         const d = this.state.data; if (!d) return [];
         const { pedidos } = d;
+        const mom = pedidos.mom || {};
         const fmtN   = n => n.toLocaleString("es-PE");
         const fmtKgC = n => n >= 1000 ? (n / 1000).toFixed(1) + "k kg" : Math.round(n) + " kg";
         return [
             { lbl: "Pedidos de Venta", raw: pedidos.confirmados, isKg: false,
               sub: `${fmtN(Math.round(pedidos.kilos_produccion))} kg confirmados`,
+              trend: mom.confirmados,
               fmt: fmtN, icon: "fa-check-circle", c: "#16a34a", bg: "#dcfce7", bgdk: "#14532d" },
             { lbl: "Cotizaciones", raw: pedidos.cotizaciones, isKg: false,
               sub: `${pedidos.borrador} borrador · ${pedidos.enviadas} enviadas`,
+              trend: mom.cotizaciones,
               fmt: fmtN, icon: "fa-file-text-o", c: "#6366f1", bg: "#eef2ff", bgdk: "#312e81" },
             { lbl: "Kg en Producción", raw: pedidos.kilos_produccion, isKg: true,
               sub: `Cotizado: ${fmtKgC(pedidos.kilos_cotizado)}`,
@@ -523,19 +464,8 @@ export class DashboardAlpha extends Component {
               fmt: fmtN, icon: "fa-money", c: "#0891b2", bg: "#e0f9fe", bgdk: "#164e63" },
             { lbl: "Total Pedidos", raw: pedidos.total, isKg: false,
               sub: `${pedidos.cancelados} cancelados`,
-              fmt: fmtN, icon: "fa-clipboard-list", c: "#ef4444", bg: "#fee2e2", bgdk: "#7f1d1d" },
+              fmt: fmtN, icon: "fa-clipboard", c: "#ef4444", bg: "#fee2e2", bgdk: "#7f1d1d" },
         ];
-    }
-
-    // ── KPI de actividad de máquinas (mostrar solo si TEXPLUS disponible) ─────
-    get kpiMaquinas() {
-        const d = this.state.data;
-        if (!d || !d.maquinas || !d.maquinas.disponible) return null;
-        const maq = d.maquinas;
-        const totalHoy = maq.top_maquinas.reduce((s, m) => s + m.hoy, 0);
-        const totalSem = maq.top_maquinas.reduce((s, m) => s + m.semana, 0);
-        const actHoy   = maq.top_maquinas.filter(m => m.hoy > 0).length;
-        return { totalHoy, totalSem, actHoy };
     }
 }
 

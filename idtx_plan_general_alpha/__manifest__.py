@@ -49,6 +49,8 @@ sobre los modelos existentes de Control de Pedidos, MRP y Ventas.
         ],
         'web.assets_web_dark': [
             'idtx_plan_general_alpha/static/src/dashboard_alpha/dashboard_alpha.dark.scss',
+            'idtx_plan_general_alpha/static/src/planner/planner.dark.scss',
+            'idtx_plan_general_alpha/static/src/machine_floor/machine_floor.dark.scss',
         ],
     },
 

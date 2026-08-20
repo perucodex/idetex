@@ -35,10 +35,11 @@
                                 <field name="sale_order_id" readonly="1" invisible="not sale_order_id"/>                              
                             </group>
                             <group>
-                                <field name="partner_id" readonly="sale_order_id" force_save="1" required="not sale_order_id"/>  
-                                <field name="sub_partner_id"/>
+                                <field name="partner_id" readonly="sale_order_id" force_save="1" required="not sale_order_id" domain="[('is_company', '=', True)]"/>
+                                <field name="sub_partner_id" domain="[('is_company', '=', True)]"/>
                                 <field name="user_id"/>
                                 <field name="testing"/>
+                                <field name="company_id" invisible="1"/>
                                 <field name="company_id" readonly="1" groups="base.group_multi_company"/>                          
                             </group>
                         </group>
@@ -62,7 +63,8 @@
                                 <field name="lab_dev_line_ids" context="{'form_view_ref': 'idtx_laboratory.lab_dev_line_view_form'}">
                                     <list editable="bottom">
                                         <field name="approved_product_ids" column_invisible="1"/>
-                                        <field name="product_ids" widget="lab_products_approval_tags"/>
+                                        <field name="available_product_ids" column_invisible="1"/>
+                                        <field name="product_ids" widget="lab_products_approval_tags" domain="[('id', 'in', available_product_ids)]"/>
                                         <field name="color_name"/>
                                         <field name="color_code" readonly="1"/>
                                         <field name="color_recipe_ids"/>

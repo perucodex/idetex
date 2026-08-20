@@ -82,19 +82,45 @@
         <xpath expr="//t[@t-elif]" position="before">
             <t t-elif="layout == 'idtx_purchase.external_layout_idtx'">
                 &amp;.o_report_layout_idtx {
-                    #informations {
-                        border-color: <t t-esc='secondary'/>;
-                        background-color: mix(white, <t t-esc='secondary'/>, 92%);
+                    /* Look NEUTRO (pedido de JP ago-2026): los colores de la
+                       compañía solo pintan las burbujas de fondo del layout;
+                       títulos, tablas y totales van en gris/negro. Estas
+                       reglas también anulan las genéricas del core
+                       (h2/o_total strong en color primario). */
+                    h2 {
+                        color: #212529;
                     }
 
-                    thead th, #total .o_total td {
-                        background-color: <t t-esc='primary'/>;
-                        color: preview-color-contrast(<t t-esc='primary'/>);
+                    #informations {
+                        border-color: #212529;
+                        background-color: white;
 
                         strong {
-                            color: preview-color-contrast(<t t-esc='primary'/>);
+                            color: #212529;
                         }
-                    }   
+                    }
+
+                    thead th {
+                        background-color: #f2f2f2;
+                        color: black;
+
+                        strong {
+                            color: black;
+                        }
+                    }
+
+                    #total .o_total td {
+                        background-color: white;
+                        color: black;
+
+                        strong {
+                            color: black;
+                        }
+                    }
+
+                    .o_total strong {
+                        color: black;
+                    }
                 }
             </t>
         </xpath>
