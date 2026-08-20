@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="seq_thread_weaving_liquidation" model="ir.sequence">
+        <field name="name">Liquidación de hilo de tejido</field>
+        <field name="code">thread.weaving.liquidation</field>
+        <field name="prefix">LQH/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <!-- Pantalla de la liquidación: solo lectura (los campos del modelo lo son),
+         misma estructura que el asistente para reconocerla de inmediato. -->
+    <record id="view_thread_weaving_liquidation_form" model="ir.ui.view">
+        <field name="name">thread.weaving.liquidation.form</field>
+        <field name="model">thread.weaving.liquidation</field>
+        <field name="arch" type="xml">
+            <form string="Liquidación de hilo" create="false" edit="false">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_scraps" type="object"
+                                class="oe_stat_button" icon="fa-trash"
+                                invisible="not scrap_count">
+                            <field name="scrap_count" widget="statinfo" string="Desechos"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Producción">
+                            <field name="workorder_id" readonly="1"/>
+                            <field name="production_id" readonly="1"/>
+                            <field name="roll_count" readonly="1"/>
+                            <field name="woven_qty" readonly="1"/>
+                        </group>
+                        <group string="Liquidación">
+                            <field name="date" readonly="1"/>
+                            <field name="user_id" readonly="1"/>
+                            <field name="reserved_qty" readonly="1"/>
+                            <field name="second_location_id" readonly="1"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page name="bags" string="Bolsas separadas">
+                            <field name="bag_line_ids" nolabel="1" readonly="1">
+                                <list create="0" delete="0" edit="0"
+                                      decoration-muted="not used">
+                                    <field name="bag_name"/>
+                                    <field name="lot_id"/>
+                                    <field name="product_id" optional="hide"/>
+                                    <field name="cone_qty"/>
+                                    <field name="net_weight" sum="Separado"/>
+                                    <field name="used" widget="boolean_toggle"/>
+                                    <field name="destino"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page name="returns" string="Hilo bajado de máquina">
+                            <field name="return_line_ids" nolabel="1" readonly="1">
+                                <list create="0" delete="0" edit="0">
+                                    <field name="lot_id"/>
+                                    <field name="cone_qty" sum="Conos"/>
+                                    <field name="weight" sum="Devuelto"/>
+                                    <field name="avg_cone_weight"/>
+                                    <field name="bag_id"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page name="docs" string="Documentos">
+                            <group string="Consumo del hilo (bolsas usadas)">
+                                <field name="move_ids" nolabel="1" readonly="1">
+                                    <list create="0" delete="0" edit="0">
+                                        <field name="reference"/>
+                                        <field name="product_id"/>
+                                        <field name="quantity" string="Consumido"/>
+                                        <field name="location_id"/>
+                                        <field name="location_dest_id"/>
+                                        <field name="state"/>
+                                    </list>
+                                </field>
+                            </group>
+                            <group string="Merma registrada como desecho">
+                                <field name="scrap_ids" nolabel="1" readonly="1">
+                                    <list create="0" delete="0" edit="0">
+                                        <field name="name"/>
+                                        <field name="lot_id"/>
+                                        <field name="scrap_qty" sum="Merma"/>
+                                        <field name="scrap_location_id"/>
+                                        <field name="state"/>
+                                    </list>
+                                </field>
+                            </group>
+                            <group string="Bolsas de 2da creadas con el hilo bajado">
+                                <field name="second_bag_ids" nolabel="1" readonly="1">
+                                    <list create="0" delete="0" edit="0">
+                                        <field name="name"/>
+                                        <field name="lot_id"/>
+                                        <field name="cone_qty"/>
+                                        <field name="net_weight" sum="A 2da"/>
+                                        <field name="location_id"/>
+                                        <field name="state"/>
+                                    </list>
+                                </field>
+                            </group>
+                        </page>
+                    </notebook>
+
+                    <group string="Balance del hilo">
+                        <group string="Sale del almacén">
+                            <field name="used_qty" readonly="1"/>
+                            <field name="used_bags" readonly="1"/>
+                            <field name="waste_qty" readonly="1"/>
+                            <field name="waste_pct" readonly="1"/>
+                        </group>
+                        <group string="Vuelve o se libera">
+                            <field name="returned_qty" readonly="1"/>
+                            <field name="returned_bags" readonly="1"/>
+                            <field name="returned_cones" readonly="1"/>
+                            <field name="released_qty" readonly="1"/>
+                            <field name="released_bags" readonly="1"/>
+                        </group>
+                    </group>
+                    <div class="text-muted">
+                        Bolsas usadas = tela tejida + hilo devuelto a 2da + merma.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_thread_weaving_liquidation_list" model="ir.ui.view">
+        <field name="name">thread.weaving.liquidation.list</field>
+        <field name="model">thread.weaving.liquidation</field>
+        <field name="arch" type="xml">
+            <list string="Liquidaciones de hilo" create="0" delete="0" edit="0">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="production_id"/>
+                <field name="workorder_id" optional="hide"/>
+                <field name="woven_qty" sum="Tejido"/>
+                <field name="used_qty" sum="Usado"/>
+                <field name="returned_qty" sum="A 2da"/>
+                <field name="waste_qty" sum="Merma"/>
+                <field name="waste_pct" optional="show"/>
+                <field name="released_qty" optional="hide" sum="Liberado"/>
+                <field name="user_id" optional="hide"/>
+                <field name="company_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_thread_weaving_liquidation" model="ir.actions.act_window">
+        <field name="name">Liquidaciones de hilo</field>
+        <field name="res_model">thread.weaving.liquidation</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'create': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Todavía no hay liquidaciones de hilo</p>
+            <p>Se crean al cerrar la operación de tejido declarando las bolsas
+               usadas, el hilo bajado de máquina y la merma.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_thread_weaving_liquidation"
+              name="Liquidaciones de hilo"
+              parent="mrp.menu_mrp_manufacturing"
+              action="action_thread_weaving_liquidation"
+              sequence="27"/>
+
+    <!-- En la orden de trabajo: la liquidación queda a la vista, en solo
+         lectura, y abre su pantalla al pulsar la línea. -->
+    <record id="mrp_workorder_form_weaving_liquidation" model="ir.ui.view">
+        <field name="name">mrp.workorder.form.weaving.liquidation</field>
+        <field name="model">mrp.workorder</field>
+        <field name="inherit_id" ref="mrp.mrp_production_workorder_form_view_inherit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page name="thread_liquidation" string="Liquidación de hilo"
+                      invisible="operation_type != 'weaving' or not weaving_liquidation_ids">
+                    <field name="weaving_liquidation_ids" nolabel="1" readonly="1">
+                        <list create="0" delete="0" edit="0">
+                            <field name="name" string="Referencia"/>
+                            <field name="date" string="Fecha"/>
+                            <field name="user_id" string="Liquidó" optional="show"/>
+                            <field name="woven_qty" string="Tejido"/>
+                            <field name="used_qty" string="Usado" sum="Usado"/>
+                            <field name="used_bags" string="Bolsas"/>
+                            <field name="returned_qty" string="A 2da" sum="A 2da"/>
+                            <field name="returned_cones" string="Conos"/>
+                            <field name="waste_qty" string="Merma" sum="Merma"/>
+                            <field name="waste_pct" string="Merma %"/>
+                            <field name="released_qty" string="Liberado" sum="Liberado"/>
+                            <field name="released_bags" string="Bolsas lib." optional="hide"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

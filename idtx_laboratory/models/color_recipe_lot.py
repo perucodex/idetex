@@ -209,6 +209,14 @@ class ColorRecipeLot(models.Model):
         for rec, vals in zip(records, vals_list):
             if not vals.get('version'):
                 rec.version = rec._next_version()
+            # La sub-receta hereda los parámetros de teñido de la receta
+            # madre: sin ellos validar falla pidiendo absorción/baño > 0
+            # aunque la madre ya los tenga.
+            madre = rec.color_recipe_id
+            if not vals.get('absorption_factor') and madre.absorption_factor:
+                rec.absorption_factor = madre.absorption_factor
+            if not vals.get('bath_ratio') and madre.bath_ratio:
+                rec.bath_ratio = madre.bath_ratio
         return records
     validated_date = fields.Date('Fecha Validación', readonly=True, copy=False)
     validated_by_id = fields.Many2one('res.users', 'Validada por', readonly=True, copy=False)

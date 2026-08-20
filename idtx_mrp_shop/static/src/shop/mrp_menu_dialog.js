@@ -8,6 +8,7 @@ import { SelectBatchDialog } from "./select_batch_dialog";
 import { SimpleBatchDialog } from "./simple_batch_dialog";
 import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
+import { onWillStart } from "@odoo/owl";
 
 patch(MrpMenuDialog.prototype, {
 
@@ -15,6 +16,19 @@ patch(MrpMenuDialog.prototype, {
         super.setup();
         this.orm = useService("orm");
         this.notification = useService("notification");
+        // Los botones de partida ("Partida de teñido" / "Registrar partida")
+        // dependen de que la OT esté en progreso. Al abrir el menú justo
+        // después de INICIAR, el registro del cliente todavía tenía el estado
+        // anterior y los botones no aparecían hasta recargar la página: se
+        // relee el registro al abrir el diálogo.
+        onWillStart(async () => {
+            try {
+                await this.props.record.load();
+            } catch {
+                // El registro pudo descartarse (diálogo cerrado): no pasa nada,
+                // se muestra con los datos que ya tenía.
+            }
+        });
     },
 
     async readScaleWithClientIP() {
@@ -32,8 +46,15 @@ patch(MrpMenuDialog.prototype, {
                 this.notification.add(result.message, { type: result.status });
             }
 
-            await this.props.record.load(); 
-            this.props.removeFromCache(this.props.record.resId);
+            // El rollo ya está registrado en el servidor: si el refresco de la
+            // vista falla (diálogo cerrándose, componente descartado) no debe
+            // parecer que el pesado falló.
+            try {
+                await this.props.record.load();
+                this.props.removeFromCache(this.props.record.resId);
+            } catch {
+                // La tarjeta se actualizará en el siguiente refresco.
+            }
             this.props.close();
         };
 

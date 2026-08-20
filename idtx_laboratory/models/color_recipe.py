@@ -178,11 +178,41 @@ class ColorRecipe(models.Model):
             rec.recipe_color_code = f'{prefix}-{str(n).zfill(3)}'
         return records
     
+    def _check_ready_to_approve(self):
+        """Una receta aprobada baja a producción: tiene que poder teñirse.
+        Sin procesos, sin colorantes o sin relación de baño no sirve, y el
+        error recién aparecería en el Taller (o peor, en la máquina)."""
+        self.ensure_one()
+        if not self.color_recipe_process_ids:
+            raise UserError(_(
+                'La receta %s no tiene ningún proceso: agrégalo en la pestaña '
+                'Receta Desarrollo antes de aprobarla.', self.name))
+        colorant_lines = self.color_recipe_process_ids \
+            .color_recipe_process_line_ids.filtered(
+                lambda l: l.line_type == 'colorants')
+        colorants = colorant_lines.child_ids.filtered(
+            lambda c: c.product_id and c.factor > 0)
+        if colorant_lines and not colorants:
+            raise UserError(_(
+                'La receta %s no tiene colorantes con porcentaje mayor a 0: '
+                'complétalos en la línea COLORANTES antes de aprobarla.',
+                self.name))
+        if self.bath_ratio <= 0:
+            raise UserError(_(
+                'La receta %s no tiene relación de baño: sin ella no se puede '
+                'calcular el volumen en el Taller.', self.name))
+        if self.absorption_factor <= 0:
+            raise UserError(_(
+                'La receta %s no tiene factor de absorción mayor a 0.',
+                self.name))
+
     def action_approve(self):
+        self.ensure_one()
         # No se puede aprobar la opción (receta) si la solidez al lavado de
         # la línea de desarrollo aún no fue negociada/aprobada con el cliente.
         if self.lab_dev_line_id.colorfastness_state != 'client_approved':
             raise UserError(_('Debe primero aprobar la solidez con el cliente.'))
+        self._check_ready_to_approve()
         # Pueden coexistir aprobadas una receta unitaria (JERSEY) y una
         # combinada que incluya el mismo producto (JERSEY+RIB). Lo que NO
         # puede repetirse aprobado es la MISMA combinación exacta.
@@ -204,8 +234,16 @@ class ColorRecipe(models.Model):
         self.lab_dev_line_id.state = 'approved'
 
     def action_return(self):
+        """Retorna esta opción a prueba. La línea de LD solo baja a 'test' si
+        NO queda ninguna otra opción aprobada: con varias opciones, retornar
+        una no debe borrar la aprobación del color (el pedido de venta lee ese
+        estado para pintar el color en verde)."""
+        lines = self.lab_dev_line_id
         self.state = 'test'
-        self.lab_dev_line_id.state = self.state
+        for line in lines:
+            still_approved = line.color_recipe_ids.filtered(
+                lambda cr: cr.state == 'approved')
+            line.state = 'approved' if still_approved else 'test'
 
     # ------------------------------------------------------------------
     # Impresión de etiquetas (impresora de códigos de barras de la empresa)

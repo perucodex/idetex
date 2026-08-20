@@ -326,14 +326,33 @@ class MrpWorkorder(models.Model):
             equipos_a_resync = self.filtered(
                 lambda wo: wo.workcenter_id.operation_type == 'weaving'
             ).option_ids.equipment_ids
-        if 'state' in vals and vals['state'] in ('progress', 'done') and self.filtered(lambda wo: wo.operation_type in (('weaving',) + wo.BATCH_OPERATION_TYPES)):
+        # El core aborta el write si llega qty_produced sobre una OT ya cerrada.
+        # Pasa al guardar el formulario de una OT terminada (reenvía el campo) y
+        # al reabrir OTs por reproceso (contexto skip_textile_qty): en ambos
+        # casos el valor es irrelevante, así que se descarta en vez de romper.
+        skip_qty = self.env.context.get('skip_textile_qty')
+        if 'qty_produced' in vals:
+            cerradas = self.filtered(lambda wo: wo.state in ('done', 'cancel'))
+            if cerradas:
+                vals_sin_qty = {k: v for k, v in vals.items() if k != 'qty_produced'}
+                abiertas = self - cerradas
+                res = super(MrpWorkorder, cerradas).write(vals_sin_qty)
+                if abiertas:
+                    res = abiertas.write(vals) and res
+                if equipos_a_resync:
+                    self._resync_equipment_state(equipos_a_resync)
+                return res
+        if (not skip_qty and 'state' in vals
+                and vals['state'] in ('progress', 'done')
+                and self.filtered(lambda wo: wo.operation_type in (('weaving',) + wo.BATCH_OPERATION_TYPES))):
             result = True
             for workorder in self:
                 current_vals = dict(vals)
                 produced_qty = workorder._get_textile_produced_qty()
-                if vals['state'] == 'done' and produced_qty > 0:
-                    current_vals['qty_produced'] = produced_qty
-                elif 'qty_produced' not in current_vals and produced_qty > 0:
+                # Solo se inyecta en OTs que aún se pueden tocar: en una OT ya
+                # cerrada el core rechazaría el campo.
+                if (produced_qty > 0 and workorder.state not in ('done', 'cancel')
+                        and (vals['state'] == 'done' or 'qty_produced' not in current_vals)):
                     current_vals['qty_produced'] = produced_qty
                 result = super(MrpWorkorder, workorder).write(current_vals) and result
         else:
@@ -419,9 +438,15 @@ class MrpWorkorder(models.Model):
         return res
 
     def button_finish(self):
+        # El hilo se consume al cerrar TEJIDO (es donde se gasta en la máquina).
+        # Si el cierre viene de la liquidación de hilo, allí ya se decidió qué
+        # bolsas se usaron, qué volvió a 2da y cuánto fue merma.
+        tejido = self.filtered(lambda wo: wo.operation_type == 'weaving')
         res = super().button_finish()
         self._set_equipment_running(False)
         self._purge_zero_duration_times()
+        if tejido and not self.env.context.get('skip_weaving_thread_consume'):
+            tejido.production_id._consume_woven_thread()
         return res
 
     def _purge_zero_duration_times(self):

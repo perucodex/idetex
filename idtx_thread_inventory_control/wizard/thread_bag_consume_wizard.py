@@ -1,6 +1,7 @@
 import base64
 import io
 import math
+import re
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
@@ -196,18 +197,44 @@ class ThreadBagConsumeWizard(models.TransientModel):
         for wiz in self:
             wiz.is_reception = self._move_is_reception(wiz.move_id)
 
-    @api.onchange("scan_input")
-    def _onchange_scan_input(self):
-        # En recepción no se escanea (las líneas vienen del Excel importado).
-        if self.is_reception:
-            self.scan_input = False
-            return
-        # El Code 39 viene como *CODIGO*; el escáner suele quitar los asteriscos,
-        # pero por si acaso los limpiamos también aquí.
-        code = (self.scan_input or "").strip().strip("*").strip()
-        self.scan_input = False
-        if not code:
-            return
+    def _split_scan_codes(self, raw):
+        """Separa el texto escaneado en correlativos.
+
+        El escáner a veces manda varios códigos sin separador (si el campo
+        perdió el foco entre lecturas queda 'H904314518H904314737' y antes eso
+        se leía como un solo correlativo inexistente). Se aceptan separadores
+        normales y, si un bloque no existe como bolsa, se intenta partirlo en
+        correlativos del mismo largo que los del producto.
+        """
+        tokens = [t.strip().strip("*").strip()
+                  for t in re.split(r"[\s,;/|]+", raw or "") if t.strip()]
+        if not tokens:
+            return []
+        Bag = self.env["thread.bag"]
+        product = self.move_id.product_id
+        codes = []
+        for token in tokens:
+            if Bag.search_count([("name", "=ilike", token)]):
+                codes.append(token)
+                continue
+            # Longitudes de correlativo conocidas para este producto.
+            largos = {len(n) for n in Bag.search(
+                [("product_id", "=", product.id)], limit=200).mapped("name") if n}
+            partido = False
+            for largo in sorted(largos, reverse=True):
+                if largo and len(token) > largo and len(token) % largo == 0:
+                    trozos = [token[i:i + largo]
+                              for i in range(0, len(token), largo)]
+                    if all(Bag.search_count([("name", "=ilike", t)]) for t in trozos):
+                        codes.extend(trozos)
+                        partido = True
+                        break
+            if not partido:
+                codes.append(token)
+        return codes
+
+    def _scan_add_code(self, code):
+        """Agrega una bolsa por correlativo. Devuelve un mensaje si no se pudo."""
         Bag = self.env["thread.bag"]
         product = self.move_id.product_id
         bag = Bag.search([("name", "=", code), ("product_id", "=", product.id)], limit=1)
@@ -216,25 +243,38 @@ class ThreadBagConsumeWizard(models.TransientModel):
         if not bag:
             other = Bag.search([("name", "=ilike", code)], limit=1)
             if other:
-                msg = _("La bolsa %(c)s es del producto %(p)s, no de %(m)s.",
-                        c=code, p=other.product_id.display_name, m=product.display_name)
-            else:
-                msg = _("No existe una bolsa con correlativo %s.") % code
-            return {"warning": {"title": _("Bolsa no válida"), "message": msg}}
+                return _("La bolsa %(c)s es del producto %(p)s, no de %(m)s.",
+                         c=code, p=other.product_id.display_name, m=product.display_name)
+            return _("No existe una bolsa con correlativo %s.") % code
         if bag in self.bag_ids:
-            return {"warning": {"title": _("Repetida"),
-                                "message": _("La bolsa %s ya está en la lista.") % bag.name}}
+            return _("La bolsa %s ya está en la lista.") % bag.name
         if bag.state != "available" and bag not in self.move_id.thread_bag_ids:
-            return {"warning": {"title": _("No disponible"),
-                                "message": _("La bolsa %(c)s está %(s)s.",
-                                             c=bag.name, s=bag.state)}}
+            return _("La bolsa %(c)s está %(s)s.", c=bag.name, s=bag.state)
         src = self.move_id.location_id
         if (src and bag not in self.move_id.thread_bag_ids
                 and not bag.filtered_domain([("location_id", "child_of", src.id)])):
-            return {"warning": {"title": _("Ubicación distinta"),
-                                "message": _("La bolsa %(c)s está en %(loc)s, no en la ubicación de origen %(src)s.",
-                                             c=bag.name, loc=bag.location_id.display_name, src=src.display_name)}}
+            return _("La bolsa %(c)s está en %(loc)s, no en la ubicación de origen %(src)s.",
+                     c=bag.name, loc=bag.location_id.display_name, src=src.display_name)
         self.bag_ids = [(4, bag.id)]
+        return None
+
+    @api.onchange("scan_input")
+    def _onchange_scan_input(self):
+        # En recepción no se escanea (las líneas vienen del Excel importado).
+        if self.is_reception:
+            self.scan_input = False
+            return
+        raw = self.scan_input or ""
+        # El campo se limpia SIEMPRE, incluso si el código falla: así el
+        # siguiente escaneo no se pega al anterior.
+        self.scan_input = False
+        codes = self._split_scan_codes(raw)
+        if not codes:
+            return
+        errores = [msg for msg in (self._scan_add_code(c) for c in codes) if msg]
+        if errores:
+            return {"warning": {"title": _("Bolsa no válida"),
+                                "message": "\n".join(errores)}}
 
     @api.model
     def default_get(self, fields_list):

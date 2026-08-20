@@ -425,7 +425,10 @@ class SaleOrder(models.Model):
                 'lab_dev_line_id': ld_line.id,
             })
 
-        self.open_labdev()
+        # Se devuelve la acción para abrir el LD recién creado: sin el return,
+        # el botón creaba el desarrollo y dejaba al usuario en el pedido, como
+        # si no hubiera pasado nada.
+        return self.open_labdev()
     
     def open_labdev(self):
         return self.lab_dev_ids._get_records_action(name=_("Lab Dip"))
@@ -505,6 +508,19 @@ class SaleOrder(models.Model):
                     #     order.weaving_warning += _(('Product %s does not have any bom. Please check with product development.')  % line.product_id.product_tmpl_id.display_name) + '\n'
                     if not line.product_id.analysis_id.weaving_price:
                         order.weaving_warning += _(('Product %s has no weaving price. Please check with product development') % line.product_id.product_tmpl_id.display_name) + '\n'
+
+                    # Cantidad por debajo del mínimo de producción: antes se
+                    # aceptaba sin decir nada y el pedido llegaba a planta con
+                    # una cantidad que no se puede tejer/teñir.
+                    if line.min_qty and line.product_uom_qty < line.min_qty:
+                        order.weaving_warning += _(
+                            'El producto %(prod)s tiene %(qty)s %(uom)s y su '
+                            'cantidad mínima es %(min)s: confirma con producción '
+                            'antes de cotizar.',
+                            prod=line.product_id.product_tmpl_id.display_name,
+                            qty=line.product_uom_qty,
+                            uom=line.product_uom_id.name or 'kg',
+                            min=line.min_qty) + '\n'
 
                     has_weaving_operation = any(
                         operation.operation_id and operation.operation_id.operation_type == 'weaving'
