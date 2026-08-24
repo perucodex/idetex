@@ -88,14 +88,18 @@ class MrpProduction(models.Model):
             # Y solo si realmente se tejió algo.
             if not tejido.mapped('roll_ids'):
                 continue
+            # Se consume lo RESERVADO (venga de elegir bolsas o de los kilos
+            # por lote de la pantalla de opciones de tejeduría). Lo que sobró en
+            # máquina y las bolsas no usadas se corrigen después por inventario.
             hilo = production.move_raw_ids.filtered(
                 lambda m: m.product_id.is_thread
                 and m.state not in ('done', 'cancel')
-                and m.picked and m.quantity > 0)
+                and m.quantity > 0)
             if not hilo:
                 continue
             try:
                 consumido = [(m.product_id.display_name, m.quantity) for m in hilo]
+                hilo.picked = True
                 hilo._action_done()
                 production.message_post(body=_(
                     'Hilo consumido al cerrar el tejido: %s',

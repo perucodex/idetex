@@ -195,6 +195,9 @@ class StockMove(models.Model):
             grp_bags.write({
                 "state": "reserved",
                 "consumed_move_line_id": line.id,
+                # Al RESERVAR ya se sabe para qué orden es: si no, la bolsa se
+                # veía "Reservada" sin decir quién la tiene tomada.
+                "production_id": self.raw_material_production_id.id or False,
             })
 
         self.thread_bag_ids = [(6, 0, bags.ids)]

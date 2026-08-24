@@ -438,14 +438,13 @@ class MrpWorkorder(models.Model):
         return res
 
     def button_finish(self):
-        # El hilo se consume al cerrar TEJIDO (es donde se gasta en la máquina).
-        # Si el cierre viene de la liquidación de hilo, allí ya se decidió qué
-        # bolsas se usaron, qué volvió a 2da y cuánto fue merma.
+        # El hilo se consume al cerrar TEJIDO: es donde se gasta en la máquina.
+        # Los kilos y bolsas que no se usaron se corrigen después por inventario.
         tejido = self.filtered(lambda wo: wo.operation_type == 'weaving')
         res = super().button_finish()
         self._set_equipment_running(False)
         self._purge_zero_duration_times()
-        if tejido and not self.env.context.get('skip_weaving_thread_consume'):
+        if tejido:
             tejido.production_id._consume_woven_thread()
         return res
 
@@ -685,12 +684,11 @@ class MrpWorkorderOption(models.Model):
         # OT en progreso) y de las AÑADIDAS (pasan a 'ejecutando' si la OT está
         # en progreso). Sin esto, quitar una máquina de una OT en curso la dejaba
         # colgada en 'ejecutando'.
-        if 'equipment_ids' not in vals:
-            return super().write(vals)
-        afectadas = self.equipment_ids            # máquinas ANTES del cambio
+        afectadas = self.equipment_ids if 'equipment_ids' in vals else None
         res = super().write(vals)
-        afectadas |= self.equipment_ids           # ∪ máquinas DESPUÉS del cambio
-        self.env['mrp.workorder']._resync_equipment_state(afectadas)
+        if afectadas is not None:
+            afectadas |= self.equipment_ids       # ∪ máquinas DESPUÉS del cambio
+            self.env['mrp.workorder']._resync_equipment_state(afectadas)
         return res
 
     def unlink(self):

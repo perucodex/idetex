@@ -34,6 +34,28 @@
         </field>
     </record>
 
+    <!-- OF: la merma de hilo del cierre de tejido, a la vista y en kilos. -->
+    <record id="view_mrp_production_form_thread_waste" model="ir.ui.view">
+        <field name="name">mrp.production.form.thread.waste</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_thread_waste" type="object"
+                        class="oe_stat_button" icon="fa-trash"
+                        invisible="not thread_waste_count">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="thread_waste_qty" widget="float" digits="[16,2]"/> kg
+                        </span>
+                        <span class="o_stat_text">Merma de hilo</span>
+                    </div>
+                </button>
+                <field name="thread_waste_count" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+
     <!-- OF: botón "Bolsas" por componente de hilo -->
     <record id="view_mrp_production_form_thread" model="ir.ui.view">
         <field name="name">mrp.production.form.thread</field>
@@ -52,6 +74,23 @@
             <!-- Para hilo, la cantidad consumida la fijan las bolsas: solo lectura. -->
             <xpath expr="//field[@name='move_raw_ids']/list/field[@name='quantity']" position="attributes">
                 <attribute name="readonly">thread_is_thread</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Existencias: del kilo del lote a sus bolsas físicas (solo hilo). -->
+    <record id="view_stock_quant_tree_editable_thread" model="ir.ui.view">
+        <field name="name">stock.quant.list.editable.thread</field>
+        <field name="model">stock.quant</field>
+        <field name="inherit_id" ref="stock.view_stock_quant_tree_editable"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_view_stock_moves']" position="before">
+                <field name="thread_is_thread" column_invisible="1"/>
+                <field name="thread_bag_count" string="Bolsas" optional="show"
+                       readonly="1"/>
+                <button name="action_view_thread_bags" type="object"
+                        string="Bolsas" icon="fa-shopping-bag" class="btn-link"
+                        invisible="not thread_is_thread or not lot_id"/>
             </xpath>
         </field>
     </record>

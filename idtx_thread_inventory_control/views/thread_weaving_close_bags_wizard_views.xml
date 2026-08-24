@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_thread_weaving_close_bags_wizard_form" model="ir.ui.view">
+        <field name="name">thread.weaving.close.bags.wizard.form</field>
+        <field name="model">thread.weaving.close.bags.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Cerrar tejido y rearmar bolsas">
+                <field name="workorder_id" invisible="1"/>
+                <field name="available_lot_ids" invisible="1"/>
+                <div class="alert alert-warning" role="alert"
+                     invisible="not balance_warning">
+                    <field name="balance_warning" readonly="1" nolabel="1"/>
+                </div>
+                <group>
+                    <group string="Se abrió para cargar la máquina">
+                        <field name="production_id" readonly="1"/>
+                        <field name="old_bags" readonly="1"/>
+                        <field name="old_cones" readonly="1"/>
+                        <field name="old_qty" readonly="1"/>
+                        <field name="old_bag_ids" widget="many2many_tags" readonly="1"
+                               options="{'no_open': True}"/>
+                    </group>
+                    <group string="Volvió de la máquina">
+                        <field name="location_id"/>
+                        <field name="new_bags" readonly="1"/>
+                        <field name="new_cones" readonly="1"/>
+                        <field name="new_qty" readonly="1"/>
+                        <field name="woven_qty" readonly="1" force_save="1"/>
+                        <field name="consumed_qty" readonly="1"/>
+                        <field name="waste_qty" readonly="1"/>
+                    </group>
+                </group>
+
+                <p class="text-muted">
+                    Una línea por bolsa que se armó con los conos que se bajaron de
+                    la máquina: su correlativo, cuántos conos tiene y cuánto pesa.
+                    Las bolsas separadas se consumen completas; lo que no volvió ni
+                    se hizo tela se registra como merma (desecho) y se ve en la
+                    orden de fabricación.
+                </p>
+                <field name="line_ids" nolabel="1">
+                    <list editable="bottom">
+                        <field name="name"/>
+                        <field name="lot_id" options="{'no_create': True, 'no_open': True}"
+                               domain="[('id', 'in', parent.available_lot_ids)]"/>
+                        <field name="cone_qty" sum="Conos"/>
+                        <field name="net_weight" sum="Rearmado"/>
+                        <field name="cone_weight" readonly="1"/>
+                    </list>
+                </field>
+
+                <footer>
+                    <button name="action_confirm" type="object" class="btn-primary"
+                            string="Crear bolsas y cerrar tejido"
+                            confirm="Se crearán las bolsas nuevas, se consumirán las separadas y se cerrará la orden de trabajo. ¿Continuar?"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Botón en la OT de tejido. -->
+    <record id="mrp_workorder_form_weaving_close_bags" model="ir.ui.view">
+        <field name="name">mrp.workorder.form.weaving.close.bags</field>
+        <field name="model">mrp.workorder</field>
+        <field name="inherit_id" ref="mrp.mrp_production_workorder_form_view_inherit"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_open_weaving_close_bags" type="object"
+                        string="Cerrar tejido y rearmar bolsas" class="oe_highlight"
+                        invisible="operation_type != 'weaving' or state in ('done', 'cancel')"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
