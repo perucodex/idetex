@@ -30,7 +30,7 @@ class ColorRecipeLocation(models.Model):
         related='recipe_id.company_id', store=True, index=True)
 
     # Campos de solo lectura para listar/buscar cómodo.
-    recipe_name = fields.Char(related='recipe_id.name', store=True, string='Receta')
+    recipe_name = fields.Char(related='recipe_id.name', store=True, string='Receta N°')
     recipe_color_code = fields.Char(
         related='recipe_id.recipe_color_code', store=True, string='Código')
     color_name = fields.Char(related='recipe_id.color_name', store=True, string='Color')

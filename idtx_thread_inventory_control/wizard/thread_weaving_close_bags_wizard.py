@@ -28,7 +28,7 @@ class ThreadWeavingCloseBagsWizard(models.TransientModel):
         'thread.bag', string='Bolsas Separadas',
         help='Bolsas que se abrieron para cargar la máquina: se consumen completas.')
     old_qty = fields.Float('Separado (kg)', compute='_compute_totals', digits=(16, 2))
-    old_bags = fields.Integer('Bolsas Separadas', compute='_compute_totals')
+    old_bags = fields.Integer('Cant. Bolsas Separadas', compute='_compute_totals')
     old_cones = fields.Integer('Conos Separados', compute='_compute_totals')
 
     location_id = fields.Many2one(
@@ -37,7 +37,7 @@ class ThreadWeavingCloseBagsWizard(models.TransientModel):
         help='Dónde entran las bolsas rearmadas. Por defecto, de donde salió el hilo.')
     line_ids = fields.One2many(
         'thread.weaving.close.bags.wizard.line', 'wizard_id',
-        string='Bolsas Nuevas')
+        string='Bolsas Nuevas Lineas')
 
     new_qty = fields.Float('Rearmado (kg)', compute='_compute_totals', digits=(16, 2))
     new_bags = fields.Integer('Bolsas Nuevas', compute='_compute_totals')
