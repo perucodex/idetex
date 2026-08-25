@@ -45,17 +45,11 @@
         <!-- `active=False` solo los oculta del árbol de menús; se eliminan
              del todo para que no queden alcanzables por ninguna otra vía
              (búsqueda, breadcrumbs, etc). El fix real de la pantalla de
-<<<<<<< HEAD
-             entrada de la app está arriba (campo `path`).
+             entrada de la app está arriba (dominio de la acción core).
              Se usa una función IDEMPOTENTE en vez de <delete>: el delete
              borra el xmlid junto con el menú y en cada -u posterior fallaba
              con "External ID not found: sale.menu_sale_quotations". -->
         <function model="sale.order" name="_idtx_remove_core_sale_menus" eval="[[]]"/>
-=======
-             entrada de la app está arriba (dominio de la acción core). -->
-        <delete id="sale.menu_sale_quotations" model="ir.ui.menu"/>
-        <delete id="sale.menu_sale_order" model="ir.ui.menu"/>
->>>>>>> 9131037 (Actualizaciones 19/08)
     </data>
 
 </odoo>
