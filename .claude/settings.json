@@ -1,0 +1,25 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); [ -n \"$f\" ] && exec \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-syntax.sh \"$f\"; exit 0"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "inp=$(cat); [ \"$(echo \"$inp\" | jq -r '.stop_hook_active // false')\" = true ] && exit 0; cd \"$CLAUDE_PROJECT_DIR\" && { git diff --name-only HEAD; git ls-files --others --exclude-standard; } | grep -E '\\.(py|xml|csv)$' | xargs -r .claude/hooks/check-syntax.sh || exit 2"
+          }
+        ]
+      }
+    ]
+  }
+}
