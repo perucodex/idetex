@@ -10,13 +10,16 @@ Réplica de usuarios y claves entre bases de datos Odoo
   usuario interno se replica a las bases seleccionadas después del commit local.
 - Los usuarios nuevos en destino se crean copiando la plantilla ``base.default_user``
   (partner, grupos y compañías), por lo que funciona con destinos Odoo 18 y 19.
+- Cada base destino puede marcarse con "Crear usuarios como portal": los usuarios que no
+  existan allí se crean como portal (sin acceso al backend); los existentes solo
+  sincronizan clave, activo, nombre y correo.
 - Si una base destino falla, el cambio local se conserva y el error queda registrado en el
   log y en Ajustes; el botón "Replicar todos los usuarios" resincroniza.
     """,
     "author": "Codex Development",
     "website": "https://www.perucodex.com",
     "category": "Administration",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.1.0",
     "license": "LGPL-3",
     "depends": ["base", "base_setup"],
     "external_dependencies": {"python": ["psycopg2"]},

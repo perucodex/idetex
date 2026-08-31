@@ -202,16 +202,18 @@
                         <notebook>
                             <page name="fibers_page" string="Fibers">
                                 <field name="fiber_ids">
-                                    <list>
+                                    <list editable="bottom">
                                         <field name="sequence" widget="handle"/>
                                         <field name="system_type"/>
                                         <field name="length"/>
                                         <field name="weight"/>
                                         <field name="thread_title"/>
-                                        <field name="product_template_id"/>
+                                        <field name="product_template_id" options="{'no_create': True, 'no_open': True}"/>
                                         <field name="cabo_number"/>
-                                        <field name="ligament_id"/>
+                                        <field name="ligament_id" options="{'no_create': True, 'no_open': True}"/>
                                         <field name="percentage" widget="percentage"/>
+                                        <button name="action_open_form" type="object" string="Análisis" class="btn btn-link"
+                                                title="Abrir el formulario de la fibra (medidas)"/>
                                     </list>
                                 </field>
                             </page>
@@ -244,7 +246,7 @@
                         <group>
                             <group>
                                 <field name="system_type"/>
-                                <field name="length"/>
+                                <field name="length" readonly="1"/>
                                 <field name="weight" required="1"/>
                                 <field name="thread_qty"/>
                             </group>

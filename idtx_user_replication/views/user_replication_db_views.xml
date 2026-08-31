@@ -9,6 +9,7 @@
                 <field name="name"/>
                 <field name="odoo_version"/>
                 <field name="version_major"/>
+                <field name="create_as_portal" widget="boolean_toggle"/>
                 <field name="active" widget="boolean_toggle"/>
             </list>
         </field>
@@ -24,6 +25,7 @@
                         <field name="name"/>
                         <field name="odoo_version"/>
                         <field name="version_major"/>
+                        <field name="create_as_portal"/>
                         <field name="active"/>
                     </group>
                 </sheet>

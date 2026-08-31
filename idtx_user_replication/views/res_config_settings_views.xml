@@ -27,6 +27,9 @@
                             <div class="text-muted mt4">
                                 Solo se muestran bases Odoo <b>versión <field name="user_repl_current_major" readonly="1" class="d-inline"/></b> de este servidor. Pulsa "Detectar bases de datos" si falta alguna.
                             </div>
+                            <div class="text-muted mt4">
+                                En "Administrar bases destino" puedes marcar <b>Crear usuarios como portal</b> para que los usuarios que no existan en esa base se creen sin acceso al backend (solo sitio web); los ya existentes solo sincronizan la clave.
+                            </div>
                             <div class="mt8">
                                 <button name="action_user_repl_discover" type="object"
                                         string="Detectar bases de datos" class="btn-link" icon="fa-refresh"/>

@@ -7,6 +7,10 @@ class ProductCodeSystem(models.Model):
     code = fields.Char('Code')
     name = fields.Char('Name')
 
+    _sql_constraints = [
+        ('code_uniq', 'unique(code)', 'Code must be unique!'),
+    ]
+
 class ProductFamily(models.Model):
     _name = 'product.family'
     _inherit = 'product.code.system'

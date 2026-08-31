@@ -77,7 +77,7 @@ class UserReplication(models.AbstractModel):
         dbs = self.env['idtx.user.replication.db'].sudo().browse(db_ids).exists().filtered('active')
         return {
             'enabled': enabled,
-            'dbs': dbs.mapped('name'),
+            'dbs': [{'name': d.name, 'as_portal': d.create_as_portal} for d in dbs],
             'major': self._current_major(),
         }
 
@@ -238,9 +238,11 @@ class UserReplication(models.AbstractModel):
             return summary, errors
         snapshots = self._snapshot(None if full else uids)
         renames = renames or {}
-        for dbname in config['dbs']:
+        for db in config['dbs']:
+            dbname = db['name']
             try:
-                res = self._push(config, dbname, snapshots, deleted, renames)
+                res = self._push(config, dbname, snapshots, deleted, renames,
+                                 as_portal=db.get('as_portal', False))
             except Exception as exc:  # noqa: BLE001 - se informa y se sigue con la siguiente BD
                 _logger.exception("Réplica de usuarios: fallo en la base %s", dbname)
                 errors.append("%s: %s" % (dbname, str(exc).strip()))
@@ -253,8 +255,9 @@ class UserReplication(models.AbstractModel):
         return summary, errors
 
     @api.model
-    def _push(self, config, dbname, snapshots, deleted, renames):
-        """Aplica cambios en UNA base destino dentro de una sola transacción."""
+    def _push(self, config, dbname, snapshots, deleted, renames, as_portal=False):
+        """Aplica cambios en UNA base destino dentro de una sola transacción.
+        Con ``as_portal`` los usuarios que no existan en el destino se crean como portal."""
         res = {'created': 0, 'updated': 0, 'deleted': 0, 'archived': 0, 'renamed': 0, 'warnings': []}
         conn = self._connect(dbname)
         try:
@@ -269,7 +272,7 @@ class UserReplication(models.AbstractModel):
                         """, {'old': old, 'new': new})
                         res['renamed'] += rcr.rowcount
                 for snap in snapshots:
-                    if self._upsert_user(rcr, snap):
+                    if self._upsert_user(rcr, snap, as_portal=as_portal):
                         res['created'] += 1
                     else:
                         res['updated'] += 1
@@ -346,6 +349,38 @@ class UserReplication(models.AbstractModel):
             gids.update(r[0] for r in rcr.fetchall())
         return sorted(gids)
 
+    def _reference_user_portal(self, rcr):
+        """Fila de referencia para crear usuarios PORTAL: la plantilla ``portaltemplate``
+        (auth_signup) si existe —sus grupos, solo portal, se copian—; si no,
+        ``base.public_user`` y el grupo se resuelve como ``base.group_portal``."""
+        ref_uid = self._xmlid(rcr, 'base', 'template_portal_user_id', 'res.users')
+        if not ref_uid:
+            rcr.execute("SELECT id FROM res_users WHERE login = 'portaltemplate'")
+            row = rcr.fetchone()
+            ref_uid = row[0] if row else None
+        if ref_uid:
+            rcr.execute("SELECT partner_id FROM res_users WHERE id = %s", (ref_uid,))
+            row = rcr.fetchone()
+            if row:
+                return ref_uid, row[0], 'template'
+        ref_uid = self._xmlid(rcr, 'base', 'public_user', 'res.users')
+        if ref_uid:
+            rcr.execute("SELECT partner_id FROM res_users WHERE id = %s", (ref_uid,))
+            row = rcr.fetchone()
+            if row:
+                return ref_uid, row[0], 'public'
+        raise UserError(_(
+            "La base destino no tiene usuario de referencia portal (portaltemplate ni base.public_user)."))
+
+    def _portal_group_ids(self, rcr, ref_uid, kind):
+        if kind == 'template':
+            rcr.execute("SELECT gid FROM res_groups_users_rel WHERE uid = %s", (ref_uid,))
+            gids = [r[0] for r in rcr.fetchall()]
+            if gids:
+                return gids
+        group_portal = self._xmlid(rcr, 'base', 'group_portal', 'res.groups')
+        return [group_portal] if group_portal else []
+
     def _default_company_ids(self, rcr, ref_uid):
         rcr.execute("SELECT cid FROM res_company_users_rel WHERE user_id = %s", (ref_uid,))
         cids = [r[0] for r in rcr.fetchall()]
@@ -399,8 +434,10 @@ class UserReplication(models.AbstractModel):
             'write_date': now,
         }
 
-    def _upsert_user(self, rcr, snap):
-        """Crea o actualiza el usuario en destino por ``login``. Devuelve True si lo creó."""
+    def _upsert_user(self, rcr, snap, as_portal=False):
+        """Crea o actualiza el usuario en destino por ``login``. Devuelve True si lo creó.
+        Al actualizar nunca se tocan los grupos del destino; ``as_portal`` solo afecta
+        a los usuarios que se CREAN (nacen como portal, sin acceso al backend)."""
         now = datetime.utcnow()
         partner_vals = self._partner_values(snap, now)
         rcr.execute("SELECT id, partner_id FROM res_users WHERE login = %s", (snap['login'],))
@@ -413,13 +450,18 @@ class UserReplication(models.AbstractModel):
             self._update_row(rcr, 'res_partner', remote_pid, partner_vals)
             return False
 
-        ref_uid, ref_pid, kind = self._reference_user(rcr)
+        if as_portal:
+            ref_uid, ref_pid, kind = self._reference_user_portal(rcr)
+            group_ids = self._portal_group_ids(rcr, ref_uid, kind)
+        else:
+            ref_uid, ref_pid, kind = self._reference_user(rcr)
+            group_ids = self._default_group_ids(rcr, ref_uid, kind)
         remote_pid = self._copy_row(rcr, 'res_partner', ref_pid, dict(
             partner_vals,
             create_date=now,
             parent_id=None,
             user_id=None,
-            partner_share=False,
+            partner_share=as_portal,
             type='contact',
         ))
         rcr.execute("UPDATE res_partner SET commercial_partner_id = id WHERE id = %s", (remote_pid,))
@@ -428,14 +470,14 @@ class UserReplication(models.AbstractModel):
             'password': snap['password'],
             'partner_id': remote_pid,
             'active': snap['active'],
-            'share': False,
+            'share': as_portal,
             'create_date': now,
             'write_date': now,
             'signature': None,
             'totp_secret': None,
             'totp_last_counter': None,
         })
-        for gid in self._default_group_ids(rcr, ref_uid, kind):
+        for gid in group_ids:
             rcr.execute(
                 "INSERT INTO res_groups_users_rel (uid, gid) VALUES (%s, %s) ON CONFLICT DO NOTHING",
                 (remote_uid, gid))

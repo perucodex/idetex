@@ -43,10 +43,15 @@ class TestUserReplicationQueue(TransactionCase):
     def test_config_uses_no_connection_params_and_is_active(self):
         # La conexión se hereda de Odoo: no hay host/puerto/usuario/clave en la config.
         cfg = self.engine._get_config()
-        self.assertEqual(cfg['dbs'], ['base_destino_test'])
+        self.assertEqual(cfg['dbs'], [{'name': 'base_destino_test', 'as_portal': False}])
         self.assertEqual(cfg['major'], self.engine._current_major())
         self.assertNotIn('host', cfg)
         self.assertTrue(self.engine._is_active())
+
+    def test_config_carries_portal_flag(self):
+        self.db.create_as_portal = True
+        cfg = self.engine._get_config()
+        self.assertEqual(cfg['dbs'], [{'name': 'base_destino_test', 'as_portal': True}])
 
     def test_db_name_stripped_and_version_major_computed(self):
         self.assertEqual(self.db.name, 'base_destino_test')

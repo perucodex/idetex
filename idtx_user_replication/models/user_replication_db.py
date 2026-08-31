@@ -17,6 +17,11 @@ class UserReplicationDb(models.Model):
         string="Versión mayor", compute='_compute_version_major', store=True,
         help="Versión mayor de Odoo (18, 19, ...). Solo se puede replicar entre bases de la misma versión.")
     active = fields.Boolean(default=True)
+    create_as_portal = fields.Boolean(
+        string="Crear usuarios como portal",
+        help="Los usuarios que no existan en esta base destino se crean como usuarios portal "
+             "(solo sitio web, sin acceso al backend). Los que ya existen solo sincronizan "
+             "clave, activo, nombre y correo, sin tocar sus grupos.")
 
     _name_uniq = models.Constraint(
         "UNIQUE (name)",

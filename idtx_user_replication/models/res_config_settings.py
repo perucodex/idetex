@@ -62,7 +62,7 @@ class ResConfigSettings(models.TransientModel):
             raise UserError(_("Selecciona al menos una base de datos destino."))
         return {
             'enabled': True,
-            'dbs': dbs.mapped('name'),
+            'dbs': [{'name': d.name, 'as_portal': d.create_as_portal} for d in dbs],
             'major': self.env['idtx.user.replication']._current_major(),
         }
 
@@ -89,7 +89,8 @@ class ResConfigSettings(models.TransientModel):
         cfg = self._user_repl_config_from_form()
         engine = self.env['idtx.user.replication']
         ok, errors = [], []
-        for dbname in cfg['dbs']:
+        for db in cfg['dbs']:
+            dbname = db['name']
             try:
                 count = engine._test_db(dbname, cfg['major'])
                 ok.append(_("%s (%s usuarios internos)", dbname, count))
