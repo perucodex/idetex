@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import logging
+
 from odoo import api, fields, models, _
 from odoo.fields import Command
 from odoo.exceptions import UserError
+
+_logger = logging.getLogger(__name__)
 
 class MrpProduction(models.Model):
     _inherit = 'mrp.production'
@@ -58,6 +62,52 @@ class MrpProduction(models.Model):
         for production in self._roll_qty_sync_targets():
             # qty_producing debe provenir solo de los rollos finalizados.
             production.qty_producing = production._roll_done_qty(True)
+
+    def _consume_woven_thread(self):
+        """Consume el HILO al cerrar la operación de TEJIDO.
+
+        El hilo se gasta en la tejedora, así que ahí debe salir del almacén:
+        mientras se tejen rollos la cantidad consumida del componente va
+        subiendo (se ve en el Taller), y al cerrar la OT de tejido esos kilos
+        se descuentan de verdad y las bolsas usadas pasan a "Consumida".
+
+        Antes esto no ocurría nunca: en este flujo la OF no se cierra con
+        "Producir" (el stock del producto nace al pesar cada rollo), así que
+        los movimientos de hilo se quedaban en 'assigned' para siempre y el
+        hilo ya gastado seguía contando como disponible.
+        """
+        for production in self:
+            if production.state in ('draft', 'cancel'):
+                continue
+            tejido = production.workorder_ids.filtered(
+                lambda wo: wo.operation_type == 'weaving')
+            # Solo cuando el tejido terminó: si quedan OTs de tejido abiertas
+            # (o reabiertas por reproceso) todavía puede sumarse consumo.
+            if not tejido or tejido.filtered(lambda wo: wo.state not in ('done', 'cancel')):
+                continue
+            # Y solo si realmente se tejió algo.
+            if not tejido.mapped('roll_ids'):
+                continue
+            # Se consume lo RESERVADO (venga de elegir bolsas o de los kilos
+            # por lote de la pantalla de opciones de tejeduría). Lo que sobró en
+            # máquina y las bolsas no usadas se corrigen después por inventario.
+            hilo = production.move_raw_ids.filtered(
+                lambda m: m.product_id.is_thread
+                and m.state not in ('done', 'cancel')
+                and m.quantity > 0)
+            if not hilo:
+                continue
+            try:
+                consumido = [(m.product_id.display_name, m.quantity) for m in hilo]
+                hilo.picked = True
+                hilo._action_done()
+                production.message_post(body=_(
+                    'Hilo consumido al cerrar el tejido: %s',
+                    ', '.join('%s (%.2f kg)' % (nombre, qty)
+                              for nombre, qty in consumido)))
+            except Exception as e:  # noqa: BLE001 - no debe bloquear el cierre de la OT
+                _logger.warning(
+                    'No se pudo consumir el hilo de %s: %s', production.name, e)
 
     def button_mark_done(self):
         targets = self._roll_qty_sync_targets()

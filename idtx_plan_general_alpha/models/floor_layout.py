@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+
 from odoo import models, fields
 
 
@@ -11,10 +11,6 @@ class AlphaFloorLayout(models.Model):
     )
     workcenter = fields.Char(required=True, index=True)
     slot_index = fields.Integer(default=0)
-    # Celdas combinadas para agrandar la tarjeta: ancho x alto, en celdas.
-    # slot_index es la celda ancla (arriba-izquierda) del bloque combinado.
-    # 1x1 = normal. Admite tanto horizontal (2x1, 3x2, 4x2...) como vertical
-    # (1x2, 2x3, 2x4...) — ver ALLOWED_SHAPES en el controlador.
     span_cols = fields.Integer(default=1)
     span_rows = fields.Integer(default=1)
 

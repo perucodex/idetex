@@ -1,4 +1,5 @@
 from odoo import fields, models, api, _, Command
+from odoo.exceptions import ValidationError
 import base64
 from pathlib import Path
 
@@ -216,52 +217,84 @@ class BatchRegistry(models.Model):
     
     @api.depends('weight','bath_ratio','abs_factor','equipment_id','salt_measurement','water_batches')
     def _compute_volume(self):
+        R = 2  # los litros se llevan a la máquina con 2 decimales
         for rec in self:
-            rec.total_volume = rec.weight * rec.bath_ratio
-            rec.start_salt = (rec.total_volume - (rec.weight * rec.abs_factor)) - (rec.dyes_volume + 4 * rec.alkalis_volume)
-            rec.brine_qty = (rec.recipe_salt * rec.total_volume / 0.33) / 1000
-            rec.start_brine = (rec.total_volume - (rec.weight * rec.abs_factor)) - (rec.brine_qty + rec.dyes_volume + 3 * rec.alkalis_volume)
-            rec.salt_qty = rec.recipe_salt * rec.total_volume / 1000
+            rec.total_volume = round(rec.weight * rec.bath_ratio, R)
+            # Agua libre del baño: el total menos lo que absorbe la tela. De
+            # ahí se descuenta lo que se reserva para colorantes y álcalis.
+            free_volume = rec.total_volume - (rec.weight * rec.abs_factor)
+            rec.brine_qty = round((rec.recipe_salt * rec.total_volume / 0.33) / 1000, R)
+            reserved_salt = rec.dyes_volume + 4 * rec.alkalis_volume
+            reserved_brine = rec.brine_qty + rec.dyes_volume + 3 * rec.alkalis_volume
+            # Un litraje inicial NEGATIVO no existe en la máquina: significa
+            # que los volúmenes de la máquina (colorantes/álcalis) no caben en
+            # el baño calculado. Se muestra 0 y se avisa en lugar de mandar al
+            # operario un número imposible.
+            rec.start_salt = round(max(0.0, free_volume - reserved_salt), R)
+            rec.start_brine = round(max(0.0, free_volume - reserved_brine), R)
+            rec.salt_qty = round(rec.recipe_salt * rec.total_volume / 1000, R)
             rec.add_soda = 0
+            capacity_short = max(reserved_salt - free_volume,
+                                 reserved_brine - free_volume, 0.0)
             if rec.water_batches:
                 if rec.water_batches == 'wb1':
-                    rec.total_tanq_volume = 3 * rec.alkalis_volume
+                    rec.total_tanq_volume = round(3 * rec.alkalis_volume, R)
                 elif rec.water_batches == 'wb2':
-                    rec.total_tanq_volume = 3 * rec.alkalis_volume + rec.dyes_volume
+                    rec.total_tanq_volume = round(3 * rec.alkalis_volume + rec.dyes_volume, R)
                 elif rec.water_batches == 'wb3':
-                    rec.total_tanq_volume = 2 * rec.alkalis_volume + rec.dyes_volume
+                    rec.total_tanq_volume = round(2 * rec.alkalis_volume + rec.dyes_volume, R)
             else:
                 rec.total_tanq_volume = 0
             if rec.salt_measurement:
-                rec.actual_volume = rec.total_volume * rec.recipe_salt / rec.salt_measurement
-                rec.final_volume = rec.total_volume * rec.recipe_salt / rec.salt_measurement + rec.total_tanq_volume
-                rec.volume_variation = rec.total_volume - rec.final_volume
+                rec.actual_volume = round(
+                    rec.total_volume * rec.recipe_salt / rec.salt_measurement, R)
+                rec.final_volume = round(rec.actual_volume + rec.total_tanq_volume, R)
+                rec.volume_variation = round(rec.total_volume - rec.final_volume, R)
                 if rec.volume_variation > 0:
                     rec.add_salt = 0
                     rec.add_carbonate = 0
                     rec.ribbon_message = 1
-                    rec.message = _('Missing water')
+                    rec.message = _(
+                        'Faltan %(litros).2f L de agua: el baño llega a '
+                        '%(final).2f L y la receta pide %(total).2f L.',
+                        litros=rec.volume_variation,
+                        final=rec.final_volume,
+                        total=rec.total_volume)
                 elif rec.volume_variation < 0:
-                    rec.add_salt = -(rec.recipe_salt * rec.volume_variation) / 1000
-                    rec.add_carbonate = -(rec.recipe_carbonate * rec.volume_variation) / 1000
+                    rec.add_salt = round(-(rec.recipe_salt * rec.volume_variation) / 1000, R)
+                    rec.add_carbonate = round(-(rec.recipe_carbonate * rec.volume_variation) / 1000, R)
                     rec.ribbon_message = 2
-                    rec.message = _('Add Salt and Alkali')
+                    rec.message = _(
+                        'Hay %(exceso).2f L de más: agrega %(sal).2f kg de sal '
+                        'y %(carb).2f kg de carbonato para mantener la '
+                        'concentración.',
+                        exceso=abs(rec.volume_variation),
+                        sal=rec.add_salt,
+                        carb=rec.add_carbonate)
                 else:
-                    rec.message = ''
                     rec.add_salt = 0
                     rec.add_carbonate = 0
                     rec.ribbon_message = 0
                     rec.message = ''
-
             else:
                 rec.actual_volume = 0
                 rec.final_volume = 0
                 rec.volume_variation = 0
-                rec.message = ''
                 rec.add_salt = 0
                 rec.add_carbonate = 0
                 rec.ribbon_message = 0
                 rec.message = ''
+            # El aviso de capacidad manda sobre el de agua/sal: si la máquina
+            # no da, los demás números tampoco sirven.
+            if capacity_short > 0:
+                rec.ribbon_message = 3
+                rec.message = _(
+                    'La máquina no alcanza: los volúmenes de colorantes y '
+                    'álcalis exceden en %(faltan).2f L el baño disponible '
+                    '(%(libre).2f L). Revisa la relación de baño, el peso de '
+                    'la partida o la máquina elegida.',
+                    faltan=round(capacity_short, R),
+                    libre=round(max(free_volume, 0.0), R))
             
     @api.onchange('workorder_id')
     def _onchange_workorder_id(self):
@@ -284,3 +317,18 @@ class BatchRegistry(models.Model):
         self.registry_date = fields.Datetime.now()
         self.workorder_id.batch_ids = [Command.link(self.id)]
         self.state = 'done'
+
+    @api.constrains('batch_id', 'workorder_id')
+    def _check_route_sequence(self):
+        """El control de secuencia de fases vive en el diálogo del Taller, pero
+        el registro también se puede crear por ORM (integraciones, importes,
+        scripts). Sin esta comprobación una partida podía quedar registrada en
+        acabado sin haber pasado por teñido."""
+        for rec in self:
+            if not rec.batch_id or not rec.workorder_id:
+                continue
+            if self.env.context.get('skip_batch_sequence_check'):
+                continue
+            error = rec.workorder_id._check_batch_previous_operation(rec.batch_id)
+            if error:
+                raise ValidationError(error['message'])

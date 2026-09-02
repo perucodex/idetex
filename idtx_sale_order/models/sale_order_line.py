@@ -1,7 +1,11 @@
+import logging
+
 from odoo import models, fields, api, _, Command
-from odoo.tools import float_round
+from odoo.tools import float_round, float_compare
 from odoo.exceptions import UserError
 import json
+
+_logger = logging.getLogger(__name__)
 
 META_KEY = "__price_meta__"
 WEAV_LOSS_KEY = "Weaving Loss"
@@ -107,6 +111,18 @@ class SaleOrderLine(models.Model):
                 yield_meter = rec.bom_id.technical_sheet_id.yield_meter
             else:
                 yield_meter = rec.printing_design_id.yield_meter
+            # Sin rendimiento no se puede derivar la cantidad mínima: se avisa
+            # en lugar de dividir por cero (antes reventaba con ZeroDivisionError).
+            if rec.printing_design_id and not yield_meter:
+                rec.min_qty = 1000
+                return {'warning': {
+                    'title': _('Falta el rendimiento'),
+                    'message': _(
+                        'El diseño %s no tiene rendimiento (kg) y la ficha '
+                        'técnica tampoco: la cantidad mínima queda en 1000. '
+                        'Complétalo en el diseño de estampado.',
+                        rec.printing_design_id.display_name),
+                }}
             if rec.printing_design_id and rec.printing_design_id.printing_type == 'rotary':
                 rec.min_qty = round(self.env.company.rotary_printing_min_qty / yield_meter)
             elif rec.printing_design_id and rec.printing_design_id.printing_type == 'digital':
@@ -650,7 +666,7 @@ class SaleOrderLine(models.Model):
                     if bom_id:
                         yield_meter = float_round(self.bom_id.technical_sheet_id.yield_meter if self.bom_id.technical_sheet_id else self.printing_design_id.yield_meter, 2)
                     else:
-                        yield_meter = float_round(self.self.product_template_id.analysis_id.yield_meter if self.product_template_id.analysis_id else self.printing_design_id.yield_meter, 2)
+                        yield_meter = float_round(self.product_template_id.analysis_id.yield_meter if self.product_template_id.analysis_id else self.printing_design_id.yield_meter, 2)
                     if self.order_id.is_quote:
                         total_qty = round(self.min_qty * yield_meter)
                     else:
@@ -819,7 +835,32 @@ class SaleOrderLine(models.Model):
                 for prd in rec.production_ids.filtered(
                         lambda p: p.state == 'draft'):
                     prd.product_qty = vals.get('product_uom_qty')
-        return super().write(vals)
+        res = super().write(vals)
+        # El recargo de estampado se calcula con el precio del tejido, pero el
+        # diseño solo se puede elegir en el PEDIDO: sin este recálculo el pedido
+        # quedaba con diseño asignado y un precio que no lo incluía.
+        if 'printing_design_id' in vals and not self.env.context.get('skip_printing_reprice'):
+            self._reprice_printing_lines()
+        return res
+
+    def _reprice_printing_lines(self):
+        """Recalcula el precio de las líneas de estampado tras cambiar el diseño."""
+        for line in self.filtered(lambda l: l.is_weaving and l.bom_id
+                                  and l.state in ('draft', 'sent', 'sale')):
+            try:
+                new_price = line.with_context(
+                    skip_printing_reprice=True).get_weaving_price_unit()
+            except Exception as e:  # noqa: BLE001 - no debe bloquear el guardado
+                _logger.warning('No se pudo recalcular el precio de %s: %s', line.id, e)
+                continue
+            if not new_price:
+                continue
+            rounding = line.currency_id.rounding or 0.01
+            if float_compare(new_price, line.price_unit, precision_rounding=rounding) != 0:
+                line.with_context(skip_printing_reprice=True).write({
+                    'price_unit': new_price,
+                    'technical_price_unit': new_price,
+                })
     
     def action_open_size_qty_wizard(self):
         self.ensure_one()

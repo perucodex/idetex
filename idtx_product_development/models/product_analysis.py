@@ -132,18 +132,26 @@ class ProductAnalysis(models.Model):
             else:
                 rec.width = 0
 
+    def _build_product_code(self):
+        """Código de 15 caracteres: familia+título+fibra+galga+apariencia+ancho+densidad."""
+        self.ensure_one()
+        return ((self.product_family_id.code or '00')
+                + (self.product_title_id.code or '00')
+                + (self.product_fiber_id.code or '0')
+                + (self.gauge_id.code or '00')
+                + (self.product_appearance_id.code or '00')
+                + str(int(self.standard_width or 0)).zfill(3)
+                + str(int(self.density or 0)).zfill(3))
+
     @api.onchange('product_family_id','product_fiber_id','product_title_id','gauge_id','product_appearance_id','standard_width','density')
     def _onchange_product_code(self):
         for rec in self:
-            rec.product_code = (rec.product_family_id.code or '00') + \
-                    (rec.product_title_id.code or '00') + \
-                    (rec.product_fiber_id.code or '0') + \
-                    (rec.gauge_id.code or '00') + \
-                    (rec.product_appearance_id.code or '00') + \
-                    (str(int(rec.standard_width)) or '000').zfill(3) + \
-                    (str(int(rec.density)) or '000').zfill(3)
-            rec.product_id.default_code = rec.product_code
-            rec.technical_sheet_ids.write({'product_code': rec.product_code})
+            rec.product_code = rec._build_product_code()
+            # OJO: aquí NO se escribe en base de datos. Antes este onchange
+            # hacía write() sobre el producto y las fichas técnicas: además de
+            # guardar cambios que el usuario aún podía descartar, disparaba
+            # recomputes en cascada que congelaban el formulario varios
+            # segundos por cada tecla. La propagación real vive en write().
                 
     @api.onchange('gauge_id')
     def _onchange_gauge_id(self):
@@ -189,6 +197,16 @@ class ProductAnalysis(models.Model):
         res = super(ProductAnalysis, target).write(vals)
         for rec in changed:
             rec._propagate_base_process()
+        # El código de producto se propaga AL GUARDAR (antes lo hacía el
+        # onchange, que escribía en BD en cada tecleo).
+        if 'product_code' in vals:
+            for rec in self:
+                if rec.product_id and rec.product_id.default_code != rec.product_code:
+                    rec.product_id.default_code = rec.product_code
+                fichas = rec.technical_sheet_ids.filtered(
+                    lambda f: f.product_code != rec.product_code)
+                if fichas:
+                    fichas.write({'product_code': rec.product_code})
         return res
 
     @api.model
@@ -569,7 +587,10 @@ class AnalysisWeavingData(models.Model):
         'res.partner', string='Customer', ondelete='restrict',
         domain="[('is_company', '=', True)]")
     stylo = fields.Char('Stylo')
-    fiber_ids = fields.One2many('analysis.fiber', 'weaving_data_id', string='Fibers')
+    # copy=True: en v19 los One2many YA NO se copian por defecto; sin esto,
+    # duplicar un Datos de Tejido (boton de la lista o wizard de copia del
+    # analisis) creaba la copia SIN fibras.
+    fiber_ids = fields.One2many('analysis.fiber', 'weaving_data_id', string='Fibers', copy=True)
     technical_sheet_id = fields.Many2one('technical.sheet', string='Technical Sheet', copy=False)
     notes = fields.Text('Weaving Notes')
 
@@ -601,28 +622,24 @@ class AnalysisWeavingData(models.Model):
 
     def _recompute_fiber_percentages(self):
         for rec in self:
-            total_weight = sum(fiber.weight for fiber in rec.fiber_ids)
+            total_weight = sum(rec.fiber_ids.mapped('weight'))
             for fiber in rec.fiber_ids:
-                fiber.percentage = (fiber.weight / total_weight) if total_weight else 0
+                pct = (fiber.weight / total_weight) if total_weight else 0
+                if fiber.percentage != pct:
+                    fiber.percentage = pct
 
     @api.onchange('fiber_ids')
     def _onchange_fiber_ids_recompute_percentages(self):
         self._recompute_fiber_percentages()
-    
+
     def action_duplicate(self):
+        """Copia COMPLETA del registro: fibras CON sus medidas (line_ids) y
+        N° cabo, via copy() + copy=True en los One2many (v19 no los copia
+        por defecto; el Command.create manual anterior omitia medidas y
+        cabo). La ficha tecnica enlazada NO se copia (copy=False). Los
+        porcentajes se recalculan en el create de las fibras."""
         for rec in self:
-            new_rec = rec.copy({
-                'analysis_id': rec.analysis_id.id,
-                'fiber_ids': [Command.create({
-                    'sequence': fiber.sequence,
-                    'system_type': fiber.system_type,
-                    'weight': fiber.weight,
-                    'thread_qty': fiber.thread_qty,
-                    'product_template_id': fiber.product_template_id.id,
-                    'ligament_id': fiber.ligament_id.id,
-                }) for fiber in rec.fiber_ids],
-            })
-            new_rec._recompute_fiber_percentages()
+            rec.with_context(skip_fiber_weight_check=True).copy()
 
 class AnalysisFiber(models.Model):
     _name = 'analysis.fiber'
@@ -638,26 +655,37 @@ class AnalysisFiber(models.Model):
         ('dtex', 'Decitex (dtex)'),
         ('nm', 'Metric number (nm)'),
     ], string='System Type', default='ne')
-    length = fields.Float('Mesh Length', compute='_compute_length_average')
+    # store=True + readonly=False: editable en línea; si la fibra tiene
+    # medidas (line_ids) el promedio recalculado pisa el valor manual.
+    length = fields.Float('Mesh Length', compute='_compute_length_average', store=True, readonly=False)
     weight = fields.Float('Weight', digits=(12,6), default=False, required=True)
     thread_qty = fields.Integer('Thread Quantity')
     thread_title = fields.Float('Thread Title', compute='_compute_thread_title')
     product_template_id = fields.Many2one('product.template', string='Thread', domain=lambda self: [('categ_id', 'in', self.env.company.thread_category_ids.ids)], ondelete='restrict')
     ligament_id = fields.Many2one('ligament.type', string='Ligament')
-    percentage = fields.Float('Percentage', compute='_compute_percentage')
+    # Campo normal, NO computado: lo mantiene el onchange de fiber_ids en
+    # analysis.weaving.data (unica forma de que el diff del onchange llegue
+    # al cliente para TODAS las lineas: un compute con depends se recalcula
+    # ya en el snapshot inicial del onchange y las hermanas nunca se
+    # refrescan en pantalla) mas create/write/unlink de la fibra para la
+    # consistencia en BD.
+    percentage = fields.Float('Percentage', readonly=True)
     # N° Cabo de la Ficha Tecnica de Tejido (por receta). Los datos de hilado
     # (Cod P / Proceso / Linea) viven ahora en el producto hilo
     # (product.template) y se sincronizan desde SITPRO por cron.
     cabo_number = fields.Integer('N° Cabo')
-    line_ids = fields.One2many('analysis.fiber.line', 'analysis_fiber_id', string='Lines')
+    # copy=True: las medidas (Longitud de Malla) deben viajar con la fibra
+    # al duplicar (v19 no copia One2many por defecto).
+    line_ids = fields.One2many('analysis.fiber.line', 'analysis_fiber_id', string='Lines', copy=True)
 
-    @api.depends('line_ids')
+    @api.depends('line_ids.length')
     def _compute_length_average(self):
         for rec in self:
             if rec.line_ids:
                 rec.length = sum(rec.line_ids.mapped('length')) / len(rec.line_ids)
             else:
-                rec.length = 0
+                # sin medidas se conserva el valor ingresado a mano
+                rec.length = rec.length or 0
 
     @api.depends('system_type','length','weight','thread_qty')
     def _compute_thread_title(self):
@@ -682,14 +710,46 @@ class AnalysisFiber(models.Model):
             else:
                 rec.thread_title = 0.0
 
-    @api.depends('weight', 'weaving_data_id.fiber_ids.weight')
-    def _compute_percentage(self):
-        for rec in self:
-            total_weight = sum(rec.weaving_data_id.fiber_ids.mapped('weight'))
-            rec.percentage = (rec.weight / total_weight) if rec.weight and total_weight else 0
+    @api.model_create_multi
+    def create(self, vals_list):
+        fibers = super().create(vals_list)
+        fibers.weaving_data_id._recompute_fiber_percentages()
+        return fibers
+
+    def write(self, vals):
+        res = super().write(vals)
+        if 'weight' in vals or 'weaving_data_id' in vals:
+            self.weaving_data_id._recompute_fiber_percentages()
+        return res
+
+    def unlink(self):
+        weaving_data = self.weaving_data_id
+        res = super().unlink()
+        weaving_data._recompute_fiber_percentages()
+        return res
+
+    def action_open_form(self):
+        """Abre el formulario completo de la fibra en un diálogo (medidas),
+        ya que la lista de fibras se edita en línea."""
+        self.ensure_one()
+        return {
+            'name': _('Fibra'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'analysis.fiber',
+            'res_id': self.id,
+            'view_mode': 'form',
+            'view_id': self.env.ref('idtx_product_development.analysis_fibe_form_view').id,
+            'target': 'new',
+        }
 
     @api.constrains('weight')
     def _check_weight_positive(self):
+        # skip_fiber_weight_check: al DUPLICAR (botón/wizard) la copia debe
+        # ser fiel al origen aunque este tenga fibras legacy con peso 0
+        # (p.ej. vanisados importados antes del constraint). El ingreso
+        # manual sigue validándose.
+        if self.env.context.get('skip_fiber_weight_check'):
+            return
         for rec in self:
             if rec.weight <= 0:
                 raise UserError(_('Weight in fiber %s must be greater than 0.') % rec.product_template_id.display_name)

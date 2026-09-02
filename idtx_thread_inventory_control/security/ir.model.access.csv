@@ -13,3 +13,7 @@ access_stock_move_import_packing_wizard_user,stock.move.import.packing.wizard us
 access_stock_picking_import_packing_wizard_user,stock.picking.import.packing.wizard user,model_stock_picking_import_packing_wizard,stock.group_stock_user,1,1,1,1
 access_thread_second_quality_wizard_user,thread.second.quality.wizard user,model_thread_second_quality_wizard,stock.group_stock_user,1,1,1,1
 access_thread_second_quality_wizard_line_user,thread.second.quality.wizard.line user,model_thread_second_quality_wizard_line,stock.group_stock_user,1,1,1,1
+access_thread_close_bags_wizard_user,thread.weaving.close.bags.wizard user,model_thread_weaving_close_bags_wizard,mrp.group_mrp_user,1,1,1,1
+access_thread_close_bags_line_user,thread.weaving.close.bags.wizard.line user,model_thread_weaving_close_bags_wizard_line,mrp.group_mrp_user,1,1,1,1
+access_thread_close_bags_wizard_stock,thread.weaving.close.bags.wizard stock,model_thread_weaving_close_bags_wizard,stock.group_stock_user,1,1,1,1
+access_thread_close_bags_line_stock,thread.weaving.close.bags.wizard.line stock,model_thread_weaving_close_bags_wizard_line,stock.group_stock_user,1,1,1,1

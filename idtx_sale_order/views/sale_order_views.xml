@@ -107,7 +107,10 @@
                 <field name="product_color_intensity_ids" column_invisible="1"/>
                 <field name="lab_dev_line_id" required="is_weaving and parent.is_company_produce and not parent.is_quote and is_lab_color and parent.has_order_lab_dev" readonly="not is_weaving or not is_lab_color" column_invisible="parent.is_quote or not parent.is_company_produce" options="{'no_create': True}" domain="[('color_range_id', 'in', product_color_range_ids), ('color_intensity_id', 'in', product_color_intensity_ids)]" force_save="1"/>
                 <field name="is_printing" column_invisible="1"/>
-                <field name="printing_design_id" options="{'no_create': True}" required="is_printing" readonly="not is_printing" column_invisible="parent.is_quote or not parent.is_company_produce" optional="hide" domain="[('partner_id','=', order_partner_id),('state','!=','draft')]"/>
+                <!-- El diseño también se elige en la COTIZACIÓN: el recargo de
+                     estampado se calcula al cotizar, así que dejarlo solo en el
+                     pedido daba precios sin el estampado incluido. -->
+                <field name="printing_design_id" options="{'no_create': True}" required="is_printing" readonly="not is_printing" column_invisible="not parent.is_company_produce" optional="hide" domain="[('partner_id','=', order_partner_id),('state','!=','draft')]"/>
                 <field name="printing_design_preview_image" column_invisible="1"/>
                 <widget name="printing_design_status_widget" column_invisible="parent.is_quote or not parent.is_company_produce" width="20px"/>
                 <field name="printing_design_name" column_invisible="parent.is_quote or not parent.is_company_produce" optional="hide"/>

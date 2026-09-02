@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_user_replication_db_list" model="ir.ui.view">
+        <field name="name">idtx.user.replication.db.list</field>
+        <field name="model">idtx.user.replication.db</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="odoo_version"/>
+                <field name="version_major"/>
+                <field name="create_as_portal" widget="boolean_toggle"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_user_replication_db_form" model="ir.ui.view">
+        <field name="name">idtx.user.replication.db.form</field>
+        <field name="model">idtx.user.replication.db</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="odoo_version"/>
+                        <field name="version_major"/>
+                        <field name="create_as_portal"/>
+                        <field name="active"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_user_replication_db" model="ir.actions.act_window">
+        <field name="name">Bases de datos destino</field>
+        <field name="res_model">idtx.user.replication.db</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+</odoo>

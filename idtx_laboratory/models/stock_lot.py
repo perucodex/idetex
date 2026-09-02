@@ -49,6 +49,9 @@ class StockLot(models.Model):
             'lab_validated_by_id': False,
         })
 
+    # La receta solo aplica a lotes de tela (rollos teñidos); is_weaving
+    # permite ocultarla en hilos, químicos y demás lotes.
+    is_weaving = fields.Boolean(related='product_id.product_tmpl_id.is_weaving')
     color_recipe_id = fields.Many2one('color.recipe', string='Color Recipe')
     color_code = fields.Char(related='color_recipe_id.color_code')
     color_name = fields.Char(related='color_recipe_id.color_name')

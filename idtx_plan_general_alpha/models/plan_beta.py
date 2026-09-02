@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+
 import logging
 import pyodbc
 from odoo import api, fields, models
@@ -11,7 +11,6 @@ _SITPRO_DSN = (
     "PWD=idtE#21@IRdc95;TDS_Version=7.3;Database=SITPRO;"
 )
 
-# Whitelist de columnas para ORDER BY — evita inyección SQL
 _SORTABLE = {
     'nro', 'fecha', 'numordped', 'occ', 'grem', 'vend1', 'razsoc', 'descrip',
     'descol', 'cdgcol', 'orden', 'pescl', 'kilos', 'fecvouc', 'voucher',
@@ -179,9 +178,6 @@ class PlanBeta(models.Model):
     _log_access = False
 
     def init(self):
-        # Vista vacía solo para que el registry tenga el objeto de tabla
-        # (evita "Model plan.beta has no table" en cada arranque): los datos
-        # reales vienen de SITPRO vía search_fetch/web_search_read.
         self.env.cr.execute(
             'CREATE OR REPLACE VIEW "%s" AS SELECT 1 AS id WHERE FALSE'
             % self._table
@@ -306,9 +302,6 @@ class PlanBeta(models.Model):
     ficha        = fields.Char(string='Ficha',             readonly=True)
     procod       = fields.Char(string='Proc.Cod.',         readonly=True)
 
-    # ------------------------------------------------------------------
-    # Helpers
-    # ------------------------------------------------------------------
 
     def _sitpro_connect(self):
         return pyodbc.connect(_SITPRO_DSN)
@@ -359,9 +352,6 @@ class PlanBeta(models.Model):
             _logger.error("PlanBeta._count_rows: %s", exc)
             return 0
 
-    # ------------------------------------------------------------------
-    # Odoo ORM — todo desde SITPRO, sin PostgreSQL
-    # ------------------------------------------------------------------
 
     @api.model
     def web_search_read(self, domain, specification, offset=0, limit=None, order=None, count_limit=None):

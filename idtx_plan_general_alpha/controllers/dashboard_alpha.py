@@ -16,8 +16,6 @@ def _covered_cells(anchor, span_cols, span_rows, cols):
 
 
 def _machine_num(name):
-    """Extrae el número de máquina (ej. 'JERSERA MAQ 12' -> 12); None si el
-    nombre no tiene número. Mismo criterio que machineNum() en machine_floor.js."""
     n = (name or "").upper()
     m = re.search(r"MAQ\s+(\d+)", n)
     if m:
@@ -27,11 +25,6 @@ def _machine_num(name):
 
 
 def _factory_sort_key(name):
-    """Orden real de fábrica: por número de máquina. Dentro de un mismo
-    centro de trabajo el número NO se repite entre tipos (es una secuencia
-    única de instalación 1..N que mezcla LISTADORA/JERSERA/RIPERA/etc, no
-    algo agrupado por tipo) — por eso se ordena solo por número, sin agrupar.
-    Las máquinas sin número (p.ej. 'BIANCALANI') van al final, por nombre."""
     num = _machine_num(name)
     if num is not None:
         return (0, num, "")
@@ -40,22 +33,12 @@ def _factory_sort_key(name):
 
 class PlanAlphaDashboard(http.Controller):
 
-    # Nombre de área (TEJEDURIA/TINTORERIA) -> palabras clave del departamento
-    # HR donde viven las máquinas. Se usa departamento (no mrp.workcenter)
-    # porque un equipo de IDETEX no puede apuntar al centro de trabajo real
-    # de otra compañía sin romper check_company — ver
-    # [[project_workcenter_check_company]]. El departamento es único (sin
-    # copias homónimas por compañía), así que no hace falta crear ni tocar
-    # ningún mrp.workcenter para este emparejamiento.
     _WORKCENTER_DEPT_KEYWORDS = {
         "TEJEDURIA":  ["TEJED", "TEJID"],
         "TINTORERIA": ["TINTOR", "TINTE"],
     }
 
     def _equipment_domain_for_workcenter(self, env, workcenter):
-        """Dominio de búsqueda de maintenance.equipment para un área dada,
-        o None si el área no existe / no aplica. Compartido por floor_data
-        y reset_factory_order."""
         kws = self._WORKCENTER_DEPT_KEYWORDS.get((workcenter or "").upper(), [])
         if not kws:
             return None
@@ -74,8 +57,6 @@ class PlanAlphaDashboard(http.Controller):
         methods=["POST"],
     )
     def alpha_workcenters(self):
-        """Return the fixed list of áreas (TEJEDURIA/TINTORERIA) with their
-        active machine count, por departamento — ver _equipment_domain_for_workcenter."""
         env = request.env
         Equipment = env["maintenance.equipment"].sudo()
         workcenters = []
@@ -140,7 +121,6 @@ class PlanAlphaDashboard(http.Controller):
                 if to_create_from_old:
                     Layout.create(to_create_from_old)
 
-        # Auto-assign sequential slots for machines that have no position yet
         next_slot = 0
         to_create = []
         for eq in equipments:
@@ -160,8 +140,6 @@ class PlanAlphaDashboard(http.Controller):
 
         has_state = "machine_state" in Equipment._fields
 
-        # Trabajo actual — solo para las máquinas agrandadas (span > 1), para no
-        # pagar el costo de esta búsqueda en las decenas/cientos de máquinas normales.
         current_job = {}
         big_ids = [eq.id for eq in equipments if span_map.get(eq.id, (1, 1)) != (1, 1)]
         if big_ids and "mrp.workorder" in env.registry.models:
@@ -203,7 +181,6 @@ class PlanAlphaDashboard(http.Controller):
         methods=["POST"],
     )
     def machine_detail(self, equipment_id=None):
-        """Devuelve la ficha técnica completa de una máquina."""
         if not equipment_id:
             return {"machine": None}
         env = request.env
@@ -230,8 +207,6 @@ class PlanAlphaDashboard(http.Controller):
             "year":        eq.manufacture_year if "manufacture_year" in fields_eq else "",
         }
 
-        # Los datetime del ORM son naive en UTC; para mostrarlos hay que
-        # convertirlos a la zona horaria del USUARIO logueado (no del sudo).
         _tz = pytz.timezone(request.env.user.tz or "UTC")
 
         def _fmt_local(dt):
@@ -239,12 +214,7 @@ class PlanAlphaDashboard(http.Controller):
                 return ""
             return pytz.utc.localize(dt).astimezone(_tz).strftime("%Y-%m-%d %H:%M")
 
-        # Lo que se está TEJIENDO ahora en esta máquina: órdenes de trabajo en
-        # progreso cuya opción usa este equipo. Se usa sudo porque las OT pueden
-        # ser de otra compañía (FULL PIMA) mientras la máquina es de IDETEX.
         tejiendo = []
-        # Historial de lo ya tejido en esta máquina: OT terminadas, con sus
-        # fechas de inicio/fin y duración real.
         historial = []
         if "mrp.workorder" in env.registry.models:
             try:
@@ -297,7 +267,6 @@ class PlanAlphaDashboard(http.Controller):
     )
     def save_floor_position(self, equipment_id=None, workcenter=None, slot_index=None,
                              span_cols=1, span_rows=1):
-        """Persist a machine's grid slot position and combined size (up to 4x4 cells)."""
         if not equipment_id or not workcenter or slot_index is None:
             return {"ok": False}
         if span_cols not in (1, 2, 3, 4):
@@ -323,9 +292,6 @@ class PlanAlphaDashboard(http.Controller):
         methods=["POST"],
     )
     def reset_factory_order(self):
-        """Reordena TODAS las máquinas de TODOS los centros de trabajo según
-        su numeración de fábrica (orden real de instalación, ver _factory_sort_key)
-        y deshace cualquier combinación de cuadros (vuelve a 1x1)."""
         env = request.env
         Equipment = env["maintenance.equipment"].sudo()
         Layout = env["idtx.alpha.floor.layout"].sudo()
@@ -357,13 +323,6 @@ class PlanAlphaDashboard(http.Controller):
         methods=["POST"],
     )
     def dashboard_data(self):
-        # ── Fuente: PEDIDOS DE VENTA (sale.order) ─────────────────────────────
-        # Confirmados/Cotizaciones se clasifican por `is_quote` (NO por `state`):
-        # es el mismo campo que usan los menús reales de Ventas de idtx_sale_order
-        # ("Cotizaciones" = is_quote=True, "Pedidos de Venta" = is_quote=False —
-        # ver sale_quotation_views.xml). `state` sigue determinando Cancelados y
-        # el sub-desglose Borrador/Enviada dentro de las cotizaciones.
-        # Kilos = suma de product_uom_qty (líneas en kg) · Monto = amount_total.
         env = request.env
         SO = env["sale.order"].sudo()
         ESTADO_LBL = {"draft": "Borrador", "sent": "Enviada",
@@ -384,7 +343,7 @@ class PlanAlphaDashboard(http.Controller):
         enviadas     = cotizaciones.filtered(lambda o: o.state == "sent")
         cancelados   = SO.search([("state", "=", "cancel")])
         todos        = SO.search([])
-        vigentes     = confirmados | cotizaciones          # todo menos cancelados
+        vigentes     = confirmados | cotizaciones          
 
         kilos_produccion = _kg(confirmados)
         kilos_cotizado   = _kg(cotizaciones)
@@ -397,7 +356,6 @@ class PlanAlphaDashboard(http.Controller):
         no_cancel = len(confirmados) + len(cotizaciones)
         pct_confirmados = round(len(confirmados) / no_cancel * 100, 1) if no_cancel else 0.0
 
-        # ── Distribución por estado (donut) ───────────────────────────────────
         estado_dist = [
             {"estado": "Confirmados", "count": len(confirmados), "color": "#22c55e"},
             {"estado": "Borrador",    "count": len(borrador),    "color": "#f59e0b"},
@@ -405,14 +363,12 @@ class PlanAlphaDashboard(http.Controller):
             {"estado": "Cancelados",  "count": len(cancelados),  "color": "#94a3b8"},
         ]
 
-        # ── Kg por estado (barras) ────────────────────────────────────────────
         estado_kg = [
             {"label": "Confirmado", "kg": kilos_produccion},
             {"label": "Cotizado",   "kg": kilos_cotizado},
             {"label": "Cancelado",  "kg": _kg(cancelados)},
         ]
 
-        # ── Top clientes por kg (vigentes) ────────────────────────────────────
         cli = defaultdict(lambda: {"kilos": 0.0, "count": 0})
         for o in vigentes:
             k = (o.partner_id.name or "Sin Cliente").strip()
@@ -423,14 +379,12 @@ class PlanAlphaDashboard(http.Controller):
              for k, v in cli.items()],
             key=lambda x: x["kilos"], reverse=True)[:10]
 
-        # ── Top pedidos por kg ────────────────────────────────────────────────
         top_pedidos = sorted(
             [{"num": o.name or "", "customer": (o.partner_id.name or "").strip()[:26],
               "kg": _kg(o), "state": o.state, "estado": ESTADO_LBL.get(o.state, o.state)}
              for o in vigentes],
             key=lambda x: x["kg"], reverse=True)[:8]
 
-        # ── Tendencia mensual (últimos 6 meses) ───────────────────────────────
         today   = datetime.date.today()
         six_ago = today - datetime.timedelta(days=180)
         recientes = SO.search([("date_order", ">=", six_ago)])
@@ -455,7 +409,6 @@ class PlanAlphaDashboard(http.Controller):
             for m in months_order
         ]
 
-        # ── Kg por producto y por color (líneas) ──────────────────────────────
         prod_map  = defaultdict(float)
         color_map = defaultdict(lambda: {"kg": 0.0, "count": 0})
         for o in vigentes:
@@ -476,7 +429,6 @@ class PlanAlphaDashboard(http.Controller):
              for k, v in color_map.items()],
             key=lambda x: x["kg"], reverse=True)[:10]
 
-        # ── Detalle de pedidos (tabla) ────────────────────────────────────────
         detalle = sorted(
             [{"num": o.name or "", "customer": (o.partner_id.name or "").strip()[:30],
               "kg": _kg(o), "monto": round(o.amount_total, 2), "state": o.state,
@@ -485,11 +437,6 @@ class PlanAlphaDashboard(http.Controller):
              for o in vigentes],
             key=lambda x: x["kg"], reverse=True)[:15]
 
-        # ── Desglose por vendedor ──────────────────────────────────────────────
-        # Este dashboard agrega TODOS los vendedores; la vista "Cotizaciones" de
-        # Ventas filtra por defecto a "Mis Cotizaciones" (user_id = uid). Esta
-        # tabla permite reconciliar el total de arriba contra lo que cada
-        # vendedor ve en su propia vista.
         vend = defaultdict(lambda: {"vendedor": "Sin vendedor", "cotizaciones": 0,
                                      "kg_cotizado": 0.0, "confirmados": 0, "kg_confirmado": 0.0})
         for o in cotizaciones:
@@ -509,9 +456,6 @@ class PlanAlphaDashboard(http.Controller):
              for uid, v in vend.items()],
             key=lambda x: x["kg_cotizado"] + x["kg_confirmado"], reverse=True)
 
-        # ── Variación vs mes anterior (para chips de tendencia en los KPIs) ────
-        # Se reutiliza la serie `tendencia` ya calculada arriba (no requiere
-        # queries adicionales). Compara el último mes cerrado contra el previo.
         def _mom(campo):
             vals = [m[campo] for m in tendencia]
             if len(vals) < 2 or not vals[-2]:

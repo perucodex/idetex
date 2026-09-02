@@ -10,38 +10,38 @@
                         <div style="flex: 1; min-width: 320px;">
                             <table style="width: 100%; border-collapse: collapse;">
                                 <tbody>
-                                    <tr><td style="padding: 6px 0; font-weight: 700; width: 180px;">Design Code</td><td><t t-esc="recipe.printing_design_code or '-'"/></td></tr>
-                                    <tr><td style="padding: 6px 0; font-weight: 700;">Design Name</td><td><t t-esc="recipe.printing_design_id.file_desc or '-'"/></td></tr>
-                                    <tr><td style="padding: 6px 0; font-weight: 700;">Recipe Version</td><td><t t-esc="recipe.version"/></td></tr>
-                                    <tr><td style="padding: 6px 0; font-weight: 700;">Recipe Date</td><td><t t-esc="recipe.recipe_date or '-'"/></td></tr>
-                                    <tr><td style="padding: 6px 0; font-weight: 700;">Status</td><td><t t-esc="recipe.state or '-'"/></td></tr>
-                                    <tr><td style="padding: 6px 0; font-weight: 700;">Customer</td><td><t t-esc="recipe.printing_design_id.partner_id.display_name or '-'"/></td></tr>
-                                    <tr><td style="padding: 6px 0; font-weight: 700;">Printing Type</td><td><t t-esc="dict(recipe.printing_design_id._fields['printing_type'].selection).get(recipe.printing_design_id.printing_type, '-')"/></td></tr>
-                                    <tr t-if="recipe.printing_design_id.printing_type == 'rotary'"><td style="padding: 6px 0; font-weight: 700;">Process</td><td><t t-esc="dict(recipe.printing_design_id._fields['process_type_rotary'].selection).get(recipe.printing_design_id.process_type_rotary, '-')"/></td></tr>
-                                    <tr t-if="recipe.printing_design_id.printing_type == 'digital'"><td style="padding: 6px 0; font-weight: 700;">Process</td><td><t t-esc="dict(recipe.printing_design_id._fields['process_type_digital'].selection).get(recipe.printing_design_id.process_type_digital, '-')"/></td></tr>
-                                    <tr><td style="padding: 6px 0; font-weight: 700;">Fabric Base</td><td><t t-esc="recipe.printing_design_id.fabric_base or '-'"/></td></tr>
+                                    <tr><td style="padding: 6px 0; font-weight: 700; width: 180px;">Código de Diseño</td><td><t t-esc="recipe.printing_design_code or '-'"/></td></tr>
+                                    <tr><td style="padding: 6px 0; font-weight: 700;">Nombre del Diseño</td><td><t t-esc="recipe.printing_design_id.file_desc or '-'"/></td></tr>
+                                    <tr><td style="padding: 6px 0; font-weight: 700;">Versión de Receta</td><td><t t-esc="recipe.version"/></td></tr>
+                                    <tr><td style="padding: 6px 0; font-weight: 700;">Fecha de Receta</td><td><t t-esc="recipe.recipe_date or '-'"/></td></tr>
+                                    <tr><td style="padding: 6px 0; font-weight: 700;">Estado</td><td><span t-field="recipe.state"/></td></tr>
+                                    <tr><td style="padding: 6px 0; font-weight: 700;">Cliente</td><td><t t-esc="recipe.printing_design_id.partner_id.display_name or '-'"/></td></tr>
+                                    <tr><td style="padding: 6px 0; font-weight: 700;">Tipo de Estampado</td><td><span t-field="recipe.printing_design_id.printing_type"/></td></tr>
+                                    <tr t-if="recipe.printing_design_id.printing_type == 'rotary'"><td style="padding: 6px 0; font-weight: 700;">Tipo de Proceso</td><td><span t-field="recipe.printing_design_id.process_type_rotary"/></td></tr>
+                                    <tr t-if="recipe.printing_design_id.printing_type == 'digital'"><td style="padding: 6px 0; font-weight: 700;">Tipo de Proceso</td><td><span t-field="recipe.printing_design_id.process_type_digital"/></td></tr>
+                                    <tr><td style="padding: 6px 0; font-weight: 700;">Fondo de Tela</td><td><t t-esc="recipe.printing_design_id.fabric_base or '-'"/></td></tr>
                                 </tbody>
                             </table>
                         </div>
                         <div style="width: 320px; text-align: center;">
                             <img t-if="recipe.printing_design_id.preview_image"
                                  t-att-src="'/web/image?model=printing.design&amp;id=%s&amp;field=preview_image' % recipe.printing_design_id.id"
-                                 alt="Design Preview"
+                                 alt="Vista previa del diseño"
                                  style="max-width: 100%; max-height: 320px; border: 1px solid #d1d5db; border-radius: 8px;"/>
                             <div t-else="" style="border: 1px dashed #d1d5db; border-radius: 8px; padding: 48px 16px; color: #6b7280;">
-                                No preview image
+                                Sin imagen de vista previa
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="mb-5">
-                    <h2 style="font-size: 22px; margin-bottom: 16px;">Recipe</h2>
+                    <h2 style="font-size: 22px; margin-bottom: 16px;">Receta</h2>
                     <table style="width: 100%; border-collapse: collapse; border: 1px solid #d1d5db;">
                         <thead style="background: #f3f4f6;">
                             <tr>
-                                <th style="padding: 10px; text-align: left; border-bottom: 1px solid #d1d5db;">Chemical</th>
-                                <th style="padding: 10px; text-align: right; border-bottom: 1px solid #d1d5db;">Quantity</th>
+                                <th style="padding: 10px; text-align: left; border-bottom: 1px solid #d1d5db;">Químico</th>
+                                <th style="padding: 10px; text-align: right; border-bottom: 1px solid #d1d5db;">Cantidad</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -58,7 +58,7 @@
                                     </tr>
                                 </t>
                                 <tr t-if="not color.chemical_line_ids">
-                                    <td colspan="2" style="padding: 10px; border-bottom: 1px solid #e5e7eb; color: #6b7280;">No chemicals</td>
+                                    <td colspan="2" style="padding: 10px; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Sin químicos</td>
                                 </tr>
                             </t>
                         </tbody>
@@ -67,14 +67,14 @@
 
                 <div>
                     <h2 style="font-size: 22px; margin-bottom: 16px;">
-                        Recipe + <t t-esc="'%.2f' % (recipe.production_percentage)"/>%
+                        Receta + <t t-esc="'%.2f' % (recipe.production_percentage)"/>%
                     </h2>
                     <table style="width: 100%; border-collapse: collapse; border: 1px solid #d1d5db;">
                         <thead style="background: #ecfdf5;">
                             <tr>
-                                <th style="padding: 10px; text-align: left; border-bottom: 1px solid #d1d5db;">Chemical</th>
+                                <th style="padding: 10px; text-align: left; border-bottom: 1px solid #d1d5db;">Químico</th>
                                 <th style="padding: 10px; text-align: right; border-bottom: 1px solid #d1d5db;">
-                                    Quantity + <t t-esc="'%.2f' % (recipe.production_percentage)"/>%
+                                    Cantidad + <t t-esc="'%.2f' % (recipe.production_percentage)"/>%
                                 </th>
                             </tr>
                         </thead>
@@ -92,7 +92,7 @@
                                     </tr>
                                 </t>
                                 <tr t-if="not color.chemical_line_ids">
-                                    <td colspan="2" style="padding: 10px; border-bottom: 1px solid #e5e7eb; color: #6b7280;">No chemicals</td>
+                                    <td colspan="2" style="padding: 10px; border-bottom: 1px solid #e5e7eb; color: #6b7280;">Sin químicos</td>
                                 </tr>
                             </t>
                         </tbody>

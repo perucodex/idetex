@@ -37,7 +37,7 @@
                         <group>
                             <group>
                                 <field name="analysis_date" required="1" readonly="state != 'test'"/>
-                                <field name="partner_id" required="1" readonly="state != 'test'"/>
+                                <field name="partner_id" required="1" readonly="state != 'test'" options="{'no_quick_create': True, 'no_create_edit': True}"/>
                                 <field name="product_description" required="1" readonly="state != 'test'"/>
                                 <field name="product_family_id" required="1" options="{'no_create': True, 'no_open': True}" readonly="state != 'test'"/>
                                 <field name="product_appearance_id" required="1" options="{'no_create': True, 'no_open': True}" readonly="state != 'test'"/>
@@ -186,7 +186,6 @@
                         <!-- <button name="action_create_technical_sheet" type="object" string="Create Technical Sheet" class="oe_highlight" invisible="technical_sheet_id"/> -->
                         <button name="open_tech" type="object" string="Open Technical Sheet" class="oe_highlight" invisible="not technical_sheet_id"/>
                         <button name="print_analysis_report" type="object" icon="fa-print" string="Print Analysis"/>
-                        <button name="action_duplicate" type="object" string="Duplicate"/>
                     </header>
                     <sheet>
                         <group>    
@@ -203,16 +202,18 @@
                         <notebook>
                             <page name="fibers_page" string="Fibers">
                                 <field name="fiber_ids">
-                                    <list>
+                                    <list editable="bottom">
                                         <field name="sequence" widget="handle"/>
                                         <field name="system_type"/>
                                         <field name="length"/>
                                         <field name="weight"/>
                                         <field name="thread_title"/>
-                                        <field name="product_template_id"/>
+                                        <field name="product_template_id" options="{'no_create': True, 'no_open': True}"/>
                                         <field name="cabo_number"/>
-                                        <field name="ligament_id"/>
+                                        <field name="ligament_id" options="{'no_create': True, 'no_open': True}"/>
                                         <field name="percentage" widget="percentage"/>
+                                        <button name="action_open_form" type="object" string="Análisis" class="btn btn-link"
+                                                title="Abrir el formulario de la fibra (medidas)"/>
                                     </list>
                                 </field>
                             </page>
@@ -230,6 +231,8 @@
                     <field name="partner_id"/>
                     <field name="stylo"/>
                     <field name="technical_sheet_id"/>
+                    <button name="action_duplicate" type="object" icon="fa-copy"
+                            title="Duplicar (con fibras y medidas)"/>
                 </list>
             </field>
         </record>
@@ -243,7 +246,7 @@
                         <group>
                             <group>
                                 <field name="system_type"/>
-                                <field name="length"/>
+                                <field name="length" readonly="1"/>
                                 <field name="weight" required="1"/>
                                 <field name="thread_qty"/>
                             </group>

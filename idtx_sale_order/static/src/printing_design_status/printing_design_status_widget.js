@@ -85,7 +85,12 @@ class PrintingDesignStatusWidget extends Component {
 
     get isVisible() {
         const data = this.props.record?.data;
-        return Boolean(data) && !data.parent_is_quote && Boolean(data.parent_is_company_produce);
+        if (!data || data.parent_is_quote || !data.parent_is_company_produce) {
+            return false;
+        }
+        // Solo en líneas que llevan estampado: en las demás el punto no
+        // significaba nada y se leía como un dato faltante.
+        return Boolean(data.is_printing) || Boolean(getPrintingDesignId(this.props.record));
     }
 
     get dotClass() {
@@ -107,6 +112,12 @@ class PrintingDesignStatusWidget extends Component {
 
 export const printingDesignStatusWidget = {
     component: PrintingDesignStatusWidget,
+    // El punto solo se muestra en líneas de estampado: se declaran los campos
+    // que decide la visibilidad para no depender de que estén en la vista.
+    fieldDependencies: [
+        { name: "is_printing", type: "boolean" },
+        { name: "printing_design_id", type: "many2one", relation: "printing.design" },
+    ],
 };
 
 registry.category("view_widgets").add("printing_design_status_widget", printingDesignStatusWidget);

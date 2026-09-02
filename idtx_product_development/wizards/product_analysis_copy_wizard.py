@@ -76,7 +76,10 @@ class ProductAnalysisCopyWizard(models.TransientModel):
         # nuevo analisis. Crea registros NUEVOS, incluyendo sus
         # fiber_ids (One2many anidado que Odoo copia automaticamente).
         for wd in self.weaving_data_ids:
-            wd.copy(default={'analysis_id': new_analysis.id})
+            # skip_fiber_weight_check: copia fiel aunque el origen tenga
+            # fibras legacy con peso 0 (mismo criterio que action_duplicate).
+            wd.with_context(skip_fiber_weight_check=True).copy(
+                default={'analysis_id': new_analysis.id})
         # 3. Re-poblar routing_ids desde el mrp.base.process.
         # Esto replica lo que hace _onchange_mrp_base_process_id en UI:
         # cada line del base process se convierte en una linea de ruta

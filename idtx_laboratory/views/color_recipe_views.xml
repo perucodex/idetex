@@ -8,7 +8,9 @@
                 <form string="Product Color">
                     <header>
                         <button name="action_approve" type="object" string="Approve" class="oe_highlight" invisible="state != 'test'" groups="sales_team.group_sale_salesman"/>
-                        <button name="action_return" type="object" string="Return" invisible="state == 'test'"/>
+                        <button name="action_return" type="object" string="Return"
+                                confirm="Esta opción volverá a Prueba y dejará de estar aprobada para producción. ¿Continuar?"
+                                invisible="state == 'test'"/>
                         <button name="action_adjust_recipe" type="object" string="Adjust Recipe" invisible="state == 'approved'"/>
                         <button name="action_print_labels" type="object" string="Imprimir etiquetas" icon="fa-print" invisible="state != 'approved'"/>
                         <field name="state" widget="statusbar"/>

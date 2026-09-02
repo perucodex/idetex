@@ -20,7 +20,7 @@
                         <group>
                             <field name="code" readonly="1" force_save="1"/>
                             <field name="printing_date" readonly="state != 'draft'" required="1"/>
-                            <field name="partner_id" readonly="state != 'draft'"/>
+                            <field name="partner_id" readonly="state != 'draft'" options="{'no_quick_create': True, 'no_create_edit': True}"/>
                             <field name="printing_type" readonly="state != 'draft'" required="1"/>
                             <field name="process_type_rotary" readonly="state != 'draft'" invisible="printing_type != 'rotary'" required="printing_type == 'rotary'"/>
                             <field name="process_type_digital" readonly="state != 'draft'" invisible="printing_type != 'digital'" required="printing_type == 'digital'"/>

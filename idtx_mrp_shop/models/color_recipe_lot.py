@@ -17,7 +17,7 @@ class ColorRecipeLot(models.Model):
     batch_ids = fields.One2many(
         'mrp.workorder.batch', 'recipe_lot_id', string='Partidas')
     batch_count = fields.Integer(
-        'Partidas', compute='_compute_batch_count')
+        'Can. Partidas', compute='_compute_batch_count')
     # Ya tiene teñidos registrados en el Taller (batch.registry de alguna
     # de sus partidas).
     has_batch_registry = fields.Boolean(

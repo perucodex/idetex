@@ -801,7 +801,12 @@ export class SelectScaleDialog extends ConfirmationDialog {
     // =========================
     // Confirm
     // =========================
-    confirm() {
+    async confirm() {
+        // Anti doble clic / doble Enter: sin esto se lanzaban dos registros del
+        // mismo rollo (o el segundo fallaba a medias).
+        if (this._isConfirmed) {
+            return;
+        }
         this.state.triedConfirm = true;
         // La opción es requerida cuando la OT tiene opciones (el roll de tejido
         // la exige en el backend; validarla aquí evita que el diálogo se cierre
@@ -861,8 +866,15 @@ export class SelectScaleDialog extends ConfirmationDialog {
         this._isConfirmed = true;
         this._clearAutoCloseTimer();
         this._stopScalePolling();
-        this.props.confirm(payload);
-        this.props.close();
+        // Se espera a que el registro termine ANTES de cerrar el diálogo: al
+        // cerrar primero, el componente se destruía mientras la llamada al
+        // servidor seguía en curso y el rollo se perdía con un
+        // "Component is destroyed" (pasaba al pesar varios rollos seguidos).
+        try {
+            await this.props.confirm(payload);
+        } finally {
+            this.props.close();
+        }
     }
 
     // =========================
