@@ -2,6 +2,52 @@
 .o_ps_pagebreak { page-break-before: always; }
 .o_ps_title { margin: 0 0 10px 0; font-size: 18px; font-weight: 700; }
 
+/* Tablas de estampado con el MISMO marco redondeado del formato boxed
+   (marco oscuro #555 + divisores claros #bbb + encabezado gris), pero
+   cerrando todas las celdas también con rowspan/colspan del encabezado doble.
+   Se usa border-collapse: separate para que cada celda dibuje su propio borde
+   (sin huecos con rowspan) y overflow:hidden + border-radius para redondear el
+   marco y recortar las esquinas cuadradas internas (sin filos blancos ni
+   esquinas que sobresalen). Va junto a la clase o_ignore_layout_styling, que
+   desactiva el ::before del layout para no duplicar el marco. */
+.o_ps_grid {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  width: 100% !important;
+  position: relative !important;
+  border: 0 !important;
+}
+/* Marco redondeado oscuro dibujado como overlay ::before sobre el perímetro.
+   Es la ÚNICA técnica que respeta el redondeo en wkhtmltopdf (el PDF real):
+   overflow:hidden + border-radius en la tabla NO recorta el relleno en el PDF
+   (sí en Chrome), por eso el relleno cuadrado del encabezado se salía del marco.
+   Misma técnica que usa el layout boxed del resto del documento. */
+.o_ps_grid::before {
+  content: "";
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  border: 1.5px solid #555;
+  border-radius: 8px;
+  pointer-events: none;
+}
+.o_ps_grid th,
+.o_ps_grid td {
+  border: 0 !important;
+  border-right: 1px solid #bbb !important;
+  border-bottom: 1px solid #bbb !important;
+  border-radius: 0 !important;
+}
+.o_ps_grid th:last-child,
+.o_ps_grid td:last-child { border-right: 0 !important; }
+.o_ps_grid thead th { background: #f3f3f3; border-bottom: 1.5px solid #555 !important; }
+/* Redondeo de las celdas que tocan cada esquina REAL de la tabla, para que su
+   relleno no sobresalga del marco ::before. Con rowspan, las esquinas inferiores
+   no caen en la última fila; se marcan con o_ps_bl/o_ps_br en la plantilla. */
+.o_ps_grid thead tr:first-child th:first-child { border-top-left-radius: 8px !important; }
+.o_ps_grid thead tr:first-child th:last-child  { border-top-right-radius: 8px !important; }
+.o_ps_grid .o_ps_bl { border-bottom-left-radius: 8px !important; }
+.o_ps_grid .o_ps_br { border-bottom-right-radius: 8px !important; }
+
 /* Tabla principal */
 .o_ps_table{
   width: 100%;

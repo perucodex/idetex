@@ -1,7 +1,7 @@
 import logging
 
 from odoo import models, fields, api, _, Command
-from odoo.tools import float_round, float_compare
+from odoo.tools import float_round, float_compare, float_is_zero
 from odoo.exceptions import UserError
 import json
 
@@ -676,7 +676,8 @@ class SaleOrderLine(models.Model):
                         if total_qty > 59.99:
                             for price_line in self.printing_design_id.digital_unit_price_ids:
                                 if total_qty >= price_line.min_qty and total_qty <= price_line.max_qty:
-                                    price = float_round(price_line.unit_price * yield_meter, 2)
+                                    # (precio + bondeo) * rendimiento, igual que en rotativo
+                                    price = float_round((price_line.unit_price + self.printing_design_id.bonding_price) * yield_meter, 2)
                                     price = self._convert_amount(
                                         price,
                                         price_line.currency_id,
@@ -696,7 +697,9 @@ class SaleOrderLine(models.Model):
                                 )
                                 price = float_round(price, 2)
                     else:
-                        price = float_round(self.printing_design_id.unit_price * yield_meter, 2)
+                        # El precio de estampado por kg suma el bondeo (ambos son precios por metro)
+                        # antes de multiplicar por el rendimiento: (precio + bondeo) * rendimiento.
+                        price = float_round((self.printing_design_id.unit_price + self.printing_design_id.bonding_price) * yield_meter, 2)
                         price = self._convert_amount(
                             price,
                             self.printing_design_id.currency_id,
@@ -829,13 +832,109 @@ class SaleOrderLine(models.Model):
             line = False
         return line
     
+    def _check_line_unlink(self):
+        # Una línea en 0, sin facturar y sin entregas, es una línea anulada
+        # (su OF ya se eliminó al ponerla en 0): se puede eliminar aunque el
+        # pedido esté confirmado, a diferencia del bloqueo estándar del core.
+        undeletable = super()._check_line_unlink()
+        deletable_zero = undeletable.filtered(
+            lambda l: float_is_zero(
+                l.product_uom_qty, precision_rounding=l.product_uom_id.rounding or 0.001)
+            and not l.invoice_lines
+            and float_is_zero(
+                l.qty_delivered, precision_rounding=l.product_uom_id.rounding or 0.001)
+        )
+        return undeletable - deletable_zero
+
+    def unlink(self):
+        # Al eliminar una línea anulada (cantidad 0), su movimiento de
+        # entrega en 0 no debe quedar huérfano en el picking: se cancela y
+        # elimina. Solo llegan aquí líneas eliminables (_check_line_unlink),
+        # cuyos movimientos vivos ya están en demanda 0.
+        moves = self.sudo().move_ids.filtered(lambda m: m.state != 'done')
+        res = super().unlink()
+        if moves:
+            moves.filtered(lambda m: m.state != 'cancel')._action_cancel()
+            moves.unlink()
+        return res
+
+    def _create_weaving_productions(self):
+        """Crea la OF de cada línea de tejido con LdM (mismas reglas que la
+        confirmación del pedido). Se usa al confirmar el pedido y al agregar
+        una línea a un pedido ya confirmado. Devuelve las OF creadas."""
+        productions = self.env['mrp.production'].sudo()
+        for line in self:
+            if not (line.product_uom_qty and line.product_id.is_weaving and line.bom_id):
+                continue
+            order = line.order_id
+            production_company = order.company_id._get_production_company()
+            prd = self.env['mrp.production'].sudo().with_company(production_company).create({
+                'product_tmpl_id': line.product_id.product_tmpl_id.id,
+                'product_qty': line.product_uom_qty,
+                'bom_id': line.bom_id.id,
+                'sale_order_line_id': line.id,
+                'production_type': order.sale_type,
+                'company_id': production_company.id,
+            })
+            # La línea "ve" la OF por el o2m inverso de sale_order_line_id.
+            order.sudo().production_ids = [(4, prd.id)]
+            if prd.color_recipe_id:
+                prd.action_confirm()
+            prd.do_unreserve()
+            productions |= prd
+        return productions
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        lines = super().create(vals_list)
+        # Producto agregado a un pedido YA confirmado: crear su OF con las
+        # mismas reglas que la confirmación (la entrega la ajusta el core
+        # por las reglas de stock).
+        lines.filtered(lambda l: l.order_id.state == 'sale')._create_weaving_productions()
+        return lines
+
     def write(self, vals):
-        for rec in self:
-            if 'product_uom_qty' in vals:
+        if 'product_uom_qty' in vals:
+            for rec in self:
+                rounding = rec.product_uom_id.rounding or 0.001
+                if float_compare(vals['product_uom_qty'], rec.product_uom_qty,
+                                 precision_rounding=rounding) == 0:
+                    continue
                 for prd in rec.production_ids.filtered(
-                        lambda p: p.state == 'draft'):
-                    prd.product_qty = vals.get('product_uom_qty')
+                        lambda p: p.state not in ('done', 'cancel')):
+                    # OF ya iniciada: no se permite cambiar la cantidad (y al
+                    # abortar aquí tampoco se toca la entrega).
+                    if prd.state in ('progress', 'to_close') or any(
+                            wo.state in ('progress', 'done') for wo in prd.workorder_ids):
+                        raise UserError(_(
+                            'No se puede actualizar la cantidad: la OF %(mo)s '
+                            'ya inició su primera operación.',
+                            mo=prd.display_name))
+                    if float_is_zero(vals['product_uom_qty'], precision_rounding=rounding):
+                        # Cantidad en 0: la OF sin iniciar se elimina (el
+                        # asistente del core no acepta cantidad 0).
+                        prd_su = prd.sudo()
+                        if prd_su.state != 'draft':
+                            prd_su.action_cancel()
+                        prd_su.unlink()
+                    elif prd.state == 'draft':
+                        prd.sudo().product_qty = vals['product_uom_qty']
+                    else:
+                        # OF confirmada: el asistente estándar ajusta consumos
+                        # y órdenes de trabajo.
+                        self.env['change.production.qty'].sudo().with_company(prd.company_id).create({
+                            'mo_id': prd.id,
+                            'product_qty': vals['product_uom_qty'],
+                        }).change_prod_qty()
         res = super().write(vals)
+        if 'product_uom_qty' in vals:
+            # Cantidad repuesta (>0) en una línea de pedido confirmado que ya
+            # no tiene OF (p.ej. se puso en 0 y su OF se eliminó): recrearla.
+            # Si existe alguna OF hecha/activa no se crea otra.
+            self.filtered(
+                lambda l: l.order_id.state == 'sale' and l.product_uom_qty
+                and not l.production_ids.filtered(lambda p: p.state != 'cancel')
+            )._create_weaving_productions()
         # El recargo de estampado se calcula con el precio del tejido, pero el
         # diseño solo se puede elegir en el PEDIDO: sin este recálculo el pedido
         # quedaba con diseño asignado y un precio que no lo incluía.

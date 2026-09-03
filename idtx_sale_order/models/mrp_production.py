@@ -17,6 +17,28 @@ class MrpProduction(models.Model):
     manual_recipe = fields.Boolean('manual_recipe', default=False)
     manual_color_recipe_id = fields.Many2one('color.recipe', string='Manual Color Recipe', ondelete='restrict')
 
+    @api.depends('sale_order_line_id', 'sale_order_line_id.operation_ids')
+    def _compute_workorder_ids(self):
+        res = super()._compute_workorder_ids()
+        # La OF debe respetar las operaciones elegidas en la línea de venta:
+        # el vendedor puede QUITAR operaciones con precio (p.ej. servicio sin
+        # tejido) y esas no deben generar orden de trabajo. Solo se filtran
+        # las que estaban disponibles para elegir (available_operation_ids);
+        # las auxiliares sin precio (control de peso/calidad, etc.) no son
+        # seleccionables en la línea y se conservan siempre.
+        for production in self:
+            line = production.sale_order_line_id
+            if not line or production.state != 'draft':
+                continue
+            excluded = line.available_operation_ids - line.operation_ids
+            if not excluded:
+                continue
+            to_delete = production.workorder_ids.filtered(
+                lambda wo: wo.operation_id in excluded)
+            if to_delete:
+                production.workorder_ids = [Command.delete(wo.id) for wo in to_delete]
+        return res
+
     @api.onchange('color_recipe_id')
     def _onchange_color_recipe_id(self):
         for production in self:
