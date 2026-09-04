@@ -4,8 +4,7 @@
 
         <!-- Perfil "Manager de Hilado": hereda TODOS los permisos del manager
              de Desarrollo de Producto (implied_ids) y, además, habilita editar
-             la descripción de un hilado ya creado (state == 'created'), que
-             propaga el cambio a SITPRO. -->
+             la descripción de un hilado ya creado (state == 'created'). -->
         <record id="group_thread_manager" model="res.groups">
             <field name="name">Thread Manager</field>
             <field name="privilege_id" ref="idtx_product_development.module_product_development_user"/>

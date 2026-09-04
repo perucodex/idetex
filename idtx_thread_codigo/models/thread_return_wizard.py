@@ -9,6 +9,6 @@ class ThreadCodeReturnWizard(models.TransientModel):
     thread_code_id = fields.Many2one('idtx.thread.code', string='Hilado', required=True, ondelete='cascade')
 
     def action_confirm(self):
-        """Segunda confirmación: ejecuta el borrado definitivo (producto + SITPRO)."""
+        """Segunda confirmación: ejecuta el borrado definitivo del producto."""
         self.ensure_one()
         return self.thread_code_id.action_return()

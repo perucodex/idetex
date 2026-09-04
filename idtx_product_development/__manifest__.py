@@ -16,7 +16,7 @@ y ficha técnica
     # Check https://github.com/odoo/odoo/blob/15.0/odoo/addons/base/data/ir_module_category_data.xml
     # for the full list
     'category': 'Producción Textil',
-    'version': '0.3',
+    'version': '19.0.0.4.0',
     'license': 'LGPL-3',
     'sequence': 0,
 
@@ -37,7 +37,6 @@ y ficha técnica
         'data/product.gauge.csv',
         'data/product.title.csv',
         'data/ligament.type.csv',
-        'data/ir_cron_sync_base_process.xml',
         'security/group_dev.xml',
         'security/ir.model.access.csv',
         'report/report_product_analysis.xml',

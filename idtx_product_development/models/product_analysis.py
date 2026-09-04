@@ -16,8 +16,8 @@ class ProductAnalysis(models.Model):
         domain="[('is_company', '=', True)]")
     product_description = fields.Char(
         'Product Description', size=26,
-        help="Máximo 26 caracteres: es el largo de ArtDsc en TEXPLUS "
-             "(char(26)). Más allá de 26 se truncaría al exportar.")
+        help="Máximo 26 caracteres (largo histórico de la descripción de "
+             "artículo en las etiquetas y documentos de planta).")
     ficha = fields.Char('Ficha')
     codpro = fields.Char('CodigoProductoBD')
     gauge_id = fields.Many2one('product.gauge', string='Gauge')
@@ -232,7 +232,7 @@ class ProductAnalysis(models.Model):
             )
             raise UserError(_(
                 "No se puede asignar la ruta '%s' al analisis: las siguientes "
-                "operaciones no tienen Maquina General (TEXPLUS) asignada. "
+                "operaciones no tienen Máquina General asignada. "
                 "Sin maquina la fase no puede registrarse en produccion.\n\n%s\n\n"
                 "Configura la maquina general en cada operacion antes de continuar."
             ) % (base.name, ops_text))

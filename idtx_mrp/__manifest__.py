@@ -15,7 +15,7 @@ Módulo base para los desarrollos de producción para empresas textiles
     # Check https://github.com/odoo/odoo/blob/15.0/odoo/addons/base/data/ir_module_category_data.xml
     # for the full list
     'category': 'Producción Textil',
-    'version': '0.1',
+    'version': '19.0.0.2.0',
     'license': 'LGPL-3',
     'sequence': 0,
 

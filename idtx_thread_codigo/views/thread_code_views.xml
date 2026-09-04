@@ -91,7 +91,7 @@
                 <field name="thread_code_id" invisible="1"/>
                 <div class="alert alert-danger" role="alert">
                     <strong>¡Atención!</strong> Esta acción es <b>definitiva</b>: se
-                    eliminará el producto y la fila en SITPRO. <b>No se puede deshacer.</b>
+                    eliminará el producto creado. <b>No se puede deshacer.</b>
                 </div>
                 <p>¿Estás seguro de eliminar definitivamente este hilado?</p>
                 <footer>

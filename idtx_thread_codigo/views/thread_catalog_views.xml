@@ -240,8 +240,7 @@
                 <field name="res_ids" invisible="1"/>
                 <div class="alert alert-danger" role="alert">
                     <strong>¡Atención!</strong> Vas a eliminar <field name="count" readonly="1" class="oe_inline"/>
-                    valor(es) de catálogo. Esta acción es <b>definitiva</b>: también se eliminarán
-                    de <b>SITPRO</b>. No se puede deshacer.
+                    valor(es) de catálogo. Esta acción es <b>definitiva</b> y no se puede deshacer.
                 </div>
                 <p>¿Confirmas el borrado definitivo?</p>
                 <footer>
@@ -285,14 +284,6 @@
         <field name="view_mode">list,form</field>
     </record>
 
-    <!-- ===== Acción servidor: sincronizar los 6 desde SITPRO ===== -->
-    <record id="action_sync_thread_catalogs_sitpro" model="ir.actions.server">
-        <field name="name">Sincronizar desde SITPRO</field>
-        <field name="model_id" ref="model_product_thread_titulo"/>
-        <field name="state">code</field>
-        <field name="code">action = env['product.thread.titulo'].action_sync_all_from_sitpro()</field>
-    </record>
-
     <!-- ===== Submenú "Hilado" dentro de Configuration ===== -->
     <menuitem id="menu_thread_catalog_config" name="Hilado"
         parent="idtx_product_development.dev_settings_menu" sequence="50" groups="idtx_thread_codigo.group_thread_manager"/>
@@ -309,7 +300,5 @@
         parent="menu_thread_catalog_config" action="product_thread_linea_action" sequence="50"/>
     <menuitem id="menu_thread_diseno" name="Diseño"
         parent="menu_thread_catalog_config" action="product_thread_diseno_action" sequence="60"/>
-    <menuitem id="menu_thread_sync_sitpro" name="↻ Sincronizar desde SITPRO"
-        parent="menu_thread_catalog_config" action="action_sync_thread_catalogs_sitpro" sequence="90"/>
 
 </odoo>

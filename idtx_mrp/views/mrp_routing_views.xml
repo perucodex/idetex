@@ -39,9 +39,6 @@
             <field name="model">mrp.routing.workcenter.operation</field>
             <field name="arch" type="xml">
                 <list string="Routing Work Centers Operations" multi_edit="1" sample="1">
-                    <header>
-                        <button name="action_sync_fas_code_from_texplus" type="object" string="Sync Fas Code" display="always"/>
-                    </header>
                     <field name="name"/>
                     <field name="fas_code"/>
                     <field name="workcenter_id"/>

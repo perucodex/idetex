@@ -3,31 +3,21 @@
 modulo (idtx_product_development).
 
 Aqui viven:
-- Campos TEXPLUS: `general_machine_id` y `specific_machine_ids`.
+- Campos de maquinaria: `general_machine_id` y `specific_machine_ids`
+  (catálogo `texplus.machine`, hoy mantenido solo en Odoo).
 - Smart button hacia las rutas (`base_process_ids` + `action_open_base_processes`).
-- Sync hacia TEXPLUS de FASPRO y MAQFAS (create/write/unlink).
-- Validaciones de uso (`_check_used_in_base_process`, `_check_used_in_texplus_prolin`).
-- Generador de codigo FasCod unico (`_generate_unique_fas_code`).
+- Cascada general -> específicas al crear/modificar la fase.
+- Validación de uso en procesos base al eliminar (`_check_used_in_base_process`).
 
-Las constantes y helpers compartidos (TEXPLUS_EMPRCOD, _fit_char,
-_is_tejido_crudo, _is_texplus_lock_error, _compose_fas_code,
-FASPRO_CODE_MAX_LEN) viven en mrp_base_process.py y se importan desde alli.
+La sincronización hacia TEXPLUS (FASPRO/MAQFAS/PROLIN) se retiró en 2026-09:
+Odoo es la única fuente de las fases y sus máquinas.
 """
+
+import logging
 
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 
-from .mrp_base_process import (
-    FASPRO_CODE_MAX_LEN,
-    TEXPLUS_EMPRCOD,
-    _compose_fas_code,
-    _fit_char,
-    _is_tejido_crudo,
-    _is_texplus_lock_error,
-    _texplus_writes_enabled,
-)
-
-import logging
 _logger = logging.getLogger(__name__)
 
 
@@ -36,19 +26,18 @@ class MrpRoutingWorkcenterOperation(models.Model):
 
     general_machine_id = fields.Many2one(
         'texplus.machine',
-        string='Maquina General (TEXPLUS)',
+        string='Máquina General',
         domain="[('is_general','=',True)]",
         ondelete='restrict',
-        help='Maquina general de TEXPLUS. Se guarda en FASPRO.MaqCod.',
+        help='Máquina general (tipo de máquina) con la que se ejecuta la fase.',
     )
     specific_machine_ids = fields.Many2many(
         'texplus.machine',
         'texplus_machine_operation_rel',
         'operation_id',
         'machine_id',
-        string='Maquinas Especificas (TEXPLUS)',
-        # domain="[('is_general','=',False),('general_machine_id','=',general_machine_id)]",
-        help='Maquinas especificas asignadas a esta fase. Se sincroniza con la tabla MAQFAS de TEXPLUS.',
+        string='Máquinas Específicas',
+        help='Máquinas concretas asignadas a esta fase.',
     )
     base_process_ids = fields.Many2many(
         'mrp.base.process',
@@ -90,10 +79,8 @@ class MrpRoutingWorkcenterOperation(models.Model):
             if not record.general_machine_id:
                 continue
             # ADITIVO: solo se AGREGAN las especificas de esta general que
-            # falten. NO se eliminan las maquinas ya asignadas: antes se
-            # borraban las que no pertenecian a esta general y eso vaciaba la
-            # curacion manual (y luego MAQFAS en TEXPLUS). El usuario puede
-            # quitar manualmente las que no quiera.
+            # falten. NO se eliminan las maquinas ya asignadas para respetar la
+            # curacion manual. El usuario puede quitar las que no quiera.
             specifics = Machine.search([
                 ('is_general', '=', False),
                 ('general_machine_id', '=', record.general_machine_id.id),
@@ -124,7 +111,7 @@ class MrpRoutingWorkcenterOperation(models.Model):
             existing = op.specific_machine_ids
             missing = specifics - existing
             if missing:
-                op.with_context(skip_texplus_sync=True).write({
+                op.with_context(skip_machine_cascade=True).write({
                     'specific_machine_ids': [(4, m.id) for m in missing],
                 })
                 changed = True
@@ -153,7 +140,7 @@ class MrpRoutingWorkcenterOperation(models.Model):
             current_ids = set(op.specific_machine_ids.ids)
             if target_ids == current_ids:
                 continue
-            op.with_context(skip_texplus_sync=True).write({
+            op.with_context(skip_machine_cascade=True).write({
                 'specific_machine_ids': [(6, 0, list(target_ids))],
             })
             changed = True
@@ -177,112 +164,16 @@ class MrpRoutingWorkcenterOperation(models.Model):
                 blocked[operation] = lines.mapped('mrp_base_process_id')
         return blocked
 
-    def _check_used_in_texplus_prolin(self, cursor):
-        blocked = {}
-        for operation in self:
-            phase_code = (operation.fas_code or '').strip()
-            if not phase_code:
-                continue
-            cursor.execute(
-                "SELECT LTRIM(RTRIM(ProCod)) FROM dbo.PROLIN WITH (NOLOCK) "
-                "WHERE EmprCod = ? AND FasCod = ?",
-                TEXPLUS_EMPRCOD,
-                phase_code,
-            )
-            process_codes = [row[0] for row in cursor.fetchall() if row and row[0]]
-            if process_codes:
-                blocked[operation] = process_codes
-        return blocked
-
-    def _generate_unique_fas_code(self, cursor, operation, max_len=FASPRO_CODE_MAX_LEN):
-        """Genera un FasCod corto para la operacion, evitando colisiones.
-
-        Compone una base a partir del nombre (distribucion equitativa entre palabras).
-        Si la base ya existe en FASPRO (TEXPLUS) o esta asignada a otra operacion
-        en Odoo, agrega un sufijo numerico ('BASE1', 'BASE2', ...) truncando la base
-        lo necesario para no exceder max_len.
-        """
-        base = _compose_fas_code(operation.name, max_len)
-        if not base:
-            return None
-
-        cursor.execute(
-            "SELECT LTRIM(RTRIM(FasCod)) FROM dbo.FASPRO WITH (NOLOCK) WHERE EmprCod = ?",
-            TEXPLUS_EMPRCOD,
-        )
-        used = {row[0].upper() for row in cursor.fetchall() if row and row[0]}
-
-        other_ops = self.sudo().search([
-            ('id', '!=', operation.id),
-            ('fas_code', '!=', False),
-        ])
-        for op in other_ops:
-            code = (op.fas_code or '').strip().upper()
-            if code:
-                used.add(code)
-
-        if base.upper() not in used:
-            return base
-        for index in range(1, 1000):
-            suffix = str(index)
-            candidate = base[: max(0, max_len - len(suffix))] + suffix
-            if candidate.upper() not in used:
-                return candidate
-        return None
-
-    def _delete_from_texplus_faspro(self, cursor):
-        for operation in self:
-            phase_code = (operation.fas_code or '').strip()
-            if not phase_code:
-                continue
-            # NO borrar FASPRO/MAQFAS de la fase si OTRA operación de Odoo (que
-            # NO se está eliminando) todavía usa el mismo fas_code: sería borrar
-            # las máquinas de una fase aún vigente (vaciado accidental).
-            others = self.sudo().search([
-                ('fas_code', '=', operation.fas_code),
-                ('id', 'not in', self.ids),
-            ], limit=1)
-            if others:
-                _logger.info(
-                    "MAQFAS/FASPRO: NO se borra la fase '%s' (op %s) porque otra "
-                    "operacion (%s) aun la usa.",
-                    phase_code, operation.id, others.id,
-                )
-                continue
-            _logger.info(
-                "MAQFAS/FASPRO: borrando la fase '%s' (op %s '%s') de TEXPLUS "
-                "por unlink de la operacion.",
-                phase_code, operation.id, operation.name,
-            )
-            cursor.execute(
-                "DELETE FROM dbo.MAQFAS WHERE EmprCod = ? AND MaqFCod = ?",
-                TEXPLUS_EMPRCOD,
-                phase_code,
-            )
-            cursor.execute(
-                "DELETE FROM dbo.FASPRO WHERE EmprCod = ? AND FasCod = ?",
-                TEXPLUS_EMPRCOD,
-                phase_code,
-            )
-
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
-        if not self.env.context.get('skip_texplus_sync'):
-            sync_targets = records.filtered(
-                lambda r: (r.name or '').strip() and not _is_tejido_crudo(r)
-            )
-            if sync_targets:
-                # Auto-fill specifics from the general BEFORE syncing so
-                # MAQFAS gets the full set in one shot.
-                sync_targets._ensure_specific_machines_from_general()
-                sync_targets._sync_to_texplus(sync_faspro=True, sync_maqfas=True)
+        if not self.env.context.get('skip_machine_cascade'):
+            records._ensure_specific_machines_from_general()
         return records
 
     def write(self, vals):
-        # Snapshot the previous general_machine_id BEFORE super so we can
-        # tell which records actually changed it. Needed for the cascade
-        # that replaces specific_machine_ids on a general swap.
+        # Snapshot de la máquina general ANTES de escribir para saber qué
+        # registros la cambiaron y completar sus específicas (aditivo).
         general_swapped = self.browse()
         if 'general_machine_id' in vals:
             new_general_id = vals.get('general_machine_id') or False
@@ -291,183 +182,14 @@ class MrpRoutingWorkcenterOperation(models.Model):
             )
 
         result = super().write(vals)
-        if self.env.context.get('skip_texplus_sync'):
+        if self.env.context.get('skip_machine_cascade'):
             return result
-
-        # fas_code se incluye porque setearlo a un valor nuevo (p.ej. tras
-        # duplicar y renombrar) debe disparar la creacion en FASPRO via
-        # _ensure_texplus_phase_exists. Sin esto, la nueva fase Odoo nunca
-        # llega a TEXPLUS.
-        sync_faspro = bool({'name', 'general_machine_id', 'fas_code'} & set(vals))
-        sync_maqfas = 'specific_machine_ids' in vals
-
-        # General changed → ADD the new general's specifics (aditivo). NO se
-        # hace un REPLACE destructivo: el antiguo `_resync_specifics_with_general`
-        # vaciaba specific_machine_ids cuando la general no tenia especificas
-        # formales (is_general=False, general_machine_id=<general>), y ese
-        # conjunto vacio disparaba un DELETE masivo en MAQFAS que borraba la
-        # fase de TODAS las maquinas en TEXPLUS. Con el enfoque aditivo se
-        # preserva la curacion manual (maquinas de otra general, sin general,
-        # o la general misma usada como especifica).
         if general_swapped:
-            if general_swapped._ensure_specific_machines_from_general():
-                sync_maqfas = True
-
-        if sync_faspro or sync_maqfas:
-            self._sync_to_texplus(sync_faspro=sync_faspro, sync_maqfas=sync_maqfas)
+            general_swapped._ensure_specific_machines_from_general()
         return result
 
-    def _sync_to_texplus(self, sync_faspro=True, sync_maqfas=True):
-        """Propaga los cambios relevantes a TEXPLUS en una sola conexion.
-
-        - FASPRO: actualiza FasDsc (nombre) y MaqCod (maquina general).
-                  Crea la fila si no existe.
-        - MAQFAS: sincroniza las maquinas especificas asignadas a la fase
-                  (inserta nuevas, borra las que ya no aplican).
-        """
-        operations = self.filtered(lambda op: not _is_tejido_crudo(op) and (op.name or '').strip())
-        if not operations:
-            return
-        if not _texplus_writes_enabled():
-            _logger.info(
-                'texplus writes disabled (texplus_write_enabled=False): skipping '
-                'FASPRO/MAQFAS sync for %s operation(s)', len(operations),
-            )
-            return
-
-        base_process = self.env['mrp.base.process'].sudo()
-
-        conn = None
-        cursor = None
-        try:
-            conn = base_process._get_texplus_sql_connection()
-            cursor = conn.cursor()
-            base_process._configure_texplus_cursor(cursor)
-
-            for operation in operations:
-                if sync_faspro:
-                    base_process._ensure_texplus_phase_exists(cursor, operation)
-                phase_code = (operation.fas_code or '').strip()
-                if not phase_code:
-                    continue
-
-                if sync_faspro:
-                    # MaqCod solo de la maquina general TEXPLUS. No usar
-                    # workcenter_id.name (es el AREA, no un codigo de maquina).
-                    # IMPORTANTE: solo escribimos MaqCod cuando Odoo conoce
-                    # la maquina general. Si Odoo no la tiene asignada, no
-                    # tocamos FASPRO.MaqCod — asi preservamos asignaciones
-                    # hechas manualmente en TEXPLUS por el usuario y evitamos
-                    # que el cron_sync_from_texplus las borre al recrear una
-                    # fase. Si quieres limpiar la maquina explicitamente,
-                    # hazlo desde Odoo seteando otra general_machine_id.
-                    if operation.general_machine_id and operation.general_machine_id.code:
-                        general_code = _fit_char(operation.general_machine_id.code, 6)
-                        cursor.execute(
-                            "UPDATE dbo.FASPRO SET FasDsc = ?, MaqCod = ? "
-                            "WHERE EmprCod = ? AND FasCod = ?",
-                            _fit_char(operation.name, 28),
-                            general_code,
-                            TEXPLUS_EMPRCOD,
-                            phase_code,
-                        )
-                    else:
-                        # Solo refresca la descripcion; NO toca MaqCod.
-                        cursor.execute(
-                            "UPDATE dbo.FASPRO SET FasDsc = ? "
-                            "WHERE EmprCod = ? AND FasCod = ?",
-                            _fit_char(operation.name, 28),
-                            TEXPLUS_EMPRCOD,
-                            phase_code,
-                        )
-
-                if sync_maqfas:
-                    self._sync_maqfas_for_operation(cursor, operation, phase_code)
-
-            conn.commit()
-        except Exception as error:
-            if conn:
-                conn.rollback()
-            if not isinstance(error, UserError) and _is_texplus_lock_error(error):
-                phase_codes = ', '.join(filter(None, (op.fas_code for op in operations))) or '(sin codigo)'
-                raise UserError(
-                    'No se pudo sincronizar la fase a TEXPLUS porque '
-                    f'{phase_codes} esta abierta o en uso en TEXPLUS. '
-                    'Cierre ese registro y vuelva a intentar.'
-                ) from error
-            raise
-        finally:
-            if cursor:
-                cursor.close()
-            if conn:
-                conn.close()
-
-    def _sync_maqfas_for_operation(self, cursor, operation, phase_code):
-        """Diff y aplica los cambios de specific_machine_ids contra MAQFAS.
-
-        `desired` = UNIÓN de specific_machine_ids de TODAS las operaciones de
-        Odoo que comparten el mismo `fas_code` (varias operaciones pueden mapear
-        al MISMO MaqFCod de TEXPLUS). Antes se tomaba solo `operation`, así que
-        sincronizar una operación con menos (o CERO) máquinas BORRABA de MAQFAS
-        las que otra operación con el mismo fas_code había puesto → vaciado
-        accidental. Ver historial del bug de máquinas por fase.
-        """
-        cursor.execute(
-            "SELECT LTRIM(RTRIM(MaqCod)) FROM dbo.MAQFAS "
-            "WHERE EmprCod = ? AND MaqFCod = ?",
-            TEXPLUS_EMPRCOD,
-            phase_code,
-        )
-        current_in_texplus = {row[0].upper() for row in cursor.fetchall() if row and row[0]}
-
-        # UNIÓN de las máquinas específicas de TODAS las operaciones con este
-        # fas_code (no solo la que dispara el sync).
-        siblings = self.sudo().search([('fas_code', '=', operation.fas_code)])
-        desired = {}
-        for sibling in siblings:
-            for machine in sibling.specific_machine_ids:
-                code = (machine.code or '').strip()
-                if code:
-                    desired[code.upper()] = machine
-        desired_codes = set(desired)
-
-        # POLÍTICA (2026-07-07): el sync a MAQFAS es ADITIVO — SOLO inserta lo
-        # que falta, NUNCA borra. El borrado automático causaba vaciados
-        # accidentales de la fase por 3 vías: (a) operación con specifics vacío,
-        # (b) fas_code duplicado (una op vacía borraba lo de otra), (c) specifics
-        # de Odoo INCOMPLETOS vs máquinas gestionadas directo en TEXPLUS. Como
-        # Odoo no siempre tiene la lista completa, el borrado se hace MANUAL en
-        # TEXPLUS. Aquí solo se registra qué sobra (para referencia).
-        to_delete = current_in_texplus - desired_codes
-        if to_delete:
-            _logger.info(
-                "MAQFAS: la fase '%s' tiene en TEXPLUS %s maquina(s) que NO estan "
-                "en ninguna operacion de Odoo: %s. NO se borran (borrado manual). "
-                "Disparado por op %s '%s'.",
-                phase_code, len(to_delete), sorted(to_delete),
-                operation.id, operation.name,
-            )
-
-        to_insert = desired_codes - current_in_texplus
-        phase_desc = _fit_char(operation.name, 28)
-        for code in to_insert:
-            machine = desired[code]
-            cursor.execute(
-                "INSERT INTO dbo.MAQFAS (EmprCod, MaqCod, MaqFCod, MaqFDsc) VALUES (?, ?, ?, ?)",
-                TEXPLUS_EMPRCOD,
-                _fit_char(machine.code, 6),
-                phase_code,
-                phase_desc,
-            )
-
-        if phase_desc:
-            cursor.execute(
-                "UPDATE dbo.MAQFAS SET MaqFDsc = ? WHERE EmprCod = ? AND MaqFCod = ?",
-                phase_desc, TEXPLUS_EMPRCOD, phase_code,
-            )
-
     def unlink(self):
-        if not self or self.env.context.get('skip_texplus_faspro_delete'):
+        if not self:
             return super().unlink()
 
         used_in_odoo = self._check_used_in_base_process()
@@ -480,48 +202,4 @@ class MrpRoutingWorkcenterOperation(models.Model):
                 'No se puede eliminar las siguientes fases porque estan en uso '
                 'en procesos base de Odoo:\n%s' % details
             )
-
-        # Modo lectura TEXPLUS: no chequeamos PROLIN ni borramos FASPRO/MAQFAS.
-        if not _texplus_writes_enabled():
-            _logger.info(
-                'texplus writes disabled (texplus_write_enabled=False): skipping '
-                'FASPRO/MAQFAS delete for %s operation(s)', len(self),
-            )
-            return super().unlink()
-
-        conn = None
-        cursor = None
-        try:
-            conn = self._get_texplus_sql_connection()
-            cursor = conn.cursor()
-
-            used_in_texplus = self._check_used_in_texplus_prolin(cursor)
-            if used_in_texplus:
-                details = '\n'.join(
-                    '- %s (%s): %s' % (op.name, op.fas_code, ', '.join(codes))
-                    for op, codes in used_in_texplus.items()
-                )
-                raise UserError(
-                    'No se puede eliminar las siguientes fases porque estan en uso '
-                    'en la tabla PROLIN de TEXPLUS:\n%s' % details
-                )
-
-            self._delete_from_texplus_faspro(cursor)
-            conn.commit()
-        except Exception as error:
-            if conn:
-                conn.rollback()
-            if not isinstance(error, UserError) and _is_texplus_lock_error(error):
-                phase_codes = ', '.join(filter(None, (op.fas_code for op in self)))
-                raise UserError(
-                    'No se pudo sincronizar con TEXPLUS porque la fase '
-                    f'{phase_codes} esta abierta o en uso en TEXPLUS. Cierre ese registro y vuelva a intentar.'
-                ) from error
-            raise
-        finally:
-            if cursor:
-                cursor.close()
-            if conn:
-                conn.close()
-
         return super().unlink()
