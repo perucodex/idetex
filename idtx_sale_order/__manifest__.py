@@ -15,7 +15,7 @@ Gestiona la carga de precios y productos en tus cotizaciones
     # Check https://github.com/odoo/odoo/blob/15.0/odoo/addons/base/data/ir_module_category_data.xml
     # for the full list
     'category': 'Producción Textil',
-    'version': '0.10',
+    'version': '19.0.0.11.0',
     'license': 'LGPL-3',
     'sequence': 0,
 
@@ -25,11 +25,9 @@ Gestiona la carga de precios y productos en tus cotizaciones
             'sale_management',
             'sale_stock',
             'sale_subscription',
-            'idtx_batch_quality',
             'idtx_product_development',
             'idtx_laboratory',
             'idtx_printing',
-            'idtx_batch_quality',
         ],
 
     # always loaded

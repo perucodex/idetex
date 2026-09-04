@@ -142,7 +142,7 @@ export class QualityTonoBoard extends Component {
                 fields.push("motivo_tono", "motivo_tacto", "motivo_apariencia");
             }
             const records = await this.orm.searchRead(
-                "control.tono.eval.log",
+                "qc.tone.eval.log",
                 [["tono", "=", this.tono]],
                 fields,
                 { order: "fecha_eval ASC" }
@@ -353,7 +353,7 @@ export class QualityTonoBoard extends Component {
         this.action.doAction({
             type: "ir.actions.act_window",
             name,
-            res_model: "control.tono.eval.log",
+            res_model: "qc.tone.eval.log",
             view_mode: "list,form",
             views: [[false, "list"], [false, "form"]],
             domain: [["id", "in", ids]],

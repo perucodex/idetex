@@ -60,8 +60,8 @@
               <td style="padding: 2px;"><t t-esc="doc.program"/></td>
               <td style="padding: 2px;">ATX</td>
               <td style="padding: 2px;"><t t-esc="doc.atx"/></td>
-              <td style="padding: 2px;">Ficha Sitpro</td>
-              <td style="padding: 2px;"><t t-esc="doc.sitpro_sheet"/></td>
+              <td style="padding: 2px;"></td>
+              <td style="padding: 2px;"></td>
             </tr>
             <tr>
               <td style="padding: 2px;">Density</td>

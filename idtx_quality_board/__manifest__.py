@@ -9,12 +9,12 @@
     'author': "Codex Development",
     'website': "https://www.perucodex.com",
     'category': 'Uncategorized',
-    'version': '19.0.0.4',
+    'version': '19.0.0.5',
     'license': 'LGPL-3',
 
     'depends': [
         'spreadsheet_dashboard',
-        'idtx_batch_quality',
+        'idtx_quality_control',
     ],
 
     'data': [
