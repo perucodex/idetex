@@ -2,14 +2,12 @@
 <odoo>
     <data noupdate="1">
 
-        <!-- Perfil "Gestor de Hilado" como CASILLA en el usuario (sin
-             privilege_id, para que NO compita en el selector User/Manager de
-             Desarrollo de Producto). Al marcarlo hereda ese Manager
-             (implied_ids) y habilita editar la descripción de un hilado ya
-             creado (state == 'created'). Mismos permisos que antes, solo
-             cambia la presentación. -->
+        <!-- Nivel "Gestor de Hilado" del selector de Desarrollo de Producto:
+             hereda el Manager (implied_ids) y además habilita editar la
+             descripción de un hilado ya creado (state == 'created'). -->
         <record id="group_thread_manager" model="res.groups">
             <field name="name">Gestor de Hilado</field>
+            <field name="privilege_id" ref="idtx_product_development.module_product_development_user"/>
             <field name="implied_ids" eval="[(4, ref('idtx_product_development.group_module_product_development_manager'))]"/>
         </record>
 

@@ -18,12 +18,11 @@
             <field name="privilege_id" ref="module_product_development_user"/>
             <field name="implied_ids" eval="[(4, ref('group_module_product_development_user'))]"/>
         </record>
-        <!-- Perfil adicional como CASILLA en el usuario (sin privilege_id, para
-             que NO compita en el selector User/Manager). Al marcarlo hereda el
-             Manager de Desarrollo de Producto (implied_ids): mismos permisos que
-             antes, solo cambia la presentación. -->
+        <!-- Nivel adicional del selector de Desarrollo de Producto: hereda el
+             Manager (implied_ids) y además desbloquea los campos de precio. -->
         <record id="group_module_product_development_price_editor" model="res.groups">
             <field name="name">Editor de Precio</field>
+            <field name="privilege_id" ref="module_product_development_user"/>
             <field name="implied_ids" eval="[(4, ref('group_module_product_development_manager'))]"/>
         </record>
         
