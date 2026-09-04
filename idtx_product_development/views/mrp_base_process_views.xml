@@ -34,8 +34,7 @@
                                     <list editable="bottom">
                                         <field name="sequence" widget="handle"/>
                                         <field name="operation_id"/>
-                                        <field name="general_machine_id"/>
-                                    </list> 
+                                    </list>
                                 </field>
                             </page>
                         </notebook>
@@ -64,11 +63,9 @@
                     <field name="name"/>
                     <!-- Picks a specific operation from the autocomplete dropdown. -->
                     <field name="operation_ids" string="Fase"/>
-                    <!-- Free-text fallback: ilike on operation name or fas_code. -->
+                    <!-- Búsqueda libre por nombre de fase. -->
                     <field name="process_ids" string="Fase (texto)"
-                           filter_domain="['|',
-                                           ('process_ids.operation_id.name', 'ilike', self),
-                                           ('process_ids.operation_id.fas_code', 'ilike', self)]"/>
+                           filter_domain="[('process_ids.operation_id.name', 'ilike', self)]"/>
                 </search>
             </field>
         </record>

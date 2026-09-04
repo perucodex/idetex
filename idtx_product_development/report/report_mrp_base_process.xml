@@ -14,7 +14,6 @@
                     <thead>
                         <tr>
                             <th class="text-center" style="width:10%;">Secuencia</th>
-                            <th style="width:25%;">Código (fas_code)</th>
                             <th>Operación</th>
                         </tr>
                     </thead>
@@ -24,9 +23,6 @@
                             <tr>
                                 <td class="text-center">
                                     <span t-field="line.sequence"/>
-                                </td>
-                                <td>
-                                    <span t-field="line.operation_id.fas_code"/>
                                 </td>
                                 <td>
                                     <span t-field="line.operation_id.name"/>

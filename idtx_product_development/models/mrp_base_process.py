@@ -209,13 +209,13 @@ class MrpBaseProcess(models.Model):
     def _configure_texplus_cursor(self, cursor):
         return self.env['mrp.routing.workcenter.operation']._get_texplus_sql_connection()
 
-    def _infer_workcenter_values(self, phase_name, phase_code):
+    def _infer_workcenter_values(self, phase_name):
         """Resuelve (workcenter_name, operation_type) para una fase nueva a
-        partir de palabras clave del nombre/código. Si no hay match ->
-        UserError: NUNCA se crea un centro de trabajo genérico como fallback
-        (eso ensucia el catálogo y obliga al usuario a limpiar a mano).
+        partir de palabras clave del nombre. Si no hay match -> UserError:
+        NUNCA se crea un centro de trabajo genérico como fallback (eso
+        ensucia el catálogo y obliga al usuario a limpiar a mano).
         """
-        normalized = ' '.join(filter(None, (_normalize_text(phase_code), _normalize_text(phase_name))))
+        normalized = _normalize_text(phase_name)
         if any(token in normalized for token in ('TEJID', 'URDIM', 'TRAMA', 'CRUDO')):
             return 'TEJEDURIA', 'weaving'
         if any(token in normalized for token in ('TENID', 'TINTO', 'TINT', 'FOULARD', 'HIDRO', 'LAVADO')):
@@ -228,10 +228,9 @@ class MrpBaseProcess(models.Model):
             return 'ACABADO', 'finishing'
         raise UserError(_(
             'No se puede determinar el centro de trabajo (area) para la '
-            'fase "%(name)s" (codigo %(code)s): no coincide con ninguna '
-            'palabra clave conocida. Crea la fase manualmente indicando su '
-            'centro de trabajo.',
-            name=phase_name or '?', code=phase_code or '?',
+            'fase "%(name)s": no coincide con ninguna palabra clave conocida. '
+            'Crea la fase manualmente indicando su centro de trabajo.',
+            name=phase_name or '?',
         ))
 
     def _get_or_create_workcenter(self, name, operation_type):
@@ -245,82 +244,38 @@ class MrpBaseProcess(models.Model):
             values['operation_type'] = operation_type
         return self.env['mrp.workcenter'].sudo().create(values)
 
-    def _get_or_create_operation(self, phase_code, phase_name, operation_cache):
-        # El código de fase se normaliza a mayúsculas: los datos históricos
-        # (importados de TEXPLUS) podían traer 'calidad' y 'CALIDAD' como la
-        # misma fase, y sin normalizar se crearían operaciones duplicadas.
-        clean_code = (phase_code or '').strip().upper()
-        clean_name = (phase_name or clean_code or '').strip()
-        cache_key = clean_code or clean_name
+    def _get_or_create_operation(self, phase_name, operation_cache):
+        """Devuelve la operación con ese nombre (sin distinguir mayúsculas);
+        si no existe la crea infiriendo el centro de trabajo por palabras
+        clave. Con varias homónimas usa la más antigua."""
+        clean_name = (phase_name or '').strip()
+        if not clean_name:
+            return self.env['mrp.routing.workcenter.operation']
+        cache_key = clean_name.upper()
         if cache_key in operation_cache:
             return operation_cache[cache_key]
 
         operation_model = self.env['mrp.routing.workcenter.operation'].sudo()
-        operation = operation_model.browse()
-
-        # 1. Match by fas_code (case-insensitive). When multiple candidates
-        #    exist (legacy dups), prefer the one whose name also matches;
-        #    otherwise pick the OLDEST id deterministically so subsequent
-        #    runs never create a new sibling.
-        if clean_code:
-            # `=ilike` does an exact case-insensitive comparison in Odoo's
-            # domain language (no % wildcards added).
-            candidates = operation_model.search([('fas_code', '=ilike', clean_code)])
-            if candidates:
-                matching_name = candidates.filtered(
-                    lambda op: (op.name or '').strip().upper() == clean_name.upper()
-                )
-                operation = (matching_name or candidates).sorted('id')[:1]
-                if len(candidates) > 1:
-                    _logger.warning(
-                        '_get_or_create_operation: %s operaciones con fas_code=%s '
-                        '(ids=%s) — usando id=%s. Deduplica para evitar este aviso.',
-                        len(candidates), clean_code, candidates.ids, operation.id,
-                    )
-
-        # 2. Fall back to name lookup only when no fas_code match was found.
-        #    Solo se reutiliza una operación con el mismo nombre si su
-        #    fas_code está vacío o coincide: pueden existir fases distintas
-        #    con la misma descripción (p.ej. TAM y TAMB, ambas "TAMBLEADO")
-        #    que deben seguir siendo operaciones separadas.
-        if not operation and clean_name:
-            by_name = operation_model.search([('name', '=ilike', clean_name)], order='id')
-            compatible = by_name.filtered(
-                lambda op: not clean_code
-                or not op.fas_code
-                or (op.fas_code or '').strip().upper() == clean_code
+        by_name = operation_model.search([('name', '=ilike', clean_name)], order='id')
+        operation = by_name[:1]
+        if len(by_name) > 1:
+            _logger.warning(
+                '_get_or_create_operation: %s operaciones con name=%s (ids=%s) — '
+                'usando id=%s. Deduplica para evitar este aviso.',
+                len(by_name), clean_name, by_name.ids, operation.id,
             )
-            if compatible:
-                operation = compatible[:1]
-                if clean_code and not operation.fas_code:
-                    operation.fas_code = clean_code
-                if len(compatible) > 1:
-                    _logger.warning(
-                        '_get_or_create_operation: %s operaciones compatibles '
-                        'con name=%s fas_code=%s (ids=%s) — usando id=%s.',
-                        len(compatible), clean_name, clean_code,
-                        compatible.ids, operation.id,
-                    )
-            elif by_name:
-                _logger.info(
-                    '_get_or_create_operation: name=%s ya existe con '
-                    'fas_code=%s, creando nueva op para fas_code=%s',
-                    clean_name, by_name.mapped('fas_code'), clean_code,
-                )
-
         if not operation:
-            workcenter_name, operation_type = self._infer_workcenter_values(clean_name, clean_code)
+            workcenter_name, operation_type = self._infer_workcenter_values(clean_name)
             workcenter = self._get_or_create_workcenter(workcenter_name, operation_type)
             operation = operation_model.create({
-                'name': clean_name or clean_code,
-                'fas_code': clean_code or False,
+                'name': clean_name,
                 'workcenter_id': workcenter.id,
             })
         operation_cache[cache_key] = operation
         return operation
 
     def _get_or_create_weaving_operation(self, operation_cache):
-        return self._get_or_create_operation(False, 'TEJIDO CRUDO', operation_cache)
+        return self._get_or_create_operation('TEJIDO CRUDO', operation_cache)
 
     def _ensure_weaving_first_line(self):
         operation_cache = {}
@@ -382,45 +337,23 @@ class MrpBaseProcess(models.Model):
         return super().unlink()
 
     @api.model
-    def action_fill_specifics_from_general(self):
-        """Para cada operacion con `general_machine_id`, agrega a sus
-        `specific_machine_ids` todas las especificas que pertenecen a esa
-        general. Idempotente: solo agrega lo que falta.
-
-        Run from the shell:
-            env['mrp.base.process'].action_fill_specifics_from_general()
-        """
-        Operation = self.env['mrp.routing.workcenter.operation'].sudo()
-        ops = Operation.search([('general_machine_id', '!=', False)])
-        if not ops:
-            return {'updated': 0}
-        changed = ops._ensure_specific_machines_from_general()
-        _logger.info(
-            'action_fill_specifics_from_general: %s operaciones revisadas '
-            '(cambios=%s)', len(ops), changed,
-        )
-        return {'updated': len(ops), 'changed': bool(changed)}
-
-    @api.model
     def action_dedupe_operations(self):
         """One-shot helper to merge duplicate `mrp.routing.workcenter.operation`
-        rows that share the same (name, fas_code). The OLDEST id wins; every
-        FK pointing to a sibling is repointed to the keeper before the
-        sibling is unlinked.
+        rows that share the same name (case-insensitive) and work center. The
+        OLDEST id wins; every FK pointing to a sibling is repointed to the
+        keeper before the sibling is unlinked.
 
         Run from the Odoo shell when needed:
             env['mrp.base.process'].action_dedupe_operations()
         """
         cr = self.env.cr
-        # Group case-insensitively so e.g. fas_code='CALIDAD' and 'calidad'
-        # collapse into a single bucket.
         cr.execute("""
             SELECT upper(trim(name)) AS uname,
-                   upper(trim(fas_code)) AS ufas_code,
+                   workcenter_id,
                    array_agg(id ORDER BY id) AS ids
             FROM mrp_routing_workcenter_operation
-            WHERE fas_code IS NOT NULL
-            GROUP BY upper(trim(name)), upper(trim(fas_code))
+            WHERE name IS NOT NULL
+            GROUP BY upper(trim(name)), workcenter_id
             HAVING COUNT(*) > 1
         """)
         groups = cr.fetchall()
@@ -451,17 +384,17 @@ class MrpBaseProcess(models.Model):
 
         Operation = self.env['mrp.routing.workcenter.operation'].sudo()
         merged = 0
-        for name, fas_code, ids in groups:
+        for name, workcenter_id, ids in groups:
             keeper_id, *dup_ids = ids
             _logger.info(
-                'action_dedupe_operations: name=%r fas_code=%r keeper=%s dups=%s',
-                name, fas_code, keeper_id, dup_ids,
+                'action_dedupe_operations: name=%r workcenter=%s keeper=%s dups=%s',
+                name, workcenter_id, keeper_id, dup_ids,
             )
             for table_name, column_name in fk_refs:
                 self._repoint_or_merge_fk(
                     table_name, column_name, keeper_id, dup_ids,
                 )
-            # Use the ORM so cascading specific_machine_ids etc. behaves.
+            # Via ORM para que se apliquen las validaciones de uso.
             Operation.browse(dup_ids).unlink()
             merged += len(dup_ids)
         _logger.info('action_dedupe_operations: removed %s duplicates', merged)
@@ -545,7 +478,6 @@ class MrpBaseProcessLine(models.Model):
     mrp_base_process_id = fields.Many2one('mrp.base.process', string='Base Process')
     sequence = fields.Integer('sequence')
     operation_id = fields.Many2one('mrp.routing.workcenter.operation', string='Operation Name', ondelete='restrict')
-    general_machine_id = fields.Many2one(related="operation_id.general_machine_id", string='Máquina General', readonly=True)
 
     @api.constrains('sequence', 'operation_id', 'mrp_base_process_id')
     def _check_parent_composition(self):

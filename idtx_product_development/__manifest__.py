@@ -16,7 +16,7 @@ y ficha técnica
     # Check https://github.com/odoo/odoo/blob/15.0/odoo/addons/base/data/ir_module_category_data.xml
     # for the full list
     'category': 'Producción Textil',
-    'version': '19.0.0.4.0',
+    'version': '19.0.0.5.0',
     'license': 'LGPL-3',
     'sequence': 0,
 
@@ -63,10 +63,6 @@ y ficha técnica
         'wizards/split_roll_views.xml',
         'wizards/product_analysis_copy_wizard_views.xml',
         'views/dev_menu.xml',
-        'views/texplus_machine_views.xml',
-        'data/texplus_machine_data.xml',
-        'data/texplus_maqfas_data.xml',
-        'data/texplus_faspro_general_data.xml',
     ],
     
     'assets': {

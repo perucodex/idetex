@@ -40,7 +40,6 @@
             <field name="arch" type="xml">
                 <list string="Routing Work Centers Operations" multi_edit="1" sample="1">
                     <field name="name"/>
-                    <field name="fas_code"/>
                     <field name="workcenter_id"/>
                     <field name="operation_type"/>
                     <field name="parent_operation_id"/>
@@ -55,7 +54,6 @@
             <field name="arch" type="xml">
                 <search string="">
                     <field name="name"/>
-                    <field name="fas_code" string="Código MSSQL"/>
                     <field name="workcenter_id"/>
                     <field name="operation_type"/>
                     <field name="company_id" groups="base.group_multi_company"/>

@@ -65,7 +65,7 @@ def _non_consecutive_repeats(ops):
 
 
 def _fmt(op):
-    return '%s [fas=%s id=%s]' % (op.name or '?', op.fas_code or '-', op.id)
+    return '%s [id=%s]' % (op.name or '?', op.id)
 
 
 print('=' * 80)

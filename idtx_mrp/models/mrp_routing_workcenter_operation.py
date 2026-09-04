@@ -29,11 +29,6 @@ class MrpRoutingWorkcenterOperation(models.Model):
     _description = 'Workcenter Operation'
 
     name = fields.Char('Name', required=True)
-    # Código corto de la fase. Nació como el FasCod de la tabla FASPRO de
-    # TEXPLUS; la sincronización con ese sistema se retiró (2026-09) y hoy es
-    # solo un identificador interno que se conserva por los datos históricos.
-    fas_code = fields.Char('Código de Fase', copy=False,
-                           help="Código corto de la fase (identificador interno).")
     workcenter_id = fields.Many2one('mrp.workcenter', 'Work Center', required=True, check_company=True)
     # Fase padre para agrupar partidas. Auto-relación simple (sin nested-set):
     # se PERMITE que una fase sea su propio padre (auto-padre) para que las
@@ -63,7 +58,7 @@ class MrpRoutingWorkcenterOperation(models.Model):
         'TEÑIDO SIN…'): buscando 'TEÑIDO' la fase exacta no entraba en las 8
         primeras sugerencias y había que ir a 'Buscar más'. Se prioriza:
         coincidencia exacta, luego las que empiezan por el texto, luego el
-        resto. También se busca por el código de fase (fas_code).
+        resto.
         """
         if not name or operator not in ('ilike', '=ilike', 'like', '=like', '='):
             return super().name_search(name=name, domain=domain, operator=operator, limit=limit)
@@ -72,7 +67,7 @@ class MrpRoutingWorkcenterOperation(models.Model):
         buckets = [
             base & Domain('name', '=ilike', term),
             base & Domain('name', '=ilike', term + '%'),
-            base & (Domain('name', operator, term) | Domain('fas_code', operator, term)),
+            base & Domain('name', operator, term),
         ]
         ids, seen = [], set()
         for dom in buckets:
