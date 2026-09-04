@@ -19,7 +19,7 @@ de product.template para los productos is_thread:
     'author': "Codex Development",
     'website': "https://www.perucodex.com",
     'category': 'Producción Textil',
-    'version': '19.0.1.6.0',
+    'version': '19.0.1.7.0',
     'license': 'LGPL-3',
     'depends': ['idtx_product_development', 'mail'],
     # 'post_init_hook': 'post_init_hook',

@@ -18,12 +18,13 @@
             <field name="privilege_id" ref="module_product_development_user"/>
             <field name="implied_ids" eval="[(4, ref('group_module_product_development_user'))]"/>
         </record>
-        <!-- Nivel adicional del selector de Desarrollo de Producto: hereda el
-             Manager (implied_ids) y además desbloquea los campos de precio. -->
+        <!-- Complemento como CASILLA en el usuario (sin privilege_id ni herencia
+             de Manager, igual que el Validador de Lotes de Laboratorio): solo
+             desbloquea los campos de precio. Se otorga a un usuario que ya tiene
+             un nivel de Desarrollo de Producto. Sin herencia, NO compite en el
+             selector Usuario/Administrador (que conserva sus niveles). -->
         <record id="group_module_product_development_price_editor" model="res.groups">
             <field name="name">Editor de Precio</field>
-            <field name="privilege_id" ref="module_product_development_user"/>
-            <field name="implied_ids" eval="[(4, ref('group_module_product_development_manager'))]"/>
         </record>
         
         <record id="base.user_admin" model="res.users">
