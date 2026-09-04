@@ -24,7 +24,7 @@ modelos usan el prefijo ``qc.``.
     'author': "Codex Development",
     'website': "https://www.perucodex.com",
     'category': 'Manufacturing/Quality',
-    'version': '19.0.1.0.3',
+    'version': '19.0.1.0.4',
     'license': 'LGPL-3',
 
     'depends': [

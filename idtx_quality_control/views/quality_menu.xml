@@ -22,6 +22,14 @@
 
     <menuitem id="menu_qc_appearance_defect" name="Defectos Apariencia (Partidas Odoo)" parent="quality_control.menu_quality_configuration" action="action_qc_appearance" sequence="91"/>
 
+    <!-- El menú raíz de Calidad (Enterprise) abre la lista de evaluaciones de tono
+         pendientes. Reemplaza a la acción del módulo TEXPLUS a la que apuntaba antes:
+         al desinstalar aquel, esta referencia quedaba colgada y rompía la carga de
+         menús (pantalla en blanco), así que la reapuntamos a una acción propia. -->
+    <record id="quality_control.menu_quality_root" model="ir.ui.menu">
+        <field name="action" ref="action_quality_tone_pending_list"/>
+    </record>
+
     <!-- Acceso para Ventas (antes lo aportaba idtx_sale_order apuntando al módulo TEXPLUS). -->
     <menuitem id="sale_quality_tone_pending_menu" name="Evaluaciones Tono Pendientes"
               action="action_quality_tone_pending_list" sequence="50"
