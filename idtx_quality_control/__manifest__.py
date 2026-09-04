@@ -24,7 +24,7 @@ modelos usan el prefijo ``qc.``.
     'author': "Codex Development",
     'website': "https://www.perucodex.com",
     'category': 'Manufacturing/Quality',
-    'version': '19.0.1.0.2',
+    'version': '19.0.1.0.3',
     'license': 'LGPL-3',
 
     'depends': [
@@ -47,6 +47,7 @@ modelos usan el prefijo ``qc.``.
         'data/qc_appearance.xml',
         'data/defectos_acabados.xml',
         'data/defectos_tejeduria.xml',
+        'data/defectos_estampado.xml',
         'views/mrp_workorder_batch_views.xml',
         'views/qc_tone_eval_log_views.xml',
         'views/qc_tone_eval_group_views.xml',

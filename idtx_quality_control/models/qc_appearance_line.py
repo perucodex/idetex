@@ -187,7 +187,9 @@ class ControlAparienciaLine(models.Model):
     @api.model
     def action_tablet_get_apariencias(self, query="", limit=20):
         query = (query or "").strip()
-        domain = Domain("state", "=", "batch")
+        # El maestro qc.appearance no tiene campo 'state' (el filtro state='batch'
+        # aplica a mrp.workorder.batch, no aquí): se listan todos los controles.
+        domain = Domain([])
         if query:
             domain = Domain.AND([domain, Domain("name", "ilike", query)])
 
