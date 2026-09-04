@@ -1,3 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_plan_beta_all,plan.beta.all,model_plan_beta,,1,0,0,0
-access_idtx_alpha_floor_layout,idtx.alpha.floor.layout all,model_idtx_alpha_floor_layout,,1,1,1,1

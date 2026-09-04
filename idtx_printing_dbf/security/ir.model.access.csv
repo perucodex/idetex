@@ -1,3 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_printing_kilos_user,printing.kilos.user,model_printing_kilos,idtx_printing.group_module_print_user,1,1,0,0
-access_printing_kilos_manager,printing.kilos.manager,model_printing_kilos,idtx_printing.group_module_print_manager,1,1,1,1

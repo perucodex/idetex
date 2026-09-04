@@ -1,14 +1,18 @@
 # idetex – addons Odoo 19 (IDETEX / Codex Development)
 
-Responde siempre en español. Este repo contiene ~55 módulos con prefijo `idtx_` para una
+Responde siempre en español. Este repo contiene ~45 módulos con prefijo `idtx_` para una
 empresa textil peruana (producción, laboratorio, planilla PE, facturación electrónica, POS).
+
+Ramas: `19.0` = producción (servidor .17, aún con los módulos SITPRO/TEXPLUS instalados);
+`prueba` = implementación (servidor clon `odoo-prueba` 172.16.64.18, BD `prueba`, sin legacy).
+En dev se trabaja sobre `prueba`.
 
 ## Entorno de desarrollo
 
 - Odoo **19.0** (community + enterprise), Python 3.10, venv: `~/odoo/odoo19/odoo-venv`
 - Config: `~/odoo/odoo19/.odoorc` · puerto **http://127.0.0.1:8019** · `max_cron_threads = 0`
-- Base de datos de desarrollo: **`odoo_idtx`** (48 módulos idtx instalados). Las BDs `idetex`,
-  `prueba`, `prueba_idtx` son copias antiguas; no usarlas salvo que el usuario lo pida.
+- Base de datos de desarrollo: **`odoo_idtx`** (41 módulos idtx instalados). Las BDs locales
+  `idetex`, `prueba`, `prueba_idtx` son copias antiguas; no usarlas salvo que el usuario lo pida.
 - El servidor Odoo corre en la **terminal del usuario** (`odoo -c .odoorc`), sin `logfile`:
   el log sale por stdout ahí. Yo no lo veo directamente; para depurar uso un segundo
   proceso con `--stop-after-init --no-http` (ver comandos).
@@ -53,15 +57,18 @@ idtx_<nombre>/
   archivos en `__manifest__.py` en orden (security → data → views → reports → wizards).
 - Siempre añadir la fila en `ir.model.access.csv` al crear un modelo (incluidos wizards
   `TransientModel`, que en Odoo 19 no requieren ACL pero los modelos normales sí).
-- **No tocar** `idtx_orgatex_old` (legado, no instalado). `idtx_plan_general` fue
-  reemplazado por `idtx_plan_general_alpha`. `idtx_sire_sunat` no está instalado en dev.
+- **No tocar** `idtx_orgatex_old` (legado, no instalado). `idtx_sire_sunat` no está instalado en dev.
+- Los módulos SITPRO/TEXPLUS (`idtx_batch_control`, `idtx_batch_quality`, `idtx_batch_mesdan`,
+  `idtx_import_product`, `idtx_sale_sitpro`, `idtx_*_dbf`, `idtx_plan_general*`,
+  `idtx_voucher_ubicacion`) se retiraron el 2026-09-04 en la rama `prueba`. Sus reemplazos sobre
+  partidas Odoo (`mrp.workorder.batch`): `idtx_quality_control`, `idtx_mesdan`, `idtx_diagram_orgatex`.
 
 ## Grafo de dependencias (cadena base)
 
 ```
 idtx_maintenance → idtx_mrp → idtx_product_development → idtx_laboratory → idtx_sale_order
                      ↑              ↑                        ↑
-     idtx_mrp_shop, idtx_batch_control, idtx_thread_codigo, idtx_printing, idtx_pos_*, ...
+     idtx_mrp_shop, idtx_quality_control, idtx_thread_codigo, idtx_printing, idtx_pos_*, ...
 ```
 
 ~20 módulos dependen (directa o transitivamente) de `idtx_mrp`, `idtx_product_development`
@@ -69,18 +76,20 @@ y `idtx_laboratory`. Antes de cambiar un campo/método de esos módulos, buscar 
 todo el repo (`grep -rn "<nombre>" --include=*.py --include=*.xml .`) y actualizar con `-u`
 también los dependientes afectados. Para ver dependencias: `grep -A8 depends <mod>/__manifest__.py`.
 
-## Integración TEXPLUS / ORGATEX (SQL Server)
+## Integración ORGATEX (SQL Server) — única integración externa
 
-Varios módulos leen/escriben un SQL Server externo (TEXPLUS: FASPRO/MAQFAS/PROCES/PROLIN;
-ORGATEX: planta de tintorería) vía `pyodbc` + FreeTDS.
+Solo `idtx_orgatex` (y `idtx_diagram_orgatex`, que reutiliza su conexión) hablan con un SQL
+Server externo (ORGATEX: planta de tintorería) vía `pyodbc` + FreeTDS. TEXPLUS y SITPRO se
+retiraron: **no** crear nuevas integraciones, lecturas ni escrituras hacia esos sistemas.
 
-- `.odoorc` tiene `texplus_write_enabled = False`: en dev **nunca** se escribe en TEXPLUS
-  (es el mismo servidor SQL que producción). Las lecturas sí funcionan.
-- Todo código nuevo que haga INSERT/UPDATE/DELETE externo debe pasar por una guarda de
-  escritura. Patrón de referencia: `idtx_orgatex/models/orgatex_connection.py`
-  (`_orgatex_write_enabled`, `_orgatex_connect`). No inventar conexiones ad hoc.
-- La cadena de conexión necesita `ClientCharset` y `Encryption=off` con FreeTDS; reutilizar
-  el mixin/helper existente en vez de copiar strings de conexión.
+- Guarda de escritura: parámetro `idtx_orgatex.enabled` (False en dev y en `prueba`). Todo
+  código que haga INSERT/UPDATE/DELETE en ORGATEX debe pasar por `_orgatex_write_enabled`.
+- Patrón de referencia: `idtx_orgatex/models/orgatex_connection.py` (`orgatex.connection.mixin`,
+  `_orgatex_connect`). No inventar conexiones ad hoc; la cadena necesita `ClientCharset` y
+  `Encryption=off` con FreeTDS.
+- `idtx_mrp` conserva stubs (`_texplus_writes_enabled`, `_ReadOnlyTexplusConnection`,
+  `_get_texplus_sql_connection`) solo para que los módulos legacy aún instalados en producción
+  carguen; no usarlos en código nuevo.
 
 ## Odoo 19 – errores frecuentes a evitar
 
