@@ -1,0 +1,64 @@
+// ── Plan General Alpha · Dashboard — Dark theme overrides ─────────────────────
+// Este archivo se carga SOLO cuando el tema de Odoo es oscuro (web.assets_web_dark).
+// No requiere selectores padre — las reglas se aplican directamente.
+
+.pad {
+    --pd-page:     #0f172a;
+    --pd-card:     #1e293b;
+    --pd-border:   #334155;
+    --pd-border2:  #1e293b;
+    --pd-text:     #f1f5f9;
+    --pd-text2:    #cbd5e1;
+    --pd-text3:    #94a3b8;
+    --pd-muted:    #64748b;
+    --pd-head-bg:  #1e293b;
+    --pd-scr-tr:   #475569;
+    --pd-scr-tk:   #1e293b;
+    --pd-tt-bd:    #334155;
+    --pd-tt-sh:    rgba(0,0,0,.35);
+    --pd-leg:      #cbd5e1;
+    --pd-hover-bg: #273449;
+    --pd-row-urg:  #2d1b1b;
+    --pd-row-wrn:  #2b2200;
+    --pd-pill-bg:  #334155;
+    --pd-pill-fg:  #94a3b8;
+    --pd-sh-card:  0 1px 3px rgba(0,0,0,.25), 0 1px 2px rgba(0,0,0,.2);
+    --pd-sh-hover: 0 4px 18px rgba(0,0,0,.45);
+    --pd-sh-c-hov: 0 4px 16px rgba(0,0,0,.40);
+    --pd-skel-a:   #1e293b;
+    --pd-skel-b:   #29394f;
+    --pd-up:       #4ade80;
+    --pd-down:     #f87171;
+}
+
+// Fix: en gráficos combo (columna + línea, ej. Tendencia Mensual), ApexCharts
+// a veces activa el tooltip con la clase "apexcharts-theme-light" pese a
+// tooltip.theme:"dark" (bug conocido de ApexCharts con series mixtas — crea
+// varios <div> de tooltip internos y no todos heredan el theme configurado).
+// Forzamos la apariencia oscura sobre esa clase para que nunca aparezca un
+// recuadro blanco ilegible sobre el fondo oscuro del dashboard.
+.pad .apexcharts-tooltip.apexcharts-theme-light {
+    background: rgba(30, 30, 30, .92) !important;
+    border: 1px solid #334155 !important;
+    color: #f1f5f9 !important;
+}
+.pad .apexcharts-tooltip.apexcharts-theme-light .apexcharts-tooltip-title {
+    background: rgba(0, 0, 0, .7) !important;
+    border-bottom: 1px solid #334155 !important;
+    color: #f1f5f9 !important;
+}
+
+// Chips en dark
+.pad__chip {
+    &.chip--green  { background: #14532d; color: #4ade80; }
+    &.chip--amber  { background: #78350f; color: #fcd34d; }
+    &.chip--red    { background: #7f1d1d; color: #fca5a5; }
+}
+
+// Pills en dark
+.pad__pill--warn  { background: #78350f; color: #fcd34d; }
+
+// KPI icon bg dark
+.pad__kpi-ico {
+    background: var(--bgdk, #334155);
+}

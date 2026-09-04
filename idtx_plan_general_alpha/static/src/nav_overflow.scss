@@ -1,0 +1,9 @@
+// Permite que la barra de menú haga scroll horizontal en viewports angostos
+// en lugar de comprimir o cortar los ítems del menú de la app.
+.o_menu_sections {
+    overflow-x: auto;
+    flex-shrink: 1;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar { display: none; }
+}

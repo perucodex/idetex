@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+
+<t t-name="idtx_plan_general_alpha.DashboardAlpha">
+<div class="pad">
+    <div class="pad__scroll" t-ref="scroll">
+
+        <!-- ── Header ───────────────────────────────────────────────────── -->
+        <header class="pad__hd">
+            <div class="pad__hd-left">
+                <h1 class="pad__hd-title">Panel de Planeamiento</h1>
+                <span t-if="state.lastUpdated" class="pad__hd-sub">
+                    Actualizado a las <t t-esc="lastUpdatedLabel"/>
+                </span>
+            </div>
+            <button class="pad__hd-refresh" t-on-click="() => this._refresh()" title="Actualizar ahora">
+                <i class="fa fa-refresh"/>
+            </button>
+        </header>
+
+        <!-- ── Error ────────────────────────────────────────────────────── -->
+        <t t-if="state.error">
+            <div class="pad__state pad__state--error">
+                <i class="fa fa-exclamation-triangle fa-2x"/>
+                <p t-esc="state.error"/>
+                <button class="pad__retry" t-on-click="() => this._load()">Reintentar</button>
+            </div>
+        </t>
+
+        <!-- ── Skeleton (primera carga) ─────────────────────────────────── -->
+        <t t-elif="state.loading">
+            <section class="pad__kpis">
+                <t t-foreach="[1,2,3,4,5,6]" t-as="i" t-key="i">
+                    <div class="pad__skel pad__skel--kpi"/>
+                </t>
+            </section>
+            <section class="pad__section">
+                <div class="pad__skel pad__skel--title"/>
+                <div class="pad__grid pad__grid--dgt">
+                    <div class="pad__skel pad__skel--card" style="height:280px"/>
+                    <div class="pad__skel pad__skel--card" style="height:280px"/>
+                    <div class="pad__skel pad__skel--card" style="height:280px"/>
+                </div>
+            </section>
+        </t>
+
+        <!-- ── Contenido ────────────────────────────────────────────────── -->
+        <t t-else="">
+
+            <!-- ── KPIs ─────────────────────────────────────────────────── -->
+            <section class="pad__kpis">
+                <t t-foreach="kpis" t-as="k" t-key="k.lbl">
+                    <div class="pad__kpi" t-attf-style="--c:#{k.c};--bg:#{k.bg};--bgdk:#{k.bgdk}">
+                        <div class="pad__kpi-left">
+                            <span class="pad__kpi-lbl" t-esc="k.lbl"/>
+                            <span class="pad__kpi-num"
+                                  t-att-data-cnt="k.raw"
+                                  t-att-data-kg="k.isKg ? '1' : '0'"
+                                  t-esc="k.fmt(k.raw)"/>
+                            <span class="pad__kpi-sub-row">
+                                <span t-if="k.sub" class="pad__kpi-sub" t-esc="k.sub"/>
+                                <span t-if="k.trend != null"
+                                      t-attf-class="pad__trend #{k.trend >= 0 ? 'pad__trend--up' : 'pad__trend--down'}">
+                                    <i t-attf-class="fa #{k.trend >= 0 ? 'fa-arrow-up' : 'fa-arrow-down'}"/>
+                                    <t t-esc="Math.abs(k.trend)"/>%
+                                </span>
+                            </span>
+                        </div>
+                        <div class="pad__kpi-ico">
+                            <i t-attf-class="fa #{k.icon}"/>
+                        </div>
+                    </div>
+                </t>
+            </section>
+
+            <!-- ── Sección 1: Visión General ────────────────────────────── -->
+            <section class="pad__section">
+                <h2 class="pad__section-title">Visión General</h2>
+                <div class="pad__grid pad__grid--dgt">
+
+                    <div class="pad__card">
+                        <div class="pad__card-hd">
+                            <i class="fa fa-pie-chart pad__ic--indigo"/>
+                            Estado de Pedidos
+                        </div>
+                        <div class="pad__chart" style="height:280px">
+                            <div t-ref="c1"/>
+                        </div>
+                    </div>
+
+                    <div class="pad__card">
+                        <div class="pad__card-hd">
+                            <i class="fa fa-tachometer pad__ic--green"/>
+                            % Confirmados
+                        </div>
+                        <div class="pad__chart" style="height:280px">
+                            <div t-ref="c2"/>
+                        </div>
+                    </div>
+
+                    <div class="pad__card">
+                        <div class="pad__card-hd">
+                            <i class="fa fa-area-chart pad__ic--blue"/>
+                            Tendencia Mensual · Cotizaciones vs Confirmados
+                        </div>
+                        <div class="pad__chart" style="height:280px">
+                            <div t-ref="c3"/>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ── Sección 2: Análisis de Pedidos ───────────────────────── -->
+            <section class="pad__section">
+                <h2 class="pad__section-title">Análisis de Pedidos</h2>
+                <div class="pad__grid pad__grid--1-1">
+
+                    <div class="pad__card">
+                        <div class="pad__card-hd">
+                            <i class="fa fa-users pad__ic--cyan"/>
+                            Top Clientes por Kg
+                        </div>
+                        <div class="pad__chart" style="height:320px">
+                            <div t-ref="c4"/>
+                        </div>
+                    </div>
+
+                    <div class="pad__card">
+                        <div class="pad__card-hd">
+                            <i class="fa fa-trophy pad__ic--amber"/>
+                            Pedidos más Grandes (kg)
+                        </div>
+                        <div class="pad__chart" style="height:320px">
+                            <div t-ref="c5"/>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ── Sección 3: Producción por Área y Proceso ─────────────── -->
+            <section class="pad__section">
+                <h2 class="pad__section-title">Producción por Producto y Color</h2>
+                <div class="pad__grid pad__grid--1-1">
+
+                    <div class="pad__card">
+                        <div class="pad__card-hd">
+                            <i class="fa fa-cubes pad__ic--amber"/>
+                            Kg por Producto
+                        </div>
+                        <div class="pad__chart" style="height:280px">
+                            <div t-ref="c6"/>
+                        </div>
+                    </div>
+
+                    <div class="pad__card">
+                        <div class="pad__card-hd">
+                            <i class="fa fa-tint pad__ic--indigo"/>
+                            Kg por Color
+                        </div>
+                        <div class="pad__chart" style="height:340px">
+                            <div t-ref="c7"/>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ── Sección 4: Kilos por Estado ──────────────────────────── -->
+            <section class="pad__section">
+                <h2 class="pad__section-title">Kilos por Estado</h2>
+                <div class="pad__grid pad__grid--full">
+                    <div class="pad__card">
+                        <div class="pad__card-hd">
+                            <i class="fa fa-balance-scale pad__ic--indigo"/>
+                            Kilos por Estado (confirmado · cotizado · cancelado)
+                        </div>
+                        <div class="pad__chart" style="height:210px">
+                            <div t-ref="c8"/>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── Sección 5: Pedidos por Vendedor ───────────────────────── -->
+            <!-- Los KPIs de arriba suman TODOS los vendedores. La vista
+                 "Cotizaciones" de Ventas filtra por defecto a "Mis Cotizaciones"
+                 (solo el vendedor logueado), por eso esta tabla puede no
+                 coincidir con lo que ves ahí a simple vista — usa esta tabla
+                 para reconciliar por vendedor. -->
+            <section class="pad__section" t-if="state.data.pedidos.por_vendedor and state.data.pedidos.por_vendedor.length">
+                <h2 class="pad__section-title">Pedidos por Vendedor</h2>
+                <div class="pad__card">
+                    <div class="pad__card-hd">
+                        <i class="fa fa-user-o pad__ic--indigo"/>
+                        Cotizaciones y Pedidos de Venta, por vendedor
+                        <span class="pad__pill">Total arriba = suma de todos</span>
+                    </div>
+                    <div class="pad__table-wrap">
+                        <table class="pad__table">
+                            <thead>
+                                <tr>
+                                    <th>Vendedor</th>
+                                    <th style="text-align:right">Cotizaciones</th>
+                                    <th style="text-align:right">Kg Cotizado</th>
+                                    <th style="text-align:right">Pedidos de Venta</th>
+                                    <th style="text-align:right">Kg Confirmado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="state.data.pedidos.por_vendedor" t-as="v" t-key="v.user_id">
+                                    <tr class="pad__row-clickable" t-on-click="() => this.openVendedorOrders(v)" title="Ver cotizaciones y pedidos de este vendedor">
+                                        <td t-esc="v.vendedor"/>
+                                        <td style="text-align:right" t-esc="v.cotizaciones"/>
+                                        <td style="text-align:right" t-esc="v.kg_cotizado.toLocaleString('es-PE') + ' kg'"/>
+                                        <td style="text-align:right" t-esc="v.confirmados"/>
+                                        <td style="text-align:right" t-esc="v.kg_confirmado.toLocaleString('es-PE') + ' kg'"/>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── Sección 6: Detalle de Pedidos ────────────────────────── -->
+            <section class="pad__section">
+                <h2 class="pad__section-title">Detalle de Pedidos</h2>
+                <div class="pad__card">
+                    <div class="pad__card-hd">
+                        <i class="fa fa-list-alt pad__ic--indigo"/>
+                        Pedidos de venta y cotizaciones
+                        <span class="pad__pill">
+                            <t t-esc="state.data.pedidos.detalle.length"/> pedidos
+                        </span>
+                    </div>
+
+                    <t t-if="state.data.pedidos.detalle.length">
+                        <div class="pad__table-wrap">
+                            <table class="pad__table">
+                                <thead>
+                                    <tr>
+                                        <th>N° Pedido</th>
+                                        <th>Cliente</th>
+                                        <th style="text-align:right">Kg</th>
+                                        <th style="text-align:right">Monto S/</th>
+                                        <th style="text-align:center">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="state.data.pedidos.detalle" t-as="p" t-key="p.num">
+                                        <tr>
+                                            <td><span class="pad__num" t-esc="p.num"/></td>
+                                            <td t-esc="p.customer"/>
+                                            <td style="text-align:right" t-esc="p.kg.toLocaleString('es-PE') + ' kg'"/>
+                                            <td style="text-align:right" t-esc="'S/ ' + p.monto.toLocaleString('es-PE')"/>
+                                            <td style="text-align:center">
+                                                <span t-attf-class="pad__chip #{p.state === 'sale' ? 'chip--green' : p.state === 'cancel' ? 'chip--red' : 'chip--amber'}">
+                                                    <t t-esc="p.estado"/>
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <div class="pad__empty">
+                            <i class="fa fa-inbox fa-lg"/>
+                            <span>No hay pedidos de venta registrados.</span>
+                        </div>
+                    </t>
+                </div>
+            </section>
+
+        </t><!-- /else data loaded -->
+    </div><!-- /scroll -->
+</div><!-- /pad -->
+</t>
+
+</templates>

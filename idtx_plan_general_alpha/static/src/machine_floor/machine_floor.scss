@@ -1,0 +1,1172 @@
+// ── Machine Floor View ─────────────────────────────────────────────────────
+// Variables de superficie/texto — ver machine_floor.dark.scss para los
+// overrides de modo oscuro (mismo mecanismo que dashboard_alpha/planner).
+// Nota: el header y la franja de pestañas ya son siempre oscuros por diseño
+// (degradado de color / #1e293b), así que no necesitan variables — se ven
+// igual en claro y oscuro. Los acentos de tipo de máquina (--tc) y los
+// indicadores de alerta (pulso rojo/amarillo) tampoco cambian entre temas:
+// son colores de acento vivos, no de superficie.
+.mf-root {
+    --mf-page:          #f0f4f8;
+    --mf-border:        #e5e7eb;
+    --mf-border2:       #e2e8f0;
+    --mf-surface:       #ffffff;
+    --mf-surface2:      #f8fafc;
+    --mf-text:          #1e293b;
+    --mf-text2:         #374151;
+    --mf-text3:         #6b7280;
+
+    --mf-chip-text:        #4b5563;
+    --mf-chip-hover-border: #93c5fd;
+    --mf-chip-hover-text:   #1d4ed8;
+    --mf-chip-hover-bg:     #eff6ff;
+
+    --mf-danger-bg:        #fef2f2;
+    --mf-danger-border:    #fca5a5;
+    --mf-danger-text:      #dc2626;
+    --mf-danger-hover-bg:  #fee2e2;
+
+    --mf-slot-empty-border: #b8c4d4;
+    --mf-slot-empty-bg:     #dce5f0;
+    --mf-slot-over-border:  #60a5fa;
+    --mf-slot-over-bg:      #dbeafe;
+
+    --mf-card-bg:      #ffffff;
+    --mf-card-border:  #e5e7eb;
+
+    --mf-card-operativa-0:     #f0fdf4; --mf-card-operativa-border:     #bbf7d0;
+    --mf-card-ejecutando-0:    #eff6ff; --mf-card-ejecutando-border:    #bfdbfe;
+    --mf-card-malograda-0:     #fef2f2; --mf-card-malograda-border:     #fecaca;
+    --mf-card-mantenimiento-0: #fefce8; --mf-card-mantenimiento-border: #fde68a;
+    --mf-card-apagada-bg:      #f3f4f6; --mf-card-apagada-border:       #d1d5db;
+
+    --mf-panel-bg:          #ffffff;
+    --mf-panel-hero-0:      #f8fafc;
+    --mf-panel-hero-border: #f1f5f9;
+    --mf-panel-name:        #0f172a;
+    --mf-panel-section-border: #f1f5f9;
+    --mf-panel-field-val:   #1e293b;
+    --mf-panel-note-bg:     #f8fafc;
+
+    --mf-status-operativa-bg:     #dcfce7; --mf-status-operativa-fg:     #16a34a;
+    --mf-status-ejecutando-bg:    #dbeafe; --mf-status-ejecutando-fg:    #1d4ed8;
+    --mf-status-malograda-bg:     #fee2e2; --mf-status-malograda-fg:     #dc2626;
+    --mf-status-mantenimiento-bg: #fef9c3; --mf-status-mantenimiento-fg: #a16207;
+    --mf-status-apagada-bg:       #f1f5f9; --mf-status-apagada-fg:       #64748b;
+
+    --mf-job-bg:        #eff6ff; --mf-job-border:      #dbeafe;
+    --mf-job-prod:      #0f172a; --mf-job-qty:         #1d4ed8;
+    --mf-job-wo:        #475569;
+    --mf-job-done-bg:     #f0fdf4; --mf-job-done-border: #dcfce7;
+    --mf-job-done-qty:    #15803d;
+
+    --mf-icon-badge-bg: rgba(15, 23, 42, 0.06);
+}
+
+.mf-root {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--mf-page);
+    overflow: hidden;
+    font-family: 'Inter', 'Roboto', system-ui, sans-serif;
+}
+
+// ── Header ─────────────────────────────────────────────────────────────────
+
+.mf-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.6rem 1.1rem;
+    color: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.22);
+    flex-shrink: 0;
+    z-index: 3;
+
+    &-stats { display: flex; gap: 0.4rem; flex-shrink: 0; margin-right: auto; }
+}
+
+.mf-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.18rem 0.55rem;
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 7px;
+    min-width: 46px;
+
+    &-num {
+        font-size: 1.1rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    &-lbl {
+        font-size: 0.55rem;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        opacity: 0.7;
+        margin-top: 1px;
+    }
+
+    &--operativa     .mf-stat-num { color: #86efac; }
+    &--ejecutando    .mf-stat-num { color: #93c5fd; }
+    &--malograda     .mf-stat-num { color: #fca5a5; }
+    &--mantenimiento .mf-stat-num { color: #fde047; }
+    &--apagada       .mf-stat-num { color: #cbd5e1; }
+    &--total         .mf-stat-num { color: #fff; }
+}
+
+.mf-btn-edit {
+    width: 32px;
+    height: 32px;
+    background: rgba(255,255,255,0.16);
+    border: 1px solid rgba(255,255,255,0.22);
+    border-radius: 7px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.1s;
+    .fa { font-size: 0.85rem; }
+
+    &:hover { background: rgba(255,255,255,0.28); }
+
+    &--active {
+        background: #fff;
+        color: #1e293b;
+        border-color: #fff;
+        &:hover { background: #e2e8f0; }
+    }
+}
+
+.mf-btn-refresh {
+    width: 32px;
+    height: 32px;
+    background: rgba(255,255,255,0.16);
+    border: 1px solid rgba(255,255,255,0.22);
+    border-radius: 7px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.1s;
+    .fa { font-size: 0.85rem; }
+
+    &:hover { background: rgba(255,255,255,0.28); }
+}
+
+// ── Loading ────────────────────────────────────────────────────────────────
+
+.mf-loading {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    color: #94a3b8;
+    span { font-size: 0.85rem; }
+
+    &--sm {
+        flex: 1;
+        padding: 2.5rem;
+        i { font-size: 1.1rem; }
+        span { font-size: 0.82rem; }
+    }
+}
+
+// ── Workcenter tabs ────────────────────────────────────────────────────────
+
+.mf-wc-tabs {
+    display: flex;
+    background: #1e293b;
+    border-bottom: 2px solid #334155;
+    overflow-x: auto;
+    flex-shrink: 0;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+    &-spacer { flex: 1; }
+}
+
+.mf-wc-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: #94a3b8;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.1s, background 0.1s;
+
+    .fa { font-size: 0.75rem; }
+
+    &:hover { color: #e2e8f0; background: rgba(255,255,255,0.05); }
+
+    &--active {
+        color: #fff;
+        border-bottom-color: #3b82f6;
+        background: rgba(59,130,246,0.12);
+    }
+}
+
+.mf-wc-badge {
+    background: rgba(255,255,255,0.12);
+    border-radius: 999px;
+    padding: 1px 6px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    min-width: 20px;
+    text-align: center;
+
+    .mf-wc-tab--active & {
+        background: rgba(59,130,246,0.3);
+        color: #bfdbfe;
+    }
+}
+
+// ── Filter bar ─────────────────────────────────────────────────────────────
+
+.mf-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    padding: 0.45rem 0.9rem;
+    background: var(--mf-surface);
+    border-bottom: 1px solid var(--mf-border2);
+    flex-shrink: 0;
+}
+
+.mf-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.mf-filter-lbl {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    white-space: nowrap;
+}
+
+.mf-filter-sep {
+    width: 1px;
+    height: 16px;
+    background: var(--mf-border);
+    flex-shrink: 0;
+}
+
+.mf-chip {
+    padding: 0.15rem 0.55rem;
+    border: 1.5px solid var(--mf-border);
+    background: var(--mf-surface);
+    border-radius: 999px;
+    font-size: 0.67rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--mf-chip-text);
+    line-height: 1.7;
+    transition: all 0.1s;
+    white-space: nowrap;
+
+    &:hover { border-color: var(--mf-chip-hover-border); color: var(--mf-chip-hover-text); background: var(--mf-chip-hover-bg); }
+
+    &--active {
+        background: #3b82f6;
+        border-color: #3b82f6;
+        color: white;
+        font-weight: 600;
+        &:hover { background: #2563eb; border-color: #2563eb; }
+    }
+}
+
+.mf-btn-clear {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.15rem 0.6rem;
+    border: 1.5px solid var(--mf-danger-border);
+    background: var(--mf-danger-bg);
+    border-radius: 999px;
+    font-size: 0.67rem;
+    font-weight: 600;
+    color: var(--mf-danger-text);
+    cursor: pointer;
+    margin-left: auto;
+    transition: all 0.1s;
+    &:hover { background: var(--mf-danger-hover-bg); }
+}
+
+.mf-filter-count {
+    font-size: 0.62rem;
+    color: #94a3b8;
+}
+
+// ── DnD hint ──────────────────────────────────────────────────────────────
+
+.mf-dnd-hint {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.67rem;
+    color: #9ca3af;
+    padding: 0.28rem 0.9rem;
+    background: var(--mf-surface2);
+    border-bottom: 1px solid var(--mf-border);
+    flex-shrink: 0;
+    i { font-size: 0.75rem; }
+}
+
+.mf-dnd-hint--edit {
+    background: var(--mf-job-bg);
+    color: var(--mf-job-qty);
+    font-weight: 600;
+}
+
+.mf-edit-count {
+    margin-left: 0.5rem;
+    font-weight: 700;
+    color: var(--mf-job-qty);
+}
+
+// ── Slot grid ─────────────────────────────────────────────────────────────
+
+.mf-slot-grid {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.mf-grid-inner {
+    display: grid;
+    grid-template-columns: repeat(24, 1fr);
+    gap: 4px;
+    padding: 8px 10px;
+    align-content: start;
+}
+
+.mf-slot {
+    height: 70px;
+    // El ítem del grid en sí necesita min-width:0 — si no, la columna 1fr
+    // usa el ancho de contenido (min-content) del texto interno como piso,
+    // sin importar cuántos min-width:0 se pongan en los hijos.
+    min-width: 0;
+    border-radius: 7px;
+    position: relative;
+
+    // Las celdas combinadas ocupan 2+ filas via grid-row: span N — un height
+    // fijo de 70px las recortaría a una sola fila (anula el stretch del grid).
+    &--big {
+        height: auto;
+        align-self: stretch;
+    }
+
+    &--empty {
+        border: 1.5px dashed var(--mf-slot-empty-border);
+        background: var(--mf-slot-empty-bg);
+        transition: background 0.1s, border-color 0.1s;
+
+        &.mf-slot--over {
+            border-color: var(--mf-slot-over-border);
+            background: var(--mf-slot-over-bg);
+        }
+    }
+
+    &--filled {
+        &.mf-slot--dragging { opacity: 0.25; }
+
+        &.mf-slot--over {
+            outline: 2.5px dashed #3b82f6;
+            outline-offset: -2px;
+            border-radius: 7px;
+        }
+    }
+
+    &--editable {
+        cursor: pointer;
+        &:hover { outline: 1.5px dashed var(--mf-slot-over-border); outline-offset: -1.5px; border-radius: 7px; }
+    }
+
+    &--selected {
+        outline: 2.5px solid #3b82f6;
+        outline-offset: -2.5px;
+        border-radius: 7px;
+        z-index: 5;
+    }
+}
+
+// ── Compact grid (filter mode) ─────────────────────────────────────────────
+
+.mf-compact-grid {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 10px;
+    display: grid;
+    grid-template-columns: repeat(24, 1fr);
+    gap: 4px;
+    align-content: start;
+
+    .mf-card { height: 70px; cursor: default; &:hover { transform: scale(1.08); } }
+}
+
+// ── Machine card ──────────────────────────────────────────────────────────
+
+.mf-card {
+    width: 100%;
+    height: 100%;
+    border-radius: 7px;
+    border: 1.5px solid var(--mf-card-border);
+    border-top: 3px solid var(--tc, #94a3b8);
+    background: var(--mf-card-bg);
+    display: flex;
+    flex-direction: column;
+    padding: 3px 3px 2px;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+    transition: transform 0.1s, box-shadow 0.1s;
+
+    &:active { cursor: grabbing; }
+
+    &:hover {
+        transform: scale(1.14);
+        box-shadow: 0 4px 18px rgba(0,0,0,0.18);
+        z-index: 20;
+        position: relative;
+    }
+
+    // Status backgrounds — 5 states
+    &--operativa {
+        background: linear-gradient(170deg, var(--mf-card-operativa-0) 0%, var(--mf-card-bg) 55%);
+        border-color: var(--mf-card-operativa-border);
+    }
+
+    &--ejecutando {
+        background: linear-gradient(170deg, var(--mf-card-ejecutando-0) 0%, var(--mf-card-bg) 55%);
+        border-color: var(--mf-card-ejecutando-border);
+    }
+
+    &--malograda {
+        background: linear-gradient(170deg, var(--mf-card-malograda-0) 0%, var(--mf-card-bg) 55%);
+        border-color: var(--mf-card-malograda-border);
+    }
+
+    &--mantenimiento {
+        background: linear-gradient(170deg, var(--mf-card-mantenimiento-0) 0%, var(--mf-card-bg) 55%);
+        border-color: var(--mf-card-mantenimiento-border);
+    }
+
+    &--apagada {
+        background: var(--mf-card-apagada-bg);
+        border-color: var(--mf-card-apagada-border);
+        opacity: 0.52;
+        filter: grayscale(0.5);
+    }
+}
+
+// ── Enlarged card (combined 2, 4, 6 or 8 cells) ────────────────────────────
+// Escala con custom properties según data-span — cuanto más grande la caja,
+// más grandes el ícono, tipografía y detalle mostrado.
+
+.mf-card--big {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 4px;
+    padding: 5px 7px;
+    position: relative;
+    cursor: default;
+    border-left: 3px solid var(--tc, #94a3b8);
+    // Sin esto, texto largo sin límite (ej. la píldora de estado
+    // "Mantenimiento") fuerza su ancho mínimo hacia arriba y ensancha la
+    // columna del grid entera — muy notorio en el combinado vertical (1
+    // columna angosta). overflow:hidden ya deja truncar los hijos; esto
+    // deja encoger al contenedor mismo por debajo de su ancho de contenido.
+    min-width: 0;
+
+    &:hover { transform: none; box-shadow: 0 4px 18px rgba(0,0,0,0.18); }
+
+    --big-icon:     20px;
+    --big-icon-fs:  0.65rem;
+    --big-num-fs:   0.64rem;
+    --big-type-fs:  0.48rem;
+    --big-job-fs:   0.6rem;
+    --big-job2-fs:  0.52rem;
+
+    &[data-span="4"] {
+        padding: 7px 9px;
+        --big-icon:     26px;
+        --big-icon-fs:  0.82rem;
+        --big-num-fs:   0.72rem;
+        --big-type-fs:  0.52rem;
+        --big-job-fs:   0.66rem;
+        --big-job2-fs:  0.56rem;
+    }
+
+    &[data-span="6"] {
+        padding: 9px 11px;
+        --big-icon:     30px;
+        --big-icon-fs:  0.92rem;
+        --big-num-fs:   0.8rem;
+        --big-type-fs:  0.56rem;
+        --big-job-fs:   0.72rem;
+        --big-job2-fs:  0.6rem;
+    }
+
+    &[data-span="8"] {
+        padding: 10px 13px;
+        --big-icon:     34px;
+        --big-icon-fs:  1rem;
+        --big-num-fs:   0.86rem;
+        --big-type-fs:  0.6rem;
+        --big-job-fs:   0.78rem;
+        --big-job2-fs:  0.64rem;
+    }
+
+    // Combinado horizontal de 2 (2x1): solo 1 fila de alto (~70px) — no cabe
+    // el layout apilado (ícono+id / avance) sin recortarse. Se usa un
+    // layout compacto en una sola fila y se omite el bloque de OT.
+    &[data-span-rows="1"] {
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 8px;
+
+        .mf-card-big-top { flex: 1; min-width: 0; }
+        .mf-card-big-job, .mf-card-big-empty { display: none; }
+    }
+
+    // Combinado vertical (Nx1, ~58px de ancho): sea cual sea el alto, el
+    // ancho angosto trunca el número/tipo igual. Se rota el encabezado 90°
+    // para leerlo aprovechando el alto disponible como si fuera ancho — así
+    // se ve el dato completo en vez de recortado. El punto de estado va
+    // aparte, en la esquina (no rota con el resto).
+    &[data-orientation="vertical"] {
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        min-width: 0;
+
+        .mf-card-big-headrow {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            white-space: nowrap;
+            // flex-shrink:0 es clave: sin esto el headrow se comprime para
+            // caber en el ancho angosto de la tarjeta (~58px) ANTES de que
+            // el transform lo rote, aplastando el ícono/texto. Debe medirse
+            // según su tamaño natural — la rotación ya lo acomoda en el alto
+            // disponible, que es mucho mayor que el ancho.
+            flex-shrink: 0;
+            transform: rotate(-90deg);
+        }
+
+        // El ícono (20px) y el bloque #num/tipo (más alto, con 2 líneas)
+        // deben quedar centrados entre sí en el eje transversal de la fila
+        // — si no, tras rotar se ven desalineados (el ícono corrido hacia
+        // un lado respecto al texto).
+        // row-reverse: con rotate(-90deg) lo que queda a la IZQUIERDA
+        // termina ABAJO y lo que queda a la DERECHA termina ARRIBA. El
+        // orden normal (ícono primero) dejaba el ícono abajo — se invierte
+        // el orden visual acá (sin tocar el DOM) para que el ícono quede
+        // arriba y el texto debajo.
+        .mf-card-big-top {
+            flex-direction: row-reverse;
+            align-items: center;
+        }
+
+        .mf-card-big-id {
+            align-items: center;
+        }
+
+        .mf-card-big-num,
+        .mf-card-big-type {
+            text-align: center;
+            // Con la rotación el contenido ya cabe con margen en la
+            // inmensa mayoría de los casos; se deja el truncado con "…"
+            // como respaldo solo para nombres de máquina extremadamente
+            // largos.
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .mf-card-big-job, .mf-card-big-empty { display: none; }
+    }
+}
+
+// Por defecto (formas cuadradas: 2x2, 3x2...) el wrapper es invisible al
+// layout — no cambia el apilado ícono+id que ya existía.
+.mf-card-big-headrow {
+    display: contents;
+}
+
+.mf-card-unmerge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 18px;
+    height: 18px;
+    border: none;
+    border-radius: 5px;
+    background: rgba(0,0,0,0.35);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.55rem;
+    z-index: 2;
+    &:hover { background: rgba(0,0,0,0.55); }
+}
+
+// Punto de estado de la tarjeta agrandada: badge fijo en la esquina
+// superior derecha (mismo estilo que el punto de las tarjetas chicas,
+// .mf-card-dot más abajo), fuera del flujo normal — así no rota con el
+// encabezado en el combinado vertical ni empuja el ancho/alto del resto
+// del contenido.
+.mf-card-big-status-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 1;
+    width: 8px;
+    height: 8px;
+}
+
+// En modo edición el botón de deshacer ocupa esa misma esquina — se corre
+// el punto para no superponerse.
+.mf-card--big:has(.mf-card-unmerge) .mf-card-big-status-dot {
+    right: 27px;
+}
+
+.mf-card-big-top {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+}
+
+.mf-card-big-icon {
+    width: var(--big-icon);
+    height: var(--big-icon);
+    border-radius: 30%;
+    background: var(--mf-icon-badge-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: width 0.15s, height 0.15s;
+
+    .fa { font-size: var(--big-icon-fs); color: var(--tc, #94a3b8); }
+}
+
+.mf-card-big-id {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+    flex: 1;
+}
+
+.mf-card-big-num {
+    font-size: var(--big-num-fs);
+    font-weight: 800;
+    color: var(--mf-text2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.mf-card-big-type {
+    font-size: var(--big-type-fs);
+    font-weight: 700;
+    color: var(--mf-text3);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.mf-card-big-job {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: auto;
+    min-width: 0;
+}
+
+.mf-card-big-job-prod {
+    font-size: var(--big-job-fs);
+    font-weight: 700;
+    color: var(--mf-text2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.mf-card-big-job-prod2 {
+    font-size: var(--big-job2-fs);
+    color: var(--mf-text3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.mf-card-big-progress {
+    height: 4px;
+    border-radius: 3px;
+    background: var(--mf-border);
+    overflow: hidden;
+    margin-top: 2px;
+    min-width: 0;
+}
+
+.mf-card-big-progress-bar {
+    height: 100%;
+    background: var(--tc, #3b82f6);
+    border-radius: 3px;
+    transition: width 0.2s;
+}
+
+.mf-card-big-progress-lbl {
+    font-size: var(--big-job2-fs);
+    color: var(--mf-text3);
+    margin-top: 1px;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mf-card-big-empty {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: var(--big-job2-fs);
+    color: var(--mf-text3);
+    font-style: italic;
+    min-width: 0;
+
+    span {
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    margin-top: auto;
+}
+
+// ── Floating action bar (edit mode: combine / undo) ────────────────────────
+
+.mf-edit-bar {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    background: var(--mf-surface);
+    border: 1px solid var(--mf-border);
+    border-radius: 999px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+    z-index: 42;
+    white-space: nowrap;
+}
+
+.mf-edit-bar-msg {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--mf-text2);
+
+    &--error { color: var(--mf-danger-text); }
+}
+
+.mf-edit-bar-btn {
+    padding: 5px 12px;
+    border: none;
+    border-radius: 999px;
+    background: #3b82f6;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    &:hover { background: #2563eb; }
+}
+
+// top row: number + status dot
+
+.mf-card-row1 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.mf-card-num {
+    font-size: 0.56rem;
+    font-weight: 800;
+    color: var(--mf-text2);
+    line-height: 1;
+    letter-spacing: 0.01em;
+}
+
+.mf-card-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &--operativa     { background: #22c55e; box-shadow: 0 0 0 1.5px #dcfce7; }
+    &--ejecutando    { background: #3b82f6; box-shadow: 0 0 0 1.5px #dbeafe; animation: mf-blink 1.2s ease-in-out infinite; }
+    &--malograda     { background: #ef4444; box-shadow: 0 0 0 1.5px #fecaca; animation: mf-pulse-red 1.5s ease-in-out infinite; }
+    &--mantenimiento { background: #eab308; box-shadow: 0 0 0 1.5px #fef9c3; animation: mf-pulse-yellow 2.5s ease-in-out infinite; }
+    &--apagada       { background: #9ca3af; }
+}
+
+@keyframes mf-pulse-red {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 1.5px #fecaca; }
+    50%       { opacity: 0.5; box-shadow: 0 0 0 3px #fca5a5; }
+}
+
+@keyframes mf-pulse-yellow {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 1.5px #fef9c3; }
+    50%       { opacity: 0.6; box-shadow: 0 0 0 3px #fde68a; }
+}
+
+@keyframes mf-blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+}
+
+// icon area (center)
+
+.mf-card-ico {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .fa {
+        font-size: 1.0rem;
+        color: var(--tc, #94a3b8);
+        opacity: 0.85;
+    }
+}
+
+// type label (bottom)
+
+.mf-card-type {
+    font-size: 0.46rem;
+    font-weight: 700;
+    color: var(--mf-text3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+    flex-shrink: 0;
+}
+
+// ── Empty state ────────────────────────────────────────────────────────────
+
+.mf-empty {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: #94a3b8;
+    gap: 0.5rem;
+    i    { font-size: 1.6rem; }
+    span { font-size: 0.82rem; }
+}
+
+// ── Side Panel ─────────────────────────────────────────────────────────────
+
+.mf-panel-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.28);
+    z-index: 40;
+    animation: mf-fade-in 0.18s ease;
+}
+
+@keyframes mf-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.mf-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 360px;
+    max-width: 92vw;
+    height: 100%;
+    background: var(--mf-panel-bg);
+    box-shadow: -6px 0 32px rgba(0,0,0,0.18);
+    z-index: 41;
+    display: flex;
+    flex-direction: column;
+    animation: mf-slide-in 0.22s cubic-bezier(0.16,1,0.3,1);
+    overflow: hidden;
+}
+
+@keyframes mf-slide-in {
+    from { transform: translateX(100%); }
+    to   { transform: translateX(0); }
+}
+
+// Header
+.mf-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 1rem;
+    background: #1e293b;
+    color: white;
+    flex-shrink: 0;
+
+    &-left {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    &-icon { font-size: 0.95rem; opacity: 0.7; }
+    &-title { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+}
+
+.mf-panel-close {
+    width: 28px;
+    height: 28px;
+    background: rgba(255,255,255,0.12);
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.1s;
+    .fa { font-size: 0.85rem; }
+    &:hover { background: rgba(255,255,255,0.24); }
+}
+
+// Loading / error
+.mf-panel-loading {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    color: #94a3b8;
+    span { font-size: 0.82rem; }
+    i { font-size: 1.5rem; }
+}
+
+// Body (scrollable)
+.mf-panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 0 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+// Hero (name + status)
+.mf-panel-hero {
+    padding: 1rem 1rem 0.75rem;
+    border-bottom: 1px solid var(--mf-panel-hero-border);
+    background: linear-gradient(135deg, var(--mf-panel-hero-0), var(--mf-panel-bg));
+}
+
+.mf-panel-hero-name {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--mf-panel-name);
+    line-height: 1.3;
+    margin-bottom: 0.4rem;
+}
+
+.mf-panel-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+
+    &-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+
+    &--operativa     { background: var(--mf-status-operativa-bg);     color: var(--mf-status-operativa-fg); }
+    &--ejecutando    { background: var(--mf-status-ejecutando-bg);    color: var(--mf-status-ejecutando-fg); }
+    &--malograda     { background: var(--mf-status-malograda-bg);     color: var(--mf-status-malograda-fg); }
+    &--mantenimiento { background: var(--mf-status-mantenimiento-bg); color: var(--mf-status-mantenimiento-fg); }
+    &--apagada       { background: var(--mf-status-apagada-bg);       color: var(--mf-status-apagada-fg); }
+}
+
+// Sections
+.mf-panel-section {
+    padding: 0.85rem 1rem 0.5rem;
+    border-bottom: 1px solid var(--mf-panel-section-border);
+
+    &:last-child { border-bottom: none; }
+}
+
+.mf-panel-section-title {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    .fa { font-size: 0.75rem; }
+}
+
+// Field grid
+.mf-panel-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem 0.6rem;
+}
+
+.mf-panel-field {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.mf-panel-field-lbl {
+    font-size: 0.58rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.mf-panel-field-val {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--mf-panel-field-val);
+}
+
+.mf-panel-note {
+    margin-top: 0.5rem;
+    font-size: 0.7rem;
+    color: #64748b;
+    background: var(--mf-panel-note-bg);
+    border-radius: 6px;
+    padding: 0.4rem 0.5rem;
+    line-height: 1.5;
+    .fa { margin-right: 0.25rem; color: #94a3b8; }
+}
+
+.mf-panel-badge {
+    background: #3b82f6;
+    color: white;
+    border-radius: 999px;
+    padding: 0 6px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    margin-left: auto;
+}
+
+// Tejido en curso (órdenes de trabajo en progreso)
+.mf-panel-job {
+    background: var(--mf-job-bg);
+    border: 1px solid var(--mf-job-border);
+    border-left: 3px solid #3b82f6;
+    border-radius: 7px;
+    padding: 0.5rem 0.65rem;
+    margin-bottom: 0.4rem;
+}
+.mf-panel-job-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.2rem;
+}
+.mf-panel-job-prod {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--mf-job-prod);
+}
+.mf-panel-job-qty {
+    font-size: 0.66rem;
+    font-weight: 600;
+    color: var(--mf-job-qty);
+    white-space: nowrap;
+    .fa { margin-right: 2px; }
+}
+.mf-panel-job-wo {
+    font-size: 0.68rem;
+    color: var(--mf-job-wo);
+    margin-bottom: 0.25rem;
+}
+.mf-panel-job-meta {
+    display: flex;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+    font-size: 0.62rem;
+    color: #64748b;
+    .fa { margin-right: 2px; }
+}
+// Historial (OT terminada): tono verde/gris para diferenciarlo del azul "ahora"
+.mf-panel-job--done {
+    background: var(--mf-job-done-bg);
+    border-color: var(--mf-job-done-border);
+    border-left-color: #16a34a;
+    .mf-panel-job-qty { color: var(--mf-job-done-qty); }
+}
+
+// Máquina EJECUTANDO: no se puede arrastrar
+.mf-card--locked { cursor: not-allowed; }
+.mf-card-lock {
+    font-size: 0.6rem;
+    color: #d97706;
+    margin-left: 4px;
+}

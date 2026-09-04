@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================
+         DASHBOARD CLIENT ACTION: componente OWL (datos de sale.order)
+    ============================================================ -->
+    <record id="action_plan_alpha_dashboard_client" model="ir.actions.client">
+        <field name="name">Dashboard de Planeamiento</field>
+        <field name="tag">plan_alpha_dashboard</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_plan_alpha_app"
+              name="Plan General Alpha"
+              web_icon="idtx_plan_general_alpha,static/description/icon.svg"
+              sequence="54"/>
+
+    <menuitem id="menu_plan_alpha_dashboard"
+              name="Dashboard"
+              parent="menu_plan_alpha_app"
+              action="action_plan_alpha_dashboard_client"
+              sequence="10"/>
+
+    <menuitem id="menu_plan_alpha_programacion"
+              name="Máquinas"
+              parent="menu_plan_alpha_app"
+              action="action_plan_alpha_floors"
+              sequence="30"/>
+
+    <menuitem id="menu_plan_alpha_config"
+              name="Configuracion"
+              parent="menu_plan_alpha_app"
+              sequence="50"/>
+
+    <menuitem id="menu_plan_alpha_config_workcenter"
+              name="Centros de Trabajo"
+              parent="menu_plan_alpha_config"
+              action="action_plan_alpha_workcenter"
+              sequence="51"/>
+
+    <menuitem id="menu_plan_alpha_config_equipment"
+              name="Equipos y Maquinas"
+              parent="menu_plan_alpha_config"
+              action="action_plan_alpha_equipment"
+              sequence="52"/>
+
+</odoo>
