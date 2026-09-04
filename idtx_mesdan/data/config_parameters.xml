@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="param_mesdan_reports_dir" model="ir.config_parameter">
+        <field name="key">idtx_mesdan.reports_dir</field>
+        <field name="value">/mnt/nas_mesdan_reports/MESDAN</field>
+    </record>
+    <record id="param_mesdan_host" model="ir.config_parameter">
+        <field name="key">idtx_mesdan.host</field>
+        <field name="value">172.16.64.100</field>
+    </record>
+    <record id="param_mesdan_telnet_user" model="ir.config_parameter">
+        <field name="key">idtx_mesdan.telnet_user</field>
+        <field name="value">root</field>
+    </record>
+    <!-- Vacía por defecto: sin clave no se intenta reparar el montaje del Mesdan. -->
+    <record id="param_mesdan_telnet_password" model="ir.config_parameter">
+        <field name="key">idtx_mesdan.telnet_password</field>
+        <field name="value"></field>
+    </record>
+</odoo>

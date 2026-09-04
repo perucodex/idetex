@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="mrp_workorder_batch_form_mesdan" model="ir.ui.view">
+        <field name="name">mrp.workorder.batch.form.mesdan</field>
+        <field name="model">mrp.workorder.batch</field>
+        <field name="inherit_id" ref="idtx_mrp.mrp_workorder_batch_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form/header" position="inside">
+                <button name="action_fetch_mesdan_reports" type="object"
+                        string="Importar Reportes Mesdan" class="btn-secondary"
+                        icon="fa-file-pdf-o" invisible="state == 'draft'"/>
+            </xpath>
+            <div name="button_box" position="inside">
+                <button name="action_view_mesdan_reports" type="object" class="oe_stat_button"
+                        icon="fa-file-pdf-o" invisible="mesdan_report_count == 0">
+                    <field name="mesdan_report_count" widget="statinfo" string="Reportes Mesdan"/>
+                </button>
+            </div>
+        </field>
+    </record>
+
+</odoo>

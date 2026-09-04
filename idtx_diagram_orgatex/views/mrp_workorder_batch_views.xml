@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <record id="view_control_pedido_line_form_inherit_diagram" model="ir.ui.view">
-        <field name="name">control.pedido.line.form.inherit.diagram</field>
-        <field name="model">control.pedido.line</field>
-        <field name="inherit_id" ref="idtx_batch_control.view_control_pedido_line_form"/>
+    <record id="mrp_workorder_batch_form_diagram_orgatex" model="ir.ui.view">
+        <field name="name">mrp.workorder.batch.form.diagram.orgatex</field>
+        <field name="model">mrp.workorder.batch</field>
+        <field name="inherit_id" ref="idtx_mrp.mrp_workorder_batch_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//page[field[@name='proceso_ids']]" position="after">
-                <page string="Diagrama" name="diagram_tab">
+            <xpath expr="//notebook" position="inside">
+                <page string="Diagrama ORGATEX" name="diagram_tab" invisible="state == 'draft'">
                     <header>
-                        <button name="action_create_diagram" 
-                                string="Actualizar Diagramas" 
-                                type="object" 
+                        <button name="action_create_diagram"
+                                string="Actualizar Diagramas"
+                                type="object"
                                 class="btn-primary"
                                 icon="fa-refresh"/>
                     </header>

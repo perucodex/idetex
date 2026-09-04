@@ -1,2 +1,2 @@
-from . import diagram_orgatex
+# -*- coding: utf-8 -*-
 from . import mrp_workorder_batch

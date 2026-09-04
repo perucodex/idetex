@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="param_diagram_shared_path" model="ir.config_parameter">
+        <field name="key">idtx_diagram_orgatex.shared_path</field>
+        <field name="value">/mnt/sysvol/OT/HISTORY</field>
+    </record>
+</odoo>
