@@ -1295,9 +1295,13 @@ class MrpWorkorderBatch(models.Model):
             limit=1,
         )
 
-        batches = sorted({(b or "").strip() for b in lines.mapped("batch") if (b or "").strip()})
+        batches = sorted({(b or "").strip() for b in lines.mapped("name") if (b or "").strip()})
         customers = sorted({(c or "").strip() for c in lines.mapped("qc_customer") if (c or "").strip()})
-        articles = sorted({(a or "").strip() for a in lines.mapped("description") if (a or "").strip()})
+        articles = sorted({
+            (l.qc_product_id.display_name or l.qc_article or "").strip()
+            for l in lines
+            if (l.qc_product_id.display_name or l.qc_article or "").strip()
+        })
         colors = sorted({(c or "").strip() for c in lines.mapped("color_name") if (c or "").strip()})
 
         return {
