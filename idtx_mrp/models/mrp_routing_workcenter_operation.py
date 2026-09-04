@@ -23,6 +23,15 @@ def _texplus_writes_enabled():
     return False
 
 
+class _ReadOnlyTexplusConnection:
+    """Compatibilidad de importación para los mismos módulos legacy (envolvían
+    la conexión pyodbc con esta clase). Ya no hay conexión que envolver: crear
+    una instancia falla con el mismo mensaje que la conexión."""
+
+    def __init__(self, *args, **kwargs):
+        raise UserError(_(TEXPLUS_RETIRED_MSG))
+
+
 class MrpRoutingWorkcenterOperation(models.Model):
     _name = 'mrp.routing.workcenter.operation'
     _inherit = ['mail.thread', 'mail.activity.mixin']
