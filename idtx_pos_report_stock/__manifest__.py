@@ -18,7 +18,7 @@ Muestra un reporte unificado de existencias que incluye:
     'website': "https://www.perucodex.com",
 
     'category': 'Point of Sale',
-    'version': '19.0.1.0.9',
+    'version': '19.0.1.0.10',
     'license': 'LGPL-3',
 
     'depends': [
@@ -28,6 +28,9 @@ Muestra un reporte unificado de existencias que incluye:
         'idtx_pos_lot_color',
         'idtx_mrp',
         'idtx_laboratory',
+        # La vista SQL usa mrp_production_roll.import_id (definido en idtx_stock_quant_import):
+        # sin esta dependencia el orden de actualización puede ejecutar la vista antes de la columna.
+        'idtx_stock_quant_import',
     ],
 
     'data': [
