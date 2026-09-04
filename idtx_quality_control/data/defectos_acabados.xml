@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="qc_appearance_defect_acabado_lineas_aceite" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_acabado"/>
+            <field name="name">Líneas de aceite</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_acabado_cont_polipileno" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_acabado"/>
+            <field name="name">Cont. Polipileno</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_acabado_anillado" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_acabado"/>
+            <field name="name">Anillado</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_acabado_barraduras" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_acabado"/>
+            <field name="name">Barraduras</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_acabado_caida_tela" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_acabado"/>
+            <field name="name">Caída de tela</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_acabado_huecos" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_acabado"/>
+            <field name="name">Huecos</field>
+            <field name="is_hueco">True</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_acabado_falla_aguja" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_acabado"/>
+            <field name="name">Falla de aguja</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_acabado_manchas_colorante" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_acabado"/>
+            <field name="name">Manchas de colorante</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_acabado_puntos_oxido" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_acabado"/>
+            <field name="name">Puntos de óxido</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_acabado_manchas_blancas" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_acabado"/>
+            <field name="name">Manchas blancas</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_acabado_jaladuras" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_acabado"/>
+            <field name="name">Jaladuras</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_acabado_raspaduras" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_acabado"/>
+            <field name="name">Raspaduras</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_acabado_migracion" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_acabado"/>
+            <field name="name">Migración</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_acabado_quebraduras" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_acabado"/>
+            <field name="name">Quebraduras</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_acabado_manchas_suciedad" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_acabado"/>
+            <field name="name">Manchas de suciedad</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_acabado_mancha_grasa" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_acabado"/>
+            <field name="name">Mancha de grasa</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_acabado_remalles" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_acabado"/>
+            <field name="name">Remalles</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_acabado_ancho_variado" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_acabado"/>
+            <field name="name">Ancho Variado</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+    </data>
+</odoo>

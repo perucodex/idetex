@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="laboratorio_resultado_publico_page" name="Public Laboratory Result">
+        <t t-call="web.layout">
+            <div style="max-width:1080px; margin:18px auto 26px auto; padding:0 14px; font-family:Arial, sans-serif; color:#1f2937;">
+                <table style="width:100%; border-collapse:collapse; margin-bottom:6px;">
+                    <tr>
+                        <td style="width:70%; border:1px solid #111827; padding:6px; vertical-align:middle;">
+                            <table style="width:100%; border-collapse:collapse;">
+                                <tr>
+                                    <td style="width:55%; vertical-align:middle;">
+                                        <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" style="max-height:66px; max-width:220px;" alt="Logo"/>
+                                        <span t-if="not company.logo" style="font-weight:700;">IDETEX</span>
+                                    </td>
+                                    <td style="width:45%; text-align:center; vertical-align:middle;">
+                                        <img t-att-src="'%s/idtx_quality_control/static/src/img/certs/iso_logo.png' % (base_url or '')" style="height:32px; margin:0 3px;" alt="ISO"/>
+                                        <img t-att-src="'%s/idtx_quality_control/static/src/img/certs/iaf_logo.svg' % (base_url or '')" style="height:32px; margin:0 3px;" alt="IAF"/>
+                                        <img t-att-src="'%s/idtx_quality_control/static/src/img/certs/snas_inacal.jpg' % (base_url or '')" style="height:32px; margin:0 3px;" alt="SNAS"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        <td style="width:30%; border:1px solid #111827; padding:6px; text-align:right; font-size:11px; line-height:1.3;">
+                            <div t-esc="company.street or ''"/>
+                            <div>
+                                <span t-esc="company.city or ''"/>
+                                <span t-if="company.city and company.country_id">, </span>
+                                <span t-esc="company.country_id.name or ''"/>
+                            </div>
+                            <div t-esc="company.website or ''"/>
+                        </td>
+                    </tr>
+                </table>
+
+                <table style="width:100%; border-collapse:collapse; margin-bottom:6px;">
+                    <tr>
+                        <td style="border:1px solid #111827; text-align:center; padding:8px;">
+                            <div style="font-size:22px; font-weight:800; text-transform:uppercase;">Laboratory Summary by Batch</div>
+                            <div style="font-size:12px; color:#4b5563;">Consolidated quality evaluation record</div>
+                        </td>
+                    </tr>
+                </table>
+
+                <table style="width:100%; border-collapse:collapse; margin-bottom:8px; font-size:12px;">
+                    <tr>
+                        <th colspan="4" style="border:1px solid #111827; background:#e5e7eb; text-align:left; padding:6px;">Sample Information</th>
+                    </tr>
+                    <tr>
+                        <td style="border:1px solid #111827; padding:5px;"><b>Client</b></td>
+                        <td style="border:1px solid #111827; padding:5px;" t-esc="line.qc_customer or '-'"/>
+                        <td style="border:1px solid #111827; padding:5px;"><b>Final Result</b></td>
+                        <td t-attf-style="border:1px solid #111827; padding:5px; text-align:center; font-weight:800; font-size:16px; color:{{ '#166534' if payload.get('overall_status') == 'Pass' else '#991b1b' }};" t-esc="payload.get('overall_result_label') or '-'"/>
+                    </tr>
+                    <tr>
+                        <td style="border:1px solid #111827; padding:5px;"><b>Description</b></td>
+                        <td style="border:1px solid #111827; padding:5px;" t-esc="line.qc_article or '-'"/>
+                        <td style="border:1px solid #111827; padding:5px;"><b>Print Date</b></td>
+                        <td style="border:1px solid #111827; padding:5px;" t-esc="print_date"/>
+                    </tr>
+                    <tr>
+                        <td style="border:1px solid #111827; padding:5px;"><b>Batch</b></td>
+                        <td style="border:1px solid #111827; padding:5px;" t-esc="line.name or '-'"/>
+                        <td style="border:1px solid #111827; padding:5px;"><b>Order</b></td>
+                        <td style="border:1px solid #111827; padding:5px;" t-esc="line.qc_order_ref or '-'"/>
+                    </tr>
+                    <tr>
+                        <td style="border:1px solid #111827; padding:5px;"><b>Color Code</b></td>
+                        <td style="border:1px solid #111827; padding:5px;" t-esc="line.color_code or '-'"/>
+                        <td style="border:1px solid #111827; padding:5px;"><b>Roll Count</b></td>
+                        <td style="border:1px solid #111827; padding:5px; text-align:right;" t-esc="'%s' % (line.rollos or 0)"/>
+                    </tr>
+                    <tr>
+                        <td style="border:1px solid #111827; padding:5px;"><b>Color</b></td>
+                        <td style="border:1px solid #111827; padding:5px;" t-esc="line.color_name or '-'"/>
+                        <td style="border:1px solid #111827; padding:5px;"><b>Kilograms</b></td>
+                        <td style="border:1px solid #111827; padding:5px; text-align:right;" t-esc="'%.2f' % (line.kilograms or 0.0)"/>
+                    </tr>
+                </table>
+
+                <div style="border:1px solid #111827; margin-bottom:8px;">
+                    <div style="background:#e5e7eb; border-bottom:1px solid #111827; font-weight:700; text-transform:uppercase; padding:6px; font-size:12px;">Care Instructions</div>
+                    <div style="padding:8px;">
+                        <table style="width:100%; border-collapse:collapse;">
+                            <tr>
+                                <td style="width:50%; vertical-align:middle;">
+                                    <table style="border-collapse:collapse;">
+                                        <tr>
+                                            <td style="padding:2px 4px;" t-if="payload.get('care_wash_icon_url')">
+                                                <img style="height:42px; width:auto;" t-att-src="payload.get('care_wash_icon_url')" alt="Wash"/>
+                                            </td>
+                                            <td style="padding:2px 4px;" t-if="payload.get('care_dry_icon_url')">
+                                                <img style="height:42px; width:auto;" t-att-src="payload.get('care_dry_icon_url')" alt="Dry"/>
+                                            </td>
+                                            <td style="padding:2px 4px;" t-if="payload.get('care_bleaching_icon_url')">
+                                                <img style="height:42px; width:auto;" t-att-src="payload.get('care_bleaching_icon_url')" alt="Bleach"/>
+                                            </td>
+                                            <td style="padding:2px 4px;" t-if="payload.get('care_ironing_icon_url')">
+                                                <img style="height:42px; width:auto;" t-att-src="payload.get('care_ironing_icon_url')" alt="Iron"/>
+                                            </td>
+                                            <td style="padding:2px 4px;" t-if="payload.get('care_iron_steam_icon_url')">
+                                                <img style="height:42px; width:auto;" t-att-src="payload.get('care_iron_steam_icon_url')" alt="No Steam"/>
+                                            </td>
+                                            <td style="padding:2px 4px;" t-if="payload.get('care_profesional_dry_icon_url')">
+                                                <img style="height:42px; width:auto;" t-att-src="payload.get('care_profesional_dry_icon_url')" alt="Professional Dry"/>
+                                            </td>
+                                            <td style="padding:2px 4px;" t-if="payload.get('care_profesional_wet_icon_url')">
+                                                <img style="height:42px; width:auto;" t-att-src="payload.get('care_profesional_wet_icon_url')" alt="Professional Wet"/>
+                                            </td>
+                                            <td style="padding:2px 4px;" t-if="payload.get('care_do_not_wring_icon_url')">
+                                                <img style="height:42px; width:auto;" t-att-src="payload.get('care_do_not_wring_icon_url')" alt="Do Not Wring"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td style="width:50%; vertical-align:middle; font-size:12px; color:#374151; line-height:1.4;" t-esc="payload.get('care_instruction') or '-'"/>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="border:1px solid #111827; margin-bottom:8px;">
+                    <div style="background:#e5e7eb; border-bottom:1px solid #111827; font-weight:700; text-transform:uppercase; padding:6px; font-size:12px;">Status Summary</div>
+                    <div style="padding:6px;">
+                        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                            <tr>
+                                <th style="border:1px solid #111827; background:#f3f4f6; text-align:left; padding:5px;">Evaluation</th>
+                                <th style="border:1px solid #111827; background:#f3f4f6; text-align:center; padding:5px;">Status</th>
+                            </tr>
+                            <tr t-foreach="payload.get('summary_rows', [])" t-as="row">
+                                <td style="border:1px solid #111827; padding:5px;" t-esc="row.get('item')"/>
+                                <td t-attf-style="border:1px solid #111827; text-align:center; padding:5px; font-weight:700; color:{{ '#166534' if row.get('status') == 'Pass' else '#991b1b' }};" t-esc="row.get('status_label') or row.get('status')"/>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="border:1px solid #111827;">
+                    <div style="background:#e5e7eb; border-bottom:1px solid #111827; font-weight:700; text-transform:uppercase; padding:6px; font-size:12px;">Test Results</div>
+                    <div style="padding:6px; overflow-x:auto;">
+                        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                            <tr>
+                                <th style="border:1px solid #111827; background:#f3f4f6; text-align:left; padding:5px;">Test</th>
+                                <th style="border:1px solid #111827; background:#f3f4f6; text-align:center; padding:5px;">Requirement</th>
+                                <th style="border:1px solid #111827; background:#f3f4f6; text-align:right; padding:5px;">
+                                    <div>Result</div>
+                                    <div style="font-size:10px; font-weight:500; color:#4b5563;">
+                                        <span>Evaluated Wash:</span>
+                                        <span t-esc="' ' + (((payload.get('dimrev_highest', {}) or {}).get('wash_label')) or '-')"/>
+                                    </div>
+                                </th>
+                                <th style="border:1px solid #111827; background:#f3f4f6; text-align:center; padding:5px;">Pass / Fail</th>
+                            </tr>
+                            <tr t-foreach="payload.get('test_rows', [])" t-as="row">
+                                <td style="border:1px solid #111827; padding:5px; vertical-align:top;">
+                                    <b t-esc="row.get('test')"/>
+                                    <div style="margin-top:2px; color:#6b7280; font-size:11px;" t-esc="row.get('method') or '-'"/>
+                                </td>
+                                <td style="border:1px solid #111827; padding:5px; vertical-align:top; text-align:center;">
+                                    <t t-if="row.get('requirement_pairs')">
+                                        <table style="margin:0 auto; border-collapse:collapse; font-size:12px;">
+                                            <tr t-foreach="row.get('requirement_pairs') or []" t-as="pair">
+                                                <td style="padding:0 4px; text-align:right;" t-esc="pair.get('label') or '-'"/>
+                                                <td style="padding:0 4px; text-align:left;" t-out="pair.get('value') or '-'"/>
+                                            </tr>
+                                        </table>
+                                    </t>
+                                    <t t-if="not row.get('requirement_pairs') and row.get('requirement_lines')">
+                                        <div t-foreach="row.get('requirement_lines') or []" t-as="req_line" t-out="req_line"/>
+                                    </t>
+                                    <t t-if="not row.get('requirement_pairs') and not row.get('requirement_lines')">
+                                        <span t-out="row.get('requirement') or '-'"/>
+                                    </t>
+                                </td>
+                                <td style="border:1px solid #111827; padding:5px; vertical-align:top; text-align:right;">
+                                    <t t-if="row.get('result_lines')">
+                                        <div t-foreach="row.get('result_lines') or []" t-as="res_line" t-esc="res_line"/>
+                                    </t>
+                                    <t t-if="not row.get('result_lines')">
+                                        <span t-esc="'%.2f' % (row.get('result') or 0.0)"/>
+                                    </t>
+                                </td>
+                                <td t-attf-style="border:1px solid #111827; text-align:center; padding:5px; font-weight:700; color:{{ '#166534' if row.get('status') == 'Pass' else '#991b1b' }};" t-esc="row.get('status_label') or row.get('status')"/>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="border:1px solid #111827; margin-top:8px;">
+                    <div style="background:#e5e7eb; border-bottom:1px solid #111827; font-weight:700; text-transform:uppercase; padding:6px; font-size:12px;">Scoring</div>
+                    <div style="padding:6px;">
+                        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                            <tr>
+                                <td style="width:60%; vertical-align:top; border-right:1px solid #111827; padding:6px 10px;">
+                                    <table style="width:100%; border-collapse:collapse;">
+                                        <tr>
+                                            <td t-foreach="payload.get('score_legend') or []" t-as="legend" style="vertical-align:top; padding:0 10px 0 0;">
+                                                <div style="font-weight:700; margin-bottom:2px;" t-esc="legend.get('title') or '-'"/>
+                                                <div t-foreach="legend.get('lines') or []" t-as="legend_line" t-esc="legend_line"/>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td style="width:40%; vertical-align:top; padding:6px 10px;">
+                                    <div style="border:1px solid #111827; min-height:150px; padding:8px; text-align:center;">
+                                        <img t-if="payload.get('emitter_signature_url')" t-att-src="payload.get('emitter_signature_url')" alt="Digital Signature" style="max-width:100%; max-height:95px;"/>
+                                        <div t-if="not payload.get('emitter_signature_url')" style="font-size:12px; color:#6b7280; margin-top:34px;">No digital signature</div>
+                                        <div style="border-top:1px solid #111827; margin-top:12px; padding-top:6px;">
+                                            <div style="font-weight:700;" t-esc="payload.get('emitter_name') or '-'"/>
+                                            <div style="font-size:11px; color:#4b5563;" t-esc="payload.get('emitter_role') or '-'"/>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

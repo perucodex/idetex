@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="idtx_quality_control.QualityToneScreen">
+        <div class="o_quality_tone_screen o_qts_root container-fluid">
+            <header class="o_qts_header">
+                <div class="o_qts_header_left">
+                    <h3 class="o_qts_title">Evaluar Tono</h3>
+                    <t t-if="state.tonoContext">
+                        <span class="o_qts_subtitle">
+                            Partida: <b t-esc="state.tonoContext.batch || '-'"/> ·
+                            Modo: <b t-esc="selectedModeLabel"/>
+                        </span>
+                    </t>
+                </div>
+
+                <div class="o_qts_header_right">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary o_qts_btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa fa-bars"/>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <button class="dropdown-item" t-on-click="onClickRefresh">
+                                    <i class="fa fa-refresh me-2"/>Recargar
+                                </button>
+                            </li>
+                            <t t-if="hasSelection">
+                                <li>
+                                    <button class="dropdown-item" t-on-click="onBackToSearch">
+                                        <i class="fa fa-arrow-left me-2"/>Volver a búsqueda
+                                    </button>
+                                </li>
+                            </t>
+                            <li><hr class="dropdown-divider"/></li>
+                            <li>
+                                <button class="dropdown-item" t-on-click="close">
+                                    <i class="fa fa-sign-out me-2"/>Cerrar
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </header>
+
+            <main class="o_qts_main">
+                <t t-if="state.error">
+                    <div class="alert alert-danger" role="alert" t-esc="state.error"/>
+                </t>
+
+                <t t-if="state.loading">
+                    <div class="alert alert-info">Cargando partidas...</div>
+                </t>
+
+                <t t-else="">
+                    <t t-if="!hasSelection">
+                        <div class="o_qts_basics_wrap">
+                            <div class="row g-3">
+                                <div class="col-12 col-lg-7">
+                                    <div class="o_qts_card">
+                                        <div class="o_qts_card_body">
+                                            <div class="o_qts_field">
+                                                <label class="form-label fw-bold mb-1">Partidas</label>
+
+                                                <div class="o_qts_autocomplete">
+                                                    <input type="text"
+                                                           class="form-control form-control-lg o_qts_input"
+                                                           placeholder="Escribe la Partida..."
+                                                           t-on-input="onPartidaQueryInput"
+                                                           t-on-focus="onPartidaInputFocus"
+                                                           t-att-value="state.partidaQuery"/>
+
+                                                    <button t-if="state.partidaQuery"
+                                                            type="button"
+                                                            class="btn btn-sm btn-outline-secondary o_qts_clear_btn"
+                                                            t-on-click="clearSearchInput"
+                                                            title="Limpiar búsqueda">
+                                                        <i class="fa fa-times"/>
+                                                    </button>
+
+                                                    <t t-if="state.showPartidaDropdown">
+                                                        <div class="o_qts_dropdown">
+                                                            <div class="o_qts_dropdown_body">
+                                                                <t t-if="state.isSearchingPartida">
+                                                                    <div class="o_qts_dropdown_item text-muted">Buscando...</div>
+                                                                </t>
+                                                                <t t-elif="!filteredPartidas.length">
+                                                                    <div class="o_qts_dropdown_item text-muted">Sin resultados</div>
+                                                                </t>
+                                                                <t t-else="">
+                                                                    <t t-foreach="filteredPartidas" t-as="partida" t-key="partida.id">
+                                                                        <button type="button"
+                                                                                class="o_qts_dropdown_item o_qts_dropdown_btn"
+                                                                                t-on-click="() => this.selectPartida(partida.id)">
+                                                                            <div class="o_qts_dropdown_main" t-esc="partida.batch || '-'"/>
+                                                                            <div class="o_qts_dropdown_sub">
+                                                                                <span t-esc="partida.customer || '-'"/> ·
+                                                                                <span t-esc="partida.article || '-'"/> ·
+                                                                                <span t-esc="(partida.kilograms || 0) + ' kg'"/> ·
+                                                                                <span t-esc="partida.mode_label || 'No disponible'"/>
+                                                                            </div>
+                                                                        </button>
+                                                                    </t>
+                                                                </t>
+                                                            </div>
+                                                        </div>
+                                                    </t>
+                                                </div>
+
+                                                <t t-if="state.selectedPartidas.length">
+                                                    <div class="mt-2 d-flex flex-wrap gap-2">
+                                                        <t t-foreach="state.selectedPartidas" t-as="partida" t-key="partida.id">
+                                                            <span class="badge rounded-pill text-bg-primary d-inline-flex align-items-center gap-2 px-3 py-2">
+                                                                <span t-esc="(partida.batch || '-') + ' (' + ((partida.kilograms || 0) + ' kg') + ')'"/>
+                                                                <button type="button"
+                                                                        class="btn btn-sm btn-link text-white p-0"
+                                                                        style="text-decoration:none"
+                                                                        t-on-click="() => this.removePartida(partida.id)">
+                                                                    <i class="fa fa-times"/>
+                                                                </button>
+                                                            </span>
+                                                        </t>
+                                                    </div>
+                                                    <div class="mt-3">
+                                                        <button type="button"
+                                                                class="btn btn-primary"
+                                                                t-on-click="startEvaluation"
+                                                                t-att-disabled="state.submitting ? true : undefined">
+                                                            Evaluar seleccionadas
+                                                        </button>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12 col-lg-5">
+                                    <div class="o_qts_card o_qts_preview_card">
+                                        <div class="o_qts_card_head">
+                                            <div class="o_qts_card_title">Ayuda</div>
+                                        </div>
+                                        <div class="o_qts_card_body">
+                                            <div class="text-muted">Selecciona una o varias partidas para evaluar en conjunto. Si comparten número de partida, se agrupan y suman sus kilos.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+
+                    <t t-else="">
+                        <div class="card mb-3">
+                            <div class="card-body py-3 px-4 d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                                <div class="d-flex flex-wrap gap-3 align-items-center">
+                                    <div><span class="text-muted">Partida:</span> <span class="fw-bold" t-esc="state.tonoContext?.batch || '-'"/></div>
+                                    <div><span class="text-muted">Partidas seleccionadas:</span> <span class="fw-bold" t-esc="(state.tonoContext?.line_count || 0)"/></div>
+                                    <div><span class="text-muted">Cliente:</span> <span class="fw-bold" t-esc="state.tonoContext?.customer || '-'"/></div>
+                                    <div><span class="text-muted">Artículo:</span> <span class="fw-bold" t-esc="state.tonoContext?.article || '-'"/></div>
+                                    <div><span class="text-muted">Color:</span> <span class="fw-bold" t-esc="state.tonoContext?.color_name || '-'"/></div>
+                                    <div><span class="text-muted">Modo:</span> <span class="fw-bold" t-esc="selectedModeLabel"/></div>
+                                    <div><span class="text-muted">Kilos Totales:</span> <span class="fw-bold" t-esc="(state.tonoContext?.kilograms || 0) + ' kg'"/></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 o_qts_grid">
+                            <div class="col-12 col-lg-7">
+                                <div class="o_qts_card">
+                                    <div class="o_qts_card_head">
+                                        <div class="o_qts_card_title">Datos de Evaluación</div>
+                                    </div>
+                                    <div class="o_qts_card_body">
+                                        <t t-if="!state.tonoContext?.can_evaluate">
+                                            <div class="alert alert-warning mb-3" t-esc="state.tonoContext?.reason || 'La partida no está disponible para evaluación.'"/>
+                                        </t>
+
+                                        <t t-if="state.tonoContext?.can_evaluate and availableModes.length > 1">
+                                            <div class="o_qts_field">
+                                                <label class="form-label fw-bold mb-3">Tipo de evaluación</label>
+                                                <div class="d-flex justify-content-center mt-2 mb-1">
+                                                    <div class="btn-group" role="group" aria-label="Modo de tono">
+                                                    <button type="button" class="btn btn-outline-primary"
+                                                            t-foreach="availableModes" t-as="mode" t-key="mode"
+                                                            t-att-class="selectedMode === mode ? 'btn btn-primary text-white' : 'btn btn-outline-primary'"
+                                                            t-on-click="() => this.onSelectMode(mode)">
+                                                        <t t-esc="mode === 'tacho' ? 'Tacho' : mode === 'secado' ? 'Secado' : 'Acabado'"/>
+                                                    </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </t>
+
+                                        <t t-if="selectedMode !== 'secado'">
+                                            <div class="o_qts_field">
+                                                <label class="form-label fw-bold mb-1">
+                                                    <t t-esc="selectedMode === 'acabado' ? 'Receta Acabado' : selectedMode === 'secado' ? 'Receta Secado' : 'Receta Laboratorio'"/>
+                                                </label>
+                                                <input type="text"
+                                                       class="form-control form-control-lg o_qts_input"
+                                                       t-on-input="onChangeReceta"
+                                                       t-att-value="state.receta"
+                                                       t-att-disabled="state.submitting ? true : undefined"/>
+                                            </div>
+
+                                            <t t-if="isTacho">
+                                                <div class="o_qts_field">
+                                                    <label class="form-label fw-bold mb-2">Comparación con receta de laboratorio</label>
+                                                    <div class="d-flex flex-wrap gap-3">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input"
+                                                                   type="radio"
+                                                                   name="receta_tacho_mode"
+                                                                   id="receta_tacho_same"
+                                                                   value="same"
+                                                                   t-att-checked="state.recetaTachoMode === 'same' ? true : undefined"
+                                                                   t-on-change="onChangeRecetaTachoMode"/>
+                                                            <label class="form-check-label" for="receta_tacho_same">Igual</label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input"
+                                                                   type="radio"
+                                                                   name="receta_tacho_mode"
+                                                                   id="receta_tacho_different"
+                                                                   value="different"
+                                                                   t-att-checked="state.recetaTachoMode === 'different' ? true : undefined"
+                                                                   t-on-change="onChangeRecetaTachoMode"/>
+                                                            <label class="form-check-label" for="receta_tacho_different">Diferente</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </t>
+
+                                            <div class="o_qts_field">
+                                                <label class="form-label fw-bold mb-1">Receta Tacho</label>
+                                                <input type="text"
+                                                       class="form-control form-control-lg o_qts_input"
+                                                       t-on-input="onChangeRecetaTono"
+                                                       t-att-value="isSameRecetaTacho ? state.receta : state.receta_tono"
+                                                       t-att-readonly="selectedMode !== 'tacho' or isSameRecetaTacho ? true : undefined"
+                                                       t-att-disabled="state.submitting ? true : undefined"/>
+                                                <t t-if="isSameRecetaTacho">
+                                                    <div class="form-text">Se usará la misma receta de laboratorio como receta de tacho.</div>
+                                                </t>
+                                            </div>
+                                        </t>
+
+                                        <t t-if="isAcabado">
+                                            <div class="o_qts_field">
+                                                <label class="form-label fw-bold mb-2">Motivos</label>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" id="motivo_tono"
+                                                           t-att-checked="state.motivo_tono ? true : undefined"
+                                                           t-on-change="(ev) => this.onToggleMotivo('motivo_tono', ev)"/>
+                                                    <label class="form-check-label" for="motivo_tono">Tono</label>
+                                                </div>
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" id="motivo_tacto"
+                                                           t-att-checked="state.motivo_tacto ? true : undefined"
+                                                           t-on-change="(ev) => this.onToggleMotivo('motivo_tacto', ev)"/>
+                                                    <label class="form-check-label" for="motivo_tacto">Tacto</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="motivo_apariencia"
+                                                           t-att-checked="state.motivo_apariencia ? true : undefined"
+                                                           t-on-change="(ev) => this.onToggleMotivo('motivo_apariencia', ev)"/>
+                                                    <label class="form-check-label" for="motivo_apariencia">Apariencia</label>
+                                                </div>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-5">
+                                <div class="o_qts_card">
+                                    <div class="o_qts_card_head">
+                                        <div class="o_qts_card_title">Decisión</div>
+                                    </div>
+                                    <div class="o_qts_card_body">
+                                        <div class="d-grid gap-2">
+                                            <button class="btn btn-primary"
+                                                    t-if="canShowAprobar"
+                                                    t-on-click="() => this.submitDecision('aprobado')"
+                                                    t-att-disabled="!state.tonoContext?.can_evaluate || !canSubmitDecision || state.submitting ? true : undefined">
+                                                Aprobar
+                                            </button>
+                                            <button class="btn btn-primary"
+                                                    t-if="canShowConcesionado"
+                                                    t-on-click="() => this.submitDecision('concesionado')"
+                                                    t-att-disabled="!state.tonoContext?.can_evaluate || !canSubmitDecision || state.submitting ? true : undefined">
+                                                Concesionado
+                                            </button>
+                                            <button class="btn btn-danger"
+                                                    t-on-click="() => this.submitDecision('rechazado')"
+                                                    t-att-disabled="!state.tonoContext?.can_evaluate || !canSubmitDecision || state.submitting ? true : undefined">
+                                                Rechazar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </main>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,30 @@
+<odoo>
+
+    <menuitem id="menu_qc_root" name="Partidas Odoo" sequence="910" parent="quality_control.menu_quality_control">
+        <menuitem id="menu_evaluations" name="Evaluaciones" sequence="10">
+            <menuitem id="menu_quality_tone_screen" name="Evaluar Tono" action="action_quality_tone_screen" sequence="10"/>
+            <menuitem id="menu_quality_defect_screen" name="Auditoría de Apariencia" action="action_quality_defect_screen" sequence="20"/>
+            <menuitem id="menu_quality_dimrev_screen" name="Estabilidad/Revirado" action="action_quality_dimrev_screen" sequence="30"/>
+            <menuitem id="menu_quality_solidez_lavado_screen" name="Solidez al Lavado" action="action_quality_solidez_lavado_screen" sequence="40"/>
+            <menuitem id="menu_quality_sample_reception_screen" name="Recepción de Muestras" action="action_quality_sample_reception_screen" sequence="50"/>
+        </menuitem>
+
+        <menuitem id="menu_records" name="Registros" sequence="20" groups="quality.group_quality_manager">
+            <menuitem id="menu_quality_partida" name="Partidas" action="action_quality_partida" sequence="10"/>
+            <menuitem id="menu_qc_tone_eval_log_tacho_acabado" name="Tono Tacho/Acabado" action="action_qc_tone_eval_log_tacho_acabado" sequence="20"/>
+            <menuitem id="menu_qc_tone_eval_group" name="Agrupaciones Tono" action="action_qc_tone_eval_group" sequence="30"/>
+            <menuitem id="menu_qc_appearance_eval" name="Evaluaciones Apariencia" action="action_qc_appearance_eval" sequence="40"/>
+            <menuitem id="menu_qc_dimstab_eval" name="Evaluaciones Estabilidad/Revirado" action="action_qc_dimstab_eval" sequence="50"/>
+            <menuitem id="menu_qc_wash_fastness_eval" name="Evaluaciones Solidez al Lavado" action="action_qc_wash_fastness_eval" sequence="60"/>
+            <menuitem id="menu_qc_sample_reception" name="Recepción de Muestras" action="action_qc_sample_reception" sequence="70"/>
+        </menuitem>
+    </menuitem>
+
+    <menuitem id="menu_qc_appearance_defect" name="Defectos Apariencia (Partidas Odoo)" parent="quality_control.menu_quality_configuration" action="action_qc_appearance" sequence="91"/>
+
+    <!-- Acceso para Ventas (antes lo aportaba idtx_sale_order apuntando al módulo TEXPLUS). -->
+    <menuitem id="sale_quality_tone_pending_menu" name="Evaluaciones Tono Pendientes"
+              action="action_quality_tone_pending_list" sequence="50"
+              parent="sale.sale_order_menu" groups="sales_team.group_sale_salesman"/>
+
+</odoo>

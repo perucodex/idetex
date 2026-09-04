@@ -1,0 +1,146 @@
+<odoo>
+
+    <record id="qc_appearance_eval_view_list" model="ir.ui.view">
+        <field name="name">qc.appearance.eval.view.list</field>
+        <field name="model">qc.appearance.eval</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="batch_id"/>
+                <field name="create_date" string="Fecha"/>
+                <field name="create_uid" string="Usuario"/>
+                <field name="apariencia_id"/>
+                <field name="line_count" string="Rollos"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="qc_appearance_eval_view_form" model="ir.ui.view">
+        <field name="name">qc.appearance.eval.view.form</field>
+        <field name="model">qc.appearance.eval</field>
+        <field name="arch" type="xml">
+            <form string="Evaluacion de Apariencia">
+                <header>
+                    <button name="action_print_report" type="object" string="Imprimir" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" readonly="1"/>
+                            <field name="create_date" string="Fecha" readonly="1"/>
+                            <field name="create_uid" string="Usuario" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="batch_id" readonly="1"/>
+                            <field name="apariencia_id"/>
+                            <field name="line_count" readonly="1"/>
+                            <field name="quality_point" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="rollos" string="Rollos Evaluados">
+                            <field name="line_ids" nolabel="1"
+                                   context="{'default_batch_id': batch_id, 'default_apariencia_id': apariencia_id, 'default_evaluacion_id': id}">
+                                <list>
+                                    <field name="create_date" string="Fecha"/>
+                                    <field name="create_uid" string="Usuario"/>
+                                    <field name="rollo_num" string="N° Rollo"/>
+                                    <field name="width" string="Ancho"/>
+                                    <field name="meters" string="Metros"/>
+                                    <field name="defect_count" string="Cantidad Defectos"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="qc_appearance_line_view_list" model="ir.ui.view">
+        <field name="name">qc.appearance.line.view.list</field>
+        <field name="model">qc.appearance.line</field>
+        <field name="arch" type="xml">
+            <form string="">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="create_date" string="Fecha" readonly="1"/>
+                            <field name="create_uid" string="Usuario" readonly="1"/>
+                            <field name="batch_id" readonly="1"/>
+                            <field name="evaluacion_id" invisible="1"/>
+                            <field name="apariencia_id" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="rollo_num"/>
+                            <field name="width"/>
+                            <field name="meters"/>
+                            <field name="defect_count" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="defectos" string="Defectos">
+                            <field name="defecto_line_ids" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <record id="view_qc_appearance_defect_list" model="ir.ui.view">
+        <field name="name">qc.appearance.defect.line.list</field>
+        <field name="model">qc.appearance.defect.line</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="defecto_id"/>
+                <field name="cantidad"/>
+                <field name="total_puntos"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="qc_appearance_defect_line_view_form" model="ir.ui.view">
+        <field name="name">qc.appearance.defect.line.view.form</field>
+        <field name="model">qc.appearance.defect.line</field>
+        <field name="arch" type="xml">
+            <form string="">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="defecto_id" domain="[('apariencia_id', '=', parent.apariencia_id)]"/>
+                            <field name="cantidad"/>
+                            <field name="total_puntos"/>
+                            <field name="is_hueco" invisible="1"/>
+                        </group>
+                        <notebook>
+                            <page name="size" string="Tamaños">
+                                <field name="tamano_defecto_ids" nolabel="1">
+                                    <list editable="bottom">
+                                        <field name="tamano" column_invisible="parent.is_hueco"/>
+                                        <field name="tamano_hueco" column_invisible="not parent.is_hueco"/>
+                                        <field name="puntos"/>
+                                    </list>
+                                </field>
+                            </page>
+                        </notebook>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_qc_appearance_eval" model="ir.actions.act_window">
+        <field name="name">Evaluaciones Apariencia</field>
+        <field name="res_model">qc.appearance.eval</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="qc_appearance_eval_view_list"/>
+    </record>
+
+    <record id="action_quality_defect_screen" model="ir.actions.client">
+        <field name="name">Auditoría de Apariencia</field>
+        <field name="tag">idtx_quality_control.defect_screen</field>
+        <field name="target">fullscreen</field>
+    </record>
+
+</odoo>

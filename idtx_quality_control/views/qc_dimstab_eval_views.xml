@@ -1,0 +1,142 @@
+<odoo>
+    <record id="view_qc_dimstab_eval_list" model="ir.ui.view">
+        <field name="name">qc.dimstab.eval.list</field>
+        <field name="model">qc.dimstab.eval</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="fecha_eval"/>
+                <field name="user_ids" widget="many2many_tags"/>
+                <field name="batch_id"/>
+                <field name="sample_type"/>
+                <field name="wash_number"/>
+                <field name="repeat_kind" widget="badge"
+                       decoration-info="repeat_kind == 'reproceso'"
+                       decoration-muted="repeat_kind == 'test'"/>
+                <field name="est_ancho_avg"/>
+                <field name="est_largo_avg"/>
+                <field name="revirado_promedio"/>
+                <field name="densidad_promedio"/>
+                <field name="ancho_promedio"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_qc_dimstab_eval_form" model="ir.ui.view">
+        <field name="name">qc.dimstab.eval.form</field>
+        <field name="model">qc.dimstab.eval</field>
+        <field name="arch" type="xml">
+            <form string="Evaluacion Estabilidad y Revirado">
+                <header>
+                    <button name="action_print_report" type="object" string="Imprimir" class="btn-primary" invisible="not id"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" readonly="1"/>
+                            <field name="fecha_eval" readonly="1"/>
+                            <field name="user_ids" widget="many2many_tags" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="batch_id" readonly="1"/>
+                            <field name="sample_type" readonly="1"/>
+                            <field name="wash_number" readonly="1"/>
+                            <field name="repeat_kind" readonly="1"
+                                   decoration-info="repeat_kind == 'reproceso'"
+                                   decoration-muted="repeat_kind == 'test'"
+                                   widget="badge"/>
+                        </group>
+                    </group>
+                    <group string="Resultados Resumen">
+                        <group>
+                            <div class="o_td_label">
+                                <label for="est_ancho_avg" string="% Ancho Promedio"/>
+                            </div>
+                            <div class="d-inline-flex align-items-center">
+                                <field name="est_ancho_avg"/>
+                                <span title="Cumple" class="fa fa-circle text-success" style="margin-left:5mm;" invisible="not bool_est_ancho_avg"/>
+                                <span title="No Cumple" class="fa fa-circle text-danger" style="margin-left:5mm;" invisible="bool_est_ancho_avg"/>
+                            </div>
+                        </group>
+                        <group>
+                            <div class="o_td_label">
+                                <label for="est_largo_avg" string="% Largo Promedio"/>
+                            </div>
+                            <div class="d-inline-flex align-items-center">
+                                <field name="est_largo_avg"/>
+                                <span title="Cumple" class="fa fa-circle text-success" style="margin-left:5mm;" invisible="not bool_est_largo_avg"/>
+                                <span title="No Cumple" class="fa fa-circle text-danger" style="margin-left:5mm;" invisible="bool_est_largo_avg"/>
+                            </div>
+                        </group>
+                    </group>
+                    <group>
+                        <group>
+                            <div class="o_td_label">
+                                <label for="revirado_promedio" string="Revirado Promedio"/>
+                            </div>
+                            <div class="d-inline-flex align-items-center">
+                                <field name="revirado_promedio"/>
+                                <span title="Cumple" class="fa fa-circle text-success" style="margin-left:5mm;" invisible="not bool_revirado_promedio"/>
+                                <span title="No Cumple" class="fa fa-circle text-danger" style="margin-left:5mm;" invisible="bool_revirado_promedio"/>
+                            </div>
+                        </group>
+                        <group invisible="not tilt_before">
+                            <div class="o_td_label">
+                                <label for="tilt_before" string="Inclinacion Antes de Lavar"/>
+                            </div>
+                            <div class="d-inline-flex align-items-center">
+                                <field name="tilt_before"/>
+                                <span title="Cumple" class="fa fa-circle text-success" style="margin-left:5mm;" invisible="not bool_tilt_before"/>
+                                <span title="No Cumple" class="fa fa-circle text-danger" style="margin-left:5mm;" invisible="bool_tilt_before"/>
+                            </div>
+                        </group>
+                    </group>
+                    <group>
+                        <group invisible="not densidad_promedio">
+                            <div class="o_td_label">
+                                <label for="densidad_promedio" string="Densidad Promedio"/>
+                            </div>
+                            <div class="d-inline-flex align-items-center">
+                                <field name="densidad_promedio"/>
+                                <span title="Cumple" class="fa fa-circle text-success" style="margin-left:5mm;" invisible="not bool_densidad_promedio"/>
+                                <span title="No Cumple" class="fa fa-circle text-danger" style="margin-left:5mm;" invisible="bool_densidad_promedio"/>
+                            </div>
+                        </group>
+                        <group invisible="not ancho_promedio">
+                            <div class="o_td_label">
+                                <label for="ancho_promedio" string="Ancho Promedio"/>
+                            </div>
+                            <div class="d-inline-flex align-items-center">
+                                <field name="ancho_promedio"/>
+                                <span title="Cumple" class="fa fa-circle text-success" style="margin-left:5mm;" invisible="not bool_ancho_promedio"/>
+                                <span title="No Cumple" class="fa fa-circle text-danger" style="margin-left:5mm;" invisible="bool_ancho_promedio"/>
+                            </div>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Tabla General de Datos">
+                            <field name="detail_line_ids" nolabel="1" readonly="1">
+                                <list default_order="sequence asc">
+                                    <field name="sequence"/>
+                                    <field name="muestra"/>
+                                    <field name="evaluacion"/>
+                                    <field name="user_id"/>
+                                    <field name="fecha_registro"/>
+                                    <field name="dato"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_qc_dimstab_eval" model="ir.actions.act_window">
+        <field name="name">Evaluaciones Estabilidad/Revirado</field>
+        <field name="res_model">qc.dimstab.eval</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

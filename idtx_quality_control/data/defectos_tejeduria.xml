@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- <data noupdate="1"> -->
+        <record id="qc_appearance_defect_tejeduria_21" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_tejeduria"/>
+            <field name="sequence">21</field>
+            <field name="name">BORDADO X MAQ. O HILADO</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_tejeduria_22" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_tejeduria"/>
+            <field name="sequence">22</field>
+            <field name="name">FALLAS DE AGUJAS FORJADA</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_tejeduria_23" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_tejeduria"/>
+            <field name="sequence">23</field>
+            <field name="name">LINEA DE AGUJA</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_tejeduria_24" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_tejeduria"/>
+            <field name="sequence">24</field>
+            <field name="name">LINEA DE ACEITE LIMPIO</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_tejeduria_25" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_tejeduria"/>
+            <field name="sequence">25</field>
+            <field name="name">AGUJEROS O CAIDA</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_tejeduria_26" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_tejeduria"/>
+            <field name="sequence">26</field>
+            <field name="name">PICADURA POR REGULACION</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_tejeduria_27" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_tejeduria"/>
+            <field name="sequence">27</field>
+            <field name="name">GOTAS DE ACEITE / SUCIEDAD</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_tejeduria_28" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_tejeduria"/>
+            <field name="sequence">28</field>
+            <field name="name">RAPOR FUERA DE MEDIDA</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_tejeduria_29" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_tejeduria"/>
+            <field name="sequence">29</field>
+            <field name="name">DOBLE (MARCADO POR RODILLO)</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_tejeduria_30" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_tejeduria"/>
+            <field name="sequence">30</field>
+            <field name="name">LYCRA MAL VANIZADA</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_tejeduria_31" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_tejeduria"/>
+            <field name="sequence">31</field>
+            <field name="name">ROTURA DE LYCRA</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_tejeduria_32" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_tejeduria"/>
+            <field name="sequence">32</field>
+            <field name="name">QUEBRADURA DE TEJIDO</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_tejeduria_33" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_tejeduria"/>
+            <field name="sequence">33</field>
+            <field name="name">CONTAMINACION DE AMBIENTE</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_tejeduria_34" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_tejeduria"/>
+            <field name="sequence">34</field>
+            <field name="name">CONTAMINACION DE POLYPROPILENO</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_tejeduria_35" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_tejeduria"/>
+            <field name="sequence">35</field>
+            <field name="name">ANILLADO POR HILO/MAQUINA</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_tejeduria_36" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_tejeduria"/>
+            <field name="sequence">36</field>
+            <field name="name">HILO IRREGULAR</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_tejeduria_37" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_tejeduria"/>
+            <field name="sequence">37</field>
+            <field name="name">JALADURA</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_tejeduria_38" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_tejeduria"/>
+            <field name="sequence">38</field>
+            <field name="name">HUECOS</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_tejeduria_39" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_tejeduria"/>
+            <field name="sequence">39</field>
+            <field name="name">APARIENCIA</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+        <record id="qc_appearance_defect_tejeduria_40" model="qc.appearance.defect">
+            <field name="apariencia_id" ref="qc_appearance_tejeduria"/>
+            <field name="sequence">40</field>
+            <field name="name">NEPTS (MOTITAS)</field>
+            <field name="is_hueco">False</field>
+            <field name="is_active">True</field>
+        </record>
+    <!-- </data> -->
+</odoo>

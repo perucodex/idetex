@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_dimrev" model="ir.actions.report">
+        <field name="name">Informe Densidad + Estabilidad + Revirado</field>
+        <field name="model">qc.lab.record</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">idtx_quality_control.report_dimrev_document</field>
+        <field name="report_file">idtx_quality_control.report_dimrev_document</field>
+        <field name="binding_model_id" ref="model_qc_lab_record"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'DimRev_%s' % (object.batch_id.name or 'Partida')</field>
+    </record>
+
+    <template id="report_dimrev_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-set="eval_rec" t-value="doc.est_revirado_eval_id"/>
+                <t t-set="line" t-value="doc.batch_id"/>
+                <t t-set="company" t-value="doc.env.company"/>
+                <t t-set="payload" t-value="doc._dimrev_report_payload()"/>
+                <t t-if="eval_rec">
+                    <t t-call="web.internal_layout">
+                        <div class="page">
+                            <style>
+                                .page {
+                                    margin-top: 2mm;
+                                }
+                                .drv-wrap {
+                                    font-family: 'DejaVu Sans', sans-serif;
+                                    color: #1f2937;
+                                    padding: 0;
+                                }
+                                .drv-header {
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                    margin-bottom: 6px;
+                                }
+                                .drv-header td {
+                                    border: 1px solid #111827;
+                                    vertical-align: middle;
+                                    padding: 4px 6px;
+                                }
+                                .drv-logo-cell {
+                                    width: 160px;
+                                    text-align: center;
+                                }
+                                .drv-logo {
+                                    max-height: 56px;
+                                    max-width: 140px;
+                                }
+                                .drv-main-cell {
+                                    text-align: center;
+                                }
+                                .drv-title {
+                                    margin: 0;
+                                    font-size: 16px;
+                                    font-weight: 800;
+                                    text-transform: uppercase;
+                                    letter-spacing: 0.4px;
+                                }
+                                .drv-subtitle {
+                                    margin: 2px 0 0;
+                                    font-size: 10px;
+                                    color: #4b5563;
+                                }
+                                .drv-meta-cell {
+                                    width: 190px;
+                                    font-size: 10px;
+                                }
+                                .drv-grid {
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                    margin-top: 4px;
+                                }
+                                .drv-grid th,
+                                .drv-grid td {
+                                    border: 1px solid #111827;
+                                    padding: 4px 6px;
+                                    font-size: 10px;
+                                }
+                                .drv-grid th {
+                                    background: #f3f4f6;
+                                    text-transform: uppercase;
+                                    font-size: 9px;
+                                }
+                                .drv-section {
+                                    margin-top: 6px;
+                                    border: 1px solid #111827;
+                                }
+                                .drv-section-head {
+                                    background: #e5e7eb;
+                                    font-size: 10px;
+                                    font-weight: 700;
+                                    text-transform: uppercase;
+                                    padding: 4px 6px;
+                                    border-bottom: 1px solid #111827;
+                                }
+                                .drv-section-body {
+                                    padding: 5px;
+                                }
+                                .drv-subnote {
+                                    margin: 0 0 4px;
+                                    font-size: 9px;
+                                    color: #6b7280;
+                                }
+                                .drv-grid.tight th,
+                                .drv-grid.tight td {
+                                    padding: 3px 4px;
+                                    font-size: 9px;
+                                }
+                                .drv-num {
+                                    text-align: right;
+                                }
+                                .drv-foot {
+                                    margin-top: 6px;
+                                    font-size: 9px;
+                                    color: #6b7280;
+                                    text-align: right;
+                                }
+                            </style>
+
+                            <div class="drv-wrap">
+                                <table class="drv-header">
+                                    <tr>
+                                        <td class="drv-logo-cell">
+                                            <img t-if="company.logo" t-att-src="image_data_uri(company.logo)" class="drv-logo" alt="Logo"/>
+                                            <span t-if="not company.logo" style="font-size:12px;font-weight:700;">IDETEX</span>
+                                        </td>
+                                        <td class="drv-main-cell">
+                                            <h2 class="drv-title">Densidad + Estabilidad + Revirado</h2>
+                                            <p class="drv-subtitle">Registro de Laboratorio</p>
+                                        </td>
+                                        <td class="drv-meta-cell">
+                                            <div><b>Reporte:</b> <span t-esc="eval_rec.name or '-'"/></div>
+                                            <div><b>Fecha:</b> <span t-field="eval_rec.fecha_eval"/></div>
+                                            <div><b>Usuarios:</b> <span t-esc="', '.join(doc.user_ids.mapped('name')) or '-'"/></div>
+                                            <div><b>Lavado:</b> <span t-esc="payload.get('wash_label') or '-'"/></div>
+                                        </td>
+                                    </tr>
+                                </table>
+
+                                <table class="drv-grid">
+                                    <tr>
+                                        <th>Partida</th>
+                                        <th>Cliente</th>
+                                        <th>Color</th>
+                                        <th>Kilogramos</th>
+                                    </tr>
+                                    <tr>
+                                        <td t-esc="line.name or '-'"/>
+                                        <td t-esc="line.qc_customer or '-'"/>
+                                        <td t-esc="line.color_name or '-'"/>
+                                        <td t-esc="'%.2f' % (line.kilograms or 0.0)"/>
+                                    </tr>
+                                </table>
+
+                                <div class="drv-section">
+                                    <div class="drv-section-head">Estabilidad Dimensional (Datos Ingresados)</div>
+                                    <div class="drv-section-body">
+                                        <table class="drv-grid tight" style="margin-top:0;">
+                                            <tr>
+                                                <th>Muestra</th>
+                                                <th>%Ancho D1</th>
+                                                <th>%Ancho D2</th>
+                                                <th>%Ancho D3</th>
+                                                <th>%Largo D1</th>
+                                                <th>%Largo D2</th>
+                                                <th>%Largo D3</th>
+                                            </tr>
+                                            <tr t-foreach="payload.get('stability_rows', [])" t-as="row">
+                                                <td t-esc="row['sample']"/>
+                                                <td class="drv-num" t-esc="'%.2f' % (row['a_d1'] or 0.0)"/>
+                                                <td class="drv-num" t-esc="'%.2f' % (row['a_d2'] or 0.0)"/>
+                                                <td class="drv-num" t-esc="'%.2f' % (row['a_d3'] or 0.0)"/>
+                                                <td class="drv-num" t-esc="'%.2f' % (row['l_d1'] or 0.0)"/>
+                                                <td class="drv-num" t-esc="'%.2f' % (row['l_d2'] or 0.0)"/>
+                                                <td class="drv-num" t-esc="'%.2f' % (row['l_d3'] or 0.0)"/>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="drv-section">
+                                    <div class="drv-section-head">Revirado (Datos Ingresados)</div>
+                                    <div class="drv-section-body">
+                                        <p class="drv-subnote">Valores AC/BD del lavado del ensayo actual, con porcentaje calculado.</p>
+                                        <table class="drv-grid tight" style="margin-top:0;">
+                                            <tr>
+                                                <th>Muestra</th>
+                                                <th>AC</th>
+                                                <th>BD</th>
+                                                <th>%</th>
+                                            </tr>
+                                            <tr t-foreach="payload.get('revirado_rows', [])" t-as="row">
+                                                <td t-esc="row['sample']"/>
+                                                <td class="drv-num" t-esc="'%.2f' % (row['ac'] or 0.0)"/>
+                                                <td class="drv-num" t-esc="'%.2f' % (row['bd'] or 0.0)"/>
+                                                <td class="drv-num" t-esc="'%.2f' % (row['pct'] or 0.0)"/>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="drv-section">
+                                    <div class="drv-section-head">Densidad STD y Ancho STD (Datos Ingresados)</div>
+                                    <div class="drv-section-body">
+                                        <p class="drv-subnote">
+                                            Fuente de STD: <b t-esc="payload.get('std_source_label') or '-'"/>.
+                                        </p>
+                                        <table class="drv-grid tight" style="margin-top:0;">
+                                            <tr>
+                                                <th>Indicador</th>
+                                                <th>M1</th>
+                                                <th>M2</th>
+                                                <th>M3</th>
+                                                <th>Promedio</th>
+                                            </tr>
+                                            <tr>
+                                                <td>Densidad STD (g/m2)</td>
+                                                <td class="drv-num" t-esc="'%.2f' % (payload.get('density_vals', [0, 0, 0])[0] or 0.0)"/>
+                                                <td class="drv-num" t-esc="'%.2f' % (payload.get('density_vals', [0, 0, 0])[1] or 0.0)"/>
+                                                <td class="drv-num" t-esc="'%.2f' % (payload.get('density_vals', [0, 0, 0])[2] or 0.0)"/>
+                                                <td class="drv-num" t-esc="'%.2f' % (payload.get('density_avg') or 0.0)"/>
+                                            </tr>
+                                            <tr>
+                                                <td>Ancho STD (m)</td>
+                                                <td class="drv-num" t-esc="'%.2f' % (payload.get('width_vals', [0, 0, 0])[0] or 0.0)"/>
+                                                <td class="drv-num" t-esc="'%.2f' % (payload.get('width_vals', [0, 0, 0])[1] or 0.0)"/>
+                                                <td class="drv-num" t-esc="'%.2f' % (payload.get('width_vals', [0, 0, 0])[2] or 0.0)"/>
+                                                <td class="drv-num" t-esc="'%.2f' % (payload.get('width_avg') or 0.0)"/>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="drv-section">
+                                    <div class="drv-section-head">Inclinacion (Datos Ingresados)</div>
+                                    <div class="drv-section-body">
+                                        <p class="drv-subnote">
+                                            La evaluacion se realiza solo sobre <b>Inclinacion Antes de Lavar</b>. Inclinacion Despues de Lavar se muestra como dato registrado.
+                                        </p>
+                                        <table class="drv-grid tight" style="margin-top:0;">
+                                            <tr>
+                                                <th>Muestra</th>
+                                                <th>Antes de Lavar</th>
+                                                <th>Despues de Lavar</th>
+                                            </tr>
+                                            <tr>
+                                                <td>M1</td>
+                                                <td class="drv-num" t-esc="'%.2f %s' % ((payload.get('tilt_before_m1') or 0.0), (payload.get('tilt_before_dir_m1') or 'Z'))"/>
+                                                <td class="drv-num" t-esc="'%.2f %s' % ((payload.get('tilt_after_m1') or 0.0), (payload.get('tilt_after_dir_m1') or 'Z'))"/>
+                                            </tr>
+                                            <tr>
+                                                <td>M2</td>
+                                                <td class="drv-num" t-esc="'%.2f %s' % ((payload.get('tilt_before_m2') or 0.0), (payload.get('tilt_before_dir_m2') or 'Z'))"/>
+                                                <td class="drv-num" t-esc="'%.2f %s' % ((payload.get('tilt_after_m2') or 0.0), (payload.get('tilt_after_dir_m2') or 'Z'))"/>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="drv-section">
+                                    <div class="drv-section-head">Resultados del Ensayo</div>
+                                    <div class="drv-section-body">
+                                        <table class="drv-grid tight" style="margin-top:0;">
+                                            <tr>
+                                                <th>Tipo</th>
+                                                <th>Resultado</th>
+                                            </tr>
+                                            <tr t-foreach="payload.get('results', [])" t-as="res">
+                                                <td t-esc="res['tipo']"/>
+                                                <td class="drv-num" t-esc="'%.2f' % (res['resultado'] or 0.0)"/>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="drv-foot">
+                                    <span t-esc="company.name"/> - Informe generado desde Odoo
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

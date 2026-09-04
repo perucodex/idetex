@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="seq_qc_appearance_eval" model="ir.sequence">
+        <field name="name">Evaluacion Apariencia</field>
+        <field name="code">qc.appearance.eval</field>
+        <field name="prefix">EVAL</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_qc_tone_eval_group" model="ir.sequence">
+        <field name="name">Evaluacion Grupal Tono</field>
+        <field name="code">qc.tone.eval.group</field>
+        <field name="prefix">TGRP</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_qc_dimstab_eval" model="ir.sequence">
+        <field name="name">Evaluacion Estabilidad/Revirado</field>
+        <field name="code">qc.dimstab.eval</field>
+        <field name="prefix">DREV</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_qc_lab_record_eval_number" model="ir.sequence">
+        <field name="name">Numero Evaluacion Laboratorio</field>
+        <field name="code">qc.lab.record.eval_number</field>
+        <field name="prefix">LABE</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_qc_wash_fastness_eval" model="ir.sequence">
+        <field name="name">Evaluacion Solidez del Color al Lavado</field>
+        <field name="code">qc.wash.fastness.eval</field>
+        <field name="prefix">SLAV</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_mrp_workorder_batch_report_name" model="ir.sequence">
+        <field name="name">Control Pedido Line Report</field>
+        <field name="code">mrp.workorder.batch.qc_report_name</field>
+        <field name="prefix">RPL-</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="seq_qc_sample_reception" model="ir.sequence">
+        <field name="name">Recepcion de Muestras</field>
+        <field name="code">qc.sample.reception</field>
+        <field name="prefix">RSM-</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+</odoo>
