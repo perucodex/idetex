@@ -35,6 +35,10 @@ class MrpWorkorderBatch(models.Model):
     qc_product_ids = fields.Many2many(
         'product.template', 'qc_batch_product_tmpl_rel', 'batch_id', 'product_tmpl_id',
         string='Artículos', compute='_compute_qc_origin', store=True)
+    # Para la vista: el evaluador de expresiones del cliente web no soporta
+    # len(), asi que "hay mas de un articulo" se calcula aqui.
+    qc_multi_product = fields.Boolean(
+        'Varios artículos', compute='_compute_qc_multi_product')
     qc_article = fields.Char('Artículo', compute='_compute_qc_origin', store=True)
     qc_partner_id = fields.Many2one(
         'res.partner', string='Cliente Principal',
@@ -82,6 +86,11 @@ class MrpWorkorderBatch(models.Model):
                  'wo_roll_ids.workorder_id.production_id.sale_order_line_id.order_id.partner_id',
                  'wo_roll_ids.workorder_id.production_id.sale_order_line_id.lab_dev_line_id',
                  'wo_roll_ids.workorder_id.production_id.color_recipe_id.lab_dev_line_id')
+    @api.depends('qc_product_ids')
+    def _compute_qc_multi_product(self):
+        for rec in self:
+            rec.qc_multi_product = len(rec.qc_product_ids) > 1
+
     def _compute_qc_origin(self):
         """Campos ALMACENADOS de cabecera (buscables desde las pantallas)."""
         Template = self.env['product.template']

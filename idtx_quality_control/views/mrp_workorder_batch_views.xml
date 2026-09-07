@@ -58,8 +58,9 @@
                             <field name="qc_customer"/>
                             <field name="qc_order_ref"/>
                             <field name="qc_product_id"/>
+                            <field name="qc_multi_product" invisible="1"/>
                             <field name="qc_product_ids" widget="many2many_tags"
-                                   invisible="not qc_product_ids or len(qc_product_ids) &lt; 2"/>
+                                   invisible="not qc_multi_product"/>
                             <field name="lab_dev_line_id"/>
                         </group>
                         <group name="qc_info_right">
