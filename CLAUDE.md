@@ -7,8 +7,9 @@ empresa textil peruana (producción, laboratorio, planilla PE, facturación elec
 
 - Odoo **19.0** (community + enterprise), Python 3.10, venv: `~/odoo/odoo19/odoo-venv`
 - Config: `~/odoo/odoo19/.odoorc` · puerto **http://127.0.0.1:8019** · `max_cron_threads = 0`
-- Base de datos de desarrollo: **`odoo_idtx`** (48 módulos idtx instalados). Las BDs `idetex`,
-  `prueba`, `prueba_idtx` son copias antiguas; no usarlas salvo que el usuario lo pida.
+- Base de datos de desarrollo: **`odoo19`** (42 de los 52 módulos idtx instalados). Las BDs
+  `idetex`, `prueba`, `prueba_idtx` mencionadas en versiones previas de este archivo ya no
+  existen en este servidor Postgres (solo quedan `odoo19` y `postgres`).
 - El servidor Odoo corre en la **terminal del usuario** (`odoo -c .odoorc`), sin `logfile`:
   el log sale por stdout ahí. Yo no lo veo directamente; para depurar uso un segundo
   proceso con `--stop-after-init --no-http` (ver comandos).
@@ -19,11 +20,11 @@ empresa textil peruana (producción, laboratorio, planilla PE, facturación elec
 ## Comandos (ejecutar desde `~/odoo/odoo19`)
 
 ```bash
-ODOO="odoo-venv/bin/odoo -c .odoorc -d odoo_idtx --no-http"
+ODOO="odoo-venv/bin/odoo -c .odoorc -d odoo19 --no-http"
 $ODOO -u <modulo> --stop-after-init                                 # actualizar módulo
 $ODOO -i <modulo> --stop-after-init                                 # instalar módulo
 $ODOO -u <modulo> --test-enable --test-tags /<modulo> --stop-after-init   # tests del módulo
-odoo-venv/bin/odoo shell -c .odoorc -d odoo_idtx --no-http          # shell interactivo
+odoo-venv/bin/odoo shell -c .odoorc -d odoo19 --no-http          # shell interactivo
 $ODOO -u <modulo> --stop-after-init 2>&1 | grep -E "WARNING|ERROR|CRITICAL|Traceback"
 ```
 
@@ -112,7 +113,7 @@ ORGATEX: planta de tintorería) vía `pyodbc` + FreeTDS.
    el hook `PostToolUse` valida la sintaxis al instante. Al terminar el turno, un hook
    `Stop` vuelve a validar todo lo modificado según `git`.
 2. Actualizar el módulo con `-u` y revisar warnings/errores.
-3. Verificar en el navegador (Chrome, `http://127.0.0.1:8019`, BD `odoo_idtx`) que la
+3. Verificar en el navegador (Chrome, `http://127.0.0.1:8019`, BD `odoo19`) que la
    vista/flujo funciona; revisar consola JS si hay OWL.
 4. Si hay lógica de negocio (cálculos, liquidaciones, consumos), añadir/ejecutar tests en
    `<modulo>/tests/` (`TransactionCase`, `@tagged('post_install', '-at_install')`).

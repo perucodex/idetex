@@ -36,10 +36,6 @@
                 title="Ordenar de fábrica (todas las máquinas, todos los centros de trabajo)">
             <i class="fa fa-sort-numeric-asc"/>
         </button>
-        <button class="mf-btn-edit" t-att-class="state.editMode ? 'mf-btn-edit--active' : ''"
-                t-on-click="toggleEditMode" title="Combinar cuadros de máquinas">
-            <i class="fa fa-object-group"/>
-        </button>
         <button class="mf-btn-refresh" t-on-click="onRefresh" title="Actualizar">
             <i class="fa fa-refresh"/>
         </button>
@@ -107,50 +103,26 @@
             <span>Cargando máquinas…</span>
         </div>
 
-        <!-- ── COMPACT GRID (filter active) ─────────────────────────────────── -->
-        <div class="mf-compact-grid" t-elif="isFiltered">
-            <t t-foreach="filteredMachines" t-as="m" t-key="m.id">
-                <div class="mf-card"
-                     t-att-class="'mf-card--' + m.status"
-                     t-att-style="'--tc:' + m.tcfg.color"
-                     t-att-title="m.name"
-                     t-att-data-machine-id="m.id"
-                     t-on-click="onMachineCardClick">
-                    <div class="mf-card-row1">
-                        <span class="mf-card-num">#<t t-esc="m.num"/></span>
-                        <span class="mf-card-dot" t-att-class="'mf-card-dot--' + m.status"/>
-                    </div>
-                    <div class="mf-card-ico">
-                        <i t-att-class="'fa ' + m.tcfg.icon"/>
-                    </div>
-                    <div class="mf-card-type" t-esc="m.type"/>
-                </div>
-            </t>
-            <div class="mf-empty" t-if="filteredMachines.length === 0">
+        <!-- ── SLOT GRID (siempre — respeta la posición real del piso; los
+             filtros de Estado/Tipo solo ocultan las que no calzan, sin
+             reacomodar nada) ──────────────────────────────────────────── -->
+        <div class="mf-slot-grid" t-else="" t-ref="slotGrid">
+            <div class="mf-empty" t-if="isFiltered and filteredMachines.length === 0">
                 <i class="fa fa-search"/>
-                <span>Sin resultados</span>
+                <span>Sin resultados para este filtro</span>
             </div>
-        </div>
-
-        <!-- ── SLOT GRID (no filter — drag-and-drop) ────────────────────────── -->
-        <div class="mf-slot-grid" t-else="">
-            <div class="mf-dnd-hint" t-if="!state.editMode">
+            <div class="mf-dnd-hint">
                 <i class="fa fa-hand-grab-o"/>
-                Arrastra las tarjetas para reorganizar · Haz clic para ver detalles ·
-                <i class="fa fa-object-group"/> combina hasta 8 cuadros para agrandar una máquina
+                Arrastra una tarjeta para moverla · Haz clic para ver detalles ·
+                <i class="fa fa-caret-square-o-down"/> arrastra su esquina inferior-derecha para agrandarla o achicarla, sin límite
             </div>
-            <div class="mf-dnd-hint mf-dnd-hint--edit" t-if="state.editMode">
-                <i class="fa fa-object-group"/>
-                Modo combinar: elige 2, 4, 6 u 8 cuadros en fila o en columna, luego confirma
-                <span class="mf-edit-count" t-if="state.selection.length" t-esc="state.selection.length + '/8 seleccionados'"/>
-            </div>
-            <div class="mf-grid-inner">
+            <div class="mf-grid-inner"
+                 t-att-style="'grid-template-columns: repeat(' + visibleCols + ', ' + state.cellWidthPx + 'px);'">
                 <t t-foreach="gridSlots" t-as="slot" t-key="slot.index">
                     <div class="mf-slot"
-                         t-att-class="(slot.machine ? 'mf-slot--filled' : 'mf-slot--empty') + (slot.span > 1 ? ' mf-slot--big' : '') + (slot.selected ? ' mf-slot--selected' : '') + (state.editMode ? ' mf-slot--editable' : '')"
+                         t-att-class="(slot.machine ? 'mf-slot--filled' : 'mf-slot--empty') + (slot.span > 1 ? ' mf-slot--big' : '')"
                          t-att-style="slot.gridStyle"
                          t-att-data-slot="slot.index"
-                         t-on-click="onSlotContainerClick"
                          t-on-dragover="onSlotDragOver"
                          t-on-dragleave="onSlotDragLeave"
                          t-on-drop="onSlotDrop">
@@ -163,6 +135,8 @@
                              t-att-draggable="slot.machine.status === 'ejecutando' ? 'false' : 'true'"
                              t-att-data-status="slot.machine.status"
                              t-att-data-span="slot.span"
+                             t-att-data-span-cols="slot.spanCols"
+                             t-att-data-span-rows="slot.spanRows"
                              t-att-data-machine-id="slot.machine.id"
                              t-att-data-slot="slot.index"
                              t-att-title="slot.machine.status === 'ejecutando' ? slot.machine.name + ' — Ejecutando (no se puede mover)' : slot.machine.name"
@@ -180,6 +154,15 @@
                                 <i t-att-class="'fa ' + slot.machine.tcfg.icon"/>
                             </div>
                             <div class="mf-card-type" t-esc="slot.machine.type"/>
+
+                            <div t-if="slot.machine.status !== 'ejecutando'"
+                                 class="mf-resize-handle"
+                                 draggable="false"
+                                 t-on-mousedown="(ev) => this.onResizeHandleMouseDown(ev, slot.machine)"
+                                 t-on-click.stop="() => {}"
+                                 title="Arrastra para cambiar el tamaño">
+                                <i class="fa fa-caret-square-o-down"/>
+                            </div>
                         </div>
 
                         <!-- Machine card — combinada/agrandada (span 2 o 4) -->
@@ -187,20 +170,32 @@
                              class="mf-card mf-card--big"
                              t-att-class="'mf-card--' + slot.machine.status + (slot.machine.status === 'ejecutando' ? ' mf-card--locked' : '')"
                              t-att-style="'--tc:' + slot.machine.tcfg.color"
-                             draggable="false"
+                             t-att-draggable="slot.machine.status === 'ejecutando' ? 'false' : 'true'"
                              t-att-data-status="slot.machine.status"
                              t-att-data-span="slot.span"
+                             t-att-data-span-cols="slot.spanCols"
                              t-att-data-span-rows="slot.spanRows"
                              t-att-data-orientation="slot.orientation"
                              t-att-data-machine-id="slot.machine.id"
                              t-att-data-slot="slot.index"
                              t-att-title="slot.machine.name"
+                             t-on-dragstart="onMachineDragStart"
+                             t-on-dragend="onMachineDragEnd"
                              t-on-click="onMachineCardClick">
 
-                            <button t-if="state.editMode" class="mf-card-unmerge"
+                            <button t-if="slot.machine.status !== 'ejecutando'" class="mf-card-unmerge"
                                     t-on-click.stop="() => this.unmergeMachine(slot.machine)" title="Deshacer combinación">
                                 <i class="fa fa-compress"/>
                             </button>
+
+                            <div t-if="slot.machine.status !== 'ejecutando'"
+                                 class="mf-resize-handle"
+                                 draggable="false"
+                                 t-on-mousedown="(ev) => this.onResizeHandleMouseDown(ev, slot.machine)"
+                                 t-on-click.stop="() => {}"
+                                 title="Arrastra para cambiar el tamaño">
+                                <i class="fa fa-caret-square-o-down"/>
+                            </div>
 
                             <span t-att-class="'mf-card-big-status-dot mf-card-dot mf-card-dot--' + slot.machine.status"
                                   t-att-title="panelStateLabel(slot.machine.status)"/>
@@ -236,23 +231,11 @@
 
                     </div>
                 </t>
-            </div>
-
-            <!-- Barra flotante de acción del modo edición -->
-            <div class="mf-edit-bar" t-if="state.editMode and editAction">
-                <span t-if="editAction.type === 'invalid'" class="mf-edit-bar-msg mf-edit-bar-msg--error" t-esc="editAction.message"/>
-                <t t-if="editAction.type === 'combine'">
-                    <span class="mf-edit-bar-msg">Combinar <t t-esc="editAction.spanCols + 'x' + editAction.spanRows"/> para <t t-esc="editAction.machine.name"/></span>
-                    <button class="mf-edit-bar-btn" t-on-click="combineSelection">
-                        <i class="fa fa-object-group"/> Combinar
-                    </button>
-                </t>
-                <t t-if="editAction.type === 'unmerge'">
-                    <span class="mf-edit-bar-msg">Deshacer combinación de <t t-esc="editAction.machine.name"/></span>
-                    <button class="mf-edit-bar-btn" t-on-click="unmergeSelection">
-                        <i class="fa fa-compress"/> Deshacer
-                    </button>
-                </t>
+                <!-- Rectángulo fantasma: previsualiza el tamaño mientras se arrastra -->
+                <div t-if="state.resize"
+                     class="mf-resize-ghost"
+                     t-att-class="state.resize.valid ? 'mf-resize-ghost--valid' : 'mf-resize-ghost--invalid'"
+                     t-attf-style="grid-column: #{state.resize.anchorCol + 1} / span #{state.resize.spanCols}; grid-row: #{state.resize.anchorRow + 1} / span #{state.resize.spanRows};"/>
             </div>
         </div>
 

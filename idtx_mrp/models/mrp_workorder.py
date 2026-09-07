@@ -4,10 +4,12 @@ import re
 from odoo import _, models, fields, api
 from odoo.exceptions import UserError
 
-# Mapea el nombre del centro de trabajo REAL (de la OT, p.ej. de FULL PIMA)
-# al departamento HR donde viven las máquinas (de IDETEX). Se usa departamento
-# en vez de mrp.workcenter porque un equipo de IDETEX no puede apuntar al
-# centro de trabajo de otra compañía sin romper check_company — ver
+# Mapea el nombre del centro de trabajo REAL (de la OT, de FULL PIMA) al
+# departamento HR donde viven las máquinas (también de FULL PIMA desde la
+# migración 0.5 de idtx_plan_general_alpha, antes de IDETEX). Se usa
+# departamento en vez de mrp.workcenter porque idtx_plan_general_alpha
+# instala bajo la compañía idetex y no puede crear/asignar un mrp.workcenter
+# de otra compañía sin romper check_company — ver
 # [[project_workcenter_check_company]]. Departamento sí es único (no hay
 # copias homónimas por compañía), así que no hace falta crear ni tocar
 # ningún mrp.workcenter para este emparejamiento.
@@ -405,9 +407,15 @@ class MrpWorkorder(models.Model):
                 # OPERATIVAS: no se puede iniciar con máquinas de otra área ni
                 # en otro estado (apagada, malograda, mantenimiento, ejecutando).
                 # Se compara por DEPARTAMENTO (no por centro de trabajo) porque
-                # las máquinas son de IDETEX y la OT puede ser de otra compañía
-                # — ver [[project_workcenter_check_company]].
-                all_equipment = wo.option_ids.equipment_ids
+                # idtx_plan_general_alpha instala bajo idetex y no puede
+                # crear/asignar un mrp.workcenter de otra compañía sin romper
+                # check_company — ver [[project_workcenter_check_company]].
+                # sudo(): se leen department_id/machine_state del equipo más
+                # abajo, y hay una regla multi-compañía global sobre
+                # maintenance.equipment — sin esto, un usuario sin la
+                # compañía del equipo habilitada no podría ni validar el
+                # arranque de la OT.
+                all_equipment = wo.option_ids.equipment_ids.sudo()
                 wc_name = wo.workcenter_id.name
                 dept_ids = _department_ids_for_workcenter_name(self.env, wc_name)
                 wrong_wc = all_equipment.filtered(
@@ -531,9 +539,13 @@ class MrpWorkorderOption(models.Model):
     )
     # Máquinas seleccionables: solo las OPERATIVAS del mismo área (mismo
     # departamento, p.ej. Tejeduría) que la orden de trabajo. Se empareja por
-    # departamento (no por centro de trabajo) porque las máquinas son de
-    # IDETEX y la OT puede ser de otra compañía — ver
-    # [[project_workcenter_check_company]].
+    # departamento (no por centro de trabajo) porque idtx_plan_general_alpha
+    # instala bajo idetex y no puede crear/asignar un mrp.workcenter de otra
+    # compañía sin romper check_company — ver [[project_workcenter_check_company]].
+    # Nota: esta búsqueda NO usa sudo() y sí respeta la regla multi-compañía
+    # estándar de Odoo (company_id in false + compañías permitidas del
+    # usuario); no filtra por compañía de forma explícita porque no hace
+    # falta — ver la nota del wikilink.
     available_equipment_ids = fields.Many2many(
         'maintenance.equipment',
         relation='mrp_wo_option_avail_equipment_rel',
@@ -580,7 +592,10 @@ class MrpWorkorderOption(models.Model):
             default_eff = company.weaving_default_efficiency or 0.0
             rate = 0.0
             machine_without_rpm = False
-            for eq in opt.equipment_ids:
+            # sudo(): rpm/efficiency del equipo, protegido por la regla
+            # multi-compañía global de maintenance.equipment — ver
+            # [[project_workcenter_check_company]].
+            for eq in opt.equipment_ids.sudo():
                 rpm = eq.rpm or 0.0
                 if rpm <= 0:
                     machine_without_rpm = True
@@ -650,8 +665,12 @@ class MrpWorkorderOption(models.Model):
     @api.depends('workorder_id', 'workorder_id.workcenter_id',
                  'workorder_id.workcenter_id.name')
     def _compute_available_equipment(self):
-        """Máquinas OPERATIVAS del mismo área (departamento) que la OT."""
-        Equipment = self.env['maintenance.equipment']
+        """Máquinas OPERATIVAS del mismo área (departamento) que la OT. Usa
+        sudo(): hay una regla multi-compañía global sobre maintenance.equipment
+        ("Maintenance Equipment Multi-company rule") y no todos los usuarios
+        de planta tienen la compañía del equipo (FULL PIMA) habilitada — ver
+        [[project_workcenter_check_company]]."""
+        Equipment = self.env['maintenance.equipment'].sudo()
         for opt in self:
             wc = opt.workorder_id.workcenter_id
             dept_ids = _department_ids_for_workcenter_name(self.env, wc.name) if wc else []

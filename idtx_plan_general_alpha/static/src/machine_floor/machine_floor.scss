@@ -135,13 +135,6 @@
     .fa { font-size: 0.85rem; }
 
     &:hover { background: rgba(255,255,255,0.28); }
-
-    &--active {
-        background: #fff;
-        color: #1e293b;
-        border-color: #fff;
-        &:hover { background: #e2e8f0; }
-    }
 }
 
 .mf-btn-refresh {
@@ -333,30 +326,41 @@
     i { font-size: 0.75rem; }
 }
 
-.mf-dnd-hint--edit {
-    background: var(--mf-job-bg);
-    color: var(--mf-job-qty);
-    font-weight: 600;
-}
-
-.mf-edit-count {
-    margin-left: 0.5rem;
-    font-weight: 700;
-    color: var(--mf-job-qty);
-}
 
 // ── Slot grid ─────────────────────────────────────────────────────────────
 
 .mf-slot-grid {
     flex: 1;
     overflow-y: auto;
+    overflow-x: auto; // columnas de ancho fijo: puede hacer falta scroll horizontal
     display: flex;
     flex-direction: column;
+
+    // Barra de scroll SIEMPRE visible y gruesa — en ventanas angostas hace
+    // falta desplazarse para ver las columnas que no caben, y una barra
+    // delgada tipo "overlay" (la que usan Chrome/Mac por defecto) puede
+    // pasar totalmente desapercibida.
+    scrollbar-width: auto; // Firefox
+    scrollbar-color: #64748b #1e293b;
+
+    &::-webkit-scrollbar { width: 14px; height: 14px; }
+    &::-webkit-scrollbar-track { background: #1e293b; }
+    &::-webkit-scrollbar-thumb {
+        background: #64748b;
+        border-radius: 7px;
+        border: 3px solid #1e293b;
+        &:hover { background: #94a3b8; }
+    }
 }
 
 .mf-grid-inner {
     display: grid;
-    grid-template-columns: repeat(24, 1fr);
+    // El ancho real de columna (fijo, no 1fr) se fija en línea vía JS —
+    // ver visibleCols. align-self:start evita que el flex padre lo estire
+    // al ancho del contenedor: debe medir exactamente lo que ocupan sus
+    // columnas fijas, ni más ni menos, para que el scroll horizontal
+    // funcione bien cuando hay más columnas de las que caben en pantalla.
+    align-self: flex-start;
     gap: 4px;
     padding: 8px 10px;
     align-content: start;
@@ -399,31 +403,41 @@
         }
     }
 
-    &--editable {
-        cursor: pointer;
-        &:hover { outline: 1.5px dashed var(--mf-slot-over-border); outline-offset: -1.5px; border-radius: 7px; }
-    }
-
-    &--selected {
-        outline: 2.5px solid #3b82f6;
-        outline-offset: -2.5px;
-        border-radius: 7px;
-        z-index: 5;
-    }
 }
 
-// ── Compact grid (filter mode) ─────────────────────────────────────────────
+// Rectángulo fantasma que previsualiza el tamaño mientras se arrastra la
+// esquina de una máquina (ver mf-resize-handle) — es el último hijo de
+// .mf-grid-inner, así que se pinta encima de cualquier tarjeta que quede
+// debajo de las celdas cubiertas mientras se arrastra.
+.mf-resize-ghost {
+    position: relative;
+    z-index: 30;
+    border-radius: 7px;
+    border: 2.5px dashed;
+    pointer-events: none;
 
-.mf-compact-grid {
-    flex: 1;
-    overflow-y: auto;
-    padding: 8px 10px;
-    display: grid;
-    grid-template-columns: repeat(24, 1fr);
-    gap: 4px;
-    align-content: start;
+    &--valid   { border-color: #3b82f6; background: rgba(59, 130, 246, 0.14); }
+    &--invalid { border-color: #ef4444; background: rgba(239, 68, 68, 0.14); }
+}
 
-    .mf-card { height: 70px; cursor: default; &:hover { transform: scale(1.08); } }
+// Esquina para redimensionar libremente (modo edición) — agarrar y
+// arrastrar para agrandar/achicar la máquina en cualquier forma.
+.mf-resize-handle {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.35);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    cursor: nwse-resize;
+    z-index: 3;
+    &:hover { background: #3b82f6; }
 }
 
 // ── Machine card ──────────────────────────────────────────────────────────
@@ -777,49 +791,6 @@
         text-overflow: ellipsis;
     }
     margin-top: auto;
-}
-
-// ── Floating action bar (edit mode: combine / undo) ────────────────────────
-
-.mf-edit-bar {
-    position: fixed;
-    left: 50%;
-    bottom: 24px;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 14px;
-    background: var(--mf-surface);
-    border: 1px solid var(--mf-border);
-    border-radius: 999px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.18);
-    z-index: 42;
-    white-space: nowrap;
-}
-
-.mf-edit-bar-msg {
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: var(--mf-text2);
-
-    &--error { color: var(--mf-danger-text); }
-}
-
-.mf-edit-bar-btn {
-    padding: 5px 12px;
-    border: none;
-    border-radius: 999px;
-    background: #3b82f6;
-    color: #fff;
-    font-size: 0.72rem;
-    font-weight: 700;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    flex-shrink: 0;
-    &:hover { background: #2563eb; }
 }
 
 // top row: number + status dot

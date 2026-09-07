@@ -25,6 +25,10 @@
         <field name="search_view_id" ref="sale.sale_order_view_search_inherit_quotation"/>
         <field name="context">{'search_default_my_quotation': 1, 'default_is_quote': True}</field>
         <field name="domain">[('is_quote','=', True)]</field>
+        <!-- Limpia el `path` heredado de una versión anterior de este fix
+             (ver comentario arriba): esta acción ya no debe competir por
+             'sales', eso lo dueña ahora la acción core. -->
+        <field name="path" eval="False"/>
     </record>
 
     <record id="sale_order_action" model="ir.actions.act_window">

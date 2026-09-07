@@ -3,9 +3,25 @@ import logging
 import re
 import unicodedata
 
+from .models.floor_layout import GRID_COLS
+
 _logger = logging.getLogger(__name__)
 
 _MODULE = 'idtx_plan_general_alpha'
+
+# Los layouts _TEJEDURIA_FLOOR_LAYOUT / _TINTORERIA_FLOOR_LAYOUT de abajo se
+# diseñaron a mano pensando en una cuadrícula de 24 columnas (el ancho
+# visible original, antes de que la cuadrícula pudiera crecer hacia la
+# derecha). GRID_COLS (importado del modelo) es hoy más ancho para permitir
+# ese crecimiento sin límite real — _to_current_encoding convierte cada
+# slot_index de esa base de diseño (24) a la codificación real que usa el
+# modelo, preservando la posición visual (fila, columna) exacta.
+_LEGACY_GRID_COLS = 24
+
+
+def _to_current_encoding(slot_index):
+    row, col = divmod(slot_index, _LEGACY_GRID_COLS)
+    return row * GRID_COLS + col
 
 
 def _slug(text):
@@ -216,19 +232,62 @@ def _get_or_create_department(env, nombre):
     return dept
 
 
+# Compañía real dueña de las máquinas de planta. Este módulo es del grupo
+# "idetex" y se instala con esa compañía activa, pero las máquinas (y las
+# órdenes de trabajo/mrp.workcenter reales que las usan) operan bajo
+# FULL PIMA S.A.C. — ver [[project_workcenter_check_company]].
+_EQUIPMENT_COMPANY_NAME = 'FULL PIMA S.A.C.'
+
+
+def _get_equipment_company(env):
+    """Resuelve la compañía dueña de las máquinas por NOMBRE, nunca por id
+    (el id de FULL PIMA S.A.C. no tiene por qué coincidir entre entornos).
+    Si no existe (p.ej. una BD de pruebas sin esa compañía), se degrada a la
+    compañía activa en vez de abortar la instalación completa."""
+    company = env['res.company'].search([('name', '=', _EQUIPMENT_COMPANY_NAME)], limit=1)
+    if not company:
+        _logger.warning(
+            'Plan General Alpha: no existe la compañía "%s"; los equipos se crearán en "%s".',
+            _EQUIPMENT_COMPANY_NAME, env.company.name,
+        )
+        return env.company
+    return company
+
+
+def _get_or_create_category(env, cache, nombre):
+    """Categoría de equipo (JERSERA, GAMUZA, TEÑIDORA...), derivada de la
+    primera palabra del nombre de la máquina. Sin company_id (compartida):
+    es una clasificación por tipo de máquina, no un dato propio de una
+    compañía, así que debe verse sin importar la compañía activa."""
+    cat = cache.get(nombre)
+    if cat:
+        return cat
+    Category = env['maintenance.equipment.category'].with_context(lang='en_US')
+    cat = Category.search([('name', '=', nombre)], limit=1)
+    if not cat:
+        cat = Category.create({'name': nombre, 'company_id': False})
+        _logger.info('Plan General Alpha: categoría de equipo creada: %s', nombre)
+    _track_owned(env, 'maintenance.equipment.category', cat.id, f'equip_categ_{_slug(nombre)}')
+    cache[nombre] = cat
+    return cat
+
+
 def _create_initial_equipment(env):
     """Crea/actualiza los equipos iniciales. Ya NO crea ni vincula ningún
     mrp.workcenter — el área de una máquina es su hr.department
     (Tejeduría/Tintorería). El puente con las órdenes de trabajo reales
-    (que sí usan mrp.workcenter, de otra compañía) se hace por departamento
-    en `idtx_mrp` — ver [[project_workcenter_check_company]]. Un equipo de
-    IDETEX no puede apuntar al centro de trabajo real de otra compañía sin
-    romper su configuración (`check_company`), así que no hace falta ni
-    conviene crear uno propio solo para este enlace."""
+    (que sí usan mrp.workcenter) se hace por departamento en `idtx_mrp` —
+    ver [[project_workcenter_check_company]]. Las máquinas pertenecen a
+    FULL PIMA S.A.C. (no a la compañía idetex bajo la que corre este
+    módulo); maintenance.equipment no exige check_company en
+    department_id/category_id, así que no hace falta que departamento o
+    categoría compartan compañía con el equipo para poder asignarlos."""
     Equipment = env['maintenance.equipment'].with_context(lang='en_US')
     fields_eq = Equipment._fields
     tiene_department = 'department_id' in fields_eq
     tiene_idtx = 'enabled' in fields_eq
+
+    target_company = _get_equipment_company(env)
 
     depts = {}
     if tiene_department:
@@ -241,7 +300,8 @@ def _create_initial_equipment(env):
 
     tiene_machine_state = 'machine_state' in fields_eq
 
-    creados = renombrados = omitidos = 0
+    categorias = {}
+    creados = actualizados = omitidos = 0
     for nombre, serial_no, modelo, dept_nombre, _wc_nombre, habilitado in _EQUIPOS_INICIALES:
         eq = Equipment.search([('serial_no', '=', serial_no)], limit=1)
 
@@ -250,19 +310,25 @@ def _create_initial_equipment(env):
             if m:
                 eq = Equipment.search([('serial_no', '=', m.group(1))], limit=1)
 
+        categoria = _get_or_create_category(env, categorias, nombre.split()[0])
+
         if eq:
             vals_upd = {}
             if eq.name != nombre:
                 vals_upd['name'] = nombre
             if eq.serial_no != serial_no:
                 vals_upd['serial_no'] = serial_no
+            if eq.company_id.id != target_company.id:
+                vals_upd['company_id'] = target_company.id
+            if eq.category_id != categoria:
+                vals_upd['category_id'] = categoria.id
             if vals_upd:
                 try:
                     eq.write(vals_upd)
-                    renombrados += 1
+                    actualizados += 1
                 except Exception:
                     _logger.warning(
-                        'Plan General Alpha: no se pudo renombrar equipo "%s".', nombre, exc_info=True
+                        'Plan General Alpha: no se pudo actualizar equipo "%s".', nombre, exc_info=True
                     )
             else:
                 omitidos += 1
@@ -273,7 +339,8 @@ def _create_initial_equipment(env):
             'name': nombre,
             'serial_no': serial_no,
             'model': modelo,
-            'company_id': env.company.id,
+            'company_id': target_company.id,
+            'category_id': categoria.id,
         }
         if tiene_department and dept_nombre in depts:
             vals['department_id'] = depts[dept_nombre].id
@@ -291,8 +358,8 @@ def _create_initial_equipment(env):
             _logger.warning('Plan General Alpha: no se pudo crear equipo "%s".', nombre, exc_info=True)
 
     _logger.info(
-        'Plan General Alpha: equipos iniciales — %d creados, %d renombrados, %d ya estaban al día.',
-        creados, renombrados, omitidos,
+        'Plan General Alpha: equipos iniciales — %d creados, %d actualizados, %d ya estaban al día.',
+        creados, actualizados, omitidos,
     )
 
 
@@ -309,6 +376,7 @@ def _create_floor_layouts(env, workcenter, layout_data):
     creados = corregidos = 0
     for entry in layout_data:
         serial_no, slot_index, *span = entry
+        slot_index = _to_current_encoding(slot_index)
         span_cols, span_rows = (span[0], span[1]) if len(span) == 2 else (1, 1)
 
         eq = Equipment.search([('serial_no', '=', serial_no)], limit=1)

@@ -14,7 +14,7 @@ sobre los modelos existentes de Control de Pedidos, MRP y Ventas.
     'website': "https://www.perucodex.com",
 
     'category': 'Manufacturing',
-    'version': '0.2',
+    'version': '0.5',
     'license': 'LGPL-3',
     'sequence': 54,
     'application': True,
