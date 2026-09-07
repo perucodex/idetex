@@ -4119,7 +4119,7 @@ msgstr "Código de máquina"
 #. module: idtx_laboratory
 #: model:res.groups,name:idtx_laboratory.group_module_laboratory_manager
 msgid "Manager"
-msgstr "Gerente"
+msgstr "Administrador"
 
 #. module: idtx_laboratory
 #: model:ir.model.fields,field_description:idtx_laboratory.field_color_recipe__message_has_error

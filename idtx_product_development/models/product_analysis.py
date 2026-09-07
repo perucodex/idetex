@@ -10,7 +10,10 @@ class ProductAnalysis(models.Model):
     _description = 'Product Analysis'
 
     name = fields.Char('Name', required=True, copy=False, readonly=False, default=lambda self: _('New'))
-    analysis_date = fields.Date('Analysis Date', required=True, default=lambda self: fields.Date.context_today(self))
+    # copy=False: al duplicar un analisis la fecha debe ser la de HOY
+    # (el default context_today), no la del original.
+    analysis_date = fields.Date('Analysis Date', required=True, copy=False,
+                                default=lambda self: fields.Date.context_today(self))
     partner_id = fields.Many2one(
         'res.partner', string='Customer', ondelete='restrict',
         domain="[('is_company', '=', True)]")
@@ -177,12 +180,15 @@ class ProductAnalysis(models.Model):
     def write(self, vals):
         # Propagate base process changes to technical sheets and their BoMs.
         # Captured BEFORE super() so we can compare old vs new value.
+        old_bases = {}
         if 'mrp_base_process_id' in vals:
             new_bp_id = vals.get('mrp_base_process_id') or False
             changed = [
                 r for r in self
                 if (r.mrp_base_process_id.id or False) != new_bp_id
             ]
+            # Proceso base anterior: define que fichas "seguian" al analisis.
+            old_bases = {r.id: r.mrp_base_process_id for r in changed}
         else:
             changed = []
         # Si vamos a propagar por cambio de ruta base, evitamos que la
@@ -192,7 +198,7 @@ class ProductAnalysis(models.Model):
         target = self.with_context(skip_route_propagation=True) if changed else self
         res = super(ProductAnalysis, target).write(vals)
         for rec in changed:
-            rec._propagate_base_process()
+            rec._propagate_base_process(old_base=old_bases.get(rec.id))
         # El código de producto se propaga AL GUARDAR (antes lo hacía el
         # onchange, que escribía en BD en cada tecleo).
         if 'product_code' in vals:
@@ -205,12 +211,28 @@ class ProductAnalysis(models.Model):
                     fichas.write({'product_code': rec.product_code})
         return res
 
-    def _propagate_base_process(self):
+    def _following_sheets(self, old_base=None):
+        """Fichas que SIGUEN al analisis: sin proceso base propio, o con el
+        mismo proceso base que el analisis (el actual, o el anterior si se
+        esta cambiando). Las que divergieron (proceso base propio distinto)
+        no se tocan desde el analisis."""
+        self.ensure_one()
+        ref = self.mrp_base_process_id | (old_base or self.env['mrp.base.process'])
+        return self.technical_sheet_ids.filtered(
+            lambda s: not s.mrp_base_process_id or s.mrp_base_process_id in ref)
+
+    def _propagate_base_process(self, old_base=None):
         """Refresh the routing lines, the technical sheets and the BoMs that
         depend on this analysis. Run when `mrp_base_process_id` is set,
         cleared, or replaced. Parameters configured by the operator on the
         technical route lines are intentionally reset — they were attached
         to operations that may not belong to the new base process.
+
+        Solo se actualizan las fichas que siguen al analisis (ver
+        `_following_sheets`); a estas se les asigna ademas el nuevo proceso
+        base. Las fichas con proceso base propio distinto se dejan intactas
+        y, si el cambio es explicito del analisis (old_base dado), se avisa
+        en el chatter del analisis.
 
         Per-line chatter from `technical.route.line` / `route.line.parameter`
         is suppressed via the `skip_route_line_chatter` context flag and
@@ -219,6 +241,8 @@ class ProductAnalysis(models.Model):
         self.ensure_one()
         base = self.mrp_base_process_id
         new_lines = list(base.process_ids.sorted(key=lambda p: p.sequence)) if base else []
+        followers = self._following_sheets(old_base)
+        skipped = self.technical_sheet_ids - followers
 
         # skip_route_line_chatter: evita chatter por linea (un solo resumen).
         # skip_route_propagation: evita que la reescritura de routing_ids /
@@ -237,8 +261,12 @@ class ProductAnalysis(models.Model):
                 for p in new_lines
             ]
 
-        # 2. Each technical sheet's route_line_ids + BoM operations.
-        for sheet in ctx_self.technical_sheet_ids:
+        # 2. Each FOLLOWING technical sheet: own base process + route_line_ids
+        #    + BoM operations (skip_route_propagation en el ctx evita que
+        #    technical.sheet.write reaplique la ruta por su cuenta).
+        for sheet in followers.with_env(ctx_self.env):
+            if sheet.mrp_base_process_id != base:
+                sheet.write({'mrp_base_process_id': base.id})
             sheet.route_line_ids.unlink()
             if new_lines:
                 sheet.route_line_ids = [
@@ -258,8 +286,12 @@ class ProductAnalysis(models.Model):
             new_name = base.name if base else _('(sin ruta)')
             # Post on the user-facing record (without our suppress context).
             sheet.sudo().message_post(
-                body=_("Ruta cambiada desde el análisis a: %s") % new_name
+                body=_("Ruta base actualizada desde el análisis a: %s") % new_name
             )
+        if skipped and old_base is not None:
+            self.sudo().message_post(body=_(
+                "Fichas con proceso base propio, no actualizadas: %s"
+            ) % ', '.join(skipped.mapped('name')))
 
     def _refresh_bom_operations(self, sheet):
         """Rebuild `operation_ids` of every BoM tied to a technical sheet.
@@ -331,7 +363,9 @@ class ProductAnalysis(models.Model):
             return
         for analysis in self:
             ordered = analysis.routing_ids.sorted(key=lambda r: r.sequence)
-            for sheet in analysis.technical_sheet_ids:
+            # Solo las fichas que siguen al analisis (las divergentes tienen
+            # proceso base propio y siguen a ese).
+            for sheet in analysis._following_sheets():
                 sheet_ctx = sheet.with_context(
                     skip_route_line_chatter=True, skip_route_propagation=True)
                 sheet_ctx.route_line_ids.unlink()
@@ -391,6 +425,7 @@ class ProductAnalysis(models.Model):
                 'gauge_id': self.gauge_id.id,
                 'stylo': rec.stylo,
                 'notes': rec.notes,
+                'mrp_base_process_id': self.mrp_base_process_id.id,
                 'route_line_ids': [Command.create({
                     'operation_id': route.operation_id.id,
                     'line_parameter_ids': [Command.create({'name': param.name}) for param in route.operation_id.parameter_ids],

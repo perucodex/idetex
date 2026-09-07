@@ -331,6 +331,14 @@ class MrpBaseProcess(models.Model):
         for base in self:
             for analysis in base.product_analysis_ids:
                 analysis._propagate_base_process()
+        # Fichas con proceso base PROPIO (divergentes de su analisis) que usan
+        # esta ruta: las que siguen al analisis ya se cubrieron arriba.
+        own = self.env['technical.sheet'].search([('mrp_base_process_id', 'in', self.ids)]).filtered(
+            lambda s: s.mrp_base_process_id != s.analysis_id.mrp_base_process_id)
+        for sheet in own:
+            sheet._apply_base_process(
+                rebuild=True,
+                message=_("Ruta actualizada desde su proceso base: %s") % sheet.mrp_base_process_id.name)
 
     def unlink(self):
         self.mapped('process_ids').unlink()

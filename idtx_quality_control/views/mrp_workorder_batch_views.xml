@@ -47,23 +47,30 @@
                         invisible="state != 'batch' or not can_eval_tono_acabado"/>
             </xpath>
 
-            <xpath expr="//group[@name='batch_info']" position="after">
-                <group name="qc_info" string="Calidad">
-                    <field name="qc_customer"/>
-                    <field name="qc_order_ref"/>
-                    <field name="qc_product_id"/>
-                    <field name="qc_product_ids" widget="many2many_tags"
-                           invisible="not qc_product_ids or len(qc_product_ids) &lt; 2"/>
-                    <field name="lab_dev_line_id"/>
-                    <field name="kilograms"/>
-                    <field name="roll_count"/>
-                    <field name="reprocess_cycle"/>
-                    <field name="user_id" widget="many2one_avatar_user"/>
-                    <field name="company_id" groups="base.group_multi_company"/>
-                </group>
-            </xpath>
-
             <xpath expr="//notebook" position="inside">
+
+                <!-- Datos de calidad como PESTAÑA (no en la cabecera): antes se
+                     insertaban como grupo dentro del bloque principal, entre
+                     datos de partida y color/receta, y desordenaban el formulario. -->
+                <page string="Calidad" name="qc_info_page">
+                    <group name="qc_info">
+                        <group name="qc_info_left">
+                            <field name="qc_customer"/>
+                            <field name="qc_order_ref"/>
+                            <field name="qc_product_id"/>
+                            <field name="qc_product_ids" widget="many2many_tags"
+                                   invisible="not qc_product_ids or len(qc_product_ids) &lt; 2"/>
+                            <field name="lab_dev_line_id"/>
+                        </group>
+                        <group name="qc_info_right">
+                            <field name="kilograms"/>
+                            <field name="roll_count"/>
+                            <field name="reprocess_cycle"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                </page>
 
                 <page string="Evaluaciones de Tono" name="qc_tone_page" invisible="not has_tono_eval_logs">
                     <field name="tono_eval_log_ids" nolabel="1"

@@ -74,7 +74,12 @@ class TechnicalSheet(models.Model):
     size_chart_ids = fields.One2many('technical.size.line', 'technical_id', string='Size Chart')
     route_line_ids = fields.One2many('technical.route.line', 'technical_id', string='Route Line')
     bom_id = fields.Many2one('mrp.bom', string='LdM')
-    mrp_base_process_id = fields.Many2one(related='analysis_id.mrp_base_process_id')
+    # Proceso base PROPIO de la ficha: nace del analisis (create) y el usuario
+    # puede cambiarlo aqui sin tocar el analisis ni las fichas hermanas. Una
+    # ficha "sigue" al analisis mientras su proceso base coincide con el de
+    # este; si diverge, los cambios de ruta del analisis ya no la pisan y
+    # pasa a seguir los cambios de lineas de su propio proceso base.
+    mrp_base_process_id = fields.Many2one('mrp.base.process', string='Base Process')
     # Campos de busqueda del analisis
     analysis_product_family_id = fields.Many2one(related='analysis_id.product_family_id', store=True, readonly=True, index=True)
     analysis_product_fiber_id = fields.Many2one(related='analysis_id.product_fiber_id', store=True, readonly=True, index=True)
@@ -95,10 +100,90 @@ class TechnicalSheet(models.Model):
                 ) if 'technical_date' in vals else None
                 vals['name'] = self.env['ir.sequence'].with_company(vals.get('company_id')).next_by_code(
                     'technical.sheet', sequence_date=seq_date) or _("New")
+            # La ficha nace con el proceso base del analisis.
+            if not vals.get('mrp_base_process_id') and vals.get('analysis_id'):
+                vals['mrp_base_process_id'] = self.env['product.analysis'].browse(
+                    vals['analysis_id']).mrp_base_process_id.id
         return super().create(vals_list)
 
+    @api.onchange('analysis_id')
+    def _onchange_analysis_id_base_process(self):
+        if self.analysis_id and not self.mrp_base_process_id:
+            self.mrp_base_process_id = self.analysis_id.mrp_base_process_id
+
+    def _base_process_route_commands(self):
+        """Comandos One2many para poblar route_line_ids desde el proceso base
+        propio (fases en orden, con sus parametros)."""
+        self.ensure_one()
+        return [
+            Command.create({
+                'sequence': line.sequence,
+                'operation_id': line.operation_id.id,
+                'line_parameter_ids': [
+                    Command.create({'name': param.name})
+                    for param in line.operation_id.parameter_ids
+                ],
+            })
+            for line in self.mrp_base_process_id.process_ids.sorted(key=lambda p: (p.sequence, p.id))
+            if line.operation_id
+        ]
+
+    def _apply_base_process(self, rebuild=True, message=None):
+        """Aplica el proceso base PROPIO de la ficha a su ruta y refresca su LdM.
+        Solo toca ESTA ficha (ni el analisis ni las hermanas).
+
+        rebuild=True: reconstruye route_line_ids desde el proceso base.
+        rebuild=False: conserva las lineas que ya tiene el registro (p.ej. la
+        vista previa del onchange que el cliente mando en el mismo guardado) y
+        solo completa los parametros que falten.
+        El chatter por linea se silencia y queda un unico resumen."""
+        Analysis = self.env['product.analysis']
+        for sheet in self:
+            ctx = sheet.with_context(skip_route_line_chatter=True, skip_route_propagation=True)
+            base = sheet.mrp_base_process_id
+            if rebuild:
+                ctx.route_line_ids.unlink()
+                if base:
+                    ctx.route_line_ids = ctx._base_process_route_commands()
+            else:
+                for line in ctx.route_line_ids:
+                    if not line.line_parameter_ids and line.operation_id.parameter_ids:
+                        line.line_parameter_ids = [
+                            Command.create({'name': param.name})
+                            for param in line.operation_id.parameter_ids
+                        ]
+            Analysis._refresh_bom_operations(sheet)
+            body = message or _("Ruta base de la ficha cambiada a: %s") % (base.name if base else _('(sin ruta)'))
+            sheet.sudo().message_post(body=body)
+
+    @api.onchange('mrp_base_process_id')
+    def _onchange_mrp_base_process_id(self):
+        # Vista previa en el formulario (igual que en el analisis): al elegir
+        # el Proceso base se muestran sus fases con sus parametros. Al guardar,
+        # write() aplica el cambio SOLO a esta ficha (ruta + LdM).
+        if not self.mrp_base_process_id:
+            self.route_line_ids = [Command.clear()]
+            return
+        self.route_line_ids = [Command.clear()] + self._base_process_route_commands()
+
     def write(self, vals):
-        res = super().write(vals)
+        target = self
+        base_changed = self.browse()
+        # skip_route_propagation: la escritura viene de la propagacion del
+        # analisis (que ya reconstruye la ruta y la LdM) -> no reaplicar aqui.
+        if 'mrp_base_process_id' in vals and not self.env.context.get('skip_route_propagation'):
+            new_bp_id = vals.get('mrp_base_process_id') or False
+            base_changed = self.filtered(lambda rec: (rec.mrp_base_process_id.id or False) != new_bp_id)
+            if base_changed:
+                # Las lineas de la vista previa (onchange) se crean en silencio
+                # y sin refrescar la LdM linea a linea; _apply_base_process
+                # refresca la LdM una vez y deja un unico resumen.
+                target = self.with_context(skip_route_line_chatter=True, skip_route_propagation=True)
+        res = super(TechnicalSheet, target).write(vals)
+        if base_changed:
+            # Si el cliente mando las lineas (vista previa del onchange, quiza
+            # ya retocadas a mano) se respetan; si no, se reconstruyen.
+            base_changed._apply_base_process(rebuild='route_line_ids' not in vals)
         # Sincroniza notes con la(s) línea(s) analysis.weaving.data enlazada(s)
         # (bidireccional con analysis.weaving.data.write). Flag anti-bucle.
         if 'notes' in vals and not self.env.context.get('_syncing_notes'):

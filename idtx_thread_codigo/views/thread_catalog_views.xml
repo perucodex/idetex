@@ -285,6 +285,13 @@
     </record>
 
     <!-- ===== Submenú "Hilado" dentro de Configuration ===== -->
+    <!-- Configuración de Desarrollo exige Administrador; el Gestor de Hilado
+         también debe verla para llegar a sus catálogos (solo ve este submenú,
+         los demás hijos exigen Administrador). Menú noupdate: en bases ya
+         instaladas lo aplica la migración 19.0.1.8.0. -->
+    <record id="idtx_product_development.dev_settings_menu" model="ir.ui.menu">
+        <field name="group_ids" eval="[(4, ref('group_thread_manager'))]"/>
+    </record>
     <menuitem id="menu_thread_catalog_config" name="Hilado"
         parent="idtx_product_development.dev_settings_menu" sequence="50" groups="idtx_thread_codigo.group_thread_manager"/>
 

@@ -124,6 +124,9 @@
                                 </field>
                             </page>
                             <page name="route_page" string="Routing">
+                                <group string="Routing Template">
+                                    <field name="mrp_base_process_id"/>
+                                </group>
                                 <field name="route_line_ids" groups="!idtx_product_development.group_module_product_development_manager">
                                     <list>
                                         <field name="sequence" widget="handle"/>

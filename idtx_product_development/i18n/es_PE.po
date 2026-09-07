@@ -2459,6 +2459,7 @@ msgstr "Líneas de Ruta"
 
 #. module: idtx_product_development
 #: model_terms:ir.ui.view,arch_db:idtx_product_development.product_analysis_form_view
+#: model_terms:ir.ui.view,arch_db:idtx_product_development.technical_sheet_form_view
 msgid "Routing Template"
 msgstr "Ruta Base"
 
