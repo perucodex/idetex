@@ -94,7 +94,17 @@ class PosRollReturn(models.Model):
             lot_vals['color_code'] = self.color_code
         if 'color_name' in lot_model_fields and self.color_name:
             lot_vals['color_name'] = self.color_name
-            
+
+        # Enlazar al lote padre para trazabilidad (devolución textil:
+        # el material devuelto es físicamente distinto del rollo original)
+        if 'idtx_parent_lot_id' in lot_model_fields and self.original_lot_name:
+            parent_lot = self.env['stock.lot'].search([
+                ('name', '=', self.original_lot_name),
+                ('product_id', '=', self.product_id.id),
+            ], limit=1)
+            if parent_lot:
+                lot_vals['idtx_parent_lot_id'] = parent_lot.id
+
         new_lot = self.env['stock.lot'].create(lot_vals)
 
         # Buscar el tipo de operación "Devoluciones POS"

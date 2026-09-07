@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+      Ajustes de menús de OTROS módulos, hechos desde aquí para no tocarlos.
+      Nota: si alguno de esos módulos se actualiza, su menú vuelve a su posición
+      original; basta re-actualizar este módulo para restaurar el orden.
+    -->
+
+    <!-- "Existencias PdV" (idtx_pos_report_stock) al nivel superior del POS,
+         entre Reportes (90) y Configuración (100). -->
+    <record id="idtx_pos_report_stock.menu_idtx_pos_stock_report" model="ir.ui.menu">
+        <field name="parent_id" ref="point_of_sale.menu_point_root"/>
+        <field name="sequence">95</field>
+    </record>
+
+    <!-- Orden del menú Reportes pedido por el usuario:
+         1-4 = nuestros reportes (Ventas Tienda, NC, ND, Devoluciones);
+         10-13 = reportes nativos detrás; Cierre y Control de Caja queda al final (100). -->
+    <record id="point_of_sale.menu_report_pos_order_all" model="ir.ui.menu">
+        <field name="sequence">10</field>
+    </record>
+    <record id="point_of_sale.menu_report_order_details" model="ir.ui.menu">
+        <field name="sequence">11</field>
+    </record>
+    <record id="point_of_sale.menu_report_daily_details" model="ir.ui.menu">
+        <field name="sequence">12</field>
+    </record>
+    <record id="pos_enterprise.menu_report_preparation_time" model="ir.ui.menu">
+        <field name="sequence">13</field>
+    </record>
+</odoo>

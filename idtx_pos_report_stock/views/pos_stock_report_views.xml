@@ -6,25 +6,54 @@
         <field name="model">idtx.pos.stock.report</field>
         <field name="arch" type="xml">
             <!-- decoration-danger: pinta la fila en rojo cuando is_reserved=True (rollo bloqueado) -->
+            <!-- Orden de columnas (izq → der) solicitado por operación:
+                 lote → stock(kg) → [muestra/kg en muestra los inyecta el módulo idtx_pos_sale_idetex]
+                 → color (cód./nombre) → producto (cód./descrip.) → partida → ubicación
+                 → bloq. → pedido que bloquea. El rollo se mantiene como columna opcional
+                 (no se muestra por defecto) porque el cajero no la usaba en esta vista. -->
             <list string="Existencias PdV" create="false" edit="false" delete="false"
                   decoration-danger="is_reserved">
                 <header>
                     <button name="reprint" string="Print Bar Code" type="object" class="btn-primary"/>
                     <button name="action_screen_barcode" string="Screen Bar Code" type="object" class="btn-secondary"/>
                     <button name="action_reubicar" string="Reubicar" type="object" class="btn-secondary"/>
+                    <!-- Acceso rápido al wizard nativo de scrap precargado con
+                         el tag 'Muestra'. Reemplaza el wizard custom anterior. -->
+                    <button name="action_scrap_muestra" string="Desechar como muestra"
+                            type="object" class="btn-warning"
+                            help="Abre el desecho nativo de Odoo precargado con el rollo seleccionado y el tag 'Muestra'."/>
+                    <!-- Acceso rápido a la vista nativa de ajustes de inventario
+                         (stock.quant editable) filtrada al lote+ubicación del rollo.
+                         Usado para devolver muestras, corregir mermas, etc. -->
+                    <button name="action_inventory_adjust" string="Ajustar stock"
+                            type="object" class="btn-info"
+                            help="Abre la vista nativa de ajustes de inventario filtrada al lote del rollo seleccionado, para sumar o restar kilos."/>
                 </header>
-                <field name="product_code"/>
-                <field name="product_name"/>
-                <field name="color_code"/>
-                <field name="color_name"/>
+                <field name="lot_name" string="N° Lote"/>
+                <field name="quantity" string="Stock (Kg)" sum="Total"/>
+                <!-- Atributos físicos del rollo (se cargan desde el Excel de Quant Imports).
+                     Rollos viejos sin datos se muestran como 0. -->
+                <field name="width" string="Ancho (m)"/>
+                <field name="density" string="Densidad (g/m²)"/>
+                <field name="color_code" string="Cód. Color"/>
+                <field name="color_name" string="Color"/>
+                <field name="product_code" string="Cód. Producción"/>
+                <field name="product_name" string="Descripción Producto"/>
                 <field name="partida"/>
-                <field name="roll_name"/>
-                <field name="quantity" sum="Total"/>
-                <field name="location_id"/>
-                <field name="lot_name"/>
+                <!-- Referencia del rollo (código P… del Quant Import), igual que
+                     la columna REFERENCIA del widget de Existencias en el POS -->
+                <field name="roll_name" string="Referencia"/>
+                <field name="location_id" string="Ubicación"/>
                 <!-- Columna visual del bloqueo: muestra badge con el pedido que lo reserva -->
                 <field name="is_reserved" widget="boolean_toggle" readonly="1" string="Bloq."/>
                 <field name="reserved_by_order_id" optional="show" string="Pedido que bloquea"/>
+                <!-- Campos disponibles pero ocultos por defecto (el usuario los puede
+                     activar desde el selector de columnas si los necesita). -->
+                <!-- Fecha de carga: viene del Quant Import que creó el rollo.
+                     Oculta por defecto; se activa desde el selector cuando
+                     el cajero quiere ver "cuándo entró este rollo". El orden
+                     por defecto de la lista ya es por esta fecha (desc). -->
+                <field name="import_date" string="Fecha de carga" optional="hide"/>
                 <field name="product_id" optional="hide"/>
                 <field name="lot_id" optional="hide"/>
                 <field name="partida_label" optional="hide"/>
@@ -48,6 +77,10 @@
                 <field name="roll_name"/>
                 <field name="product_id"/>
                 <field name="location_id"/>
+                <!-- Campo de búsqueda por fecha de carga: permite al cajero
+                     escribir una fecha exacta o seleccionar un rango desde el
+                     calendar picker del autocompletado. -->
+                <field name="import_date" string="Fecha de carga"/>
                 <!-- Filtro por defecto: solo mostrar lotes con stock disponible -->
                 <filter string="Con Stock" name="filter_with_stock"
                         domain="[('quantity', '>', 0)]"/>
@@ -56,7 +89,13 @@
                         domain="[('is_reserved', '=', True)]"/>
                 <filter string="Solo Disponibles" name="filter_only_available"
                         domain="[('is_reserved', '=', False)]"/>
-                <!-- Separador visual entre filtros y agrupaciones -->
+                <separator/>
+                <!-- Filtros preset de fecha de carga: Odoo expande este
+                     `date="import_date"` automáticamente a opciones por mes,
+                     trimestre y año + selector de rango. Solo afecta rollos
+                     cargados vía Quant Import (los demás tienen import_date
+                     NULL, no entran al filtro). -->
+                <filter string="Fecha de carga" name="group_import_date" date="import_date"/>
                 <separator/>
                 <group>
                     <filter string="Código" name="group_code" domain="[]" context="{'group_by':'product_label'}"/>
@@ -66,6 +105,7 @@
                     <filter string="Lote" name="group_lot" domain="[]" context="{'group_by':'lot_name'}"/>
                     <filter string="Ubicación" name="group_location" domain="[]" context="{'group_by':'location_id'}"/>
                     <filter string="Estado Bloqueo" name="group_reserved" domain="[]" context="{'group_by':'is_reserved'}"/>
+                    <filter string="Fecha de carga" name="group_by_import_date" domain="[]" context="{'group_by':'import_date'}"/>
                 </group>
             </search>
         </field>

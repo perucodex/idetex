@@ -79,263 +79,128 @@
         </xpath>
         <!-- Tabla de detalle de servicio de estampado digital -->
         <xpath expr="//div[span[@name='order_note']]" position="before">
-            <t t-if="doc.sale_type == 'service' and doc.is_digital">
+            <t t-if="doc.is_digital">
                 <div class="o_ps_pagebreak"/>
                 <h3 class="o_ps_title">Digital Printing Design Service Price Summary</h3>
-                <table class="o_ps_table">
+                <table class="table table-sm o_main_table o_ps_grid o_ignore_layout_styling" style="font-size:11px;">
                     <thead>
                         <tr>
-                            <th class="o_ps_th o_ps_w_product">Product</th>
-                            <th class="o_ps_th o_ps_w_design">Design</th>
-                            <th class="o_ps_th o_ps_w_technique">Technique</th>
-                            <th class="o_ps_th o_ps_w_technique">Fabric Base</th>
-                            <th class="o_ps_th o_ps_w_techdata">Tech Data</th>
-                            <th class="o_ps_th o_ps_w_range">Range</th>
-                            <th class="o_ps_th o_ps_w_price o_ps_right">Price / mt.</th>
-                            <th class="o_ps_th o_ps_w_strike o_ps_right">Price / Strike</th>
+                            <th class="text-start">Producto</th>
+                            <th class="text-start">Diseño</th>
+                            <th class="text-start">Fondo de tela</th>
+                            <th class="text-end">Ancho</th>
+                            <th class="text-end">Densidad</th>
+                            <th class="text-end">Rendimiento</th>
+                            <th class="text-start">Rango</th>
+                            <th class="text-end">Precio/mt</th>
+                            <th class="text-end">Precio / strike off</th>
                         </tr>
                     </thead>
-                    <t t-foreach="doc.order_line.filtered(lambda l: l.printing_design_id and l.printing_design_id.printing_type == 'digital')" t-as="line">
-                        <t t-set="design" t-value="line.printing_design_id"/>
-                        <t t-set="prices" t-value="(design.digital_unit_price_ids.sorted('sequence') or [])[:6]"/>
-                        <tbody class="o_ps_item_group">
-                            <tr>
-                                <td class="o_ps_td o_ps_vtop">
-                                    <div class="o_ps_product">
-                                        <strong t-field="line.name"/>
-                                    </div>
-                                </td>
-                                <td class="o_ps_td o_ps_vtop">
-                                    <div class="o_ps_design">
-                                        <div class="o_ps_design_code">
-                                            <strong t-field="design.code"/>
-                                        </div>
-                                        <div class="o_ps_design_desc" t-if="design.file_desc">
-                                            <span t-field="design.file_desc"/>
-                                        </div>
-
-                                        <t t-if="design.preview_image">
-                                            <img t-att-src="image_data_uri(design.preview_image)" class="o_ps_img"/>
-                                        </t>
-                                    </div>
-                                </td>
-                                <td class="o_ps_td o_ps_vtop">
-                                    <div class="o_ps_technique">
-                                        <div t-field="design.printing_type"/>
-                                        <div t-if="design.printing_type == 'rotary'" t-field="design.process_type_rotary"/>
-                                        <div t-if="design.printing_type == 'digital'" t-field="design.process_type_digital"/>
-                                    </div>
-                                </td>
-                                <td class="o_ps_td o_ps_vtop">
-                                    <div class="o_ps_technique">
-                                        <div t-field="design.fabric_base"/>
-                                    </div>
-                                </td>
-                                <td class="o_ps_td o_ps_td_techdata">
-                                    <table class="o_ps_tech_table">
-                                        <tr>
-                                            <td class="o_ps_tech_k">Width:</td>
-                                            <td class="o_ps_tech_v o_ps_right">
-                                                <span t-field="line.bom_id.technical_sheet_id.width"/>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="o_ps_tech_k">Density:</td>
-                                            <td class="o_ps_tech_v o_ps_right">
-                                                <span t-field="line.bom_id.technical_sheet_id.density"/>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="o_ps_tech_k">Yield:</td>
-                                            <td class="o_ps_tech_v o_ps_right">
-                                                <span t-esc="'%.2f' % (line.bom_id.technical_sheet_id.yield_meter or 0.0)"/>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                                <td class="o_ps_td o_ps_td_prices" colspan="2">
-                                    <table class="o_ps_prices_table">
-                                        <t t-if="prices">
-                                            <t t-foreach="prices" t-as="price">
-                                                <tr>
-                                                    <td class="o_ps_prices_range">
-                                                        <span t-field="price.range"/>
-                                                    </td>
-                                                    <td class="o_ps_prices_price o_ps_right">
-                                                        <span t-field="price.unit_price" t-options="{'widget':'monetary','display_currency':price.currency_id}"/>
-                                                    </td>
-                                                </tr>
-                                            </t>
-                                        </t>
-                                    </table>
-                                </td>
-                                <td class="o_ps_td o_ps_center">
-                                    <span t-esc="'%.2f' % (doc.company_id.strike_off or 0.0)"/>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </t>
+                    <tbody>
+                        <t t-foreach="doc.order_line.filtered(lambda l: l.printing_design_id and l.printing_design_id.printing_type == 'digital')" t-as="line">
+                            <t t-set="design" t-value="line.printing_design_id"/>
+                            <t t-set="prices" t-value="(design.digital_unit_price_ids.sorted('sequence') or [])[:6]"/>
+                            <t t-set="nrows" t-value="len(prices) or 1"/>
+                            <t t-foreach="range(nrows)" t-as="ri">
+                                <t t-set="price" t-value="prices[ri] if ri &lt; len(prices) else None"/>
+                                <tr>
+                                    <t t-if="ri == 0">
+                                        <td t-att-class="'text-start align-middle' + (' o_ps_bl' if line_last else '')" t-att-rowspan="nrows">
+                                            <strong t-field="line.name"/>
+                                        </td>
+                                        <td class="text-start align-middle" t-att-rowspan="nrows">
+                                            <div><strong t-field="design.code"/></div>
+                                            <div t-if="design.file_desc" class="text-muted"><span t-field="design.file_desc"/></div>
+                                            <div class="text-muted"><span t-field="design.printing_type"/><span t-if="design.process_type_digital"> · <span t-field="design.process_type_digital"/></span></div>
+                                            <img t-if="design.preview_image" t-att-src="image_data_uri(design.preview_image)" style="height:1.8cm; margin-top:3px;"/>
+                                        </td>
+                                        <td class="text-start align-middle" t-att-rowspan="nrows"><span t-field="design.fabric_base"/></td>
+                                        <td class="text-end align-middle" t-att-rowspan="nrows"><span t-field="line.bom_id.technical_sheet_id.width"/></td>
+                                        <td class="text-end align-middle" t-att-rowspan="nrows"><span t-field="line.bom_id.technical_sheet_id.density"/></td>
+                                        <td class="text-end align-middle" t-att-rowspan="nrows"><span t-esc="'%.2f' % (line.bom_id.technical_sheet_id.yield_meter or 0.0)"/></td>
+                                    </t>
+                                    <td class="text-start"><span t-if="price" t-field="price.range"/></td>
+                                    <td class="text-end"><span t-if="price" t-field="price.unit_price" t-options="{'widget':'monetary','display_currency':price.currency_id}"/></td>
+                                    <t t-if="ri == 0">
+                                        <td t-att-class="'text-end align-middle' + (' o_ps_br' if line_last else '')" t-att-rowspan="nrows"><span t-out="doc.company_id.strike_off or 0.0" t-options="{'widget': 'monetary', 'display_currency': design.currency_id}"/></td>
+                                    </t>
+                                </tr>
+                            </t>
+                        </t>
+                    </tbody>
                 </table>
+                <p class="text-muted" style="font-size:10px; margin-top:2px;">Precio por strike off: <span t-out="doc.company_id.strike_off or 0.0" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/></p>
             </t>
         </xpath>
         <!-- Tabla de detalle de servicio de estampado rotativo -->
         <xpath expr="//div[span[@name='order_note']]" position="before">
-            <t t-if="doc.sale_type == 'service' and doc.is_rotary">
+            <t t-if="doc.is_rotary">
                 <div class="o_ps_pagebreak"/>
                 <h3 class="o_ps_title">Rotary Printing Design Service Price Summary</h3>
-                <table class="o_ps_table">
+                <table class="table table-sm o_main_table o_ps_grid o_ignore_layout_styling" style="font-size:11px;">
                     <thead>
                         <tr>
-                            <th class="o_ps_th o_ps_w_product" rowspan="2">Product</th>
-                            <th class="o_ps_th o_ps_w_design" rowspan="2">Design</th>
-                            <th class="o_ps_th o_ps_w_technique" rowspan="2">Technique</th>
-                            <th class="o_ps_th o_ps_w_technique" rowspan="2">Fabric Base</th>
-                            <th class="o_ps_th o_ps_w_colors" rowspan="2">Colors</th>
-                            <th class="o_ps_th o_ps_w_production" colspan="5">
-                                Production
-                            </th>
-                            <th class="o_ps_th o_ps_w_sample" colspan="3">
-                                Sample
-                            </th>
+                            <th class="text-start" rowspan="2">Producto</th>
+                            <th class="text-start" rowspan="2">Diseño</th>
+                            <th class="text-start" rowspan="2">Fondo de tela</th>
+                            <th class="text-center" rowspan="2">Colores</th>
+                            <th class="text-center" colspan="5">Producción</th>
+                            <th class="text-center" colspan="3">Muestra</th>
                         </tr>
                         <tr>
-                            <th>Price / mt.</th>
-                            <th>Bonding Price / mt.</th>
-                            <th>Raport</th>
-                            <th>Cylinder Price</th>
-                            <th>Color Qty.</th>
-                            <th>Price / Strike</th>    
-                            <th>Min. Qty.</th>
-                            <th>Sample Price</th>
+                            <th class="text-end">Precio/mt</th>
+                            <th class="text-end">Bondeo/mt</th>
+                            <th class="text-center">Raport</th>
+                            <th class="text-end">Precio cilindro</th>
+                            <th class="text-center">Cant. colores</th>
+                            <th class="text-end">Precio / strike off</th>
+                            <th class="text-center">Cant. mín.</th>
+                            <th class="text-end">Precio muestra</th>
                         </tr>
                     </thead>
-                    <t t-foreach="doc.order_line.filtered(lambda l: l.printing_design_id and l.printing_design_id.printing_type == 'rotary')" t-as="line">
-                        <t t-set="design" t-value="line.printing_design_id"/>
-                        <t t-set="prices" t-value="(design.rotary_unit_price_ids.sorted('sequence') or [])[:3]"/>
-                        <tbody class="o_ps_item_group">
-                            <tr>
-                                <td class="o_ps_td o_ps_vtop">
-                                    <div class="o_ps_product">
-                                        <strong t-field="line.name"/>
-                                    </div>
-                                </td>
-                                <td class="o_ps_td o_ps_vtop">
-                                    <div class="o_ps_design">
-                                        <div class="o_ps_design_code">
-                                            <strong t-field="design.code"/>
-                                        </div>
-                                        <div class="o_ps_design_desc" t-if="design.file_desc">
-                                            <span t-field="design.file_desc"/>
-                                        </div>
-                                        <t t-if="design.preview_image">
-                                            <img t-att-src="image_data_uri(design.preview_image)" class="o_ps_img"/>
-                                        </t>
-                                    </div>
-                                </td>
-                                <td class="o_ps_td o_ps_vtop">
-                                    <div class="o_ps_technique">
-                                        <div t-field="design.printing_type"/>
-                                        <div t-if="design.printing_type == 'rotary'" t-field="design.process_type_rotary"/>
-                                        <div t-if="design.printing_type == 'digital'" t-field="design.process_type_digital"/>
-                                    </div>
-                                </td>
-                                <td class="o_ps_td o_ps_vtop">
-                                    <div class="o_ps_technique">
-                                        <div t-field="design.fabric_base"/>
-                                    </div>
-                                </td>
-                                <td class="o_ps_td o_ps_td_techdata">
-                                    <div class="o_ps_technique">
-                                        <div t-field="design.cylinder_qty" class="text-center"/>
-                                    </div>
-                                </td>
-                                <td class="o_ps_td o_ps_td_techdata">
-                                    <div class="o_ps_technique">
-                                        <div t-field="design.unit_price" class="text-center"/>
-                                    </div>
-                                </td>
-                                <td class="o_ps_td o_ps_td_techdata">
-                                    <div class="o_ps_technique">
-                                        <div t-field="design.bonding_price" class="text-center"/>
-                                    </div>
-                                </td>
-                                <td class="o_ps_td o_ps_td_prices">
-                                    <table class="o_ps_prices_table">
-                                        <t t-if="prices">
-                                            <t t-foreach="prices" t-as="price">
-                                                <tr>
-                                                    <td class="o_ps_prices_raport o_nowrap">
-                                                        <span t-field="price.raport"/>
-                                                    </td>
-                                                </tr>
-                                            </t>
-                                        </t>
-                                    </table>
-                                </td>
-                                <td class="o_ps_td o_ps_td_prices">
-                                    <table class="o_ps_prices_table">
-                                        <t t-if="prices">
-                                            <t t-foreach="prices" t-as="price">
-                                                <tr>
-                                                    <td class="o_ps_prices_price o_ps_right o_nowrap">
-                                                        <span t-field="price.unit_price" t-options="{'widget':'monetary','display_currency':price.currency_id}"/>
-                                                    </td>
-                                                </tr>
-                                            </t>
-                                        </t>
-                                    </table>
-                                </td>
-                                <td class="o_ps_td o_ps_td_prices">
-                                    <table class="o_ps_prices_table">
-                                        <t t-if="prices">
-                                            <t t-foreach="prices" t-as="price">
-                                                <tr>
-                                                    <td class="o_ps_prices_color_qty o_nowrap">
-                                                        <span t-field="price.color_qty"/>
-                                                    </td>
-                                                </tr>
-                                            </t>
-                                        </t>
-                                    </table>
-                                </td>
-                                <td class="o_ps_td o_ps_center">
-                                    <span t-esc="'%.2f' % (doc.company_id.strike_off or 0.0)"/>
-                                </td>
-                                <td class="o_ps_td o_ps_td_prices">
-                                    <table class="o_ps_prices_table">
-                                        <t t-if="prices">
-                                            <t t-foreach="prices" t-as="price">
-                                                <tr>
-                                                    <td class="o_ps_prices_sample_qty o_nowrap">
-                                                        <span t-field="price.sample_min_qty"/>
-                                                    </td>
-                                                </tr>
-                                            </t>
-                                        </t>
-                                    </table>
-                                </td>
-                                <td class="o_ps_td o_ps_td_prices">
-                                    <table class="o_ps_prices_table">
-                                        <t t-if="prices">
-                                            <t t-foreach="prices" t-as="price">
-                                                <tr>
-                                                    <td class="o_ps_prices_range o_ps_right">
-                                                        <span t-field="price.sample_price"/>
-                                                    </td>
-                                                </tr>
-                                            </t>
-                                        </t>
-                                    </table>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </t>
+                    <tbody>
+                        <t t-foreach="doc.order_line.filtered(lambda l: l.printing_design_id and l.printing_design_id.printing_type == 'rotary')" t-as="line">
+                            <t t-set="design" t-value="line.printing_design_id"/>
+                            <t t-set="prices" t-value="(design.rotary_unit_price_ids.sorted('sequence') or [])[:3]"/>
+                            <t t-set="nrows" t-value="len(prices) or 1"/>
+                            <t t-foreach="range(nrows)" t-as="ri">
+                                <t t-set="price" t-value="prices[ri] if ri &lt; len(prices) else None"/>
+                                <tr>
+                                    <t t-if="ri == 0">
+                                        <td t-att-class="'text-start align-middle' + (' o_ps_bl' if line_last else '')" t-att-rowspan="nrows">
+                                            <strong t-field="line.name"/>
+                                        </td>
+                                        <td class="text-start align-middle" t-att-rowspan="nrows">
+                                            <div><strong t-field="design.code"/></div>
+                                            <div t-if="design.file_desc" class="text-muted"><span t-field="design.file_desc"/></div>
+                                            <div class="text-muted"><span t-field="design.printing_type"/><span t-if="design.process_type_rotary"> · <span t-field="design.process_type_rotary"/></span></div>
+                                            <img t-if="design.preview_image" t-att-src="image_data_uri(design.preview_image)" style="height:1.8cm; margin-top:3px;"/>
+                                        </td>
+                                        <td class="text-start align-middle" t-att-rowspan="nrows"><span t-field="design.fabric_base"/></td>
+                                        <td class="text-center align-middle" t-att-rowspan="nrows"><span t-field="design.cylinder_qty"/></td>
+                                        <td class="text-end align-middle" t-att-rowspan="nrows"><span t-field="design.unit_price" t-options="{'widget':'monetary','display_currency':design.currency_id}"/></td>
+                                        <td class="text-end align-middle" t-att-rowspan="nrows"><span t-field="design.bonding_price" t-options="{'widget':'monetary','display_currency':design.currency_id}"/></td>
+                                    </t>
+                                    <td class="text-center"><span t-if="price" t-field="price.raport"/></td>
+                                    <td class="text-end"><span t-if="price" t-field="price.unit_price" t-options="{'widget':'monetary','display_currency':price.currency_id}"/></td>
+                                    <td class="text-center"><span t-if="price" t-field="price.color_qty"/></td>
+                                    <t t-if="ri == 0">
+                                        <td class="text-end align-middle" t-att-rowspan="nrows"><span t-out="doc.company_id.strike_off or 0.0" t-options="{'widget': 'monetary', 'display_currency': design.currency_id}"/></td>
+                                    </t>
+                                    <td class="text-center"><span t-if="price" t-field="price.sample_min_qty"/></td>
+                                    <td t-att-class="'text-end' + (' o_ps_br' if (line_last and ri_last) else '')"><span t-if="price" t-field="price.sample_price" t-options="{'widget':'monetary','display_currency':price.currency_id}"/></td>
+                                </tr>
+                            </t>
+                        </t>
+                    </tbody>
                 </table>
             </t>
         </xpath>
 
-        <!-- Tabla adicional para cotizaciones: resumen tecnico por analysis_id sin duplicados -->
-        <xpath expr="//div[span[@name='order_note']]" position="before">
+        <!-- Tabla adicional para cotizaciones: resumen tecnico por analysis_id sin duplicados.
+             Se inserta ANTES del bloque de estampado digital para que las tablas de
+             estampado (digital y rotativo) queden DESPUÉS de "Datos Proyectados". -->
+        <xpath expr="//t[@t-if='doc.is_digital']" position="before">
             <t t-if="doc.is_quote">
                 <t t-set="quote_weaving_lines" t-value="doc.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.analysis_id)"/>
                 <t t-set="quote_analyses" t-value="quote_weaving_lines.mapped('analysis_id')"/>

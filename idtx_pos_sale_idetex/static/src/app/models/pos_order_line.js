@@ -12,7 +12,18 @@ patch(PosOrderline.prototype, {
             price :
             (isNaN(parseFloat(price)) ? 0 : parseFloat("" + price));
 
-        const taxes = this.tax_ids || (this.product_id ? this.product_id.taxes_id : []);
+        // Impuestos "crudos" de la línea: el core del POS guarda en tax_ids los del
+        // producto SIN mapear (el mapeo de la posición fiscal ocurre recién al calcular).
+        let taxes = this.tax_ids || (this.product_id ? this.product_id.taxes_id : []);
+
+        // CRÍTICO: aplicar aquí el mismo mapeo de posición fiscal que usa el core en
+        // prepareBaseLineForTaxesComputationExtraValues. Si la orden tiene una FP que
+        // mapea IGV 18% (excluido) → IGV 18% INC (incluido), sin este mapeo veríamos
+        // el impuesto excluido, dividiríamos entre 1.18 y el POS cobraría ~15% de menos.
+        const fpos = this.order_id && this.order_id.fiscal_position_id;
+        if (fpos && taxes && taxes.length > 0) {
+            taxes = fpos.getTaxesAfterFiscalPosition(taxes);
+        }
 
         if (taxes && taxes.length > 0 && parsedPrice !== 0) {
             const ProductPrice = this.models["decimal.precision"].find(

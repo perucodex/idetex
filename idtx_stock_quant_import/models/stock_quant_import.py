@@ -84,6 +84,19 @@ class StockQuantImport(models.Model):
                 lot_name = row[header['lot'] - 1]
                 color_code = row[header['color'] - 1]
                 color_name = row[header['color_name'] - 1]
+                # Lectura tolerante de ancho/densidad: si la plantilla NO trae esas
+                # columnas (Excels viejos), se ignora y queda 0; si las trae con valor
+                # vacío o 0, también queda 0. Solo se persiste un valor > 0.
+                width_raw = row[header['ancho'] - 1] if 'ancho' in header else 0
+                dens_raw = row[header['dens'] - 1] if 'dens' in header else 0
+                try:
+                    width_val = float(width_raw or 0)
+                except (TypeError, ValueError):
+                    width_val = 0.0
+                try:
+                    density_val = int(float(dens_raw or 0))
+                except (TypeError, ValueError):
+                    density_val = 0
 
                 # Buscar si el lote ya existe en el sistema y tiene stock
                 lot_record = self.env['stock.lot'].search([('name', '=', lot_name), ('product_id.default_code', '=', product_code)], limit=1)
@@ -95,22 +108,39 @@ class StockQuantImport(models.Model):
 
                 if not (product_code and qty):
                     continue
-                
+
                 color = self.env['color.recipe'].search([('color_code','=', color_code)], limit=1)
+
+                # Autoasignar la RECETA solo si su nombre COINCIDE con la
+                # descripción importada (comparación tolerante a mayúsculas y
+                # espacios). Los códigos de color no son un identificador
+                # confiable: hay varios genéricos (0XLV0001, etc.) y un mismo
+                # código puede corresponder a colores distintos. Por eso, si el
+                # nombre de la receta encontrada NO coincide con lo que dice el
+                # Excel, se deja SIN receta (color_id vacío) para que el operador
+                # edite la descripción y se migre solo esa (sin código/receta).
+                def _norm(s):
+                    return (s or '').strip().upper()
+                color_ok = bool(color) and _norm(color.color_name) == _norm(color_name)
 
                 # Línea de auditoría
                 vals_list.append({
                     'import_id': rec.id,
                     'product_code': product_code,
                     'product_name': product_name,
-                    'color_id': color.id if color else False,
+                    'color_id': color.id if color_ok else False,
                     'color_code': color_code,
                     'color_name': color_name,
+                    # Copia inmutable del nombre de color tal cual vino del Excel
+                    # (el operador puede editar color_name; esto preserva el original).
+                    'color_name_import': color_name,
                     'ref': refe_interna,
                     'ident_lot': ident_lote,
                     'lot_name': lot_name,
                     'location_id': rec.location_id.id,
                     'quantity': float(qty),
+                    'width': width_val,
+                    'density': density_val,
                     'red_flag': exists,
                 })
                 
@@ -131,7 +161,28 @@ class StockQuantImport(models.Model):
 
         for row in self.line_ids:
 
-            if not (row.product_code and row.quantity) or row.red_flag:
+            if not (row.product_code and row.quantity):
+                continue
+
+            # Si el lote ya tiene stock (red_flag): NO recreamos producto/batch/lot/quant,
+            # pero SÍ aprovechamos para actualizar ancho/densidad del rollo si la línea
+            # trae valores > 0 (caso típico: completar rollos viejos importados sin esos datos).
+            if row.red_flag:
+                if row.width > 0 or row.density > 0:
+                    product = Product.search([('default_code', '=', row.product_code)], limit=1)
+                    if product:
+                        lot = Lote.search([
+                            ('name', '=', row.lot_name),
+                            ('product_id', '=', product.id),
+                        ], limit=1)
+                        if lot and lot.roll_id:
+                            patch_vals = {}
+                            if row.width > 0:
+                                patch_vals['width'] = row.width
+                            if row.density > 0:
+                                patch_vals['density'] = row.density
+                            if patch_vals:
+                                lot.roll_id.write(patch_vals)
                 continue
 
             product = Product.search([('default_code', '=', row.product_code)], limit=1)
@@ -153,37 +204,19 @@ class StockQuantImport(models.Model):
             else:
                 # Asegurar que esté disponible en PdV aunque ya exista
                 product.product_tmpl_id.available_in_pos = True
-            if row.color_id:
-                color = row.color_id
-            else:
-                # if row.color_name:
-                #     color = Color.search([('color_name','ilike', '%' + row.color_name + '%')], limit=1)
-                if row.color_code:
-                    color = Color.search([('color_code','=', row.color_code)], limit=1)
-                elif row.color_name:
-                    color = Color.search([('color_code','=', row.color_code),('color_name','=', row.color_name)], limit=1)
-                    row.color_code = '00000000'
-            if not color:
-                # raise UserError(_('Color code %s not found') % color_code)
-                cpt = self.env['color.process.type'].search([('code','=',row.color_code[:2])])
-                cr = self.env['color.range'].search([('code','=',row.color_code[2:3])])
-                ci = self.env['color.intensity'].search([('code','=',row.color_code[3:4])])
-                labdev = LabDev.create({
-                    'partner_id': self.env.company.partner_id.id, 
-                    'lab_dev_line_ids': [
-                        Command.create({
-                            # 'product_id':product.id,
-                            'color_name': row.color_name,
-                            'color_process_type_id': cpt.id,
-                            'color_range_id': cr.id,
-                            'color_intensity_id': ci.id,
-                            'color_code': row.color_code,
-                            'color_recipe_ids': [Command.create({'state': 'approved',})],
-                        }),
-                    ]
-                })
-                color = labdev.lab_dev_line_ids.color_recipe_ids
-            
+            # === Resolución de color (flexible, sin auto-crear recetas) ===
+            # Regla acordada:
+            #  - Si la línea tiene RECETA asignada (color_id) -> se usa esa receta.
+            #    (color_id solo se autoasigna cuando el nombre de la receta
+            #     coincide con la descripción del Excel; o el operador la asignó
+            #     a mano en la pantalla de carga.)
+            #  - Si NO hay receta (código genérico o color que no corresponde) ->
+            #    se migra SOLO la descripción de color al lote (color_description),
+            #    sin código ni receta. NO se auto-crea ninguna receta en el
+            #    laboratorio (antes sí se creaba, generando recetas basura).
+            color = row.color_id                        # recordset color.recipe (vacío si no coincide/no asignó)
+            color_desc = (row.color_name or '').strip() # descripción libre (editable por el operador)
+
             batch = Batch.search([('name','=', row.ident_lot)])
             if not batch:
                 # Crear batch
@@ -194,37 +227,63 @@ class StockQuantImport(models.Model):
 
             # Buscar rollo existente para evitar duplicados
             roll = self.env['mrp.production.roll'].search([('name', '=', row.ref), ('product_id', '=', product.product_tmpl_id.id)], limit=1)
+            # Vals físicos opcionales: solo se incluyen si el Excel trae > 0.
+            # Si vienen en 0/vacío, NO se sobrescribe el valor previo (preserva
+            # datos cargados en importaciones anteriores).
+            physical_vals = {}
+            if row.width and row.width > 0:
+                physical_vals['width'] = row.width
+            if row.density and row.density > 0:
+                physical_vals['density'] = row.density
+
             if not roll:
-                # Crear rollo
+                # Crear rollo. Setea import_id apuntando a este import como
+                # origen del rollo (para trazabilidad y filtros por fecha de
+                # carga en el reporte Existencias PdV).
                 roll = self.env['mrp.production.roll'].create({
                     'batch_id': batch.id,
                     'product_id': product.product_tmpl_id.id,
                     'quantity': 1,
                     'gross_weight': row.quantity,
                     'net_weight': row.quantity,
+                    'import_id': self.id,
+                    **physical_vals,
                 })
                 roll.name = row.ref
             else:
-                # Actualizar pesos si ya existe
+                # Actualizar pesos y atributos físicos. También refrescamos
+                # import_id: si un rollo se vuelve a "validar" en un nuevo
+                # import (sin red_flag, es decir el lote estaba en cero), es
+                # razonable atribuirlo al import más reciente.
                 roll.write({
                     'batch_id': batch.id,
                     'gross_weight': row.quantity,
                     'net_weight': row.quantity,
+                    'import_id': self.id,
+                    **physical_vals,
                 })
             
             lot = Lote.search([('name','=', row.lot_name),('product_id','=', product.id)], limit=1)
             if not lot:
-                # Crear lote
-                lot = self.env['stock.lot'].create({
+                # Crear lote. Con receta -> color_recipe_id; sin receta -> se
+                # migra solo la descripción libre (color_description).
+                lot_vals = {
                     'name': row.lot_name,
                     'product_id': product.id,
-                    'color_recipe_id': color.id,
                     'roll_id': roll.id,
-                })
+                }
+                if color:
+                    lot_vals['color_recipe_id'] = color.id
+                else:
+                    lot_vals['color_description'] = color_desc
+                lot = self.env['stock.lot'].create(lot_vals)
             else:
                 lot.roll_id = roll
                 if color:
                     lot.color_recipe_id = color.id
+                else:
+                    # Sin receta: guardar/actualizar la descripción libre.
+                    lot.color_description = color_desc
 
             roll.lot_id = lot
 
@@ -345,11 +404,20 @@ class StockQuantImportLine(models.Model):
     recipe_color_name = fields.Char(related='color_id.color_name')
     color_code = fields.Char('Import Color Code')
     color_name = fields.Char('Import Color Name')
+    # Valor original del nombre de color tal cual vino del Excel. color_name es
+    # editable por el operador (para crear la descripción cuando no hay receta);
+    # este campo preserva el original para auditoría. Oculto en la vista.
+    color_name_import = fields.Char('Descripción original (Excel)', readonly=True)
     ref = fields.Char('Reference')
     ident_lot = fields.Char('Ident Lot')
     lot_name = fields.Char('Lot Name')
     location_id = fields.Many2one('stock.location', readonly=True)
     quantity = fields.Float(digits='Product Unit of Measure', readonly=True)
+    # Atributos físicos opcionales del rollo. Si el Excel los trae se propagan
+    # al mrp.production.roll; si vienen en 0 o no existe la columna, se
+    # preserva lo que ya tenga el rollo.
+    width = fields.Float('Ancho (m)', digits=(6, 2), readonly=True)
+    density = fields.Integer('Densidad (g/m²)', readonly=True)
     red_flag = fields.Boolean('red_flag')
 
     @api.onchange('color_id')

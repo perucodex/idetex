@@ -26,6 +26,34 @@
                 <span t-esc="line.idtx_get_color_name()"/>
             </td>
         </xpath>
+
+        <!-- ============================================================
+             FIX: forzar formato a 2 decimales en el "Precio Unitario"
+             ============================================================
+             En Odoo 19 el campo account.move.line.price_unit usa
+             min_display_digits='Product Price' (mínimo 2 decimales pero
+             muestra los que tenga el valor). Cuando los impuestos están
+             como price_include=True, el precio se guarda SIN IGV
+             (división por 1.18), y eso genera valores con 4+ decimales
+             como 21.186440677966104. Visualmente esto se ve mal en el
+             PDF de factura/boleta/nota de crédito.
+
+             Solución: sobreescribir el <span> que pinta price_unit para
+             usar formato fijo de 2 decimales vía t-options.
+             NO toca los datos en BD — solo la presentación del PDF.
+             Aplica a facturas, boletas y notas de crédito por igual.
+             ============================================================ -->
+        <xpath expr="//td[@name='td_price_unit']/span" position="replace">
+            <!-- t-options con widget=float + decimal_precision fuerza el formato a usar
+                 la precisión decimal "Product Price" (configurada a 2 dígitos en BD).
+                 Esto reemplaza el t-field original que respetaba min_display_digits.
+                 Nota: la celda td_price_unit_grouped del core ya usa este mismo
+                 t-options correctamente — no necesita override. -->
+            <span t-if="not hide_prices"
+                  class="text-nowrap"
+                  t-out="line.price_unit"
+                  t-options="{'widget': 'float', 'decimal_precision': 'Product Price'}">9.00</span>
+        </xpath>
     </template>
 
     <!-- Quitamos la tabla de lotes -->

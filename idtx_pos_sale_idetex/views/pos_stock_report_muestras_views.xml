@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Herencia del list view de idtx.pos.stock.report.
+
+        Originalmente este archivo contenía las columnas/filtros del flujo
+        custom de muestras (Muestra / Kg en muestra / Solo Muestras / Solo
+        Existencias). Esa funcionalidad fue removida el 2026-06-25 en favor
+        de las herramientas nativas de Odoo (stock.scrap + Ajuste de inventario).
+
+        Lo único que queda: reemplazar la columna Many2one nativa
+        `reserved_by_order_id` (que muestra el `name` '/' de pedidos en draft)
+        por el campo computado `reserved_by_order_label` que arma un texto
+        legible con ticket + pos_reference.
+    -->
+    <record id="view_idtx_pos_stock_report_list_inherit_muestras" model="ir.ui.view">
+        <field name="name">idtx.pos.stock.report.list.inherit.reserved_label</field>
+        <field name="model">idtx.pos.stock.report</field>
+        <field name="inherit_id" ref="idtx_pos_report_stock.view_idtx_pos_stock_report_list"/>
+        <field name="arch" type="xml">
+            <!-- Reemplazar la columna 'reserved_by_order_id' (Many2one que muestra
+                 el name '/' cuando el pedido está en draft) por el campo computed
+                 reserved_by_order_label que arma un texto legible con ticket + ref. -->
+            <field name="reserved_by_order_id" position="replace">
+                <field name="reserved_by_order_label" optional="show" string="Pedido que bloquea"/>
+            </field>
+        </field>
+    </record>
+</odoo>

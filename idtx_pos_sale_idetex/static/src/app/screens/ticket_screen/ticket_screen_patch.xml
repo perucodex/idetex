@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates id="template" xml:space="preserve">
     <t t-name="idtx_pos_sale_idetex.TicketScreen" t-inherit="point_of_sale.TicketScreen" t-inherit-mode="extension" owl="1">
-        
+
         <!-- 1. Forzar distribución 50/50 en pantallas grandes -->
         <xpath expr="//div[hasclass('rightpane')]" position="attributes">
             <attribute name="t-attf-style">{{ !ui.isSmall ? 'flex: 0 0 50% !important; max-width: 50% !important; background: #f8f9fa;' : '' }}</attribute>
@@ -10,7 +10,7 @@
             <attribute name="t-attf-style">{{ !ui.isSmall ? 'flex: 0 0 50% !important; max-width: 50% !important; border-left: 2px solid #dee2e6;' : '' }}</attribute>
         </xpath>
 
-        <!-- 2. Cabecera del Listado de Órdenes -->
+        <!-- 2. Cabecera del Listado de Órdenes (izquierda) -->
         <xpath expr="//table[hasclass('table')]/tbody" position="before">
             <thead t-if="!ui.isSmall" class="bg-white text-muted small text-uppercase fw-bold border-bottom">
                 <tr>
@@ -29,9 +29,49 @@
         <xpath expr="//td[7]" position="attributes"><attribute name="class">d-none</attribute></xpath>
         <xpath expr="//td[8]" position="attributes"><attribute name="class">d-none</attribute></xpath>
 
-        <!-- 3. Cabecera del Detalle de la Orden -->
+        <!-- 3. Cabecera del Detalle de la Orden + Barra de Marcado para reembolso -->
+        <!-- ============================================================ -->
+        <!-- Se inserta antes de OrderDisplay. Solo aparece cuando hay una -->
+        <!-- orden sincronizada (pagada) seleccionada, porque solo en ese  -->
+        <!-- modo (isOrderSynced) el cajero puede marcar rollos a devolver -->
+        <!-- ============================================================ -->
         <xpath expr="//OrderDisplay" position="before">
+            <!-- Barra de marcado masivo (solo en modo reembolso) -->
+            <div t-if="!ui.isSmall and _selectedSyncedOrder and isOrderSynced"
+                 class="idtx-refund-actionbar d-flex justify-content-between align-items-center py-2 px-3 mb-1 bg-white border-bottom shadow-sm">
+                <!-- Indicadores en vivo: cuántos rollos y cuántos kilos van a devolverse -->
+                <div class="d-flex gap-3 align-items-center">
+                    <span class="badge bg-success fs-6 px-3 py-2">
+                        <i class="fa fa-check-square-o me-1" role="img" aria-label="Rollos marcados" title="Rollos marcados"/>
+                        <t t-esc="totalRefundLines"/> rollos
+                    </span>
+                    <span class="badge bg-primary fs-6 px-3 py-2">
+                        <i class="fa fa-balance-scale me-1" role="img" aria-label="Kilos a devolver" title="Kilos a devolver"/>
+                        <t t-esc="totalRefundKilos.toFixed(2)"/> Kg a devolver
+                    </span>
+                </div>
+                <!-- Botones para marcar/desmarcar todos los rollos de la orden -->
+                <div class="d-flex gap-2">
+                    <button t-on-click="() => this.markAllForRefund()"
+                            class="btn btn-sm btn-success">
+                        <i class="fa fa-check-square me-1" role="img" aria-label="Marcar todos" title="Marcar todos"/>
+                        Marcar todos
+                    </button>
+                    <button t-on-click="() => this.unmarkAllForRefund()"
+                            class="btn btn-sm btn-outline-secondary">
+                        <i class="fa fa-square-o me-1" role="img" aria-label="Quitar selección" title="Quitar selección"/>
+                        Quitar selección
+                    </button>
+                </div>
+            </div>
+
+            <!-- Cabecera de columnas del detalle de la orden (siempre visible) -->
             <div t-if="!ui.isSmall and _selectedSyncedOrder" class="idtx-detail-header d-flex align-items-center w-100 py-2 px-3 border-bottom bg-white fw-bold text-muted shadow-sm" style="font-size: 0.7rem; text-transform: uppercase;">
+                <!-- Columna del checkbox (solo en modo reembolso) -->
+                <div t-if="isOrderSynced" style="width: 40px;" class="text-center">Sel.</div>
+                <!-- Columna 'Devolver': muestra los kilos que el cajero está reembolsando
+                     de cada rollo individualmente. Solo visible en modo reembolso. -->
+                <div t-if="isOrderSynced" style="width: 75px;" class="text-end pe-2">Devolver</div>
                 <div style="width: 80px;">Kilos</div>
                 <div class="flex-grow-1 px-2">Artículo</div>
                 <div style="width: 100px;">Color</div>
@@ -41,21 +81,119 @@
             </div>
         </xpath>
 
-        <!-- 4. Reestructuración TOTAL de los PADS (Botones y Teclado) para igualar al Carrito -->
+        <!-- 4. Reemplazo de la OrderDisplay para inyectar checkbox por rollo -->
+        <!-- ============================================================ -->
+        <!-- Buscamos la OrderDisplay ORIGINAL del core (la que renderiza  -->
+        <!-- cada Orderline) y la envolvemos con un wrapper que incluye el -->
+        <!-- checkbox a la izquierda. Solo aplicamos cuando isOrderSynced  -->
+        <!-- (modo reembolso); fuera de ese modo el comportamiento queda   -->
+        <!-- exactamente igual que en core.                                -->
+        <!-- ============================================================ -->
+        <xpath expr="//Orderline[@t-on-click]" position="replace">
+            <!-- Modo reembolso: con checkbox + columna 'Devolver' + Orderline -->
+            <t t-if="isOrderSynced">
+                <!-- Sombreado por devoluciones previas: rojo = rollo ya devuelto
+                     completo (no se puede volver a devolver), crema = devuelto
+                     parcialmente (solo queda el saldo). -->
+                <div class="idtx-refund-row d-flex align-items-stretch"
+                     t-att-class="{
+                        'idtx-marked': this.isLineMarkedForRefund(line),
+                        'idtx-refund-total': this.getLineRefundState(line) === 'total',
+                        'idtx-refund-parcial': this.getLineRefundState(line) === 'parcial',
+                     }">
+                    <!-- Columna del checkbox: click toggle, no propaga al wrapper.
+                         Desactivado si el rollo ya se devolvió completo. -->
+                    <div class="idtx-check-cell d-flex align-items-center justify-content-center"
+                         style="width: 40px; flex-shrink: 0;">
+                        <input type="checkbox"
+                               t-att-checked="this.isLineMarkedForRefund(line)"
+                               t-att-disabled="this.getLineRefundState(line) === 'total'"
+                               t-on-click="(ev) => this.toggleLineRefundMark(line, ev)"
+                               class="form-check-input idtx-roll-check"/>
+                    </div>
+                    <!-- Columna 'Devolver': muestra kilos a reembolsar de ESTE rollo,
+                         leídos del estado uiState.lineToRefund que mantiene el POS.
+                         Si la cantidad es 0/undefined, mostramos un guion gris discreto. -->
+                    <div class="idtx-refund-qty-cell d-flex align-items-center justify-content-end pe-2"
+                         style="width: 75px; flex-shrink: 0;">
+                        <t t-set="_refundQty" t-value="line.order_id?.uiState?.lineToRefund?.[line.uuid]?.qty || 0"/>
+                        <t t-if="_refundQty > 0">
+                            <span class="fw-bold text-primary" style="font-size: 0.95rem;">
+                                <t t-esc="env.utils.formatProductQty(_refundQty)"/>
+                            </span>
+                        </t>
+                        <t t-else="">
+                            <span class="text-muted">—</span>
+                        </t>
+                    </div>
+                    <!-- La Orderline original (sin tocar) con su selección normal.
+                         Le quitamos la línea "DEVOLVERÁ: X Kg" que aparecía como subtexto
+                         porque esa info ahora vive en la columna 'Devolver' de arriba. -->
+                    <div class="flex-grow-1" style="min-width: 0;">
+                        <Orderline line="line"
+                                   t-on-click="() => this.onClickOrderline(line)"
+                                   class="{'selected': line.id === _selectedOrderlineId}"/>
+                        <!-- Detalle de devoluciones previas del rollo. Va FUERA del
+                             Orderline porque la plantilla compacta de idetex oculta
+                             la lista de detalles interna en pantalla (solo recibo). -->
+                        <div t-if="this.getLineRefundState(line) === 'total'"
+                             class="idtx-nota-devuelto-total ps-2 pb-1" style="font-size: 0.8rem;">
+                            <strong>ROLLO YA DEVUELTO COMPLETO</strong>
+                        </div>
+                        <div t-elif="this.getLineRefundState(line) === 'parcial'"
+                             class="idtx-nota-devuelto-parcial ps-2 pb-1" style="font-size: 0.8rem;">
+                            <span>Devuelto </span>
+                            <strong t-esc="env.utils.formatProductQty(line.refundedQty)"/>
+                            <span> Kg · quedan </span>
+                            <strong t-esc="env.utils.formatProductQty(line.qty - line.refundedQty)"/>
+                            <span> Kg</span>
+                        </div>
+                    </div>
+                </div>
+            </t>
+            <!-- Modo NO reembolso (ej. previsualizar orden activa): comportamiento original -->
+            <t t-else="">
+                <Orderline line="line"
+                           t-on-click="() => this.onClickOrderline(line)"
+                           class="{'selected': line.id === _selectedOrderlineId}">
+                    <t t-set="toRefundDetail" t-value="line.order_id?.uiState?.lineToRefund?.[line.uuid]" />
+                    <li t-if="!pos.isProductQtyZero(line.refundedQty)"
+                        class="info refund-note mt-1">
+                        <strong t-esc="env.utils.formatProductQty(line.refundedQty)" />
+                        <span> Reembolsado</span>
+                    </li>
+                    <li t-if="!pos.isProductQtyZero(toRefundDetail?.qty)" class="info to-refund-highlight refund-note mt-1 fw-bold text-primary">
+                        <t t-set="_destinationOrderUid" t-value="toRefundDetail.destinationOrder?.uuid"/>
+                        <t t-set="refundQty" t-value="env.utils.formatProductQty(toRefundDetail.qty)"/>
+                        <t t-if="_destinationOrderUid">
+                            Reembolsando <t t-esc="refundQty" /> en
+                            <span t-esc="_destinationOrderUid"
+                                class="order-link ms-1 text-decoration-underline cursor-pointer"
+                                t-on-click.stop="() => this.onClickRefundOrderUid(_destinationOrderUid)" />
+                        </t>
+                        <t t-else="">
+                            DEVOLVERÁ: <t t-esc="refundQty" /> Kg
+                        </t>
+                    </li>
+                </Orderline>
+            </t>
+        </xpath>
+
+        <!-- 5. Reestructuración TOTAL de los PADS (Botones y Teclado) -->
         <xpath expr="//div[hasclass('pads')]" position="replace">
             <div t-if="_selectedSyncedOrder" class="idtx-pads-container d-flex flex-column bg-white border-top">
-                
+
                 <!-- Mantener la clase 'subpads' para compatibilidad con otros módulos (ej. pos_hr) -->
                 <div class="subpads d-flex flex-column h-100">
                     <!-- Fila Superior: Teclado (Izquierda) + Resumen y Botones de Acción (Derecha) -->
                     <div class="d-flex flex-row h-100 p-2 gap-2">
-                        
+
                         <!-- Teclado Izquierdo -->
                         <div class="numpad-container" style="width: 45%;">
                             <Numpad class="'small shadow-sm'" buttons="getNumpadButtons()"/>
                         </div>
 
-                        <!-- Botones de Acción (sin bloque de resumen duplicado: el resumen ya aparece arriba en la cabecera del detalle de la orden) -->
+                        <!-- Botones de Acción -->
                         <div class="summary-actions-container d-flex flex-column flex-grow-1 gap-2">
 
                             <!-- Botones de Control Compactos -->
@@ -72,7 +210,6 @@
                             </div>
 
                             <!-- Actionpad (Botón Cliente y Reembolso) -->
-                            <!-- Pasamos la orden seleccionada para que el resumen muestre sus totales (kilos/rollos/subtotal/impuestos/total) -->
                             <ActionpadWidget
                                 partner="_selectedSyncedOrder?.getPartner()"
                                 actionName.translate="Refund"

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Extensión de la vista form de stock.lot para mostrar la cadena de
+        trazabilidad de devoluciones encadenadas:
+          - Lote padre (de qué rollo se derivó este lote)
+          - Lotes derivados (qué rollos vinieron de este, por devoluciones posteriores)
+
+        Solo se muestran si tienen valor, para no saturar el formulario
+        de lotes que no son derivados (rollos originales sin hijos).
+    -->
+    <record id="view_stock_lot_lineage_inherit" model="ir.ui.view">
+        <field name="name">stock.lot.form.lineage.inherit</field>
+        <field name="model">stock.lot</field>
+        <field name="inherit_id" ref="stock.view_production_lot_form"/>
+        <field name="arch" type="xml">
+            <!-- Insertar el grupo de trazabilidad después del nombre del lote -->
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="idtx_parent_lot_id"
+                       readonly="1"
+                       options="{'no_create': True, 'no_open': False}"
+                       invisible="not idtx_parent_lot_id"/>
+            </xpath>
+
+            <!-- Añadir una pestaña con los lotes derivados -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Linaje (devoluciones)"
+                      invisible="not idtx_parent_lot_id and not idtx_child_lot_ids">
+                    <group>
+                        <group string="Lote padre">
+                            <field name="idtx_parent_lot_id"
+                                   readonly="1"
+                                   nolabel="1"
+                                   options="{'no_create': True}"/>
+                        </group>
+                        <group string="Lotes derivados (devoluciones de este)">
+                            <field name="idtx_child_lot_ids"
+                                   readonly="1"
+                                   nolabel="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="product_id"/>
+                                    <field name="create_date"/>
+                                </list>
+                            </field>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

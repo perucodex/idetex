@@ -22,12 +22,12 @@ class PosRollReturnWizard(models.TransientModel):
             ('pack_lot_ids', '!=', False),
             ('qty', '>', 0)
         ]
-        
+
         if self.pos_category_id:
             domain.append(('product_id.pos_categ_ids', 'in', [self.pos_category_id.id]))
 
         order_lines = self.env['pos.order.line'].search(domain)
-        
+
         lines = []
         for line in order_lines:
             for lot in line.pack_lot_ids:
@@ -41,7 +41,7 @@ class PosRollReturnWizard(models.TransientModel):
                     'color_name': stock_lot.color_name if stock_lot else '',
                     'qty': line.qty,
                 }))
-        
+
         self.line_ids = [(5, 0, 0)] + lines
 
     def action_confirm_returns(self):

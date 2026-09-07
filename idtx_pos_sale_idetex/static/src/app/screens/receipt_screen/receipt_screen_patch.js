@@ -14,7 +14,8 @@ patch(OrderPaymentValidation.prototype, {
     // Aprovechamos este gancho para actualizar el stock en memoria sin bloquear la pantalla de recibo.
     async afterOrderValidation() {
         const result = await super.afterOrderValidation(...arguments); // ejecutar lógica original primero
-        this.pos.refreshStockData().catch(                             // actualizar stock en segundo plano
+        // silent=true: el cajero acaba de cobrar; el toast de éxito de venta ya da feedback.
+        this.pos.refreshStockData(true).catch(                         // actualizar stock en segundo plano
             e => console.error('IDTX: Stock refresh falló:', e)
         );
         return result;

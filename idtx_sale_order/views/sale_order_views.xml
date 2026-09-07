@@ -54,9 +54,12 @@
             </xpath>
             <field name="payment_term_id" position="attributes">
                 <attribute name="required">1</attribute>
+                <!-- En la orden de venta confirmada ya no se renegocian los
+                     términos de pago. -->
+                <attribute name="readonly">state == 'sale'</attribute>
             </field>
             <xpath expr="//field[@name='payment_term_id']" position="before">
-                <field name="sale_type" required="is_company_produce or not is_subscription" options="{'no_create': True, 'no_open': True}" invisible="not is_company_produce or is_subscription"/>
+                <field name="sale_type" required="is_company_produce or not is_subscription" options="{'no_create': True, 'no_open': True}" invisible="not is_company_produce or is_subscription" readonly="state == 'sale'"/>
             </xpath>
             <xpath expr="//field[@name='payment_term_id']" position="after">
                 <field name="lab_dev_ids" widget="many2many_tags" required="state == 'sale'" options="{'no_create': True, 'no_open': True}" invisible="is_quote or not is_company_produce or not need_labdev" readonly="state == 'sale'" force_save="1"/>
@@ -115,7 +118,9 @@
                 <widget name="printing_design_status_widget" column_invisible="parent.is_quote or not parent.is_company_produce" width="20px"/>
                 <field name="printing_design_name" column_invisible="parent.is_quote or not parent.is_company_produce" optional="hide"/>
                 <field name="bom_id" options="{'no_create': True}" required="is_weaving and parent.is_company_produce and parent.is_quote" readonly="not is_weaving" domain="[('product_tmpl_id','=',product_template_id)]" optional="hide" column_invisible="not parent.is_quote or not parent.is_company_produce"/>
-                <field name="bom_id" options="{'no_create': True}" required="is_weaving and parent.is_company_produce and not parent.is_quote" readonly="not is_weaving" domain="[('product_tmpl_id','=',product_template_id)]" optional="hide" column_invisible="parent.is_quote or not parent.is_company_produce" groups="base.group_system"/>
+                <!-- En el pedido (is_quote=False) la LdM viene copiada de la
+                     cotización: solo lectura y oculta por defecto. -->
+                <field name="bom_id" options="{'no_create': True}" readonly="1" force_save="1" domain="[('product_tmpl_id','=',product_template_id)]" optional="hide" column_invisible="parent.is_quote or not parent.is_company_produce" groups="base.group_system"/>
                 <field name="operation_ids" options="{'no_create': True}" required="parent.sale_type == 'service' and parent.is_company_produce and is_weaving" readonly="not is_weaving or parent.sale_type != 'service'" domain="[('id','in',available_operation_ids)]" widget="many2many_tags" force_save="1" optional="hide" column_invisible="not parent.is_quote or not parent.is_company_produce"/>
                 <field name="weaving_loss" readonly="not is_weaving" optional="hide" widget="percentage" column_invisible="not parent.is_quote or not parent.is_company_produce"/>
                 <field name="production_loss" readonly="not is_weaving" optional="hide" widget="percentage" column_invisible="not parent.is_quote or not parent.is_company_produce"/>
@@ -151,6 +156,9 @@
             <xpath expr="//notebook/page/field[@name='order_line']/list/field[@name='discount']" position="attributes">
                 <attribute name="readonly">not parent.is_quote and is_salesman and parent.is_company_produce and is_weaving</attribute>
                 <attribute name="force_save">1</attribute>
+                <!-- El descuento se negocia en la cotización: en el pedido
+                     (is_quote=False) la columna no debe aparecer. -->
+                <attribute name="column_invisible">not parent.is_quote and parent.is_company_produce</attribute>
             </xpath>
 
             <field name="origin" position="after">

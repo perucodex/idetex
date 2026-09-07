@@ -3,10 +3,17 @@ import { patch } from "@web/core/utils/patch";
 
 patch(ProductScreen.prototype, {
     async _barcodeProductAction(code) {
-        let product = await this._getProductByBarcode(code);
         const barcodeString = typeof code === 'string' ? code : (code.base_code || code.code);
+        // Optimización (2026-07-10): las etiquetas GS1 de rollos miden ~38 caracteres;
+        // ningún código de barras de producto es así. Saltamos las 4 búsquedas nativas
+        // (por código completo) que siempre fallaban para estas etiquetas.
+        const esEtiquetaGS1 = barcodeString && barcodeString.startsWith('01') && barcodeString.length > 20;
+        let product = esEtiquetaGS1 ? null : await this._getProductByBarcode(code);
         let barcodeOption = code;
         let productQty = 1; // Default quantity
+        // Color del rollo escaneado: se asigna a la línea al final, igual que
+        // lo hace el widget de Existencias (antes las líneas escaneadas quedaban sin color)
+        let rollColorName = null;
 
         // 0. Búsqueda por GS1 (QR Especial)
         if (!product && barcodeString && barcodeString.startsWith('01')) {
@@ -14,8 +21,9 @@ patch(ProductScreen.prototype, {
             const gs1Data = this._parseGS1(barcodeString);
             if (gs1Data) {
                 console.log("[IDTX] GS1 Parsed:", gs1Data);
-                // Buscar por GTIN (barcode en Odoo)
-                product = this.pos.models["product.product"].getAll().find(p => p.barcode === gs1Data.gtin);
+                // Buscar por GTIN vía mapa cacheado (antes: recorrido lineal de
+                // todos los productos en cada escaneo)
+                product = this._idtxProductByGtin(gs1Data.gtin);
                 
                 if (!product) {
                     console.log("[IDTX] GTIN no encontrado en memoria. Buscando en servidor:", gs1Data.gtin);
@@ -27,7 +35,55 @@ patch(ProductScreen.prototype, {
                 }
 
                 if (product) {
-                    productQty = gs1Data.weight;
+                    // ===== Blindaje (2026-07-08): validar el lote contra Existencias PdV =====
+                    // Antes se aceptaba el lote TAL CUAL venía del escáner: un escáner
+                    // desconfigurado (o un teclado a través de una VM) metía lotes
+                    // corruptos ("c#83604-080") y se guardaban pedidos con rollos
+                    // inexistentes, sin reserva y sin trazabilidad. Ahora el lote debe
+                    // corresponder a un rollo REAL, con stock y libre; si no, se rechaza
+                    // con aviso en pantalla para que el cajero se entere al instante.
+                    const reportModel = this.pos.models["idtx.pos.stock.report"];
+                    if (reportModel) {
+                        // Comparación sin distinguir mayúsculas/minúsculas ni espacios
+                        const scanned = String(gs1Data.lot || "").trim().toLowerCase();
+                        const quant = reportModel.getAll().find(
+                            q => (q.lot_name || "").trim().toLowerCase() === scanned
+                        );
+                        const notificar = (msg, tipo, fijo) => {
+                            if (this.sound) this.sound.play("scan-error");
+                            if (this.env.services.notification) {
+                                this.env.services.notification.add(msg, { type: tipo, sticky: fijo });
+                            }
+                            this.numberBuffer.reset();
+                        };
+                        // Rechazo 1: el lote no corresponde a NINGÚN rollo conocido
+                        if (!quant) {
+                            notificar(
+                                `Rollo "${gs1Data.lot}" NO encontrado en Existencias PdV. Escaneo rechazado: ` +
+                                `verifique el escáner o refresque el POS (F5) si el rollo es de una carga reciente.`,
+                                "danger", true
+                            );
+                            return;
+                        }
+                        // Rechazo 2: rollo sin stock disponible (ya vendido o en cero)
+                        if (!(quant.quantity > 0)) {
+                            notificar(`Rollo ${quant.lot_name} sin stock disponible. Escaneo rechazado.`, "danger", true);
+                            return;
+                        }
+                        // Rechazo 3: rollo bloqueado por otro pedido guardado
+                        // (isQuantReservedByOtherOrder viene del patch de idtx_pos_sale_idetex)
+                        if (this.isQuantReservedByOtherOrder && this.isQuantReservedByOtherOrder(quant)) {
+                            notificar(`Rollo ${quant.lot_name} bloqueado por otro pedido guardado. No se puede escanear.`, "warning", false);
+                            return;
+                        }
+                        // Lote canónico (mayúsculas correctas) y peso del SISTEMA (no el de
+                        // la etiqueta): si el rollo se partió, el stock real es el vigente.
+                        gs1Data.lot = quant.lot_name;
+                        productQty = quant.quantity;
+                        rollColorName = quant.color_name || "";
+                    } else {
+                        productQty = gs1Data.weight;
+                    }
                     barcodeOption = { type: 'lot', code: gs1Data.lot };
                 }
             }
@@ -57,7 +113,7 @@ patch(ProductScreen.prototype, {
                 console.log("[IDTX] Buscando en Reporte Técnico por Lote/Referencia:", searchTerm);
                 try {
                     const domain = ["|", ["lot_name", "ilike", searchTerm], ["roll_name", "ilike", searchTerm]];
-                    const reportRecords = await this.pos.data.searchRead("idtx.pos.stock.report", domain, ["product_id", "lot_name", "roll_name", "quantity"], { limit: 1 });
+                    const reportRecords = await this.pos.data.searchRead("idtx.pos.stock.report", domain, ["product_id", "lot_name", "roll_name", "quantity", "color_name"], { limit: 1 });
 
                     if (reportRecords && reportRecords.length > 0) {
                         const reportRaw = reportRecords[0];
@@ -78,6 +134,7 @@ patch(ProductScreen.prototype, {
                         if (product) {
                             barcodeOption = { type: 'lot', code: reportRaw.lot_name };
                             productQty = reportRaw.quantity || 1;
+                            rollColorName = reportRaw.color_name || "";
                             console.log("[IDTX] Peso detectado:", productQty, "Lote:", reportRaw.lot_name);
                         }
                     } else {
@@ -138,6 +195,14 @@ patch(ProductScreen.prototype, {
                 { code: barcodeOption, merge: false }, // merge: false para evitar agrupar rollos distintos
                 product.needToConfigure()
             );
+            // Asignar el color del rollo a la línea recién creada,
+            // igual que lo hace el widget de Existencias (addSelectedQuants)
+            if (rollColorName !== null && order) {
+                const newLine = order.getSelectedOrderline();
+                if (newLine) {
+                    newLine.color_name = rollColorName;
+                }
+            }
             this.numberBuffer.reset();
             this.showOptionalProductPopupIfNeeded(product);
             return;
@@ -148,8 +213,27 @@ patch(ProductScreen.prototype, {
     },
 
     /**
+     * Mapa GTIN → producto, construido una sola vez y reconstruido solo si
+     * cambia la cantidad de productos cargados (ej. loadNewProducts).
+     * Evita recorrer todos los productos en cada escaneo.
+     */
+    _idtxProductByGtin(gtin) {
+        const productos = this.pos.models["product.product"].getAll();
+        if (!this._idtxGtinMap || this._idtxGtinMapSize !== productos.length) {
+            this._idtxGtinMap = new Map();
+            for (const p of productos) {
+                if (p.barcode) {
+                    this._idtxGtinMap.set(p.barcode, p);
+                }
+            }
+            this._idtxGtinMapSize = productos.length;
+        }
+        return this._idtxGtinMap.get(gtin);
+    },
+
+    /**
      * Parsea un string en formato GS1 (01 GTIN 3102 WEIGHT 10 LOT)
-     * @param {string} code 
+     * @param {string} code
      * @returns {object|null}
      */
     _parseGS1(code) {

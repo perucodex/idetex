@@ -1,1 +1,5 @@
 *.pyc
+
+# Copias manuales de respaldo (no versionar)
+*.bak
+*.bak_*

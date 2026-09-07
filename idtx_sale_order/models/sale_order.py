@@ -173,7 +173,11 @@ class SaleOrder(models.Model):
             'finance_approval_user_id': self.env.user.id,
             'finance_approval_date': fields.Datetime.now(),
         })
-        return pending_orders._run_sale_confirmation()
+        res = pending_orders._run_sale_confirmation()
+        # Tras la aprobación financiera el pedido queda bloqueado: cualquier
+        # cambio posterior exige desbloquearlo conscientemente.
+        pending_orders.filtered(lambda o: o.state == 'sale').sudo().action_lock()
+        return res
 
     def action_quotation_send(self):
         if self.need_approval:
@@ -236,26 +240,9 @@ class SaleOrder(models.Model):
         self._validate_sale_confirmation_requirements()
         res = super(SaleOrder, self).action_confirm()
         for rec in self:
-            production_company = rec.company_id._get_production_company()
-            for line in rec.order_line:
-                if line.product_uom_qty and line.product_id.is_weaving and line.bom_id:
-                    # production_state = line.bom_id.technical_sheet_id.production_state
-                    production_env = self.env['mrp.production'].sudo().with_company(production_company)
-                    prd = production_env.create({
-                        'product_tmpl_id': line.product_id.product_tmpl_id.id,
-                        'product_qty': line.product_uom_qty,
-                        'bom_id': line.bom_id.id,
-                        'sale_order_line_id': line.id,
-                        'production_type': rec.sale_type,
-                        'company_id': production_company.id,
-                    })
-                    # La línea "ve" la OF por el o2m inverso de
-                    # sale_order_line_id (ya seteado arriba).
-                    self.sudo().production_ids = [(4, prd.id)]
-                    # if prd.color_recipe_id and production_state and production_state != 'Sample':
-                    if prd.color_recipe_id:
-                        prd.action_confirm()
-                    prd.do_unreserve()
+            # La creación de OF vive en la línea para reutilizarla al agregar
+            # productos a un pedido ya confirmado.
+            rec.order_line._create_weaving_productions()
             if not rec.company_id.is_company_produce or not rec.has_weaving_line:
                 rec.is_quote = False
         return res
@@ -511,12 +498,15 @@ class SaleOrder(models.Model):
 
                     # Cantidad por debajo del mínimo de producción: antes se
                     # aceptaba sin decir nada y el pedido llegaba a planta con
-                    # una cantidad que no se puede tejer/teñir.
-                    if line.min_qty and line.product_uom_qty < line.min_qty:
+                    # una cantidad que no se puede tejer/teñir. Solo en el
+                    # pedido de venta (is_quote=False): en la cotización no
+                    # debe salir ni bloquear la creación del pedido. Una línea
+                    # en 0 es una línea anulada (su OF se elimina): no avisa.
+                    if not order.is_quote and line.min_qty and line.product_uom_qty and line.product_uom_qty < line.min_qty:
                         order.weaving_warning += _(
                             'El producto %(prod)s tiene %(qty)s %(uom)s y su '
                             'cantidad mínima es %(min)s: confirma con producción '
-                            'antes de cotizar.',
+                            'antes de crear el pedido.',
                             prod=line.product_id.product_tmpl_id.display_name,
                             qty=line.product_uom_qty,
                             uom=line.product_uom_id.name or 'kg',
@@ -580,7 +570,11 @@ class SaleOrder(models.Model):
 
         finance_orders = self.filtered(lambda order: order.state == 'pending_finance_approval' and order._requires_sale_approval_workflow())
         if finance_orders:
-            return finance_orders._run_sale_confirmation()
+            res = finance_orders._run_sale_confirmation()
+            # Mismo bloqueo que en action_finance_approve: aprobado
+            # financieramente => pedido bloqueado.
+            finance_orders.filtered(lambda o: o.state == 'sale').sudo().action_lock()
+            return res
 
         regular_orders = self.filtered(lambda order: not order._requires_sale_approval_workflow())
         if regular_orders:

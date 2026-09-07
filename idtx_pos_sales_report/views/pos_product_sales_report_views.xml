@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ===== Vista LISTA: una fila por línea vendida; filas devueltas resaltadas ===== -->
+    <record id="view_idtx_pos_product_sales_report_list" model="ir.ui.view">
+        <field name="name">idtx.pos.product.sales.report.list</field>
+        <field name="model">idtx.pos.product.sales.report</field>
+        <field name="arch" type="xml">
+            <list string="Ventas por Producto" create="false" edit="false" delete="false"
+                  default_order="date_order desc" decoration-warning="devuelto">
+                <field name="date_order" widget="datetime"/>
+                <field name="partner_vat"/>
+                <field name="partner_id"/>
+                <field name="product_id"/>
+                <field name="color_name"/>
+                <field name="kilos" sum="Total kilos"/>
+                <field name="price_unit"/>
+                <field name="total" sum="Suma Total"/>
+                <field name="pos_reference"/>
+                <field name="devuelto" widget="boolean_toggle" readonly="1" string="¿Devuelto?"/>
+                <!-- Ocultos por defecto -->
+                <field name="tipo_venta" optional="hide"/>
+                <field name="doc_name" string="Serie y Número" optional="hide"/>
+                <field name="doc_rectificado" optional="hide"/>
+                <field name="pedido_devuelto" optional="hide"/>
+                <field name="session_id" optional="hide"/>
+                <field name="config_id" optional="hide"/>
+                <field name="user_id" optional="hide"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="company_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ===== Vista PIVOT: Producto × Cliente, kilos y total, para ranking ===== -->
+    <record id="view_idtx_pos_product_sales_report_pivot" model="ir.ui.view">
+        <field name="name">idtx.pos.product.sales.report.pivot</field>
+        <field name="model">idtx.pos.product.sales.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Ventas por Producto" sample="1">
+                <field name="product_id" type="row"/>
+                <field name="partner_id" type="row"/>
+                <field name="kilos" type="measure"/>
+                <field name="total" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ===== Búsqueda ===== -->
+    <record id="view_idtx_pos_product_sales_report_search" model="ir.ui.view">
+        <field name="name">idtx.pos.product.sales.report.search</field>
+        <field name="model">idtx.pos.product.sales.report</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="product_id" string="Producto (tela)"/>
+                <field name="partner_id" string="Cliente"/>
+                <field name="partner_vat" string="RUC / DNI"/>
+                <field name="color_name" string="Color"/>
+                <field name="pos_reference" string="Pedido"/>
+                <filter name="f_devuelto" string="Solo devueltas" domain="[('devuelto', '=', True)]"/>
+                <separator/>
+                <filter name="f_fecha" string="Fecha" date="date_order"/>
+                <group>
+                    <filter name="g_producto" string="Producto" domain="[]" context="{'group_by': 'product_id'}"/>
+                    <filter name="g_cliente" string="Cliente" domain="[]" context="{'group_by': 'partner_id'}"/>
+                    <filter name="g_color" string="Color" domain="[]" context="{'group_by': 'color_name'}"/>
+                    <filter name="g_tipo" string="Tipo de venta" domain="[]" context="{'group_by': 'tipo_venta'}"/>
+                    <filter name="g_dia" string="Día" domain="[]" context="{'group_by': 'date_order:day'}"/>
+                    <filter name="g_mes" string="Mes" domain="[]" context="{'group_by': 'date_order:month'}"/>
+                    <filter name="g_vendedor" string="Vendedor" domain="[]" context="{'group_by': 'user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ===== Acción y menú ===== -->
+    <record id="action_idtx_pos_product_sales_report" model="ir.actions.act_window">
+        <field name="name">Ventas por Producto</field>
+        <field name="res_model">idtx.pos.product.sales.report</field>
+        <!-- Vista por defecto = tabla dinámica (pivot); la lista queda como alternativa -->
+        <field name="view_mode">pivot,list</field>
+        <field name="view_id" ref="view_idtx_pos_product_sales_report_pivot"/>
+        <field name="search_view_id" ref="view_idtx_pos_product_sales_report_search"/>
+        <!-- Agrupado por Producto desde que se abre (el nombre del reporte lo dice) -->
+        <field name="context">{'group_by': ['product_id']}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Sin ventas en el período seleccionado</p>
+            <p>Solo ventas concretadas (nunca borradores ni pedidos cancelados).
+               Las líneas devueltas (por nota de crédito o devolución sin
+               comprobante) se muestran resaltadas, no se ocultan.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_idtx_pos_product_sales_report"
+              name="Ventas por Producto"
+              parent="point_of_sale.menu_point_rep"
+              action="action_idtx_pos_product_sales_report"
+              sequence="5"/>
+
+</odoo>

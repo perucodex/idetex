@@ -30,7 +30,8 @@ patch(PosStore.prototype, {
         this.mobile_pane = "right";
         // Refrescar el modelo de stock para reflejar las nuevas reservas (rollos en rojo con 🔒).
         // En background para no bloquear la UI; si falla solo loggeamos.
-        this.refreshStockData().catch(e => console.error('IDTX: Stock refresh tras guardar falló:', e));
+        // silent=true: el cajero ya tiene feedback "Order saved for later", no spamear toast.
+        this.refreshStockData(true).catch(e => console.error('IDTX: Stock refresh tras guardar falló:', e));
     },
 
     /*
@@ -43,13 +44,20 @@ patch(PosStore.prototype, {
         // Ejecutar la lógica original primero (selecciona la siguiente orden, etc.)
         const result = await super.afterOrderDeletion(...arguments);
         // Refrescar el stock en background: el servidor ya liberó las reservas (state cambió a 'cancel').
-        this.refreshStockData().catch(e => console.error('IDTX: Stock refresh tras eliminar falló:', e));
+        // silent=true: ya hubo feedback en la cancelación; no necesitamos otro toast.
+        this.refreshStockData(true).catch(e => console.error('IDTX: Stock refresh tras eliminar falló:', e));
         return result;
     },
 
     // Recarga el modelo idtx.pos.stock.report desde el servidor y actualiza la memoria del POS.
     // Elimina los lotes que ya no tienen stock (excluidos por HAVING SUM >= 0 en la vista SQL).
-    async refreshStockData() {
+    //
+    // Parámetros:
+    //   silent (Boolean, default false) — si true, NO muestra notificaciones al usuario.
+    //   Se usa true cuando la llamada viene de hooks automáticos (post-guardar pedido,
+    //   post-cancelar), donde el cajero ya tiene feedback de la acción principal.
+    //   Cuando viene del botón "Actualizar Stock" manual, silent=false → muestra toast.
+    async refreshStockData(silent = false) {
         const fields = [                    // campos definidos en _load_pos_data_fields
             'id', 'product_id', 'product_name', 'product_code', 'product_label',
             'lot_id', 'lot_name', 'partida', 'partida_label', 'roll_id', 'roll_name',
@@ -82,18 +90,45 @@ patch(PosStore.prototype, {
             const stockModel = this.models['idtx.pos.stock.report'];   // referencia al modelo en memoria
             const freshIds = new Set(freshRecords.map(r => r.id));     // IDs actuales del servidor
 
+            // Contar antes de borrar para reportar diferencias al cajero
+            const oldRecords = stockModel.getAll();
+            const oldIds = new Set(oldRecords.map(r => r.id));
+            let removed = 0;
             // Eliminar del modelo en memoria los lotes que ya no existen en el servidor (agotados)
-            for (const record of stockModel.getAll()) {
+            for (const record of oldRecords) {
                 if (!freshIds.has(record.id)) {
                     stockModel.delete(record);                          // quita el lote de la tabla
+                    removed++;
                 }
             }
+            const added = freshRecords.filter(r => !oldIds.has(r.id)).length;
+            const total = freshRecords.length;
 
             // Actualizar o insertar los registros frescos en el modelo en memoria
             this.models.loadConnectedData({ 'idtx.pos.stock.report': freshRecords });
 
+            // Notificación al usuario (solo si la llamada NO es silenciosa).
+            // Nota: en Odoo 19, _t() NO acepta argumentos posicionales como Python —
+            // solo recibe el string a traducir. Para interpolar usamos template literals.
+            if (!silent) {
+                let msg;
+                if (added === 0 && removed === 0) {
+                    msg = `${_t("Stock actualizado: sin cambios")} (${total} rollos)`;
+                } else {
+                    msg = `${_t("Stock actualizado")}: ${total} rollos (+${added} nuevos, -${removed} agotados)`;
+                }
+                this.notification.add(msg, { type: "success" });
+            }
+
         } catch (e) {
-            console.error('IDTX: Error al actualizar stock:', e);      // log de error sin interrumpir el POS
+            console.error('IDTX: Error al actualizar stock:', e);
+            // Notificación de error visible al usuario (también solo si no es silent)
+            if (!silent) {
+                this.notification.add(
+                    `${_t("Error al actualizar stock")}: ${e.message || e}`,
+                    { type: "danger" }
+                );
+            }
         }
     },
 });

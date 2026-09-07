@@ -1,0 +1,212 @@
+// ============================================================================
+// FLUJO DE REEMBOLSO DEL POS — MARCADO PERSISTENTE POR ROLLO
+// ============================================================================
+// El cajero entra a Órdenes → click un pedido pagado → Reembolso. Cada fila de
+// rollo tiene un checkbox a la izquierda; al marcarlo se queda PERSISTENTE
+// (verde) hasta que se quite. Aparte se muestra grande la cantidad de kilos
+// que se devolverán de cada rollo.
+
+.ticket-screen {
+
+    // ====================================================================
+    // FIX: ocultar el header de columnas global del OrderDisplay
+    // (`.idtx-cart-headers` definido en order_display.xml) cuando se
+    // renderiza dentro del TicketScreen. El TicketScreen ya tiene su propio
+    // header (`.idtx-detail-header`) con la columna "Sel." para el modo
+    // reembolso. Si dejamos ambos, se ven dos filas de encabezados con
+    // anchos diferentes y todo queda desalineado.
+    // ====================================================================
+    .idtx-cart-headers {
+        display: none !important;
+    }
+
+    // ====================================================================
+    // BARRA SUPERIOR — contador en vivo + botones "Marcar todos"
+    // ====================================================================
+    // (Las clases ya vienen del XML; solo afinamos detalles visuales)
+    .idtx-refund-actionbar {
+        // Borde verde claro para que destaque del header normal
+        border-top: 3px solid #28a745;
+
+        // Los botones del lado derecho un poco más generosos
+        .btn {
+            font-weight: 600;
+            padding: 0.4rem 0.9rem;
+        }
+
+        // Badge donde se muestra la suma de "X Kg a devolver":
+        // suavizamos el azul oscuro de bg-primary por un azul claro tipo pastel,
+        // con texto oscuro para mantener la legibilidad.
+        .badge.bg-primary {
+            background-color: #cfe2ff !important;       // azul muy claro
+            color: #0a4d8a !important;                  // azul oscuro para contraste
+
+            // El ícono interno hereda el color del texto
+            i { color: inherit !important; }
+        }
+    }
+
+    // ====================================================================
+    // FILA DE ROLLO — checkbox + Orderline (modo reembolso)
+    // ====================================================================
+    .idtx-refund-row {
+        // Borde inferior tenue para separar visualmente las filas
+        border-bottom: 1px solid #e9ecef;
+        // Transición suave de fondo al marcar/desmarcar
+        transition: background-color 0.15s ease, border-left-color 0.15s ease;
+        // Borde lateral invisible por defecto (reservamos el espacio para no "saltar")
+        border-left: 6px solid transparent;
+
+        // Hover sobre filas no marcadas
+        &:not(.idtx-marked):hover {
+            background-color: #f1f3f5;
+            border-left-color: #adb5bd;
+        }
+
+        // ============================================================
+        // FILA MARCADA — fondo verde claro, borde grueso, todo persistente
+        // ============================================================
+        // Esta es la clave del nuevo comportamiento: la fila se queda verde
+        // aunque el cajero seleccione OTRA fila para editar con el numpad.
+        &.idtx-marked {
+            background-color: #d4edda !important;
+            border-left: 6px solid #28a745 !important;
+
+            // Refuerzo del checkbox marcado
+            .idtx-roll-check {
+                background-color: #28a745;
+                border-color: #1e7e34;
+            }
+
+            // Mantenemos el hover con un verde ligeramente más oscuro
+            &:hover {
+                background-color: #c3e6cb !important;
+            }
+
+            // ============================================================
+            // BADGE "DEVOLVERÁ: X kg" — enorme y muy visible
+            // ============================================================
+            // El core la marca con .to-refund-highlight. Aquí la transformamos
+            // en un chip grande verde tipo "alerta", para que el cajero vea
+            // claramente la cantidad al teclearla en el numpad.
+            .to-refund-highlight {
+                background-color: #28a745 !important;
+                color: #ffffff !important;
+                padding: 8px 16px !important;
+                border-radius: 8px !important;
+                font-size: 1.05rem !important;
+                font-weight: 800 !important;
+                margin-top: 6px !important;
+                display: inline-block !important;
+                box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+                // Pulso suave al aparecer/actualizar (capta la atención al teclear)
+                animation: idtx-pulse-refund 0.35s ease-out 1;
+                letter-spacing: 0.4px;
+
+                strong, span {
+                    color: #ffffff !important;
+                }
+            }
+        }
+
+        // ============================================================
+        // CHECKBOX — más grande y táctil
+        // ============================================================
+        .idtx-check-cell {
+            background-color: rgba(0, 0, 0, 0.02);
+            border-right: 1px solid #dee2e6;
+        }
+
+        .idtx-roll-check {
+            // Escalado para mayor área de click
+            width: 1.6rem;
+            height: 1.6rem;
+            cursor: pointer;
+            // Borde más visible para que se note el cuadrado vacío
+            border: 2px solid #6c757d;
+            border-radius: 4px;
+
+            &:hover {
+                border-color: #28a745;
+                box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.15);
+            }
+        }
+    }
+
+    // ====================================================================
+    // SELECCIÓN ACTUAL (para numpad) — distinta del marcado persistente
+    // ====================================================================
+    // La fila que está actualmente "seleccionada" (para editar con el numpad)
+    // recibe un anillo azul. Esto se DIFERENCIA del verde de "marcada", para
+    // que el cajero pueda saber qué fila va a recibir el siguiente número.
+    .orderline.selected {
+        background-color: #cfe2ff !important;
+        outline: 2px solid #0d6efd;
+        outline-offset: -2px;
+    }
+
+    // ====================================================================
+    // INDICADOR "Reembolsado" (líneas ya devueltas en otra orden anterior)
+    // ====================================================================
+    .refund-note:not(.to-refund-highlight) {
+        background-color: #e7f3ff !important;
+        color: #0c5aa6 !important;
+        padding: 3px 10px !important;
+        border-radius: 4px !important;
+        font-size: 0.85rem !important;
+        font-weight: 600 !important;
+        display: inline-block !important;
+        margin-top: 3px !important;
+    }
+
+    // ====================================================================
+    // BANNER "Seleccione los productos a reembolsar" — más contraste
+    // ====================================================================
+    .bg-view.text-center {
+        background-color: #fff3cd !important;
+        border: 1px solid #ffe69c !important;
+        color: #664d03 !important;
+        font-weight: 600;
+        font-size: 0.95rem;
+        &.highlight.text-danger {
+            background-color: #f8d7da !important;
+            border-color: #f5c2c7 !important;
+            color: #842029 !important;
+        }
+    }
+}
+
+// ============================================================================
+// ANIMACIÓN DEL BADGE "DEVOLVERÁ"
+// ============================================================================
+// Pulso suave al aparecer — refuerza la atención del cajero al teclear.
+@keyframes idtx-pulse-refund {
+    0%   { transform: scale(0.85); opacity: 0; }
+    60%  { transform: scale(1.06); opacity: 1; }
+    100% { transform: scale(1.00); opacity: 1; }
+}
+
+// ============================================================================
+// SOMBREADO POR DEVOLUCIONES PREVIAS (2026-07-14)
+// ============================================================================
+// Rojo suave  = rollo ya devuelto COMPLETO en NC anteriores (no devolvible).
+// Crema       = rollo devuelto PARCIALMENTE (solo queda el saldo).
+// El resaltado de "marcado para devolver" (.idtx-marked) gana sobre el crema
+// para que se note qué está seleccionado; los rojos no se pueden marcar.
+.idtx-refund-row.idtx-refund-total {
+    background-color: #f8d7da !important;          // rojo suave
+    .idtx-roll-check {
+        opacity: 0.35;                              // checkbox apagado
+        cursor: not-allowed;
+    }
+    .idtx-nota-devuelto-total {
+        color: #842029 !important;                  // rojo oscuro para el texto
+        font-weight: 700;
+    }
+}
+.idtx-refund-row.idtx-refund-parcial:not(.idtx-marked) {
+    background-color: #fdf1d0 !important;           // crema
+}
+.idtx-refund-row .idtx-nota-devuelto-parcial {
+    color: #7a5c00 !important;                      // mostaza oscuro legible sobre crema
+}
