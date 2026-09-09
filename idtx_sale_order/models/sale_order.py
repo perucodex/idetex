@@ -24,12 +24,17 @@ class SaleOrder(models.Model):
     sale_order_ids = fields.One2many('sale.order', 'quotation_id', string='Sale Orders')
     quotation_id = fields.Many2one('sale.order', string='Quotation')
     applicant_id = fields.Many2one('res.partner', string='Applicant')
+    # Datos comerciales de la OC del cliente (pestaña Otra información > Ventas).
+    client_order_date = fields.Date('Fecha de OC del cliente', tracking=True)
+    sub_partner_id = fields.Many2one('res.partner', string='Sub-cliente', tracking=True)
+    # Maestro SITPRO vtas_tipoorden, solo referencia (sin integración).
+    process_type_id = fields.Many2one('sitpro.sale.type', string='Tipo de proceso', tracking=True)
     sale_type = fields.Selection([
         ('sale', 'Sale'),
         ('service', 'Service'),
         # ('sample', 'Sample'),
         # ('pilot', 'Pilot'),
-    ], string='Sale Type', default='sale')
+    ], string='Sale Type', default='sale', required=True)
     production_ids = fields.Many2many('mrp.production', string='Production')
     production_count = fields.Integer(string="Production Count", compute='_compute_production_count')
     sale_count = fields.Integer('Sales Count', compute='_compute_sale_count')

@@ -189,8 +189,8 @@ msgstr "Cuerpo"
 
 #. module: idtx_sale_order
 #: model:ir.model.fields,field_description:idtx_sale_order.field_sale_order_line__bom_id
-msgid "Bom"
-msgstr "LdM"
+msgid "Ficha"
+msgstr "Ficha"
 
 #. module: idtx_sale_order
 #: model_terms:ir.ui.view,arch_db:idtx_sale_order.report_saleorder_add_color
@@ -347,6 +347,7 @@ msgstr "Rangos de color (desde el color)"
 
 #. module: idtx_sale_order
 #: model:ir.model.fields,field_description:idtx_sale_order.field_mrp_production__color_recipe_id
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.mrp_production_form_view_inherit
 msgid "Color Recipe"
 msgstr "Receta"
 
@@ -1618,6 +1619,16 @@ msgstr "Título"
 #: model_terms:ir.ui.view,arch_db:idtx_sale_order.mrp_routing_workcenter_operation_form_view_inherit
 msgid "Title Prices"
 msgstr "Precios por título"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.mrp_routing_workcenter_operation_view_search_inherit
+msgid "Valued"
+msgstr "Valorizado"
+
+#. module: idtx_sale_order
+#: model_terms:ir.ui.view,arch_db:idtx_sale_order.mrp_routing_workcenter_operation_view_search_inherit
+msgid "Operations with a price type: they add value to the product cost"
+msgstr "Operaciones con tipo de precio: agregan valor al costo del producto"
 
 #. module: idtx_sale_order
 #: model:ir.model.fields,field_description:idtx_sale_order.field_product_color_title_price__title_ids

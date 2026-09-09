@@ -9,12 +9,12 @@
             <field name="arch" type="xml">
                 <field name="company_id" position="before">
                     <field name="type_prices" invisible="operation_type == 'weaving'" groups="idtx_product_development.group_module_product_development_manager,idtx_product_development.group_module_product_development_price_editor"/>
-                    <field name="per_title" invisible="operation_type == 'weaving' or type_prices == 'pp'" widget="boolean_toggle" groups="idtx_product_development.group_module_product_development_manager,idtx_product_development.group_module_product_development_price_editor"/>
-                    <field name="currency_id" invisible="operation_type == 'weaving'" groups="idtx_product_development.group_module_product_development_manager,idtx_product_development.group_module_product_development_price_editor"/>
-                    <field name="unit_price" invisible = "type_prices == 'col' or operation_type == 'weaving'" groups="idtx_product_development.group_module_product_development_manager,idtx_product_development.group_module_product_development_price_editor"/>
+                    <field name="per_title" invisible="operation_type == 'weaving' or type_prices != 'col'" widget="boolean_toggle" groups="idtx_product_development.group_module_product_development_manager,idtx_product_development.group_module_product_development_price_editor"/>
+                    <field name="currency_id" invisible="operation_type == 'weaving' or not type_prices" groups="idtx_product_development.group_module_product_development_manager,idtx_product_development.group_module_product_development_price_editor"/>
+                    <field name="unit_price" invisible="operation_type == 'weaving' or type_prices != 'pp'" groups="idtx_product_development.group_module_product_development_manager,idtx_product_development.group_module_product_development_price_editor"/>
                 </field>
                 <page name="parameter_page" position="before">
-                    <page name="prices_page" string="Prices" invisible="type_prices == 'pp' or per_title or operation_type == 'weaving'" groups="idtx_product_development.group_module_product_development_manager,idtx_product_development.group_module_product_development_price_editor">
+                    <page name="prices_page" string="Prices" invisible="type_prices != 'col' or per_title or operation_type == 'weaving'" groups="idtx_product_development.group_module_product_development_manager,idtx_product_development.group_module_product_development_price_editor">
                         <field name="product_color_price_ids">
                                 <list editable="bottom">
                                     <field name="sequence" widget="handle"/>
@@ -24,7 +24,7 @@
                             </list> 
                         </field>
                     </page>
-                    <page name="title_prices_page" string="Title Prices" invisible="type_prices == 'pp' or not per_title or operation_type == 'weaving'" groups="idtx_product_development.group_module_product_development_manager,idtx_product_development.group_module_product_development_price_editor">
+                    <page name="title_prices_page" string="Title Prices" invisible="type_prices != 'col' or not per_title or operation_type == 'weaving'" groups="idtx_product_development.group_module_product_development_manager,idtx_product_development.group_module_product_development_price_editor">
                         <field name="product_color_price_ids">
                             <list editable="bottom" open_form_view="True">
                                 <field name="sequence" widget="handle"/>
@@ -85,6 +85,9 @@
                 <field name="workcenter_id" position="after">
                     <field name="currency_id"/>
                 </field>
+                <group position="before">
+                    <filter string="Valued" name="valued" domain="[('type_prices', '!=', False)]" help="Operations with a price type: they add value to the product cost"/>
+                </group>
             </field>
         </record>
 

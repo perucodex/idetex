@@ -15,7 +15,7 @@ Gestiona la carga de precios y productos en tus cotizaciones
     # Check https://github.com/odoo/odoo/blob/15.0/odoo/addons/base/data/ir_module_category_data.xml
     # for the full list
     'category': 'Producción Textil',
-    'version': '19.0.0.11.0',
+    'version': '19.0.0.12.0',
     'license': 'LGPL-3',
     'sequence': 0,
 
@@ -36,6 +36,7 @@ Gestiona la carga de precios y productos en tus cotizaciones
         'security/sale_order_approval_security.xml',
         'security/sale_mrp_readonly_security.xml',
         'security/ir.model.access.csv',
+        'data/sitpro_sale_type_data.xml',
         'report/ir_actions_report_templates.xml',
         'report/ir_actions_report.xml',
         'report/report_technical_sheet_customer.xml',
@@ -53,6 +54,7 @@ Gestiona la carga de precios y productos en tus cotizaciones
         'views/sale_order_portal_templates.xml',
         'views/sale_order_views.xml',
         'views/sale_quotation_views.xml',
+        'views/sitpro_sale_type_views.xml',
         'wizards/size_qty_wizard_views.xml',
     ],
     

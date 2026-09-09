@@ -234,7 +234,9 @@ class MrpWorkorderBatch(models.Model):
             partners = rec.wo_roll_ids.workorder_id.production_id.sale_order_line_id.order_id.mapped('partner_id')
             rec.partner_ids = [(6, 0, partners.ids)] if partners else [(5, 0, 0)]
 
-    @api.depends('wo_roll_ids', 'child_batch_ids.wo_roll_ids')
+    @api.depends('wo_roll_ids', 'child_batch_ids.wo_roll_ids',
+                 'wo_roll_ids.workorder_id.production_id.color_recipe_id',
+                 'wo_roll_ids.workorder_id.production_id.manual_lab_dev_line_id')
     def _compute_colors(self):
         """La PARTIDA resuelve su receta por combinación de productos: la
         receta aprobada del color (línea de Lab Dip de las OFs) cuya
@@ -246,8 +248,11 @@ class MrpWorkorderBatch(models.Model):
                 # Partida dividida: conserva el color histórico desde sus hijas.
                 rolls = rec.child_batch_ids.wo_roll_ids
             productions = rolls.workorder_id.production_id
+            # Color: del Lab Dip del pedido; si no, de la receta de la OF; si
+            # no, el color elegido a mano en una OF libre (muestra/piloto).
             line = (productions.sale_order_line_id.lab_dev_line_id
-                    or productions.color_recipe_id.lab_dev_line_id)[:1]
+                    or productions.color_recipe_id.lab_dev_line_id
+                    or productions.manual_lab_dev_line_id)[:1]
             products = rolls.mapped('product_id')
             recipe = self.env['color.recipe']
             if line and products:

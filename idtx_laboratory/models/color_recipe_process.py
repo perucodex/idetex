@@ -1,5 +1,46 @@
+from markupsafe import Markup
+
 from odoo import models, fields, api, _, Command
 from odoo.exceptions import UserError
+
+
+# ----------------------------------------------------------------------
+# Bitácora de la receta (color.recipe) y de la sub-receta (color.recipe.lot)
+# ----------------------------------------------------------------------
+# Cada alta/baja/cambio de un proceso o de una línea se ENCOLA aquí y al
+# precommit se publica UNA nota por receta/sub-receta con todos los cambios
+# de la transacción: un guardado del form (que dispara N writes de líneas)
+# = un solo mensaje en el chatter. El dueño del proceso (madre o sub-receta)
+# lo resuelve color.recipe.process._log_owner().
+_LOG_KEY = 'idtx_recipe_log'
+
+
+def _queue_recipe_log(env, owners, entry):
+    """Encola `entry` (str o Markup) en la bitácora de los `owners`
+    (recetas color.recipe y/o sub-recetas color.recipe.lot). Se omite con el
+    contexto skip_recipe_log (copias de procesos entre recetas, creación de
+    un proceso con sus líneas)."""
+    owners = [o for o in owners if o]
+    if not owners or env.context.get('skip_recipe_log'):
+        return
+    data = env.cr.precommit.data
+    if _LOG_KEY not in data:
+        data[_LOG_KEY] = {}
+        env.cr.precommit.add(lambda: _flush_recipe_log(env))
+    for owner in owners:
+        data[_LOG_KEY].setdefault((owner._name, owner.id), []).append(entry)
+
+
+def _flush_recipe_log(env):
+    pending = env.cr.precommit.data.pop(_LOG_KEY, None) or {}
+    for (model, res_id), entries in pending.items():
+        owner = env[model].browse(res_id).exists()
+        if not owner:
+            continue
+        items = Markup('').join(Markup('<li>%s</li>') % e for e in entries)
+        owner._message_log(body=Markup('<p>%s</p><ul>%s</ul>') % (
+            _('Cambios en la receta:'), items))
+
 
 class ColorRecipeProcess(models.Model):
     _name = 'color.recipe.process'
@@ -50,6 +91,53 @@ class ColorRecipeProcess(models.Model):
             for line in self.base_process_id.base_process_line_ids
         ]
         self.color_recipe_process_line_ids = commands
+
+    # ---- bitácora (receta madre o sub-receta) ----
+    def _log_owner(self):
+        """Dueño con chatter del proceso: la sub-receta si es de producción,
+        si no la receta madre; vacío en los flujos legacy (lote/mixing)."""
+        self.ensure_one()
+        return self.recipe_lot_id or self.color_recipe_id
+
+    def _log_name(self):
+        self.ensure_one()
+        return self.base_process_id.display_name or _('Proceso')
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        # Las líneas nacen con el proceso: se registra el proceso completo
+        # (no línea por línea), por eso las líneas se crean con el skip.
+        # with_env: los registros devueltos NO deben arrastrar el skip (si no,
+        # un unlink/write posterior sobre ellos tampoco se registraría).
+        records = super(ColorRecipeProcess,
+                        self.with_context(skip_recipe_log=True)).create(vals_list)
+        records = records.with_env(self.env)
+        for rec in records:
+            _queue_recipe_log(self.env, [rec._log_owner()], _(
+                'Proceso agregado: %(process)s (%(count)s líneas)',
+                process=rec._log_name(),
+                count=len(rec.color_recipe_process_line_ids)))
+        return records
+
+    def write(self, vals):
+        before = {rec.id: rec._log_name() for rec in self} \
+            if 'base_process_id' in vals else None
+        res = super().write(vals)
+        if before is not None:
+            for rec in self:
+                if rec._log_name() != before[rec.id]:
+                    _queue_recipe_log(self.env, [rec._log_owner()], _(
+                        'Proceso cambiado: %(old)s → %(new)s',
+                        old=before[rec.id], new=rec._log_name()))
+        return res
+
+    def unlink(self):
+        for rec in self:
+            _queue_recipe_log(self.env, [rec._log_owner()], _(
+                'Proceso eliminado: %(process)s (%(count)s líneas)',
+                process=rec._log_name(),
+                count=len(rec.color_recipe_process_line_ids)))
+        return super().unlink()
 
     def _resequence_lines(self):
         """Normaliza la secuencia (la lista con handle ordena SOLO por
@@ -175,6 +263,72 @@ class ColorRecipeProcessLine(models.Model):
         return self.color_recipe_process_id | self.parent_line_id.color_recipe_process_id
 
     # ------------------------------------------------------------------
+    # Bitácora de la receta / sub-receta (ver _queue_recipe_log)
+    # ------------------------------------------------------------------
+    # Campos cuyo cambio se registra (la secuencia del arrastre no: la
+    # normaliza _resequence_lines y solo hace ruido).
+    _LOGGED_FIELDS = ('line_type', 'product_id', 'lot_id', 'order_number',
+                      'factor', 'uom', 'factor_manual')
+
+    def _log_owners(self):
+        return [p._log_owner() for p in self._get_processes()]
+
+    def _log_value(self, fname):
+        """Valor legible del campo para la bitácora."""
+        self.ensure_one()
+        field = self._fields[fname]
+        value = self[fname]
+        if field.type == 'many2one':
+            return value.display_name or '—'
+        if field.type == 'selection':
+            return dict(field._description_selection(self.env)).get(value) or '—'
+        if field.type == 'boolean':
+            return _('Sí') if value else _('No')
+        if field.type == 'float':
+            digits = field.get_digits(self.env)
+            return '%.*f' % (digits[1] if digits else 2, value)
+        return str(value) if value not in (False, None) else '—'
+
+    def _log_label(self):
+        """'<b>[00004] ACABADO PPT</b> · N° 1 · [800116] SODA CAUSTICA'; las
+        sub-líneas de colorantes llevan 'COLORANTES › producto'."""
+        self.ensure_one()
+        process = self._get_processes()[:1]
+        holder = self.parent_line_id or self
+        name = self.display_name
+        if self.parent_line_id:
+            name = '%s › %s' % (self.parent_line_id.display_name, name)
+        return Markup('<b>%s</b> · N° %s · %s') % (
+            process.base_process_id.display_name or _('Proceso'),
+            holder.order_number or '', name)
+
+    def _log_summary(self):
+        self.ensure_one()
+        if self.line_type == 'colorants' and not self.parent_line_id:
+            return _('%s colorantes', len(self.child_ids))
+        summary = '%s %s' % (self._log_value('factor'), self._log_value('uom'))
+        if self.lot_id:
+            summary = _('%(summary)s, lote %(lot)s',
+                        summary=summary, lot=self.lot_id.display_name)
+        return summary
+
+    def _log_changes(self, before, fnames):
+        suffix = _(' (recalculado por tabla)') \
+            if self.env.context.get('table_recompute') else ''
+        for rec in self:
+            if rec.id not in before:
+                continue
+            changes = []
+            for fname in fnames:
+                old, new = before[rec.id][fname], rec._log_value(fname)
+                if old != new:
+                    changes.append(Markup('%s: %s → %s') % (
+                        rec._fields[fname]._description_string(self.env), old, new))
+            if changes:
+                _queue_recipe_log(self.env, rec._log_owners(), Markup('%s: %s%s') % (
+                    rec._log_label(), Markup('; ').join(changes), suffix))
+
+    # ------------------------------------------------------------------
     # Motor de tablas (CF)
     # ------------------------------------------------------------------
     def _recompute_table_factors(self):
@@ -206,9 +360,15 @@ class ColorRecipeProcessLine(models.Model):
             records._recompute_table_factors()
         if not self.env.context.get('skip_reseq'):
             records.color_recipe_process_id._resequence_lines()
+        for rec in records:
+            _queue_recipe_log(self.env, rec._log_owners(), Markup('%s: %s') % (
+                rec._log_label(), _('línea agregada (%s)', rec._log_summary())))
         return records
 
     def write(self, vals):
+        logged = [f for f in self._LOGGED_FIELDS if f in vals]
+        before = {rec.id: {f: rec._log_value(f) for f in logged}
+                  for rec in self} if logged else {}
         # Editar a mano el factor de una línea con tabla la marca como manual.
         if 'factor' in vals and not self.env.context.get('table_recompute') \
                 and 'factor_manual' not in vals:
@@ -216,6 +376,8 @@ class ColorRecipeProcessLine(models.Model):
             if manual:
                 super(ColorRecipeProcessLine, manual).write({'factor_manual': True})
         res = super().write(vals)
+        if logged:
+            self._log_changes(before, logged)
         if not self.env.context.get('table_recompute') \
                 and ({'factor', 'uom', 'product_id'} & set(vals.keys())):
             self._recompute_table_factors()
@@ -226,6 +388,9 @@ class ColorRecipeProcessLine(models.Model):
 
     def unlink(self):
         processes = self._get_processes()
+        for rec in self:
+            _queue_recipe_log(self.env, rec._log_owners(), Markup('%s: %s') % (
+                rec._log_label(), _('línea eliminada (%s)', rec._log_summary())))
         res = super().unlink()
         processes.color_recipe_process_line_ids._recompute_table_factors()
         return res

@@ -17,3 +17,5 @@ access_sale_mrp_readonly_stock_move,access.sale.mrp.readonly.stock.move,stock.mo
 access_sale_mrp_readonly_mrp_production_group,access.sale.mrp.readonly.mrp.production.group,mrp.model_mrp_production_group,idtx_sale_order.group_sale_mrp_readonly,1,0,0,0
 access_sale_mrp_readonly_mrp_unbuild,access.sale.mrp.readonly.mrp.unbuild,mrp.model_mrp_unbuild,idtx_sale_order.group_sale_mrp_readonly,1,0,0,0
 access_sale_mrp_readonly_mrp_workcenter_productivity,access.sale.mrp.readonly.mrp.workcenter.productivity,mrp.model_mrp_workcenter_productivity,idtx_sale_order.group_sale_mrp_readonly,1,0,0,0
+access_sitpro_sale_type_user,sitpro.sale.type user,model_sitpro_sale_type,base.group_user,1,0,0,0
+access_sitpro_sale_type_manager,sitpro.sale.type manager,model_sitpro_sale_type,sales_team.group_sale_manager,1,1,1,1

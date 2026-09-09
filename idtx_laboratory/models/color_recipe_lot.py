@@ -15,6 +15,9 @@ class ColorRecipeLot(models.Model):
     color.recipe.mixing.group y a las "recetas por lote" sobre stock.lot.
     """
     _name = 'color.recipe.lot'
+    # Bitácora (chatter): tracking de la cabecera; los cambios de procesos y
+    # líneas los registra color.recipe.process(.line) como nota agregada.
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Sub-receta por combinación de lotes'
     _rec_name = 'lot_summary'
     # Búsqueda por texto del m2o (dropdown/Buscar más): por lotes, OF u opción.
@@ -30,6 +33,7 @@ class ColorRecipeLot(models.Model):
     # sus líneas hilo+lote; al elegir OF y opción, los lotes se completan solos.
     production_id = fields.Many2one(
         'mrp.production', string='Orden de Fabricación', ondelete='set null',
+        tracking=True,
         help='OF cuya OT de tejido tiene opciones con los lotes de hilo. '
              'Al elegir la opción, los lotes se completan automáticamente.')
     available_production_ids = fields.Many2many(
@@ -37,6 +41,7 @@ class ColorRecipeLot(models.Model):
         string='OFs Disponibles')
     workorder_option_id = fields.Many2one(
         'mrp.workorder.option', string='Opción', ondelete='set null',
+        tracking=True,
         help='Opción de la OT de tejido de la OF; sus líneas hilo+lote '
              'definen la combinación de esta sub-receta.')
     available_option_ids = fields.Many2many(
@@ -53,7 +58,8 @@ class ColorRecipeLot(models.Model):
              'partidas.')
     # Almacenado para que el name_search del m2o (partida, Buscar más) pueda
     # buscar por el texto de los lotes.
-    lot_summary = fields.Char('Lotes', compute='_compute_lot_summary', store=True)
+    lot_summary = fields.Char('Lotes', compute='_compute_lot_summary', store=True,
+                              tracking=True)
     # Lotes elegibles: solo los de los hilos que consumen las LdM de los
     # productos de la receta. Evita elegir un lote homónimo de otro hilo
     # (pueden existir varios lotes llamados "123" de hilos distintos).
@@ -146,13 +152,13 @@ class ColorRecipeLot(models.Model):
         ('pending', 'Pendiente'),
         ('validated', 'Validada'),
         ('obsolete', 'Obsoleta'),
-    ], string='Estado', default='pending', required=True)
+    ], string='Estado', default='pending', required=True, tracking=True)
     # Versionado tipo estampado (printing.design.rotary.line): se pueden
     # registrar N sub-recetas del MISMO hilo de versiones (misma opción de OF;
     # sin opción, misma combinación de lotes) sin restricción; al VALIDAR una,
     # las versiones anteriores del hilo quedan obsoletas.
     version = fields.Integer(
-        'Versión', default=1, readonly=True, copy=False,
+        'Versión', default=1, readonly=True, copy=False, tracking=True,
         help='Correlativo dentro del hilo de versiones (misma opción de OF; '
              'para filas sin opción, misma combinación de lotes). Al validar '
              'una versión, las anteriores quedan obsoletas.')
@@ -246,10 +252,10 @@ class ColorRecipeLot(models.Model):
     # Parámetros de teñido de la combinación (por defecto heredan los de la
     # receta madre; cada combinación puede ajustarlos).
     absorption_factor = fields.Float(
-        'Factor de Absorción (L/kg)', digits=(12, 2), default=3.00,
+        'Factor de Absorción (L/kg)', digits=(12, 2), default=3.00, tracking=True,
         help='Litros de baño absorbidos por kilogramo de tela.')
     bath_ratio = fields.Integer(
-        'Relación de Baño 1:',
+        'Relación de Baño 1:', tracking=True,
         help='Relación de baño 1:N en litros por kilogramo. '
              'Ej.: ingrese 10 para una relación 1:10 (uno a diez).')
     # Mismo catálogo de curvas que batch.registry (tipo_proceso); la imagen
@@ -260,7 +266,7 @@ class ColorRecipeLot(models.Model):
         ('MIGRACION60-80-60', 'MIGRACION60-80-60'),
         ('MIGRACION80-90-60', 'MIGRACION80-90-60'),
         ('MIGRASALADE160-80-60', 'MIGRASALADE160-80-60'),
-    ], string='Tipo de Proceso')
+    ], string='Tipo de Proceso', tracking=True)
     imagen_proceso = fields.Binary(
         'Imagen Proceso', compute='_compute_imagen_proceso', store=False)
 
@@ -313,8 +319,9 @@ class ColorRecipeLot(models.Model):
         ajustar las dosificaciones según el hilado."""
         self.ensure_one()
         if not self.process_ids and self.color_recipe_id.color_recipe_process_ids:
+            # skip_recipe_log: la copia inicial no es un cambio del usuario.
             for process in self.color_recipe_id.color_recipe_process_ids:
-                process.copy({
+                process.with_context(skip_recipe_log=True).copy({
                     'color_recipe_id': False,
                     'stock_lot_id': False,
                     'mixing_group_id': False,

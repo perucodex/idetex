@@ -165,6 +165,16 @@
                 <field name="quotation_id" readonly="1" invisible="not quotation_id"/>
             </field>
 
+            <!-- Otra información > Ventas: datos de la OC del cliente y tipo de proceso SITPRO -->
+            <xpath expr="//page[@name='other_information']//field[@name='client_order_ref']" position="attributes">
+                <attribute name="string">Orden de compra del cliente</attribute>
+            </xpath>
+            <xpath expr="//page[@name='other_information']//field[@name='client_order_ref']" position="after">
+                <field name="client_order_date"/>
+                <field name="sub_partner_id" context="{'res_partner_search_mode': 'customer'}"/>
+                <field name="process_type_id" options="{'no_create': True}"/>
+            </xpath>
+
         </field>
     </record>
 

@@ -19,7 +19,13 @@ class MrpProduction(models.Model):
         ('pilot', 'Pilot'),
         ('sample', 'Sample'),
         ('reposicion', 'Reposición'),
-    ], string='Production Type', required=True, default='sale')
+    ], string='Production Type', required=True,
+        # Sin default: en una OF creada a mano el usuario DEBE elegir el tipo
+        # (antes nacia como "Venta" en silencio). Las creaciones automaticas lo
+        # fijan explicitamente: pedido de venta (sale_type del pedido),
+        # reposicion ('reposicion') y reglas de abastecimiento (stock.rule).
+        help='Obligatorio. Con pedido de venta se hereda del tipo de venta; '
+             'en una OF libre (muestra, piloto) lo elige el usuario.')
 
     @api.depends('bom_id', 'product_id', 'qty_producing', 'product_uom_id', 'never_product_template_attribute_value_ids')
     def _compute_workorder_ids(self):

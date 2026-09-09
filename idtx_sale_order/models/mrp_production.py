@@ -12,10 +12,18 @@ class MrpProduction(models.Model):
     partner_id = fields.Many2one('res.partner', string='Client', related='order_id.partner_id', store=True)
     need_recipe = fields.Boolean('Need Recipe', compute='_compute_need_recipe')
     color_recipe_id = fields.Many2one('color.recipe', string='Color Recipe', compute='_compute_color_recipe', store=True)
-    color_code = fields.Char(related='color_recipe_id.color_code')
-    color_name = fields.Char(related='color_recipe_id.color_name')
+    color_code = fields.Char(compute='_compute_color_labels')
+    color_name = fields.Char(compute='_compute_color_labels')
     manual_recipe = fields.Boolean('manual_recipe', default=False)
     manual_color_recipe_id = fields.Many2one('color.recipe', string='Manual Color Recipe', ondelete='restrict')
+    # OF LIBRE (sin pedido de venta: muestra, piloto, reposicion interna):
+    # el usuario elige el color a mano (solo en borrador) y la receta se
+    # resuelve sola (_manual_recipe_for_line), como en una OF con pedido.
+    manual_lab_dev_line_id = fields.Many2one(
+        'lab.dev.line', string='Color', ondelete='restrict',
+        help='Color elegido a mano en una OF sin pedido de venta (muestra, '
+             'piloto). Define la receta de color de la OF y, con ella, la de '
+             'la partida en la que se tiñan sus rollos.')
 
     @api.depends('sale_order_line_id', 'sale_order_line_id.operation_ids')
     def _compute_workorder_ids(self):
@@ -71,11 +79,43 @@ class MrpProduction(models.Model):
             # muestra color y código.)
             rec.need_recipe = bool(rec.sale_order_line_id and rec.sale_order_line_id.lab_dev_line_id)
 
-    @api.depends('manual_recipe', 'manual_color_recipe_id', 'product_tmpl_id', 'sale_order_line_id', 'sale_order_line_id.lab_dev_line_id', 'sale_order_line_id.lab_dev_line_id.color_recipe_ids.state', 'sale_order_line_id.lab_dev_line_id.color_recipe_ids.product_ids')
+    @api.depends('color_recipe_id.lab_dev_line_id.color_code', 'color_recipe_id.lab_dev_line_id.color_name',
+                 'manual_lab_dev_line_id.color_code', 'manual_lab_dev_line_id.color_name')
+    def _compute_color_labels(self):
+        # Color de la receta; si la OF libre solo tiene color elegido (sin
+        # receta aun), se muestra ese color.
+        for rec in self:
+            line = rec.color_recipe_id.lab_dev_line_id or rec.manual_lab_dev_line_id
+            rec.color_code = line.color_code
+            rec.color_name = line.color_name
+
+    def _manual_recipe_for_line(self, line):
+        """Receta de una OF libre a partir del color elegido (misma regla que
+        con pedido): aprobada que incluye el producto, la unitaria exacta
+        primero y luego la combinada mas chica. El producto de una muestra
+        normalmente no figura en ninguna receta: entonces la unica aprobada
+        del color y, si hay varias, la mas reciente (el laboratorio ajusta
+        la sub-receta en la partida)."""
+        self.ensure_one()
+        approved = line.color_recipe_ids.filtered(lambda r: r.state == 'approved')
+        match = approved.filtered(lambda r: self.product_tmpl_id in r.product_ids)
+        if match:
+            exact = match.filtered(lambda r: len(r.product_ids) == 1)
+            return (exact or match.sorted(key=lambda r: (len(r.product_ids), r.id)))[:1]
+        return approved.sorted(key=lambda r: r.id, reverse=True)[:1]
+
+    @api.depends('manual_recipe', 'manual_color_recipe_id', 'manual_lab_dev_line_id', 'product_tmpl_id', 'sale_order_line_id', 'sale_order_line_id.lab_dev_line_id', 'sale_order_line_id.lab_dev_line_id.color_recipe_ids.state', 'sale_order_line_id.lab_dev_line_id.color_recipe_ids.product_ids')
     def _compute_color_recipe(self):
         for rec in self:
-            if rec.manual_recipe:
+            if rec.manual_recipe or not rec.sale_order_line_id:
+                # Receta manual (o OF libre sin pedido): manda lo elegido.
                 color_recipe_id = rec.manual_color_recipe_id
+                line = rec.manual_lab_dev_line_id
+                if line and (not color_recipe_id or color_recipe_id.lab_dev_line_id != line):
+                    # Cambio de color: la receta anterior ya no aplica.
+                    color_recipe_id = rec._manual_recipe_for_line(line)
+                elif color_recipe_id and not line:
+                    rec.manual_lab_dev_line_id = color_recipe_id.lab_dev_line_id
             else:
                 if rec.sale_order_line_id:
                     # La línea de lab dev tiene recetas aprobadas por producto

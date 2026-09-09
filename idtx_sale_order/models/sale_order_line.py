@@ -36,7 +36,8 @@ class SaleOrderLine(models.Model):
     printing_design_name = fields.Char(related='printing_design_id.file_desc')
     printing_design_preview_image = fields.Binary(related='printing_design_id.preview_image', readonly=True)
     analysis_id = fields.Many2one(related='product_template_id.analysis_id')
-    bom_id = fields.Many2one('mrp.bom', string='Bom')
+    # 'Ficha' (pedido de JP, sep-2026): en ventas la LdM se llama ficha técnica.
+    bom_id = fields.Many2one('mrp.bom', string='Ficha')
     operation_ids = fields.Many2many('mrp.routing.workcenter', string='Operations')
     # lab_dev_ids = fields.Many2many(related='order_id.lab_dev_ids', store=True)
     available_operation_ids = fields.Many2many(

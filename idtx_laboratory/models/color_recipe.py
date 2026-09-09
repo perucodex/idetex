@@ -383,7 +383,9 @@ class ColorRecipe(models.Model):
 
     def action_adjust_recipe(self):
         self.ensure_one()
-        new_recipe = self.copy()
+        # skip_recipe_log: los procesos copiados no son cambios del usuario
+        # (la bitácora de la receta nueva arranca limpia).
+        new_recipe = self.with_context(skip_recipe_log=True).copy()
         return {
             'type': 'ir.actions.act_window',
             'name': 'Adjusted Recipe',

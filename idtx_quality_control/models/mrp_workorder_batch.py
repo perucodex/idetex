@@ -85,7 +85,8 @@ class MrpWorkorderBatch(models.Model):
                  'wo_roll_ids.workorder_id.production_id.sale_order_line_id',
                  'wo_roll_ids.workorder_id.production_id.sale_order_line_id.order_id.partner_id',
                  'wo_roll_ids.workorder_id.production_id.sale_order_line_id.lab_dev_line_id',
-                 'wo_roll_ids.workorder_id.production_id.color_recipe_id.lab_dev_line_id')
+                 'wo_roll_ids.workorder_id.production_id.color_recipe_id.lab_dev_line_id',
+                 'wo_roll_ids.workorder_id.production_id.manual_lab_dev_line_id')
     @api.depends('qc_product_ids')
     def _compute_qc_multi_product(self):
         for rec in self:
@@ -117,7 +118,8 @@ class MrpWorkorderBatch(models.Model):
             rec.qc_route = ', '.join(productions.mapped('name'))
             rec.lab_dev_line_id = (
                 productions.sale_order_line_id.lab_dev_line_id
-                or productions.color_recipe_id.lab_dev_line_id)[:1]
+                or productions.color_recipe_id.lab_dev_line_id
+                or productions.manual_lab_dev_line_id)[:1]
 
     @api.depends('wo_roll_ids', 'child_batch_ids.wo_roll_ids',
                  'wo_roll_ids.workorder_id.production_id',

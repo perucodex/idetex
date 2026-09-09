@@ -177,8 +177,15 @@
                     <attribute name="readonly">order_id or state != 'draft'</attribute>
                 </field>
                 <div name="bom_div" position="after">
+                    <field name="sale_order_line_id" invisible="1"/>
                     <field name="order_id" readonly="1" invisible="not order_id"/>
                     <field name="partner_id" readonly="1" invisible="not partner_id"/>
+                    <!-- OF LIBRE (sin pedido): el color se elige a mano SOLO en
+                         borrador; la receta se resuelve sola (como con pedido).
+                         Confirmada, se ve igual que una OF con pedido: codigo y
+                         nombre de color de solo lectura. -->
+                    <field name="manual_lab_dev_line_id" invisible="sale_order_line_id or state != 'draft'"
+                           options="{'no_create': True}"/>
                     <field name="color_code" readonly="1" invisible="not color_code"/>
                     <field name="color_name" readonly="1" invisible="not color_name"/>
                 </div>

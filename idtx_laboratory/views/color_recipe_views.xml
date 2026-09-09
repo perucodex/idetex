@@ -54,10 +54,10 @@
                                             <notebook>
                                                 <page name="lines_page" string="Lines">
                                                     <field name="color_recipe_process_line_ids" nolabel="1">
-                                                        <!-- Sin edicion en linea: el clic en la fila abre el form
-                                                             en MODAL (dialogo nativo del framework), asi el usuario
-                                                             regresa facil a la pila de dialogos. -->
-                                                        <list decoration-info="has_table" decoration-primary="line_type == 'colorants'">
+                                                        <!-- Edición EN LÍNEA (sep-2026); open_form_view agrega el
+                                                             botón por fila para abrir el form (línea COLORANTES:
+                                                             ahí se eligen los colorantes reales como sub-líneas). -->
+                                                        <list editable="bottom" open_form_view="1" decoration-info="has_table" decoration-primary="line_type == 'colorants'">
                                                             <field name="sequence" widget="handle"/>
                                                             <!-- base_line_id en el spec: sin él, el onchange de la
                                                                  plantilla crea las líneas SIN enlace a la línea base
@@ -69,7 +69,7 @@
                                                             <field name="factor" readonly="line_type == 'colorants'"/>
                                                             <field name="uom" readonly="line_type == 'colorants'"/>
                                                             <field name="has_table" column_invisible="1"/>
-                                                            <field name="factor_manual" string="Manual" optional="hide"/>
+                                                            <field name="factor_manual" string="Manual" optional="hide" invisible="not has_table"/>
                                                             <field name="recipe_lot_state" column_invisible="1"/>
                                                             <button name="action_reset_table_factor" type="object" icon="fa-undo" title="Volver al valor de la tabla" invisible="not factor_manual or recipe_lot_state in ('validated', 'obsolete')"/>
                                                         </list>
@@ -242,8 +242,11 @@
                                                 </group>
                                             </group>
                                             <field name="color_recipe_process_line_ids" nolabel="1">
-                                                <!-- Sin edicion en linea: el clic en la fila abre el form en MODAL. -->
-                                                <list decoration-info="has_table" decoration-primary="line_type == 'colorants'">
+                                                <!-- Edición EN LÍNEA (pedido de JP, sep-2026): el clic en la fila edita
+                                                     directo. open_form_view agrega el botón por fila para abrir el form,
+                                                     necesario en la línea COLORANTES para elegir los colorantes reales
+                                                     (sub-líneas) y en productos con seguimiento para ver el lote. -->
+                                                <list editable="bottom" open_form_view="1" decoration-info="has_table" decoration-primary="line_type == 'colorants'">
                                                     <field name="sequence" widget="handle"/>
                                                     <!-- base_line_id en el spec: sin él, el onchange de la
                                                          plantilla crea las líneas SIN enlace a la línea base
@@ -261,7 +264,7 @@
                                                     <field name="factor" readonly="line_type == 'colorants'"/>
                                                     <field name="uom" readonly="line_type == 'colorants'"/>
                                                     <field name="has_table" column_invisible="1"/>
-                                                    <field name="factor_manual" string="Manual"/>
+                                                    <field name="factor_manual" string="Manual" invisible="not has_table"/>
                                                     <field name="recipe_lot_state" column_invisible="1"/>
                                                     <button name="action_reset_table_factor" type="object" icon="fa-undo" title="Volver al valor de la tabla" invisible="not factor_manual or recipe_lot_state in ('validated', 'obsolete')"/>
                                                 </list>
@@ -272,6 +275,10 @@
                             </page>
                         </notebook>
                     </sheet>
+                    <!-- Bitácora: seguimiento de cabecera (tracking) + nota por
+                         guardado con los cambios de procesos/líneas (ver
+                         color_recipe_process.py, _queue_recipe_lot_log). -->
+                    <chatter/>
                 </form>
             </field>
         </record>

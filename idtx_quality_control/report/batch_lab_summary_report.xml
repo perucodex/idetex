@@ -121,7 +121,7 @@
                                     <td><b>Color Code</b></td>
                                     <td t-esc="line.color_code or '-'"/>
                                     <td><b>Roll Count</b></td>
-                                    <td class="lab-num" t-esc="'%s' % (line.rollos or 0)"/>
+                                    <td class="lab-num" t-esc="'%s' % (line.roll_count or 0)"/>
                                 </tr>
                                 <tr>
                                     <td><b>Color</b></td>

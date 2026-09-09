@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- Maestro SITPRO vtas_tipoorden (extracto sitpro.sale.type.csv, 09-sep-2026).
+         noupdate: el maestro se mantiene desde Ventas > Configuración > Tipos de proceso. -->
+    <record id="sitpro_sale_type_001" model="sitpro.sale.type">
+        <field name="code">1</field>
+        <field name="name">SERVICIO DE TEJIDO CON HILO DEL CLIENTE</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_002" model="sitpro.sale.type">
+        <field name="code">2</field>
+        <field name="name">SERVICIO DE TEÑIDO CON CRUDO DEL CLIENTE</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_003" model="sitpro.sale.type">
+        <field name="code">3</field>
+        <field name="name">SERVICIO DE TEJIDO Y TEÑIDO CON HILO DEL CLIENTE</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_004" model="sitpro.sale.type">
+        <field name="code">4</field>
+        <field name="name">SERVICIO DE TERMOFIJADO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_005" model="sitpro.sale.type">
+        <field name="code">5</field>
+        <field name="name">SERVICIO DE LAVADO Y RAMEADO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_006" model="sitpro.sale.type">
+        <field name="code">6</field>
+        <field name="name">SERVICIO DE PERCHADO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_007" model="sitpro.sale.type">
+        <field name="code">7</field>
+        <field name="name">SERVICIO DE LIJADO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_008" model="sitpro.sale.type">
+        <field name="code">8</field>
+        <field name="name">SERVICIO DE LAVADO Y TAMBLEADO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_009" model="sitpro.sale.type">
+        <field name="code">9</field>
+        <field name="name">SERVICIO DE ESTAMPADO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_010" model="sitpro.sale.type">
+        <field name="code">10</field>
+        <field name="name">SERVICIO DE RAMEADO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_011" model="sitpro.sale.type">
+        <field name="code">11</field>
+        <field name="name">SERVICIO DE LAVADO Y SILICONADO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_012" model="sitpro.sale.type">
+        <field name="code">12</field>
+        <field name="name">SERVICIO DE COMPACTADO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_013" model="sitpro.sale.type">
+        <field name="code">13</field>
+        <field name="name">SERVICIO DE MITESS</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_014" model="sitpro.sale.type">
+        <field name="code">14</field>
+        <field name="name">SERVICIO DE TUNDIDO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_015" model="sitpro.sale.type">
+        <field name="code">15</field>
+        <field name="name">VENTA DE TELA CRUDA</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_016" model="sitpro.sale.type">
+        <field name="code">16</field>
+        <field name="name">VENTA DE TELA CRUDA Y TEÑIDA</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_017" model="sitpro.sale.type">
+        <field name="code">17</field>
+        <field name="name">VENTA DE TELA CRUDA Y ESTAMPADA</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_018" model="sitpro.sale.type">
+        <field name="code">18</field>
+        <field name="name">VENTA DE TELA DE STOCK CON PROCESO ADICIONAL</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_019" model="sitpro.sale.type">
+        <field name="code">19</field>
+        <field name="name">SERVICIO DE TAMBLEADO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_020" model="sitpro.sale.type">
+        <field name="code">20</field>
+        <field name="name">SERVICIO DE PLISADO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_021" model="sitpro.sale.type">
+        <field name="code">21</field>
+        <field name="name">SERVICIO DE LAVADO Y SUAVIZADO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_022" model="sitpro.sale.type">
+        <field name="code">22</field>
+        <field name="name">SERVICIO DE ANTIPILLING</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_023" model="sitpro.sale.type">
+        <field name="code">23</field>
+        <field name="name">SERVICIO DE DESCRUDADO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_024" model="sitpro.sale.type">
+        <field name="code">24</field>
+        <field name="name">SERVICIO DE ESMERILADO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_025" model="sitpro.sale.type">
+        <field name="code">25</field>
+        <field name="name">SERVICIO DE LAVADO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_026" model="sitpro.sale.type">
+        <field name="code">26</field>
+        <field name="name">VENTA DE ALGODÓN / POLYESTER FIBRA</field>
+        <field name="order_kind">F</field>
+    </record>
+    <record id="sitpro_sale_type_027" model="sitpro.sale.type">
+        <field name="code">27</field>
+        <field name="name">STOCK DE ALMACEN HILOS</field>
+        <field name="order_kind">F</field>
+    </record>
+    <record id="sitpro_sale_type_028" model="sitpro.sale.type">
+        <field name="code">28</field>
+        <field name="name">VENTA DE PRENDAS CONFECCIONADAS</field>
+        <field name="order_kind">F</field>
+    </record>
+    <record id="sitpro_sale_type_029" model="sitpro.sale.type">
+        <field name="code">29</field>
+        <field name="name">STOCK DE ALMACEN</field>
+        <field name="order_kind">F</field>
+    </record>
+    <record id="sitpro_sale_type_030" model="sitpro.sale.type">
+        <field name="code">30</field>
+        <field name="name">VENTA DE STOCK DE CRUDO</field>
+        <field name="order_kind">F</field>
+    </record>
+    <record id="sitpro_sale_type_031" model="sitpro.sale.type">
+        <field name="code">31</field>
+        <field name="name">TELA REMATE</field>
+        <field name="order_kind">F</field>
+    </record>
+    <record id="sitpro_sale_type_032" model="sitpro.sale.type">
+        <field name="code">32</field>
+        <field name="name">SERVICIO DE OXIDADO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_033" model="sitpro.sale.type">
+        <field name="code">33</field>
+        <field name="name">RESIDUOS VARIOS</field>
+        <field name="order_kind">F</field>
+    </record>
+    <record id="sitpro_sale_type_034" model="sitpro.sale.type">
+        <field name="code">34</field>
+        <field name="name">SERVICIO DE TERMOFIJADO, TEÑIDO Y RAMEADO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_035" model="sitpro.sale.type">
+        <field name="code">35</field>
+        <field name="name">SERVICIO DE TEÑIDO, ANTIPILLING Y SILICONADO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_036" model="sitpro.sale.type">
+        <field name="code">36</field>
+        <field name="name">SERVICIO DE TERMOFIJADO, LAVADO, SUAVIZADO Y RAMEADO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_037" model="sitpro.sale.type">
+        <field name="code">37</field>
+        <field name="name">SERVICIO DE SUAVIZADO EN RAMA</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_038" model="sitpro.sale.type">
+        <field name="code">38</field>
+        <field name="name">VENTA DE TELA CRUDA, TEÑIDA Y PIGMENTADA</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_039" model="sitpro.sale.type">
+        <field name="code">39</field>
+        <field name="name">VENTA DE TELA STOCK, TEÑIDA Y PIGMENTADA</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_040" model="sitpro.sale.type">
+        <field name="code">40</field>
+        <field name="name">OTROS SERVICIOS</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_041" model="sitpro.sale.type">
+        <field name="code">41</field>
+        <field name="name">VENTA DE TELA CRUDA Y PROCESADA</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_042" model="sitpro.sale.type">
+        <field name="code">42</field>
+        <field name="name">SERVICIO DE TEJIDO Y PROCESADO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_043" model="sitpro.sale.type">
+        <field name="code">43</field>
+        <field name="name">VENTA DE TELA STOCK Y PROCESADA</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_044" model="sitpro.sale.type">
+        <field name="code">44</field>
+        <field name="name">VENTA ACTIVOS</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_045" model="sitpro.sale.type">
+        <field name="code">45</field>
+        <field name="name">VENTA ACTIVOS LEASING</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_046" model="sitpro.sale.type">
+        <field name="code">46</field>
+        <field name="name">REGULARIZACIONES</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_047" model="sitpro.sale.type">
+        <field name="code">47</field>
+        <field name="name">TITULO GRATUITIO-DONACION</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_048" model="sitpro.sale.type">
+        <field name="code">48</field>
+        <field name="name">VENTA DE HILO TEÑIDO</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_049" model="sitpro.sale.type">
+        <field name="code">48</field>
+        <field name="name">VENTA DE ALGODÓN RECUPERADO BAJO CARDA</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_050" model="sitpro.sale.type">
+        <field name="code">43</field>
+        <field name="name">SERVICIO DE TEÑIDO DE HILO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_051" model="sitpro.sale.type">
+        <field name="code">49</field>
+        <field name="name">VENTA DE SUB PRODUCTO DE ALGODÓN CINTA</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_052" model="sitpro.sale.type">
+        <field name="code">50</field>
+        <field name="name">VENTA DE SUB PRODUCTO DE ALGODÓN PABILO</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_053" model="sitpro.sale.type">
+        <field name="code">51</field>
+        <field name="name">VENTA DE SUB PRODUCTO DE ALGODÓN PNEUMAFIL</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_054" model="sitpro.sale.type">
+        <field name="code">52</field>
+        <field name="name">VENTA DE PASTO ARTIFICIAL RECREATIVO</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_055" model="sitpro.sale.type">
+        <field name="code">53</field>
+        <field name="name">VENTA DE POLOS (DAMAS, CABALLEROS, NIÑOS)</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_056" model="sitpro.sale.type">
+        <field name="code">54</field>
+        <field name="name">FIBRA DE ALGODON AMERICANO TIPO ALCALA</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_057" model="sitpro.sale.type">
+        <field name="code">55</field>
+        <field name="name">VENTA DE HILADO POLIVISCOSA 30/1</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_058" model="sitpro.sale.type">
+        <field name="code">56</field>
+        <field name="name">VENTA DE HILO ALGODON CARDADO P 24/1</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_059" model="sitpro.sale.type">
+        <field name="code">57</field>
+        <field name="name">VENTA DE SUB PRODUCTO DE ALGODON TIPO NOIL</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_060" model="sitpro.sale.type">
+        <field name="code">58</field>
+        <field name="name">SERVICIO DE HILATURA 30/1 HILADO DE FIBRA DE ALGODON</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_061" model="sitpro.sale.type">
+        <field name="code">59</field>
+        <field name="name">VENTA DE SUB PRODUCTO DE ALGODÓN TIPO WAYPE</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_062" model="sitpro.sale.type">
+        <field name="code">60</field>
+        <field name="name">VENTA DE HILO</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_063" model="sitpro.sale.type">
+        <field name="code">60</field>
+        <field name="name">SERVICIO DE TEJIDO Y TERMOFIJADO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_064" model="sitpro.sale.type">
+        <field name="code">61</field>
+        <field name="name">VENTA DE FARDOS DE FIBRA</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_065" model="sitpro.sale.type">
+        <field name="code">62</field>
+        <field name="name">SERVICIO RETORCIDO DE HILO</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_066" model="sitpro.sale.type">
+        <field name="code">63</field>
+        <field name="name">SERVICIO DE HILATURA</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_067" model="sitpro.sale.type">
+        <field name="code">64</field>
+        <field name="name">VENTA DE PRODUCTO QUIMICO</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_068" model="sitpro.sale.type">
+        <field name="code">65</field>
+        <field name="name">VENTA DE PRENDAS</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_069" model="sitpro.sale.type">
+        <field name="code">66</field>
+        <field name="name">DISEÑO EST. M. MANUAL</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_070" model="sitpro.sale.type">
+        <field name="code">67</field>
+        <field name="name">DISEÑO EST. M. MANUAL</field>
+        <field name="order_kind">S</field>
+    </record>
+    <record id="sitpro_sale_type_071" model="sitpro.sale.type">
+        <field name="code">68</field>
+        <field name="name">FIBRA DE ALGODÓN TANGUIS</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_072" model="sitpro.sale.type">
+        <field name="code">69</field>
+        <field name="name">VENTA DE HILO 10/1 OPEN</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_073" model="sitpro.sale.type">
+        <field name="code">70</field>
+        <field name="name">VENTA DE HILO 10/1 POLY COTTON 50/50</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_074" model="sitpro.sale.type">
+        <field name="code">71</field>
+        <field name="name">VENTA DE TELA ESTAMPADA</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_075" model="sitpro.sale.type">
+        <field name="code">72</field>
+        <field name="name">VENTA DE TELA PREPARADA PARA ESTAMPAR</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_076" model="sitpro.sale.type">
+        <field name="code">73</field>
+        <field name="name">VENTA POR REMBOLSO</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_077" model="sitpro.sale.type">
+        <field name="code">74</field>
+        <field name="name">VENTA DE TELA TEÑIDA CON CRUDO DEL STOCK</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_078" model="sitpro.sale.type">
+        <field name="code">75</field>
+        <field name="name">SUB PRODUCTO BAJO CARDA</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_079" model="sitpro.sale.type">
+        <field name="code">76</field>
+        <field name="name">SUB PRODUCTO CINTA</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_080" model="sitpro.sale.type">
+        <field name="code">77</field>
+        <field name="name">SUB PRODUCTO CINTA POLYESTER</field>
+        <field name="order_kind">V</field>
+    </record>
+    <record id="sitpro_sale_type_081" model="sitpro.sale.type">
+        <field name="code">78</field>
+        <field name="name">VENTA DE FIBRA ALGODON AMERICANO</field>
+        <field name="order_kind">V</field>
+    </record>
+</odoo>

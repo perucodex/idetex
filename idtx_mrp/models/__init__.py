@@ -13,3 +13,4 @@ from . import res_config_settings
 from . import scale_registry
 from . import stock_lot
 from . import stock_quant
+from . import stock_rule

@@ -67,7 +67,7 @@
                         <td style="border:1px solid #111827; padding:5px;"><b>Color Code</b></td>
                         <td style="border:1px solid #111827; padding:5px;" t-esc="line.color_code or '-'"/>
                         <td style="border:1px solid #111827; padding:5px;"><b>Roll Count</b></td>
-                        <td style="border:1px solid #111827; padding:5px; text-align:right;" t-esc="'%s' % (line.rollos or 0)"/>
+                        <td style="border:1px solid #111827; padding:5px; text-align:right;" t-esc="'%s' % (line.roll_count or 0)"/>
                     </tr>
                     <tr>
                         <td style="border:1px solid #111827; padding:5px;"><b>Color</b></td>
