@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_production_lot_form_inherit_batch" model="ir.ui.view">
+            <field name="name">stock.lot.form.inherit.batch</field>
+            <field name="model">stock.lot</field>
+            <field name="inherit_id" ref="stock.view_production_lot_form"/>
+            <field name="arch" type="xml">
+                <field name="ref" position="after">
+                    <field name="batch_id" readonly="1"/>
+                    <field name="roll_id" readonly="1" invisible="not roll_id"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="view_production_lot_tree_inherit_batch" model="ir.ui.view">
+            <field name="name">stock.lot.list.inherit.batch</field>
+            <field name="model">stock.lot</field>
+            <field name="inherit_id" ref="stock.view_production_lot_tree"/>
+            <field name="arch" type="xml">
+                <field name="product_id" position="after">
+                    <field name="batch_id" optional="show"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="search_product_lot_filter_inherit_batch" model="ir.ui.view">
+            <field name="name">stock.lot.search.inherit.batch</field>
+            <field name="model">stock.lot</field>
+            <field name="inherit_id" ref="stock.search_product_lot_filter"/>
+            <field name="arch" type="xml">
+                <field name="product_id" position="after">
+                    <field name="batch_id"/>
+                </field>
+                <filter name="group_by_product" position="after">
+                    <filter name="group_by_batch" string="Partida" domain="[]" context="{'group_by': 'batch_id'}"/>
+                </filter>
+            </field>
+        </record>
+
+    </data>
+</odoo>

@@ -9,3 +9,5 @@ from . import qc_wash_fastness_eval
 from . import qc_lab_record
 from . import qc_sample_reception
 from . import mail_compose_message
+from . import mrp_production_roll
+from . import stock_lot_quality

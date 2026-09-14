@@ -63,6 +63,69 @@ class MrpWorkorderBatch(models.Model):
         related='qc_product_id.analysis_id.density_stability_twisting_id',
         string='Estándar Densidad / Estabilidad / Revirado')
     kilograms = fields.Float(related='total_weight', string='Kilos')
+    # --- Calificación de rollos terminados (grado A/B/M por rollo pesado) ---
+    finished_roll_ids = fields.One2many(
+        'mrp.production.roll', 'batch_id', string='Rollos terminados',
+        domain=[('lot_id', '!=', False)])
+    finished_roll_count = fields.Integer('Rollos pesados', compute='_compute_roll_quality_counts')
+    roll_pending_count = fields.Integer('Por evaluar', compute='_compute_roll_quality_counts')
+    roll_observed_count = fields.Integer('Observados', compute='_compute_roll_quality_counts')
+    roll_graded_count = fields.Integer('Calificados', compute='_compute_roll_quality_counts')
+    roll_released_count = fields.Integer('Liberados', compute='_compute_roll_quality_counts')
+    roll_quality_state = fields.Selection(
+        [('none', 'Sin rollos pesados'), ('pending', 'Por calificar'),
+         ('partial', 'Calificación parcial'), ('complete', 'Calificada')],
+        string='Calidad de rollos', compute='_compute_roll_quality_state', store=True)
+
+    @api.depends('finished_roll_ids', 'finished_roll_ids.lot_id',
+                 'finished_roll_ids.quality_state')
+    def _compute_roll_quality_counts(self):
+        for batch in self:
+            states = batch.finished_roll_ids.mapped('quality_state')
+            batch.finished_roll_count = len(states)
+            batch.roll_pending_count = states.count('pending')
+            batch.roll_observed_count = states.count('observed')
+            batch.roll_graded_count = states.count('graded')
+            batch.roll_released_count = states.count('released')
+
+    @api.depends('finished_roll_ids', 'finished_roll_ids.lot_id',
+                 'finished_roll_ids.quality_state')
+    def _compute_roll_quality_state(self):
+        for batch in self:
+            rolls = batch.finished_roll_ids
+            states = rolls.mapped('quality_state')
+            if not rolls:
+                batch.roll_quality_state = 'none'
+            elif all(s in ('graded', 'released') for s in states):
+                batch.roll_quality_state = 'complete'
+            elif all(s == 'pending' for s in states):
+                batch.roll_quality_state = 'pending'
+            else:
+                batch.roll_quality_state = 'partial'
+
+    def action_grade_rolls(self):
+        self.ensure_one()
+        action = self.env['ir.actions.act_window']._for_xml_id(
+            'idtx_quality_control.action_qc_roll_grading')
+        action['domain'] = [('batch_id', '=', self.id), ('lot_id', '!=', False)]
+        action['context'] = {'default_batch_id': self.id, 'create': False}
+        action['display_name'] = _('Calificación de rollos · %s') % self.name
+        return action
+
+    def action_print_roll_quality_report(self):
+        return self.env.ref(
+            'idtx_quality_control.action_report_roll_quality_release').report_action(self)
+
+    def _roll_quality_summary(self):
+        """Resumen por grado para el informe: {'A': (n, kg), ...}, retenidos."""
+        self.ensure_one()
+        rolls = self.finished_roll_ids
+        summary = {}
+        for grade in ('A', 'B', 'M'):
+            sub = rolls.filtered(lambda r: r.quality_grade == grade)
+            summary[grade] = (len(sub), sum(sub.mapped('net_weight')))
+        retained = rolls.filtered(lambda r: r.quality_state in ('pending', 'observed'))
+        return summary, retained
     roll_count = fields.Integer('Rollos', compute='_compute_roll_count')
     reprocess_cycle = fields.Char(
         'Ciclo de Reproceso', compute='_compute_reprocess_cycle',

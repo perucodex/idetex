@@ -569,14 +569,13 @@ class ProductAnalysis(models.Model):
         """copy() estandar — el web client de Odoo espera un recordset
         iterable, asi que NO podemos retornar action dict aqui.
 
-        La logica de "abrir wizard si hay >1 weaving_data" la maneja un
-        patch JS en static/src/js/product_analysis_duplicate.js que
-        intercepta el boton Duplicar del engranaje ANTES de invocar
-        copy(). Cuando el wizard ya hizo la seleccion, llama a copy()
-        con context['product_analysis_skip_copy_wizard']=True para
-        omitir el patch JS y la copia procede en modo "vaciar
-        weaving_data" (el wizard se encarga de duplicar las
-        seleccionadas).
+        El boton Duplicar del engranaje SIEMPRE abre el wizard de seleccion
+        (patch JS en static/src/js/product_analysis_duplicate.js que
+        intercepta duplicateRecord ANTES de invocar copy()): weaving_data_ids
+        no lleva copy=True, asi que un copy() directo sale SIN datos de
+        tejido ni ruta. El wizard llama a copy() con weaving_data_ids y
+        routing_ids vaciados y luego duplica las seleccionadas y repuebla la
+        ruta desde el proceso base.
         """
         return super().copy(default)
 

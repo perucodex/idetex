@@ -45,7 +45,8 @@ solicitud pasa a **Hecho** y el solicitante recibe un mensaje en el chatter.
   (logo, ÁREA = departamento del solicitante o ubicación destino, SOLICITANTE, FECHA, N° BOLETA =
   número REQ, MOTIVO = observaciones, tabla ITEM/CANTIDAD/UND/DESCRIPCION/Ult Lote Cocina rellenada
   hasta 30 filas, firmas V°B° Jefe de área / Producción / Almacén). Plantilla
-  `reports/report_stock_request_order.xml`, textos en español fijos.
+  `reports/report_stock_request_order.xml`, textos en español fijos. El `<style>` del template anula el
+  `border-style: solid; border-width: 0` de Bootstrap 5 en tr/tbody, que wkhtmltopdf pinta como líneas finas.
 - Requerimientos (varios productos por documento) activados por defecto.
 - Solicitante y **Observaciones** visibles en el requerimiento; filtro *Mis requerimientos*.
 - Menú *Requerimientos de almacén* dentro de Inventario › Operaciones para almacén.

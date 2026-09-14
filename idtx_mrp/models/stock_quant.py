@@ -1,7 +1,11 @@
-from odoo import models
+from odoo import fields, models
 
 class StockQuant(models.Model):
     _inherit = 'stock.quant'
+
+    batch_id = fields.Many2one(
+        related='lot_id.batch_id', string='Partida', store=True, index=True,
+        help='Partida del rollo (desde el lote): permite agrupar y filtrar el stock por partida.')
 
     def reprint(self):
         for rec in self:

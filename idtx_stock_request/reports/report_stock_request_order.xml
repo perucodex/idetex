@@ -32,9 +32,20 @@
         <t t-call="web.basic_layout">
             <t t-set="lines" t-value="o.stock_request_ids.sorted('id')" />
             <t t-set="min_rows" t-value="30" />
-            <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #000;">
+            <div class="page o_idtx_stock_request_report" style="font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #000;">
+                <!-- Bootstrap 5 deja 'border-style: solid; border-width: 0' en tr/tbody/thead
+                     y wkhtmltopdf lo pinta como una línea fina (mismo fix que web .table-borderless). -->
+                <style>
+                    .o_idtx_stock_request_report table,
+                    .o_idtx_stock_request_report thead,
+                    .o_idtx_stock_request_report tbody,
+                    .o_idtx_stock_request_report tfoot,
+                    .o_idtx_stock_request_report tr,
+                    .o_idtx_stock_request_report td,
+                    .o_idtx_stock_request_report th { border-style: none; border-width: 0; }
+                </style>
                 <!-- Cabecera: logo + título -->
-                <table style="width: 100%; border-collapse: collapse; border: none; margin-bottom: 14px;">
+                <table class="o_ignore_layout_styling" style="width: 100%; border-collapse: collapse; border: none; margin-bottom: 14px;">
                     <tr>
                         <td style="width: 32%; vertical-align: middle; border: none; padding: 0;">
                             <img
@@ -51,7 +62,7 @@
                 </table>
 
                 <!-- Datos: área / solicitante / fecha / boleta -->
-                <table style="width: 100%; border: none; border-collapse: separate; border-spacing: 0 6px; margin-bottom: 4px;">
+                <table class="o_ignore_layout_styling" style="width: 100%; border: none; border-collapse: separate; border-spacing: 0 6px; margin-bottom: 4px;">
                     <tr>
                         <td style="width: 15%; border: 1px solid #000; padding: 4px 6px; font-weight: bold;">AREA</td>
                         <td style="width: 26%; border: 1px solid #000; padding: 4px 6px; text-align: center; font-weight: bold;">
@@ -77,7 +88,7 @@
                 </table>
 
                 <!-- Motivo -->
-                <table style="width: 100%; border-collapse: collapse; border: none; margin: 6px 0 10px 0;">
+                <table class="o_ignore_layout_styling" style="width: 100%; border-collapse: collapse; border: none; margin: 6px 0 10px 0;">
                     <tr>
                         <td style="width: 15%; border: none; padding: 4px 6px; font-weight: bold;">MOTIVO:</td>
                         <td style="border: none; border-bottom: 1px solid #000; padding: 4px 6px; font-weight: bold;">
@@ -87,14 +98,14 @@
                 </table>
 
                 <!-- Detalle -->
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 26px;">
+                <table class="o_ignore_layout_styling" style="width: 100%; border-collapse: collapse; margin-bottom: 26px;">
                     <thead>
                         <tr style="background-color: #f2f2f2; font-weight: bold; text-align: center;">
                             <th style="width: 6%; border: 1px solid #000; padding: 4px;">ITEM</th>
                             <th style="width: 11%; border: 1px solid #000; padding: 4px;">CANTIDAD</th>
                             <th style="width: 8%; border: 1px solid #000; padding: 4px;">UND</th>
                             <th style="border: 1px solid #000; padding: 4px;">DESCRIPCION</th>
-                            <th style="width: 19%; border: 1px solid #000; padding: 4px;">Ult Lote Cocina</th>
+                            <th style="width: 19%; border: 1px solid #000; padding: 4px;">Ult Lote</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -128,7 +139,7 @@
                 </table>
 
                 <!-- Firmas -->
-                <table style="width: 100%; border-collapse: collapse; border: none; margin-top: 18px;">
+                <table class="o_ignore_layout_styling" style="width: 100%; border-collapse: collapse; border: none; margin-top: 18px;">
                     <tr style="text-align: center; font-size: 10px;">
                         <td style="width: 33%; border: none; padding: 0 30px;">
                             <div style="border-top: 1px solid #000; padding-top: 4px;">V°B° JEFE DE AREA</div>

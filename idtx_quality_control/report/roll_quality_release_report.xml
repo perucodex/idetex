@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="paperformat_qc_roll_quality" model="report.paperformat">
+        <field name="name">Informe de calidad de partida A4</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">8</field>
+        <field name="margin_bottom">8</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_roll_quality_release" model="ir.actions.report">
+        <field name="name">Informe de calidad de partida</field>
+        <field name="model">mrp.workorder.batch</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">idtx_quality_control.report_roll_quality_release</field>
+        <field name="report_file">idtx_quality_control.report_roll_quality_release</field>
+        <field name="binding_model_id" ref="idtx_mrp.model_mrp_workorder_batch"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_qc_roll_quality"/>
+        <field name="print_report_name">'Calidad partida %s' % (object.name)</field>
+    </record>
+
+    <template id="report_roll_quality_release_document">
+        <t t-call="web.basic_layout">
+            <t t-set="rolls" t-value="o.finished_roll_ids.sorted(lambda r: (r.lot_id.name or ''))"/>
+            <t t-set="summary_retained" t-value="o._roll_quality_summary()"/>
+            <t t-set="summary" t-value="summary_retained[0]"/>
+            <t t-set="retained" t-value="summary_retained[1]"/>
+            <t t-set="states" t-value="dict(o.env['mrp.production.roll']._fields['quality_state']._description_selection(o.env))"/>
+            <t t-set="observations" t-value="dict(o.env['mrp.production.roll']._fields['quality_observation']._description_selection(o.env))"/>
+            <div class="page o_idtx_qc_roll_report" style="font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #000;">
+                <style>
+                    .o_idtx_qc_roll_report table, .o_idtx_qc_roll_report thead, .o_idtx_qc_roll_report tbody,
+                    .o_idtx_qc_roll_report tr, .o_idtx_qc_roll_report td, .o_idtx_qc_roll_report th { border-style: none; border-width: 0; }
+                    .o_idtx_qc_roll_report td.b, .o_idtx_qc_roll_report th.b { border: 1px solid #000; padding: 3px 5px; }
+                </style>
+                <table class="o_ignore_layout_styling" style="width: 100%; margin-bottom: 10px;">
+                    <tr>
+                        <td style="width: 30%; vertical-align: middle;">
+                            <img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)"
+                                 style="max-height: 50px; max-width: 190px;" alt="Logo"/>
+                        </td>
+                        <td style="vertical-align: middle; font-size: 16px; font-weight: bold;">
+                            INFORME DE CALIDAD DE PARTIDA
+                        </td>
+                        <td style="width: 22%; text-align: right; vertical-align: middle;">
+                            <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/>
+                        </td>
+                    </tr>
+                </table>
+
+                <table class="o_ignore_layout_styling" style="width: 100%; border-collapse: separate; border-spacing: 0 4px; margin-bottom: 8px;">
+                    <tr>
+                        <td class="b" style="width: 14%; font-weight: bold;">PARTIDA</td>
+                        <td class="b" style="width: 36%; font-weight: bold; font-size: 13px;"><t t-esc="o.name"/></td>
+                        <td style="width: 4%;"></td>
+                        <td class="b" style="width: 14%; font-weight: bold;">CLIENTE</td>
+                        <td class="b" style="width: 32%;"><t t-esc="o.qc_customer or ''"/></td>
+                    </tr>
+                    <tr>
+                        <td class="b" style="font-weight: bold;">ARTÍCULO</td>
+                        <td class="b"><t t-esc="o.qc_article or ''"/></td>
+                        <td></td>
+                        <td class="b" style="font-weight: bold;">PEDIDO</td>
+                        <td class="b"><t t-esc="o.qc_order_ref or ''"/></td>
+                    </tr>
+                    <tr>
+                        <td class="b" style="font-weight: bold;">ESTADO</td>
+                        <td class="b"><t t-esc="dict(o._fields['roll_quality_state']._description_selection(o.env)).get(o.roll_quality_state, '')"/></td>
+                        <td></td>
+                        <td class="b" style="font-weight: bold;">ROLLOS</td>
+                        <td class="b"><t t-esc="len(rolls)"/> pesados · <t t-esc="len(retained)"/> retenidos</td>
+                    </tr>
+                </table>
+
+                <table class="o_ignore_layout_styling" style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+                    <thead>
+                        <tr style="background-color: #f2f2f2; font-weight: bold; text-align: center;">
+                            <th class="b" style="width: 5%;">N°</th>
+                            <th class="b" style="width: 16%;">ROLLO (LOTE)</th>
+                            <th class="b">PRODUCTO</th>
+                            <th class="b" style="width: 8%;">KG</th>
+                            <th class="b" style="width: 7%;">GRADO</th>
+                            <th class="b" style="width: 12%;">ESTADO</th>
+                            <th class="b" style="width: 12%;">OBSERVACIÓN</th>
+                            <th class="b" style="width: 18%;">NOTA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="rolls" t-as="roll">
+                            <tr t-att-style="'background-color: #fff3cd;' if roll.quality_state in ('pending', 'observed') else ''">
+                                <td class="b" style="text-align: center;"><t t-esc="roll_index + 1"/></td>
+                                <td class="b" style="font-weight: bold;"><t t-esc="roll.lot_id.name"/></td>
+                                <td class="b"><t t-esc="roll.product_id.display_name"/></td>
+                                <td class="b" style="text-align: right;"><t t-esc="'%.2f' % roll.net_weight"/></td>
+                                <td class="b" style="text-align: center; font-weight: bold; font-size: 13px;"><t t-esc="roll.quality_grade or '—'"/></td>
+                                <td class="b"><t t-esc="states.get(roll.quality_state, '')"/></td>
+                                <td class="b"><t t-esc="observations.get(roll.quality_observation, '') if roll.quality_observation else ''"/></td>
+                                <td class="b"><t t-esc="roll.quality_note or ''"/></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <table class="o_ignore_layout_styling" style="width: 60%; border-collapse: collapse; margin-bottom: 12px;">
+                    <tr style="background-color: #f2f2f2; font-weight: bold; text-align: center;">
+                        <th class="b">GRADO</th><th class="b">DESTINO</th><th class="b">ROLLOS</th><th class="b">KG</th>
+                    </tr>
+                    <t t-foreach="[('A', 'Existencias'), ('B', 'Saldo'), ('M', 'Mermas')]" t-as="g">
+                        <tr>
+                            <td class="b" style="text-align: center; font-weight: bold;"><t t-esc="g[0]"/></td>
+                            <td class="b"><t t-esc="g[1]"/></td>
+                            <td class="b" style="text-align: right;"><t t-esc="summary[g[0]][0]"/></td>
+                            <td class="b" style="text-align: right;"><t t-esc="'%.2f' % summary[g[0]][1]"/></td>
+                        </tr>
+                    </t>
+                    <tr>
+                        <td class="b" style="text-align: center; font-weight: bold;">—</td>
+                        <td class="b">Retenidos (por evaluar / observados)</td>
+                        <td class="b" style="text-align: right;"><t t-esc="len(retained)"/></td>
+                        <td class="b" style="text-align: right;"><t t-esc="'%.2f' % sum(retained.mapped('net_weight'))"/></td>
+                    </tr>
+                </table>
+
+                <div style="border: 1px solid #000; padding: 6px 8px; margin-bottom: 26px; font-size: 12px;">
+                    <b>INSTRUCCIÓN PARA PESADO / ALMACÉN:</b>
+                    <t t-if="retained">
+                        Despachar todos los rollos calificados
+                        <b>excepto</b>: <t t-esc="', '.join(retained.mapped('lot_id.name'))"/>
+                        (retenidos por calidad).
+                    </t>
+                    <t t-elif="rolls">
+                        Despachar todos los rollos de la partida según su grado.
+                    </t>
+                    <t t-else="">
+                        La partida aún no tiene rollos pesados.
+                    </t>
+                </div>
+
+                <table class="o_ignore_layout_styling" style="width: 100%; border-collapse: collapse; margin-top: 18px;">
+                    <tr style="text-align: center; font-size: 10px;">
+                        <td style="width: 33%; padding: 0 30px;"><div style="border-top: 1px solid #000; padding-top: 4px;">V°B° CALIDAD</div></td>
+                        <td style="width: 34%; padding: 0 30px;"><div style="border-top: 1px solid #000; padding-top: 4px;">V°B° PESADO</div></td>
+                        <td style="width: 33%; padding: 0 30px;"><div style="border-top: 1px solid #000; padding-top: 4px;">V°B° ALMACÉN</div></td>
+                    </tr>
+                </table>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_roll_quality_release">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="idtx_quality_control.report_roll_quality_release_document"/>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -10,6 +10,45 @@
                 <header position="inside">
                     <button name="reprint" string="Reprint" type="object" groups="stock.group_stock_manager"/>
                 </header>
+                <field name="lot_id" position="after">
+                    <field name="batch_id" optional="show" readonly="1"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="view_stock_quant_tree_simple_inherit_batch" model="ir.ui.view">
+            <field name="name">stock.quant.list.simple.inherit.batch</field>
+            <field name="model">stock.quant</field>
+            <field name="inherit_id" ref="stock.view_stock_quant_tree_simple"/>
+            <field name="arch" type="xml">
+                <field name="lot_id" position="after">
+                    <field name="batch_id" optional="show" readonly="1"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="view_stock_quant_tree_inventory_editable_inherit_batch" model="ir.ui.view">
+            <field name="name">stock.quant.list.inventory.editable.inherit.batch</field>
+            <field name="model">stock.quant</field>
+            <field name="inherit_id" ref="stock.view_stock_quant_tree_inventory_editable"/>
+            <field name="arch" type="xml">
+                <field name="lot_id" position="after">
+                    <field name="batch_id" optional="show" readonly="1"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="quant_search_view_inherit_batch" model="ir.ui.view">
+            <field name="name">stock.quant.search.inherit.batch</field>
+            <field name="model">stock.quant</field>
+            <field name="inherit_id" ref="stock.quant_search_view"/>
+            <field name="arch" type="xml">
+                <field name="lot_id" position="after">
+                    <field name="batch_id"/>
+                </field>
+                <xpath expr="//group" position="inside">
+                    <filter name="groupby_batch" string="Partida" domain="[]" context="{'group_by': 'batch_id'}"/>
+                </xpath>
             </field>
         </record>
 

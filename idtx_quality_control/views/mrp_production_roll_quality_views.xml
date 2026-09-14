@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Lista editable de calificación de rollos terminados -->
+        <record id="view_qc_roll_grading_list" model="ir.ui.view">
+            <field name="name">mrp.production.roll.qc.grading.list</field>
+            <field name="model">mrp.production.roll</field>
+            <field name="arch" type="xml">
+                <list editable="bottom" create="0" delete="0" default_order="batch_id desc, lot_id"
+                      decoration-success="quality_state == 'released'"
+                      decoration-info="quality_state == 'graded'"
+                      decoration-warning="quality_state == 'observed'">
+                    <field name="batch_id" readonly="1"/>
+                    <field name="lot_id" readonly="1" string="Rollo (lote)"/>
+                    <field name="name" readonly="1" optional="hide" string="Nº rollo"/>
+                    <field name="product_id" readonly="1" optional="show"/>
+                    <field name="net_weight" readonly="1" sum="Kg" string="Kg"/>
+                    <field name="weighed_date" readonly="1" optional="hide"/>
+                    <button name="action_set_grade" type="object" string="A" context="{'grade': 'A'}"
+                            class="btn btn-sm btn-outline-success" invisible="quality_released or quality_grade == 'A'"/>
+                    <button name="action_set_grade" type="object" string="B" context="{'grade': 'B'}"
+                            class="btn btn-sm btn-outline-primary" invisible="quality_released or quality_grade == 'B'"/>
+                    <button name="action_set_grade" type="object" string="M" context="{'grade': 'M'}"
+                            class="btn btn-sm btn-outline-danger" invisible="quality_released or quality_grade == 'M'"/>
+                    <field name="quality_grade" readonly="quality_released"/>
+                    <field name="quality_observation" readonly="quality_released"/>
+                    <field name="quality_note" readonly="quality_released"/>
+                    <field name="quality_state" widget="badge" readonly="1"
+                           decoration-success="quality_state == 'released'"
+                           decoration-info="quality_state == 'graded'"
+                           decoration-warning="quality_state == 'observed'"
+                           decoration-muted="quality_state == 'pending'"/>
+                    <field name="quality_user_id" readonly="1" optional="show" widget="many2one_avatar_user"/>
+                    <field name="quality_date" readonly="1" optional="hide"/>
+                    <field name="quality_released" column_invisible="1"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_qc_roll_grading_search" model="ir.ui.view">
+            <field name="name">mrp.production.roll.qc.grading.search</field>
+            <field name="model">mrp.production.roll</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="batch_id"/>
+                    <field name="lot_id" string="Rollo (lote)"/>
+                    <field name="product_id"/>
+                    <filter name="unreleased" string="Sin liberar" domain="[('quality_released', '=', False)]"/>
+                    <filter name="pending" string="Por evaluar" domain="[('quality_state', '=', 'pending')]"/>
+                    <filter name="observed" string="Observados" domain="[('quality_state', '=', 'observed')]"/>
+                    <filter name="graded" string="Calificados" domain="[('quality_state', '=', 'graded')]"/>
+                    <filter name="released" string="Liberados" domain="[('quality_state', '=', 'released')]"/>
+                    <separator/>
+                    <filter name="grade_a" string="Grado A" domain="[('quality_grade', '=', 'A')]"/>
+                    <filter name="grade_b" string="Grado B" domain="[('quality_grade', '=', 'B')]"/>
+                    <filter name="grade_m" string="Grado M" domain="[('quality_grade', '=', 'M')]"/>
+                    <group>
+                        <filter name="group_batch" string="Partida" domain="[]" context="{'group_by': 'batch_id'}"/>
+                        <filter name="group_state" string="Estado calidad" domain="[]" context="{'group_by': 'quality_state'}"/>
+                        <filter name="group_grade" string="Grado" domain="[]" context="{'group_by': 'quality_grade'}"/>
+                        <filter name="group_product" string="Producto" domain="[]" context="{'group_by': 'product_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_qc_roll_grading" model="ir.actions.act_window">
+            <field name="name">Calificación de Rollos</field>
+            <field name="res_model">mrp.production.roll</field>
+            <field name="view_mode">list</field>
+            <field name="view_id" ref="view_qc_roll_grading_list"/>
+            <field name="search_view_id" ref="view_qc_roll_grading_search"/>
+            <field name="domain">[('lot_id', '!=', False)]</field>
+            <field name="context">{'search_default_unreleased': 1, 'search_default_group_batch': 1, 'create': False}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">Sin rollos pesados por calificar</p>
+                <p>Cada rollo pesado recibe un grado: A entra a Existencias, B a Saldo y M a Mermas.
+                   Un rollo observado (desmanchar, descontaminar, reprocesar) queda retenido hasta recibir grado.</p>
+            </field>
+        </record>
+
+    </data>
+</odoo>
