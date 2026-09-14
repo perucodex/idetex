@@ -1,12 +1,6 @@
 
 from odoo import models, fields
 
-# Ancho de codificación de la cuadrícula: slot_index = fila*GRID_COLS+columna.
-# Debe coincidir EXACTO con GRID_COLS en static/src/machine_floor/machine_floor.js
-# (el ancho visible ahí crece dinámicamente, pero esta es la base fija de
-# codificación). Única fuente de verdad del lado Python — hooks.py y el
-# controller (dashboard_alpha.py) importan esta constante en vez de tener
-# cada uno su propio número, para no volver a desincronizarse.
 GRID_COLS = 60
 
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import logging
 import re
 import unicodedata
@@ -9,13 +8,6 @@ _logger = logging.getLogger(__name__)
 
 _MODULE = 'idtx_plan_general_alpha'
 
-# Los layouts _TEJEDURIA_FLOOR_LAYOUT / _TINTORERIA_FLOOR_LAYOUT de abajo se
-# diseñaron a mano pensando en una cuadrícula de 24 columnas (el ancho
-# visible original, antes de que la cuadrícula pudiera crecer hacia la
-# derecha). GRID_COLS (importado del modelo) es hoy más ancho para permitir
-# ese crecimiento sin límite real — _to_current_encoding convierte cada
-# slot_index de esa base de diseño (24) a la codificación real que usa el
-# modelo, preservando la posición visual (fila, columna) exacta.
 _LEGACY_GRID_COLS = 24
 
 
@@ -25,21 +17,11 @@ def _to_current_encoding(slot_index):
 
 
 def _slug(text):
-    """Normaliza un nombre a un sufijo de xml_id seguro (sin tildes/Ñ/espacios)."""
     norm = unicodedata.normalize('NFKD', text or '').encode('ascii', 'ignore').decode('ascii')
     return re.sub(r'[^a-zA-Z0-9]+', '_', norm).strip('_').lower()
 
 
 def _track_owned(env, model, res_id, xml_id):
-    """Marca un registro como propiedad de este módulo en ir.model.data,
-    para que al DESINSTALARLO Odoo lo elimine automáticamente (o falle
-    silenciosamente ese registro puntual si algo más lo referencia — Odoo
-    nunca aborta el uninstall completo por eso).
-    Se llama tanto si el registro se acaba de crear como si ya existía,
-    porque el nombre/serial buscado (departamentos Tintorería/Tejeduría,
-    equipos por serial_no de _EQUIPOS_INICIALES) es específico de este
-    módulo — pero SIEMPRE filtrado por la compañía actual, así que nunca
-    reclama datos de otra compañía."""
     IMD = env['ir.model.data'].sudo()
     if IMD.search_count([('module', '=', _MODULE), ('name', '=', xml_id)]):
         return
@@ -82,10 +64,6 @@ _TEJEDURIA_FLOOR_LAYOUT = [
     ('TEJ55', 225),
 ]
 
-# Igual que _TEJEDURIA_FLOOR_LAYOUT pero con celdas combinadas (span_cols,
-# span_rows): varias máquinas de TINTORERIA se agrandaron manualmente en la
-# cuadrícula (ver ALLOWED_SHAPES / _covered_cells en el controlador). Cada
-# tupla es (serial_no, slot_index_ancla, span_cols, span_rows).
 _TINTORERIA_FLOOR_LAYOUT = [
     ('TEÑ21', 0, 1, 2),   ('TEÑ20', 2, 1, 2),   ('TEÑ22', 4, 1, 2),
     ('TEÑ19', 30, 1, 2),  ('TEÑ18', 32, 1, 2),  ('TEÑ17', 34, 1, 2),
@@ -231,19 +209,10 @@ def _get_or_create_department(env, nombre):
     _track_owned(env, 'hr.department', dept.id, f'dept_{_slug(nombre)}_{company.id}')
     return dept
 
-
-# Compañía real dueña de las máquinas de planta. Este módulo es del grupo
-# "idetex" y se instala con esa compañía activa, pero las máquinas (y las
-# órdenes de trabajo/mrp.workcenter reales que las usan) operan bajo
-# FULL PIMA S.A.C. — ver [[project_workcenter_check_company]].
 _EQUIPMENT_COMPANY_NAME = 'FULL PIMA S.A.C.'
 
 
 def _get_equipment_company(env):
-    """Resuelve la compañía dueña de las máquinas por NOMBRE, nunca por id
-    (el id de FULL PIMA S.A.C. no tiene por qué coincidir entre entornos).
-    Si no existe (p.ej. una BD de pruebas sin esa compañía), se degrada a la
-    compañía activa en vez de abortar la instalación completa."""
     company = env['res.company'].search([('name', '=', _EQUIPMENT_COMPANY_NAME)], limit=1)
     if not company:
         _logger.warning(
@@ -255,10 +224,6 @@ def _get_equipment_company(env):
 
 
 def _get_or_create_category(env, cache, nombre):
-    """Categoría de equipo (JERSERA, GAMUZA, TEÑIDORA...), derivada de la
-    primera palabra del nombre de la máquina. Sin company_id (compartida):
-    es una clasificación por tipo de máquina, no un dato propio de una
-    compañía, así que debe verse sin importar la compañía activa."""
     cat = cache.get(nombre)
     if cat:
         return cat
@@ -273,15 +238,6 @@ def _get_or_create_category(env, cache, nombre):
 
 
 def _create_initial_equipment(env):
-    """Crea/actualiza los equipos iniciales. Ya NO crea ni vincula ningún
-    mrp.workcenter — el área de una máquina es su hr.department
-    (Tejeduría/Tintorería). El puente con las órdenes de trabajo reales
-    (que sí usan mrp.workcenter) se hace por departamento en `idtx_mrp` —
-    ver [[project_workcenter_check_company]]. Las máquinas pertenecen a
-    FULL PIMA S.A.C. (no a la compañía idetex bajo la que corre este
-    módulo); maintenance.equipment no exige check_company en
-    department_id/category_id, así que no hace falta que departamento o
-    categoría compartan compañía con el equipo para poder asignarlos."""
     Equipment = env['maintenance.equipment'].with_context(lang='en_US')
     fields_eq = Equipment._fields
     tiene_department = 'department_id' in fields_eq
@@ -364,9 +320,6 @@ def _create_initial_equipment(env):
 
 
 def _create_floor_layouts(env, workcenter, layout_data):
-    """Crea/corrige las posiciones de cuadrícula para un centro de trabajo.
-    Cada entrada de layout_data es (serial_no, slot_index) o
-    (serial_no, slot_index, span_cols, span_rows) — sin span se asume 1x1."""
     if 'idtx.alpha.floor.layout' not in env.registry.models:
         _logger.warning('Plan General Alpha: modelo idtx.alpha.floor.layout no disponible.')
         return
@@ -416,7 +369,6 @@ def _create_floor_layouts(env, workcenter, layout_data):
 
 
 def _set_tejeduria_operativa(env):
-    """Fuerza a 'operativa' el estado de todas las máquinas del centro de trabajo TEJEDURIA."""
     Equipment = env['maintenance.equipment']
     if 'machine_state' not in Equipment._fields:
         return
