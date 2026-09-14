@@ -15,7 +15,7 @@ Módulo base para los desarrollos de producción para empresas textiles
     # Check https://github.com/odoo/odoo/blob/15.0/odoo/addons/base/data/ir_module_category_data.xml
     # for the full list
     'category': 'Producción Textil',
-    'version': '19.0.0.3.0',
+    'version': '19.0.0.5.0',
     'license': 'LGPL-3',
     'sequence': 0,
 
@@ -40,6 +40,7 @@ Módulo base para los desarrollos de producción para empresas textiles
         'views/mrp_routing_views.xml',
         'views/mrp_workorder_batch_views.xml',
         'views/mrp_workorder_roll_views.xml',
+        'views/mrp_roll_reception_views.xml',
         'views/mrp_workorder_views.xml',
         'views/mrp_workorder_option_views.xml',
         'views/res_company_views.xml',
@@ -58,6 +59,8 @@ Módulo base para los desarrollos de producción para empresas textiles
     "assets": {
         "web.assets_backend": [
             "idtx_mrp/static/src/js/print_zpl_simple.js",
+            "idtx_mrp/static/src/widgets/generate_roll_lines.js",
+            "idtx_mrp/static/src/widgets/generate_roll_lines.xml",
         ],
     },
 }

@@ -25,4 +25,11 @@
         <field name="company_id" eval="False"/>
     </record>
 
+        <record id="seq_mrp_roll_reception" model="ir.sequence">
+            <field name="name">Recepción de rollos del cliente</field>
+            <field name="code">mrp.roll.reception</field>
+            <field name="prefix">RC%(y)s%(month)s</field>
+            <field name="padding">4</field>
+            <field name="company_id" eval="False"/>
+        </record>
 </odoo>

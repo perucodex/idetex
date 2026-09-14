@@ -859,6 +859,19 @@ class SaleOrderLine(models.Model):
             moves.unlink()
         return res
 
+    def _production_qty_from_sale_qty(self, sale_qty):
+        """Cantidad a FABRICAR para entregar sale_qty: se infla por la merma de
+        producción de la línea con la misma convención que el precio
+        (qty / (1 - merma)); con 9% de merma, 500 kg pedidos -> 549.45 kg.
+        Redondeo a la precisión de la UdM. La entrega al cliente sigue siendo
+        la cantidad pedida."""
+        self.ensure_one()
+        loss = self.production_loss or self.sudo().bom_id.technical_sheet_id.prod_scrap or 0.0
+        if not sale_qty or loss <= 0 or loss >= 1:
+            return sale_qty
+        return float_round(sale_qty / (1 - loss),
+                           precision_rounding=self.product_uom_id.rounding or 0.01)
+
     def _create_weaving_productions(self):
         """Crea la OF de cada línea de tejido con LdM (mismas reglas que la
         confirmación del pedido). Se usa al confirmar el pedido y al agregar
@@ -871,7 +884,7 @@ class SaleOrderLine(models.Model):
             production_company = order.company_id._get_production_company()
             prd = self.env['mrp.production'].sudo().with_company(production_company).create({
                 'product_tmpl_id': line.product_id.product_tmpl_id.id,
-                'product_qty': line.product_uom_qty,
+                'product_qty': line._production_qty_from_sale_qty(line.product_uom_qty),
                 'bom_id': line.bom_id.id,
                 'sale_order_line_id': line.id,
                 'production_type': order.sale_type,
@@ -901,6 +914,8 @@ class SaleOrderLine(models.Model):
                 if float_compare(vals['product_uom_qty'], rec.product_uom_qty,
                                  precision_rounding=rounding) == 0:
                     continue
+                # La OF fabrica la cantidad pedida inflada por la merma.
+                new_prod_qty = rec._production_qty_from_sale_qty(vals['product_uom_qty'])
                 for prd in rec.production_ids.filtered(
                         lambda p: p.state not in ('done', 'cancel')):
                     # OF ya iniciada: no se permite cambiar la cantidad (y al
@@ -919,13 +934,13 @@ class SaleOrderLine(models.Model):
                             prd_su.action_cancel()
                         prd_su.unlink()
                     elif prd.state == 'draft':
-                        prd.sudo().product_qty = vals['product_uom_qty']
+                        prd.sudo().product_qty = new_prod_qty
                     else:
                         # OF confirmada: el asistente estándar ajusta consumos
                         # y órdenes de trabajo.
                         self.env['change.production.qty'].sudo().with_company(prd.company_id).create({
                             'mo_id': prd.id,
-                            'product_qty': vals['product_uom_qty'],
+                            'product_qty': new_prod_qty,
                         }).change_prod_qty()
         res = super().write(vals)
         if 'product_uom_qty' in vals:

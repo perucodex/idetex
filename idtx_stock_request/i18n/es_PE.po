@@ -1,0 +1,1183 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* idtx_stock_request
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0+e\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-14 14:38+0000\n"
+"PO-Revision-Date: 2026-09-14 14:38+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es_PE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_move_line.py:0
+msgid ""
+"%(product_name)s : Transferred quantity %(product_qty)s %(product_uom)s"
+msgstr "%(product_name)s: cantidad entregada %(product_qty)s %(product_uom)s"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__message_needaction
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__message_needaction
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__message_needaction
+msgid "Action Needed"
+msgstr "Acción Necesaria"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__activity_ids
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__activity_ids
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__activity_ids
+msgid "Activities"
+msgstr "Actividades"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__activity_exception_decoration
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__activity_exception_decoration
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr "Actividad Excepción Decoración"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__activity_state
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__activity_state
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__activity_state
+msgid "Activity State"
+msgstr "Estado de Actividad"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__activity_type_icon
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__activity_type_icon
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__activity_type_icon
+msgid "Activity Type Icon"
+msgstr "Icono de tipo de actividad"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_allocation__allocated_product_qty
+msgid "Allocated Quantity"
+msgstr "Cantidad reservada"
+
+#. module: idtx_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.res_config_settings_view_form
+msgid "Allow All Locations Types"
+msgstr "Permitir todo tipo de ubicaciones"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_res_company__stock_request_allow_virtual_loc
+#: model:ir.model.fields,field_description:idtx_stock_request.field_res_config_settings__stock_request_allow_virtual_loc
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__allow_virtual_location
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__allow_virtual_location
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__allow_virtual_location
+msgid "Allow Virtual locations on Stock Requests"
+msgstr "Permitir ubicaciones virtuales en requerimientos"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__allowed_uom_ids
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__allowed_uom_ids
+msgid "Allowed Uom"
+msgstr "UdM permitidas"
+
+#. module: idtx_stock_request
+#: model_terms:ir.actions.act_window,help:idtx_stock_request.stock_request_order_action
+msgid ""
+"Ask the warehouse for products: on confirmation an internal\n"
+"                transfer is created and reserved so the warehouse can serve it."
+msgstr ""
+"Solicite productos al almacén: al confirmar se crea y reserva un traslado "
+"interno para que almacén lo atienda."
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__message_attachment_count
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__message_attachment_count
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__message_attachment_count
+msgid "Attachment Count"
+msgstr "Cuenta de Archivos Adjuntos"
+
+#. module: idtx_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.res_config_settings_view_form
+msgid ""
+"By default only internal and transit locations are allowed in Stock Request "
+"and Orders."
+msgstr ""
+"Por defecto solo se permiten ubicaciones internas y de tránsito en los "
+"requerimientos."
+
+#. module: idtx_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_order_form
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.view_stock_request_form
+msgid "Cancel"
+msgstr "Cancelar"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields.selection,name:idtx_stock_request.selection__stock_request__state__cancel
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_order_search
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_search
+msgid "Cancelled"
+msgstr "Cancelado"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_res_company__stock_request_check_available_first
+#: model:ir.model.fields,field_description:idtx_stock_request.field_res_config_settings__stock_request_check_available_first
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.res_config_settings_view_form
+msgid "Check available stock first"
+msgstr "Verificar primero el stock disponible"
+
+#. module: idtx_stock_request
+#: model_terms:ir.actions.act_window,help:idtx_stock_request.action_stock_request_form
+msgid "Click to add a Stock Request."
+msgstr "Haga clic para agregar una solicitud de producto."
+
+#. module: idtx_stock_request
+#: model:ir.model,name:idtx_stock_request.model_res_company
+msgid "Companies"
+msgstr "Compañías"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__company_id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__company_id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_allocation__company_id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__company_id
+msgid "Company"
+msgstr "Compañía"
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_request.py:0
+msgid "Company must be equal to the order"
+msgstr "La compañía debe ser la misma que la de la petición"
+
+#. module: idtx_stock_request
+#: model:ir.model,name:idtx_stock_request.model_res_config_settings
+msgid "Config Settings"
+msgstr "Configuración"
+
+#. module: idtx_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_order_form
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.view_stock_request_form
+msgid "Confirm"
+msgstr "Confirmar"
+
+#. module: idtx_stock_request
+#: model_terms:ir.actions.act_window,help:idtx_stock_request.stock_request_order_action
+msgid "Create a warehouse request"
+msgstr "Cree un requerimiento de almacén"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_res_company__stock_request_direct_transfer
+#: model:ir.model.fields,field_description:idtx_stock_request.field_res_config_settings__stock_request_direct_transfer
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.res_config_settings_view_form
+msgid "Create internal transfer when no route is selected"
+msgstr "Crear traslado interno cuando no se elige ruta"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__create_uid
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_allocation__create_uid
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__create_uid
+msgid "Created by"
+msgstr "Creado por"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__create_date
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_allocation__create_date
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__create_date
+msgid "Created on"
+msgstr "Creado el"
+
+#. module: idtx_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_search
+msgid "Current requests"
+msgstr "Requerimientos vigentes"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request__expected_date
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_order__expected_date
+msgid "Date when you expect to receive the goods."
+msgstr "Fecha en la que espera recibir los productos."
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__picking_count
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__picking_count
+msgid "Delivery Orders"
+msgstr "Traslados"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_res_company__display_name
+#: model:ir.model.fields,field_description:idtx_stock_request.field_res_config_settings__display_name
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_location__display_name
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_move__display_name
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_move_line__display_name
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_picking__display_name
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__display_name
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__display_name
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_allocation__display_name
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__display_name
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_route__display_name
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_rule__display_name
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_warehouse__display_name
+msgid "Display Name"
+msgstr "Nombre mostrado"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields.selection,name:idtx_stock_request.selection__stock_request__state__done
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.view_stock_request_form
+msgid "Done"
+msgstr "Hecho"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields.selection,name:idtx_stock_request.selection__stock_request__state__draft
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_order_search
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_search
+msgid "Draft"
+msgstr "Borrador"
+
+#. module: idtx_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.res_config_settings_view_form
+msgid "Enable Orders"
+msgstr "Activar requerimientos (varios productos por documento)"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__expected_date
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__expected_date
+msgid "Expected Date"
+msgstr "Fecha esperada"
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_request.py:0
+msgid "Expected date must be equal to the order"
+msgstr "La fecha prevista debe ser la misma que la del pedido"
+
+#. module: idtx_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_order_search
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_search
+msgid "Finished"
+msgstr "Terminados"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__message_follower_ids
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__message_follower_ids
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__message_follower_ids
+msgid "Followers"
+msgstr "Seguidores"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__message_partner_ids
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__message_partner_ids
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__message_partner_ids
+msgid "Followers (Partners)"
+msgstr "Seguidores (Socios)"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request__activity_type_icon
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_abstract__activity_type_icon
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_order__activity_type_icon
+msgid "Font awesome icon e.g. fa-tasks"
+msgstr "Icono de Font Awesome ej. fa-tasks"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_res_config_settings__group_stock_request_order
+msgid "Group Stock Request Order"
+msgstr "Agrupa las solicitudes en pedidos"
+
+#. module: idtx_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.res_config_settings_view_form
+msgid "Group several products in one request document (orders)."
+msgstr "Agrupa varios productos en un solo documento de requerimiento."
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__has_message
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__has_message
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__has_message
+msgid "Has Message"
+msgstr "Tiene Mensaje"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_res_company__id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_res_config_settings__id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_location__id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_move__id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_move_line__id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_picking__id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_allocation__id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_route__id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_rule__id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_warehouse__id
+msgid "ID"
+msgstr "ID"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__activity_exception_icon
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__activity_exception_icon
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__activity_exception_icon
+msgid "Icon"
+msgstr "Icono"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request__activity_exception_icon
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_abstract__activity_exception_icon
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_order__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr "Icono para indicar una actividad de excepción."
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request__message_needaction
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_abstract__message_needaction
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_order__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr "Si está marcado, los nuevos mensajes requieren su atención."
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request__message_has_error
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request__message_has_sms_error
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_abstract__message_has_error
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_abstract__message_has_sms_error
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_order__message_has_error
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_order__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr "Si está marcado, algunos mensajes tienen un error de entrega."
+
+#. module: idtx_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.res_config_settings_view_form
+msgid ""
+"If the requested quantity is already available in the requested location, "
+"the request is completed without creating a transfer."
+msgstr ""
+"Si la cantidad solicitada ya está disponible en la ubicación destino, la "
+"solicitud se completa sin crear traslado."
+
+#. module: idtx_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_order_search
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_search
+msgid "In Progress"
+msgstr "En progreso"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields.selection,name:idtx_stock_request.selection__stock_request__state__open
+msgid "In progress"
+msgstr "En proceso"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_order__note
+msgid ""
+"Internal note for the warehouse. It is copied to the generated transfer."
+msgstr "Nota interna para el almacén. Se copia al traslado generado."
+
+#. module: idtx_stock_request
+#: model:ir.model,name:idtx_stock_request.model_stock_location
+msgid "Inventory Locations"
+msgstr "Localización de Inventarios"
+
+#. module: idtx_stock_request
+#: model:ir.model,name:idtx_stock_request.model_stock_route
+msgid "Inventory Routes"
+msgstr "Rutas de inventarios"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__message_is_follower
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__message_is_follower
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__message_is_follower
+msgid "Is Follower"
+msgstr "Es Seguidor"
+
+#. module: idtx_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_order_form
+msgid "Items"
+msgstr "Productos"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__write_uid
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_allocation__write_uid
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__write_uid
+msgid "Last Updated by"
+msgstr "Última actualización por"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__write_date
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_allocation__write_date
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__write_date
+msgid "Last Updated on"
+msgstr "Última actualización el"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__location_id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__location_id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__location_id
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_order_search
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_search
+msgid "Location"
+msgstr "Ubicación"
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_request.py:0
+msgid "Location must be equal to the order"
+msgstr "La ubicación debe ser la misma que la del pedido"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__message_has_error
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__message_has_error
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__message_has_error
+msgid "Message Delivery error"
+msgstr "Mensaje de Entrega de error"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__message_ids
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__message_ids
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__message_ids
+msgid "Messages"
+msgstr "Mensajes"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request__reference_ids
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_abstract__reference_ids
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_order__reference_ids
+msgid ""
+"Moves created through this stock request will be grouped using these "
+"references. If none are given, the moves generated by procurement rules will"
+" be grouped into one big picking."
+msgstr ""
+"Los movimientos creados por esta solicitud se agruparán con estas "
+"referencias. Si no se indica ninguna, los movimientos generados por las "
+"reglas de aprovisionamiento se agrupan en un solo traslado."
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__my_activity_date_deadline
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__my_activity_date_deadline
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr "Mi fecha de límite de actividad"
+
+#. module: idtx_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_order_search
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_search
+msgid "My Requests"
+msgstr "Mis requerimientos"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__name
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__name
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__name
+msgid "Name"
+msgstr "Nombre"
+
+#. module: idtx_stock_request
+#: model:ir.model.constraint,message:idtx_stock_request.constraint_stock_request_abstract_name_uniq
+msgid "Name must be unique"
+msgstr "El nombre debe ser único"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__activity_date_deadline
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__activity_date_deadline
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr "Fecha Límite de Actividad Siguiente"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__activity_summary
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__activity_summary
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__activity_summary
+msgid "Next Activity Summary"
+msgstr "Resumen de actividad siguiente"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__activity_type_id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__activity_type_id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__activity_type_id
+msgid "Next Activity Type"
+msgstr "Siguiente tipo de actividad"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__note
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_order_form
+msgid "Notes"
+msgstr "Observaciones"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__message_needaction_counter
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__message_needaction_counter
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__message_needaction_counter
+msgid "Number of Actions"
+msgstr "Numero de Acciones"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__message_has_error_counter
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__message_has_error_counter
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__message_has_error_counter
+msgid "Number of errors"
+msgstr "Número de errores"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request__message_needaction_counter
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_abstract__message_needaction_counter
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_order__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr "Número de mensajes que requieren una acción"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request__message_has_error_counter
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_abstract__message_has_error_counter
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_order__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr "Número de mensajes con error de entrega"
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_request_order.py:0
+msgid "Only orders on draft state can be unlinked"
+msgstr "Solo se pueden eliminar requerimientos en borrador"
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_request.py:0
+msgid "Only requests on draft state can be unlinked"
+msgstr "Solo se pueden eliminar solicitudes en borrador"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_allocation__open_product_qty
+msgid "Open Quantity"
+msgstr "Cantidad pendiente"
+
+#. module: idtx_stock_request
+#: model:ir.ui.menu,name:idtx_stock_request.menu_stock_request_operations
+msgid "Operations"
+msgstr "Operaciones"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__order_id
+msgid "Order"
+msgstr "Pedido"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__picking_ids
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__picking_ids
+msgid "Pickings"
+msgstr "Traslados"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__product_id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__product_id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_allocation__product_id
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_order_search
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_search
+msgid "Product"
+msgstr "Producto"
+
+#. module: idtx_stock_request
+#: model:ir.model,name:idtx_stock_request.model_stock_move_line
+msgid "Product Moves (Stock Move Line)"
+msgstr "Movimientos de producto (línea de movimiento de stock)"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__product_uom_id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__product_uom_id
+msgid "Product Unit of Measure"
+msgstr "Unidad de medida del producto"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__qty_cancelled
+msgid "Qty Cancelled"
+msgstr "Cant. cancelada"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__qty_done
+msgid "Qty Done"
+msgstr "Cant. atendida"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__qty_in_progress
+msgid "Qty In Progress"
+msgstr "Cant. en proceso"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__product_uom_qty
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__product_uom_qty
+msgid "Quantity"
+msgstr "Cantidad"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request__qty_cancelled
+msgid "Quantity cancelled"
+msgstr "Cantidad cancelada"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request__qty_done
+msgid "Quantity completed"
+msgstr "Cantidad atendida"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request__qty_in_progress
+msgid "Quantity in progress."
+msgstr "Cantidad en proceso."
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request__product_qty
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_abstract__product_qty
+msgid "Quantity in the default UoM of the product"
+msgstr "Cantidad en la UdM por defecto del producto"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_allocation__requested_product_uom_qty
+msgid ""
+"Quantity of the stock request allocated to the stock move, in the UoM of the"
+" Stock Request"
+msgstr ""
+"Cantidad asignada de la solicitud de existencias en el movimiento, en la UdM"
+" de la Solicitud de Existencias"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_allocation__allocated_product_qty
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_allocation__requested_product_qty
+msgid ""
+"Quantity of the stock request allocated to the stock move, in the default "
+"UoM of the product"
+msgstr ""
+"Cantidad asignada de la solicitud de existencias en el movimiento, en la UdM"
+" por defecto del producto"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request__product_uom_qty
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_abstract__product_uom_qty
+msgid "Quantity, specified in the unit of measure indicated in the request."
+msgstr "Cantidad, especificada en la unidad de medida de la solicitud."
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__product_qty
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__product_qty
+msgid "Real Quantity"
+msgstr "Cantidad real"
+
+#. module: idtx_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_order_form
+msgid "Reason of the request or indications for the warehouse..."
+msgstr "Motivo del requerimiento o indicaciones para el almacén..."
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_move_line.py:0
+msgid ""
+"Receipt confirmation %(picking_name)s for your Request %(request_name)s"
+msgstr ""
+"Confirmación de entrega %(picking_name)s de su requerimiento "
+"%(request_name)s"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields.selection,name:idtx_stock_request.selection__stock_request__picking_policy__one
+#: model:ir.model.fields.selection,name:idtx_stock_request.selection__stock_request_order__picking_policy__one
+msgid "Receive all products at once"
+msgstr "Entregar todos los productos juntos"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields.selection,name:idtx_stock_request.selection__stock_request__picking_policy__direct
+#: model:ir.model.fields.selection,name:idtx_stock_request.selection__stock_request_order__picking_policy__direct
+msgid "Receive each product when available"
+msgstr "Entregar cada producto cuando esté disponible"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__reference_ids
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__reference_ids
+msgid "Reference"
+msgstr "Referencia"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__reference_ids
+msgid "References"
+msgstr "Referencias"
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_request.py:0
+msgid "References must be equal to the order"
+msgstr "Las referencias deben coincidir con las del requerimiento"
+
+#. module: idtx_stock_request
+#: model:ir.actions.server,name:idtx_stock_request.action_template_generate_stock_request_orders
+#: model:ir.actions.server,name:idtx_stock_request.action_variant_generate_stock_request_orders
+msgid "Request Stock"
+msgstr "Solicitar al almacén"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__requested_by
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__requested_by
+msgid "Requested By"
+msgstr "Solicitado por"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_allocation__requested_product_qty
+msgid "Requested Quantity"
+msgstr "Cantidad solicitada"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_allocation__requested_product_uom_qty
+msgid "Requested Quantity (UoM)"
+msgstr "Cantidad Solicitada (UdM)"
+
+#. module: idtx_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_order_search
+msgid "Requested by"
+msgstr "Solicitado por"
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_request.py:0
+msgid "Requested by must be equal to the order"
+msgstr "El solicitante debe coincidir"
+
+#. module: idtx_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.res_config_settings_view_form
+msgid "Requests"
+msgstr "Requerimientos"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__activity_user_id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__activity_user_id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__activity_user_id
+msgid "Responsible User"
+msgstr "Usuario Responsable"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__route_id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__route_id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__route_id
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_search
+msgid "Route"
+msgstr "Ruta"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__route_ids
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__route_ids
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__route_ids
+msgid "Routes"
+msgstr "Rutas"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__message_has_sms_error
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__message_has_sms_error
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr "Error de entrega de SMS"
+
+#. module: idtx_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_order_form
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.view_stock_request_form
+msgid "Set to Draft"
+msgstr "Pasar a borrador"
+
+#. module: idtx_stock_request
+#: model:ir.actions.act_window,name:idtx_stock_request.action_stock_request_config
+#: model:ir.ui.menu,name:idtx_stock_request.menu_stock_request_config
+msgid "Settings"
+msgstr "Ajustes"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__picking_policy
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__picking_policy
+msgid "Shipping Policy"
+msgstr "Política de entrega"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__state
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__state
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_order_search
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_search
+msgid "Status"
+msgstr "Estado"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request__activity_state
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_abstract__activity_state
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_order__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+"Estado basado en actividades\n"
+"Atrasado: la fecha de vencimiento ya pasó\n"
+"Hoy: la fecha de la actividad es hoy\n"
+"Planificado: Actividades futuras."
+
+#. module: idtx_stock_request
+#: model:ir.model,name:idtx_stock_request.model_stock_move
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_allocation__stock_move_id
+msgid "Stock Move"
+msgstr "Movimiento de stock"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__move_ids
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__move_ids
+msgid "Stock Moves"
+msgstr "Movimientos de stock"
+
+#. module: idtx_stock_request
+#: model:ir.model,name:idtx_stock_request.model_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_allocation__stock_request_id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__stock_request_ids
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.view_stock_request_form
+msgid "Stock Request"
+msgstr "Solicitud de producto"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_picking__stock_request_count
+msgid "Stock Request #"
+msgstr "N.º de solicitudes"
+
+#. module: idtx_stock_request
+#: model:ir.model,name:idtx_stock_request.model_stock_request_allocation
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_move__allocation_ids
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__allocation_ids
+msgid "Stock Request Allocation"
+msgstr "Asignación de solicitud"
+
+#. module: idtx_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.view_move_form
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.view_stock_request_allocation_form
+msgid "Stock Request Allocations"
+msgstr "Asignaciones de solicitud"
+
+#. module: idtx_stock_request
+#: model:res.groups,name:idtx_stock_request.group_stock_request_manager
+msgid "Stock Request Manager"
+msgstr "Administrador de requerimientos"
+
+#. module: idtx_stock_request
+#: model:ir.model,name:idtx_stock_request.model_stock_request_order
+#: model:res.groups,name:idtx_stock_request.group_stock_request_order
+msgid "Stock Request Order"
+msgstr "Requerimiento de almacén"
+
+#. module: idtx_stock_request
+#: model:ir.actions.act_window,name:idtx_stock_request.stock_request_order_action
+#: model:ir.ui.menu,name:idtx_stock_request.stock_request_order_menu
+#: model:res.groups.privilege,name:idtx_stock_request.res_groups_privilege_stock_request_order
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_order_search
+msgid "Stock Request Orders"
+msgstr "Requerimientos de almacén"
+
+#. module: idtx_stock_request
+#: model:ir.model,name:idtx_stock_request.model_stock_request_abstract
+msgid "Stock Request Template"
+msgstr "Plantilla de solicitud de producto"
+
+#. module: idtx_stock_request
+#: model:res.groups,name:idtx_stock_request.group_stock_request_user
+msgid "Stock Request User"
+msgstr "Usuario de requerimientos"
+
+#. module: idtx_stock_request
+#: model:ir.model.constraint,message:idtx_stock_request.constraint_stock_request_name_uniq
+#: model:ir.model.constraint,message:idtx_stock_request.constraint_stock_request_order_name_uniq
+msgid "Stock Request name must be unique"
+msgstr "El nombre del requerimiento debe ser único"
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_request.py:0
+msgid "Stock Request product quantity cannot be negative."
+msgstr "La cantidad solicitada no puede ser negativa."
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_request.py:0
+msgid "Stock Request product quantity has to be strictly positive."
+msgstr "La cantidad solicitada debe ser mayor que cero."
+
+#. module: idtx_stock_request
+#: model:ir.actions.act_window,name:idtx_stock_request.action_stock_request_form
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_move__stock_request_ids
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_picking__stock_request_ids
+#: model:ir.ui.menu,name:idtx_stock_request.menu_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_order_form
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_search
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.view_picking_form
+msgid "Stock Requests"
+msgstr "Solicitudes de producto"
+
+#. module: idtx_stock_request
+#: model:ir.model,name:idtx_stock_request.model_stock_rule
+msgid "Stock Rule"
+msgstr "Regla de stock"
+
+#. module: idtx_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_order_form
+msgid "Stock request Order"
+msgstr "Requerimiento de almacén"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__stock_request_count
+msgid "Stock requests"
+msgstr "Solicitudes de producto"
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_move.py:0
+#: code:addons/idtx_stock_request/models/stock_request_order.py:0
+msgid "The company of the stock request must match with that of the location."
+msgstr "La compañía de la solicitud debe coincidir con la de la localización."
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_request_order.py:0
+msgid ""
+"The company of the stock request must match with that of the warehouse."
+msgstr "La compañía de la solicitud debe coincidir con la del almacén."
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_move_line.py:0
+msgid ""
+"The following requested items from Stock Request %(request_name)s have now "
+"been received in %(location_name)s using Picking %(picking_name)s:"
+msgstr ""
+"Los siguientes productos de la solicitud %(request_name)s fueron entregados "
+"en %(location_name)s con el traslado %(picking_name)s:"
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_request.py:0
+msgid "The picking policy must be equal to the order"
+msgstr "La política de albaranes debe coincidir"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_order__route_id
+msgid "The route related to a stock request order"
+msgstr "Ruta aplicada a las líneas del requerimiento"
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_request_order.py:0
+msgid "There should be at least one request item for confirming the order."
+msgstr "Debe haber al menos un producto para confirmar el requerimiento."
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_request_order.py:0
+msgid "This action only works in the context of products"
+msgstr "Esta acción solo funciona en el contexto de productos"
+
+#. module: idtx_stock_request
+#: model:ir.model,name:idtx_stock_request.model_stock_picking
+msgid "Transfer"
+msgstr "Transferir"
+
+#. module: idtx_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_order_form
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.view_stock_request_form
+msgid "Transfers"
+msgstr "Traslados"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request__activity_exception_decoration
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_abstract__activity_exception_decoration
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_order__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr "Tipo de actividad de excepción registrada."
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_allocation__product_uom_id
+msgid "UoM"
+msgstr "UdM"
+
+#. module: idtx_stock_request
+#: model:ir.model,name:idtx_stock_request.model_stock_warehouse
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__warehouse_id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__warehouse_id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__warehouse_id
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_order_search
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_search
+msgid "Warehouse"
+msgstr "Almacén"
+
+#. module: idtx_stock_request
+#: model:ir.ui.menu,name:idtx_stock_request.menu_stock_request_order_inventory
+#: model:ir.ui.menu,name:idtx_stock_request.menu_stock_request_root
+#: model:res.groups.privilege,name:idtx_stock_request.res_groups_privilege_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.res_config_settings_view_form
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.view_warehouse_stock_request
+msgid "Warehouse Requests"
+msgstr "Requerimientos de almacén"
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_request.py:0
+msgid "Warehouse must be equal to the order"
+msgstr "El almacén debe coincidir"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__website_message_ids
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_abstract__website_message_ids
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__website_message_ids
+msgid "Website Messages"
+msgstr "Mensajes del sitio web"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request__website_message_ids
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_abstract__website_message_ids
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_order__website_message_ids
+msgid "Website communication history"
+msgstr "Historial de comunicación del sitio web"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_res_company__stock_request_direct_transfer
+#: model:ir.model.fields,help:idtx_stock_request.field_res_config_settings__stock_request_direct_transfer
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.res_config_settings_view_form
+msgid ""
+"When no route is selected and the requested location is not the stock "
+"location of the warehouse, the request creates an internal transfer from the"
+" warehouse stock instead of running the product routes (buy / manufacture)."
+msgstr ""
+"Si no se elige ruta y la ubicación solicitada no es Existencias del almacén,"
+" el requerimiento crea un traslado interno desde Existencias en lugar de "
+"ejecutar las rutas del producto (comprar / fabricar)."
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_location.py:0
+msgid ""
+"You cannot change the company of the location, as it is already assigned to "
+"stock request orders that belong to another company."
+msgstr ""
+"No puede cambiar la compañía de la localización, ya que tiene asignados "
+"pedidos de existencias que pertenecen a otras compañías."
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_location.py:0
+msgid ""
+"You cannot change the company of the location, as it is already assigned to "
+"stock requests that belong to another company."
+msgstr ""
+"No puede cambiar la compañía de la localización, ya que tiene asignadas "
+"solicitudes de existencias que pertenecen a otras compañías."
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_route.py:0
+msgid ""
+"You cannot change the company of the route, as it is already assigned to "
+"stock requests that belong to another company."
+msgstr ""
+"No puede cambiar la compañía de la ruta, ya que está asignada a solicitudes "
+"de existencias que pertenecen a otras compañías."
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_warehouse.py:0
+msgid ""
+"You cannot change the company of the warehouse, as it is already assigned to"
+" stock request orders that belong to another company."
+msgstr ""
+"No puede cambiar la compañía del almacén, ya que está asignada a pedidos de "
+"existencias que pertenecen a otras compañías."
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_warehouse.py:0
+msgid ""
+"You cannot change the company of the warehouse, as it is already assigned to"
+" stock requests that belong to another company."
+msgstr ""
+"No puede cambiar la compañía del almacén, ya que está asignada a solicitudes"
+" de existencias que pertenecen a otras compañías."
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_request_abstract.py:0
+msgid "You have entered a location that is assigned to another company."
+msgstr "Ha seleccionado una localización que está asignada a otra compañía."
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_request_abstract.py:0
+msgid "You have entered a product that is assigned to another company."
+msgstr "Ha seleccionado un producto que está asignado a otra compañía."
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_request_abstract.py:0
+msgid "You have entered a route that is assigned to another company."
+msgstr "Ha seleccionado una ruta que está asignada a otra compañía."
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_request_abstract.py:0
+msgid "You have entered a warehouse that is assigned to another company."
+msgstr "Ha seleccionado un almacén que está asignado a otra compañía."
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_request_abstract.py:0
+msgid ""
+"You have to select a product unit of measure in the same category than the "
+"default unit of measure of the product"
+msgstr ""
+"Debe seleccionada una unidad de medida de producto de la misma categoría que"
+" la unidad de medida por defecto del producto"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_warehouse__stock_request_location_id
+msgid "Default request destination"
+msgstr "Destino por defecto de requerimientos"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_warehouse__stock_request_location_id
+msgid ""
+"Location proposed as destination of the warehouse requests of this warehouse"
+" (e.g. Pre-Production, Workshop). Leave empty to force the requester to "
+"choose one. The stock location itself is never proposed because it is the "
+"source of the transfer."
+msgstr ""
+"Ubicación propuesta como destino de los requerimientos de este almacén (p. "
+"ej. Preproducción, Taller). Déjela vacía para obligar al solicitante a "
+"elegir. Existencias nunca se propone porque es el origen del traslado."
+
+#. module: idtx_stock_request
+#. odoo-python
+#: code:addons/idtx_stock_request/models/stock_request.py:0
+msgid ""
+"%(request)s: the destination %(location)s is the stock location of the "
+"warehouse, that is, where the products are taken from. Set the location "
+"where you need the products (e.g. Pre-Production, Workshop) or select a "
+"route."
+msgstr ""
+"%(request)s: el destino %(location)s es la ubicación de Existencias del "
+"almacén, es decir, de donde salen los productos. Indique la ubicación donde "
+"necesita los productos (p. ej. Preproducción, Taller) o elija una ruta."
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request__request_reference_id
+#: model:ir.model.fields,field_description:idtx_stock_request.field_stock_request_order__request_reference_id
+msgid "Stock reference"
+msgstr "Referencia de stock"
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request_order__request_reference_id
+msgid ""
+"Reference created on confirmation and shared by all the lines of the request"
+" so that they are grouped in a single transfer."
+msgstr ""
+"Referencia creada al confirmar y compartida por todas las líneas del "
+"requerimiento para que queden en un solo traslado."
+
+#. module: idtx_stock_request
+#: model:ir.model.fields,help:idtx_stock_request.field_stock_request__request_reference_id
+msgid ""
+"Reference used to group the moves of a stand-alone request (requests of an "
+"order use the reference of the order)."
+msgstr ""
+"Referencia que agrupa los movimientos de una solicitud sin requerimiento "
+"(las líneas de un requerimiento usan la referencia del requerimiento)."
+
+#. module: idtx_stock_request
+#: model_terms:ir.ui.view,arch_db:idtx_stock_request.stock_request_order_form
+msgid "Print"
+msgstr "Imprimir"

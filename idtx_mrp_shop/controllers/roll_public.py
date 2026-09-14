@@ -60,21 +60,21 @@ class RollPublicController(http.Controller):
                     <span class="value">{escape(roll.option_id.notes or '')}</span>
                 </div>"""
         color_html = ""
-        if roll.workorder_id.production_id.color_recipe_id and roll.workorder_id.production_id.color_recipe_id.state == 'approved':
+        if roll.production_id.color_recipe_id and roll.production_id.color_recipe_id.state == 'approved':
             color_html = f"""
                 <div class="row">
                     <span class="label">Color:</span>
-                    <span class="value">[{escape(roll.workorder_id.production_id.color_recipe_id.color_code or '')}] {escape(roll.workorder_id.production_id.color_recipe_id.color_name or '')}</span>
+                    <span class="value">[{escape(roll.production_id.color_recipe_id.color_code or '')}] {escape(roll.production_id.color_recipe_id.color_name or '')}</span>
                 </div>"""
         else:
             color_html = f"""
                 <div class="row">
                     <span class="label">Color:</span>
-                    <span class="value">{escape(roll.workorder_id.production_id.sale_order_line_id.product_color_id.name or '')}</span>
+                    <span class="value">{escape(roll.production_id.sale_order_line_id.product_color_id.name or '')}</span>
                 </div>"""
-        technical_sheet_id = roll.workorder_id.production_id.bom_id.technical_sheet_id
-        weaving_data_id = roll.workorder_id.product_id.product_tmpl_id.analysis_id.weaving_data_ids.filtered(lambda w: w.technical_sheet_id == technical_sheet_id)
-        for fiber in weaving_data_id.fiber_ids if roll.workorder_id.production_id.state != 'cancel' else []:
+        technical_sheet_id = roll.production_id.bom_id.technical_sheet_id
+        weaving_data_id = roll.production_id.product_id.product_tmpl_id.analysis_id.weaving_data_ids.filtered(lambda w: w.technical_sheet_id == technical_sheet_id)
+        for fiber in weaving_data_id.fiber_ids if roll.production_id.state != 'cancel' else []:
             lot_name = ''
             try:
                 if roll.option_id:
@@ -82,7 +82,7 @@ class RollPublicController(http.Controller):
                         lambda l: l.product_id.product_tmpl_id == fiber.product_template_id
                     ).mapped('lot_id').name or ''
                 else:
-                    lots = roll.workorder_id.production_id.move_raw_ids.filtered(
+                    lots = roll.production_id.move_raw_ids.filtered(
                         lambda l: l.product_id.product_tmpl_id == fiber.product_template_id
                     ).move_line_ids.mapped('lot_id')
                     lot_name = lots[0].name if lots else ''
@@ -101,7 +101,7 @@ class RollPublicController(http.Controller):
                         """
 
         # ==== OF como enlace ====
-        production = roll.workorder_id.production_id
+        production = roll.production_id
         of_html = backend_link('mrp.production', production.id, production.name or '')
 
         # ==== Registros de teñido / acabado (batch.registry) ====
@@ -282,12 +282,12 @@ class RollPublicController(http.Controller):
                     </div>
                     <div class="row">
                         <span class="label">Proceso:</span>
-                        <span class="value">{escape(roll.workorder_id.name or '')}</span>
+                        <span class="value">{escape(roll.workorder_id.name or (roll.origin == 'customer' and 'Recibido del cliente') or '')}</span>
                     </div>
                     {origin_html}
                     <div class="row">
                         <span class="label">Cliente:</span>
-                        <span class="value">{escape(roll.workorder_id.production_id.sale_order_line_id.order_id.partner_id.name or roll.workorder_id.company_id.partner_id.name or '')}</span>
+                        <span class="value">{escape(roll.partner_id.name or roll.production_id.sale_order_line_id.order_id.partner_id.name or roll.production_id.company_id.partner_id.name or '')}</span>
                     </div>
                     <div class="row">
                         <span class="label">Orden de Producción:</span>

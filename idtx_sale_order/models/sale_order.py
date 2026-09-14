@@ -342,6 +342,10 @@ class SaleOrder(models.Model):
         for rec in self:
             rec.order_line._onchange_bom_id()
             rec.order_line._onchange_product_or_color()
+            # El tipo de proceso SITPRO debe ser de la misma clase que la venta.
+            allowed = self.env['sitpro.sale.type']._order_kinds_for_sale_type(rec.sale_type)
+            if rec.process_type_id and rec.process_type_id.order_kind not in allowed:
+                rec.process_type_id = False
 
     @api.onchange('payment_term_id','incoterm')
     def _onchange_payment_term_id(self):

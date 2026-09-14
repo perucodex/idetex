@@ -478,7 +478,7 @@ class MrpWorkorder(models.Model):
         if not self.mrwo_id:
             # Sin operación de catálogo no hay con qué comparar.
             return siblings, missing
-        productions = batch.wo_roll_ids.workorder_id.production_id - self.production_id
+        productions = batch.wo_roll_ids.production_id - self.production_id
         for prod in productions:
             same_op = prod.workorder_ids.filtered(lambda wo: wo.mrwo_id == self.mrwo_id)
             if same_op:
@@ -580,7 +580,9 @@ class MrpWorkorder(models.Model):
         forward |= self
         # Solo las operaciones que la partida YA procesó (tiene registro): son
         # las que hay que rehacer. Las que aún no procesó siguen su flujo normal.
-        registered_mrwo = batch.registry_ids.mapped('workorder_id.mrwo_id')
+        # Cuenta el LINAJE: al reprocesar desde una operación anterior al split,
+        # la sub-partida hereda los registros de su partida de origen.
+        registered_mrwo = batch._get_lineage_registered_mrwo()
         target = forward.filtered(lambda w: w.mrwo_id in registered_mrwo)
         if not target:
             return target
@@ -607,13 +609,33 @@ class MrpWorkorder(models.Model):
             br.batch_id.pending_reprocess_mrwo_ids = [(3, self.mrwo_id.id)]
         if br.reprocess_number <= 1:
             return
-        alert = self.env['quality.alert'].search([
-            ('batch_id', '=', br.batch_id.id),
-            ('workorder_id.mrwo_id', '=', self.mrwo_id.id),
-            ('tipo', '=', 'reproceso'),
-        ], order='id desc', limit=1)
+        alert = self._find_reprocess_alert(br.batch_id)
         if alert:
             br.quality_alert_id = alert.id
+
+    def _find_reprocess_alert(self, batch):
+        """Última alerta de reproceso APROBADA de la partida cuyo punto de
+        inicio ("Reprocesar desde", o la OT de la alerta si no se eligió otro)
+        está en esta operación o antes en la ruta: es la que reabrió esta
+        operación. El punto de inicio se compara por operación (mrwo) dentro de
+        la ruta de ESTA OF (partidas multi-OF: OTs hermanas comparten mrwo)."""
+        self.ensure_one()
+        Alert = self.env['quality.alert']
+        wos = self.production_id.workorder_ids  # en orden de ruta
+        if self not in wos:
+            return Alert
+        my_pos = wos.ids.index(self.id)
+        alerts = Alert.search([
+            ('batch_id', '=', batch.id),
+            ('tipo', '=', 'reproceso'),
+            ('state', '=', 'approved'),
+        ], order='id desc')
+        for alert in alerts:
+            start = alert.reprocess_from_workorder_id or alert.workorder_id
+            match = wos.filtered(lambda w: w.mrwo_id == start.mrwo_id)[:1]
+            if match and wos.ids.index(match.id) <= my_pos:
+                return alert
+        return Alert
 
     def action_create_registry_record(self, batch_id_or_payload, employee_id=False, equipment_id=False):
         self.ensure_one()

@@ -10,6 +10,22 @@
                 <field name="user_id" position="after">
                     <field name="production_type"/>
                 </field>
+                <!-- OF de SERVICIO sin OT de tejido: el crudo lo trae el cliente. -->
+                <xpath expr="//header" position="inside">
+                    <field name="can_receive_customer_rolls" invisible="1"/>
+                    <field name="reception_count" invisible="1"/>
+                    <button name="action_receive_customer_rolls" string="Recibir rollos del cliente"
+                            type="object" class="btn-primary" invisible="not can_receive_customer_rolls"/>
+                </xpath>
+                <div name="button_box" position="inside">
+                    <button name="action_view_receptions" type="object" class="oe_stat_button"
+                            icon="fa-truck" invisible="reception_count == 0">
+                        <div class="o_field_widget o_stat_info">
+                            <span class="o_stat_value"><field name="customer_roll_count"/> rollos</span>
+                            <span class="o_stat_text">Recibidos del cliente</span>
+                        </div>
+                    </button>
+                </div>
                 <!-- Sin lote a nivel de OF: cada ROLLO fabricado lleva su
                      propio lote (N° de partida + secuencia del rollo), así
                      que el campo Número de serie/lote y sus botones
@@ -39,6 +55,24 @@
                 <page name="miscellaneous" position="after">
                     <page name="rolls_page" string="Finished Rolls">
                         <field name="roll_ids"/>
+                    </page>
+                    <page name="wo_rolls_page" string="Rollos Crudos">
+                        <field name="wo_roll_ids" readonly="1">
+                            <list create="0" delete="0">
+                                <field name="name"/>
+                                <field name="origin"/>
+                                <field name="workorder_id" optional="show"/>
+                                <field name="customer_roll_ref" optional="show"/>
+                                <field name="reception_id" optional="hide"/>
+                                <field name="declared_weight" optional="hide" sum="Total"/>
+                                <field name="gross_weight" sum="Total"/>
+                                <field name="current_batch_id" optional="show"/>
+                                <field name="state" widget="badge"
+                                       decoration-success="state == 'finished'"
+                                       decoration-info="state == 'in_batch'"
+                                       decoration-muted="state == 'transferred'"/>
+                            </list>
+                        </field>
                     </page>
                 </page>
             </field>

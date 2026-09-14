@@ -71,7 +71,7 @@ class MrpWorkorderBatchSplitLine(models.TransientModel):
     roll_id = fields.Many2one('mrp.workorder.roll', string='Rollo',
                               required=True, readonly=True)
     workorder_id = fields.Many2one(related='roll_id.workorder_id', string='Orden de trabajo')
-    production_id = fields.Many2one(related='roll_id.workorder_id.production_id',
+    production_id = fields.Many2one(related='roll_id.production_id',
                                     string='Orden de fabricación')
     product_id = fields.Many2one(related='roll_id.product_id', string='Producto')
     gross_weight = fields.Float(related='roll_id.gross_weight', string='Peso Bruto')

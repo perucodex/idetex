@@ -19,6 +19,28 @@
         </field>
     </record>
 
+    <!-- Misma regla en la vista de VARIANTE (product.product): la referencia y
+         la categoría de un hilado tampoco se editan desde la variante (el
+         código lo genera el Maestro de Código y la categoría fija is_thread).
+         idtx_product_development ya pone readonly="is_weaving" ahí. -->
+    <record id="product_normal_form_view_inherit_thread" model="ir.ui.view">
+        <field name="name">product.product.form.inherit.thread</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <!-- > 16: debe aplicarse DESPUÉS de idtx_product_development
+             (product_normal_form_view_inherit_ld), que asigna el readonly
+             con un set plano; si va antes, se pierde el is_thread. -->
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='categ_id']" position="attributes">
+                <attribute name="readonly" add="is_thread" separator=" or "/>
+            </xpath>
+            <xpath expr="//field[@name='default_code']" position="attributes">
+                <attribute name="readonly" add="is_thread" separator=" or "/>
+            </xpath>
+        </field>
+    </record>
+
     <!-- Muestra los datos del hilado en la pestaña "Datos de Hilado" en SOLO
          LECTURA. La edición se hace en el modelo Hilado (Operaciones ▸ Hilado);
          aquí solo se visualizan. -->

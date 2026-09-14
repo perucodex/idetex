@@ -13,6 +13,7 @@
         <!-- Rollos > Rollos de Tejido / Rollos Terminados -->
         <menuitem id="wo_rolls_menu" name="Rollos de Tejido" action="wo_rolls_action" sequence="10" parent="menu_rollos"/>
         <menuitem id="mrp_rolls_menu" name="Rollos Terminados" action="mrp_rolls_action" sequence="20" parent="menu_rollos"/>
+        <menuitem id="mrp_roll_reception_menu" name="Recepciones de crudo" action="mrp_roll_reception_action" sequence="30" parent="menu_rollos"/>
 
         <menuitem id="dev_mrp_routing_operation_action_menu" name="Workcenter Operations" action="mrp_routing_operation_action" sequence="900" parent="mrp.menu_mrp_configuration"/>
         <menuitem id="menu_scale_registry" name="Scales" action="action_scale_registry" sequence="910" parent="mrp.menu_mrp_configuration"/>

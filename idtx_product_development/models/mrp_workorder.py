@@ -16,8 +16,7 @@ class MrpWorkorder(models.Model):
         'batch_ids.wo_roll_ids',
         'batch_ids.wo_roll_ids.gross_weight',
         'batch_ids.wo_roll_ids.quantity',
-        'batch_ids.wo_roll_ids.workorder_id',
-        'batch_ids.wo_roll_ids.workorder_id.production_id',
+        'batch_ids.wo_roll_ids.production_id',
         'batch_ids.child_batch_ids.wo_roll_ids',
     )
     def _compute_progress(self):

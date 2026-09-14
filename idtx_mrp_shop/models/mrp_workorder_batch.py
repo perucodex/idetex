@@ -231,12 +231,12 @@ class MrpWorkorderBatch(models.Model):
     @api.depends('wo_roll_ids')
     def _compute_partner_ids(self):
         for rec in self:
-            partners = rec.wo_roll_ids.workorder_id.production_id.sale_order_line_id.order_id.mapped('partner_id')
+            partners = rec.wo_roll_ids.production_id.sale_order_line_id.order_id.mapped('partner_id')
             rec.partner_ids = [(6, 0, partners.ids)] if partners else [(5, 0, 0)]
 
     @api.depends('wo_roll_ids', 'child_batch_ids.wo_roll_ids',
-                 'wo_roll_ids.workorder_id.production_id.color_recipe_id',
-                 'wo_roll_ids.workorder_id.production_id.manual_lab_dev_line_id')
+                 'wo_roll_ids.production_id.color_recipe_id',
+                 'wo_roll_ids.production_id.manual_lab_dev_line_id')
     def _compute_colors(self):
         """La PARTIDA resuelve su receta por combinación de productos: la
         receta aprobada del color (línea de Lab Dip de las OFs) cuya
@@ -247,7 +247,7 @@ class MrpWorkorderBatch(models.Model):
             if not rolls and rec.child_batch_ids:
                 # Partida dividida: conserva el color histórico desde sus hijas.
                 rolls = rec.child_batch_ids.wo_roll_ids
-            productions = rolls.workorder_id.production_id
+            productions = rolls.production_id
             # Color: del Lab Dip del pedido; si no, de la receta de la OF; si
             # no, el color elegido a mano en una OF libre (muestra/piloto).
             line = (productions.sale_order_line_id.lab_dev_line_id
@@ -301,6 +301,19 @@ class MrpWorkorderBatch(models.Model):
             rec.mrwo_id = (regs[-1].workorder_id.mrwo_id
                            if regs else rec.parent_batch_id.mrwo_id)
 
+    def _get_lineage_registered_mrwo(self):
+        """Operaciones (mrp.routing.workcenter.operation) que la partida YA
+        procesó, contando el LINAJE: una sub-partida hereda los registros de
+        sus partidas de origen (antes de dividirse pasaron por ellas)."""
+        lineage = self.env['mrp.workorder.batch']
+        for batch in self:
+            node = batch
+            lineage |= node
+            while node.parent_batch_id:
+                node = node.parent_batch_id
+                lineage |= node
+        return lineage.registry_ids.mapped('workorder_id.mrwo_id')
+
     def _get_process_tree(self):
         """Árbol genealógico de los procesos (OTs) de la partida según las OFs
         de sus rollos. Mientras las rutas coinciden operación-a-operación es un
@@ -309,7 +322,7 @@ class MrpWorkorderBatch(models.Model):
         cabecera por OF. Devuelve el nodo raíz anidado:
         {'ofs': [nombres], 'ops': [operaciones], 'branches': [nodos hijos]}."""
         self.ensure_one()
-        productions = self.origin_roll_ids.workorder_id.production_id
+        productions = self.origin_roll_ids.production_id
         of_seqs = []
         for prod in productions:
             wos = prod.workorder_ids.sorted(lambda w: (w.sequence, w.id))
@@ -438,7 +451,7 @@ class MrpWorkorderBatch(models.Model):
             'rb': rb, 'fac_abs': fac_abs, 'volume': volume,
             'meters': total_meters, 'products': products,
             'recipe': recipe, 'sub': sub, 'processes': processes,
-            'productions': rolls.workorder_id.production_id,
+            'productions': rolls.production_id,
         }
 
     def action_print_dye_recipe(self):
@@ -630,7 +643,7 @@ class MrpWorkorderBatch(models.Model):
 
             warning = ""
             if caller_production:
-                foreign = (rec.wo_roll_ids.workorder_id.production_id
+                foreign = (rec.wo_roll_ids.production_id
                            - caller_production)
                 if foreign:
                     warning = _(
@@ -715,7 +728,7 @@ class MrpWorkorderBatch(models.Model):
                 return {'status': 'danger',
                         'message': _('El producto no pertenece a los rollos de la partida.')}
             production = self.wo_roll_ids.filtered(
-                lambda r: r.product_id == product).workorder_id.production_id[:1]
+                lambda r: r.product_id == product).production_id[:1]
             if not production:
                 return {'status': 'danger',
                         'message': _('La partida no tiene OF para el producto elegido.')}

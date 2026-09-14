@@ -292,7 +292,7 @@ class MrpWorkorder(models.Model):
                 continue
             rolls |= batch.origin_roll_ids
         return rolls.filtered(
-            lambda roll: roll.workorder_id and roll.workorder_id.production_id == self.production_id)
+            lambda roll: roll.production_id == self.production_id)
 
     def _get_textile_produced_qty(self):
         self.ensure_one()

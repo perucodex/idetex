@@ -43,7 +43,7 @@ class CollarQualityCheck(models.Model):
     qty_total = fields.Integer(
         related='roll_id.quantity', string='Cantidad del Rollo')
     production_id = fields.Many2one(
-        related='roll_id.workorder_id.production_id', string='OF', store=True)
+        related='roll_id.production_id', string='OF', store=True)
     # La línea de venta pertenece a OTRA compañía (la comercial, p.ej.
     # IDETEX) por diseño: se muestra solo su referencia, leída con sudo —
     # un m2o directo revienta con las reglas multiempresa de sale.order.line.

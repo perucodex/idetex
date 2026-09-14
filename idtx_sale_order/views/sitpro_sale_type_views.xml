@@ -6,7 +6,6 @@
         <field name="model">sitpro.sale.type</field>
         <field name="arch" type="xml">
             <list string="Tipos de proceso" editable="bottom">
-                <field name="code"/>
                 <field name="name"/>
                 <field name="order_kind"/>
                 <field name="active" widget="boolean_toggle"/>
@@ -23,7 +22,6 @@
                     <widget name="web_ribbon" title="Archivado" bg_color="text-bg-danger" invisible="active"/>
                     <group>
                         <group>
-                            <field name="code"/>
                             <field name="name"/>
                         </group>
                         <group>
@@ -42,10 +40,9 @@
         <field name="arch" type="xml">
             <search string="Tipos de proceso">
                 <field name="name"/>
-                <field name="code"/>
-                <filter name="service" string="Servicio" domain="[('order_kind', '=', 'S')]"/>
-                <filter name="sale" string="Venta" domain="[('order_kind', '=', 'V')]"/>
-                <filter name="stock" string="Venta de stock" domain="[('order_kind', '=', 'F')]"/>
+                <filter name="service" string="Servicio" domain="[('order_kind', '=', 'service')]"/>
+                <filter name="sale" string="Venta" domain="[('order_kind', '=', 'sale')]"/>
+                <filter name="stock" string="Venta de stock" domain="[('order_kind', '=', 'sale_stock')]"/>
                 <separator/>
                 <filter name="inactive" string="Archivados" domain="[('active', '=', False)]"/>
                 <group>

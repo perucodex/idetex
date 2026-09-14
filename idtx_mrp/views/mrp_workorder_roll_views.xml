@@ -9,10 +9,14 @@
                 <sheet>
                     <widget name="web_ribbon" title="Transferido" bg_color="text-bg-success" invisible="transfer_state != 'transferido'"/>
                     <widget name="web_ribbon" title="Recibido" bg_color="text-bg-info" invisible="transfer_state != 'recibido'"/>
+                    <widget name="web_ribbon" title="Rollo del cliente" bg_color="text-bg-warning" invisible="origin != 'customer'"/>
                     <group>
                         <group>
                             <field name="transfer_state" invisible="1"/>
-                            <field name="workorder_id" readonly="1" string="OT (Tejido)"/>
+                            <field name="origin" readonly="1"/>
+                            <field name="state" readonly="1"/>
+                            <field name="production_id" readonly="1"/>
+                            <field name="workorder_id" readonly="1" string="OT (Tejido)" invisible="origin == 'customer'"/>
                             <field name="dest_workorder_id" readonly="1" invisible="transfer_state != 'transferido'"/>
                             <field name="transfer_origin_roll_id" readonly="1" invisible="transfer_state != 'recibido'"/>
                             <field name="name" readonly="1"/>
@@ -23,6 +27,19 @@
                             <field name="quantity" readonly="1" invisible="not quantity"/>
                             <field name="net_weight" readonly="1"/>
                             <field name="gross_weight" readonly="1"/>
+                            <field name="current_batch_id" readonly="1" invisible="not current_batch_id"/>
+                        </group>
+                    </group>
+                    <group string="Recepción del cliente" invisible="origin != 'customer'">
+                        <group>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="reception_id" readonly="1"/>
+                            <field name="customer_roll_ref" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="declared_weight" readonly="1"/>
+                            <field name="location_note" readonly="1"/>
+                            <field name="reception_note" readonly="1"/>
                         </group>
                     </group>
                 </sheet>
@@ -36,9 +53,20 @@
         <field name="arch" type="xml">
             <search string="Search Roll">
                 <field name="workorder_id"/>
+                <field name="production_id"/>
                 <field name="name"/>
+                <field name="customer_roll_ref"/>
                 <field name="product_id"/>
+                <filter name="origin_weaving" string="Tejido propio" domain="[('origin', '=', 'weaving')]"/>
+                <filter name="origin_customer" string="Recibidos del cliente" domain="[('origin', '=', 'customer')]"/>
+                <separator/>
+                <filter name="state_available" string="Disponibles" domain="[('state', '=', 'available')]"/>
+                <filter name="state_in_batch" string="En partida" domain="[('state', '=', 'in_batch')]"/>
+                <filter name="state_finished" string="Terminados" domain="[('state', '=', 'finished')]"/>
                 <group>
+                    <filter name="group_production" string="Orden de Fabricación" context="{'group_by': 'production_id'}"/>
+                    <filter name="group_origin" string="Origen" context="{'group_by': 'origin'}"/>
+                    <filter name="group_state" string="Estado" context="{'group_by': 'state'}"/>
                     <filter name="group_workorder" string="Orden de Trabajo" context="{'group_by': 'workorder_id'}"/>
                     <filter name="group_option" string="Opción" context="{'group_by': 'option_id'}"/>
                 </group>
@@ -55,7 +83,10 @@
                     <button name="reprint" string="Reprint" type="object"/>
                 </header>
                 <field name="transfer_state" string="Transf." optional="show"/>
+                <field name="origin" optional="show"/>
+                <field name="production_id" optional="show"/>
                 <field name="workorder_id"/>
+                <field name="customer_roll_ref" optional="hide"/>
                 <field name="dest_workorder_id" string="Transferido a" optional="show"/>
                 <field name="transfer_origin_roll_id" string="Rollo origen" optional="hide"/>
                 <field name="name"/>
@@ -64,6 +95,10 @@
                 <field name="quantity" sum="Total"/>
                 <field name="net_weight" sum="Total"/>
                 <field name="gross_weight" sum="Total"/>
+                <field name="state" widget="badge" optional="show"
+                       decoration-success="state == 'finished'"
+                       decoration-info="state == 'in_batch'"
+                       decoration-muted="state == 'transferred'"/>
             </list>
         </field>
     </record>

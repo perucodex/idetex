@@ -27,6 +27,19 @@ class QualityAlert(models.Model):
     available_batch_ids = fields.Many2many(
         'mrp.workorder.batch', compute='_compute_available_batch_ids',
         string='Partidas de la OT')
+    # Punto de inicio del reproceso. Por defecto la OT donde se crea la alerta,
+    # pero puede ser una operación ANTERIOR de la misma OF (p.ej. la alerta se
+    # detecta en la 8va operación y la tela debe volver desde la 2da): se
+    # reabren esa y todas las posteriores que la partida ya procesó.
+    reprocess_from_workorder_id = fields.Many2one(
+        'mrp.workorder', string='Reprocesar desde', copy=False,
+        help='Operación de la OF desde la cual la partida vuelve a procesarse. '
+             'Por defecto la operación donde se crea la alerta; puede elegirse '
+             'una anterior: se reabren esa y todas las posteriores que la '
+             'partida ya procesó.')
+    available_reprocess_workorder_ids = fields.Many2many(
+        'mrp.workorder', compute='_compute_available_reprocess_workorder_ids',
+        string='Operaciones reprocesables')
     batch_qty = fields.Float(
         'Cantidad de la Partida', related='batch_id.total_weight', readonly=True)
     production_qty = fields.Float(
@@ -53,6 +66,57 @@ class QualityAlert(models.Model):
     def _compute_available_batch_ids(self):
         for rec in self:
             rec.available_batch_ids = rec.workorder_id.batch_ids
+
+    @api.depends('workorder_id', 'batch_id', 'batch_id.registry_ids',
+                 'batch_id.parent_batch_id.registry_ids')
+    def _compute_available_reprocess_workorder_ids(self):
+        """Operaciones de partida de la MISMA OF que la OT de la alerta, desde
+        el inicio de la ruta hasta la propia OT de la alerta (inclusive), y que
+        la partida (o su linaje de partidas de origen) ya procesó. Tejeduría
+        nunca entra."""
+        WO = self.env['mrp.workorder']
+        batch_ops = WO.BATCH_OPERATION_TYPES
+        for rec in self:
+            wo = rec.workorder_id
+            wos = wo.production_id.workorder_ids  # en orden de ruta
+            if not wo or wo not in wos:
+                rec.available_reprocess_workorder_ids = WO
+                continue
+            upto = wos[:wos.ids.index(wo.id) + 1].filtered(
+                lambda w: w.operation_type in batch_ops)
+            if rec.batch_id:
+                done_mrwo = rec.batch_id._get_lineage_registered_mrwo()
+                upto = upto.filtered(lambda w: w == wo or w.mrwo_id in done_mrwo)
+            rec.available_reprocess_workorder_ids = upto
+
+    @api.onchange('workorder_id', 'batch_id', 'tipo')
+    def _onchange_reprocess_from_workorder(self):
+        """Por defecto se reprocesa desde la OT de la alerta; si la elección
+        actual dejó de ser válida (cambió la partida/OT) se vuelve al default."""
+        for rec in self:
+            available = rec.available_reprocess_workorder_ids
+            if rec.reprocess_from_workorder_id not in available:
+                rec.reprocess_from_workorder_id = (
+                    rec.workorder_id if rec.workorder_id in available else False)
+
+    @api.constrains('reprocess_from_workorder_id', 'workorder_id')
+    def _check_reprocess_from_workorder(self):
+        batch_ops = self.env['mrp.workorder'].BATCH_OPERATION_TYPES
+        for rec in self:
+            start, wo = rec.reprocess_from_workorder_id, rec.workorder_id
+            if not start or start == wo:
+                continue
+            if not wo or start.production_id != wo.production_id:
+                raise ValidationError(_(
+                    '"Reprocesar desde" (%(start)s) debe ser una operación de '
+                    'la misma OF que la operación de la alerta (%(wo)s).',
+                    start=start.display_name,
+                    wo=wo.display_name if wo else '-'))
+            if start.operation_type not in batch_ops:
+                raise ValidationError(_(
+                    'No se puede reprocesar desde %(start)s: no es una '
+                    'operación de partida (teñido/acabado/estampado/calidad).',
+                    start=start.display_name))
 
     @api.onchange('batch_id', 'tipo')
     def _onchange_batch_reposition_qty(self):
@@ -82,6 +146,8 @@ class QualityAlert(models.Model):
                 res['batch_id'] = batches.id
         if res.get('batch_id') and 'reposition_qty' in fields_list and not res.get('reposition_qty'):
             res['reposition_qty'] = self.env['mrp.workorder.batch'].browse(res['batch_id']).total_weight
+        if wo_id and 'reprocess_from_workorder_id' in fields_list and not res.get('reprocess_from_workorder_id'):
+            res['reprocess_from_workorder_id'] = wo_id
         return res
 
     @api.model_create_multi
@@ -124,6 +190,12 @@ class QualityAlert(models.Model):
                     'La alerta %s no tiene partida y OT de una operación de '
                     'partida (teñido/acabado/estampado/calidad): no hay nada '
                     'que aprobar.') % (alert.name or ''))
+            start = alert._get_reprocess_start_workorder()
+            if alert.tipo == 'reproceso' and start.operation_type not in batch_ops:
+                raise UserError(_(
+                    'La alerta %(alert)s no se puede aprobar: "Reprocesar '
+                    'desde" (%(start)s) no es una operación de partida.',
+                    alert=alert.name or '', start=start.display_name))
             if alert.tipo == 'reposicion':
                 new = alert._trigger_reposition()
                 alert.reposition_production_id = new
@@ -134,25 +206,40 @@ class QualityAlert(models.Model):
                 alert._trigger_reprocess()
                 body = _(
                     'Reproceso APROBADO por %(user)s: se reabrieron las '
-                    'operaciones de la partida %(batch)s.',
-                    user=self.env.user.name, batch=alert.batch_id.name)
+                    'operaciones de la partida %(batch)s desde %(op)s.',
+                    user=self.env.user.name, batch=alert.batch_id.name,
+                    op=start.mrwo_id.name or start.display_name)
             alert.state = 'approved'
             alert.message_post(body=Markup('<p>%s</p>') % body)
         return True
 
+    def _get_reprocess_start_workorder(self):
+        """OT desde la que arranca el reproceso: la elegida en "Reprocesar
+        desde" o, por defecto, la OT donde se creó la alerta."""
+        self.ensure_one()
+        return self.reprocess_from_workorder_id or self.workorder_id
+
     def _trigger_reprocess(self):
-        """Reabre la operación de la OT y las posteriores ya terminadas de la
-        partida, y deja constancia en el hilo de la partida."""
+        """Reabre la operación de inicio (por defecto la OT de la alerta; puede
+        ser una anterior de la ruta) y las posteriores que la partida ya
+        procesó, y deja constancia en el hilo de la partida."""
         self.ensure_one()
         wo, batch = self.workorder_id, self.batch_id
-        reopened = wo._reprocess_from_here(batch)
-        detail = ', '.join(reopened.mapped(lambda w: w.mrwo_id.name or w.display_name)) or wo.mrwo_id.name
+        start = self._get_reprocess_start_workorder()
+        reopened = start._reprocess_from_here(batch)
+        detail = ', '.join(reopened.mapped(lambda w: w.mrwo_id.name or w.display_name)) or start.mrwo_id.name
+        if start != wo:
+            origin = _(', detectada en %(wo)s', wo=wo.mrwo_id.name or wo.display_name)
+        else:
+            origin = ''
         body = Markup('<p>%s</p>') % _(
             'Reproceso disparado por la alerta de calidad %(alert)s '
-            '(causa: %(reason)s). Operaciones reabiertas desde %(op)s: %(detail)s.',
+            '(causa: %(reason)s%(origin)s). Operaciones reabiertas desde '
+            '%(op)s: %(detail)s.',
             alert=self.name or self.title or '',
             reason=self.reason_id.name or _('sin especificar'),
-            op=wo.mrwo_id.name or wo.display_name,
+            origin=origin,
+            op=start.mrwo_id.name or start.display_name,
             detail=detail,
         )
         batch.message_post(body=body)

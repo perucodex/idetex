@@ -27,6 +27,12 @@
                             <field name="weaving_default_efficiency"/>
                         </setting>
                     </block>
+                    <block title="Recepción de crudo del cliente" name="mrp_roll_reception_block">
+                        <setting id="mrp_roll_reception_setting"
+                                help="OF de servicio sin tejido: aviso cuando los kilos recibidos del cliente superan la cantidad de la OF más esta tolerancia.">
+                            <field name="roll_reception_tolerance"/>
+                        </setting>
+                    </block>
                 </xpath>
             </field>
         </record>

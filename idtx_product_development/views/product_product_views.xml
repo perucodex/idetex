@@ -12,6 +12,9 @@
             <xpath expr="//field[@name='barcode']" position="attributes">
                 <attribute name="readonly">is_weaving</attribute>
             </xpath>
+            <xpath expr="//field[@name='categ_id']" position="attributes">
+                <attribute name="readonly">is_weaving</attribute>
+            </xpath>
         </field>
     </record>
 

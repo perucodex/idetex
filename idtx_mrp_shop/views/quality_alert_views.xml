@@ -9,6 +9,7 @@
             <field name="reason_id" position="after">
                 <field name="tipo" optional="show"/>
                 <field name="batch_id" optional="show"/>
+                <field name="reprocess_from_workorder_id" optional="hide"/>
                 <field name="reposition_production_id" optional="show"/>
                 <field name="state" optional="show" widget="badge"
                        decoration-success="state == 'approved'"
@@ -34,7 +35,7 @@
                         string="Aprobar Reproceso" class="oe_highlight"
                         groups="idtx_mrp_shop.group_quality_approve_reprocess"
                         invisible="state != 'draft' or tipo != 'reproceso' or not batch_id"
-                        confirm="Al aprobar se reabrirán la operación de la OT y las posteriores ya terminadas de la partida. ¿Continuar?"/>
+                        confirm="Al aprobar se reabrirán la operación indicada en 'Reprocesar desde' y todas las posteriores que la partida ya procesó. ¿Continuar?"/>
                 <field name="state" widget="statusbar"/>
             </xpath>
             <field name="reason_id" position="attributes">
@@ -51,6 +52,16 @@
                        invisible="not available_batch_ids and not batch_id"
                        readonly="not available_batch_ids"
                        domain="[('id', 'in', available_batch_ids)]"/>
+                <!-- Punto de inicio del reproceso: solo operaciones de partida
+                     de ESTA OF, hasta la OT de la alerta, que la partida ya
+                     procesó. Por defecto la OT de la alerta. -->
+                <field name="available_reprocess_workorder_ids" invisible="1" widget="many2many_tags"/>
+                <field name="reprocess_from_workorder_id"
+                       invisible="tipo != 'reproceso' or not batch_id or not available_reprocess_workorder_ids"
+                       readonly="state != 'draft'"
+                       required="tipo == 'reproceso' and batch_id and available_reprocess_workorder_ids"
+                       domain="[('id', 'in', available_reprocess_workorder_ids)]"
+                       options="{'no_create': True, 'no_open': True}"/>
                 <field name="batch_qty" invisible="tipo != 'reposicion' or not available_batch_ids"/>
                 <field name="production_qty" invisible="tipo != 'reposicion' or not available_batch_ids"/>
                 <field name="reposition_qty"

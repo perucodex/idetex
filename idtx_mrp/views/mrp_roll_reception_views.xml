@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="mrp_roll_reception_view_form" model="ir.ui.view">
+        <field name="name">mrp.roll.reception.form</field>
+        <field name="model">mrp.roll.reception</field>
+        <field name="arch" type="xml">
+            <form string="Recepción de rollos del cliente">
+                <header>
+                    <button name="action_confirm" string="Recibir" type="object"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_print_stickers" string="Imprimir stickers" type="object"
+                            class="btn-secondary" invisible="state != 'received'"/>
+                    <button name="action_cancel" string="Cancelar recepción" type="object"
+                            invisible="state != 'received'"
+                            confirm="Se eliminarán los rollos creados por esta recepción. No se permite si algún rollo ya está en una partida que no esté en borrador. ¿Continuar?"/>
+                    <button name="action_draft" string="Volver a borrador" type="object"
+                            invisible="state != 'cancel'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,received"/>
+                </header>
+                <sheet>
+                    <div class="alert alert-warning mb-3" role="alert" invisible="not qty_warning">
+                        <field name="qty_warning" nolabel="1" readonly="1"/>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Orden de fabricación">
+                            <field name="production_id" readonly="state != 'draft'" options="{'no_create': True}"/>
+                            <field name="product_tmpl_id"/>
+                            <label for="production_qty"/>
+                            <div class="o_row">
+                                <field name="production_qty"/>
+                                <field name="production_uom_id"/>
+                            </div>
+                            <field name="partner_id" readonly="state != 'draft'"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                        <group string="Entrega del cliente">
+                            <field name="guide_number" readonly="state != 'draft'"/>
+                            <field name="guide_date" readonly="state != 'draft'"/>
+                            <field name="carrier" readonly="state != 'draft'"/>
+                            <field name="plate" readonly="state != 'draft'"/>
+                            <field name="received_date" readonly="state != 'draft'"/>
+                            <field name="received_by_id" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <group invisible="state != 'draft'">
+                        <label for="generate_count" string="Generar filas"/>
+                        <div class="o_row">
+                            <field name="generate_count"/>
+                            <span>rollos de</span>
+                            <field name="generate_weight"/>
+                            <span>kg cada uno, desde la Ref.</span>
+                            <field name="generate_ref_start" placeholder="A1"/>
+                            <!-- Widget cliente (como "Generar lotes" de inventario): agrega las
+                                 filas en el formulario SIN guardar ni cerrar el diálogo. -->
+                            <widget name="generate_roll_lines"/>
+                        </div>
+                    </group>
+                    <notebook>
+                        <page name="lines" string="Rollos">
+                            <field name="line_ids" readonly="state != 'draft'">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="customer_roll_ref"/>
+                                    <field name="declared_weight" sum="Total guía"/>
+                                    <field name="gross_weight" sum="Total planta"/>
+                                    <field name="location_note"/>
+                                    <field name="reception_note"/>
+                                    <field name="roll_name" column_invisible="parent.state == 'draft'"/>
+                                    <field name="roll_state" column_invisible="parent.state == 'draft'" widget="badge"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer">
+                                <field name="declared_qty"/>
+                                <field name="declared_weight"/>
+                                <field name="received_weight"/>
+                                <field name="weight_diff"/>
+                                <field name="production_received_weight"/>
+                            </group>
+                        </page>
+                        <page name="notes" string="Observaciones">
+                            <field name="note" nolabel="1" placeholder="Observaciones de la entrega..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="mrp_roll_reception_view_list" model="ir.ui.view">
+        <field name="name">mrp.roll.reception.list</field>
+        <field name="model">mrp.roll.reception</field>
+        <field name="arch" type="xml">
+            <list string="Recepciones de crudo" decoration-muted="state == 'cancel'">
+                <field name="name"/>
+                <field name="received_date"/>
+                <field name="production_id"/>
+                <field name="partner_id"/>
+                <field name="guide_number"/>
+                <field name="declared_qty" sum="Total"/>
+                <field name="declared_weight" sum="Total"/>
+                <field name="received_weight" sum="Total"/>
+                <field name="weight_diff"/>
+                <field name="state" widget="badge" decoration-success="state == 'received'" decoration-info="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="mrp_roll_reception_view_search" model="ir.ui.view">
+        <field name="name">mrp.roll.reception.search</field>
+        <field name="model">mrp.roll.reception</field>
+        <field name="arch" type="xml">
+            <search string="Recepciones de crudo">
+                <field name="name"/>
+                <field name="guide_number"/>
+                <field name="production_id"/>
+                <field name="partner_id"/>
+                <filter name="draft" string="Borrador" domain="[('state', '=', 'draft')]"/>
+                <filter name="received" string="Recibidas" domain="[('state', '=', 'received')]"/>
+                <group>
+                    <filter name="group_production" string="Orden de fabricación" context="{'group_by': 'production_id'}"/>
+                    <filter name="group_partner" string="Cliente" context="{'group_by': 'partner_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="mrp_roll_reception_action" model="ir.actions.act_window">
+        <field name="name">Recepciones de crudo</field>
+        <field name="res_model">mrp.roll.reception</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Sin recepciones de crudo</p>
+            <p>Los rollos que envía el cliente para una OF de servicio sin tejido se reciben desde el botón
+               "Recibir rollos del cliente" de la orden de fabricación.</p>
+        </field>
+    </record>
+
+</odoo>

@@ -10,6 +10,7 @@ class ResConfigSettings(models.TransientModel):
     zpl_printer_ip = fields.Char(related='company_id.zpl_printer_ip', readonly=False)
     weaving_weight_per_roll = fields.Float(related='company_id.weaving_weight_per_roll', readonly=False)
     weaving_default_efficiency = fields.Float(related='company_id.weaving_default_efficiency', readonly=False)
+    roll_reception_tolerance = fields.Float(related='company_id.roll_reception_tolerance', readonly=False)
 
     def test_zpl_printer_ip(self):
         if self.zpl_printer_ip and self.is_printer:

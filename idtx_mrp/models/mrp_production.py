@@ -13,6 +13,15 @@ class MrpProduction(models.Model):
 
     batch_id = fields.Many2one('mrp.workorder.batch', string='Batch')
     roll_ids = fields.One2many('mrp.production.roll', 'production_id', string='Rolls')
+    # Rollos CRUDOS de la OF (tejidos en sus OTs o recibidos del cliente).
+    wo_roll_ids = fields.One2many('mrp.workorder.roll', 'production_id', string='Rollos Crudos')
+    reception_ids = fields.One2many('mrp.roll.reception', 'production_id', string='Recepciones de crudo')
+    reception_count = fields.Integer(compute='_compute_reception_stats')
+    customer_roll_count = fields.Integer(compute='_compute_reception_stats')
+    customer_roll_weight = fields.Float(compute='_compute_reception_stats')
+    has_weaving_workorder = fields.Boolean(compute='_compute_can_receive_customer_rolls')
+    # OF de SERVICIO sin OT de tejido: el crudo lo trae el cliente.
+    can_receive_customer_rolls = fields.Boolean(compute='_compute_can_receive_customer_rolls')
     production_type = fields.Selection([
         ('sale', 'Sale'),
         ('service', 'Service'),
@@ -26,6 +35,98 @@ class MrpProduction(models.Model):
         # reposicion ('reposicion') y reglas de abastecimiento (stock.rule).
         help='Obligatorio. Con pedido de venta se hereda del tipo de venta; '
              'en una OF libre (muestra, piloto) lo elige el usuario.')
+
+    @api.depends('reception_ids.state', 'wo_roll_ids.origin', 'wo_roll_ids.gross_weight')
+    def _compute_reception_stats(self):
+        for rec in self:
+            rec.reception_count = len(rec.reception_ids.filtered(lambda r: r.state != 'cancel'))
+            customer_rolls = rec.wo_roll_ids.filtered(lambda r: r.origin == 'customer')
+            rec.customer_roll_count = len(customer_rolls)
+            rec.customer_roll_weight = sum(customer_rolls.mapped('gross_weight'))
+
+    @api.depends('production_type', 'state', 'workorder_ids.operation_type',
+                 'workorder_ids.workcenter_id.operation_type', 'workorder_ids.state')
+    def _compute_can_receive_customer_rolls(self):
+        for rec in self:
+            rec.has_weaving_workorder = rec._has_weaving_workorder()
+            rec.can_receive_customer_rolls = (
+                rec.production_type == 'service'
+                and not rec.has_weaving_workorder
+                and rec.state in ('confirmed', 'progress', 'to_close'))
+
+    def _has_weaving_workorder(self):
+        self.ensure_one()
+        # Por operación LAB (mrwo_id) O por centro de trabajo: una OT de la
+        # tejeduría con la operación LAB mal enlazada sigue siendo tejido.
+        return bool(self.workorder_ids.filtered(
+            lambda wo: wo.state != 'cancel'
+            and 'weaving' in (wo.operation_type, wo.workcenter_id.operation_type)))
+
+    def action_receive_customer_rolls(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Recibir rollos del cliente'),
+            'res_model': 'mrp.roll.reception',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_production_id': self.id},
+        }
+
+    def action_view_receptions(self):
+        self.ensure_one()
+        action = self.env['ir.actions.act_window']._for_xml_id('idtx_mrp.mrp_roll_reception_action')
+        action['domain'] = [('production_id', '=', self.id)]
+        action['context'] = {'default_production_id': self.id}
+        return action
+
+    def _remove_thread_components_without_weaving(self):
+        """OF de SERVICIO sin OT de tejido: la tela cruda la trae el cliente,
+        así que el HILO de la LdM nunca se consumirá (el consumo de hilo se
+        dispara al cerrar la OT de tejido, que aquí no existe). El componente
+        y su traslado a preproducción se ELIMINAN de la OF (JP, 10-sep-2026:
+        "esa línea ya no debería existir"), no solo se cancelan: un movimiento
+        cancelado seguía mostrándose en Componentes como "No disponible".
+
+        Idempotente: también limpia OF donde el hilo quedó cancelado por la
+        versión anterior (movimientos en estado cancel)."""
+        StockMove = self.env['stock.move']
+        for production in self.filtered(lambda p: p.production_type == 'service'):
+            if production._has_weaving_workorder():
+                continue
+            moves = production.move_raw_ids.filtered(
+                lambda m: m.state != 'done'
+                and 'is_thread' in m.product_id._fields and m.product_id.is_thread)
+            if not moves:
+                continue
+            detail = ', '.join('%s (%.2f)' % (m.product_id.display_name, m.product_uom_qty) for m in moves)
+            # Traslado de hilo a preproducción que alimenta al componente. Tras
+            # cancelar se pierde el enlace orig/dest, así que además se busca
+            # por grupo de producción + producto (movimientos ya cancelados).
+            feeding = moves.move_orig_ids.filtered(lambda m: m.state != 'done')
+            if production.production_group_id:
+                feeding |= StockMove.search([
+                    ('production_group_id', '=', production.production_group_id.id),
+                    ('product_id', 'in', moves.product_id.ids),
+                    ('raw_material_production_id', '=', False),
+                    ('production_id', '=', False),
+                    ('picking_id', '!=', False),
+                    ('state', '!=', 'done'),
+                ])
+            pickings = feeding.picking_id
+            to_cancel = (feeding | moves).filtered(lambda m: m.state != 'cancel')
+            # skip_mo_check: el core CANCELA LA OF entera cuando quedan todos
+            # sus componentes cancelados (mrp/stock_move._action_cancel); aquí
+            # la OF sigue viva, solo se le quita el hilo.
+            if to_cancel:
+                to_cancel.with_context(skip_mo_check=True)._action_cancel()
+            (feeding | moves).unlink()
+            # El traslado queda vacío: se elimina para que la OF no muestre un
+            # traslado cancelado de un insumo que nunca existió.
+            pickings.filtered(lambda p: not p.move_ids).unlink()
+            production.message_post(body=_(
+                'OF de servicio sin tejido: se eliminó el componente de hilo %s '
+                'y su traslado a preproducción. El crudo lo entrega el cliente.', detail))
 
     @api.depends('bom_id', 'product_id', 'qty_producing', 'product_uom_id', 'never_product_template_attribute_value_ids')
     def _compute_workorder_ids(self):
@@ -222,4 +323,5 @@ class MrpProduction(models.Model):
     def action_confirm(self):
         res = super().action_confirm()
         self.picking_ids.action_assign()
+        self._remove_thread_components_without_weaving()
         return res

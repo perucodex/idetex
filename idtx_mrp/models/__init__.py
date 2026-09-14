@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from . import mrp_production_roll
+from . import mrp_roll_reception
 from . import mrp_production
 from . import mrp_routing_workcenter_operation
 from . import mrp_routing

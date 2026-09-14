@@ -8,6 +8,40 @@ class MrpWorkorderRoll(models.Model):
     _description = 'Mrp Workorder Roll'
 
     workorder_id = fields.Many2one('mrp.workorder', string='Workorder')
+    # OF dueña del rollo. Es el enlace que leen partidas, pesado final, avance
+    # y reportes (antes pasaban por workorder_id.production_id). Un rollo de
+    # TEJIDO la hereda de su OT; un rollo RECIBIDO DEL CLIENTE (OF de servicio
+    # sin tejido) no tiene OT y la recibe directo de la recepción.
+    production_id = fields.Many2one(
+        'mrp.production', string='Orden de Fabricación', compute='_compute_production_id',
+        store=True, readonly=False, precompute=True, index=True)
+    origin = fields.Selection([
+        ('weaving', 'Tejido propio'),
+        ('customer', 'Recibido del cliente'),
+    ], string='Origen', default='weaving', required=True, index=True)
+    reception_id = fields.Many2one(
+        'mrp.roll.reception', string='Recepción', ondelete='set null', index=True,
+        help='Entrega del cliente (guía de remisión) con la que llegó el rollo.')
+    partner_id = fields.Many2one(
+        'res.partner', string='Dueño de la tela',
+        help='Cliente que envió el rollo (solo rollos recibidos del cliente).')
+    customer_roll_ref = fields.Char(
+        'Ref. del cliente', help='Número o etiqueta con que llega el rollo del cliente.')
+    declared_weight = fields.Float(
+        'Peso según guía', help='Kilos declarados en la guía de remisión del cliente. '
+                                'El peso bruto es el pesado en planta.')
+    location_note = fields.Char('Ubicación', help='Ubicación física en almacén de crudo (rack, fila).')
+    reception_note = fields.Char('Observación de recepción', help='Manchas, humedad, roturas, etc.')
+    # Rollos terminados pesados a partir de este crudo (traza crudo -> terminado).
+    finished_roll_ids = fields.One2many('mrp.production.roll', 'wo_roll_id', string='Rollos Terminados')
+    # Estado DERIVADO de datos que ya existen (no lo escribe ningún flujo):
+    # in_batch (partida), el rollo terminado pesado y la transferencia.
+    state = fields.Selection([
+        ('available', 'Disponible'),
+        ('in_batch', 'En partida'),
+        ('finished', 'Terminado'),
+        ('transferred', 'Transferido'),
+    ], string='Estado', compute='_compute_state', store=True, index=True)
     # Trazabilidad de transferencia entre OTs con DOS registros del mismo rollo:
     #  - En la OT de ORIGEN: el registro original, estado 'transferido'. SIGUE
     #    contando su consumo (se tejió ahí). Guarda `dest_workorder_id`.
@@ -29,8 +63,8 @@ class MrpWorkorderRoll(models.Model):
         'Transferido', compute='_compute_is_transferred', store=True)
     sequence = fields.Integer('Sequence')
     name = fields.Char('Number')
-    product_id = fields.Many2one(related='workorder_id.product_id.product_tmpl_id')
-    uom_id = fields.Many2one(related='workorder_id.product_id.product_tmpl_id.uom_id')
+    product_id = fields.Many2one(related='production_id.product_tmpl_id')
+    uom_id = fields.Many2one(related='production_id.product_tmpl_id.uom_id')
     quantity = fields.Integer('Quantity')
     gross_weight = fields.Float('Gross Weight')
     net_weight = fields.Float('Net Weight')
@@ -55,6 +89,37 @@ class MrpWorkorderRoll(models.Model):
     thread_lot_ids = fields.Many2many(
         'stock.lot', 'wo_roll_thread_lot_rel', 'roll_id', 'lot_id',
         string='Lotes de Hilo', copy=True)
+
+    @api.depends('workorder_id.production_id')
+    def _compute_production_id(self):
+        # Con OT manda la OT; sin OT (rollo del cliente) se conserva lo asignado.
+        for roll in self:
+            roll.production_id = roll.workorder_id.production_id if roll.workorder_id else roll.production_id
+
+    @api.depends('in_batch', 'transfer_state', 'finished_roll_ids')
+    def _compute_state(self):
+        for roll in self:
+            if roll.transfer_state == 'transferido':
+                roll.state = 'transferred'
+            elif roll.finished_roll_ids:
+                roll.state = 'finished'
+            elif roll.in_batch:
+                roll.state = 'in_batch'
+            else:
+                roll.state = 'available'
+
+    @api.constrains('customer_roll_ref', 'production_id')
+    def _check_customer_roll_ref_unique(self):
+        for roll in self.filtered(lambda r: r.customer_roll_ref and r.production_id):
+            dup = self.search_count([
+                ('id', '!=', roll.id),
+                ('production_id', '=', roll.production_id.id),
+                ('customer_roll_ref', '=', roll.customer_roll_ref),
+            ])
+            if dup:
+                raise UserError(_(
+                    'La referencia de cliente %(ref)s ya existe en otro rollo de la OF %(prod)s.',
+                    ref=roll.customer_roll_ref, prod=roll.production_id.name))
 
     @api.depends('transfer_state')
     def _compute_is_transferred(self):
@@ -137,6 +202,13 @@ class MrpWorkorderRoll(models.Model):
         self.ensure_one()
         base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') #"https://odoo.gestionidtx.com/rollo"
         url = f"{base_url}/rollo/datos/{self.id}"
+        # Rollo del cliente: sin máquina ni operario; se imprime dueño y referencia.
+        if self.origin == 'customer':
+            line6 = f"Cliente: {(self.partner_id.name or '')[:28]}"
+            line7 = f"Ref. cliente: {self.customer_roll_ref or ''}"
+        else:
+            line6 = f"Maquina: {self.equipment_id.name or ''}"
+            line7 = f"Usuario: {self.employee_id.name or ''}"
         zpl_code = f"""^XA
                     ^PW600
                     ^LL600
@@ -168,11 +240,11 @@ class MrpWorkorderRoll(models.Model):
 
                     ^FO300,210
                     ^A0N,22,22
-                    ^FDMaquina: {self.equipment_id.name}^FS
+                    ^FD{line6}^FS
 
                     ^FO300,235
                     ^A0N,22,22
-                    ^FDUsuario: {self.employee_id.name}^FS
+                    ^FD{line7}^FS
 
                     ^XZ"""
         return zpl_code

@@ -123,7 +123,9 @@
                 <field name="bom_id" options="{'no_create': True}" readonly="1" force_save="1" domain="[('product_tmpl_id','=',product_template_id)]" optional="hide" column_invisible="parent.is_quote or not parent.is_company_produce" groups="base.group_system"/>
                 <field name="operation_ids" options="{'no_create': True}" required="parent.sale_type == 'service' and parent.is_company_produce and is_weaving" readonly="not is_weaving or parent.sale_type != 'service'" domain="[('id','in',available_operation_ids)]" widget="many2many_tags" force_save="1" optional="hide" column_invisible="not parent.is_quote or not parent.is_company_produce"/>
                 <field name="weaving_loss" readonly="not is_weaving" optional="hide" widget="percentage" column_invisible="not parent.is_quote or not parent.is_company_produce"/>
-                <field name="production_loss" readonly="not is_weaving" optional="hide" widget="percentage" column_invisible="not parent.is_quote or not parent.is_company_produce"/>
+                <!-- Merma de producción: editable en la cotización, visible en el pedido
+                     porque define la cantidad de la OF (pedido / (1 - merma)). -->
+                <field name="production_loss" readonly="not is_weaving or not parent.is_quote" optional="hide" widget="percentage" column_invisible="not parent.is_company_produce" force_save="1"/>
                 <field name="min_qty" readonly="not is_weaving" optional="hide" column_invisible="not parent.is_quote or not parent.is_company_produce"/>
                 <field name="dis_app" column_invisible="1"/>
                 <field name="is_rect" column_invisible="1"/>
@@ -172,7 +174,10 @@
             <xpath expr="//page[@name='other_information']//field[@name='client_order_ref']" position="after">
                 <field name="client_order_date"/>
                 <field name="sub_partner_id" context="{'res_partner_search_mode': 'customer'}"/>
-                <field name="process_type_id" options="{'no_create': True}"/>
+                <!-- Venta admite venta con producción y venta de stock; servicio solo servicio.
+                     Misma regla que sitpro.sale.type._order_kinds_for_sale_type (onchange). -->
+                <field name="process_type_id" options="{'no_create': True}"
+                       domain="[('order_kind', 'in', ['sale', 'sale_stock'] if sale_type == 'sale' else [sale_type])]"/>
             </xpath>
 
         </field>

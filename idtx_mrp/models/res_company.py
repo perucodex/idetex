@@ -6,6 +6,10 @@ class ResCompany(models.Model):
     is_company_produce = fields.Boolean('Production Company', store=True, default=False)
     is_printer = fields.Boolean('is_printer?')
     zpl_printer_ip = fields.Char('Barcode Printer IP')
+    roll_reception_tolerance = fields.Float(
+        'Tolerancia de recepción de crudo (%)', default=0.0,
+        help='Porcentaje por encima de la cantidad de la OF a partir del cual la '
+             'recepción de rollos del cliente muestra un aviso (no bloquea).')
 
     # Configuración de tejeduría (estimación de tiempo de OT)
     weaving_weight_per_roll = fields.Float(

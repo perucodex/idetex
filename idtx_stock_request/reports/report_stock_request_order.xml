@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Codex Development
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl.html). -->
+<odoo>
+    <record id="paperformat_stock_request_order" model="report.paperformat">
+        <field name="name">Requerimiento de productos A4</field>
+        <field name="default" eval="False" />
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">8</field>
+        <field name="margin_bottom">8</field>
+        <field name="margin_left">10</field>
+        <field name="margin_right">10</field>
+        <field name="header_line" eval="False" />
+        <field name="header_spacing">0</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_stock_request_order" model="ir.actions.report">
+        <field name="name">Requerimiento de productos</field>
+        <field name="model">stock.request.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">idtx_stock_request.report_stock_request_order</field>
+        <field name="report_file">idtx_stock_request.report_stock_request_order</field>
+        <field name="print_report_name">'Requerimiento %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_stock_request_order" />
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="paperformat_stock_request_order" />
+    </record>
+
+    <template id="report_stock_request_order_document">
+        <t t-call="web.basic_layout">
+            <t t-set="lines" t-value="o.stock_request_ids.sorted('id')" />
+            <t t-set="min_rows" t-value="30" />
+            <div class="page" style="font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #000;">
+                <!-- Cabecera: logo + título -->
+                <table style="width: 100%; border-collapse: collapse; border: none; margin-bottom: 14px;">
+                    <tr>
+                        <td style="width: 32%; vertical-align: middle; border: none; padding: 0;">
+                            <img
+                                t-if="o.company_id.logo"
+                                t-att-src="image_data_uri(o.company_id.logo)"
+                                style="max-height: 52px; max-width: 200px;"
+                                alt="Logo"
+                            />
+                        </td>
+                        <td style="vertical-align: middle; border: none; padding: 0; font-size: 17px; font-weight: bold; letter-spacing: 0.5px;">
+                            REQUERIMIENTO DE PRODUCTOS
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Datos: área / solicitante / fecha / boleta -->
+                <table style="width: 100%; border: none; border-collapse: separate; border-spacing: 0 6px; margin-bottom: 4px;">
+                    <tr>
+                        <td style="width: 15%; border: 1px solid #000; padding: 4px 6px; font-weight: bold;">AREA</td>
+                        <td style="width: 26%; border: 1px solid #000; padding: 4px 6px; text-align: center; font-weight: bold;">
+                            <t t-esc="o._report_area()" />
+                        </td>
+                        <td style="width: 8%; border: none;"></td>
+                        <td style="width: 27%; border: 1px solid #000; padding: 4px 6px; font-weight: bold;">FECHA DE REQUERIMIENTO</td>
+                        <td style="width: 24%; border: 1px solid #000; padding: 4px 6px; text-align: center;">
+                            <t t-esc="o._report_date_label()" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 4px 6px; font-weight: bold;">SOLICITANTE</td>
+                        <td style="border: 1px solid #000; padding: 4px 6px; text-align: center; font-weight: bold;">
+                            <t t-esc="(o.requested_by.name or '').upper()" />
+                        </td>
+                        <td style="border: none;"></td>
+                        <td style="border: 1px solid #000; padding: 4px 6px; font-weight: bold; text-align: center;">N° BOLETA</td>
+                        <td style="border: 1px solid #000; padding: 4px 6px; text-align: center;">
+                            <t t-esc="o.name" />
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Motivo -->
+                <table style="width: 100%; border-collapse: collapse; border: none; margin: 6px 0 10px 0;">
+                    <tr>
+                        <td style="width: 15%; border: none; padding: 4px 6px; font-weight: bold;">MOTIVO:</td>
+                        <td style="border: none; border-bottom: 1px solid #000; padding: 4px 6px; font-weight: bold;">
+                            <t t-esc="(o.note or '').replace('\n', ' ').upper()" />
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Detalle -->
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 26px;">
+                    <thead>
+                        <tr style="background-color: #f2f2f2; font-weight: bold; text-align: center;">
+                            <th style="width: 6%; border: 1px solid #000; padding: 4px;">ITEM</th>
+                            <th style="width: 11%; border: 1px solid #000; padding: 4px;">CANTIDAD</th>
+                            <th style="width: 8%; border: 1px solid #000; padding: 4px;">UND</th>
+                            <th style="border: 1px solid #000; padding: 4px;">DESCRIPCION</th>
+                            <th style="width: 19%; border: 1px solid #000; padding: 4px;">Ult Lote Cocina</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="lines" t-as="line">
+                            <tr t-att-style="'height: 22px;' + (' background-color: #f2f2f2;' if line_index % 2 else '')">
+                                <td style="border: 1px solid #000; padding: 2px 4px; text-align: center;">
+                                    <t t-esc="line_index + 1" />
+                                </td>
+                                <td style="border: 1px solid #000; padding: 2px 4px; text-align: center;">
+                                    <t t-esc="line._report_qty()" />
+                                </td>
+                                <td style="border: 1px solid #000; padding: 2px 4px; text-align: center;">
+                                    <t t-esc="line.product_uom_id.name" />
+                                </td>
+                                <td style="border: 1px solid #000; padding: 2px 6px;">
+                                    <t t-esc="line.product_id.display_name" />
+                                </td>
+                                <td style="border: 1px solid #000; padding: 2px 4px;"></td>
+                            </tr>
+                        </t>
+                        <t t-foreach="range(max(0, min_rows - len(lines)))" t-as="i">
+                            <tr t-att-style="'height: 22px;' + (' background-color: #f2f2f2;' if (len(lines) + i) % 2 else '')">
+                                <td style="border: 1px solid #000;"></td>
+                                <td style="border: 1px solid #000;"></td>
+                                <td style="border: 1px solid #000;"></td>
+                                <td style="border: 1px solid #000;"></td>
+                                <td style="border: 1px solid #000;"></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <!-- Firmas -->
+                <table style="width: 100%; border-collapse: collapse; border: none; margin-top: 18px;">
+                    <tr style="text-align: center; font-size: 10px;">
+                        <td style="width: 33%; border: none; padding: 0 30px;">
+                            <div style="border-top: 1px solid #000; padding-top: 4px;">V°B° JEFE DE AREA</div>
+                        </td>
+                        <td style="width: 34%; border: none; padding: 0 30px;">
+                            <div style="border-top: 1px solid #000; padding-top: 4px;">V°B° PRODUCCIÓN</div>
+                        </td>
+                        <td style="width: 33%; border: none; padding: 0 30px;">
+                            <div style="border-top: 1px solid #000; padding-top: 4px;">V°B° ALMACEN</div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_stock_request_order">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="idtx_stock_request.report_stock_request_order_document" />
+            </t>
+        </t>
+    </template>
+</odoo>

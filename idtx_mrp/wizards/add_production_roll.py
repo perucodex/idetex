@@ -36,7 +36,7 @@ class BatchAddWizard(models.TransientModel):
     def action_add(self):
         """Crear los registros reales y MANTENER el wizard abierto."""
         for line in self:
-            prd = line.batch_id.wo_roll_ids.filtered(lambda r: r.product_id == line.product_id).workorder_id.production_id
+            prd = line.batch_id.wo_roll_ids.filtered(lambda r: r.product_id == line.product_id).production_id[:1]
             # for prd in prds:
             lot_id = self.env['stock.lot'].create(self._get_lot_vals(prd, line))
             roll = self.env['mrp.production.roll'].create({

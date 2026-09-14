@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    Copyright 2018 Creu Blanca
+    Copyright 2026 Codex Development
+    License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl.html).
+-->
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.idtx_stock_request</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app
+                    data-string="Warehouse Requests"
+                    string="Warehouse Requests"
+                    name="idtx_stock_request"
+                    groups="idtx_stock_request.group_stock_request_manager"
+                >
+                    <block id="stock_request" title="Requests">
+                        <setting
+                            help="Group several products in one request document (orders)."
+                            class="text-muted"
+                        >
+                            <field
+                                name="group_stock_request_order"
+                                string="Enable Orders"
+                            />
+                        </setting>
+                        <setting
+                            help="When no route is selected and the requested location is not the stock location of the warehouse, the request creates an internal transfer from the warehouse stock instead of running the product routes (buy / manufacture)."
+                            class="text-muted"
+                        >
+                            <field
+                                name="stock_request_direct_transfer"
+                                string="Create internal transfer when no route is selected"
+                            />
+                        </setting>
+                        <setting
+                            help="By default only internal and transit locations are allowed in Stock Request and Orders."
+                            class="text-muted"
+                        >
+                            <field
+                                name="stock_request_allow_virtual_loc"
+                                string="Allow All Locations Types"
+                            />
+                        </setting>
+                        <setting
+                            help="If the requested quantity is already available in the requested location, the request is completed without creating a transfer."
+                            class="text-muted"
+                        >
+                            <field
+                                name="stock_request_check_available_first"
+                                string="Check available stock first"
+                            />
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+    <record id="action_stock_request_config" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_id" ref="res_config_settings_view_form" />
+        <field name="view_mode">form</field>
+        <field name="context">{'module': 'idtx_stock_request', 'bin_size': False}</field>
+    </record>
+</odoo>

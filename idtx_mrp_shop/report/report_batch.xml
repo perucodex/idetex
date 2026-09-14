@@ -4,7 +4,7 @@
     <!-- Contenido: datos de la partida + listado de rollos. -->
     <template id="report_batch_partida_content">
         <t t-set="rolls" t-value="doc.origin_roll_ids"/>
-        <t t-set="productions" t-value="rolls.workorder_id.production_id"/>
+        <t t-set="productions" t-value="rolls.production_id"/>
         <div class="page reporte-partida" style="font-size: 0.85rem;">
             <style>
                 .reporte-partida table::before, .reporte-partida table::after {
@@ -92,7 +92,7 @@
                     <tr t-foreach="rolls" t-as="roll">
                         <td class="text-center"><t t-esc="roll.name or ''"/></td>
                         <td><t t-esc="roll.product_id.display_name or ''"/></td>
-                        <td><t t-esc="roll.workorder_id.production_id.name or ''"/></td>
+                        <td><t t-esc="roll.production_id.name or ''"/></td>
                         <td class="text-end"><t t-esc="roll.quantity"/></td>
                         <td class="text-end"><t t-esc="'%.2f' % (roll.net_weight or 0)"/></td>
                         <td class="text-end"><t t-esc="'%.2f' % (roll.gross_weight or 0)"/></td>

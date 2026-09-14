@@ -73,7 +73,7 @@ class MrpWorkorderBatch(models.Model):
         concreta la resuelve la partida por combinación de productos, así que
         aquí ya no se exige la misma receta sino el mismo color."""
         for batch in self:
-            productions = batch.wo_roll_ids.workorder_id.production_id
+            productions = batch.wo_roll_ids.production_id
             by_color = {}
             for prod in productions:
                 line = (prod.sale_order_line_id.lab_dev_line_id
@@ -103,7 +103,7 @@ class MrpWorkorderBatch(models.Model):
         for batch in self:
             by_prod = {}
             for roll in batch.wo_roll_ids:
-                prod = roll.workorder_id.production_id
+                prod = roll.production_id
                 by_prod.setdefault(prod, {}).setdefault(
                     roll.option_id, []).append(roll.name or str(roll.id))
             offending = {prod: opts for prod, opts in by_prod.items()

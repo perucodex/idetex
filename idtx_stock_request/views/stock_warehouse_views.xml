@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Codex Development
+     License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl.html). -->
+<odoo>
+    <record id="view_warehouse_stock_request" model="ir.ui.view">
+        <field name="name">stock.warehouse.form.inherit.idtx_stock_request</field>
+        <field name="model">stock.warehouse</field>
+        <field name="inherit_id" ref="stock.view_warehouse" />
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='group_resupply']" position="after">
+                <group
+                    string="Warehouse Requests"
+                    name="group_stock_request"
+                    groups="idtx_stock_request.group_stock_request_manager"
+                >
+                    <field name="lot_stock_id" invisible="1" />
+                    <field
+                        name="stock_request_location_id"
+                        options="{'no_create': True}"
+                    />
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <menuitem
+        id="menu_stock_request_root"
+        name="Warehouse Requests"
+        groups="idtx_stock_request.group_stock_request_user,idtx_stock_request.group_stock_request_manager"
+        web_icon="idtx_stock_request,static/description/icon.png"
+        sequence="100"
+    />
+    <menuitem
+        id="menu_stock_request_operations"
+        parent="menu_stock_request_root"
+        name="Operations"
+        sequence="10"
+    />
+    <menuitem
+        id="stock_request_order_menu"
+        name="Stock Request Orders"
+        parent="menu_stock_request_operations"
+        action="stock_request_order_action"
+        groups="group_stock_request_order"
+        sequence="10"
+    />
+    <menuitem
+        id="menu_stock_request"
+        action="action_stock_request_form"
+        name="Stock Requests"
+        parent="menu_stock_request_operations"
+        sequence="20"
+    />
+    <menuitem
+        id="menu_stock_request_config"
+        name="Settings"
+        parent="menu_stock_request_root"
+        sequence="999"
+        action="action_stock_request_config"
+        groups="base.group_system"
+    />
+    <!-- Warehouse staff: requests inside Inventory > Operations -->
+    <menuitem
+        id="menu_stock_request_order_inventory"
+        name="Warehouse Requests"
+        parent="stock.menu_stock_warehouse_mgmt"
+        action="stock_request_order_action"
+        groups="idtx_stock_request.group_stock_request_manager,group_stock_request_order"
+        sequence="2"
+    />
+</odoo>
