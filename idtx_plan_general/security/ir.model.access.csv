@@ -1,2 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_idtx_machine_layout_user,idtx.machine.layout user,model_idtx_machine_layout,base.group_user,1,1,1,1
