@@ -283,7 +283,8 @@ class MrpWorkorder(models.Model):
             'batch_id': batch.id if batch and batch.exists() else False,
             'employee_id': int(employee_id) if employee_id else False,
             'equipment_id': equipment.id if equipment and equipment.exists() else False,
-            'weight': batch.total_weight if batch and batch.exists() else 0,
+            # Peso para la receta: tras Control de peso si lo hubo, si no el crudo.
+            'weight': batch.recipe_weight if batch and batch.exists() else 0,
             'bath_ratio': sub.bath_ratio or recipe.bath_ratio or (ldl.bath_ratio if ldl else 0),
             'abs_factor': sub.absorption_factor or recipe.absorption_factor or 0,
             'tipo_proceso': sub.tipo_proceso or False,
@@ -692,7 +693,7 @@ class MrpWorkorder(models.Model):
             'operation': self.mrwo_id.name,
             'total_weight': batch.dye_lot_weight,
             'started': batch.id in started,
-            'batches': [{'id': b.id, 'name': b.display_name, 'weight': b.total_weight,
+            'batches': [{'id': b.id, 'name': b.display_name, 'weight': b.recipe_weight,
                          'started': b.id in started} for b in lot],
         }
 
@@ -733,7 +734,7 @@ class MrpWorkorder(models.Model):
             'employee_id': employee_id, 'equipment_id': equipment_id,
             'lot_batch_ids': [(6, 0, lot.ids)], 'lot_weight': total,
         } for b, wo in targets])
-        detail = ' + '.join('%s (%.2f kg)' % (b.display_name, b.total_weight) for b, _wo in targets)
+        detail = ' + '.join('%s (%.2f kg)' % (b.display_name, b.recipe_weight) for b, _wo in targets)
         for b, _wo in targets:
             b.message_post(body=_('Arranque de %(op)s (conjunto): %(detail)s = %(kg).2f kg.',
                                   op=self.mrwo_id.name, detail=detail, kg=total))
@@ -884,11 +885,44 @@ class MrpWorkorder(models.Model):
                         if joint_targets else _(f'Registry created for batch {br.batch_id.name}')),
         }
 
-    def action_register_batch_operation(self, payload):
+    def action_register_batch_weight(self, payload):
+        """CONTROL DE PESO (operación con weighs_batch, JP 22-sep-2026): pesa la
+        partida en la balanza (o manual autorizado), registra la operación como
+        cualquier registro simple (secuencia de ruta, OF hermanas...) y guarda el
+        peso en la partida como "Peso tras control", el que usa la receta."""
+        self.ensure_one()
+        batch_id = int(payload.get('batch_id')) if payload.get('batch_id') else False
+        if not batch_id:
+            return {'status': 'danger', 'message': _('Debes seleccionar una partida.')}
+        batch = self.env['mrp.workorder.batch'].browse(batch_id)
+        if not batch.exists():
+            return {'status': 'danger', 'message': _('La partida seleccionada no existe.')}
+        scale_id = payload.get('scale_id')
+        scale = self.env['scale.registry'].browse(int(scale_id)) if scale_id else False
+        weight, err = batch._read_roll_weight(scale, payload.get('manual_weight'))
+        if err:
+            return {'status': 'danger', 'message': err}
+        # El control de peso no lleva máquina: solo empleado y partida.
+        res = self.action_register_batch_operation({
+            'batch_id': batch_id,
+            'employee_id': payload.get('employee_id'),
+            'equipment_id': payload.get('equipment_id'),
+        }, equipment_required=False)
+        if res.get('status') != 'success':
+            return res
+        batch.action_set_controlled_weight(weight, scale=scale or None)
+        res['message'] = _(
+            'Control de peso registrado para %(batch)s: %(kg).2f kg (crudo %(raw).2f kg). '
+            'La receta usará este peso.', batch=batch.display_name, kg=weight, raw=batch.total_weight)
+        return res
+
+    def action_register_batch_operation(self, payload, equipment_required=True):
         """Registro SIMPLE de partida para operaciones de tintorería sin receta
         de laboratorio (HABILITADO, HIDROEXTRACTORA, ...): solo deja constancia
         de que la partida recibió esta operación (las horas de inicio/fin ya
-        viven en la propia OT). Crea un batch.registry mínimo en estado Done."""
+        viven en la propia OT). Crea un batch.registry mínimo en estado Done.
+        `equipment_required=False` para operaciones sin máquina (Control de
+        peso: solo empleado y partida)."""
         self.ensure_one()
         batch_id = int(payload.get('batch_id')) if payload.get('batch_id') else False
         employee_id = int(payload.get('employee_id')) if payload.get('employee_id') else False
@@ -899,8 +933,9 @@ class MrpWorkorder(models.Model):
         batch = self.env['mrp.workorder.batch'].browse(batch_id)
         if not batch.exists():
             return {'status': 'danger', 'message': _('La partida seleccionada no existe.')}
-        if not employee_id or not equipment_id:
-            return {'status': 'danger', 'message': _('Debes seleccionar empleado y equipo.')}
+        if not employee_id or (equipment_required and not equipment_id):
+            return {'status': 'danger', 'message': _('Debes seleccionar empleado y equipo.')
+                    if equipment_required else _('Debes seleccionar un empleado.')}
 
         # Control de secuencia: la partida debe haber pasado por la operación
         # anterior de la ruta (considerando partidas padre).

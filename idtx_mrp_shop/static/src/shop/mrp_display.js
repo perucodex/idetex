@@ -11,6 +11,7 @@ patch(MrpDisplayAction.prototype, {
         result["mrp.workorder"].push('operation_type');
         result["mrp.workorder"].push('weave_type');
         result["mrp.workorder"].push('use_lab_recipe');
+        result["mrp.workorder"].push('weighs_batch');
         result["mrp.workorder"].push('employee_id');
         result["mrp.workorder"].push('equipment_ids');
         result["mrp.workorder"].push('roll_ids');

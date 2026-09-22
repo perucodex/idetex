@@ -6,6 +6,8 @@ from collections import defaultdict
 from odoo import http
 from odoo.http import request
 
+from ..models.floor_layout import GRID_COLS
+
 _logger = logging.getLogger(__name__)
 
 
@@ -85,7 +87,7 @@ class PlanAlphaDashboard(http.Controller):
         equipments = Equipment.search(domain, order="name asc")
 
         GRID_COLS_OLD = 20
-        GRID_COLS_NEW = 24
+        GRID_COLS_NEW = GRID_COLS  # importado de models.floor_layout — misma constante que hooks.py
 
         Layout = env["idtx.alpha.floor.layout"].sudo()
         existing = Layout.search([("workcenter", "=", workcenter)])
@@ -269,9 +271,17 @@ class PlanAlphaDashboard(http.Controller):
                              span_cols=1, span_rows=1):
         if not equipment_id or not workcenter or slot_index is None:
             return {"ok": False}
-        if span_cols not in (1, 2, 3, 4):
+        try:
+            span_cols = int(span_cols)
+        except (TypeError, ValueError):
             span_cols = 1
-        if span_rows not in (1, 2, 3, 4):
+        try:
+            span_rows = int(span_rows)
+        except (TypeError, ValueError):
+            span_rows = 1
+        if span_cols < 1:
+            span_cols = 1
+        if span_rows < 1:
             span_rows = 1
         env = request.env
         Layout = env["idtx.alpha.floor.layout"].sudo()

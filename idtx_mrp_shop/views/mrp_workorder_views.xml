@@ -9,6 +9,7 @@
         <field name="inherit_id" ref="idtx_mrp.mrp_production_workorder_form_view_inherit_mrp_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='batch_ids']/list/field[@name='total_weight']" position="after">
+                <field name="controlled_weight" string="Peso tras control" optional="show"/>
                 <field name="pending_reprocess_mrwo_ids" string="Reproceso pendiente"
                        widget="many2many_tags" readonly="1" optional="show"/>
             </xpath>

@@ -23,7 +23,8 @@ class BatchRegistry(models.Model):
     color_code = fields.Char('Color Code')
     partner_id = fields.Many2one('res.partner', 'Customer')
     abs_factor = fields.Float('Absorption Factor', default=3.0)
-    weight = fields.Float(related='batch_id.total_weight', string='Total Weight')
+    # Peso que usa la receta: tras Control de peso si la partida pasó por él.
+    weight = fields.Float(related='batch_id.recipe_weight', string='Total Weight')
     recipe_salt = fields.Float('Recipe Salt', compute='_compute_recipe_components')
     recipe_carbonate = fields.Float('Recipe Carbonate', compute='_compute_recipe_components')
     recipe_soda = fields.Float('Recipe Soda', compute='_compute_recipe_components')

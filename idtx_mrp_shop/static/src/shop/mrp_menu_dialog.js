@@ -6,6 +6,7 @@ import { SelectScaleDialog } from "./select_scale_dialog";
 import { SelectSizeDialog } from "./select_size_dialog";
 import { SelectBatchDialog } from "./select_batch_dialog";
 import { SimpleBatchDialog } from "./simple_batch_dialog";
+import { WeighBatchDialog } from "../weighing/weigh_batch_dialog";
 import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
 import { onWillStart } from "@odoo/owl";
@@ -232,6 +233,40 @@ patch(MrpMenuDialog.prototype, {
                 title: _t("Register batch operation"),
                 confirm: _createRecord,
                 recordId: this.props.record.resId,
+            });
+        });
+
+        this.props.close();
+    },
+
+    async registerBatchWeight() {
+        // CONTROL DE PESO: partida + balanza. El peso queda en la partida como
+        // "Peso tras control" y la receta se calcula con él (operación marcada
+        // "Control de peso" en la ruta).
+        await new Promise(resolve => {
+            const _register = async (payload) => {
+                const res = await this.orm.call(
+                    "mrp.workorder",
+                    "action_register_batch_weight",
+                    [[this.props.record.resId], payload]
+                );
+
+                if (res) {
+                    this.notification.add(res.message, { type: res.status });
+                }
+                await this.props.record.load();
+                this.props.removeFromCache(this.props.record.resId);
+
+                resolve(res);
+            };
+
+            document.activeElement?.blur?.();
+            this.dialogService.add(WeighBatchDialog, {
+                title: _t("Control de peso de la partida"),
+                confirm: _register,
+                // Hereda del diálogo de balanza: `active` es la OT (opciones,
+                // empleados/equipos, balanza recordada por OT).
+                active: [this.props.record.resId],
             });
         });
 

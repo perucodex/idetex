@@ -14,6 +14,20 @@ class MrpWorkorderBatch(models.Model):
     batch_date = fields.Date('Batch Date', required=True, default=lambda self: fields.Date.context_today(self))
     wo_roll_ids = fields.Many2many('mrp.workorder.roll', string='Batch Rolls')
     total_weight = fields.Float('Total', compute='_compute_total_weight')
+    # Control de peso (JP, 22-sep-2026): peso de la partida tomado en balanza
+    # en la operación marcada "Control de peso". Es el peso que usa la RECETA
+    # (el crudo pudo bajar en los procesos previos).
+    controlled_weight = fields.Float(
+        'Peso tras control (kg)', readonly=True, copy=False, tracking=True, digits=(12, 2))
+    controlled_weight_date = fields.Datetime('Fecha del control de peso', readonly=True, copy=False)
+    controlled_weight_user_id = fields.Many2one(
+        'res.users', 'Pesado por', readonly=True, copy=False, ondelete='set null')
+    controlled_weight_scale_id = fields.Many2one(
+        'scale.registry', 'Balanza del control', readonly=True, copy=False, ondelete='set null')
+    recipe_weight = fields.Float(
+        'Peso para receta (kg)', compute='_compute_recipe_weight', digits=(12, 2),
+        help='Peso tras control si la partida ya pasó por Control de peso; '
+             'si no, el peso crudo de los rollos.')
     mrwo_id = fields.Many2one('mrp.routing.workcenter.operation', string='Last Operation')
     state = fields.Selection([
         ('draft', 'Draft'),
@@ -85,14 +99,52 @@ class MrpWorkorderBatch(models.Model):
 
     @api.depends('dye_product_id', 'parent_batch_id.is_dye_lot',
                  'parent_batch_id.child_batch_ids.wo_roll_ids.gross_weight',
-                 'wo_roll_ids.gross_weight')
+                 'parent_batch_id.child_batch_ids.controlled_weight',
+                 'wo_roll_ids.gross_weight', 'controlled_weight')
     def _compute_dye_siblings(self):
         for rec in self:
             siblings = self.browse()
             if rec.dye_product_id and rec.parent_batch_id.is_dye_lot:
                 siblings = rec.parent_batch_id.child_batch_ids - rec
             rec.dye_sibling_ids = siblings
-            rec.dye_lot_weight = rec.total_weight + sum(siblings.mapped('total_weight'))
+            # Kilos del baño con el peso que usa la receta (tras control si lo hay).
+            rec.dye_lot_weight = rec.recipe_weight + sum(siblings.mapped('recipe_weight'))
+
+    @api.depends('controlled_weight', 'wo_roll_ids.gross_weight',
+                 'child_batch_ids.wo_roll_ids.gross_weight')
+    def _compute_recipe_weight(self):
+        for rec in self:
+            rec.recipe_weight = rec.controlled_weight if rec.controlled_weight > 0 else rec.total_weight
+
+    def _dye_lot_batches(self):
+        """Partidas que van en el MISMO baño (pareja de _dye_lot_rolls): la
+        propia y sus hermanas del lote; para el lote (madre), sus hijas."""
+        self.ensure_one()
+        if self.dye_product_id and self.parent_batch_id.is_dye_lot:
+            return self | self.dye_sibling_ids
+        if self.is_dye_lot and self.child_batch_ids:
+            return self.child_batch_ids
+        return self
+
+    def action_set_controlled_weight(self, weight, scale=None):
+        """Control de peso: guarda el peso de balanza de la partida (el que usa
+        la receta) y lo deja en el chatter junto al crudo."""
+        self.ensure_one()
+        weight = round(float(weight or 0), 2)
+        if weight <= 0:
+            raise UserError(_('El peso del control debe ser mayor a cero.'))
+        previous = self.controlled_weight
+        self.write({
+            'controlled_weight': weight,
+            'controlled_weight_date': fields.Datetime.now(),
+            'controlled_weight_user_id': self.env.uid,
+            'controlled_weight_scale_id': scale.id if scale else False,
+        })
+        self.message_post(body=_(
+            'Control de peso: %(kg).2f kg (peso crudo %(raw).2f kg, diferencia %(diff)+.2f kg)%(prev)s. '
+            'La receta se calcula con este peso.',
+            kg=weight, raw=self.total_weight, diff=weight - self.total_weight,
+            prev=_(' — reemplaza el control anterior de %(p).2f kg', p=previous) if previous else ''))
 
     @api.depends('name', 'dye_product_id', 'is_dye_lot', 'reprocess_seq')
     def _compute_display_name(self):

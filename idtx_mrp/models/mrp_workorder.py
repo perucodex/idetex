@@ -35,6 +35,8 @@ class MrpWorkorder(models.Model):
 
     mrwo_id = fields.Many2one('mrp.routing.workcenter.operation', string='Operation LAB')
     operation_type = fields.Selection(related='mrwo_id.operation_type')
+    # Operación de Control de peso: el Taller pesa la partida al registrarla.
+    weighs_batch = fields.Boolean(related='mrwo_id.weighs_batch')
     roll_ids = fields.One2many('mrp.workorder.roll', 'workorder_id', string='Weaving Rolls')
     batch_ids = fields.Many2many('mrp.workorder.batch', string='Batchs')
     equipment_ids = fields.Many2many('maintenance.equipment', string='Equipments')
@@ -409,7 +411,13 @@ class MrpWorkorder(models.Model):
                 # Se compara por DEPARTAMENTO (no por centro de trabajo) porque
                 # las máquinas son de IDETEX y la OT puede ser de otra compañía
                 # — ver [[project_workcenter_check_company]].
-                all_equipment = wo.option_ids.equipment_ids
+                # sudo(): se leen department_id/machine_state del equipo más
+                # abajo y hay una regla multi-compañía global sobre
+                # maintenance.equipment; desde la migración 19.0.1.1.0 de
+                # idtx_plan_general_alpha las máquinas son de FULL PIMA y un
+                # usuario sin esa compañía habilitada no podría ni validar el
+                # arranque de la OT (portado de la rama 19.0, 22-sep-2026).
+                all_equipment = wo.option_ids.equipment_ids.sudo()
                 wc_name = wo.workcenter_id.name
                 dept_ids = _department_ids_for_workcenter_name(self.env, wc_name)
                 wrong_wc = all_equipment.filtered(
@@ -582,7 +590,10 @@ class MrpWorkorderOption(models.Model):
             default_eff = company.weaving_default_efficiency or 0.0
             rate = 0.0
             machine_without_rpm = False
-            for eq in opt.equipment_ids:
+            # sudo(): rpm/efficiency del equipo, protegido por la regla
+            # multi-compañía global de maintenance.equipment (máquinas de
+            # FULL PIMA; ver nota en _check_equipment de la OT).
+            for eq in opt.equipment_ids.sudo():
                 rpm = eq.rpm or 0.0
                 if rpm <= 0:
                     machine_without_rpm = True
@@ -652,8 +663,11 @@ class MrpWorkorderOption(models.Model):
     @api.depends('workorder_id', 'workorder_id.workcenter_id',
                  'workorder_id.workcenter_id.name')
     def _compute_available_equipment(self):
-        """Máquinas OPERATIVAS del mismo área (departamento) que la OT."""
-        Equipment = self.env['maintenance.equipment']
+        """Máquinas OPERATIVAS del mismo área (departamento) que la OT. Usa
+        sudo(): hay una regla multi-compañía global sobre maintenance.equipment
+        y no todos los usuarios de planta tienen la compañía del equipo
+        (FULL PIMA) habilitada (portado de la rama 19.0, 22-sep-2026)."""
+        Equipment = self.env['maintenance.equipment'].sudo()
         for opt in self:
             wc = opt.workorder_id.workcenter_id
             dept_ids = _department_ids_for_workcenter_name(self.env, wc.name) if wc else []

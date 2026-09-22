@@ -66,6 +66,14 @@ class MrpRoutingWorkcenterOperation(models.Model):
         help='En un lote de teñido (partidas por producto con el mismo número) '
              'esta operación se arranca y registra a la vez en todas las partidas '
              'del lote: la relación de baño está calculada sobre los kilos totales.')
+    # Operación de CONTROL DE PESO (JP, 22-sep-2026): la partida se pesa en la
+    # balanza al registrarla en el Taller y ese peso —menor al crudo por las
+    # pérdidas de los procesos previos— es el que usa la receta.
+    weighs_batch = fields.Boolean(
+        'Control de peso (pesa la partida)',
+        help='Al registrar esta operación en el Taller se pesa la partida en la '
+             'balanza; el peso queda en la partida como "Peso tras control" y la '
+             'receta de teñido se calcula con él en lugar del peso crudo de los rollos.')
 
     @api.model
     def name_search(self, name='', domain=None, operator='ilike', limit=100):

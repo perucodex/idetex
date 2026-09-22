@@ -111,6 +111,25 @@
                                 </form>
                             </field>
                         </page>
+                        <!-- Pesos: crudo (rollos), tras Control de peso (balanza) y el
+                             que usa la receta (JP, 22-sep-2026). -->
+                        <page name="weights_page" string="Pesos">
+                            <group>
+                                <group string="Peso de la partida">
+                                    <field name="total_weight" string="Peso crudo (kg)"/>
+                                    <field name="recipe_weight" class="fw-bold"/>
+                                </group>
+                                <group string="Control de peso">
+                                    <field name="controlled_weight"/>
+                                    <field name="controlled_weight_date" invisible="not controlled_weight"/>
+                                    <field name="controlled_weight_user_id" invisible="not controlled_weight"/>
+                                    <field name="controlled_weight_scale_id" invisible="not controlled_weight"/>
+                                </group>
+                            </group>
+                            <div class="text-muted" invisible="controlled_weight">
+                                La partida aún no pasó por Control de peso: la receta se calcula con el peso crudo.
+                            </div>
+                        </page>
                         <page name="reprocess_transfer_page" string="Transferidos a reproceso"
                               invisible="not transferred_roll_ids">
                             <field name="transferred_roll_ids" readonly="1">

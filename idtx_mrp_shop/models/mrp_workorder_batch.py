@@ -542,7 +542,12 @@ class MrpWorkorderBatch(models.Model):
         rolls = self._dye_lot_rolls()
         recipe = self.color_recipe_id
         sub = self.recipe_lot_id
-        kilos = sum(rolls.mapped('gross_weight'))
+        # Kilos con Control de peso: peso tras control de cada partida del baño
+        # (o su crudo si aún no pasó por el control). Los kilos por producto se
+        # escalan en la misma proporción para que sigan sumando el total.
+        raw_kilos = sum(rolls.mapped('gross_weight'))
+        kilos = sum(self._dye_lot_batches().mapped('recipe_weight')) or raw_kilos
+        weight_factor = (kilos / raw_kilos) if raw_kilos else 1.0
         rb = (sub.bath_ratio if sub else 0) or (recipe.bath_ratio if recipe else 0) \
             or (recipe.lab_dev_line_id.bath_ratio if recipe and recipe.lab_dev_line_id else 0)
         fac_abs = (sub.absorption_factor if sub else 0.0) \
@@ -551,7 +556,7 @@ class MrpWorkorderBatch(models.Model):
         products, total_meters = [], 0.0
         for tmpl in rolls.mapped('product_id'):
             p_rolls = rolls.filtered(lambda r: r.product_id == tmpl)
-            p_kilos = sum(p_rolls.mapped('gross_weight'))
+            p_kilos = round(sum(p_rolls.mapped('gross_weight')) * weight_factor, 2)
             yield_m = tmpl.analysis_id.yield_meter if tmpl.analysis_id else 0.0
             meters = p_kilos * yield_m
             total_meters += meters

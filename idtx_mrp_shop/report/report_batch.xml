@@ -76,6 +76,12 @@
                         <td><strong>Piezas</strong></td>
                         <td><t t-esc="len(rolls)"/></td>
                     </tr>
+                    <tr t-if="doc.controlled_weight">
+                        <td><strong>Peso tras control (kg)</strong></td>
+                        <td><t t-esc="'%.2f' % doc.controlled_weight"/></td>
+                        <td><strong>Peso para receta (kg)</strong></td>
+                        <td><t t-esc="'%.2f' % doc.recipe_weight"/></td>
+                    </tr>
                     <tr>
                         <td><strong>Reprocesos</strong></td>
                         <td><t t-esc="doc.reprocess_count"/></td>

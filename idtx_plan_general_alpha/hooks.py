@@ -1,29 +1,27 @@
-# -*- coding: utf-8 -*-
 import logging
 import re
 import unicodedata
+
+from .models.floor_layout import GRID_COLS
 
 _logger = logging.getLogger(__name__)
 
 _MODULE = 'idtx_plan_general_alpha'
 
+_LEGACY_GRID_COLS = 24
+
+
+def _to_current_encoding(slot_index):
+    row, col = divmod(slot_index, _LEGACY_GRID_COLS)
+    return row * GRID_COLS + col
+
 
 def _slug(text):
-    """Normaliza un nombre a un sufijo de xml_id seguro (sin tildes/Ñ/espacios)."""
     norm = unicodedata.normalize('NFKD', text or '').encode('ascii', 'ignore').decode('ascii')
     return re.sub(r'[^a-zA-Z0-9]+', '_', norm).strip('_').lower()
 
 
 def _track_owned(env, model, res_id, xml_id):
-    """Marca un registro como propiedad de este módulo en ir.model.data,
-    para que al DESINSTALARLO Odoo lo elimine automáticamente (o falle
-    silenciosamente ese registro puntual si algo más lo referencia — Odoo
-    nunca aborta el uninstall completo por eso).
-    Se llama tanto si el registro se acaba de crear como si ya existía,
-    porque el nombre/serial buscado (departamentos Tintorería/Tejeduría,
-    equipos por serial_no de _EQUIPOS_INICIALES) es específico de este
-    módulo — pero SIEMPRE filtrado por la compañía actual, así que nunca
-    reclama datos de otra compañía."""
     IMD = env['ir.model.data'].sudo()
     if IMD.search_count([('module', '=', _MODULE), ('name', '=', xml_id)]):
         return
@@ -66,10 +64,6 @@ _TEJEDURIA_FLOOR_LAYOUT = [
     ('TEJ55', 225),
 ]
 
-# Igual que _TEJEDURIA_FLOOR_LAYOUT pero con celdas combinadas (span_cols,
-# span_rows): varias máquinas de TINTORERIA se agrandaron manualmente en la
-# cuadrícula (ver ALLOWED_SHAPES / _covered_cells en el controlador). Cada
-# tupla es (serial_no, slot_index_ancla, span_cols, span_rows).
 _TINTORERIA_FLOOR_LAYOUT = [
     ('TEÑ21', 0, 1, 2),   ('TEÑ20', 2, 1, 2),   ('TEÑ22', 4, 1, 2),
     ('TEÑ19', 30, 1, 2),  ('TEÑ18', 32, 1, 2),  ('TEÑ17', 34, 1, 2),
@@ -215,20 +209,41 @@ def _get_or_create_department(env, nombre):
     _track_owned(env, 'hr.department', dept.id, f'dept_{_slug(nombre)}_{company.id}')
     return dept
 
+_EQUIPMENT_COMPANY_NAME = 'FULL PIMA S.A.C.'
+
+
+def _get_equipment_company(env):
+    company = env['res.company'].search([('name', '=', _EQUIPMENT_COMPANY_NAME)], limit=1)
+    if not company:
+        _logger.warning(
+            'Plan General Alpha: no existe la compañía "%s"; los equipos se crearán en "%s".',
+            _EQUIPMENT_COMPANY_NAME, env.company.name,
+        )
+        return env.company
+    return company
+
+
+def _get_or_create_category(env, cache, nombre):
+    cat = cache.get(nombre)
+    if cat:
+        return cat
+    Category = env['maintenance.equipment.category'].with_context(lang='en_US')
+    cat = Category.search([('name', '=', nombre)], limit=1)
+    if not cat:
+        cat = Category.create({'name': nombre, 'company_id': False})
+        _logger.info('Plan General Alpha: categoría de equipo creada: %s', nombre)
+    _track_owned(env, 'maintenance.equipment.category', cat.id, f'equip_categ_{_slug(nombre)}')
+    cache[nombre] = cat
+    return cat
+
 
 def _create_initial_equipment(env):
-    """Crea/actualiza los equipos iniciales. Ya NO crea ni vincula ningún
-    mrp.workcenter — el área de una máquina es su hr.department
-    (Tejeduría/Tintorería). El puente con las órdenes de trabajo reales
-    (que sí usan mrp.workcenter, de otra compañía) se hace por departamento
-    en `idtx_mrp` — ver [[project_workcenter_check_company]]. Un equipo de
-    IDETEX no puede apuntar al centro de trabajo real de otra compañía sin
-    romper su configuración (`check_company`), así que no hace falta ni
-    conviene crear uno propio solo para este enlace."""
     Equipment = env['maintenance.equipment'].with_context(lang='en_US')
     fields_eq = Equipment._fields
     tiene_department = 'department_id' in fields_eq
     tiene_idtx = 'enabled' in fields_eq
+
+    target_company = _get_equipment_company(env)
 
     depts = {}
     if tiene_department:
@@ -241,7 +256,8 @@ def _create_initial_equipment(env):
 
     tiene_machine_state = 'machine_state' in fields_eq
 
-    creados = renombrados = omitidos = 0
+    categorias = {}
+    creados = actualizados = omitidos = 0
     for nombre, serial_no, modelo, dept_nombre, _wc_nombre, habilitado in _EQUIPOS_INICIALES:
         eq = Equipment.search([('serial_no', '=', serial_no)], limit=1)
 
@@ -250,19 +266,25 @@ def _create_initial_equipment(env):
             if m:
                 eq = Equipment.search([('serial_no', '=', m.group(1))], limit=1)
 
+        categoria = _get_or_create_category(env, categorias, nombre.split()[0])
+
         if eq:
             vals_upd = {}
             if eq.name != nombre:
                 vals_upd['name'] = nombre
             if eq.serial_no != serial_no:
                 vals_upd['serial_no'] = serial_no
+            if eq.company_id.id != target_company.id:
+                vals_upd['company_id'] = target_company.id
+            if eq.category_id != categoria:
+                vals_upd['category_id'] = categoria.id
             if vals_upd:
                 try:
                     eq.write(vals_upd)
-                    renombrados += 1
+                    actualizados += 1
                 except Exception:
                     _logger.warning(
-                        'Plan General Alpha: no se pudo renombrar equipo "%s".', nombre, exc_info=True
+                        'Plan General Alpha: no se pudo actualizar equipo "%s".', nombre, exc_info=True
                     )
             else:
                 omitidos += 1
@@ -273,7 +295,8 @@ def _create_initial_equipment(env):
             'name': nombre,
             'serial_no': serial_no,
             'model': modelo,
-            'company_id': env.company.id,
+            'company_id': target_company.id,
+            'category_id': categoria.id,
         }
         if tiene_department and dept_nombre in depts:
             vals['department_id'] = depts[dept_nombre].id
@@ -291,15 +314,12 @@ def _create_initial_equipment(env):
             _logger.warning('Plan General Alpha: no se pudo crear equipo "%s".', nombre, exc_info=True)
 
     _logger.info(
-        'Plan General Alpha: equipos iniciales — %d creados, %d renombrados, %d ya estaban al día.',
-        creados, renombrados, omitidos,
+        'Plan General Alpha: equipos iniciales — %d creados, %d actualizados, %d ya estaban al día.',
+        creados, actualizados, omitidos,
     )
 
 
 def _create_floor_layouts(env, workcenter, layout_data):
-    """Crea/corrige las posiciones de cuadrícula para un centro de trabajo.
-    Cada entrada de layout_data es (serial_no, slot_index) o
-    (serial_no, slot_index, span_cols, span_rows) — sin span se asume 1x1."""
     if 'idtx.alpha.floor.layout' not in env.registry.models:
         _logger.warning('Plan General Alpha: modelo idtx.alpha.floor.layout no disponible.')
         return
@@ -309,6 +329,7 @@ def _create_floor_layouts(env, workcenter, layout_data):
     creados = corregidos = 0
     for entry in layout_data:
         serial_no, slot_index, *span = entry
+        slot_index = _to_current_encoding(slot_index)
         span_cols, span_rows = (span[0], span[1]) if len(span) == 2 else (1, 1)
 
         eq = Equipment.search([('serial_no', '=', serial_no)], limit=1)
@@ -348,7 +369,6 @@ def _create_floor_layouts(env, workcenter, layout_data):
 
 
 def _set_tejeduria_operativa(env):
-    """Fuerza a 'operativa' el estado de todas las máquinas del centro de trabajo TEJEDURIA."""
     Equipment = env['maintenance.equipment']
     if 'machine_state' not in Equipment._fields:
         return

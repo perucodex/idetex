@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- Control de peso de la partida: el diálogo de balanza del Taller
+         (opción/empleado/equipo/balanza) más el buscador de partida. -->
+    <t t-name="idtx_mrp_shop.WeighBatchDialog" t-inherit="idtx_mrp_shop.SelectScaleDialog" t-inherit-mode="primary">
+        <!-- Sin Equipo: el control de peso solo lleva empleado y partida. El bloque
+             de Equipo es el div inmediatamente anterior al de la balanza. -->
+        <xpath expr="//div[contains(@class, 'o_select_scale_dialog')]/preceding-sibling::div[1]" position="replace"/>
+        <xpath expr="//div[contains(@class, 'o_select_scale_dialog')]" position="before">
+            <div class="mt-4">
+                <h5 class="fw-bold">Partida</h5>
+                <div class="position-relative">
+                    <input type="text"
+                           t-att-class="'form-control fs-4' + (isBatchInvalid ? ' is-invalid' : '')"
+                           placeholder="Buscar partida..."
+                           autocomplete="off"
+                           t-att-value="state.batchQuery"
+                           t-on-input="onBatchQueryInput"
+                           t-on-focus="onBatchInputFocus"/>
+                    <button t-if="state.selectedBatch"
+                            type="button"
+                            class="btn btn-sm btn-light position-absolute top-50 end-0 translate-middle-y me-2"
+                            title="Quitar partida"
+                            t-on-click="() => this.clearBatch()">
+                        <i class="fa fa-times"/>
+                    </button>
+                    <div t-if="state.showBatchDropdown and !state.selectedBatch"
+                         class="position-absolute w-100 border rounded shadow bg-view"
+                         style="z-index: 1080; max-height: 260px; overflow-y: auto;">
+                        <t t-if="state.isSearchingBatch">
+                            <div class="p-2 text-muted">Buscando...</div>
+                        </t>
+                        <t t-elif="!state.batches.length">
+                            <div class="p-2 text-muted">Sin resultados</div>
+                        </t>
+                        <t t-else="">
+                            <t t-foreach="state.batches" t-as="batch" t-key="batch.id">
+                                <button type="button"
+                                        class="btn btn-link text-start text-reset text-decoration-none d-block w-100 border-bottom py-2"
+                                        t-on-click="() => this.selectBatch(batch.id)">
+                                    <div class="fw-bold" t-esc="batch.display_name"/>
+                                    <div class="small text-muted">
+                                        <span t-esc="batch.color_name or '-'"/> ·
+                                        crudo <span t-esc="(batch.total_weight or 0).toFixed(2) + ' kg'"/>
+                                        <t t-if="batch.controlled_weight">
+                                            · control <span t-esc="(batch.controlled_weight or 0).toFixed(2) + ' kg'"/>
+                                        </t>
+                                    </div>
+                                </button>
+                            </t>
+                        </t>
+                    </div>
+                </div>
+                <div t-if="isBatchInvalid" class="invalid-feedback d-block">
+                    Debes seleccionar la partida.
+                </div>
+                <div t-if="state.selectedBatchData" class="mt-2 d-flex flex-wrap gap-2 align-items-center fs-6">
+                    <span class="badge rounded-pill bg-light text-dark border">
+                        Peso crudo: <t t-esc="(state.selectedBatchData.total_weight or 0).toFixed(2)"/> kg
+                    </span>
+                    <span t-if="state.selectedBatchData.controlled_weight" class="badge rounded-pill bg-warning text-dark">
+                        Control anterior: <t t-esc="(state.selectedBatchData.controlled_weight or 0).toFixed(2)"/> kg (se reemplaza)
+                    </span>
+                </div>
+                <div class="text-muted fs-6 mt-1">
+                    El peso de la balanza queda en la partida como "Peso tras control" y la receta se calcula con él.
+                </div>
+            </div>
+        </xpath>
+    </t>
+
+</templates>

@@ -20,7 +20,10 @@ TEXPLUS se reconstruirá sobre las partidas de Odoo (mrp.workorder.batch).
     'website': "https://www.perucodex.com",
 
     'category': 'Manufacturing',
-    'version': '19.0.1.0.0',
+    # 19.0.1.1.0 (22-sep-2026): portadas de la rama 19.0 las mejoras del piso
+    # de máquinas (cuadrícula de 60 columnas, tamaños libres, equipos en
+    # FULL PIMA con categoría). Migración única 19.0.1.1.0 = 0.3+0.4+0.5 de 19.0.
+    'version': '19.0.1.1.0',
     'license': 'LGPL-3',
     'sequence': 54,
     'application': True,
