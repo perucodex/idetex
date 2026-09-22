@@ -15,14 +15,14 @@
         <!-- Inserta color -->
         <xpath expr="//th[@name='th_description']" position="after">
             <th name="th_color" class="text-start">Color</th>
-            <th name="th_min_qty" class="text-start">Min. Qty.</th>
+            <th t-if="doc.is_quote" name="th_min_qty" class="text-start">Min. Qty.</th>
             <th t-if="doc.is_quote" name="th_customer_lead" class="text-start">Customer Lead</th>
         </xpath>
         <xpath expr="//td[@name='td_product_name']" position="after">
             <td name="td_product_color" class="text-start">
                 <span t-if="line.product_color_id" t-field="line.product_color_id.name"/>
             </td>
-            <td name="td_min_qty" class="text-end">
+            <td t-if="doc.is_quote" name="td_min_qty" class="text-end">
                 <span t-field="line.min_qty"/>
             </td>
             <td t-if="doc.is_quote" name="td_customer_lead" class="text-end">
@@ -76,6 +76,26 @@
         </xpath>
         <xpath expr="//th[@name='th_taxes']" position="attributes">
             <attribute name="t-if">display_taxes and not doc.is_quote</attribute>
+        </xpath>
+        <!-- Filas de sección/combo: el nombre debe abarcar TODAS las columnas menos
+             Importe. El core asume 3 columnas base (+descuento +impuestos); aquí se
+             suma Color (siempre), Cant. mín. y Plazo (solo cotización), Diseño (estampado)
+             y se restan Cantidad (cotización de tejido) e Impuestos (cotización). -->
+        <xpath expr="(//t[@t-set='section_name_colspan'])[1]" position="attributes">
+            <attribute name="t-value">3 + (0 if (doc.is_quote and doc.has_weaving_line) else 1) + (1 if display_discount else 0) + (1 if (display_taxes and not doc.is_quote) else 0) + (2 if doc.is_quote else 0) + (1 if doc.is_printing else 0)</attribute>
+        </xpath>
+        <xpath expr="//td[@name='td_combo_name']" position="attributes">
+            <attribute name="t-att-colspan">3 + (0 if (doc.is_quote and doc.has_weaving_line) else 1) + (1 if display_discount else 0) + (1 if (display_taxes and not doc.is_quote) else 0) + (2 if doc.is_quote else 0) + (1 if doc.is_printing else 0)</attribute>
+        </xpath>
+        <!-- Cotizacion de tejidos: sin columna de cantidad (solo precio por unidad) -->
+        <xpath expr="//th[@name='th_quantity']" position="attributes">
+            <attribute name="t-if">not (doc.is_quote and doc.has_weaving_line)</attribute>
+        </xpath>
+        <xpath expr="//td[@name='td_product_quantity']" position="attributes">
+            <attribute name="t-if">not (doc.is_quote and doc.has_weaving_line)</attribute>
+        </xpath>
+        <xpath expr="//td[@name='td_section_group_quantity']" position="attributes">
+            <attribute name="t-if">not (doc.is_quote and doc.has_weaving_line)</attribute>
         </xpath>
         <!-- Tabla de detalle de servicio de estampado digital -->
         <xpath expr="//div[span[@name='order_note']]" position="before">
@@ -144,12 +164,13 @@
                             <th class="text-start" rowspan="2">Diseño</th>
                             <th class="text-start" rowspan="2">Fondo de tela</th>
                             <th class="text-center" rowspan="2">Colores</th>
-                            <th class="text-center" colspan="5">Producción</th>
+                            <!-- En pedido de venta (no cotizacion) se ocultan Precio/mt y Bondeo/mt -->
+                            <th class="text-center" t-att-colspan="5 if doc.is_quote else 3">Producción</th>
                             <th class="text-center" colspan="3">Muestra</th>
                         </tr>
                         <tr>
-                            <th class="text-end">Precio/mt</th>
-                            <th class="text-end">Bondeo/mt</th>
+                            <th t-if="doc.is_quote" class="text-end">Precio/mt</th>
+                            <th t-if="doc.is_quote" class="text-end">Bondeo/mt</th>
                             <th class="text-center">Raport</th>
                             <th class="text-end">Precio cilindro</th>
                             <th class="text-center">Cant. colores</th>
@@ -178,8 +199,8 @@
                                         </td>
                                         <td class="text-start align-middle" t-att-rowspan="nrows"><span t-field="design.fabric_base"/></td>
                                         <td class="text-center align-middle" t-att-rowspan="nrows"><span t-field="design.cylinder_qty"/></td>
-                                        <td class="text-end align-middle" t-att-rowspan="nrows"><span t-field="design.unit_price" t-options="{'widget':'monetary','display_currency':design.currency_id}"/></td>
-                                        <td class="text-end align-middle" t-att-rowspan="nrows"><span t-field="design.bonding_price" t-options="{'widget':'monetary','display_currency':design.currency_id}"/></td>
+                                        <td t-if="doc.is_quote" class="text-end align-middle" t-att-rowspan="nrows"><span t-field="design.unit_price" t-options="{'widget':'monetary','display_currency':design.currency_id}"/></td>
+                                        <td t-if="doc.is_quote" class="text-end align-middle" t-att-rowspan="nrows"><span t-field="design.bonding_price" t-options="{'widget':'monetary','display_currency':design.currency_id}"/></td>
                                     </t>
                                     <td class="text-center"><span t-if="price" t-field="price.raport"/></td>
                                     <td class="text-end"><span t-if="price" t-field="price.unit_price" t-options="{'widget':'monetary','display_currency':price.currency_id}"/></td>
@@ -222,7 +243,9 @@
                             <t t-foreach="quote_analyses" t-as="analysis">
                                 <t t-set="line" t-value="quote_weaving_lines.filtered(lambda l: l.analysis_id == analysis)[:1]"/>
                                 <t t-set="dst" t-value="analysis.density_stability_twisting_id"/>
-                                <t t-set="shrink_max" t-value="max(abs(dst.width_shrinkage_from or 0.0), abs(dst.width_shrinkage_to or 0.0), abs(dst.length_shrinkage_from or 0.0), abs(dst.length_shrinkage_to or 0.0)) if dst else 0.0"/>
+                                <!-- Encogimiento maximo = valor "hasta" de cada eje (limite superior del rango) -->
+                                <t t-set="shrink_width_max" t-value="(dst.width_shrinkage_to or 0.0) if dst else 0.0"/>
+                                <t t-set="shrink_length_max" t-value="(dst.length_shrinkage_to or 0.0) if dst else 0.0"/>
                                 <t t-set="target_partner" t-value="line.bom_id.technical_sheet_id.partner_id or doc.partner_id"/>
                                 <t t-set="weaving_data" t-value="analysis.weaving_data_ids.filtered(lambda w: w.partner_id == target_partner)[:1] or analysis.weaving_data_ids[:1]"/>
                                 <t t-set="fabric_composition" t-value="'\n'.join(['{}% {}'.format(round((f.percentage or 0.0) * 100), f.product_template_id.name) for f in weaving_data.fiber_ids if f.product_template_id]).strip()"/>
@@ -239,8 +262,9 @@
                                     <td class="text-end">
                                         <span t-esc="'{:.2f}'.format(analysis.yield_meter or 0.0)"/>
                                     </td>
-                                    <td class="text-end">
-                                        <span t-esc="'{:.2f}'.format(abs(shrink_max * 100 or 0.0) if shrink_max else 0.0) + '%'"/>
+                                    <td class="text-end text-nowrap">
+                                        <!-- Formato "3% ancho x 2% largo" (campos guardados como fraccion) -->
+                                        <span t-esc="'{:g}% ancho x {:g}% largo'.format(round(shrink_width_max * 100, 2), round(shrink_length_max * 100, 2))"/>
                                     </td>
                                     <td class="text-end">
                                         <span t-esc="'{:.2f}'.format(abs(dst.twist * 100 or 0.0) if dst else 0.0) + '%'"/>
@@ -254,7 +278,12 @@
                     </table>
                 </t>
                 <t t-if="doc.is_quote">
-                    <t t-set="projected_lines" t-value="doc.order_line.filtered(lambda l: not l.bom_id or not l.bom_id.technical_sheet_id.production_state or l.bom_id.technical_sheet_id.production_state == 'Sample')"/>
+                    <!-- Productos "proyectados" (JP, 22-sep-2026): de tejido y cuyo
+                         análisis NUNCA tuvo una muestra terminada = círculo rojo del
+                         semáforo (con o sin M). Misma fuente que el semáforo: estado
+                         efectivo del análisis (almacenado + OF hechas). Sin análisis
+                         también cuenta como proyectado. -->
+                    <t t-set="projected_lines" t-value="doc.order_line.filtered(lambda l: l.product_template_id.is_weaving and (not l.analysis_id or l.analysis_id._get_effective_production_state() == 'product'))"/>
                         <t t-set="projected_products" t-value="projected_lines.mapped('product_template_id')"/>
                         <t t-if="projected_products">
                         <div style="margin-top: 12px;">

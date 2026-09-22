@@ -11,7 +11,6 @@
                     <group>
                         <field name="name" required="1"/>
                         <field name="workorder_id" readonly="1"/>
-                        <field name="employee_ids" widget="many2many_tags" required="1"/>
                         <field name="workcenter_id" invisible="1"/>
                         <field name="available_equipment_ids" invisible="1"/>
                         <field name="equipment_ids" widget="many2many_tags" required="1" domain="[('id','in',available_equipment_ids)]"/>
@@ -43,7 +42,6 @@
             <list>
                 <field name="name"/>
                 <field name="workorder_id"/>
-                <field name="employee_ids" widget="many2many_tags"/>
                 <field name="equipment_ids" widget="many2many_tags"/>
             </list>
         </field>

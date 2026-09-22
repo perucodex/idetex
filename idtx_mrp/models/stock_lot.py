@@ -10,6 +10,10 @@ class StockLot(models.Model):
         compute='_compute_batch_id', store=True, index=True, readonly=True,
         help="Partida de la que salió el rollo. Viene del rollo pesado; para lotes "
              "antiguos sin rollo se deduce del nombre (partida-correlativo).")
+    quality_grade = fields.Selection(
+        related='roll_id.quality_grade', string='Grado', store=True, index=True)
+    quality_state = fields.Selection(
+        related='roll_id.quality_state', string='Estado calidad', store=True)
 
     @api.depends('roll_id', 'roll_id.batch_id', 'name')
     def _compute_batch_id(self):

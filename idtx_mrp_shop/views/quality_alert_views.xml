@@ -62,6 +62,7 @@
                        required="tipo == 'reproceso' and batch_id and available_reprocess_workorder_ids"
                        domain="[('id', 'in', available_reprocess_workorder_ids)]"
                        options="{'no_create': True, 'no_open': True}"/>
+                <field name="available_roll_ids" invisible="1"/>
                 <field name="batch_qty" invisible="tipo != 'reposicion' or not available_batch_ids"/>
                 <field name="production_qty" invisible="tipo != 'reposicion' or not available_batch_ids"/>
                 <field name="reposition_qty"
@@ -70,6 +71,28 @@
                 <field name="reposition_production_id"
                        invisible="not reposition_production_id"/>
             </field>
+            <!-- Reproceso parcial: los rollos que van al reproceso, en la PRIMERA
+                 pestaña como lista (una partida puede tener 50+ rollos). Por
+                 defecto entran todos; se quitan los que no se reprocesan. -->
+            <xpath expr="//notebook/page[@name='description']" position="before">
+                <page name="reprocess_rolls" string="Rollos a reprocesar"
+                      invisible="tipo != 'reproceso' or not batch_id">
+                    <div class="alert alert-info mb-2" role="alert">
+                        Por defecto se reprocesa toda la partida. Quita los rollos que NO van al
+                        reproceso: al aprobar, los que queden aquí se separan a una partida nueva
+                        con el mismo número (Reproceso N) y la alerta pasa a esa partida.
+                    </div>
+                    <field name="roll_ids" readonly="state != 'draft'"
+                           domain="[('id', 'in', available_roll_ids)]">
+                        <list create="0" edit="0">
+                            <field name="name"/>
+                            <field name="product_id"/>
+                            <field name="production_id" optional="show"/>
+                            <field name="gross_weight" sum="Total"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
         </field>
     </record>
 

@@ -317,8 +317,6 @@ class MrpWorkorder(models.Model):
                 option = self.env['mrp.workorder.option'].browse(option_id)
                 if not option.exists() or option.workorder_id != self:
                     return {'status': 'danger', 'message': _('The selected option does not belong to this workorder')}
-                if employee_id not in option.employee_ids.ids:
-                    return {'status': 'danger', 'message': _('The selected employee is not assigned to this option')}
                 if equipment_id not in option.equipment_ids.ids:
                     return {'status': 'danger', 'message': _('The selected equipment is not assigned to this option')}
 
@@ -362,7 +360,6 @@ class MrpWorkorder(models.Model):
                 'sequence': len(self.roll_ids),
                 'workorder_id': self.id,
                 'gross_weight': peso,
-                'net_weight': peso,
                 'employee_id': employee_id,
                 'equipment_id': equipment_id,
                 'roll_start': start,
@@ -419,8 +416,6 @@ class MrpWorkorder(models.Model):
                 option = self.env['mrp.workorder.option'].browse(option_id)
                 if not option.exists() or option.workorder_id != self:
                     return {'status': 'danger', 'message': _('The selected option does not belong to this workorder')}
-                if employee_id not in option.employee_ids.ids:
-                    return {'status': 'danger', 'message': _('The selected employee is not assigned to this option')}
                 if equipment_id not in option.equipment_ids.ids:
                     return {'status': 'danger', 'message': _('The selected equipment is not assigned to this option')}
 
@@ -442,7 +437,6 @@ class MrpWorkorder(models.Model):
                 'size_id': size_id,
                 'quantity': quantity,
                 'gross_weight': peso,
-                'net_weight': peso,
                 'employee_id': employee_id,
                 'equipment_id': equipment_id,
                 # Opción de la OT (en tejido el roll la exige: define
@@ -637,6 +631,137 @@ class MrpWorkorder(models.Model):
                 return alert
         return Alert
 
+    # ------------------------------------------------------------------
+    # Lote de teñido: operaciones CONJUNTAS (mismo baño)
+    # ------------------------------------------------------------------
+    def _is_joint_for(self, batch):
+        """La operación de self es conjunta y la partida es una partida por
+        producto con hermanas en su lote de teñido."""
+        self.ensure_one()
+        return bool(self.mrwo_id.is_joint_dye and batch and batch.dye_sibling_ids)
+
+    def _dye_lot_targets(self, batch):
+        """[(partida, OT)] de TODO el lote para la operación de self: la
+        partida elegida con self y cada hermana con la OT de la misma operación
+        en su OF. Devuelve (targets, error_dict|None)."""
+        self.ensure_one()
+        targets = [(batch, self)]
+        for sib in batch.dye_sibling_ids:
+            prods = sib.wo_roll_ids.production_id
+            wo = prods.workorder_ids.filtered(lambda w: w.mrwo_id == self.mrwo_id)[:1]
+            if not wo:
+                return targets, {'status': 'danger', 'message': _(
+                    'La partida %(sib)s del lote no tiene la operación %(op)s en su '
+                    'ruta (OF %(prods)s): una operación conjunta debe existir en todas '
+                    'las partidas del lote de teñido.',
+                    sib=sib.display_name, op=self.mrwo_id.name,
+                    prods=', '.join(prods.mapped('name')))}
+            targets.append((sib, wo))
+        return targets, None
+
+    def _check_joint_started(self, batch):
+        """Fin de operación conjunta: exige un ARRANQUE abierto de la partida
+        en esta operación (la tela ya entró a la máquina con sus hermanas)."""
+        self.ensure_one()
+        start = self.env['batch.dye.start'].search([
+            ('batch_id', '=', batch.id), ('mrwo_id', '=', self.mrwo_id.id),
+            ('state', '=', 'open')], limit=1)
+        if not start:
+            lot = batch | batch.dye_sibling_ids
+            return start, {'status': 'danger', 'need_start': True, 'message': _(
+                'Operación conjunta: primero registra el ARRANQUE de %(op)s con todas '
+                'las partidas del lote (%(names)s · %(kg).2f kg en total). El fin de la '
+                'operación se registra después.',
+                op=self.mrwo_id.name, names=', '.join(lot.mapped('display_name')),
+                kg=batch.dye_lot_weight)}
+        return start, None
+
+    def action_get_dye_lot_info(self, batch_id):
+        """Para la pantalla del Taller: si la operación es conjunta y la partida
+        tiene hermanas, describe el lote (partidas, kilos, si ya arrancó)."""
+        self.ensure_one()
+        batch = self.env['mrp.workorder.batch'].browse(int(batch_id)) if batch_id else False
+        if not batch or not batch.exists() or not self._is_joint_for(batch):
+            return {'joint': False}
+        Start = self.env['batch.dye.start']
+        lot = batch | batch.dye_sibling_ids
+        started = {s.batch_id.id for s in Start.search([
+            ('batch_id', 'in', lot.ids), ('mrwo_id', '=', self.mrwo_id.id), ('state', '=', 'open')])}
+        return {
+            'joint': True,
+            'operation': self.mrwo_id.name,
+            'total_weight': batch.dye_lot_weight,
+            'started': batch.id in started,
+            'batches': [{'id': b.id, 'name': b.display_name, 'weight': b.total_weight,
+                         'started': b.id in started} for b in lot],
+        }
+
+    def action_start_joint_operation(self, payload):
+        """ARRANQUE de una operación conjunta: deja constancia de que TODAS las
+        partidas por producto del lote entraron juntas a la máquina (la
+        relación de baño es de los kilos totales). Valida en cada una que haya
+        completado su operación anterior."""
+        self.ensure_one()
+        batch_id = int(payload.get('batch_id')) if payload.get('batch_id') else False
+        employee_id = int(payload.get('employee_id')) if payload.get('employee_id') else False
+        equipment_id = int(payload.get('equipment_id')) if payload.get('equipment_id') else False
+        batch = self.env['mrp.workorder.batch'].browse(batch_id) if batch_id else False
+        if not batch or not batch.exists():
+            return {'status': 'danger', 'message': _('Debes seleccionar una partida.')}
+        if not self._is_joint_for(batch):
+            return {'status': 'danger', 'message': _(
+                'La partida %s no pertenece a un lote de teñido con varias partidas, '
+                'o la operación %s no es conjunta: regístrala directamente.')
+                % (batch.display_name, self.mrwo_id.name)}
+        targets, error = self._dye_lot_targets(batch)
+        if error:
+            return error
+        Start = self.env['batch.dye.start']
+        lot = self.env['mrp.workorder.batch'].browse([b.id for b, _wo in targets])
+        if Start.search_count([('batch_id', 'in', lot.ids), ('mrwo_id', '=', self.mrwo_id.id),
+                               ('state', '=', 'open')]):
+            return {'status': 'warning', 'message': _(
+                'El lote %s ya tiene el arranque de %s registrado: ahora corresponde '
+                'registrar el fin de la operación.') % (batch.name, self.mrwo_id.name)}
+        for b, wo in targets:
+            error = wo._check_batch_previous_operation(b)
+            if error:
+                return error
+        total = batch.dye_lot_weight
+        Start.create([{
+            'batch_id': b.id, 'workorder_id': wo.id, 'mrwo_id': self.mrwo_id.id,
+            'employee_id': employee_id, 'equipment_id': equipment_id,
+            'lot_batch_ids': [(6, 0, lot.ids)], 'lot_weight': total,
+        } for b, wo in targets])
+        detail = ' + '.join('%s (%.2f kg)' % (b.display_name, b.total_weight) for b, _wo in targets)
+        for b, _wo in targets:
+            b.message_post(body=_('Arranque de %(op)s (conjunto): %(detail)s = %(kg).2f kg.',
+                                  op=self.mrwo_id.name, detail=detail, kg=total))
+        return {'status': 'success', 'message': _(
+            'Arranque de %(op)s registrado para el lote %(lot)s: %(detail)s = %(kg).2f kg. '
+            'Al terminar, registra la operación en cualquiera de ellas.',
+            op=self.mrwo_id.name, lot=batch.name, detail=detail, kg=total)}
+
+    def _register_joint_siblings(self, batch, br, vals, targets):
+        """Tras registrar la operación conjunta en la partida elegida, la
+        registra en cada hermana del lote (misma fecha, operario, máquina y
+        datos) y cierra los arranques. Devuelve los registros hermanos."""
+        Registry = self.env['batch.registry']
+        siblings_br = Registry
+        for sib, wo in targets[1:]:
+            sib_vals = dict(vals, batch_id=sib.id, workorder_id=wo.id)
+            sbr = Registry.create(sib_vals)
+            wo._link_reprocess_alert(sbr)
+            related = (wo | sib.wo_roll_ids.mapped('workorder_id')).filtered(lambda w: w.id)
+            related.write({'batch_ids': [(4, sib.id)]})
+            related._sync_textile_qty_produced()
+            siblings_br |= sbr
+        lot = self.env['mrp.workorder.batch'].browse([b.id for b, _wo in targets])
+        self.env['batch.dye.start'].search([
+            ('batch_id', 'in', lot.ids), ('mrwo_id', '=', self.mrwo_id.id), ('state', '=', 'open'),
+        ]).write({'state': 'done', 'registry_id': br.id})
+        return siblings_br
+
     def action_create_registry_record(self, batch_id_or_payload, employee_id=False, equipment_id=False):
         self.ensure_one()
         payload = batch_id_or_payload if isinstance(batch_id_or_payload, dict) else {
@@ -676,6 +801,20 @@ class MrpWorkorder(models.Model):
         sibling_workorders, error = self._check_batch_sibling_operations(batch)
         if error:
             return error
+        # Operación conjunta de un lote de teñido: exige el arranque con todas
+        # las partidas y se registra en todas a la vez.
+        joint_targets = []
+        if self._is_joint_for(batch):
+            joint_targets, error = self._dye_lot_targets(batch)
+            if error:
+                return error
+            _start, error = self._check_joint_started(batch)
+            if error:
+                return error
+            for sib, wo in joint_targets[1:]:
+                error = wo._check_batch_previous_operation(sib)
+                if error:
+                    return error
 
         recipe_components = self._compute_registry_recipe_components(batch)
 
@@ -727,6 +866,8 @@ class MrpWorkorder(models.Model):
 
         br = self.env['batch.registry'].create(vals)
         self._link_reprocess_alert(br)
+        if joint_targets:
+            self._register_joint_siblings(batch, br, vals, joint_targets)
         if br.batch_id:
             # Se anexa la partida a la OT actual, a las OTs de origen de los
             # rollos y a la OT de esta misma operación en cada otra OF
@@ -737,7 +878,10 @@ class MrpWorkorder(models.Model):
         return {
             'status': 'success',
             'batchId': br.id,
-            'message': _(f'Registry created for batch {br.batch_id.name}'),
+            'message': (_('Registro creado para el lote %(lot)s: %(names)s.',
+                          lot=batch.name,
+                          names=', '.join(b.display_name for b, _wo in joint_targets))
+                        if joint_targets else _(f'Registry created for batch {br.batch_id.name}')),
         }
 
     def action_register_batch_operation(self, payload):
@@ -767,9 +911,21 @@ class MrpWorkorder(models.Model):
         sibling_workorders, error = self._check_batch_sibling_operations(batch)
         if error:
             return error
+        joint_targets = []
+        if self._is_joint_for(batch):
+            joint_targets, error = self._dye_lot_targets(batch)
+            if error:
+                return error
+            _start, error = self._check_joint_started(batch)
+            if error:
+                return error
+            for sib, wo in joint_targets[1:]:
+                error = wo._check_batch_previous_operation(sib)
+                if error:
+                    return error
 
         defaults = self.action_get_registry_defaults(batch_id=batch_id)
-        br = self.env['batch.registry'].create({
+        simple_vals = {
             'batch_id': batch.id,
             'workorder_id': self.id,
             'employee_id': employee_id,
@@ -779,8 +935,11 @@ class MrpWorkorder(models.Model):
             'partner_id': defaults.get('partner_id'),
             'registry_date': fields.Datetime.now(),
             'state': 'done',
-        })
+        }
+        br = self.env['batch.registry'].create(simple_vals)
         self._link_reprocess_alert(br)
+        if joint_targets:
+            self._register_joint_siblings(batch, br, simple_vals, joint_targets)
         related_workorders = (self | sibling_workorders | batch.wo_roll_ids.mapped('workorder_id')).filtered(lambda wo: wo.id)
         related_workorders.write({'batch_ids': [(4, batch.id)]})
         related_workorders._sync_textile_qty_produced()

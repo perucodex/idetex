@@ -501,6 +501,19 @@ class ControlAparienciaLine(models.Model):
         )
 
 
+    def action_hold_roll(self):
+        """Marcar este N° de rollo para separarlo en el pesado (qc.roll.hold)."""
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Separar rollo %s' % self.rollo_num,
+            'res_model': 'qc.roll.hold',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_batch_id': self.batch_id.id, 'default_roll_num': self.rollo_num},
+        }
+
+
 class ControlAparienciaDefectoLine(models.Model):
     _name = "qc.appearance.defect.line"
     _description = "Detalle Defecto Apariencia"

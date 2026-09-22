@@ -35,16 +35,40 @@ class SaleOrderLine(models.Model):
     printing_design_id = fields.Many2one('printing.design', string='Design')
     printing_design_name = fields.Char(related='printing_design_id.file_desc')
     printing_design_preview_image = fields.Binary(related='printing_design_id.preview_image', readonly=True)
+    # Semáforo del diseño en la línea (cotización y pedido): rojo sin diseño,
+    # naranja ficha sin precio o sin cerrar, verde ficha Hecha con precio.
+    printing_design_state = fields.Selection(related='printing_design_id.state')
+    printing_design_has_price = fields.Boolean(related='printing_design_id.has_price')
     analysis_id = fields.Many2one(related='product_template_id.analysis_id')
+    # Semáforo de producción del producto (estado a nivel de ANÁLISIS, JP
+    # 21-sep-2026): rojo sin letra = sin OF; rojo M = muestra en curso; verde
+    # M = muestra terminada; naranja P = piloto en curso; verde P = piloto
+    # terminado; verde sin letra = OF de venta/servicio terminada. Lo pinta
+    # analysis_production_state_widget.
+    analysis_production_indicator = fields.Selection(
+        related='product_template_id.analysis_id.production_indicator')
     # 'Ficha' (pedido de JP, sep-2026): en ventas la LdM se llama ficha técnica.
+    # Desde 21-sep-2026 la ficha YA NO se elige en la cotización (oculta en la
+    # vista): los procesos a cotizar salen de la RUTA DEL ANÁLISIS del producto.
+    # Se sigue asignando sola (primera LdM del producto) porque la OF la necesita.
     bom_id = fields.Many2one('mrp.bom', string='Ficha')
-    operation_ids = fields.Many2many('mrp.routing.workcenter', string='Operations')
+    # Operaciones cotizadas: fases del MAESTRO (mrp.routing.workcenter.operation)
+    # tomadas de la ruta del análisis del producto (antes eran las operaciones
+    # de la LdM, mrp.routing.workcenter). En servicio el vendedor puede quitar.
+    operation_ids = fields.Many2many(
+        'mrp.routing.workcenter.operation',
+        'sale_order_line_mrwo_rel', 'line_id', 'operation_id',
+        string='Operations')
     # lab_dev_ids = fields.Many2many(related='order_id.lab_dev_ids', store=True)
     available_operation_ids = fields.Many2many(
-        'mrp.routing.workcenter',
+        'mrp.routing.workcenter.operation',
         compute='_compute_available_operations',
         string='Available Operations'
     )
+    # Ids de las fases de la ruta del análisis en orden de secuencia (JSON):
+    # el widget route_ordered_many2many_tags pinta las Operaciones siempre en
+    # ese orden, aunque se quiten y vuelvan a agregar (JP, 22-sep-2026).
+    route_operation_order = fields.Char(compute='_compute_route_operation_order')
     # Campo para guardar los precios
     price_items = fields.Text(string='Price Items', default='{}')
     # Antes era Many2one y la reposición "reemplazaba" la OF de la línea.
@@ -76,42 +100,81 @@ class SaleOrderLine(models.Model):
     # como una sección y hereda el color de la línea anterior.
     is_complement = fields.Boolean(string='Es complemento', default=False, copy=True)
 
+    # ------------------------------------------------------------------
+    # Ruta del análisis del producto (fuente de los procesos a cotizar)
+    # ------------------------------------------------------------------
+    def _get_analysis_route_operations(self):
+        """Fases (maestro) de la ruta del análisis del producto, en el orden
+        de la ruta y sin repetidos. Lectura con sudo: el comercial no
+        necesita permisos de Fabricación para cotizar."""
+        self.ensure_one()
+        analysis = self.sudo().product_template_id.analysis_id
+        lines = analysis.routing_ids.sorted(key=lambda r: (r.sequence, r.id))
+        return lines.mapped('operation_id')
+
+    @api.model
+    def _filter_priced_operations(self, operations):
+        """Fases que aportan al precio: con precio por proceso, por color
+        (o por color y título), la de tejido (su precio sale del análisis) y
+        las que ESTAMPAN el producto (toggle prints_product; su precio va
+        aparte, con el diseño: siempre se muestran aunque su precio por
+        proceso sea 0; JP, 22-sep-2026). Las auxiliares sin precio (control
+        de peso, calidad, cepillado, vaporizado…) no se cotizan."""
+        def priced(op):
+            if op.operation_type == 'weaving' or op.prints_product or op.unit_price > 0:
+                return True
+            if op.type_prices == 'col':
+                if sum(op.product_color_price_ids.mapped('unit_price')) > 0:
+                    return True
+                if op.per_title and sum(
+                        op.product_color_price_ids.color_title_price_ids.mapped('unit_price')) > 0:
+                    return True
+            return False
+        return operations.filtered(priced)
+
+    def _get_priced_route_operations(self):
+        self.ensure_one()
+        return self._filter_priced_operations(self._get_analysis_route_operations())
+
+    def _get_quoted_operations(self):
+        """Operaciones a cotizar de la línea: las seleccionadas (operation_ids),
+        en el orden de la ruta del análisis; si aún no hay selección, toda la
+        ruta con precio. Una fase seleccionada que ya no esté en la ruta se
+        conserva al final (se cotizó así)."""
+        self.ensure_one()
+        selected = self.sudo().operation_ids._origin
+        if not selected:
+            return self._get_priced_route_operations()
+        route = self._get_analysis_route_operations()
+        return route.filtered(lambda op: op in selected) | (selected - route)
+
     @api.depends(
-        'order_id.is_quote',
-        'bom_id',
         'operation_ids',
-        'operation_ids.operation_id',
-        'operation_ids.operation_id.operation_type',
+        'operation_ids.operation_type',
         'product_template_id',
+        'product_template_id.analysis_id',
         'product_template_id.analysis_id.routing_ids',
         'product_template_id.analysis_id.routing_ids.operation_id',
         'product_template_id.analysis_id.routing_ids.operation_id.operation_type',
     )
     def _compute_has_weaving_operation(self):
         for line in self:
-            # Lectura con sudo: referencia operaciones/rutas de produccion que
-            # el comercial puede no tener permiso de leer (grupo Fabricacion).
+            # Si el vendedor ya eligió operaciones (p. ej. servicio sin
+            # tejido) mandan esas; si no, la ruta del análisis del producto.
             sline = line.sudo()
-            if not sline.bom_id:
-                line.has_weaving_operation = any(
-                    op.operation_type == "weaving"
-                    for op in sline.product_template_id.analysis_id.routing_ids.mapped('operation_id')
-                ) if sline.product_template_id else False
-            elif sline.order_id.is_quote:
-                line.has_weaving_operation = any(op.operation_id.operation_type == "weaving" for op in sline.operation_ids)
-            else:
-                line.has_weaving_operation = any(
-                    op.operation_id.operation_type == "weaving"
-                    for op in sline.bom_id.operation_ids
-                )
-    
+            operations = sline.operation_ids._origin
+            if not operations and sline.product_template_id:
+                operations = line._get_analysis_route_operations()
+            line.has_weaving_operation = any(
+                op.operation_type == "weaving" for op in operations)
+
     @api.onchange('printing_design_id')
     def _onchange_printing_design_id(self):
         for rec in self:
-            if rec.bom_id and rec.bom_id.technical_sheet_id:
-                yield_meter = rec.bom_id.technical_sheet_id.yield_meter
-            else:
-                yield_meter = rec.printing_design_id.yield_meter
+            # El rendimiento (m/kg) es del análisis del producto (la ficha lo
+            # tomaba de ahí); sin análisis se usa el del diseño.
+            analysis = rec.sudo().product_template_id.analysis_id
+            yield_meter = analysis.yield_meter if analysis else rec.printing_design_id.yield_meter
             # Sin rendimiento no se puede derivar la cantidad mínima: se avisa
             # en lugar de dividir por cero (antes reventaba con ZeroDivisionError).
             if rec.printing_design_id and not yield_meter:
@@ -150,51 +213,118 @@ class SaleOrderLine(models.Model):
     @api.depends('lab_dev_line_id', 'lab_dev_line_id.state',
                  'lab_dev_line_id.color_recipe_ids.state',
                  'lab_dev_line_id.color_recipe_ids.product_ids',
-                 'product_template_id')
+                 'lab_dev_line_id.color_recipe_ids.recipe_lot_ids.state',
+                 'lab_dev_line_id.color_recipe_ids.recipe_lot_ids.lot_ids',
+                 'lab_dev_line_id.color_recipe_ids.recipe_lot_ids.production_id',
+                 'product_template_id', 'production_ids')
     def _compute_has_approved_lab_line(self):
-        # El badge del color solo es verde si la línea de Lab Dip tiene una
-        # receta APROBADA que incluya al PRODUCTO de esta línea de venta
-        # (receta individual o de combinación de productos).
+        # El badge del color es verde si la línea de Lab Dip tiene una receta
+        # APROBADA que incluya al PRODUCTO de esta línea de venta (receta
+        # individual o de combinación), o bien —TELA DEL CLIENTE (servicio sin
+        # tejido, JP 18-sep-2026)— si alguna receta aprobada del color tiene
+        # VALIDADA la sub-receta sin lotes de una OF de esta línea: la tela
+        # del cliente no figura entre los productos de la receta.
         for line in self:
-            line.has_approved_lab_line = bool(line.lab_dev_line_id and any(
-                cr.state == 'approved' and line.product_template_id in cr.product_ids
-                for cr in line.lab_dev_line_id.color_recipe_ids))
+            recipes = line.lab_dev_line_id.color_recipe_ids.filtered(
+                lambda cr: cr.state == 'approved') if line.lab_dev_line_id else []
+            ok = any(line.product_template_id in cr.product_ids for cr in recipes)
+            if not ok and recipes:
+                prods = line.production_ids.filtered(
+                    lambda p: p.state != 'cancel' and p.is_customer_roll_production)
+                ok = bool(prods) and any(
+                    sub.state == 'validated' and not sub.lot_ids
+                    and sub.production_id in prods
+                    for cr in recipes for sub in cr.recipe_lot_ids)
+            line.has_approved_lab_line = ok
 
     @api.depends(
-        'bom_id',
-        'bom_id.operation_ids',
-        'bom_id.operation_ids.operation_id',
-        'bom_id.operation_ids.operation_id.gives_color',
+        'product_template_id',
+        'product_template_id.analysis_id',
+        'product_template_id.analysis_id.routing_ids',
+        'product_template_id.analysis_id.routing_ids.operation_id',
+        'product_template_id.analysis_id.routing_ids.operation_id.gives_color',
     )
     def _compute_is_lab_color(self):
         for line in self:
-            sline = line.sudo()
-            line.is_lab_color = any(op.operation_id.gives_color for op in sline.bom_id.operation_ids) if sline.bom_id else False
+            line.is_lab_color = any(
+                op.gives_color for op in line._get_analysis_route_operations()
+            ) if line.product_template_id else False
 
-    @api.depends('bom_id')
+    @api.depends(
+        'product_template_id',
+        'product_template_id.analysis_id',
+        'product_template_id.analysis_id.routing_ids',
+        'product_template_id.analysis_id.routing_ids.operation_id',
+        'product_template_id.analysis_id.routing_ids.operation_id.operation_type',
+        'product_template_id.analysis_id.routing_ids.operation_id.unit_price',
+        'product_template_id.analysis_id.routing_ids.operation_id.type_prices',
+        'product_template_id.analysis_id.routing_ids.operation_id.per_title',
+        'product_template_id.analysis_id.routing_ids.operation_id.product_color_price_ids.unit_price',
+        'product_template_id.analysis_id.routing_ids.operation_id.product_color_price_ids.color_title_price_ids.unit_price',
+    )
     def _compute_available_operations(self):
         for record in self:
-            srecord = record.sudo()
-            operations = self.env['mrp.routing.workcenter']
-            if srecord.bom_id:
-                operations = srecord.bom_id.operation_ids.filtered(lambda o: o.operation_id.unit_price > 0 or o.operation_id.type_prices == 'col' and sum(o.operation_id.product_color_price_ids.mapped('unit_price')) > 0 or o.operation_id.type_prices == 'col' and o.operation_id.per_title and sum(o.operation_id.product_color_price_ids.color_title_price_ids.mapped('unit_price')) > 0 or o.operation_id.operation_type == 'weaving').ids
-            record.available_operation_ids = operations
-    
-    @api.depends('bom_id')
-    def _compute_is_printing(self):
-        for rec in self:
-            srec = rec.sudo()
-            rec.is_printing = bool(any(p.operation_type == 'printing' for p in srec.bom_id.operation_ids.mapped('operation_id')))
+            record.available_operation_ids = record._get_priced_route_operations() \
+                if record.product_template_id else self.env['mrp.routing.workcenter.operation']
 
-    @api.onchange('bom_id','product_color_id')
+    @api.depends(
+        'product_template_id',
+        'product_template_id.analysis_id',
+        'product_template_id.analysis_id.routing_ids',
+        'product_template_id.analysis_id.routing_ids.sequence',
+        'product_template_id.analysis_id.routing_ids.operation_id',
+    )
+    def _compute_route_operation_order(self):
+        for record in self:
+            ops = record._get_analysis_route_operations() if record.product_template_id else []
+            record.route_operation_order = json.dumps([op.id for op in ops])
+
+    @api.depends(
+        'operation_ids',
+        'operation_ids.prints_product',
+        'product_template_id',
+        'product_template_id.analysis_id',
+        'product_template_id.analysis_id.routing_ids',
+        'product_template_id.analysis_id.routing_ids.operation_id',
+        'product_template_id.analysis_id.routing_ids.operation_id.prints_product',
+    )
+    def _compute_is_printing(self):
+        """Estampa si hay una fase que ESTAMPA el producto (toggle
+        prints_product de la fase, no el tipo 'printing': en ese centro hay
+        muchas auxiliares) entre las operaciones elegidas (servicio: el
+        vendedor puede quitarla) o, sin selección, en la ruta del análisis.
+        Esas fases siempre son seleccionables (su precio va con el diseño),
+        así que quitarla = no estampar."""
+        for rec in self:
+            sline = rec.sudo()
+            operations = sline.operation_ids._origin
+            if not operations and sline.product_template_id:
+                operations = rec._get_analysis_route_operations()
+            rec.is_printing = any(op.prints_product for op in operations)
+
+    @api.onchange('product_id', 'product_color_id')
+    def _onchange_route_operations(self):
+        """Propone como operaciones a cotizar todas las fases con precio de la
+        ruta del análisis del producto (en servicio el vendedor puede quitar)."""
+        for rec in self:
+            rec.operation_ids = [Command.set(rec._get_priced_route_operations().ids)]
+
+    @api.onchange('operation_ids')
+    def _onchange_operation_ids_printing(self):
+        """Servicio: al quitar la fase de estampado la línea deja de estampar y
+        se limpia el diseño (su recargo sale del precio; min_qty vuelve a 1000
+        por el onchange del diseño)."""
+        for rec in self:
+            if rec.printing_design_id and not rec.is_printing:
+                rec.printing_design_id = False
+
+    @api.onchange('product_id', 'bom_id')
     def _onchange_bom_id(self):
         for rec in self:
-            # Lectura con sudo del BoM/operaciones (datos de produccion) para
-            # que el comercial sin grupo de Fabricacion pueda seleccionar la
-            # LdM y se calculen las operaciones con precio sin AccessError.
+            # Mermas: de la ficha técnica de la LdM asignada; sin ficha, los
+            # valores por defecto (1% tejido, 9% producción). Lectura con sudo
+            # (datos de producción que el comercial puede no leer).
             srec = rec.sudo()
-            rec.operation_ids = [Command.clear()]
-            rec.operation_ids = srec.bom_id.operation_ids.filtered(lambda o: o.operation_id.unit_price > 0 or o.operation_id.type_prices == 'col' and sum(o.operation_id.product_color_price_ids.mapped('unit_price')) > 0 or o.operation_id.type_prices == 'col' and o.operation_id.per_title and sum(o.operation_id.product_color_price_ids.color_title_price_ids.mapped('unit_price')) > 0 or o.operation_id.operation_type == 'weaving').sorted(key=lambda r: r.sequence)
             rec.weaving_loss = srec.bom_id.technical_sheet_id.scrap or 0.01
             rec.production_loss = srec.bom_id.technical_sheet_id.prod_scrap or 0.09
             for prd in rec.production_ids.filtered(
@@ -289,8 +419,10 @@ class SaleOrderLine(models.Model):
     @api.onchange('product_id')
     def _onchange_product_id(self):
         res = super()._onchange_product_id()
-        if self.is_weaving and self.product_template_id.bom_ids:
-            self.bom_id = self.product_template_id.bom_ids[0]
+        # La ficha (LdM) no se elige en la cotización: se toma la primera del
+        # producto para que la OF del pedido la tenga. Si el producto no tiene
+        # LdM (o no es tejido) se limpia para no arrastrar la de otro producto.
+        self.bom_id = self.sudo().product_template_id.bom_ids[:1] if self.is_weaving else False
         return res
 
     @api.depends('product_id',
@@ -617,13 +749,10 @@ class SaleOrderLine(models.Model):
                     for value in price_dict.values():
                         value['is_thread'] = True
 
-                if not bom_id:
-                    operations = self.product_template_id.analysis_id.routing_ids.sorted(key=lambda r: r.sequence).filtered(lambda l: l.operation_id.unit_price > 0 or l.operation_id.type_prices == 'col' and sum(l.operation_id.product_color_price_ids.mapped('unit_price')) > 0 or l.operation_id.operation_type == 'weaving')
-                else:
-                    operations = self.operation_ids.sorted(key=lambda r: r.sequence)
-
-                for operation in operations:
-                    if operation.operation_id.operation_type == 'weaving':
+                # Procesos a cotizar: fases del maestro tomadas de la RUTA DEL
+                # ANÁLISIS del producto (ya no de la ficha/LdM), en su orden.
+                for operation in self._get_quoted_operations():
+                    if operation.operation_type == 'weaving':
                         price = self._convert_amount(
                             self.product_template_id.analysis_id.weaving_price,
                             self.product_template_id.analysis_id.currency_id,
@@ -632,21 +761,19 @@ class SaleOrderLine(models.Model):
                         )
                         price = float_round(price, 2)
                     else:
-                        if operation.operation_id.type_prices == 'col':
-                            operation_color_line = operation.operation_id.product_color_price_ids.search([
-                                ('product_color_id', '=', self.product_color_id.id),
-                                ('mrwo_id', '=', operation.operation_id._origin.id)
-                            ])
-                            if operation.operation_id.per_title:
-                                operation_color_title_line = operation_color_line.color_title_price_ids.filtered(lambda l: self.product_template_id.analysis_id.product_title_id in l.title_ids)
-                                source_currency = operation_color_title_line.currency_id if operation_color_title_line else operation.operation_id.currency_id
+                        if operation.type_prices == 'col':
+                            operation_color_line = operation.product_color_price_ids.filtered(
+                                lambda p: p.product_color_id == self.product_color_id)[:1]
+                            if operation.per_title:
+                                operation_color_title_line = operation_color_line.color_title_price_ids.filtered(lambda l: self.product_template_id.analysis_id.product_title_id in l.title_ids)[:1]
+                                source_currency = operation_color_title_line.currency_id if operation_color_title_line else operation.currency_id
                                 price = float_round(operation_color_title_line.unit_price, 2) if operation_color_title_line else 0
                             else:
-                                source_currency = operation_color_line.currency_id if operation_color_line else operation.operation_id.currency_id
+                                source_currency = operation_color_line.currency_id if operation_color_line else operation.currency_id
                                 price = float_round(operation_color_line.unit_price, 2) if operation_color_line else 0
                         else:
-                            source_currency = operation.operation_id.currency_id
-                            price = float_round(operation.operation_id.unit_price, 2)
+                            source_currency = operation.currency_id
+                            price = float_round(operation.unit_price, 2)
                         price = self._convert_amount(
                             price,
                             source_currency,
@@ -655,48 +782,45 @@ class SaleOrderLine(models.Model):
                         )
                         price = float_round(price, 2)
                     if price:
-                        price_dict[operation.operation_id.name] = {
-                            'label': operation.operation_id.name,
+                        price_dict[operation.name] = {
+                            'label': operation.name,
                             'price': price,
                         }
 
             if self.printing_design_id:
                 printing = price_dict.get('PRINTING')
-                if not printing or printing.get('design_id') != self.printing_design_id.id or printing.get('qty') != self.product_uom_qty or printing.get('min_qty') != self.min_qty:
+                # force_printing_reprice: la ficha cambió de precio (pasó a Hecho);
+                # el recargo guardado ya no vale aunque diseño y cantidades coincidan.
+                # Autocuración: si el recargo guardado es 0 (se calculó con la ficha
+                # del vendedor aún sin precio) y la ficha ya tiene precio, se rehace.
+                stale_zero = printing and not printing.get('price') and self.printing_design_id.has_price
+                if not printing or stale_zero or self.env.context.get('force_printing_reprice') or printing.get('design_id') != self.printing_design_id.id or printing.get('qty') != self.product_uom_qty or printing.get('min_qty') != self.min_qty:
                     price_dict.pop('PRINTING', None)
-                    if bom_id:
-                        yield_meter = float_round(self.bom_id.technical_sheet_id.yield_meter if self.bom_id.technical_sheet_id else self.printing_design_id.yield_meter, 2)
-                    else:
-                        yield_meter = float_round(self.product_template_id.analysis_id.yield_meter if self.product_template_id.analysis_id else self.printing_design_id.yield_meter, 2)
+                    # Rendimiento (m/kg) del análisis del producto (la ficha lo
+                    # tomaba de ahí); sin análisis, el del diseño.
+                    analysis = self.product_template_id.analysis_id
+                    yield_meter = float_round(analysis.yield_meter if analysis else self.printing_design_id.yield_meter, 2)
                     if self.order_id.is_quote:
                         total_qty = round(self.min_qty * yield_meter)
                     else:
                         total_qty = round(self.product_uom_qty * yield_meter)
                     price = 0
                     if self.printing_design_id.printing_type == 'digital':
-                        if total_qty > 59.99:
-                            for price_line in self.printing_design_id.digital_unit_price_ids:
-                                if total_qty >= price_line.min_qty and total_qty <= price_line.max_qty:
-                                    # (precio + bondeo) * rendimiento, igual que en rotativo
-                                    price = float_round((price_line.unit_price + self.printing_design_id.bonding_price) * yield_meter, 2)
-                                    price = self._convert_amount(
-                                        price,
-                                        price_line.currency_id,
-                                        currency,
-                                        conversion_date,
-                                    )
-                                    price = float_round(price, 2)
-                        else:
-                            price_line = self.printing_design_id.digital_unit_price_ids[:1]
-                            price = price_line.unit_price if price_line else 0
-                            if price_line:
-                                price = self._convert_amount(
-                                    price,
-                                    price_line.currency_id,
-                                    currency,
-                                    conversion_date,
-                                )
-                                price = float_round(price, 2)
+                        # Rango por metros totales; por debajo del primer rango (o sin
+                        # cantidad) se usa el primero. En TODOS los rangos, también el
+                        # primero, el recargo es (precio + bondeo) * rendimiento: antes
+                        # el primer rango trasladaba el precio plano (JP, 22-sep-2026).
+                        price_lines = self.printing_design_id.digital_unit_price_ids.sorted('sequence')
+                        price_line = price_lines.filtered(lambda p: p.min_qty <= total_qty <= p.max_qty)[:1] or price_lines[:1]
+                        if price_line:
+                            price = float_round((price_line.unit_price + self.printing_design_id.bonding_price) * yield_meter, 2)
+                            price = self._convert_amount(
+                                price,
+                                price_line.currency_id,
+                                currency,
+                                conversion_date,
+                            )
+                            price = float_round(price, 2)
                     else:
                         # El precio de estampado por kg suma el bondeo (ambos son precios por metro)
                         # antes de multiplicar por el rendimiento: (precio + bondeo) * rendimiento.
@@ -892,11 +1016,25 @@ class SaleOrderLine(models.Model):
             })
             # La línea "ve" la OF por el o2m inverso de sale_order_line_id.
             order.sudo().production_ids = [(4, prd.id)]
-            if prd.color_recipe_id:
+            # Se confirma sola si el color de DESARROLLO del pedido ya está
+            # aprobado (misma regla que action_confirm; la receta de
+            # producción la valida la partida) Y el producto ya tiene PILOTO
+            # terminado (estado de producción del análisis). Si no, queda en
+            # borrador con el botón Confirmar para cuando laboratorio apruebe
+            # el color o termine el piloto.
+            if line.lab_dev_line_id.state == 'approved' and prd._production_state_allows_confirm():
                 prd.action_confirm()
             prd.do_unreserve()
             productions |= prd
         return productions
+
+    def _link_printing_design_to_quotation(self):
+        """La ficha de estampado en borrador creada por el vendedor queda
+        enlazada a la cotización donde se usó por primera vez (trazabilidad)."""
+        for line in self.filtered(lambda l: l.printing_design_id and l.order_id.is_quote and l.order_id.id):
+            design = line.printing_design_id
+            if design.state == 'draft' and not design.quotation_id:
+                design.quotation_id = line.order_id.id
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -905,6 +1043,7 @@ class SaleOrderLine(models.Model):
         # mismas reglas que la confirmación (la entrega la ajusta el core
         # por las reglas de stock).
         lines.filtered(lambda l: l.order_id.state == 'sale')._create_weaving_productions()
+        lines._link_printing_design_to_quotation()
         return lines
 
     def write(self, vals):
@@ -951,17 +1090,28 @@ class SaleOrderLine(models.Model):
                 lambda l: l.order_id.state == 'sale' and l.product_uom_qty
                 and not l.production_ids.filtered(lambda p: p.state != 'cancel')
             )._create_weaving_productions()
+        # Servicio: al quitar la fase de estampado de las operaciones la línea
+        # deja de estampar y su diseño se limpia (JP, 22-sep-2026); el write
+        # anidado recalcula el precio sin el recargo de estampado.
+        if 'operation_ids' in vals:
+            to_clear = self.filtered(lambda l: l.printing_design_id and not l.is_printing)
+            if to_clear:
+                to_clear.write({'printing_design_id': False})
         # El recargo de estampado se calcula con el precio del tejido, pero el
         # diseño solo se puede elegir en el PEDIDO: sin este recálculo el pedido
         # quedaba con diseño asignado y un precio que no lo incluía.
         if 'printing_design_id' in vals and not self.env.context.get('skip_printing_reprice'):
             self._reprice_printing_lines()
+        if vals.get('printing_design_id'):
+            self._link_printing_design_to_quotation()
         return res
 
     def _reprice_printing_lines(self):
         """Recalcula el precio de las líneas de estampado tras cambiar el diseño."""
+        # Incluye las cotizaciones/pedidos en espera de validación: la ficha de
+        # estampado suele cerrarse mientras la cotización ya está pendiente.
         for line in self.filtered(lambda l: l.is_weaving and l.bom_id
-                                  and l.state in ('draft', 'sent', 'sale')):
+                                  and l.state in ('draft', 'sent', 'sale', 'pending_admin_approval', 'pending_finance_approval')):
             try:
                 new_price = line.with_context(
                     skip_printing_reprice=True).get_weaving_price_unit()

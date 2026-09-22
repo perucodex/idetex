@@ -2,7 +2,9 @@
 
 from odoo import fields, models, api, _
 from odoo.fields import Command
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, AccessError
+
+PRODUCT_DEV_MANAGER_GROUP = 'idtx_product_development.group_module_product_development_manager'
 
 class MrpProduction(models.Model):
     _inherit = 'mrp.production'
@@ -34,6 +36,8 @@ class MrpProduction(models.Model):
         # las que estaban disponibles para elegir (available_operation_ids);
         # las auxiliares sin precio (control de peso/calidad, etc.) no son
         # seleccionables en la línea y se conservan siempre.
+        # La línea guarda fases del MAESTRO (ruta del análisis): se comparan
+        # con la fase maestra de cada operación de la LdM (operation_id).
         for production in self:
             line = production.sale_order_line_id
             if not line or production.state != 'draft':
@@ -42,7 +46,7 @@ class MrpProduction(models.Model):
             if not excluded:
                 continue
             to_delete = production.workorder_ids.filtered(
-                lambda wo: wo.operation_id in excluded)
+                lambda wo: wo.operation_id.operation_id in excluded)
             if to_delete:
                 production.workorder_ids = [Command.delete(wo.id) for wo in to_delete]
         return res
@@ -71,6 +75,55 @@ class MrpProduction(models.Model):
                     production.move_raw_ids = [Command.delete(move.id) for move in production.move_raw_ids.filtered(lambda m: m.bom_line_id)]    
             production.move_raw_ids = list_move_raw
 
+    # ------------------------------------------------------------------
+    # OF con pedido: convertir en PILOTO / revertir al tipo del pedido
+    # (solo Desarrollo de Producto / Administrador; JP, 21-sep-2026)
+    # ------------------------------------------------------------------
+    def _check_production_type_manager(self):
+        if not self.env.user.has_group(PRODUCT_DEV_MANAGER_GROUP):
+            raise AccessError(_(
+                'Solo el administrador de Desarrollo de Producto puede cambiar el '
+                'tipo de producción de una OF con pedido de venta.'))
+
+    def _check_production_type_switchable(self):
+        for rec in self:
+            if not rec.order_id:
+                raise UserError(_(
+                    'Solo aplica a OF creadas desde un pedido de venta (%s no tiene pedido).', rec.name))
+            if rec.state in ('done', 'cancel'):
+                raise UserError(_(
+                    'La OF %s ya está terminada o cancelada: no se puede cambiar su tipo.', rec.name))
+
+    def _set_production_type_logged(self, new_type):
+        self.ensure_one()
+        labels = dict(self._fields['production_type']._description_selection(self.env))
+        old_type = self.production_type
+        if old_type == new_type:
+            return
+        # La restricción de mrp.production (muestra/piloto no permitidos con el
+        # producto en producción) valida el cambio.
+        self.production_type = new_type
+        self.message_post(body=_(
+            'Tipo de producción cambiado de %(old)s a %(new)s por %(user)s.',
+            old=labels.get(old_type, old_type), new=labels.get(new_type, new_type),
+            user=self.env.user.name))
+
+    def action_set_pilot_production_type(self):
+        """La primera OF de un producto nuevo (venta o servicio) se fabrica como
+        PILOTO: se puede confirmar sin piloto previo y, al terminar, el
+        producto queda en estado Piloto."""
+        self._check_production_type_manager()
+        self._check_production_type_switchable()
+        for rec in self:
+            rec._set_production_type_logged('pilot')
+
+    def action_revert_production_type(self):
+        """Vuelve al tipo que viene del pedido de venta (venta o servicio)."""
+        self._check_production_type_manager()
+        self._check_production_type_switchable()
+        for rec in self:
+            rec._set_production_type_logged(rec.order_id.sale_type)
+
     def _compute_need_recipe(self):
         for rec in self:
             # Solo exige receta si viene de venta CON color de laboratorio.
@@ -80,12 +133,16 @@ class MrpProduction(models.Model):
             rec.need_recipe = bool(rec.sale_order_line_id and rec.sale_order_line_id.lab_dev_line_id)
 
     @api.depends('color_recipe_id.lab_dev_line_id.color_code', 'color_recipe_id.lab_dev_line_id.color_name',
-                 'manual_lab_dev_line_id.color_code', 'manual_lab_dev_line_id.color_name')
+                 'manual_lab_dev_line_id.color_code', 'manual_lab_dev_line_id.color_name',
+                 'sale_order_line_id.lab_dev_line_id.color_code', 'sale_order_line_id.lab_dev_line_id.color_name')
     def _compute_color_labels(self):
         # Color de la receta; si la OF libre solo tiene color elegido (sin
-        # receta aun), se muestra ese color.
+        # receta aun), se muestra ese color. Sin receta de producción todavía,
+        # el color es el de la línea del pedido (la OF ya puede confirmarse
+        # solo con el color de desarrollo aprobado).
         for rec in self:
-            line = rec.color_recipe_id.lab_dev_line_id or rec.manual_lab_dev_line_id
+            line = (rec.color_recipe_id.lab_dev_line_id or rec.manual_lab_dev_line_id
+                    or rec.sale_order_line_id.lab_dev_line_id)
             rec.color_code = line.color_code
             rec.color_name = line.color_name
 
@@ -141,8 +198,20 @@ class MrpProduction(models.Model):
     #     return super().unlink()
 
     def action_confirm(self):
-        if self.need_recipe and not self.color_recipe_id:
-            raise UserError(_('Production must have an approved recipe.'))
+        # JP (18-sep-2026): para confirmar la OF basta el color de DESARROLLO
+        # aprobado (línea de Lab Dip del pedido). La receta de PRODUCCIÓN no
+        # se exige aquí: la resuelve y valida la PARTIDA al armarla/teñir
+        # (recipe_lot_warning y el registro de TEÑIDO del Taller).
+        for rec in self:
+            if not rec.need_recipe:
+                continue
+            line = rec.sale_order_line_id.lab_dev_line_id
+            if line.state != 'approved':
+                raise UserError(_(
+                    'No se puede confirmar %(prod)s: el color %(color)s del pedido '
+                    'aún no está aprobado en laboratorio (Lab Dip %(ld)s).',
+                    prod=rec.name, color=line.display_name,
+                    ld=line.lab_dev_id.name or ''))
         return super().action_confirm()
     
     def action_manual(self):

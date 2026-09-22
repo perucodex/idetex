@@ -1,0 +1,13 @@
+/* Badge "N Hilos cotizados" (cabecera de la cotización). */
+.o_thread_price_badge {
+    cursor: pointer;
+    font-size: 0.85em;
+    user-select: none;
+}
+
+.o_thread_price_badge_popover {
+    min-width: 360px;
+    max-width: 640px;
+    max-height: 60vh;
+    overflow: auto;
+}

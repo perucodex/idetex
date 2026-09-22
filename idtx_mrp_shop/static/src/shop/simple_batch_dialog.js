@@ -46,6 +46,9 @@ export class SimpleBatchDialog extends SelectBatchDialog {
             || !this.state.selectedBatchId) {
             return;
         }
+        if (this._blockIfLotNotStarted()) {
+            return;
+        }
         const payload = {
             batch_id: parseInt(this.state.selectedBatchId),
             employee_id: parseInt(this.state.selectedEmployee),

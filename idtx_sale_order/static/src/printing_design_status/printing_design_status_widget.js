@@ -69,6 +69,19 @@ class PrintingDesignStatusPopover extends Component {
     get emptyMessage() {
         return _t("Select a design to preview its image.");
     }
+
+    get statusText() {
+        const data = this.props.record?.data || {};
+        if (!this.hasDesign) {
+            return "";
+        }
+        if (data.printing_design_has_price && data.printing_design_state === "done") {
+            return _t("Ficha hecha, con precio");
+        }
+        return data.printing_design_has_price
+            ? _t("Ficha con precio, pendiente de marcar Hecho en desarrollo")
+            : _t("Ficha sin precio: desarrollo debe completarla");
+    }
 }
 
 class PrintingDesignStatusWidget extends Component {
@@ -85,7 +98,9 @@ class PrintingDesignStatusWidget extends Component {
 
     get isVisible() {
         const data = this.props.record?.data;
-        if (!data || data.parent_is_quote || !data.parent_is_company_produce) {
+        // Se muestra en cotización Y pedido (JP, 22-sep-2026): en la cotización
+        // indica si la ficha del vendedor ya tiene precio y está Hecha.
+        if (!data || !data.parent_is_company_produce) {
             return false;
         }
         // Solo en líneas que llevan estampado: en las demás el punto no
@@ -93,14 +108,35 @@ class PrintingDesignStatusWidget extends Component {
         return Boolean(data.is_printing) || Boolean(getPrintingDesignId(this.props.record));
     }
 
+    /** rojo: sin diseño · naranja: ficha sin precio o sin cerrar · verde: Hecha con precio */
+    get status() {
+        if (!this.hasDesign) {
+            return "missing";
+        }
+        const data = this.props.record?.data || {};
+        return data.printing_design_has_price && data.printing_design_state === "done" ? "ok" : "pending";
+    }
+
     get dotClass() {
-        return this.hasDesign
-            ? "o_printing_design_status_dot o_printing_design_status_dot--ok"
-            : "o_printing_design_status_dot o_printing_design_status_dot--missing";
+        return `o_printing_design_status_dot o_printing_design_status_dot--${this.status}`;
+    }
+
+    get statusText() {
+        const data = this.props.record?.data || {};
+        switch (this.status) {
+            case "missing":
+                return _t("Sin ficha de estampado");
+            case "ok":
+                return _t("Ficha hecha, con precio");
+            default:
+                return data.printing_design_has_price
+                    ? _t("Ficha con precio, pendiente de marcar Hecho en desarrollo")
+                    : _t("Ficha sin precio: desarrollo debe completarla");
+        }
     }
 
     get title() {
-        return this.hasDesign ? _t("Show design preview") : _t("No printing design selected");
+        return this.statusText;
     }
 
     showPopover(ev) {
@@ -117,6 +153,8 @@ export const printingDesignStatusWidget = {
     fieldDependencies: [
         { name: "is_printing", type: "boolean" },
         { name: "printing_design_id", type: "many2one", relation: "printing.design" },
+        { name: "printing_design_state", type: "selection" },
+        { name: "printing_design_has_price", type: "boolean" },
     ],
 };
 

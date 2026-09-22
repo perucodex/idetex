@@ -6,9 +6,14 @@
         <field name="arch" type="xml">
             <form string="Printing Design">
                 <header>
-                    <button name="action_set_quoting" type="object" string="Set Quoting" class="oe_highlight" invisible="state != 'draft'"/>
-                    <button name="action_set_development" type="object" string="Set Development" class="oe_highlight" invisible="state not in ('draft', 'quoting')"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,quoting,development,done" readonly="1"/>
+                    <!-- Flujo: Borrador → Desarrollo → Hecho, y siempre "Regresar a
+                         borrador". Marcar hecho exige precio; al pasar a Hecho las
+                         cotizaciones que usan la ficha se recalculan. -->
+                    <button name="action_set_development" type="object" string="Pasar a desarrollo" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_set_done" type="object" string="Marcar hecho" class="oe_highlight" invisible="state != 'development'" groups="idtx_printing.group_module_print_manager"/>
+                    <button name="action_set_draft" type="object" string="Regresar a borrador" invisible="state == 'draft'" groups="idtx_printing.group_module_print_manager"/>
+                    <field name="has_price" invisible="1"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,development,done" readonly="1"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -31,6 +36,8 @@
                             <field name="cylinder_size" readonly="state != 'draft'" invisible="printing_type != 'rotary'"/>
                             <field name="shrinkage" readonly="state != 'draft'" widget="percentage" invisible="printing_type != 'rotary'"/>
                             <!-- <field name="raport" invisible="printing_type != 'rotary'"/> -->
+                            <field name="width" readonly="state != 'draft'"/>
+                            <field name="density" readonly="state != 'draft'"/>
                             <label for="yield_meter"/>
                             <div name="yield_meter" class="o_row">
                                 <field name="yield_meter" readonly="state != 'draft'"/>
@@ -46,6 +53,31 @@
                         </group>
                     </group>
                     <notebook>
+                        <!-- Datos que llena el vendedor al cotizar (ficha Excel). -->
+                        <page name="quote_sheet" string="Ficha de cotización">
+                            <group>
+                                <group string="Cobertura y color">
+                                    <field name="coverage" readonly="state != 'draft'"/>
+                                    <field name="color_depth" readonly="state != 'draft'"/>
+                                </group>
+                                <group string="Solidez a ofrecer">
+                                    <field name="fastness_dry_rub" readonly="state != 'draft'"/>
+                                    <field name="fastness_wet_rub" readonly="state != 'draft'"/>
+                                    <field name="fastness_wash" readonly="state != 'draft'"/>
+                                </group>
+                                <group string="Cuidados base de la tela">
+                                    <field name="thiotan" readonly="state != 'draft'"/>
+                                    <field name="discharge_prepared" readonly="state != 'draft'"/>
+                                </group>
+                                <group string="Productos adicionales">
+                                    <field name="pasting" readonly="state != 'draft'"/>
+                                    <field name="rotary_bonding" readonly="state != 'draft'" invisible="printing_type != 'rotary'"/>
+                                    <field name="digital_defuzzing" readonly="state != 'draft'" invisible="printing_type != 'digital'"/>
+                                    <field name="polyurethane" readonly="state != 'draft'"/>
+                                </group>
+                            </group>
+                            <field name="quote_notes" readonly="state != 'draft'" placeholder="Observaciones de la cotización..."/>
+                        </page>
                         <page name="prices" string="Prices" invisible="printing_type != 'digital'" groups="idtx_printing.group_module_print_manager">
                             <field name="digital_unit_price_ids" readonly="state != 'draft'">
                                 <list create="0" delete="0" editable="top">
@@ -68,7 +100,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page name="rotary_recipes" string="Rotary Recipes" invisible="printing_type != 'rotary' or state in ('draft', 'quoting')"  groups="idtx_printing.group_module_print_user">
+                        <page name="rotary_recipes" string="Rotary Recipes" invisible="printing_type != 'rotary' or state == 'draft'"  groups="idtx_printing.group_module_print_user">
                             <field name="rotary_recipe_line_ids" context="{'form_view_ref': 'idtx_printing.view_printing_design_rotary_line_form'}">
                                 <list editable="top" open_form_view="True">
                                     <field name="name"/>
@@ -195,7 +227,6 @@
                 <field name="fabric_base"/>
                 <field name="state" widget="badge"
                        decoration-muted="state == 'draft'"
-                       decoration-info="state == 'quoting'"
                        decoration-warning="state == 'development'"
                        decoration-success="state == 'done'"/>
             </list>

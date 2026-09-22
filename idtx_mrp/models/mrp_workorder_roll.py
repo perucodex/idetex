@@ -32,6 +32,15 @@ class MrpWorkorderRoll(models.Model):
                                 'El peso bruto es el pesado en planta.')
     location_note = fields.Char('Ubicación', help='Ubicación física en almacén de crudo (rack, fila).')
     reception_note = fields.Char('Observación de recepción', help='Manchas, humedad, roturas, etc.')
+    # Reproceso PARCIAL: el rollo salió de su partida hacia una partida de
+    # reproceso (mismo número · Reproceso N). La original lo lista como
+    # "transferido a reproceso".
+    reprocess_from_batch_id = fields.Many2one(
+        'mrp.workorder.batch', string='Transferido desde', readonly=True, copy=False, index=True,
+        help='Partida de la que salió este rollo para reprocesarse.')
+    reprocess_batch_id = fields.Many2one(
+        'mrp.workorder.batch', string='Transferido a reproceso', readonly=True, copy=False,
+        help='Partida de reproceso a la que se transfirió este rollo.')
     # Rollos terminados pesados a partir de este crudo (traza crudo -> terminado).
     finished_roll_ids = fields.One2many('mrp.production.roll', 'wo_roll_id', string='Rollos Terminados')
     # Estado DERIVADO de datos que ya existen (no lo escribe ningún flujo):
@@ -66,8 +75,10 @@ class MrpWorkorderRoll(models.Model):
     product_id = fields.Many2one(related='production_id.product_tmpl_id')
     uom_id = fields.Many2one(related='production_id.product_tmpl_id.uom_id')
     quantity = fields.Integer('Quantity')
-    gross_weight = fields.Float('Gross Weight')
-    net_weight = fields.Float('Net Weight')
+    # El rollo CRUDO tiene un único peso: no lleva bolsa ni tubo de cartón
+    # (eso aparece recién en el rollo TERMINADO, mrp.production.roll, que sí
+    # conserva peso bruto y neto). Se quitó net_weight (19.0.0.9.0).
+    gross_weight = fields.Float('Peso (kg)')
     in_batch = fields.Boolean('in_batch?', default=False)
     new_weight = fields.Float('Split new weight')
     equipment_id = fields.Many2one('maintenance.equipment', string='Equipment')
@@ -232,11 +243,7 @@ class MrpWorkorderRoll(models.Model):
 
                     ^FO300,160
                     ^A0N,22,22
-                    ^FDPeso: {self.gross_weight}^FS
-
-                    ^FO300,185
-                    ^A0N,22,22
-                    ^FDPeso Neto: {self.net_weight} kg^FS
+                    ^FDPeso: {self.gross_weight} kg^FS
 
                     ^FO300,210
                     ^A0N,22,22

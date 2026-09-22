@@ -273,12 +273,8 @@ class RollPublicController(http.Controller):
                         <span class="value">{escape(roll.name or '')}</span>
                     </div>
                     <div class="row">
-                        <span class="label">Peso Tejido(kg):</span>
+                        <span class="label">Peso (kg):</span>
                         <span class="value">{(roll.gross_weight or 0):.2f}</span>
-                    </div>
-                    <div class="row">
-                        <span class="label">Peso Neto (kg):</span>
-                        <span class="value">{(roll.net_weight or 0):.2f}</span>
                     </div>
                     <div class="row">
                         <span class="label">Proceso:</span>

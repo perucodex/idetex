@@ -16,13 +16,25 @@
                     <header>
                         <button name="reprint" string="Reimprimir" type="object"/>
                     </header>
-                    <field name="name"/>
+                    <field name="name" optional="hide"/>
                     <field name="lot_id" string="Lote"/>
+                    <field name="roll_num" string="N° rollo" optional="show"/>
                     <field name="batch_id" string="Partida"/>
-                    <field name="production_id" optional="show"/>
+                    <field name="production_id" optional="hide"/>
                     <field name="product_id"/>
                     <field name="size_id" string="Talla" optional="show"/>
                     <field name="gross_weight" sum="Total" string="Peso (kg)"/>
+                    <field name="quality_state" string="Calidad" widget="badge"
+                           decoration-success="quality_state == 'released'"
+                           decoration-info="quality_state == 'graded'"
+                           decoration-warning="quality_state == 'observed'"
+                           decoration-muted="quality_state == 'pending'"/>
+                    <field name="quality_grade" string="Grado" optional="show"/>
+                    <field name="reweigh_pending" string="Repesar" optional="show" widget="boolean_toggle" readonly="1"/>
+                    <field name="quality_observation" string="Observación" optional="show"/>
+                    <field name="quality_note" string="Detalle" optional="hide"/>
+                    <field name="release_picking_id" string="Recepción" optional="show"/>
+                    <field name="release_picking_state" string="Estado recepción" optional="hide"/>
                     <field name="weighed_date" string="Fecha de Pesado"/>
                 </list>
             </field>
@@ -41,6 +53,13 @@
                             domain="[('weighed_date', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0, 0, 0)))]"/>
                     <filter name="filter_weighed" string="Con pesado registrado"
                             domain="[('weighed_date', '!=', False)]"/>
+                    <separator/>
+                    <filter name="filter_observed" string="Observados (sin grado final)"
+                            domain="[('quality_state', '=', 'observed')]"/>
+                    <filter name="filter_reweigh" string="Pendientes de repesar"
+                            domain="[('reweigh_pending', '=', True)]"/>
+                    <filter name="filter_graded" string="Calificados (por liberar)" domain="[('quality_state', '=', 'graded')]"/>
+                    <filter name="filter_released" string="Liberados a almacén" domain="[('quality_released', '=', True)]"/>
                     <group>
                         <filter name="group_by_batch" string="Partida" context="{'group_by': 'batch_id'}"/>
                         <filter name="group_by_product" string="Producto" context="{'group_by': 'product_id'}"/>
@@ -65,8 +84,9 @@
                     Pesa los rollos terminados (auditados por calidad) con el botón "Pesar rollo".
                 </p>
                 <p>
-                    Al pesar se crea el lote (partida + correlativo) con su stock
-                    y se imprime el sticker con código de barras.
+                    Al pesar se indica el N° de rollo de Acabado (correlativo del lote) y si el rollo
+                    está conforme (grado A) u observado (se separa para reproceso con sticker OBSERVADO).
+                    Los observados se resuelven con "Resolver observado": se repesan y reciben grado A, B o M.
                 </p>
             </field>
         </record>

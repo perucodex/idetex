@@ -31,13 +31,20 @@
                 <!-- Candado de laboratorio sobre la sub-receta asignada -->
                 <button name="action_lock_recipe_lot" string="Bloquear Sub-receta" type="object" icon="fa-lock"
                         groups="idtx_laboratory.group_module_laboratory_manager"
-                        invisible="not recipe_lot_id or recipe_lot_locked"/>
+                        invisible="not recipe_lot_id or recipe_lot_locked or state == 'split'"/>
                 <button name="action_unlock_recipe_lot" string="Revertir Sub-receta" type="object" icon="fa-unlock"
                         groups="idtx_laboratory.group_module_laboratory_manager"
-                        invisible="not recipe_lot_locked"
+                        invisible="not recipe_lot_locked or state == 'split'"
                         confirm="Se quitará la sub-receta asignada y el campo volverá a ser editable. ¿Continuar?"/>
+                <!-- Recepción de almacén: traslado Pesado → destino por grado con los rollos calificados -->
+                <button name="action_release_rolls" string="Liberar a Almacén" type="object" class="btn-primary"
+                        icon="fa-truck" invisible="roll_releasable_count == 0 or state == 'split'"
+                        confirm="Se creará la recepción de almacén con los rollos calificados (A → Existencias, B → Saldo, M → Mermas). Los observados quedan en Pesado. ¿Continuar?"/>
             </button>
             <div name="button_box" position="inside">
+                <button name="action_view_release_pickings" type="object" class="oe_stat_button" icon="fa-truck" invisible="release_picking_count == 0">
+                    <field name="release_picking_count" widget="statinfo" string="Recepciones"/>
+                </button>
                 <button name="action_show_dye_recipe" type="object" class="oe_stat_button" icon="fa-flask" invisible="state == 'draft'">
                     <span class="o_stat_text">Mostrar Receta</span>
                 </button>

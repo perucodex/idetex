@@ -4,6 +4,19 @@ import json
 import logging
 _logger = logging.getLogger(__name__)
 
+# Estado de producción del producto (a nivel de análisis): orden de avance.
+# Nunca retrocede: una OF terminada solo puede subir el estado.
+PRODUCTION_STATE_RANK = {'product': 0, 'sample': 1, 'pilot': 2, 'production': 3}
+# Estado que alcanza el producto al TERMINAR una OF según su tipo.
+PRODUCTION_TYPE_STATE = {
+    'sample': 'sample',
+    'pilot': 'pilot',
+    'sale': 'production',
+    'service': 'production',
+    'reposicion': 'production',
+}
+
+
 class ProductAnalysis(models.Model):
     _name = 'product.analysis'
     _inherit = ['mail.thread', 'mail.activity.mixin']
@@ -80,6 +93,34 @@ class ProductAnalysis(models.Model):
     # Tolerancia de tela
     density_stability_twisting_id = fields.Many2one('density.stability.twisting', string='Density Stability Twisting Data', copy=False)
     yield_meter = fields.Float('Yield', compute='_compute_yield_meter')
+    # Estado de PRODUCCIÓN del producto. Antes vivía en la ficha técnica
+    # (technical.sheet.production_state, texto); desde 21-sep-2026 (JP) está
+    # a nivel de ANÁLISIS: avanza al TERMINAR una OF según su tipo (muestra →
+    # Muestra, piloto → Piloto, venta/servicio → Producción) y nunca
+    # retrocede. Ver mrp.production.button_mark_done.
+    production_state = fields.Selection([
+        ('product', 'Producto'),
+        ('sample', 'Muestra'),
+        ('pilot', 'Piloto'),
+        ('production', 'Producción'),
+    ], string='Estado de producción', default='product', required=True,
+        copy=False, readonly=True, tracking=True,
+        help='Producto: aún no se fabricó. Muestra: OF de muestra terminada. '
+             'Piloto: OF piloto terminada (habilita confirmar OF de venta/servicio). '
+             'Producción: OF de venta o servicio terminada (ya no admite muestra ni piloto).')
+    # Semáforo para ventas (no almacenado): estado + OF existentes del
+    # producto. Ver _compute_production_indicator.
+    production_indicator = fields.Selection([
+        ('none', 'Sin OF'),
+        ('sample', 'Muestra en curso'),
+        ('sample_done', 'Muestra terminada'),
+        ('pilot', 'Piloto en curso'),
+        ('pilot_done', 'Piloto terminado'),
+        ('production', 'En producción'),
+    ], string='Semáforo de producción', compute='_compute_production_indicator')
+    # OF de los productos del análisis (inverso de mrp.production.analysis_id).
+    production_ids = fields.One2many(
+        'mrp.production', 'analysis_id', string='Órdenes de fabricación')
 
     _check_standard_width = models.Constraint(
         'CHECK(standard_width > 0)',
@@ -103,6 +144,69 @@ class ProductAnalysis(models.Model):
     def _compute_yield_meter(self):
         for rec in self:
             rec.yield_meter = 1000 / (rec.density * (rec.standard_width / 100)) if (rec.density and rec.standard_width) else 1
+
+    # ------------------------------------------------------------------
+    # Estado de producción (muestra → piloto → producción)
+    # ------------------------------------------------------------------
+    def _get_productions(self):
+        """OF no canceladas de los productos del análisis (lectura con sudo:
+        ventas no necesita permisos de Fabricación para ver el semáforo)."""
+        self.ensure_one()
+        return self.sudo().production_ids.filtered(lambda p: p.state != 'cancel')
+
+    @api.depends('production_state', 'production_ids.production_type', 'production_ids.state')
+    def _compute_production_indicator(self):
+        """Semáforo (JP, 21-sep-2026): rojo sin letra = ninguna OF de muestra o
+        piloto ni producción; rojo M = muestra en curso; verde M = muestra
+        terminada; naranja P = piloto en curso (aún sin piloto terminado);
+        verde P = piloto terminado; verde sin letra = venta o servicio
+        terminada. Sigue al estado, que no retrocede."""
+        for rec in self:
+            productions = rec._get_productions()
+            types = set(productions.mapped('production_type'))
+            state = rec._get_effective_production_state()
+            if state == 'production':
+                rec.production_indicator = 'production'
+            elif state == 'pilot':
+                rec.production_indicator = 'pilot_done'
+            elif 'pilot' in types:
+                rec.production_indicator = 'pilot'
+            elif state == 'sample':
+                rec.production_indicator = 'sample_done'
+            elif 'sample' in types:
+                rec.production_indicator = 'sample'
+            else:
+                rec.production_indicator = 'none'
+
+    @api.model
+    def _production_state_for_type(self, production_type):
+        """Estado que alcanza el producto al terminar una OF de ese tipo."""
+        return PRODUCTION_TYPE_STATE.get(production_type)
+
+    def _get_effective_production_state(self):
+        """Estado de producción VIGENTE: el máximo entre el almacenado y el que
+        resulta de las OF TERMINADAS del análisis. Así el semáforo y las
+        reglas no dependen de que el gancho de "Hecho" haya corrido (p. ej.
+        OF terminada con el servidor sin reiniciar o cerrada por otro camino);
+        el almacenado se pone al día con _sync_production_state_from_productions."""
+        self.ensure_one()
+        state = self.production_state or 'product'
+        for mo in self.sudo().production_ids.filtered(lambda p: p.state == 'done'):
+            new_state = PRODUCTION_TYPE_STATE.get(mo.production_type)
+            if new_state and PRODUCTION_STATE_RANK[new_state] > PRODUCTION_STATE_RANK.get(state, 0):
+                state = new_state
+        return state
+
+    def _sync_production_state_from_productions(self):
+        """Guarda (con tracking) el estado vigente si subió. Idempotente."""
+        for rec in self:
+            rec._advance_production_state(rec._get_effective_production_state())
+
+    def _advance_production_state(self, new_state):
+        """Sube el estado de producción; nunca retrocede."""
+        for rec in self:
+            if PRODUCTION_STATE_RANK.get(new_state, -1) > PRODUCTION_STATE_RANK.get(rec.production_state, 0):
+                rec.production_state = new_state
 
     @api.onchange('mrp_base_process_id')
     def _onchange_mrp_base_process_id(self):

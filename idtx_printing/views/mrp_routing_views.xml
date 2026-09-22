@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- Toggle "¿Estampa el producto?" junto a "¿Da color al producto?"
+             (JP, 22-sep-2026): identifica las fases de estampado reales entre
+             las de tipo 'printing'. -->
+        <record id="mrp_routing_workcenter_operation_form_view_printing" model="ir.ui.view">
+            <field name="name">mrp.routing.workcenter.operation.form.printing</field>
+            <field name="model">mrp.routing.workcenter.operation</field>
+            <field name="inherit_id" ref="idtx_laboratory.mrp_routing_workcenter_operation_form_view"/>
+            <field name="arch" type="xml">
+                <field name="gives_color" position="after">
+                    <field name="prints_product" widget="boolean_toggle"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="mrp_routing_workcenter_operation_tree_view_printing" model="ir.ui.view">
+            <field name="name">mrp.routing.workcenter.operation.list.printing</field>
+            <field name="model">mrp.routing.workcenter.operation</field>
+            <field name="inherit_id" ref="idtx_laboratory.mrp_routing_workcenter_operation_tree_view"/>
+            <field name="arch" type="xml">
+                <field name="gives_color" position="after">
+                    <field name="prints_product" widget="boolean_toggle" readonly="1" optional="show"/>
+                </field>
+            </field>
+        </record>
+
+    </data>
+</odoo>

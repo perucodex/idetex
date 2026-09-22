@@ -16,3 +16,7 @@ access_qc_lab_record_user,qc.lab.record.user,model_qc_lab_record,base.group_user
 access_qc_lab_record_result_user,qc.lab.record.result.user,model_qc_lab_record_result,base.group_user,1,1,1,1
 access_qc_sample_reception_user,qc.sample.reception.user,model_qc_sample_reception,base.group_user,1,1,1,1
 access_qc_tone_eval_report_wizard_user,access.qc.tone.eval.report.wizard.user,model_qc_tone_eval_report_wizard,base.group_user,1,1,1,1
+access_qc_roll_hold_user,qc.roll.hold user,model_qc_roll_hold,base.group_user,1,1,1,0
+access_qc_roll_hold_manager,qc.roll.hold manager,model_qc_roll_hold,quality.group_quality_manager,1,1,1,1
+access_qc_roll_grade_wizard_user,qc.roll.grade.wizard user,model_qc_roll_grade_wizard,base.group_user,1,1,1,1
+access_qc_roll_grade_wizard_line_user,qc.roll.grade.wizard.line user,model_qc_roll_grade_wizard_line,base.group_user,1,1,1,1

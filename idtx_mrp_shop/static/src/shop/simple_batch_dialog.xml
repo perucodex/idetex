@@ -125,7 +125,35 @@
                     </div>
                 </div>
 
-                <t t-set-slot="footer">
+                <!-- Lote de teñido: la operación es conjunta y la partida tiene
+                 hermanas. Se arranca con TODAS (relación de baño del total) y
+                 recién después se registra el fin, que aplica a todas. -->
+            <div t-if="state.dyeLot" class="alert mt-3 mb-0"
+                 t-att-class="state.dyeLot.started ? 'alert-success' : 'alert-warning'">
+                <div class="fw-bold">
+                    <i class="fa fa-exclamation-triangle me-1"/>
+                    Teñido conjunto · <t t-esc="state.dyeLot.operation"/> ·
+                    <t t-esc="Number(state.dyeLot.total_weight || 0).toFixed(2)"/> kg en total
+                </div>
+                <div class="small">Estas partidas deben entrar JUNTAS a la máquina (la relación de baño es del total):</div>
+                <ul class="mb-2">
+                    <t t-foreach="state.dyeLot.batches" t-as="b" t-key="b.id">
+                        <li>
+                            <t t-esc="b.name"/> · <t t-esc="Number(b.weight || 0).toFixed(2)"/> kg
+                            <span t-if="b.started" class="badge bg-success ms-1">en máquina</span>
+                        </li>
+                    </t>
+                </ul>
+                <button t-if="!state.dyeLot.started" type="button" class="btn btn-warning"
+                        t-att-disabled="state.startingLot" t-on-click="startJointOperation">
+                    <i class="fa fa-play me-1"/> Arrancar con todas las partidas
+                </button>
+                <div t-else="" class="fw-bold">
+                    Arranque registrado. Al terminar, Confirmar registra la operación en todas las partidas del lote.
+                </div>
+            </div>
+
+            <t t-set-slot="footer">
                     <div class="d-flex justify-content-end w-100">
                         <button class="btn btn-primary" t-on-click="confirm">
                             Confirm

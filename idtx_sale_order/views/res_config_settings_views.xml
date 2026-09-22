@@ -34,6 +34,15 @@
                                 </div>
                             </div>
                         </setting>
+                        <setting id="idtx_quotation_admin_approval" string="Cotizaciones: validación administrativa" company_dependent="1" help="Las cotizaciones de tejido requieren aprobación de un Aprobador Administrativo antes de enviarse al cliente. Desactívalo para enviar sin validación.">
+                            <field name="quotation_admin_approval"/>
+                        </setting>
+                        <setting id="idtx_sale_admin_approval" string="Pedidos: validación administrativa" company_dependent="1" help="Los pedidos de venta de tejido pasan por aprobación administrativa antes de confirmarse.">
+                            <field name="sale_admin_approval"/>
+                        </setting>
+                        <setting id="idtx_sale_finance_approval" string="Pedidos: validación financiera" company_dependent="1" help="Los pedidos de venta de tejido pasan por aprobación financiera antes de confirmarse. Si ambas validaciones de pedidos están desactivadas, el pedido se confirma directo.">
+                            <field name="sale_finance_approval"/>
+                        </setting>
                     </block>
                 </block>
             </field>

@@ -58,6 +58,14 @@ class MrpRoutingWorkcenterOperation(models.Model):
     )
     parameter_ids = fields.One2many('operation.parameter', 'operation_id', string='Parameters')
     operation_type = fields.Selection(related='workcenter_id.operation_type')
+    # Operación de MISMO BAÑO (teñido y las que ocurren dentro del baño): en
+    # un lote de teñido se registra a la vez en todas las partidas por
+    # producto y exige un ARRANQUE previo con todas ellas (idtx_mrp_shop).
+    is_joint_dye = fields.Boolean(
+        'Operación conjunta (mismo baño)',
+        help='En un lote de teñido (partidas por producto con el mismo número) '
+             'esta operación se arranca y registra a la vez en todas las partidas '
+             'del lote: la relación de baño está calculada sobre los kilos totales.')
 
     @api.model
     def name_search(self, name='', domain=None, operator='ilike', limit=100):

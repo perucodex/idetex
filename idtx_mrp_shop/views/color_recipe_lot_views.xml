@@ -38,6 +38,13 @@
                 <filter name="filter_with_registry" string="Con Registro de Operaciones"
                         domain="[('registry_ids', '!=', False)]"/>
                 <separator/>
+                <!-- Partidas con alertas de calidad APROBADAS: reprocesos (la partida
+                     de reproceso parcial se lleva la alerta) y reposiciones. -->
+                <filter name="filter_reprocess" string="Reprocesos"
+                        domain="[('quality_alert_ids', 'any', [('tipo', '=', 'reproceso'), ('state', '=', 'approved')])]"/>
+                <filter name="filter_reposition" string="Reposiciones"
+                        domain="[('quality_alert_ids', 'any', [('tipo', '=', 'reposicion'), ('state', '=', 'approved')])]"/>
+                <separator/>
                 <filter name="filter_batch_date" string="Fecha de Partida"
                         date="batch_date"/>
                 <group>

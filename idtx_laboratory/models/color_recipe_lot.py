@@ -1,7 +1,7 @@
 import base64
 
 from odoo import models, fields, api, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 from odoo.tools import file_path
 
 
@@ -34,8 +34,9 @@ class ColorRecipeLot(models.Model):
     production_id = fields.Many2one(
         'mrp.production', string='Orden de Fabricación', ondelete='set null',
         tracking=True,
-        help='OF cuya OT de tejido tiene opciones con los lotes de hilo. '
-             'Al elegir la opción, los lotes se completan automáticamente.')
+        help='OF del MISMO CÓDIGO DE COLOR que la receta (puede ser de otro '
+             'producto) cuya OT de tejido tiene opciones con los lotes de '
+             'hilo. Al elegir la opción, los lotes se completan automáticamente.')
     available_production_ids = fields.Many2many(
         'mrp.production', compute='_compute_available_productions',
         string='OFs Disponibles')
@@ -47,10 +48,15 @@ class ColorRecipeLot(models.Model):
     available_option_ids = fields.Many2many(
         'mrp.workorder.option', compute='_compute_available_options',
         string='Opciones Disponibles')
+    # Obligatorios salvo en la sub-receta de una OF de TELA DEL CLIENTE (OF de
+    # servicio sin tejido): ahí no se conocen los lotes y la sub-receta es
+    # por OF (ver _check_lots_required).
     lot_ids = fields.Many2many(
         'stock.lot', 'color_recipe_lot_stock_lot_rel', 'recipe_lot_id', 'lot_id',
-        string='Lotes de Hilo', required=True,
+        string='Lotes de Hilo',
         domain="[('product_id.product_tmpl_id.is_thread', '=', True)]")
+    is_customer_production = fields.Boolean(
+        related='production_id.is_customer_roll_production', string='Tela del cliente')
     lot_key = fields.Char(
         'Clave de Combinación', compute='_compute_lot_key', store=True, index=True,
         help='Identificador normalizado de la combinación (ids de lote '
@@ -81,26 +87,44 @@ class ColorRecipeLot(models.Model):
                 rec.available_thread_lot_ids = Lot.search(
                     [('product_id.product_tmpl_id.is_thread', '=', True)])
 
-    @api.depends('color_recipe_id.product_ids')
+    @api.depends('color_recipe_id.color_code', 'color_recipe_id.lab_dev_line_id')
     def _compute_available_productions(self):
-        """OFs elegibles: fabrican un producto de la receta y su OT de tejido
-        tiene opciones (la OF se empareja con la receta por product_tmpl_id,
-        igual que _compute_color_recipe de la OF)."""
+        """OFs elegibles (JP, 18-sep-2026): no canceladas, con OPCIONES en su
+        OT de tejido y del MISMO CÓDIGO DE COLOR que la receta. Pueden ser de
+        OTRO producto: la sub-receta ata la receta a los lotes de hilo reales
+        y lo que debe coincidir es el color. El color de la OF es el de su
+        receta, el elegido a mano (OF libre) o el de la línea del pedido —
+        mismas fuentes que muestra la OF en "Código de Color"."""
         Option = self.env['mrp.workorder.option']
+        Line = self.env['lab.dev.line']
         for rec in self:
-            templates = rec.color_recipe_id.product_ids
-            if templates:
-                options = Option.search([
-                    ('workorder_id.operation_type', '=', 'weaving'),
-                    ('workorder_id.production_id.state', '!=', 'cancel'),
-                    ('workorder_id.production_id.product_id.product_tmpl_id',
-                     'in', templates.ids),
-                ])
-                rec.available_production_ids = \
-                    options.workorder_id.production_id
-            else:
-                # Sin productos en la receta no hay OF que emparejar.
+            code = rec.color_recipe_id.color_code
+            if not code:
+                # Receta sin color de laboratorio: no hay OF que emparejar.
                 rec.available_production_ids = False
+                continue
+            # Todas las líneas LabDip con ese código (el mismo color puede
+            # estar en varios Lab Dip / clientes).
+            lines = Line.search([('color_code', '=', code)])
+            options = Option.search([
+                ('workorder_id.operation_type', '=', 'weaving'),
+                ('workorder_id.production_id.state', '!=', 'cancel'),
+                '|', '|',
+                ('workorder_id.production_id.color_recipe_id.lab_dev_line_id', 'in', lines.ids),
+                ('workorder_id.production_id.manual_lab_dev_line_id', 'in', lines.ids),
+                ('workorder_id.production_id.sale_order_line_id.lab_dev_line_id', 'in', lines.ids),
+            ])
+            productions = options.workorder_id.production_id
+            # OF de TELA DEL CLIENTE (servicio sin tejido): no tiene opciones ni
+            # lotes; entra por el color para registrarle su sub-receta por OF.
+            customer = self.env['mrp.production'].search([
+                ('state', '!=', 'cancel'), ('production_type', '=', 'service'),
+                '|', '|',
+                ('color_recipe_id.lab_dev_line_id', 'in', lines.ids),
+                ('manual_lab_dev_line_id', 'in', lines.ids),
+                ('sale_order_line_id.lab_dev_line_id', 'in', lines.ids),
+            ]).filtered('is_customer_roll_production')
+            rec.available_production_ids = productions | customer
 
     @api.depends('production_id')
     def _compute_available_options(self):
@@ -303,15 +327,39 @@ class ColorRecipeLot(models.Model):
         """Clave canónica de una combinación de lotes (ids ordenados)."""
         return '-'.join(str(i) for i in sorted(set(lot_ids)))
 
-    @api.depends('lot_ids')
+    @api.depends('lot_ids', 'production_id', 'production_id.is_customer_roll_production')
     def _compute_lot_key(self):
         for rec in self:
-            rec.lot_key = self._make_lot_key(rec.lot_ids.ids) if rec.lot_ids else False
+            if rec.lot_ids:
+                rec.lot_key = self._make_lot_key(rec.lot_ids.ids)
+            elif rec.is_customer_production and rec.production_id:
+                # Sin lotes: la "combinación" es la OF del cliente (así el
+                # versionado agrupa por OF y no mezcla con otras OF).
+                rec.lot_key = 'OF%s' % rec.production_id.id
+            else:
+                rec.lot_key = False
 
-    @api.depends('lot_ids.name')
+    # OJO: partner_id de la OF lo define idtx_sale_order (no es dependencia de
+    # este módulo): no puede ir en @depends; se lee en tiempo de ejecución.
+    @api.depends('lot_ids.name', 'production_id', 'production_id.is_customer_roll_production')
     def _compute_lot_summary(self):
         for rec in self:
-            rec.lot_summary = ', '.join(rec.lot_ids.mapped('name'))
+            if not rec.lot_ids and rec.is_customer_production:
+                prod = rec.production_id.sudo()
+                partner = prod.partner_id.name if 'partner_id' in prod._fields else ''
+                rec.lot_summary = _('Tela del cliente%s') % (
+                    (' · %s' % partner) if partner else '')
+            else:
+                rec.lot_summary = ', '.join(rec.lot_ids.mapped('name'))
+
+    @api.constrains('lot_ids', 'production_id')
+    def _check_lots_required(self):
+        for rec in self:
+            if not rec.lot_ids and not rec.is_customer_production:
+                raise ValidationError(_(
+                    'La sub-receta necesita lotes de hilo. Solo la sub-receta '
+                    'de una OF de tela del cliente (servicio sin tejido) va '
+                    'sin lotes.'))
 
     def action_open_subrecipe(self):
         """Abre la sub-receta en formulario. La primera vez copia los
@@ -343,7 +391,7 @@ class ColorRecipeLot(models.Model):
                 raise UserError(_(
                     'Una sub-receta obsoleta no se puede validar: crea una '
                     'nueva versión.'))
-            if not rec.lot_ids:
+            if not rec.lot_ids and not rec.is_customer_production:
                 raise UserError(_('La sub-receta no tiene lotes de hilo.'))
             if rec.absorption_factor <= 0 or rec.bath_ratio <= 0:
                 raise UserError(_(

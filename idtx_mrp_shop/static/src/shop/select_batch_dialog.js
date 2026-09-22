@@ -47,6 +47,10 @@ export class SelectBatchDialog extends ConfirmationDialog {
             recent: [],
 
             workorderId: this.props.recordId || false,
+            // Lote de teñido (operación conjunta): partidas que deben entrar
+            // JUNTAS a la máquina y si ya se registró el arranque.
+            dyeLot: null,
+            startingLot: false,
             partnerName: "",
             colorName: "",
             colorCode: "",
@@ -292,11 +296,70 @@ export class SelectBatchDialog extends ConfirmationDialog {
         this.state.selectedBatchId = String(batch.id);
         this._persistPartial();
         this._maybeReloadDefaults();
+        this._loadDyeLotInfo();
     }
 
     clearSelectedBatch() {
         this.state.selectedBatchId = "";
+        this.state.dyeLot = null;
         this._persistPartial();
+    }
+
+    // -----------------------------------------------------------------
+    // Lote de teñido: operación conjunta (mismo baño)
+    // -----------------------------------------------------------------
+    async _loadDyeLotInfo() {
+        this.state.dyeLot = null;
+        const woId = this.state.workorderId;
+        const batchId = parseInt(this.state.selectedBatchId);
+        if (!woId || !batchId) {
+            return;
+        }
+        try {
+            const info = await this.ormService.call(
+                "mrp.workorder", "action_get_dye_lot_info", [[woId], batchId]
+            );
+            this.state.dyeLot = info && info.joint ? info : null;
+        } catch (e) {
+            this.state.dyeLot = null;
+        }
+    }
+
+    // Fin de una operación conjunta sin arranque: se avisa aquí (el servidor
+    // lo vuelve a validar).
+    _blockIfLotNotStarted() {
+        if (this.state.dyeLot && !this.state.dyeLot.started) {
+            this.notification.add(
+                _t("Operación conjunta: primero registra el ARRANQUE con todas las partidas del lote."),
+                { type: "danger" }
+            );
+            return true;
+        }
+        return false;
+    }
+
+    async startJointOperation() {
+        if (!this.state.selectedBatchId || !this.state.selectedEmployee || !this.state.selectedEquipment) {
+            this.notification.add(_t("Batch, employee and equipment are required."), { type: "danger" });
+            return;
+        }
+        this.state.startingLot = true;
+        try {
+            const res = await this.ormService.call(
+                "mrp.workorder", "action_start_joint_operation",
+                [[this.state.workorderId], {
+                    batch_id: parseInt(this.state.selectedBatchId),
+                    employee_id: parseInt(this.state.selectedEmployee),
+                    equipment_id: parseInt(this.state.selectedEquipment),
+                }]
+            );
+            if (res) {
+                this.notification.add(res.message, { type: res.status });
+            }
+            await this._loadDyeLotInfo();
+        } finally {
+            this.state.startingLot = false;
+        }
     }
 
     get selectedBatch() {
@@ -391,6 +454,9 @@ export class SelectBatchDialog extends ConfirmationDialog {
     confirm() {
         if (!this.state.selectedBatchId || !this.state.selectedEmployee || !this.state.selectedEquipment) {
             this.notification.add(_t("Batch, employee and equipment are required."), { type: "danger" });
+            return;
+        }
+        if (this._blockIfLotNotStarted()) {
             return;
         }
 

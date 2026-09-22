@@ -24,7 +24,7 @@ modelos usan el prefijo ``qc.``.
     'author': "Codex Development",
     'website': "https://www.perucodex.com",
     'category': 'Manufacturing/Quality',
-    'version': '19.0.1.1.0',
+    'version': '19.0.1.5.1',
     'license': 'LGPL-3',
 
     'depends': [
@@ -65,12 +65,13 @@ modelos usan el prefijo ``qc.``.
         'views/quality_defect_views.xml',
         'views/quality_dimrev_views.xml',
         'views/quality_solidez_lavado_views.xml',
+        'views/qc_roll_hold_views.xml',
         'views/mrp_production_roll_quality_views.xml',
-        'views/stock_quality_grade_views.xml',
         'report/roll_quality_release_report.xml',
         'views/quality_menu.xml',
         'wizards/qc_tone_wizard.xml',
         'wizards/tono_eval_report_wizard.xml',
+        'wizards/qc_roll_grade_wizard_views.xml',
     ],
 
     'assets': {

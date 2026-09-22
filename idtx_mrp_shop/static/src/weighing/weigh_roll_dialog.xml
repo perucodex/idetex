@@ -3,23 +3,57 @@
     <t t-name="idtx_mrp_shop.WeighRollDialog">
         <Dialog size="'md'" title="props.title" modalRef="modalRef">
 
-            <!-- Partida -->
+            <!-- Partida: buscador con autocompletado (se teclea el número y
+                 se elige de la lista; en planta hay cientos abiertas) -->
             <div class="mt-2">
                 <h5 class="fw-bold">Partida</h5>
-                <select t-att-class="'form-select fs-4' + (isBatchInvalid ? ' is-invalid' : '')"
-                        t-model="state.selectedBatch"
-                        t-on-change="onBatchChange">
-                    <option value=""> </option>
-                    <t t-foreach="state.batches" t-as="batch" t-key="batch.id">
-                        <option t-att-value="'' + batch.id"
-                                t-att-selected="state.selectedBatch == ('' + batch.id)"
-                                t-esc="batch.name"/>
-                    </t>
-                </select>
+                <div class="position-relative">
+                    <input type="text"
+                           t-att-class="'form-control fs-4' + (isBatchInvalid ? ' is-invalid' : '')"
+                           placeholder="Buscar partida..."
+                           autocomplete="off"
+                           t-att-value="state.batchQuery"
+                           t-on-input="onBatchQueryInput"
+                           t-on-focus="onBatchInputFocus"/>
+                    <button t-if="state.selectedBatch"
+                            type="button"
+                            class="btn btn-sm btn-light position-absolute top-50 end-0 translate-middle-y me-2"
+                            title="Quitar partida"
+                            t-on-click="() => this.clearBatch()">
+                        <i class="fa fa-times"/>
+                    </button>
+                    <div t-if="state.showBatchDropdown and !state.selectedBatch"
+                         class="position-absolute w-100 border rounded shadow bg-view"
+                         style="z-index: 1080; max-height: 260px; overflow-y: auto;">
+                        <t t-if="state.isSearchingBatch">
+                            <div class="p-2 text-muted">Buscando...</div>
+                        </t>
+                        <t t-elif="!state.batches.length">
+                            <div class="p-2 text-muted">Sin resultados</div>
+                        </t>
+                        <t t-else="">
+                            <t t-foreach="state.batches" t-as="batch" t-key="batch.id">
+                                <button type="button"
+                                        class="btn btn-link text-start text-reset text-decoration-none d-block w-100 border-bottom py-2"
+                                        t-on-click="() => this.selectBatch(batch.id)">
+                                    <div class="fw-bold" t-esc="batch.name"/>
+                                    <div class="small text-muted">
+                                        <span t-esc="batch.color_name or '-'"/> ·
+                                        <span t-esc="(batch.total_weight or 0).toFixed(2) + ' kg'"/>
+                                    </div>
+                                </button>
+                            </t>
+                        </t>
+                    </div>
+                </div>
+                <div t-if="state.selectedBatchData" class="small text-muted mt-1">
+                    <span t-esc="state.selectedBatchData.color_name or '-'"/> ·
+                    <span t-esc="(state.selectedBatchData.total_weight or 0).toFixed(2) + ' kg'"/>
+                </div>
             </div>
 
             <!-- Producto -->
-            <div class="mt-4" t-if="state.products.length">
+            <div class="mt-4" t-if="!isResolveMode and state.products.length">
                 <h5 class="fw-bold">Producto</h5>
                 <select t-att-class="'form-select fs-4' + (isProductInvalid ? ' is-invalid' : '')"
                         t-model="state.selectedProduct"
@@ -34,7 +68,7 @@
             </div>
 
             <!-- Rollo crudo que se está pesando (opcional): aplica su talla -->
-            <div class="mt-4" t-if="state.rolls.length">
+            <div class="mt-4" t-if="!isResolveMode and state.rolls.length">
                 <h5 class="fw-bold">Rollo</h5>
                 <select class="form-select fs-4" t-model="state.selectedRoll">
                     <option value=""> </option>
@@ -44,6 +78,99 @@
                                 t-esc="roll.name"/>
                     </t>
                 </select>
+            </div>
+
+            <!-- N° de rollo (Acabado): correlativo del lote -->
+            <div class="mt-4" t-if="!isResolveMode and state.selectedProduct">
+                <h5 class="fw-bold">N° de rollo</h5>
+                <input type="number" min="1" step="1" inputmode="numeric"
+                       t-att-class="'form-control fs-4' + (isRollNumInvalid or isRollAlreadyWeighed ? ' is-invalid' : '')"
+                       placeholder="N° que marcó Acabado en el rollo"
+                       t-att-value="state.rollNum"
+                       t-on-input="onRollNumInput"
+                       t-ref="rollNumInput"/>
+                <div t-if="isRollAlreadyWeighed" class="alert alert-danger mt-2 fs-6 mb-0">
+                    Ya pesado: <b t-esc="state.rollInfo.lot"/>. Si vuelve de reproceso usa "Resolver observado".
+                </div>
+                <div t-if="state.rollInfo and state.rollInfo.hold and state.rollInfo.hold.observed and !isRollAlreadyWeighed"
+                     class="alert alert-warning mt-2 fs-6 mb-0">
+                    Calidad pidió <b>SEPARAR</b> este rollo:
+                    <b t-esc="state.rollInfo.hold.reason_label"/>
+                    <t t-if="state.rollInfo.hold.note"> — <t t-esc="state.rollInfo.hold.note"/></t>
+                </div>
+                <div t-if="state.rollInfo and state.rollInfo.valid and !isRollAlreadyWeighed and !(state.rollInfo.hold and state.rollInfo.hold.observed)"
+                     t-att-class="'alert mt-2 fs-6 mb-0 ' + (state.rollInfo.hold ? 'alert-info' : 'alert-light border')">
+                    <t t-if="state.rollInfo.hold">
+                        Calidad calificó este rollo: <b>grado <t t-esc="state.rollInfo.hold.grade"/></b>
+                        <t t-if="state.rollInfo.hold.note"> — <t t-esc="state.rollInfo.hold.note"/></t>
+                    </t>
+                    <t t-else="">Sin calificación previa de Calidad: entra como <b>grado A</b>.</t>
+                </div>
+            </div>
+
+            <!-- Pesar según calidad / Observado (separar). Si Calidad pidió SEPARAR,
+                 Pesado no puede cambiarlo: el rollo entra observado sí o sí. -->
+            <div class="mt-3" t-if="!isResolveMode and state.selectedProduct">
+                <div t-if="isHoldObserved" class="btn btn-warning w-100 fs-5 disabled" role="status">
+                    Se pesa como OBSERVADO (decisión de Calidad)
+                </div>
+                <div t-else="" class="btn-group w-100" role="group">
+                    <button type="button"
+                            t-att-class="'btn fs-5 ' + (state.observed ? 'btn-outline-success' : 'btn-success')"
+                            t-on-click="() => this.setObserved(false)">
+                        Pesar · grado <t t-esc="qualityGrade or 'A'"/>
+                    </button>
+                    <button type="button"
+                            t-att-class="'btn fs-5 ' + (state.observed ? 'btn-warning' : 'btn-outline-warning')"
+                            t-on-click="() => this.setObserved(true)">
+                        Observado
+                    </button>
+                </div>
+                <div t-if="state.observed" class="mt-2">
+                    <select class="form-select fs-5" t-model="state.observation" t-att-disabled="isHoldObserved ? 'disabled' : undefined">
+                        <t t-foreach="observationOptions" t-as="opt" t-key="opt.value">
+                            <option t-att-value="opt.value" t-att-selected="state.observation === opt.value" t-esc="opt.label"/>
+                        </t>
+                    </select>
+                    <input type="text" class="form-control fs-5 mt-2"
+                           placeholder="Detalle del problema (sale en el sticker)"
+                           t-model="state.note"/>
+                    <div class="text-muted fs-6 mt-1">
+                        El rollo se pesa igual, sale con sticker OBSERVADO y va al área de reproceso.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Repesar: rollo observado que vuelve de reproceso con grado final de Calidad -->
+            <div class="mt-4" t-if="isResolveMode and state.selectedBatch">
+                <h5 class="fw-bold">Rollo a repesar</h5>
+                <select class="form-select fs-4" t-model="state.selectedObservedRoll">
+                    <option value=""> </option>
+                    <t t-foreach="state.observedRolls" t-as="roll" t-key="roll.id">
+                        <option t-att-value="'' + roll.id"
+                                t-att-selected="state.selectedObservedRoll == ('' + roll.id)"
+                                t-esc="roll.name"/>
+                    </t>
+                </select>
+                <div t-if="!state.observedRolls.length" class="text-muted fs-6 mt-1">
+                    No hay rollos listos para repesar.
+                </div>
+                <div t-else="" class="text-muted fs-6 mt-1">
+                    El grado lo dio Calidad; aquí solo se repesa y se reimprime el sticker.
+                </div>
+                <div t-if="state.pendingGradeRolls.length" class="alert alert-warning fs-6 mt-2 mb-0">
+                    <b>Observados sin grado final</b> (no se pueden repesar todavía):
+                    <ul class="mb-1">
+                        <t t-foreach="state.pendingGradeRolls" t-as="r" t-key="r.id">
+                            <li t-esc="r.name"/>
+                        </t>
+                    </ul>
+                    Calidad debe darles el grado A, B o M en <b>Calidad › Evaluaciones › Rollos Observados</b>;
+                    en cuanto lo haga aparecerán aquí para repesar.
+                </div>
+                <input type="text" class="form-control fs-5 mt-2"
+                       placeholder="Nota del repesado (opcional)"
+                       t-model="state.note"/>
             </div>
 
             <div class="o_select_scale_dialog w-100 mt-3">
@@ -175,7 +302,7 @@
                 <!-- Tras pesar, se espera a DESCARGAR la balanza para rearmar -->
                 <div class="mt-3 alert alert-info fs-6 mb-0"
                      t-if="state.waitingZero and !state.weighing">
-                    Rollo registrado. Retira el rollo: el botón Pesar se
+                    Rollo registrado. Retira el rollo: el botón se
                     reactiva cuando la balanza vuelva a 0.
                 </div>
 
@@ -188,6 +315,7 @@
                             data-select-confirm="1"
                             t-on-click="confirm">
                         <t t-if="state.weighing">Pesando...</t>
+                        <t t-elif="isResolveMode">Repesar</t>
                         <t t-else="">Pesar</t>
                     </button>
                     <button class="btn btn-secondary" t-on-click="closeDialog">

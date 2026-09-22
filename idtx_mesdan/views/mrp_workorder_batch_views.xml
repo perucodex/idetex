@@ -9,7 +9,7 @@
             <xpath expr="//form/header" position="inside">
                 <button name="action_fetch_mesdan_reports" type="object"
                         string="Importar Reportes Mesdan" class="btn-secondary"
-                        icon="fa-file-pdf-o" invisible="state == 'draft'"/>
+                        icon="fa-file-pdf-o" invisible="state in ('draft', 'split')"/>
             </xpath>
             <div name="button_box" position="inside">
                 <button name="action_view_mesdan_reports" type="object" class="oe_stat_button"

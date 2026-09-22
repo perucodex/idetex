@@ -63,8 +63,12 @@
                                 <field name="lab_dev_line_ids" context="{'form_view_ref': 'idtx_laboratory.lab_dev_line_view_form'}">
                                     <list editable="bottom">
                                         <field name="approved_product_ids" column_invisible="1"/>
+                                    <!-- search_product_product: con un dominio por 'id' el core deja de
+                                         buscar por REFERENCIA (solo por nombre); este contexto fuerza la
+                                         búsqueda por variante/código. no_create: los productos no se crean
+                                         desde el Lab Dip. -->
                                         <field name="available_product_ids" column_invisible="1"/>
-                                        <field name="product_ids" widget="lab_products_approval_tags" domain="[('id', 'in', available_product_ids)]"/>
+                                        <field name="product_ids" widget="lab_products_approval_tags" domain="[('id', 'in', available_product_ids)]" context="{'search_product_product': True}" options="{'no_create': True}"/>
                                         <field name="color_name"/>
                                         <field name="color_code" readonly="1"/>
                                         <field name="color_recipe_ids"/>
@@ -194,7 +198,7 @@
                                 <field name="available_product_ids" invisible="1"/>
                                 <field name="approved_product_ids" invisible="1"/>
                                 <field name="sale_order_id" invisible="1"/>
-                                <field name="product_ids" widget="lab_products_approval_tags" required="1" readonly="sale_order_id or color_recipe_ids" domain="[('id', 'in', available_product_ids)]" force_save="1"/>
+                                <field name="product_ids" widget="lab_products_approval_tags" required="1" readonly="sale_order_id or color_recipe_ids" domain="[('id', 'in', available_product_ids)]" context="{'search_product_product': True}" options="{'no_create': True}" force_save="1"/>
                                 <field name="color_name" required="1" readonly="sale_order_id or color_recipe_ids" force_save="1"/>
                                 <field name="color_code" readonly="1" force_save="1"/>
                             </group>   
@@ -221,7 +225,7 @@
                                         <field name="name" readonly="1"/>
                                         <field name="recipe_date" readonly="1"/>
                                         <field name="available_product_ids" column_invisible="1"/>
-                                        <field name="product_ids" widget="many2many_tags" domain="[('id', 'in', available_product_ids)]" required="1" options="{'no_create': True}"/>
+                                        <field name="product_ids" widget="many2many_tags" domain="[('id', 'in', available_product_ids)]" context="{'search_product_product': True}" required="1" options="{'no_create': True}"/>
                                         <field name="color_name"/>
                                         <field name="recipe_color_code" readonly="1"/>
                                         <field name="company_id" groups="base.group_multi_company" readonly="1" column_invisible="1"/>
@@ -285,6 +289,9 @@
                 <search string="Lab Dip Line">
                     <field name="color_code"/>
                     <field name="color_name"/>
+                    <!-- Buscar por el número del Lab Dip (LD-17557 o 17557)
+                         desde "Buscar más" en el pedido de venta. -->
+                    <field name="lab_dev_id" string="Lab Dip"/>
                     <group>
                         <filter string="Lab Dip" name="group_by_lab_dev" domain="[]" context="{'group_by': 'lab_dev_id'}"/>
                     </group>

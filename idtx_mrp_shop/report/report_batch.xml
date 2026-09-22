@@ -27,12 +27,25 @@
                 .reporte-partida .proc-of { font-weight: bold !important; text-align: center !important; background: #eee !important; }
                 .reporte-partida .proc-op { text-align: center !important; }
                 .reporte-partida .proc-branch { border: 0 !important; padding: 0 !important; vertical-align: top !important; }
+                /* Rollos por producto: cabecera del producto + dos columnas de rollos */
+                .reporte-partida .rolls-wrap { margin-bottom: 6px; }
+                .reporte-partida .rolls-wrap table { border-collapse: collapse !important; width: 100%; margin: 0; }
+                .reporte-partida .rolls-prod { font-weight: bold !important; background: #eee !important; }
+                .reporte-partida .rolls-col { border: 0 !important; padding: 0 !important; vertical-align: top !important; width: 50%; }
+                .reporte-partida .rolls-col-left { padding-right: 4px !important; }
+                .reporte-partida .rolls-empty { border: 0 !important; background: transparent !important; }
+                /* Sin quiebre de línea: el N° de rollo y la O.F. deben caber enteros en media hoja */
+                .reporte-partida .rolls-wrap th, .reporte-partida .rolls-wrap td { white-space: nowrap; }
+                .reporte-partida .rolls-wrap .rolls-data { font-size: 0.78rem; }
+                .reporte-partida .rolls-wrap .rolls-data th, .reporte-partida .rolls-wrap .rolls-data td { padding: 2px 4px !important; }
             </style>
 
             <div class="row mb-2">
                 <div class="col-6"><h3 class="mb-0">Reporte de Partida</h3></div>
                 <div class="col-6 text-end">
                     <h4 class="mb-0"><t t-esc="doc.name"/></h4>
+                    <div t-if="doc.dye_product_id" class="fw-bold"><t t-esc="doc.dye_product_id.name"/></div>
+                    <div t-if="doc.reprocess_seq" class="fw-bold text-danger">Reproceso <t t-esc="doc.reprocess_seq"/></div>
                     <span t-esc="doc.batch_date" t-options="{'widget': 'date'}"/>
                 </div>
             </div>
@@ -69,46 +82,103 @@
                         <td><strong>Estado</strong></td>
                         <td><t t-esc="dict(doc._fields['state'].selection).get(doc.state, doc.state)"/></td>
                     </tr>
-                    <tr t-if="doc.parent_batch_id">
-                        <td><strong>Partida Origen</strong></td>
-                        <td colspan="3"><t t-esc="doc.parent_batch_id.name"/></td>
+                    <tr t-if="doc.parent_batch_id and (not doc.dye_product_id or doc.reprocess_seq)">
+                        <td><strong><t t-esc="'Reproceso de' if doc.reprocess_seq else 'Partida Origen'"/></strong></td>
+                        <td colspan="3"><t t-esc="doc.parent_batch_id.display_name"/></td>
+                    </tr>
+                    <tr t-if="doc.transferred_roll_ids">
+                        <td><strong>Transferidos a reproceso</strong></td>
+                        <td colspan="3">
+                            <t t-esc="', '.join(doc.transferred_roll_ids.mapped('name'))"/>
+                            (<t t-esc="'%.2f' % sum(doc.transferred_roll_ids.mapped('gross_weight'))"/> kg) →
+                            <t t-esc="', '.join(sorted(set(doc.transferred_roll_ids.mapped('reprocess_batch_id.display_name'))))"/>
+                        </td>
+                    </tr>
+                    <!-- Partida por producto de un lote de teñido: va al mismo baño
+                         que sus hermanas; la relación de baño es del total. -->
+                    <tr t-if="doc.dye_sibling_ids" style="background: #fff3cd;">
+                        <td colspan="4">
+                            <strong>TEÑIDO CONJUNTO:</strong> se tiñe junto con
+                            <t t-esc="', '.join(doc.dye_sibling_ids.mapped('display_name'))"/>.
+                            Kilos totales del baño: <strong><t t-esc="'%.2f' % doc.dye_lot_weight"/> kg</strong>
+                            (esta partida: <t t-esc="'%.2f' % doc.total_weight"/> kg). Deben entrar juntas a la máquina.
+                        </td>
                     </tr>
                 </tbody>
             </table>
 
             <h5 class="mb-1">Rollos</h5>
-            <table class="table table-sm table-bordered o_ignore_layout_styling">
-                <thead>
+            <t t-set="roll_groups" t-value="doc._get_report_rolls_by_product()"/>
+            <t t-set="any_rect" t-value="any(g['rect'] for g in roll_groups)"/>
+            <p t-if="not roll_groups" class="text-center">Sin rollos.</p>
+            <!-- Una tabla por PRODUCTO (cabecera con el producto y su
+                 subtotal) y los rollos repartidos en dos columnas: se lee
+                 hacia abajo la izquierda y sigue la derecha. -->
+            <div t-foreach="roll_groups" t-as="grp" class="rolls-wrap">
+                <table class="table table-sm table-bordered o_ignore_layout_styling">
                     <tr>
-                        <th class="text-center">N°</th>
-                        <th>Producto</th>
-                        <th>O.F.</th>
-                        <th class="text-end">Cantidad</th>
-                        <th class="text-end">Peso Neto (kg)</th>
-                        <th class="text-end">Peso Bruto (kg)</th>
+                        <td t-att-colspan="2 if grp['has_right'] else 1" class="rolls-prod">
+                            <t t-esc="grp['product'].display_name or ''"/>
+                            <span class="float-end">
+                                <t t-esc="grp['count']"/> <t t-esc="'rollo' if grp['count'] == 1 else 'rollos'"/> ·
+                                <t t-if="grp['rect']"><t t-esc="grp['quantity']"/> piezas · </t>
+                                <t t-esc="'%.2f' % grp['weight']"/> kg
+                            </span>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    <tr t-foreach="rolls" t-as="roll">
-                        <td class="text-center"><t t-esc="roll.name or ''"/></td>
-                        <td><t t-esc="roll.product_id.display_name or ''"/></td>
-                        <td><t t-esc="roll.production_id.name or ''"/></td>
-                        <td class="text-end"><t t-esc="roll.quantity"/></td>
-                        <td class="text-end"><t t-esc="'%.2f' % (roll.net_weight or 0)"/></td>
-                        <td class="text-end"><t t-esc="'%.2f' % (roll.gross_weight or 0)"/></td>
-                    </tr>
-                    <tr t-if="not rolls">
-                        <td colspan="6" class="text-center">Sin rollos.</td>
-                    </tr>
-                </tbody>
-                <tfoot t-if="rolls">
                     <tr>
-                        <td colspan="3" class="text-end"><strong>Totales</strong></td>
-                        <td class="text-end"><strong><t t-esc="sum(rolls.mapped('quantity'))"/></strong></td>
-                        <td class="text-end"><strong><t t-esc="'%.2f' % sum(rolls.mapped('net_weight'))"/></strong></td>
-                        <td class="text-end"><strong><t t-esc="'%.2f' % sum(rolls.mapped('gross_weight'))"/></strong></td>
+                        <t t-foreach="[0, 1] if grp['has_right'] else [0]" t-as="col">
+                            <td t-attf-class="rolls-col #{'rolls-col-left' if col == 0 and grp['has_right'] else ''}"
+                                t-attf-style="width: #{'50%' if grp['has_right'] else '100%'}">
+                                <table class="table table-sm table-bordered o_ignore_layout_styling rolls-data">
+                                    <thead>
+                                        <tr>
+                                            <!-- Rectilíneo: talla y piezas; tela: solo peso. -->
+                                            <t t-if="grp['rect']">
+                                                <th class="text-center" style="width:26%">N°</th>
+                                                <th style="width:24%">O.F.</th>
+                                                <th class="text-center" style="width:14%">Talla</th>
+                                                <th class="text-end" style="width:12%">Cant</th>
+                                                <th class="text-end" style="width:24%">Peso (kg)</th>
+                                            </t>
+                                            <t t-else="">
+                                                <th class="text-center" style="width:36%">N°</th>
+                                                <th style="width:34%">O.F.</th>
+                                                <th class="text-end" style="width:30%">Peso (kg)</th>
+                                            </t>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="grp['rows']" t-as="row">
+                                            <t t-set="roll" t-value="row[col]"/>
+                                            <t t-if="roll">
+                                                <td class="text-center"><t t-esc="roll.name or ''"/></td>
+                                                <td><t t-esc="roll.production_id.name or ''"/></td>
+                                                <t t-if="grp['rect']">
+                                                    <td class="text-center"><t t-esc="roll.size_id.size or ''"/></td>
+                                                    <td class="text-end"><t t-esc="roll.quantity"/></td>
+                                                </t>
+                                                <td class="text-end"><t t-esc="'%.2f' % (roll.gross_weight or 0)"/></td>
+                                            </t>
+                                            <t t-else="">
+                                                <td t-att-colspan="5 if grp['rect'] else 3" class="rolls-empty"/>
+                                            </t>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </t>
                     </tr>
-                </tfoot>
+                </table>
+            </div>
+
+            <table t-if="rolls" class="table table-sm table-bordered o_ignore_layout_styling">
+                <tr>
+                    <td class="text-end" style="width:58%"><strong>Totales</strong></td>
+                    <!-- Piezas solo si hay algún producto rectilíneo en la partida. -->
+                    <td t-if="any_rect" class="text-end" style="width:14%"><strong><t t-esc="sum(g['quantity'] for g in roll_groups if g['rect'])"/> piezas</strong></td>
+                    <td class="text-end" style="width:28%"><strong><t t-esc="'%.2f' % sum(rolls.mapped('gross_weight'))"/> kg</strong></td>
+                </tr>
             </table>
 
             <t t-set="tree" t-value="doc._get_process_tree()"/>

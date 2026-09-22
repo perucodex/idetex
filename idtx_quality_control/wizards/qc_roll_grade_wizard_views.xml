@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_qc_roll_grade_wizard_form" model="ir.ui.view">
+            <field name="name">qc.roll.grade.wizard.form</field>
+            <field name="model">qc.roll.grade.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Calificar rollos de la partida">
+                    <group>
+                        <group>
+                            <field name="batch_id"/>
+                            <label for="roll_count"/>
+                            <div class="d-flex gap-2">
+                                <field name="roll_count" class="oe_inline" style="max-width: 6rem;"/>
+                                <button name="action_regenerate" type="object" string="Generar filas" class="btn-link" icon="fa-refresh"/>
+                            </div>
+                        </group>
+                        <group>
+                            <field name="default_grade"/>
+                        </group>
+                    </group>
+                    <div class="text-muted mb-2">
+                        Un rollo por N° de Acabado. Grado A, B o M según lo evaluado; marca <b>Separar</b> con su motivo
+                        cuando el rollo debe ir a reproceso antes de recibir grado. Lo que dejes en blanco no se marca
+                        (al pesar entra como A), salvo que indiques un grado para los no marcados.
+                    </div>
+                    <field name="line_ids">
+                        <list editable="bottom" create="0" delete="0"
+                              decoration-muted="released"
+                              decoration-warning="observed"
+                              decoration-info="grade == 'B'"
+                              decoration-danger="grade == 'M'">
+                            <field name="roll_num" readonly="1" force_save="1"/>
+                            <field name="grade" readonly="released"/>
+                            <field name="observed" readonly="released" widget="boolean_toggle"/>
+                            <field name="reason" readonly="released or not observed" required="observed"/>
+                            <field name="note" readonly="released"/>
+                            <field name="lot_name" optional="show" force_save="1"/>
+                            <field name="weight" optional="show" sum="Kg" force_save="1"/>
+                            <field name="current_state" optional="show" force_save="1"/>
+                            <field name="released" column_invisible="1" force_save="1"/>
+                        </list>
+                    </field>
+                    <footer>
+                        <button name="action_apply" type="object" string="Guardar calificación" class="btn-primary"/>
+                        <button string="Cancelar" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>

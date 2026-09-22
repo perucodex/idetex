@@ -63,10 +63,93 @@ class MrpWorkorderBatch(models.Model):
         related='qc_product_id.analysis_id.density_stability_twisting_id',
         string='Estándar Densidad / Estabilidad / Revirado')
     kilograms = fields.Float(related='total_weight', string='Kilos')
+    # --- Rollos a separar (marca de Calidad ANTES del pesado, por N° rollo) ---
+    roll_hold_ids = fields.One2many('qc.roll.hold', 'batch_id', string='Rollos a separar')
+    roll_hold_open_count = fields.Integer('Marcas por pesar', compute='_compute_roll_hold_counts')
+    roll_hold_count = fields.Integer('Rollos marcados', compute='_compute_roll_hold_counts')
+
+    @api.depends('roll_hold_ids.state')
+    def _compute_roll_hold_counts(self):
+        for batch in self:
+            holds = batch.roll_hold_ids.filtered(lambda h: h.state != 'cancel')
+            batch.roll_hold_count = len(holds)
+            batch.roll_hold_open_count = len(holds.filtered(lambda h: h.state == 'open'))
+
+    def _get_roll_hold(self, roll_num):
+        """Hook del pesado (idtx_mrp_shop): calificación previa de Calidad para
+        ese N° rollo (grado o separar), o False si no hay."""
+        self.ensure_one()
+        hold = self.roll_hold_ids.filtered(
+            lambda h: h.roll_num == int(roll_num) and h.state == 'open')[:1]
+        if not hold:
+            return super()._get_roll_hold(roll_num)
+        return {'id': hold.id, 'grade': hold.grade or '', 'observed': bool(hold.observed),
+                'reason': hold.reason or '', 'reason_label': hold._reason_label(),
+                'note': hold.note or '', 'label': hold._mark_label()}
+
+    def _after_weigh_finished_roll(self, roll):
+        super()._after_weigh_finished_roll(roll)
+        hold = self.roll_hold_ids.filtered(
+            lambda h: h.roll_num == roll.roll_num and h.state == 'open')[:1]
+        if hold:
+            hold.write({'roll_id': roll.id, 'state': 'weighed'})
+            roll.hold_id = hold
+
+    # --- Wizard "Calificar Rollos" (previo al pesado) ---
+    def _roll_grade_default_count(self):
+        """N° de rollos de la partida: máximo entre rollos de tejido, marcas y
+        rollos ya pesados."""
+        self.ensure_one()
+        counts = [len(self.wo_roll_ids), max(self.roll_hold_ids.mapped('roll_num') or [0]),
+                  max(self.finished_roll_ids.mapped('roll_num') or [0])]
+        return max(counts) or 1
+
+    def _roll_grade_wizard_lines(self, count):
+        self.ensure_one()
+        holds = {h.roll_num: h for h in self.roll_hold_ids if h.state != 'cancel'}
+        rolls = {r.roll_num: r for r in self.finished_roll_ids}
+        states = dict(self.env['mrp.production.roll']._fields['quality_state']._description_selection(self.env))
+        lines = []
+        for num in range(1, int(count) + 1):
+            hold = holds.get(num)
+            roll = rolls.get(num)
+            vals = {'roll_num': num,
+                    'grade': hold.grade if hold else False,
+                    'observed': hold.observed if hold else False,
+                    'reason': hold.reason if hold else False,
+                    'note': hold.note if hold else False}
+            if roll:
+                vals.update({
+                    'lot_name': roll.lot_id.name, 'weight': roll.net_weight,
+                    'current_state': '%s%s' % (states.get(roll.quality_state, ''),
+                                               (' · grado ' + roll.quality_grade) if roll.quality_grade else ''),
+                    'released': roll.quality_released,
+                })
+                if not hold:
+                    vals['grade'] = roll.quality_grade if not roll.quality_observation else False
+                    vals['observed'] = bool(roll.quality_observation) and not roll.quality_grade
+                    vals['reason'] = roll.quality_observation if vals['observed'] else False
+            lines.append(vals)
+        return lines
+
+    def action_open_roll_grade_wizard(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Calificar rollos · %s') % self.name,
+            'res_model': 'qc.roll.grade.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_batch_id': self.id},
+        }
+
+    def _after_resolve_observed_roll(self, roll):
+        super()._after_resolve_observed_roll(roll)
+        if roll.hold_id and roll.hold_id.state == 'weighed':
+            roll.hold_id.state = 'resolved'
+
     # --- Calificación de rollos terminados (grado A/B/M por rollo pesado) ---
-    finished_roll_ids = fields.One2many(
-        'mrp.production.roll', 'batch_id', string='Rollos terminados',
-        domain=[('lot_id', '!=', False)])
+    # finished_roll_ids se define en idtx_mrp_shop (lo usa la liberación a almacén)
     finished_roll_count = fields.Integer('Rollos pesados', compute='_compute_roll_quality_counts')
     roll_pending_count = fields.Integer('Por evaluar', compute='_compute_roll_quality_counts')
     roll_observed_count = fields.Integer('Observados', compute='_compute_roll_quality_counts')
@@ -126,6 +209,10 @@ class MrpWorkorderBatch(models.Model):
             summary[grade] = (len(sub), sum(sub.mapped('net_weight')))
         retained = rolls.filtered(lambda r: r.quality_state in ('pending', 'observed'))
         return summary, retained
+
+    def _roll_open_holds(self):
+        self.ensure_one()
+        return self.roll_hold_ids.filtered(lambda h: h.state == 'open')
     roll_count = fields.Integer('Rollos', compute='_compute_roll_count')
     reprocess_cycle = fields.Char(
         'Ciclo de Reproceso', compute='_compute_reprocess_cycle',

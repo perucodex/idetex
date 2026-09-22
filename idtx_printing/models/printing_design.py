@@ -10,6 +10,12 @@ from PIL import Image
 # Extensiones permitidas
 ALLOWED_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.bmp')
 
+# Grados de solidez (norma ISO/AATCC: 1 a 5 con medios grados)
+FASTNESS_GRADES = [
+    ('1', '1'), ('1-2', '1-2'), ('2', '2'), ('2-3', '2-3'), ('3', '3'),
+    ('3-4', '3-4'), ('4', '4'), ('4-5', '4-5'), ('5', '5'),
+]
+
 class PrintingDesign(models.Model):
     _name = 'printing.design'
     _inherit = ['mail.thread', 'mail.activity.mixin']
@@ -52,9 +58,11 @@ class PrintingDesign(models.Model):
     rotary_unit_price_ids = fields.One2many('printing.design.price', 'rotary_printing_id', string='Rotary Prices')
     rotary_recipe_line_ids = fields.One2many('printing.design.rotary.line', 'printing_design_id', string='Rotary Recipes')
     yield_meter = fields.Float('Yield')
+    # Flujo (JP, 22-sep-2026): Borrador → Desarrollo → Hecho, con retorno a
+    # borrador desde cualquier estado. El antiguo estado "Cotización" se
+    # eliminó (migración 19.0.0.3.1 lo lleva a Desarrollo).
     state = fields.Selection([
         ('draft', 'Draft'),
-        ('quoting', 'Quoting'),
         ('development', 'Development'),
         ('done', 'Done'),
     ], string='Status', default='draft', tracking=True, copy=False)
@@ -62,6 +70,40 @@ class PrintingDesign(models.Model):
     currency_id = fields.Many2one('res.currency', string='Currency', default=lambda self: self.env.ref('base.USD'))
     unit_price = fields.Monetary('Unit Price', currency_field='currency_id')
     bonding_price = fields.Monetary('Bonding Price', currency_field='currency_id')
+    # "Con precio" con la MISMA regla que usa la línea de venta para el recargo
+    # de estampado: rotativo = precio/mt del diseño; digital = alguna fila de la
+    # tabla de rangos con precio. Sin precio la cotización no se puede validar.
+    has_price = fields.Boolean('Con precio', compute='_compute_has_price')
+
+    # --- Ficha de cotización de estampado (JP, 22-sep-2026) ---
+    # Campos que el VENDEDOR llena al cotizar (ficha Excel "Ficha de cotización
+    # de estampados"). Las selecciones replican las opciones de la ficha.
+    width = fields.Float('Ancho (cm)', digits=(12, 2))
+    density = fields.Float('Densidad (gr/m²)', digits=(12, 2))
+    coverage = fields.Selection([
+        ('low', 'Cobertura baja'),
+        ('medium', 'Cobertura media'),
+        ('high', 'Cobertura alta'),
+    ], string='Porcentaje de cobertura')
+    color_depth = fields.Selection([
+        ('light', 'Claros (10 gr/kilo)'),
+        ('medium', 'Medios (20 gr/kilo)'),
+        ('dark', 'Oscuros (30 gr/kilo a más)'),
+    ], string='Porcentaje de color')
+    # Cuidados base de la tela
+    thiotan = fields.Boolean('Thiotan')
+    discharge_prepared = fields.Boolean('Preparado para descarga')
+    # Productos adicionales antes de estampar
+    pasting = fields.Boolean('Empastado')
+    rotary_bonding = fields.Boolean('Bondeado rotativo')
+    digital_defuzzing = fields.Boolean('Despeluzado digital')
+    # Productos adicionales después de estampar
+    polyurethane = fields.Boolean('Poliuretano')
+    # Solidez a ofrecer (escala 1-5 con medios grados, como en laboratorio)
+    fastness_dry_rub = fields.Selection(FASTNESS_GRADES, string='Frote seco')
+    fastness_wet_rub = fields.Selection(FASTNESS_GRADES, string='Frote húmedo')
+    fastness_wash = fields.Selection(FASTNESS_GRADES, string='Solidez al lavado')
+    quote_notes = fields.Text('Observaciones')
 
     @api.depends('name')
     def _compute_is_locked(self):
@@ -114,15 +156,33 @@ class PrintingDesign(models.Model):
             base_domain &= Domain('code', operator, name) | Domain('file_desc', operator, name)
         return [(rec.id, rec.display_name) for rec in self.search(base_domain, limit=limit)]
 
-    def action_set_quoting(self):
-        for rec in self:
-            if rec.state == 'draft':
-                rec.state = 'quoting'
-
     def action_set_development(self):
         for rec in self:
-            if rec.state in ('draft', 'quoting'):
+            if rec.state == 'draft':
                 rec.state = 'development'
+
+    def action_set_draft(self):
+        """Regresar a borrador desde cualquier estado: la ficha vuelve a ser
+        editable por el vendedor y deja de contar como Hecha."""
+        self.filtered(lambda rec: rec.state != 'draft').write({'state': 'draft'})
+
+    def action_set_done(self):
+        """Desarrollo cierra la ficha: exige precio. Al pasar a Hecho las
+        cotizaciones que usan el diseño se recalculan (idtx_sale_order)."""
+        for rec in self:
+            if rec.state != 'development':
+                continue
+            if not rec.has_price:
+                raise ValidationError(_('La ficha %s no tiene precio de estampado: colócalo antes de marcarla como Hecho.', rec.display_name))
+            rec.state = 'done'
+
+    @api.depends('printing_type', 'unit_price', 'digital_unit_price_ids.unit_price')
+    def _compute_has_price(self):
+        for rec in self:
+            if rec.printing_type == 'digital':
+                rec.has_price = any(p.unit_price > 0 for p in rec.digital_unit_price_ids)
+            else:
+                rec.has_price = rec.unit_price > 0
 
     def _sync_state_from_recipes(self):
         for rec in self:
@@ -136,8 +196,14 @@ class PrintingDesign(models.Model):
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
+        # Las tablas de precios solo se proponen a quien puede crear precios
+        # (Estampado/Administrador). Para el vendedor que crea la ficha desde
+        # la cotización se crean después con sudo (_ensure_default_price_lines);
+        # si se propusieran aquí, el create fallaría por permisos al insertar
+        # las líneas (Odoo completa los defaults de los campos ausentes).
+        can_create_prices = self.env['printing.design.price'].has_access('create')
         # Estampado Digital
-        if 'digital_unit_price_ids' in fields_list:
+        if 'digital_unit_price_ids' in fields_list and can_create_prices:
             res['digital_unit_price_ids'] = [
                 (0, 0, {'sequence': 1,'range': '1 roll lower than 20Kg.','min_qty': 1, 'max_qty': 59}),
                 (0, 0, {'sequence': 2,'range': '60-100 mts','min_qty': 60, 'max_qty': 100}),
@@ -147,7 +213,7 @@ class PrintingDesign(models.Model):
                 (0, 0, {'sequence': 6,'range': '1001 or +','min_qty': 1000, 'max_qty': 99999999}),
             ]
         # Estampado Rotativo
-        if 'rotary_unit_price_ids' in fields_list:
+        if 'rotary_unit_price_ids' in fields_list and can_create_prices:
             res['rotary_unit_price_ids'] = [
                 (0, 0, {'sequence': 1,'raport': '64','unit_price': self.env.company.cylinder_64_price, 'color_qty': '8-10', 'sample_min_qty': '0-100 mts.', 'sample_price': self.env.company.sample_1_price}),
                 (0, 0, {'sequence': 2,'raport': '82','unit_price': self.env.company.cylinder_82_price, 'color_qty': '4-6', 'sample_min_qty': '101-200 mts.', 'sample_price': self.env.company.sample_2_price}),
@@ -166,7 +232,22 @@ class PrintingDesign(models.Model):
                 vals['name'] = self.env['ir.sequence'].with_company(vals.get('company_id')).next_by_code(
                     'printing.design', sequence_date=seq_date) or _("New")
                 vals['code'] = self._create_code(vals)
-        return super().create(vals_list)
+        designs = super().create(vals_list)
+        designs._ensure_default_price_lines()
+        return designs
+
+    def _ensure_default_price_lines(self):
+        """Las tablas de precios nacen con default_get solo para quien puede
+        crear precios. La ficha del vendedor (cotización) llega sin ellas, así
+        que se crean aquí con los mismos valores por defecto (sudo justificado:
+        el vendedor no tiene permiso sobre precios y las tablas deben existir
+        para que desarrollo las complete)."""
+        Price = self.env['printing.design.price'].sudo()
+        for rec in self:
+            if not rec.sudo().digital_unit_price_ids and not rec.sudo().rotary_unit_price_ids:
+                defaults = self.sudo().default_get(['digital_unit_price_ids', 'rotary_unit_price_ids'])
+                Price.create([dict(cmd[2], digital_printing_id=rec.id) for cmd in defaults.get('digital_unit_price_ids', [])])
+                Price.create([dict(cmd[2], rotary_printing_id=rec.id) for cmd in defaults.get('rotary_unit_price_ids', [])])
 
     # -------------------------------------------------------
     # HELPERS
@@ -175,17 +256,17 @@ class PrintingDesign(models.Model):
     # @api.onchange('printing_date','printing_type','cylinder_qty','process_type_rotary','process_type_digital')
     def _create_code(self, vals):
         # for rec in self:
-        p_date = vals['printing_date'] or fields.Date.context_today(self)
+        p_date = vals.get('printing_date') or fields.Date.context_today(self)
         year_2d = fields.Date.from_string(p_date).strftime('%y')
-        last_code = len(self.search([])) #.sorted('code', True)
+        last_code = self.sudo().search_count([])
         seq = str(last_code + 1).zfill(4)
         cyl = ''
-        if vals['printing_type'] == 'rotary':
-            cyl = str(vals['cylinder_qty']) or 0
-            process = vals['process_type_rotary']
+        if vals.get('printing_type') == 'rotary':
+            cyl = str(vals.get('cylinder_qty') or 0)
+            process = vals.get('process_type_rotary')
         else:
-            process = vals['process_type_digital']
-        code = self._get_process_code(vals['printing_type'], process)
+            process = vals.get('process_type_digital')
+        code = self._get_process_code(vals.get('printing_type'), process)
         parts = ['M' + year_2d, seq]
         if cyl:
             parts.append(cyl)
@@ -242,16 +323,14 @@ class PrintingDesign(models.Model):
     strike_off = fields.Monetary('Strike Off Price', currency_field='currency_id')
     total_price = fields.Monetary('Price per Kg.', compute='_compute_total_price', currency_field='currency_id')
         
-    @api.depends('unit_price','digital_printing_id.yield_meter','rotary_printing_id.yield_meter')
+    @api.depends('unit_price', 'digital_printing_id.yield_meter', 'rotary_printing_id.yield_meter')
     def _compute_total_price(self):
+        # Precio por kg = precio/mt × rendimiento (m/kg) en TODOS los rangos,
+        # también en el primero ("1 roll lower than 20Kg."): antes ese rango
+        # trasladaba el precio plano sin rendimiento (JP, 22-sep-2026).
         for rec in self:
-            if rec.max_qty == 59:
-                rec.total_price = rec.unit_price
-            else:
-                if rec.digital_printing_id and rec.digital_printing_id.printing_type == 'digital':
-                    rec.total_price = rec.unit_price * rec.digital_printing_id.yield_meter
-                else:
-                    rec.total_price = rec.unit_price * rec.rotary_printing_id.yield_meter
+            design = rec.digital_printing_id or rec.rotary_printing_id
+            rec.total_price = rec.unit_price * (design.yield_meter or 0.0)
 
 
 class PrintingDesignRotaryLine(models.Model):

@@ -16,7 +16,7 @@ luego armar las partidas
     # Check https://github.com/odoo/odoo/blob/15.0/odoo/addons/base/data/ir_module_category_data.xml
     # for the full list
     'category': 'Producción Textil',
-    'version': '0.1',
+    'version': '19.0.0.6.0',
     'license': 'LGPL-3',
     'sequence': 0,
 
@@ -39,7 +39,6 @@ luego armar las partidas
         'report/report_collar_quality_check.xml',
         'views/batch_registry_views.xml',
         'views/quality_alert_views.xml',
-        'views/mrp_workorder_option_views.xml',
         'views/mrp_production_views.xml',
         'views/mrp_workorder_views.xml',
         'views/maintenance_equipment_views.xml',
@@ -47,6 +46,8 @@ luego armar las partidas
         'views/mrp_workorder_batch_views.xml',
         'views/mrp_workcenter_views.xml',
         'views/roll_weighing_views.xml',
+        'views/stock_warehouse_views.xml',
+        'views/stock_picking_views.xml',
         'views/collar_quality_check_views.xml',
         'views/color_recipe_lot_views.xml',
     ],

@@ -82,8 +82,8 @@
                 <table class="o_ignore_layout_styling" style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
                     <thead>
                         <tr style="background-color: #f2f2f2; font-weight: bold; text-align: center;">
-                            <th class="b" style="width: 5%;">N°</th>
-                            <th class="b" style="width: 16%;">ROLLO (LOTE)</th>
+                            <th class="b" style="width: 6%;">N° ROLLO</th>
+                            <th class="b" style="width: 15%;">LOTE</th>
                             <th class="b">PRODUCTO</th>
                             <th class="b" style="width: 8%;">KG</th>
                             <th class="b" style="width: 7%;">GRADO</th>
@@ -95,7 +95,7 @@
                     <tbody>
                         <t t-foreach="rolls" t-as="roll">
                             <tr t-att-style="'background-color: #fff3cd;' if roll.quality_state in ('pending', 'observed') else ''">
-                                <td class="b" style="text-align: center;"><t t-esc="roll_index + 1"/></td>
+                                <td class="b" style="text-align: center;"><t t-esc="roll.roll_num or ''"/></td>
                                 <td class="b" style="font-weight: bold;"><t t-esc="roll.lot_id.name"/></td>
                                 <td class="b"><t t-esc="roll.product_id.display_name"/></td>
                                 <td class="b" style="text-align: right;"><t t-esc="'%.2f' % roll.net_weight"/></td>
@@ -128,12 +128,35 @@
                     </tr>
                 </table>
 
+                <t t-set="open_holds" t-value="o._roll_open_holds()"/>
+                <table class="o_ignore_layout_styling" t-if="open_holds" style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+                    <thead>
+                        <tr style="background-color: #fff3cd; font-weight: bold; text-align: center;">
+                            <th class="b" colspan="3">CALIFICACIÓN PREVIA DE CALIDAD (rollos aún sin pesar)</th>
+                        </tr>
+                        <tr style="background-color: #f2f2f2; font-weight: bold; text-align: center;">
+                            <th class="b" style="width: 12%;">N° ROLLO</th>
+                            <th class="b" style="width: 22%;">CALIFICACIÓN</th>
+                            <th class="b">DETALLE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="open_holds" t-as="hold">
+                            <td class="b" style="text-align: center; font-weight: bold;"><t t-esc="hold.roll_num"/></td>
+                            <td class="b"><t t-esc="hold._mark_label()"/></td>
+                            <td class="b"><t t-esc="hold.note or ''"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+
                 <div style="border: 1px solid #000; padding: 6px 8px; margin-bottom: 26px; font-size: 12px;">
                     <b>INSTRUCCIÓN PARA PESADO / ALMACÉN:</b>
-                    <t t-if="retained">
+                    <t t-if="retained or open_holds">
                         Despachar todos los rollos calificados
-                        <b>excepto</b>: <t t-esc="', '.join(retained.mapped('lot_id.name'))"/>
-                        (retenidos por calidad).
+                        <b>excepto</b>:
+                        <t t-if="retained"><t t-esc="', '.join(retained.mapped('lot_id.name'))"/> (observados, en reproceso)</t>
+                        <t t-if="retained and open_holds">;</t>
+                        <t t-if="open_holds"> rollos N° <t t-esc="', '.join(str(h.roll_num) for h in open_holds if h.observed)"/> (separar al pesar)</t>.
                     </t>
                     <t t-elif="rolls">
                         Despachar todos los rollos de la partida según su grado.

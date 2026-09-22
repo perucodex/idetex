@@ -27,6 +27,19 @@ class QualityAlert(models.Model):
     available_batch_ids = fields.Many2many(
         'mrp.workorder.batch', compute='_compute_available_batch_ids',
         string='Partidas de la OT')
+    # Reproceso PARCIAL (JP, 18-sep-2026): rollos de la partida que van al
+    # reproceso (por defecto todos). Si queda alguno fuera, al aprobar se
+    # separan a una partida nueva con el mismo número ("· Reproceso N") que se
+    # lleva el reproceso y esta alerta; la original sigue con el resto.
+    roll_ids = fields.Many2many(
+        'mrp.workorder.roll', 'quality_alert_roll_rel', 'alert_id', 'roll_id',
+        string='Rollos a reprocesar',
+        help='Por defecto todos los rollos de la partida. Desmarca los que no '
+             'se reprocesan: al aprobar se separan los marcados a una partida de '
+             'reproceso con el mismo número.')
+    available_roll_ids = fields.Many2many(
+        'mrp.workorder.roll', compute='_compute_available_roll_ids',
+        string='Rollos de la partida')
     # Punto de inicio del reproceso. Por defecto la OT donde se crea la alerta,
     # pero puede ser una operación ANTERIOR de la misma OF (p.ej. la alerta se
     # detecta en la 8va operación y la tela debe volver desde la 2da): se
@@ -118,6 +131,26 @@ class QualityAlert(models.Model):
                     'operación de partida (teñido/acabado/estampado/calidad).',
                     start=start.display_name))
 
+    @api.depends('batch_id', 'batch_id.wo_roll_ids')
+    def _compute_available_roll_ids(self):
+        for rec in self:
+            rec.available_roll_ids = rec.batch_id.wo_roll_ids
+
+    @api.onchange('batch_id')
+    def _onchange_batch_rolls(self):
+        """Al elegir la partida, todos sus rollos quedan marcados para reprocesar."""
+        for rec in self:
+            rec.roll_ids = [(6, 0, rec.batch_id.wo_roll_ids.ids)]
+
+    def _partial_reprocess_rolls(self):
+        """Rollos elegidos SI son un subconjunto estricto de la partida; vacío
+        si el reproceso es de la partida completa (todos o ninguno marcado)."""
+        self.ensure_one()
+        rolls = self.roll_ids & self.batch_id.wo_roll_ids
+        if not rolls or rolls == self.batch_id.wo_roll_ids:
+            return self.env['mrp.workorder.roll']
+        return rolls
+
     @api.onchange('batch_id', 'tipo')
     def _onchange_batch_reposition_qty(self):
         """Por defecto la cantidad a reponer = kilos de la partida (editable)."""
@@ -203,12 +236,23 @@ class QualityAlert(models.Model):
                     'Reposición APROBADA por %(user)s: se creó la OF '
                     '%(prod)s.', user=self.env.user.name, prod=new.name)
             else:
+                # Reproceso PARCIAL: los rollos marcados se separan a una
+                # partida nueva (mismo número · Reproceso N) que se lleva el
+                # reproceso y esta alerta.
+                partial = alert._partial_reprocess_rolls()
+                original = alert.batch_id
+                if partial:
+                    new_batch = original._split_for_reprocess(partial, alert=alert)
+                    alert.batch_id = new_batch
                 alert._trigger_reprocess()
                 body = _(
                     'Reproceso APROBADO por %(user)s: se reabrieron las '
                     'operaciones de la partida %(batch)s desde %(op)s.',
-                    user=self.env.user.name, batch=alert.batch_id.name,
+                    user=self.env.user.name, batch=alert.batch_id.display_name,
                     op=start.mrwo_id.name or start.display_name)
+                if partial:
+                    body += _(' Reproceso parcial: %(n)s rollo(s) separados de %(orig)s.',
+                              n=len(partial), orig=original.display_name)
             alert.state = 'approved'
             alert.message_post(body=Markup('<p>%s</p>') % body)
         return True

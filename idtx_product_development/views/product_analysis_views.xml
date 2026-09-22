@@ -29,6 +29,15 @@
                                     <field name="technical_sheet_count" widget="statinfo" string="Technical Sheets"/>
                             </button>
                         </div>
+                        <!-- Estado de producción del producto (antes en la ficha
+                             técnica): avanza al terminar OF muestra/piloto/venta. -->
+                        <div class="float-end fs-6 border-0">
+                            <field name="production_state" widget="badge" readonly="1"
+                                   decoration-success="production_state == 'production'"
+                                   decoration-info="production_state == 'pilot'"
+                                   decoration-warning="production_state == 'sample'"
+                                   decoration-muted="production_state == 'product'"/>
+                        </div>
                         <div class="oe_title">
                             <h1>
                                 <field name="name" readonly="1"/>
@@ -136,6 +145,11 @@
                     <field name="product_description"/>
                     <field name="company_id" groups="base.group_multi_company"/>
                     <field name="state" widget="badge" decoration-success="state == 'prod'"/>
+                    <field name="production_state" widget="badge" optional="show"
+                           decoration-success="production_state == 'production'"
+                           decoration-info="production_state == 'pilot'"
+                           decoration-warning="production_state == 'sample'"
+                           decoration-muted="production_state == 'product'"/>
                 </list>
             </field>
         </record>
@@ -159,6 +173,11 @@
                     <field name="standard_width"/>
                     <filter name="test" string="Test" domain="[('state','=','test')]"/>
                     <filter name="prod" string="Product" domain="[('state','=','prod')]"/>
+                    <separator/>
+                    <filter name="production_state_product" string="Sin fabricar" domain="[('production_state','=','product')]"/>
+                    <filter name="production_state_sample" string="Muestra" domain="[('production_state','=','sample')]"/>
+                    <filter name="production_state_pilot" string="Piloto" domain="[('production_state','=','pilot')]"/>
+                    <filter name="production_state_production" string="Producción" domain="[('production_state','=','production')]"/>
                     <!-- <filter name="tech" string="Technical Sheet" domain="[('state','=','tech')]"/> -->
                     <group>
                         <filter string="Analysis Date" name="group_by_analysis_date" domain="[]" context="{'group_by': 'analysis_date'}"/>

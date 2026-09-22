@@ -17,11 +17,22 @@ class MrpProduction(models.Model):
     wo_roll_ids = fields.One2many('mrp.workorder.roll', 'production_id', string='Rollos Crudos')
     reception_ids = fields.One2many('mrp.roll.reception', 'production_id', string='Recepciones de crudo')
     reception_count = fields.Integer(compute='_compute_reception_stats')
+    # Partidas relacionadas con la OF (botón inteligente): las que agrupan
+    # rollos crudos de esta OF, las anexadas a sus OTs (multi-OF: hermanas
+    # comparten la partida) y las partidas madre de esas (divididas).
+    batch_ids = fields.Many2many(
+        'mrp.workorder.batch', compute='_compute_batch_ids', string='Partidas')
+    batch_count = fields.Integer(compute='_compute_batch_ids', string='N° Partidas')
     customer_roll_count = fields.Integer(compute='_compute_reception_stats')
     customer_roll_weight = fields.Float(compute='_compute_reception_stats')
     has_weaving_workorder = fields.Boolean(compute='_compute_can_receive_customer_rolls')
     # OF de SERVICIO sin OT de tejido: el crudo lo trae el cliente.
     can_receive_customer_rolls = fields.Boolean(compute='_compute_can_receive_customer_rolls')
+    # OF de SERVICIO sin tejido: el crudo lo entrega el cliente en rollos y
+    # NO se conocen sus lotes de hilo. Casuística aparte en laboratorio
+    # (sub-receta por OF, sin lotes) y en partidas (no se mezclan).
+    is_customer_roll_production = fields.Boolean(
+        'Tela del cliente', compute='_compute_is_customer_roll_production')
     production_type = fields.Selection([
         ('sale', 'Sale'),
         ('service', 'Service'),
@@ -54,6 +65,13 @@ class MrpProduction(models.Model):
                 and not rec.has_weaving_workorder
                 and rec.state in ('confirmed', 'progress', 'to_close'))
 
+    @api.depends('production_type', 'workorder_ids.state', 'workorder_ids.mrwo_id',
+                 'workorder_ids.workcenter_id')
+    def _compute_is_customer_roll_production(self):
+        for rec in self:
+            rec.is_customer_roll_production = (
+                rec.production_type == 'service' and not rec._has_weaving_workorder())
+
     def _has_weaving_workorder(self):
         self.ensure_one()
         # Por operación LAB (mrwo_id) O por centro de trabajo: una OT de la
@@ -72,6 +90,40 @@ class MrpProduction(models.Model):
             'target': 'new',
             'context': {'default_production_id': self.id},
         }
+
+    @api.depends('wo_roll_ids', 'workorder_ids.batch_ids')
+    def _compute_batch_ids(self):
+        Batch = self.env['mrp.workorder.batch']
+        for prod in self:
+            batches = Batch
+            if isinstance(prod.id, int):
+                batches |= Batch.search([('wo_roll_ids.production_id', '=', prod.id)])
+            batches |= prod.workorder_ids.batch_ids
+            # Linaje hacia arriba: la madre dividida antes de procesar no
+            # tiene rollos ni OTs, pero es el origen de las sub-partidas.
+            frontier = batches.parent_batch_id
+            while frontier:
+                batches |= frontier
+                frontier = frontier.parent_batch_id - batches
+            prod.batch_ids = batches
+            prod.batch_count = len(batches)
+
+    def action_view_batches(self):
+        """Botón inteligente Partidas: lista (o abre, si es una sola) las
+        partidas relacionadas con la OF, sin los filtros por defecto de la
+        acción general para que se vean también las divididas/terminadas."""
+        self.ensure_one()
+        action = self.env['ir.actions.act_window']._for_xml_id('idtx_mrp.wo_batch_action')
+        action['context'] = {}
+        if len(self.batch_ids) == 1:
+            action.update({
+                'view_mode': 'form',
+                'views': [(False, 'form')],
+                'res_id': self.batch_ids.id,
+            })
+        else:
+            action['domain'] = [('id', 'in', self.batch_ids.ids)]
+        return action
 
     def action_view_receptions(self):
         self.ensure_one()
@@ -320,8 +372,59 @@ class MrpProduction(models.Model):
         ctx = dict(self.env.context, skip_consumption=True)
         return super(MrpProduction, self.with_context(ctx)).button_mark_done()
 
+    # ------------------------------------------------------------------
+    # Candado de cancelación (JP, 22-sep-2026): una OF con avance real de
+    # planta no se cancela; hay que revertir el proceso a mano primero.
+    # ------------------------------------------------------------------
+    def _get_cancel_blockers(self):
+        """Motivos por los que la OF ya no se puede cancelar: avance que una
+        cancelación no deshace (operaciones iniciadas, rollos del cliente
+        recibidos, rollos registrados, partidas, consumos y traslados hechos)."""
+        self.ensure_one()
+        reasons = []
+        state_labels = dict(self._fields['state']._description_selection(self.env))
+        if self.state in ('progress', 'to_close', 'done'):
+            reasons.append(_('está en estado %s', state_labels.get(self.state, self.state)))
+        started = self.workorder_ids.filtered(lambda w: w.state in ('progress', 'done'))
+        if started:
+            reasons.append(_('%s operación(es) iniciada(s) o terminada(s)', len(started)))
+        receptions = self.reception_ids.filtered(lambda r: r.state != 'cancel')
+        if receptions:
+            reasons.append(_('%s recepción(es) de rollos del cliente (%s)',
+                             len(receptions), ', '.join(receptions.mapped('display_name'))))
+        if self.wo_roll_ids:
+            reasons.append(_('%s rollo(s) registrado(s)', len(self.wo_roll_ids)))
+        if self.batch_ids:
+            reasons.append(_('partida(s) %s', ', '.join(self.batch_ids.mapped('name'))))
+        if self.move_raw_ids.filtered(lambda m: m.state == 'done'):
+            reasons.append(_('componentes ya consumidos'))
+        done_pickings = self.picking_ids.filtered(lambda p: p.state == 'done')
+        if done_pickings:
+            reasons.append(_('traslado(s) de componentes hecho(s): %s',
+                             ', '.join(done_pickings.mapped('name'))))
+        return reasons
+
+    def _check_cancel_allowed(self):
+        for production in self.filtered(lambda p: p.state != 'cancel'):
+            reasons = production._get_cancel_blockers()
+            if reasons:
+                raise UserError(_(
+                    'No se puede cancelar la OF %(mo)s: %(reasons)s.\n\n'
+                    'Revierte primero todo el proceso a mano (cancelar partidas, recepciones '
+                    'y rollos, deshacer consumos y traslados) y vuelve a intentarlo.',
+                    mo=production.display_name, reasons='; '.join(reasons)))
+
+    def action_cancel(self):
+        if not self.env.context.get('skip_cancel_progress_check'):
+            self._check_cancel_allowed()
+        return super().action_cancel()
+
     def action_confirm(self):
         res = super().action_confirm()
-        self.picking_ids.action_assign()
+        # Solo si hay pickings: sobre un recordset vacío el core levanta
+        # "Nothing to check the availability for" (OF sin componentes o
+        # fabricación en un paso), lo que impedía confirmar la OF.
+        if self.picking_ids:
+            self.picking_ids.action_assign()
         self._remove_thread_components_without_weaving()
         return res

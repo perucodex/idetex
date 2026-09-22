@@ -1,0 +1,31 @@
+/* Semáforo de producción del producto en la línea del pedido:
+   círculo con letra opcional (M = muestra, P = piloto). */
+.o_analysis_prod_state {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.7) inset;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    vertical-align: middle;
+    cursor: help;
+    user-select: none;
+}
+
+.o_analysis_prod_state--red {
+    background: #d64545;
+}
+
+.o_analysis_prod_state--orange {
+    background: #e8871e;
+}
+
+.o_analysis_prod_state--green {
+    background: #1f9d55;
+}

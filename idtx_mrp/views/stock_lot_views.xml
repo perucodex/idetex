@@ -21,6 +21,7 @@
             <field name="arch" type="xml">
                 <field name="product_id" position="after">
                     <field name="batch_id" optional="show"/>
+                    <field name="quality_grade" optional="show"/>
                 </field>
             </field>
         </record>
@@ -35,6 +36,7 @@
                 </field>
                 <filter name="group_by_product" position="after">
                     <filter name="group_by_batch" string="Partida" domain="[]" context="{'group_by': 'batch_id'}"/>
+                    <filter name="group_by_quality_grade" string="Grado" domain="[]" context="{'group_by': 'quality_grade'}"/>
                 </filter>
             </field>
         </record>

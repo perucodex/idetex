@@ -142,7 +142,6 @@ class MrpRollReception(models.Model):
                     'customer_roll_ref': (line.customer_roll_ref or '').strip() or False,
                     'declared_weight': line.declared_weight,
                     'gross_weight': weight,
-                    'net_weight': weight,
                     'location_note': line.location_note,
                     'reception_note': line.reception_note,
                     'employee_id': rec.received_by_id.id,

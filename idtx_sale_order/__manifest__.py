@@ -15,7 +15,7 @@ Gestiona la carga de precios y productos en tus cotizaciones
     # Check https://github.com/odoo/odoo/blob/15.0/odoo/addons/base/data/ir_module_category_data.xml
     # for the full list
     'category': 'Producción Textil',
-    'version': '19.0.0.13.0',
+    'version': '19.0.0.16.1',
     'license': 'LGPL-3',
     'sequence': 0,
 
@@ -36,6 +36,7 @@ Gestiona la carga de precios y productos en tus cotizaciones
         'security/sale_order_approval_security.xml',
         'security/sale_mrp_readonly_security.xml',
         'security/ir.model.access.csv',
+        'security/printing_design_security.xml',
         'data/sitpro_sale_type_data.xml',
         'report/ir_actions_report_templates.xml',
         'report/ir_actions_report.xml',
@@ -46,6 +47,7 @@ Gestiona la carga de precios y productos en tus cotizaciones
         'views/mrp_production_views.xml',
         'views/mrp_routing_views.xml',
         # 'views/mrp_workorder_batch_views.xml',
+        'views/printing_design_quote_views.xml',
         'views/portal_price_items_template.xml',
         # 'views/product_code_system_views.xml',
         'views/product_color_views.xml',
@@ -66,6 +68,9 @@ Gestiona la carga de precios y productos en tus cotizaciones
         'web.assets_backend': [
             'idtx_sale_order/static/src/price_items/**/*',
             'idtx_sale_order/static/src/printing_design_status/**/*',
+            'idtx_sale_order/static/src/analysis_production_state/**/*',
+            'idtx_sale_order/static/src/thread_price_badge/**/*',
+            'idtx_sale_order/static/src/route_ordered_tags/**/*',
             'idtx_sale_order/static/src/complement_line/**/*',
             'idtx_sale_order/static/src/lab_color_name/**/*',
         ],

@@ -234,7 +234,11 @@ class LabDevLine(models.Model):
     def name_search(self, name='', domain=None, operator='ilike', limit=100):
         base_domain = Domain(domain or Domain.TRUE)
         if name:
-            base_domain &= Domain('color_code', operator, name) | Domain('color_name', operator, name)
+            # También por el número del Lab Dip (LD-17557 / 17557): así el
+            # campo del pedido encuentra los colores de un LD al teclearlo.
+            base_domain &= (Domain('color_code', operator, name)
+                            | Domain('color_name', operator, name)
+                            | Domain('lab_dev_id.name', operator, name))
         return [(rec.id, rec.display_name) for rec in self.search(base_domain, limit=limit)]
     
     @api.depends('sale_order_id')

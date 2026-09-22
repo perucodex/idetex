@@ -22,6 +22,11 @@
     background: #d64545;
 }
 
+/* Ficha creada pero sin precio o sin cerrar por desarrollo */
+.o_printing_design_status_dot--pending {
+    background: #e8a33d;
+}
+
 .o_printing_design_status_popover {
     min-width: 220px;
     max-width: 320px;

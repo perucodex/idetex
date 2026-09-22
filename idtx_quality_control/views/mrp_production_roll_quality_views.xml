@@ -13,19 +13,17 @@
                       decoration-warning="quality_state == 'observed'">
                     <field name="batch_id" readonly="1"/>
                     <field name="lot_id" readonly="1" string="Rollo (lote)"/>
-                    <field name="name" readonly="1" optional="hide" string="Nº rollo"/>
+                    <field name="roll_num" readonly="1" string="N° rollo"/>
+                    <field name="name" readonly="1" optional="hide" string="Nº interno"/>
                     <field name="product_id" readonly="1" optional="show"/>
                     <field name="net_weight" readonly="1" sum="Kg" string="Kg"/>
                     <field name="weighed_date" readonly="1" optional="hide"/>
-                    <button name="action_set_grade" type="object" string="A" context="{'grade': 'A'}"
-                            class="btn btn-sm btn-outline-success" invisible="quality_released or quality_grade == 'A'"/>
-                    <button name="action_set_grade" type="object" string="B" context="{'grade': 'B'}"
-                            class="btn btn-sm btn-outline-primary" invisible="quality_released or quality_grade == 'B'"/>
-                    <button name="action_set_grade" type="object" string="M" context="{'grade': 'M'}"
-                            class="btn btn-sm btn-outline-danger" invisible="quality_released or quality_grade == 'M'"/>
-                    <field name="quality_grade" readonly="quality_released"/>
-                    <field name="quality_observation" readonly="quality_released"/>
+                    <!-- Grado final de un OBSERVADO lo da Calidad aquí; Pesado luego lo repesa -->
+                    <field name="quality_grade" readonly="quality_released or not quality_observation"/>
+                    <field name="reweigh_pending" readonly="1" widget="boolean_toggle" string="Repesar"/>
+                    <field name="quality_observation" readonly="quality_released or quality_grade"/>
                     <field name="quality_note" readonly="quality_released"/>
+                    <field name="hold_id" readonly="1" optional="show" string="Calif. previa"/>
                     <field name="quality_state" widget="badge" readonly="1"
                            decoration-success="quality_state == 'released'"
                            decoration-info="quality_state == 'graded'"
@@ -66,17 +64,18 @@
         </record>
 
         <record id="action_qc_roll_grading" model="ir.actions.act_window">
-            <field name="name">Calificación de Rollos</field>
+            <field name="name">Rollos Observados</field>
             <field name="res_model">mrp.production.roll</field>
             <field name="view_mode">list</field>
             <field name="view_id" ref="view_qc_roll_grading_list"/>
             <field name="search_view_id" ref="view_qc_roll_grading_search"/>
             <field name="domain">[('lot_id', '!=', False)]</field>
-            <field name="context">{'search_default_unreleased': 1, 'search_default_group_batch': 1, 'create': False}</field>
+            <field name="context">{'search_default_observed': 1, 'search_default_group_batch': 1, 'create': False}</field>
             <field name="help" type="html">
-                <p class="o_view_nocontent_smiling_face">Sin rollos pesados por calificar</p>
-                <p>Cada rollo pesado recibe un grado: A entra a Existencias, B a Saldo y M a Mermas.
-                   Un rollo observado (desmanchar, descontaminar, reprocesar) queda retenido hasta recibir grado.</p>
+                <p class="o_view_nocontent_smiling_face">Sin rollos observados</p>
+                <p>Un rollo observado (desmanchar, descontaminar, reprocesar) queda retenido en Pesado.
+                   Cuando vuelve del área, Calidad le da aquí el grado final A, B o M y la zona de pesado lo repesa;
+                   recién entonces se puede liberar a almacén.</p>
             </field>
         </record>
 

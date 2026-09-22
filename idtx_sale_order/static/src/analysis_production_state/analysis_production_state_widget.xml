@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="idtx_sale_order.AnalysisProductionStateWidget">
+        <t t-if="state">
+            <span t-att-class="'o_analysis_prod_state ' + state.cls"
+                  t-att-title="state.title"
+                  role="img"
+                  t-att-aria-label="state.title">
+                <t t-esc="state.letter"/>
+            </span>
+        </t>
+    </t>
+
+</templates>

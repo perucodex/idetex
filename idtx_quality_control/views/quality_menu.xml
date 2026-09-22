@@ -7,7 +7,8 @@
             <menuitem id="menu_quality_dimrev_screen" name="Estabilidad/Revirado" action="action_quality_dimrev_screen" sequence="30"/>
             <menuitem id="menu_quality_solidez_lavado_screen" name="Solidez al Lavado" action="action_quality_solidez_lavado_screen" sequence="40"/>
             <menuitem id="menu_quality_sample_reception_screen" name="Recepción de Muestras" action="action_quality_sample_reception_screen" sequence="50"/>
-            <menuitem id="menu_quality_roll_grading" name="Calificación de Rollos" action="action_qc_roll_grading" sequence="60"/>
+            <menuitem id="menu_quality_roll_hold" name="Calificación Previa de Rollos" action="action_qc_roll_hold" sequence="60"/>
+            <menuitem id="menu_quality_roll_grading" name="Rollos Observados" action="action_qc_roll_grading" sequence="70"/>
         </menuitem>
 
         <menuitem id="menu_records" name="Registros" sequence="20" groups="quality.group_quality_manager">

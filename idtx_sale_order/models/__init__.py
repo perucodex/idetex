@@ -13,4 +13,5 @@ from . import res_partner
 from . import res_config_settings
 from . import sitpro_sale_type
 from . import sale_order_line
+from . import printing_design
 from . import sale_order

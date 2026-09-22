@@ -17,7 +17,7 @@ Parámetro del sistema:
     'author': "Codex Development",
     'website': "https://www.perucodex.com",
     'category': 'Manufacturing',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'license': 'LGPL-3',
     'depends': ['idtx_orgatex'],
     'external_dependencies': {'python': ['matplotlib']},

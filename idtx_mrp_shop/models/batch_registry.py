@@ -157,7 +157,7 @@ class BatchRegistry(models.Model):
     # PESO") y cada OT es un paso distinto — pasar por la 2ª no es un reproceso.
     # Un reproceso = re-registrar la MISMA OT (varios registros del mismo
     # workorder_id).
-    @api.depends('batch_id', 'workorder_id', 'registry_date', 'state')
+    @api.depends('batch_id', 'batch_id.parent_batch_id', 'workorder_id', 'registry_date', 'state')
     def _compute_reprocess_number(self):
         self.reprocess_number = 0
         self.is_reprocess = False
@@ -171,8 +171,16 @@ class BatchRegistry(models.Model):
             groups[key] |= rec
         sentinel = fields.Datetime.to_datetime('9999-12-31 00:00:00')
         for (batch_id, workorder_id), recs in groups.items():
+            # LINAJE: la partida de reproceso parcial hereda la historia de su
+            # original; su primer registro de una operación que la original
+            # ya hizo es la 2ª ejecución (reproceso).
+            lineage = self.env['mrp.workorder.batch'].browse(batch_id)
+            node = lineage
+            while node.parent_batch_id:
+                node = node.parent_batch_id
+                lineage |= node
             siblings = self.search([
-                ('batch_id', '=', batch_id),
+                ('batch_id', 'in', lineage.ids),
                 ('workorder_id', '=', workorder_id),
             ])
             ordered = siblings.sorted(

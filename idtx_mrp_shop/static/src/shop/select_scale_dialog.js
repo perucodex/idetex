@@ -905,14 +905,16 @@ export class SelectScaleDialog extends ConfirmationDialog {
         }
     }
 
-    async _loadEmployees(employeeIds = []) {
-        const ids = (employeeIds || []).filter(Boolean);
-        this.state.employees = ids.length
-            ? await this.ormService.searchRead("hr.employee", [["id", "in", ids]], ["name"])
-            : [];
+    async _loadEmployees() {
+        // Los operarios ROTAN: ya no se asignan a la opción de la orden de
+        // trabajo, así que el pesado ofrece TODOS los empleados (el filtro por
+        // opción se retiró a pedido de produccion).
+        this.state.employees = await this.ormService.searchRead(
+            "hr.employee", [], ["name"], { order: "name" }
+        );
         if (!this.state.employees.length) {
             this.notification.add(
-                _t("No employees are available, please assign one first to add it to the shop floor view"),
+                _t("No employees are available, please create one first to add it to the shop floor view"),
                 { type: "danger" }
             );
         }
@@ -938,7 +940,7 @@ export class SelectScaleDialog extends ConfirmationDialog {
                 const raw = await this.ormService.searchRead(
                     "mrp.workorder.option",
                     [["workorder_id", "=", workorderId]],
-                    ["name", "id", "employee_ids", "equipment_ids"]
+                    ["name", "id", "equipment_ids"]
                 );
                 this.options = (raw || []).filter(opt => opt && opt.id);
             } else {
@@ -962,20 +964,21 @@ export class SelectScaleDialog extends ConfirmationDialog {
             ? this.options.find(o => String(o.id) === String(selectedOptionId))
             : null;
 
-        const employeeIds = selected
-            ? (selected.employee_ids || [])
-            : this._getAllOptionEmployeeIds();
         const equipmentIds = selected
             ? (selected.equipment_ids || [])
             : this._getAllOptionEquipmentIds();
 
-        await this._loadEmployees(employeeIds);
+        // Los empleados NO dependen de la opción (salen todos); solo las
+        // máquinas se sincronizan con la opción elegida.
+        await this._loadEmployees();
         await this._loadEquipments(equipmentIds);
 
         const validEmployeeIds = new Set((this.state.employees || []).map(e => String(e.id)));
         const validEquipmentIds = new Set((this.state.equipments || []).map(e => String(e.id)));
 
-        if (!preserveSelection || !validEmployeeIds.has(String(this.state.selectedEmployee || ""))) {
+        // El empleado sobrevive al cambio de opción: solo se limpia si el
+        // seleccionado ya no existe en la lista.
+        if (!validEmployeeIds.has(String(this.state.selectedEmployee || ""))) {
             this.state.selectedEmployee = "";
         }
         if (!preserveSelection || !validEquipmentIds.has(String(this.state.selectedEquipment || ""))) {
@@ -990,21 +993,11 @@ export class SelectScaleDialog extends ConfirmationDialog {
         if (!optionIds.length) return;
 
         try {
-            const raw = await this.ormService.read("mrp.workorder.option", optionIds, ["name", "id", "employee_ids", "equipment_ids"]);
+            const raw = await this.ormService.read("mrp.workorder.option", optionIds, ["name", "id", "equipment_ids"]);
             this.options = (raw || []).filter(opt => opt && opt.id);
         } catch (e) {
             // ignore
         }
-    }
-
-    _getAllOptionEmployeeIds() {
-        const ids = new Set();
-        for (const option of this.options || []) {
-            for (const employeeId of option.employee_ids || []) {
-                ids.add(employeeId);
-            }
-        }
-        return [...ids];
     }
 
     _getAllOptionEquipmentIds() {

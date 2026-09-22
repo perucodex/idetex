@@ -15,7 +15,7 @@ Producción y control de estampados textiles.
     # Check https://github.com/odoo/odoo/blob/15.0/odoo/addons/base/data/ir_module_category_data.xml
     # for the full list
     'category': 'Uncategorized',
-    'version': '0.1',
+    'version': '19.0.0.3.0',
     'license': 'LGPL-3',
     'sequence': 0,
 
@@ -27,6 +27,7 @@ Producción y control de estampados textiles.
         'security/group_print.xml',
         'security/ir.model.access.csv',
         'data/ir_sequence.xml',
+        'views/mrp_routing_views.xml',
         'views/printing_design_views.xml',
         'views/printing_recipe_templates.xml',
         'views/res_config_settings_views.xml',

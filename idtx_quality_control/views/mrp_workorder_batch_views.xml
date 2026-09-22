@@ -11,16 +11,21 @@
 
             <!-- Calificación de rollos terminados (grado A/B/M) -->
             <xpath expr="//form/header" position="inside">
-                <button name="action_grade_rolls"
+                <button name="action_open_roll_grade_wizard"
                         type="object"
                         string="Calificar Rollos"
                         class="btn-primary"
-                        invisible="finished_roll_count == 0"/>
+                        invisible="state != 'batch'"/>
+                <button name="action_grade_rolls"
+                        type="object"
+                        string="Rollos Observados"
+                        class="btn-secondary"
+                        invisible="roll_observed_count == 0 or state == 'split'"/>
                 <button name="action_print_roll_quality_report"
                         type="object"
                         string="Informe de Calidad"
                         class="btn-secondary"
-                        invisible="finished_roll_count == 0"/>
+                        invisible="finished_roll_count == 0 or state == 'split'"/>
             </xpath>
 
             <xpath expr="//form/header" position="inside">
@@ -28,13 +33,13 @@
                         type="object"
                         string="Enviar Resumen Lab."
                         class="btn-secondary"
-                        invisible="state not in ('batch', 'split')"/>
+                        invisible="state != 'batch'"/>
 
                 <button name="action_view_laboratorio_public"
                         type="object"
                         string="Ver Informe Público"
                         class="btn-secondary"
-                        invisible="state not in ('batch', 'split')"/>
+                        invisible="state != 'batch'"/>
 
                 <button name="action_sample_reception_screen"
                         type="object"
@@ -62,6 +67,35 @@
             </xpath>
 
             <xpath expr="//notebook" position="inside">
+                <page string="Calificación previa" name="qc_roll_holds_page">
+                    <div class="text-muted mb-2">
+                        Calificación de Calidad por N° de rollo de Acabado, antes del pesado: grado A/B/M o
+                        Separar para reproceso. Al pesar ese número el rollo nace con ese grado o como OBSERVADO.
+                        Usa el botón Calificar Rollos para llenar toda la partida de una vez.
+                    </div>
+                    <field name="roll_hold_ids" context="{'default_batch_id': id}" readonly="state in ('done', 'split')">
+                        <list editable="bottom" default_order="roll_num"
+                              decoration-warning="observed and state == 'open'"
+                              decoration-success="state == 'resolved'"
+                              decoration-muted="state == 'cancel'">
+                            <field name="roll_num" readonly="state != 'open'"/>
+                            <field name="grade" readonly="state not in ('open', 'weighed') or observed"/>
+                            <field name="observed" readonly="state not in ('open', 'weighed')" widget="boolean_toggle" string="Separar"/>
+                            <field name="reason" readonly="state not in ('open', 'weighed') or not observed" required="observed"/>
+                            <field name="note" readonly="state not in ('open', 'weighed')"/>
+                            <field name="state" widget="badge"
+                                   decoration-warning="state == 'open'"
+                                   decoration-info="state == 'weighed'"
+                                   decoration-success="state == 'resolved'"
+                                   decoration-muted="state == 'cancel'"/>
+                            <field name="roll_id" readonly="1" optional="show" string="Lote pesado"/>
+                            <field name="roll_grade" optional="show"/>
+                            <field name="user_id" readonly="1" optional="hide" widget="many2one_avatar_user"/>
+                            <button name="action_cancel" type="object" string="Anular" icon="fa-times" invisible="state != 'open'"/>
+                            <button name="action_reopen" type="object" string="Reabrir" icon="fa-undo" invisible="state != 'cancel'"/>
+                        </list>
+                    </field>
+                </page>
                 <page string="Rollos terminados" name="qc_finished_rolls_page" invisible="finished_roll_count == 0">
                     <group>
                         <group>
@@ -78,16 +112,17 @@
                             <field name="roll_released_count"/>
                         </group>
                     </group>
-                    <field name="finished_roll_ids" readonly="state == 'done'">
+                    <field name="finished_roll_ids" readonly="state in ('done', 'split')">
                         <list editable="bottom" create="0" delete="0" default_order="lot_id"
                               decoration-success="quality_state == 'released'"
                               decoration-info="quality_state == 'graded'"
                               decoration-warning="quality_state == 'observed'">
                             <field name="lot_id" readonly="1" string="Rollo (lote)"/>
+                            <field name="roll_num" readonly="1" string="N° rollo"/>
                             <field name="product_id" readonly="1" optional="show"/>
                             <field name="net_weight" readonly="1" sum="Kg" string="Kg"/>
-                            <field name="quality_grade" readonly="quality_released"/>
-                            <field name="quality_observation" readonly="quality_released"/>
+                            <field name="quality_grade" readonly="1"/>
+                            <field name="quality_observation" readonly="quality_released or quality_grade"/>
                             <field name="quality_note" readonly="quality_released"/>
                             <field name="quality_state" widget="badge" readonly="1"
                                    decoration-success="quality_state == 'released'"
@@ -106,20 +141,20 @@
                 <page string="Calidad" name="qc_info_page">
                     <group name="qc_info">
                         <group name="qc_info_left">
-                            <field name="qc_customer"/>
-                            <field name="qc_order_ref"/>
-                            <field name="qc_product_id"/>
+                            <field name="qc_customer" readonly="state == 'split'"/>
+                            <field name="qc_order_ref" readonly="state == 'split'"/>
+                            <field name="qc_product_id" readonly="state == 'split'"/>
                             <field name="qc_multi_product" invisible="1"/>
                             <field name="qc_product_ids" widget="many2many_tags"
-                                   invisible="not qc_multi_product"/>
-                            <field name="lab_dev_line_id"/>
+                                   invisible="not qc_multi_product" readonly="state == 'split'"/>
+                            <field name="lab_dev_line_id" readonly="state == 'split'"/>
                         </group>
                         <group name="qc_info_right">
                             <field name="kilograms"/>
                             <field name="roll_count"/>
                             <field name="reprocess_cycle"/>
-                            <field name="user_id" widget="many2one_avatar_user"/>
-                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="user_id" widget="many2one_avatar_user" readonly="state == 'split'"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state == 'split'"/>
                         </group>
                     </group>
                 </page>
@@ -297,6 +332,13 @@
                 <field name="qc_order_ref"/>
                 <field name="color_name"/>
             </field>
+            <!-- Partidas con rollos observados (no conformes) pendientes -->
+            <filter name="unbuild" position="after">
+                <separator/>
+                <filter name="no_conformes" string="No Conformes"
+                        domain="[('finished_roll_ids.quality_state', '=', 'observed')]"
+                        help="Partidas con rollos terminados observados (no conformes) por resolver."/>
+            </filter>
         </field>
     </record>
 

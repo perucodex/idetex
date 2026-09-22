@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_qc_roll_hold_form" model="ir.ui.view">
+            <field name="name">qc.roll.hold.form</field>
+            <field name="model">qc.roll.hold</field>
+            <field name="arch" type="xml">
+                <form string="Calificación previa del rollo">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="batch_id" readonly="state != 'open'" options="{'no_create': True}"/>
+                                <field name="roll_num" readonly="state != 'open'"/>
+                                <field name="grade" readonly="state not in ('open', 'weighed') or observed"/>
+                                <field name="observed" readonly="state not in ('open', 'weighed')" widget="boolean_toggle"/>
+                                <field name="reason" readonly="state not in ('open', 'weighed')" invisible="not observed" required="observed"/>
+                                <field name="note" readonly="state not in ('open', 'weighed')"/>
+                            </group>
+                            <group>
+                                <field name="state" widget="badge"
+                                       decoration-warning="state == 'open'"
+                                       decoration-info="state == 'weighed'"
+                                       decoration-success="state == 'resolved'"
+                                       decoration-muted="state == 'cancel'"/>
+                                <field name="roll_id" readonly="1" invisible="not roll_id"/>
+                                <field name="roll_grade" invisible="not roll_id"/>
+                                <field name="user_id" readonly="1"/>
+                                <field name="date" readonly="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string="Guardar" special="save" class="btn-primary"/>
+                        <button string="Cancelar" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_qc_roll_hold_list" model="ir.ui.view">
+            <field name="name">qc.roll.hold.list</field>
+            <field name="model">qc.roll.hold</field>
+            <field name="arch" type="xml">
+                <list editable="bottom" default_order="batch_id desc, roll_num"
+                      decoration-warning="state == 'open'"
+                      decoration-success="state == 'resolved'"
+                      decoration-muted="state == 'cancel'">
+                    <field name="batch_id" readonly="state != 'open'" options="{'no_create': True}"/>
+                    <field name="roll_num" readonly="state != 'open'"/>
+                    <field name="grade" readonly="state not in ('open', 'weighed') or observed"/>
+                    <field name="observed" readonly="state not in ('open', 'weighed')" widget="boolean_toggle" string="Separar"/>
+                    <field name="reason" readonly="state not in ('open', 'weighed') or not observed" required="observed"/>
+                    <field name="note" readonly="state not in ('open', 'weighed')"/>
+                    <field name="state" widget="badge"
+                           decoration-warning="state == 'open'"
+                           decoration-info="state == 'weighed'"
+                           decoration-success="state == 'resolved'"
+                           decoration-muted="state == 'cancel'"/>
+                    <field name="roll_id" readonly="1" optional="show" string="Lote pesado"/>
+                    <field name="roll_grade" optional="show"/>
+                    <field name="user_id" readonly="1" optional="hide" widget="many2one_avatar_user"/>
+                    <field name="date" readonly="1" optional="hide"/>
+                    <button name="action_cancel" type="object" string="Anular" icon="fa-times" invisible="state != 'open'"/>
+                    <button name="action_reopen" type="object" string="Reabrir" icon="fa-undo" invisible="state != 'cancel'"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_qc_roll_hold_search" model="ir.ui.view">
+            <field name="name">qc.roll.hold.search</field>
+            <field name="model">qc.roll.hold</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="batch_id"/>
+                    <field name="roll_num"/>
+                    <filter name="open" string="Por pesar" domain="[('state', '=', 'open')]"/>
+                    <filter name="weighed" string="Pesados como observados" domain="[('state', '=', 'weighed')]"/>
+                    <filter name="resolved" string="Resueltos" domain="[('state', '=', 'resolved')]"/>
+                    <group>
+                        <filter name="group_batch" string="Partida" domain="[]" context="{'group_by': 'batch_id'}"/>
+                        <filter name="group_reason" string="Motivo" domain="[]" context="{'group_by': 'reason'}"/>
+                        <filter name="group_state" string="Estado" domain="[]" context="{'group_by': 'state'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_qc_roll_hold" model="ir.actions.act_window">
+            <field name="name">Calificación Previa de Rollos</field>
+            <field name="res_model">qc.roll.hold</field>
+            <field name="view_mode">list,form</field>
+            <field name="search_view_id" ref="view_qc_roll_hold_search"/>
+            <field name="context">{'search_default_open': 1, 'search_default_group_batch': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">Sin calificaciones previas</p>
+                <p>Calidad califica cada rollo por su N° de Acabado antes del pesado: grado A, B o M,
+                   o Separar para reproceso con su motivo. Al pesar ese número el rollo nace con ese
+                   grado, o como OBSERVADO si se separa. Se registra desde el botón Calificar Rollos de la partida.</p>
+            </field>
+        </record>
+
+    </data>
+</odoo>

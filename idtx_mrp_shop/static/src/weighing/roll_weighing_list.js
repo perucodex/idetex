@@ -22,26 +22,55 @@ export class RollWeighingListController extends ListController {
     }
 
     openWeighDialog() {
+        this._openDialog("weigh", _t("Pesar rollo"));
+    }
+
+    openResolveDialog() {
+        this._openDialog("resolve", _t("Repesar rollo observado"));
+    }
+
+    _openDialog(mode, title) {
         this.dialogService.add(WeighRollDialog, {
-            title: _t("Pesar rollo"),
+            title,
+            mode,
             confirm: async (payload) => {
-                // Devuelve true/false: el diálogo bloquea el botón Pesar
-                // hasta que la balanza vuelva a 0 SOLO si el pesado fue OK.
+                // Devuelve true/false: el diálogo bloquea el botón hasta que
+                // la balanza vuelva a 0 SOLO si la operación fue OK.
                 try {
-                    const res = await this.orm.call(
-                        "mrp.workorder.batch",
-                        "action_weigh_finished_roll",
-                        [
-                            [parseInt(payload.batch_id)],
-                            parseInt(payload.product_id),
-                            payload.scale_id || false,
-                            payload.manual_weight,
-                            payload.print_sticker !== false,
-                            payload.wo_roll_id ? parseInt(payload.wo_roll_id) : false,
-                        ]
-                    );
+                    let res;
+                    if (payload.mode === "resolve") {
+                        res = await this.orm.call(
+                            "mrp.workorder.batch",
+                            "action_reweigh_roll",
+                            [
+                                [parseInt(payload.batch_id)],
+                                parseInt(payload.roll_id),
+                                payload.scale_id || false,
+                                payload.manual_weight,
+                                payload.print_sticker !== false,
+                                payload.note || false,
+                            ]
+                        );
+                    } else {
+                        res = await this.orm.call(
+                            "mrp.workorder.batch",
+                            "action_weigh_finished_roll",
+                            [
+                                [parseInt(payload.batch_id)],
+                                parseInt(payload.product_id),
+                                payload.scale_id || false,
+                                payload.manual_weight,
+                                payload.print_sticker !== false,
+                                payload.wo_roll_id ? parseInt(payload.wo_roll_id) : false,
+                                payload.roll_num || false,
+                                !!payload.observed,
+                                payload.observation || false,
+                                payload.note || false,
+                            ]
+                        );
+                    }
                     if (res && res.status === "success") {
-                        this.notification.add(res.message, { type: "success" });
+                        this.notification.add(res.message, { type: res.observed ? "warning" : "success" });
                         return true;
                     }
                     this.notification.add((res && res.message) || _t("Error al pesar."), {

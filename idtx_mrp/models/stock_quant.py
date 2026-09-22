@@ -6,6 +6,8 @@ class StockQuant(models.Model):
     batch_id = fields.Many2one(
         related='lot_id.batch_id', string='Partida', store=True, index=True,
         help='Partida del rollo (desde el lote): permite agrupar y filtrar el stock por partida.')
+    quality_grade = fields.Selection(
+        related='lot_id.quality_grade', string='Grado', store=True, index=True)
 
     def reprint(self):
         for rec in self:

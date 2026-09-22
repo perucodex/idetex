@@ -86,11 +86,13 @@
                                         <field name="available_production_ids" column_invisible="1"/>
                                         <field name="available_option_ids" column_invisible="1"/>
                                         <field name="available_thread_lot_ids" column_invisible="1"/>
+                                        <field name="is_customer_production" column_invisible="1"/>
                                         <field name="production_id" options="{'no_create': True}" domain="[('id', 'in', available_production_ids)]" readonly="state in ('validated', 'obsolete')"/>
-                                        <field name="workorder_option_id" options="{'no_create': True}" domain="[('id', 'in', available_option_ids)]" readonly="state in ('validated', 'obsolete') or not production_id"/>
+                                        <field name="workorder_option_id" options="{'no_create': True}" domain="[('id', 'in', available_option_ids)]" readonly="state in ('validated', 'obsolete') or not production_id or is_customer_production"/>
                                         <!-- force_save: los lotes los escribe el onchange de la opción
-                                             estando el campo readonly; sin él, el cliente los descarta. -->
-                                        <field name="lot_ids" widget="many2many_tags" options="{'no_create': True}" domain="[('id', 'in', available_thread_lot_ids)]" context="{'display_thread_product': True}" readonly="state in ('validated', 'obsolete') or workorder_option_id" force_save="1"/>
+                                             estando el campo readonly; sin él, el cliente los descarta.
+                                             Tela del cliente (OF de servicio sin tejido): sin lotes. -->
+                                        <field name="lot_ids" widget="many2many_tags" options="{'no_create': True}" domain="[('id', 'in', available_thread_lot_ids)]" context="{'display_thread_product': True}" readonly="state in ('validated', 'obsolete') or workorder_option_id or is_customer_production" required="not is_customer_production" force_save="1"/>
                                         <field name="version" readonly="1"/>
                                         <field name="validated_date" optional="show" readonly="1"/>
                                         <field name="validated_by_id" optional="hide"/>
@@ -204,11 +206,13 @@
                                 <field name="available_production_ids" invisible="1"/>
                                 <field name="available_option_ids" invisible="1"/>
                                 <field name="available_thread_lot_ids" invisible="1"/>
+                                <field name="is_customer_production" invisible="1"/>
                                 <field name="production_id" options="{'no_create': True}" domain="[('id', 'in', available_production_ids)]" readonly="state in ('validated', 'obsolete')"/>
-                                <field name="workorder_option_id" options="{'no_create': True}" domain="[('id', 'in', available_option_ids)]" readonly="state in ('validated', 'obsolete') or not production_id"/>
+                                <field name="workorder_option_id" options="{'no_create': True}" domain="[('id', 'in', available_option_ids)]" readonly="state in ('validated', 'obsolete') or not production_id or is_customer_production"/>
                                 <!-- force_save: los lotes los escribe el onchange de la opción
-                                     estando el campo readonly; sin él, el cliente los descarta. -->
-                                <field name="lot_ids" widget="many2many_tags" options="{'no_create': True}" readonly="state in ('validated', 'obsolete') or workorder_option_id" force_save="1" domain="[('id', 'in', available_thread_lot_ids)]" context="{'display_thread_product': True}"/>
+                                     estando el campo readonly; sin él, el cliente los descarta.
+                                     Tela del cliente (OF de servicio sin tejido): sin lotes. -->
+                                <field name="lot_ids" widget="many2many_tags" options="{'no_create': True}" readonly="state in ('validated', 'obsolete') or workorder_option_id or is_customer_production" required="not is_customer_production" force_save="1" domain="[('id', 'in', available_thread_lot_ids)]" context="{'display_thread_product': True}"/>
                                 <field name="version" readonly="1"/>
                                 <field name="absorption_factor" readonly="state in ('validated', 'obsolete')"/>
                                 <field name="bath_ratio" readonly="state in ('validated', 'obsolete')"/>

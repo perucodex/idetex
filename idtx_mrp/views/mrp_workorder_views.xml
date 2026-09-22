@@ -83,7 +83,6 @@
                     <field name="option_ids" readonly="state not in ('ready','progress')" context="{'default_workorder_id': id}">
                         <list>
                             <field name="name" readonly="1" force_save="1"/>
-                            <field name="employee_ids" widget="many2many_tags"/>
                             <field name="available_equipment_ids" column_invisible="1"/>
                             <field name="equipment_ids" widget="many2many_tags" domain="[('id','in',available_equipment_ids)]"/>
                             <field name="estimated_rate_kg_h" readonly="1"/>
@@ -99,14 +98,12 @@
                             <field name="name"/>
                             <field name="option_id" required="1"/>
                             <field name="equipment_ids" column_invisible="1"/>
-                            <field name="employee_ids" column_invisible="1"/>
                             <field name="equipment_id" domain="[('id','in',equipment_ids)]" required="1"/>
-                            <field name="employee_id" domain="[('id','in',employee_ids)]" required="1"/>
+                            <field name="employee_id" required="1"/>
                             <field name="uom_id"/>
                             <field name="quantity"/>
                             <field name="in_batch" column_invisible="1"/>
                             <field name="gross_weight" sum="Total" required="1" readonly="in_batch"/>
-                            <field name="net_weight" sum="Total" required="1"/>
                             <field name="roll_start"/>
                             <field name="roll_end"/>
                             <!-- <button name="unlink" icon="fa-trash" type="object" invisible="gross_weight" title="Delete" id="unlink_button_weight"/>

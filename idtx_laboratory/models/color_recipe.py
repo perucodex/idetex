@@ -84,6 +84,10 @@ class ColorRecipe(models.Model):
         combinación (opciones de OF y versiones): se prefiere la validada y
         se ignoran las obsoletas."""
         self.ensure_one()
+        if not lots:
+            # Sin lotes (rollos del cliente) la sub-receta es por OF, no por
+            # combinación: no hay nada que emparejar aquí.
+            return self.env['color.recipe.lot']
         key = self.env['color.recipe.lot']._make_lot_key(lots.ids)
         matches = self.recipe_lot_ids.filtered(
             lambda r: r.state != 'obsolete'

@@ -45,6 +45,7 @@
                                     <field name="create_date" string="Fecha"/>
                                     <field name="create_uid" string="Usuario"/>
                                     <field name="rollo_num" string="N° Rollo"/>
+                                    <button name="action_hold_roll" type="object" string="Separar" icon="fa-flag" title="Marcar para separar en el pesado"/>
                                     <field name="width" string="Ancho"/>
                                     <field name="meters" string="Metros"/>
                                     <field name="defect_count" string="Cantidad Defectos"/>
@@ -73,6 +74,7 @@
                         </group>
                         <group>
                             <field name="rollo_num"/>
+                            <button name="action_hold_roll" type="object" string="Separar" icon="fa-flag" title="Marcar para separar en el pesado"/>
                             <field name="width"/>
                             <field name="meters"/>
                             <field name="defect_count" readonly="1"/>

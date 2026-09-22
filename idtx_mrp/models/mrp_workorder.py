@@ -397,9 +397,11 @@ class MrpWorkorder(models.Model):
             if wo.workcenter_id.operation_type == 'weaving':
                 if not wo.option_ids:
                     raise UserError(_('Please create at least one option before starting the workorder.'))
-                invalid_options = wo.option_ids.filtered(lambda opt: not opt.employee_ids or not opt.equipment_ids)
+                # Los operarios ROTAN: no se planifican en la opción, así que
+                # solo se exige la máquina asignada.
+                invalid_options = wo.option_ids.filtered(lambda opt: not opt.equipment_ids)
                 if invalid_options:
-                    raise UserError(_('All options must have assigned employees and equipments before starting.'))
+                    raise UserError(_('All options must have assigned equipments before starting.'))
                 # La orden de trabajo debe estar enlazada a máquinas de su misma
                 # área (mismo departamento, p. ej. Tejeduría) y que estén
                 # OPERATIVAS: no se puede iniciar con máquinas de otra área ni

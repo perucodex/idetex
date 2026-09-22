@@ -25,7 +25,7 @@
                                     invisible="not product_id" string="Product"/>
                         </div> -->
                         <div class="float-end fs-6 border-0" invisible="not production_state">
-                            <field name="production_state" widget="badge" readonly="1" decoration-success="production_state == 'Production'" decoration-info="production_state == 'Pilot'" decoration-warning="production_state == 'Sample'"/>
+                            <field name="production_state" widget="badge" readonly="1" decoration-success="production_state == 'production'" decoration-info="production_state == 'pilot'" decoration-warning="production_state == 'sample'"/>
                         </div>
                         <div class="oe_title">
                             <h1>
@@ -208,7 +208,7 @@
                     <field name="atx"/>
                     <field name="weave_type"/>
                     <field name="company_id" groups="base.group_multi_company" optional="hide" readonly="1"/>
-                    <field name="production_state" widget="badge" decoration-success="production_state == 'Production'" decoration-info="production_state == 'Pilot'" decoration-warning="production_state == 'Sample'"/>
+                    <field name="production_state" widget="badge" decoration-success="production_state == 'production'" decoration-info="production_state == 'pilot'" decoration-warning="production_state == 'sample'"/>
                 </list>
             </field>
         </record>

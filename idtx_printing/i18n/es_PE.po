@@ -370,7 +370,7 @@ msgstr "Tipo de Proceso"
 #. module: idtx_printing
 #: model:ir.model.fields.selection,name:idtx_printing.selection__printing_design__process_type_rotary__discharge
 msgid "Discharge"
-msgstr "Corrosión"
+msgstr ""
 
 #. module: idtx_printing
 #: model:ir.model.fields,field_description:idtx_printing.field_printing_design__display_name

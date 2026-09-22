@@ -15,7 +15,7 @@
                 <attribute name="invisible">state != 'draft' or is_quote and is_company_produce and has_weaving_line</attribute>
             </xpath>
             <xpath expr="//button[@id='quotation_send_primary']" position="attributes">
-                <attribute name="invisible">state != 'draft' or need_approval and is_company_produce</attribute>
+                <attribute name="invisible">state != 'draft' or need_approval and is_company_produce or quote_approval_required and not admin_approval_user_id</attribute>
             </xpath>
             <xpath expr="//button[@id='quotation_send']" position="attributes">
                 <attribute name="invisible">state not in ('sent', 'sale') or need_approval and is_company_produce</attribute>
@@ -45,6 +45,13 @@
                         invisible="sale_count == 0 or not is_company_produce">
                         <field name="sale_count" string="Sales" widget="statinfo"/>
                 </button>
+                <button name="action_view_printing_designs"
+                        class="oe_stat_button"
+                        icon="fa-paint-brush"
+                        type="object"
+                        invisible="printing_design_count == 0 or not is_company_produce">
+                        <field name="printing_design_count" string="Fichas estampado" widget="statinfo"/>
+                </button>
             </xpath>
             <xpath expr="//field[@name='partner_id']" position="attributes">
                 <attribute name="domain">[('is_company','=', True)]</attribute>
@@ -63,16 +70,31 @@
             </xpath>
             <xpath expr="//field[@name='payment_term_id']" position="after">
                 <field name="lab_dev_ids" widget="many2many_tags" required="state == 'sale'" options="{'no_create': True, 'no_open': True}" invisible="is_quote or not is_company_produce or not need_labdev" readonly="state == 'sale'" force_save="1"/>
+                <!-- Badge "N Hilos cotizados" (JP, 21-sep-2026), sin etiqueta ni
+                     fecha; clic = tabla código/nombre/fecha de última
+                     actualización de la regla de cada hilo en la lista de precios. -->
+                <field name="thread_price_info" invisible="1"/>
+                <field name="thread_price_count" widget="thread_price_badge" nolabel="1" colspan="2" readonly="1" invisible="not is_company_produce or not thread_price_count"/>
             </xpath>
             <xpath expr="//header/button[@name='action_confirm'][1]" position="after">
                 <button name="create_labdev" class="btn-primary" string="Create LabDip" type="object" invisible="is_quote or not is_company_produce or not has_pending_labdev_lines or state == 'cancel'"/>
                 <!-- <button name="manual_labdev" class="btn-secondary" string="Manual LabDip" type="object" invisible="lab_dev_ids or is_quote"/> -->
-                <button name="action_create_sale_order" type="object" string="Sale Order" class="btn-primary" groups="base.group_user" invisible="state != 'sent' or not is_quote or not is_company_produce or need_approval or not signed_on"/>
+                <button name="action_create_sale_order" type="object" string="Sale Order" class="btn-primary" groups="base.group_user" invisible="state != 'sent' or not is_quote or not is_company_produce or need_approval or not signed_on or quote_approval_required and not admin_approval_user_id"/>
                 <button name="action_request_approval" type="object" string="Request Approval" class="btn-primary" invisible="not need_approval or state == 'for_app' or not is_company_produce"/>
                 <button name="action_approve" type="object" string="Approve Discount" class="btn-primary" groups="sales_team.group_sale_salesman_all_leads" invisible="state != 'for_app' or not is_company_produce"/>
-                <button name="action_admin_approve" type="object" string="Administrative Approve" class="btn-primary" groups="idtx_sale_order.group_sale_order_admin_approver" invisible="is_quote or not sale_approval_required or state != 'pending_admin_approval'"/>
-                <button name="action_finance_approve" type="object" string="Financial Approve" class="btn-primary" groups="idtx_sale_order.group_sale_order_finance_approver" invisible="is_quote or not sale_approval_required or state != 'pending_finance_approval'"/>
+                <!-- Validación administrativa de la COTIZACIÓN (JP, 22-sep-2026):
+                     se pide en borrador, el aprobador la devuelve a borrador ya
+                     validada y recién entonces se puede Enviar. Interruptor en
+                     Ajustes > Ventas > Cotizaciones: validación administrativa. -->
+                <button name="action_request_quote_approval" type="object" string="Solicitar validación" class="btn-primary"
+                        invisible="not is_quote or not quote_approval_required or state != 'draft' or admin_approval_user_id or need_approval"/>
+                <button name="action_admin_approve" type="object" string="Administrative Approve" class="btn-primary" groups="idtx_sale_order.group_sale_order_admin_approver" invisible="state != 'pending_admin_approval'"/>
+                <button name="action_finance_approve" type="object" string="Financial Approve" class="btn-primary" groups="idtx_sale_order.group_sale_order_finance_approver" invisible="is_quote or state != 'pending_finance_approval'"/>
                 <button name="action_price_preview" type="object" string="Prices" class="btn-secondary" groups="sales_team.group_sale_salesman_all_leads" invisible="not is_quote or not is_company_produce or is_subscription"/>
+                <!-- Ficha de cotización de estampado: la llena el vendedor (borrador)
+                     y desarrollo la completa después. -->
+                <button name="action_new_printing_design" type="object" string="Ficha de estampado" class="btn-secondary"
+                        invisible="not is_quote or not is_company_produce or is_subscription or state not in ('draft', 'sent')"/>
             </xpath>
             <xpath expr="//header" position="after">
                 <div class="alert alert-warning d-flex justify-content-between align-items-center" role="alert" invisible="not weaving_warning or not is_company_produce">
@@ -87,6 +109,7 @@
                 <field name="has_weaving_line" invisible="1"/>
                 <field name="need_approval" invisible="1"/>
                 <field name="sale_approval_required" invisible="1"/>
+                <field name="quote_approval_required" invisible="1"/>
                 <field name="has_order_lab_dev" invisible="1"/>
                 <field name="has_pending_labdev_lines" invisible="1"/>
                 <field name="admin_approval_user_id" invisible="1"/>
@@ -95,6 +118,14 @@
                 <field name="finance_approval_date" invisible="1"/>
             </xpath>
             <xpath expr="//notebook/page/field[@name='order_line']/list/field[@name='product_template_id']" position="after">
+                <!-- Semáforo de producción del producto (estado del ANÁLISIS),
+                     en cotización y pedido (JP, 21-sep-2026): rojo = sin OF,
+                     rojo M = muestra en curso, verde M = muestra terminada,
+                     naranja P = piloto en curso, verde P = piloto terminado,
+                     verde = venta/servicio terminada. La visibilidad real la
+                     decide el widget (column_invisible no aplica a <widget>). -->
+                <field name="analysis_production_indicator" column_invisible="1"/>
+                <widget name="analysis_production_state_widget" column_invisible="not parent.is_company_produce" width="20px"/>
                 <button name="action_duplicate_without_color" type="object"
                         icon="fa-copy" class="btn-link"
                         title="Duplicar linea sin color"
@@ -106,22 +137,41 @@
                 <field name="diff_days" column_invisible="1"/>
                 <field name="is_lab_color" column_invisible="1"/>
                 <field name="color_name" widget="lab_color_name" required="is_weaving and not lab_dev_line_id and parent.is_company_produce and is_lab_color" readonly="not is_weaving or not is_lab_color or lab_dev_line_id" column_invisible="parent.is_quote or not parent.is_company_produce" force_save="1"/>
-                <field name="product_color_range_ids" column_invisible="1"/>
-                <field name="product_color_intensity_ids" column_invisible="1"/>
-                <field name="lab_dev_line_id" required="is_weaving and parent.is_company_produce and not parent.is_quote and is_lab_color and parent.has_order_lab_dev" readonly="not is_weaving or not is_lab_color" column_invisible="parent.is_quote or not parent.is_company_produce" options="{'no_create': True}" domain="[('color_range_id', 'in', product_color_range_ids), ('color_intensity_id', 'in', product_color_intensity_ids)]" force_save="1"/>
+                <!-- Sin dominio por rango/intensidad: los colores SIN código de
+                     laboratorio no tienen rango ni intensidad y quedaban fuera
+                     de la lista en el pedido (JP, 17-sep-2026). -->
+                <field name="lab_dev_line_id" required="is_weaving and parent.is_company_produce and not parent.is_quote and is_lab_color and parent.has_order_lab_dev" readonly="not is_weaving or not is_lab_color" column_invisible="parent.is_quote or not parent.is_company_produce" options="{'no_create': True}" force_save="1"/>
                 <field name="is_printing" column_invisible="1"/>
                 <!-- El diseño también se elige en la COTIZACIÓN: el recargo de
                      estampado se calcula al cotizar, así que dejarlo solo en el
                      pedido daba precios sin el estampado incluido. -->
-                <field name="printing_design_id" options="{'no_create': True}" required="is_printing" readonly="not is_printing" column_invisible="not parent.is_company_produce" optional="hide" domain="[('partner_id','=', order_partner_id),('state','!=','draft')]"/>
+                <!-- Ficha de estampado desde la cotización (JP, 22-sep-2026): en la
+                     COTIZACIÓN el vendedor puede elegir fichas en borrador y crear una
+                     nueva con "Crear y editar" (formulario reducido, precargado con el
+                     cliente y la tela del producto). En el PEDIDO solo fichas ya
+                     trabajadas por desarrollo (no borradores). -->
+                <field name="printing_design_id" options="{'no_quick_create': True}" required="is_printing" readonly="not is_printing" column_invisible="not parent.is_company_produce" optional="hide"
+                       domain="[('partner_id','=', order_partner_id), ('state', 'not in', [] if parent.is_quote else ['draft'])]"
+                       context="{'form_view_ref': 'idtx_sale_order.view_printing_design_form_quote', 'default_partner_id': order_partner_id, 'quote_product_tmpl_id': product_template_id}"/>
                 <field name="printing_design_preview_image" column_invisible="1"/>
-                <widget name="printing_design_status_widget" column_invisible="parent.is_quote or not parent.is_company_produce" width="20px"/>
+                <field name="printing_design_state" column_invisible="1"/>
+                <field name="printing_design_has_price" column_invisible="1"/>
+                <!-- Semáforo del diseño también en la cotización: naranja mientras la
+                     ficha del vendedor no tenga precio/Hecho, verde cuando desarrollo la cierra. -->
+                <widget name="printing_design_status_widget" column_invisible="not parent.is_company_produce" width="20px"/>
                 <field name="printing_design_name" column_invisible="parent.is_quote or not parent.is_company_produce" optional="hide"/>
-                <field name="bom_id" options="{'no_create': True}" required="is_weaving and parent.is_company_produce and parent.is_quote" readonly="not is_weaving" domain="[('product_tmpl_id','=',product_template_id)]" optional="hide" column_invisible="not parent.is_quote or not parent.is_company_produce"/>
-                <!-- En el pedido (is_quote=False) la LdM viene copiada de la
-                     cotización: solo lectura y oculta por defecto. -->
-                <field name="bom_id" options="{'no_create': True}" readonly="1" force_save="1" domain="[('product_tmpl_id','=',product_template_id)]" optional="hide" column_invisible="parent.is_quote or not parent.is_company_produce" groups="base.group_system"/>
-                <field name="operation_ids" options="{'no_create': True}" required="parent.sale_type == 'service' and parent.is_company_produce and is_weaving" readonly="not is_weaving or parent.sale_type != 'service'" domain="[('id','in',available_operation_ids)]" widget="many2many_tags" force_save="1" optional="hide" column_invisible="not parent.is_quote or not parent.is_company_produce"/>
+                <!-- Ficha (LdM): OCULTA en cotización y pedido desde el
+                     21-sep-2026. Los procesos a cotizar salen de la ruta del
+                     análisis del producto; la ficha se asigna sola (primera
+                     LdM del producto) porque la OF del pedido la necesita.
+                     Se mantiene en la vista (invisible) para que el onchange
+                     de producto la guarde y encadene el de mermas. -->
+                <field name="bom_id" column_invisible="1" force_save="1"/>
+                <!-- Las operaciones se pintan SIEMPRE en el orden de la ruta del
+                     análisis (route_operation_order), aunque se quiten y se
+                     vuelvan a agregar (JP, 22-sep-2026). -->
+                <field name="route_operation_order" column_invisible="1"/>
+                <field name="operation_ids" options="{'no_create': True}" required="parent.sale_type == 'service' and parent.is_company_produce and is_weaving" readonly="not is_weaving or parent.sale_type != 'service'" domain="[('id','in',available_operation_ids)]" widget="route_ordered_many2many_tags" force_save="1" optional="hide" column_invisible="not parent.is_quote or not parent.is_company_produce"/>
                 <field name="weaving_loss" readonly="not is_weaving" optional="hide" widget="percentage" column_invisible="not parent.is_quote or not parent.is_company_produce"/>
                 <!-- Merma de producción: editable en la cotización, visible en el pedido
                      porque define la cantidad de la OF (pedido / (1 - merma)). -->
@@ -167,17 +217,39 @@
                 <field name="quotation_id" readonly="1" invisible="not quotation_id"/>
             </field>
 
-            <!-- Otra información > Ventas: datos de la OC del cliente y tipo de proceso SITPRO -->
+            <!-- Otra información > Ventas: datos de la OC del cliente y tipo de
+                 proceso SITPRO. SOLO en el PEDIDO (is_quote=False): en la
+                 cotización estos datos aún no existen y el campo del core
+                 conserva su etiqueta original ("Referencia del cliente"). -->
             <xpath expr="//page[@name='other_information']//field[@name='client_order_ref']" position="attributes">
-                <attribute name="string">Orden de compra del cliente</attribute>
+                <!-- En la cotización se ve el campo del core con su etiqueta. -->
+                <attribute name="invisible">not is_quote</attribute>
             </xpath>
             <xpath expr="//page[@name='other_information']//field[@name='client_order_ref']" position="after">
-                <field name="client_order_date"/>
-                <field name="sub_partner_id" context="{'res_partner_search_mode': 'customer'}"/>
+                <!-- Mismo campo del core, renombrado, solo para el pedido. -->
+                <field name="client_order_ref" string="Orden de compra del cliente"
+                       invisible="is_quote"/>
+                <field name="client_order_date" invisible="is_quote"/>
+                <field name="sub_partner_id" context="{'res_partner_search_mode': 'customer'}"
+                       invisible="is_quote"/>
                 <!-- Venta admite venta con producción y venta de stock; servicio solo servicio.
                      Misma regla que sitpro.sale.type._order_kinds_for_sale_type (onchange). -->
                 <field name="process_type_id" options="{'no_create': True}"
+                       invisible="is_quote"
                        domain="[('order_kind', 'in', ['sale', 'sale_stock'] if sale_type == 'sale' else [sale_type])]"/>
+            </xpath>
+            <!-- Quién validó y cuándo (cotización: solo administrativa; pedido: ambas). -->
+            <xpath expr="//page[@name='other_information']" position="inside">
+                <group name="idtx_approvals" string="Validaciones" invisible="not admin_approval_user_id and not finance_approval_user_id">
+                    <group>
+                        <field name="admin_approval_user_id" string="Validación administrativa" readonly="1" invisible="not admin_approval_user_id"/>
+                        <field name="admin_approval_date" string="Fecha" readonly="1" invisible="not admin_approval_user_id"/>
+                    </group>
+                    <group>
+                        <field name="finance_approval_user_id" string="Validación financiera" readonly="1" invisible="not finance_approval_user_id"/>
+                        <field name="finance_approval_date" string="Fecha" readonly="1" invisible="not finance_approval_user_id"/>
+                    </group>
+                </group>
             </xpath>
 
         </field>
