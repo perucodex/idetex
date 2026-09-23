@@ -25,7 +25,7 @@ def migrate(cr, version):
         {"old": _OLD_GRID_COLS, "new": _NEW_GRID_COLS},
     )
     _logger.info(
-        "idtx_plan_general_alpha 0.3: %s filas de idtx.alpha.floor.layout "
+        "idtx_plan_alpha 0.3: %s filas de idtx.alpha.floor.layout "
         "re-codificadas de ancho %s a ancho %s",
         cr.rowcount, _OLD_GRID_COLS, _NEW_GRID_COLS,
     )

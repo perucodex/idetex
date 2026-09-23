@@ -6,7 +6,7 @@ from .models.floor_layout import GRID_COLS
 
 _logger = logging.getLogger(__name__)
 
-_MODULE = 'idtx_plan_general_alpha'
+_MODULE = 'idtx_plan_alpha'
 
 _LEGACY_GRID_COLS = 24
 
@@ -391,10 +391,10 @@ def _set_tejeduria_operativa(env):
 
 def post_init_hook(env):
     try:
-        estados_id = env.ref('idtx_plan_general_alpha.action_plan_alpha_dash_estados').id
-        clientes_id = env.ref('idtx_plan_general_alpha.action_plan_alpha_dash_clientes').id
-        area_id    = env.ref('idtx_plan_general_alpha.action_plan_alpha_dash_area').id
-        proceso_id = env.ref('idtx_plan_general_alpha.action_plan_alpha_dash_proceso').id
+        estados_id = env.ref('idtx_plan_alpha.action_plan_alpha_dash_estados').id
+        clientes_id = env.ref('idtx_plan_alpha.action_plan_alpha_dash_clientes').id
+        area_id    = env.ref('idtx_plan_alpha.action_plan_alpha_dash_area').id
+        proceso_id = env.ref('idtx_plan_alpha.action_plan_alpha_dash_proceso').id
 
         arch = (
             '<form string="Dashboard de Planeamiento">'
@@ -411,7 +411,7 @@ def post_init_hook(env):
             '</form>'
         )
 
-        board_view = env.ref('idtx_plan_general_alpha.view_plan_alpha_dashboard_board')
+        board_view = env.ref('idtx_plan_alpha.view_plan_alpha_dashboard_board')
         board_view.with_context(no_cow=True).write({'arch': arch})
         _logger.info('Plan General Alpha: dashboard board configurado correctamente.')
     except Exception:

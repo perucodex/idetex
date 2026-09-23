@@ -19,7 +19,7 @@ _logger = logging.getLogger(__name__)
 def migrate(cr, version):
     env = Environment(cr, SUPERUSER_ID, {})
 
-    from odoo.addons.idtx_plan_general_alpha.hooks import _create_initial_equipment
+    from odoo.addons.idtx_plan_alpha.hooks import _create_initial_equipment
 
     _create_initial_equipment(env)
-    _logger.info('idtx_plan_general_alpha 0.5: equipos migrados a FULL PIMA S.A.C. y categorizados.')
+    _logger.info('idtx_plan_alpha 0.5: equipos migrados a FULL PIMA S.A.C. y categorizados.')

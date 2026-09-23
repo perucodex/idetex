@@ -241,15 +241,19 @@
 
     </t>
 
-    <!-- ── SIDE PANEL ───────────────────────────────────────────────────────── -->
+    <!-- ── DETAIL MODAL ─────────────────────────────────────────────────────── -->
+    <!-- El modal vive DENTRO del overlay a propósito: es lo que permite que
+         el flex centering de .mf-panel-overlay lo centre en pantalla. Un
+         clic en el overlay cierra (onCloseSidePanel); .stop en el modal
+         evita que un clic adentro burbujee hasta el overlay y lo cierre. -->
     <t t-if="state.panel.open">
-        <div class="mf-panel-overlay" t-on-click="onCloseSidePanel"/>
-        <div class="mf-panel">
+        <div class="mf-panel-overlay" t-on-click="onCloseSidePanel">
+        <div class="mf-panel" role="dialog" aria-modal="true" aria-label="Detalle de Máquina" t-on-click.stop="() => {}">
 
-            <!-- Header del panel -->
+            <!-- Header del modal -->
             <div class="mf-panel-header">
                 <div class="mf-panel-header-left">
-                    <i class="fa fa-cog mf-panel-header-icon"/>
+                    <span class="mf-panel-header-icon"><i class="fa fa-cog"/></span>
                     <span class="mf-panel-header-title">Detalle de Máquina</span>
                 </div>
                 <button class="mf-panel-close" t-on-click="onCloseSidePanel">
@@ -393,6 +397,7 @@
                 <span>No se pudo cargar el detalle</span>
             </div>
 
+        </div>
         </div>
     </t>
 

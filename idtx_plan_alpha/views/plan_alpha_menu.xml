@@ -3,7 +3,7 @@
 
     <menuitem id="menu_plan_alpha_app"
               name="Plan General Alpha"
-              web_icon="idtx_plan_general_alpha,static/description/icon.svg"
+              web_icon="idtx_plan_alpha,static/description/icon.svg"
               sequence="54"/>
 
     <menuitem id="menu_plan_alpha_dashboard"
@@ -40,5 +40,11 @@
               parent="menu_plan_alpha_config"
               action="action_plan_alpha_equipment"
               sequence="52"/>
+
+    <menuitem id="menu_plan_alpha_config_equipment_category"
+              name="Categorias de Equipo"
+              parent="menu_plan_alpha_config"
+              action="action_plan_alpha_equipment_category"
+              sequence="53"/>
 
 </odoo>

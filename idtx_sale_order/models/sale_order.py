@@ -446,7 +446,10 @@ class SaleOrder(models.Model):
             if order.partner_id and not pricing_pricelist:
                 order.weaving_warning += _(('This sale order has no price list or the option is not activated.')) + '\n'
             else:
-                for line in order.order_line.filtered(lambda l: l.product_template_id.is_weaving):
+                # Una linea en 0 es una linea anulada (ver comentario mas abajo
+                # sobre min_qty): no debe generar ningun warning, no solo el
+                # de min_qty.
+                for line in order.order_line.filtered(lambda l: l.product_template_id.is_weaving and l.product_uom_qty):
                     # if line.product_template_id.bom_ids:
                     if line.bom_id:
                         bom_id = line.bom_id
@@ -461,6 +464,13 @@ class SaleOrder(models.Model):
                         else:
                             product = bom_line.product_template_id
                             quantity = bom_line.percentage or 0
+                        if not product:
+                            # Fila de bom/fibra sin producto vinculado (ficha
+                            # técnica incompleta) — sin esto, _get_product_rule
+                            # revienta con KeyError: False al buscar la regla
+                            # de precio de un producto vacío.
+                            order.weaving_warning += _(('Product %s has a bom/fiber line without a linked product. Please check with product development') % line.product_id.product_tmpl_id.display_name) + '\n'
+                            continue
                         pricelist_item_id = pricing_pricelist._get_product_rule(
                             product,
                             quantity=quantity or 1.0,

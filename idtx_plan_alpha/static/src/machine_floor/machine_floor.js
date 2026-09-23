@@ -145,6 +145,11 @@ export class MachineFloor extends Component {
         this._onResizeMove = null;
         this._onResizeUp   = null;
         this._onWindowResize = () => this._measureCellWidth();
+        // Cierra el modal de detalle con Escape, como cualquier modal — solo
+        // mientras está abierto, para no interferir con otros atajos.
+        this._onKeydown = (ev) => {
+            if (ev.key === "Escape" && this.state.panel.open) this.onCloseSidePanel();
+        };
 
         onWillStart(async () => {
             await this._loadWorkcenters();
@@ -158,8 +163,10 @@ export class MachineFloor extends Component {
         onMounted(() => this._measureCellWidth());
         onPatched(() => this._measureCellWidth());
         window.addEventListener("resize", this._onWindowResize);
+        document.addEventListener("keydown", this._onKeydown);
         onWillUnmount(() => {
             window.removeEventListener("resize", this._onWindowResize);
+            document.removeEventListener("keydown", this._onKeydown);
         });
     }
 

@@ -55,7 +55,8 @@ idtx_<nombre>/
 - Siempre añadir la fila en `ir.model.access.csv` al crear un modelo (incluidos wizards
   `TransientModel`, que en Odoo 19 no requieren ACL pero los modelos normales sí).
 - **No tocar** `idtx_orgatex_old` (legado, no instalado). `idtx_plan_general` fue
-  reemplazado por `idtx_plan_general_alpha`. `idtx_sire_sunat` no está instalado en dev.
+  reemplazado por `idtx_plan_alpha` (renombrado de `idtx_plan_general_alpha` el
+  2026-09-21). `idtx_sire_sunat` no está instalado en dev.
 
 ## Grafo de dependencias (cadena base)
 

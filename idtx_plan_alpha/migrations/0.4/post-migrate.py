@@ -27,7 +27,7 @@ _logger = logging.getLogger(__name__)
 def migrate(cr, version):
     env = Environment(cr, SUPERUSER_ID, {})
 
-    from odoo.addons.idtx_plan_general_alpha.hooks import (
+    from odoo.addons.idtx_plan_alpha.hooks import (
         _create_floor_layouts,
         _TEJEDURIA_FLOOR_LAYOUT,
         _TINTORERIA_FLOOR_LAYOUT,
@@ -35,4 +35,4 @@ def migrate(cr, version):
 
     _create_floor_layouts(env, 'TEJEDURIA', _TEJEDURIA_FLOOR_LAYOUT)
     _create_floor_layouts(env, 'TINTORERIA', _TINTORERIA_FLOOR_LAYOUT)
-    _logger.info('idtx_plan_general_alpha 0.4: layout canonico de piso restaurado.')
+    _logger.info('idtx_plan_alpha 0.4: layout canonico de piso restaurado.')

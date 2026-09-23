@@ -501,6 +501,11 @@ class SaleOrderLine(models.Model):
                     else:
                         product = bom_line.product_template_id
                         quantity = bom_line.percentage or 0
+                    if not product:
+                        # Fila de bom/fibra sin producto vinculado (ficha
+                        # tecnica incompleta) - se omite de la firma en vez de
+                        # reventar con KeyError: False en _get_product_rule.
+                        continue
                     pricelist_item_id = pricing_pricelist._get_product_rule(
                         product,
                         quantity=quantity or 1.0,
@@ -569,6 +574,11 @@ class SaleOrderLine(models.Model):
                         else:
                             product = bom_line.product_template_id
                             quantity = bom_line.percentage or 0
+                        if not product:
+                            # Ver nota equivalente mas arriba en
+                            # _compute_thread_signature: fila de bom/fibra sin
+                            # producto vinculado, se omite del calculo.
+                            continue
                         pricelist_item_id = pricing_pricelist._get_product_rule(
                             product,
                             quantity=quantity,

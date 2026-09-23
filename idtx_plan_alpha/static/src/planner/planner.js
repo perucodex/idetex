@@ -84,7 +84,7 @@ function lsSet(key, val) {
 
 // ── Component ──────────────────────────────────────────────────────────────
 export class PlannerView extends Component {
-    static template = 'idtx_plan_general_alpha.Planner';
+    static template = 'idtx_plan_alpha.Planner';
 
     setup() {
         this.orm           = useService('orm');

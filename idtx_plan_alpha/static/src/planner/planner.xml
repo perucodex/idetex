@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates xml:space="preserve">
 
-<t t-name="idtx_plan_general_alpha.Planner">
+<t t-name="idtx_plan_alpha.Planner">
 <div class="plr">
 
     <!-- ── Header ─────────────────────────────────────────────────────────── -->

@@ -1,6 +1,7 @@
 import datetime
 import logging
 import re
+import unicodedata
 import pytz
 from collections import defaultdict
 from odoo import http
@@ -9,6 +10,34 @@ from odoo.http import request
 from ..models.floor_layout import GRID_COLS
 
 _logger = logging.getLogger(__name__)
+
+# Compañías dueñas de las áreas de planta (ver [[project_workcenter_check_company]]):
+# FULL PIMA S.A.C. es la dueña actual de los equipos desde la migración 0.5;
+# IDETEX S.A.C. sigue siendo dueña de facto del department_id de la mayoría
+# de las ~113 máquinas históricas (nunca se migró ese campo). Se agrupan las
+# áreas de ambas por nombre normalizado para no duplicar pestañas.
+_PLANT_COMPANY_NAMES = ("FULL PIMA S.A.C.", "IDETEX S.A.C.")
+
+
+def _normalize_area(name):
+    name = (name or "").strip().upper()
+    name = unicodedata.normalize("NFKD", name)
+    return "".join(c for c in name if not unicodedata.combining(c))
+
+
+# Orden de negocio del flujo de producción textil (de planta), pedido por el
+# usuario — no alfabético. "ACABADO" hace match por prefijo contra el
+# hr.department real "Acabados" (plural) vía _area_sort_key.
+_AREA_ORDER = (
+    "HILANDERIA", "TEJEDURIA", "TINTORERIA", "ESTAMPADO", "ACABADO", "CONTROL DE CALIDAD",
+)
+
+
+def _area_sort_key(name):
+    for i, canon in enumerate(_AREA_ORDER):
+        if name == canon or name.startswith(canon) or canon.startswith(name):
+            return (0, i, name)
+    return (1, 0, name)
 
 
 def _covered_cells(anchor, span_cols, span_rows, cols):
@@ -35,19 +64,31 @@ def _factory_sort_key(name):
 
 class PlanAlphaDashboard(http.Controller):
 
-    _WORKCENTER_DEPT_KEYWORDS = {
-        "TEJEDURIA":  ["TEJED", "TEJID"],
-        "TINTORERIA": ["TINTOR", "TINTE"],
-    }
+    def _plant_department_groups(self, env):
+        """Agrupa hr.department de las compañías de planta por nombre
+        normalizado (sin tildes, mayúsculas) -> lista de department_id.
+
+        Reemplaza el diccionario harcodeado de 2 áreas (TEJEDURIA/TINTORERIA)
+        que existía antes: ahora cualquier área (con o sin máquinas todavía)
+        aparece automáticamente como pestaña en Máquinas apenas exista el
+        hr.department correspondiente en FULL PIMA S.A.C. o IDETEX S.A.C.,
+        sin tocar código. El agrupado por nombre normalizado evita mostrar
+        una pestaña duplicada cuando la misma área existe en ambas compañías
+        (caso real de Tejeduría/Tintorería)."""
+        Company = env["res.company"].sudo()
+        companies = Company.search([("name", "in", list(_PLANT_COMPANY_NAMES))])
+        Dept = env["hr.department"].sudo()
+        domain = [("active", "=", True)]
+        if companies:
+            domain.append(("company_id", "in", companies.ids))
+        groups = {}
+        for d in Dept.search(domain, order="name asc"):
+            groups.setdefault(_normalize_area(d.name), []).append(d.id)
+        return groups
 
     def _equipment_domain_for_workcenter(self, env, workcenter):
-        kws = self._WORKCENTER_DEPT_KEYWORDS.get((workcenter or "").upper(), [])
-        if not kws:
-            return None
-        Dept = env["hr.department"].sudo()
-        dept_ids = []
-        for kw in kws:
-            dept_ids += Dept.search([("name", "ilike", kw)]).ids
+        groups = self._plant_department_groups(env)
+        dept_ids = groups.get(_normalize_area(workcenter))
         if not dept_ids:
             return None
         return [("active", "=", True), ("department_id", "in", dept_ids)]
@@ -61,11 +102,17 @@ class PlanAlphaDashboard(http.Controller):
     def alpha_workcenters(self):
         env = request.env
         Equipment = env["maintenance.equipment"].sudo()
-        workcenters = []
-        for name in ("TEJEDURIA", "TINTORERIA"):
-            domain = self._equipment_domain_for_workcenter(env, name)
-            count = Equipment.search_count(domain) if domain else 0
-            workcenters.append({"name": name, "count": count})
+        groups = self._plant_department_groups(env)
+        counts = {
+            name: Equipment.search_count([("active", "=", True), ("department_id", "in", dept_ids)])
+            for name, dept_ids in groups.items()
+        }
+        workcenters = [
+            {"name": name, "count": count}
+            for name, count in counts.items()
+            if count > 0
+        ]
+        workcenters.sort(key=lambda wc: _area_sort_key(wc["name"]))
         return {"workcenters": workcenters}
 
     @http.route(
@@ -87,7 +134,7 @@ class PlanAlphaDashboard(http.Controller):
         equipments = Equipment.search(domain, order="name asc")
 
         GRID_COLS_OLD = 20
-        GRID_COLS_NEW = GRID_COLS  # importado de models.floor_layout — misma constante que hooks.py
+        GRID_COLS_NEW = GRID_COLS  
 
         Layout = env["idtx.alpha.floor.layout"].sudo()
         existing = Layout.search([("workcenter", "=", workcenter)])

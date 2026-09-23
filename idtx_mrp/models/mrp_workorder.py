@@ -6,8 +6,8 @@ from odoo.exceptions import UserError
 
 # Mapea el nombre del centro de trabajo REAL (de la OT, de FULL PIMA) al
 # departamento HR donde viven las máquinas (también de FULL PIMA desde la
-# migración 0.5 de idtx_plan_general_alpha, antes de IDETEX). Se usa
-# departamento en vez de mrp.workcenter porque idtx_plan_general_alpha
+# migración 0.5 de idtx_plan_alpha, antes de IDETEX). Se usa
+# departamento en vez de mrp.workcenter porque idtx_plan_alpha
 # instala bajo la compañía idetex y no puede crear/asignar un mrp.workcenter
 # de otra compañía sin romper check_company — ver
 # [[project_workcenter_check_company]]. Departamento sí es único (no hay
@@ -407,7 +407,7 @@ class MrpWorkorder(models.Model):
                 # OPERATIVAS: no se puede iniciar con máquinas de otra área ni
                 # en otro estado (apagada, malograda, mantenimiento, ejecutando).
                 # Se compara por DEPARTAMENTO (no por centro de trabajo) porque
-                # idtx_plan_general_alpha instala bajo idetex y no puede
+                # idtx_plan_alpha instala bajo idetex y no puede
                 # crear/asignar un mrp.workcenter de otra compañía sin romper
                 # check_company — ver [[project_workcenter_check_company]].
                 # sudo(): se leen department_id/machine_state del equipo más
@@ -539,7 +539,7 @@ class MrpWorkorderOption(models.Model):
     )
     # Máquinas seleccionables: solo las OPERATIVAS del mismo área (mismo
     # departamento, p.ej. Tejeduría) que la orden de trabajo. Se empareja por
-    # departamento (no por centro de trabajo) porque idtx_plan_general_alpha
+    # departamento (no por centro de trabajo) porque idtx_plan_alpha
     # instala bajo idetex y no puede crear/asignar un mrp.workcenter de otra
     # compañía sin romper check_company — ver [[project_workcenter_check_company]].
     # Nota: esta búsqueda NO usa sudo() y sí respeta la regla multi-compañía

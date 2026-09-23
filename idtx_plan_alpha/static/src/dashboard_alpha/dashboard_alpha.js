@@ -56,7 +56,7 @@ function fmtKg(v) {
 
 // ── Component ──────────────────────────────────────────────────────────────────
 export class DashboardAlpha extends Component {
-    static template = "idtx_plan_general_alpha.DashboardAlpha";
+    static template = "idtx_plan_alpha.DashboardAlpha";
     static props = ["*"];
 
     setup() {
