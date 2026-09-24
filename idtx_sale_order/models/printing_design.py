@@ -7,7 +7,26 @@ PRICE_FIELDS = ('unit_price', 'bonding_price', 'digital_unit_price_ids', 'rotary
 class PrintingDesign(models.Model):
     _inherit = 'printing.design'
 
+    # Última actualización del recargo de estampado de la ficha: cambio de un
+    # campo de precio (PRICE_FIELDS) o paso a Hecho (momento en que el precio
+    # vale para la cotización). La muestra el widget de fechas de precio de los
+    # procesos del vendedor (JP, 23-sep-2026).
+    price_date = fields.Datetime(
+        'Fecha de precio', readonly=True, copy=False,
+        help='Última actualización del precio de estampado de la ficha o su paso a Hecho.')
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        now = fields.Datetime.now()
+        for vals in vals_list:
+            if any(vals.get(f) for f in PRICE_FIELDS if f != 'printing_type'):
+                vals.setdefault('price_date', now)
+        return super().create(vals_list)
+
     def write(self, vals):
+        if 'price_date' not in vals and (
+                vals.get('state') == 'done' or any(f in vals for f in PRICE_FIELDS)):
+            vals = dict(vals, price_date=fields.Datetime.now())
         res = super().write(vals)
         # La cotización se recalcula cuando la ficha pasa a Hecho y cuando, ya
         # hecha, desarrollo ajusta el precio (JP, 22-sep-2026).

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Ficha del cliente > Ventas y compras: grupo MUESTRAS a la derecha de
+         Varios con los precios de muestra del cliente (JP, 23-sep-2026). En 0
+         la cotización/pedido marcado como Muestra usa los de Ajustes > Ventas. -->
+    <record id="view_partner_form_inherit_idtx_samples" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.idtx.samples</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='misc']" position="after">
+                <group string="Muestras" name="idtx_samples">
+                    <field name="sample_currency_id" invisible="1"/>
+                    <field name="sample_price"/>
+                    <field name="sample_printing_price"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

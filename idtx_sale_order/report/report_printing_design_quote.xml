@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Ficha de cotización de estampado (JP, 22-sep-2026): réplica del Excel
+         "Ficha de cotización de estampados" con los datos que llena el vendedor. -->
+    <record id="action_report_printing_design_quote" model="ir.actions.report">
+        <field name="name">Ficha de cotización de estampado</field>
+        <field name="model">printing.design</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">idtx_sale_order.report_printing_design_quote</field>
+        <field name="report_file">idtx_sale_order.report_printing_design_quote</field>
+        <field name="print_report_name">'Ficha estampado - %s' % (object.code or object.name)</field>
+        <field name="binding_model_id" ref="idtx_printing.model_printing_design"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_printing_design_quote_document">
+        <t t-call="web.external_layout">
+            <t t-set="d" t-value="doc"/>
+            <!-- Casilla marcada / vacía (dibujada con CSS: no depende de fuentes). -->
+            <t t-set="box_on" t-value="'display:inline-block;width:12px;height:12px;border:1.5px solid #333;background:#333;vertical-align:middle;margin-right:6px;'"/>
+            <t t-set="box_off" t-value="'display:inline-block;width:12px;height:12px;border:1.5px solid #333;vertical-align:middle;margin-right:6px;'"/>
+            <t t-set="cell" t-value="'border:1px solid #999;padding:4px 6px;'"/>
+            <t t-set="head" t-value="'border:1px solid #999;padding:4px 6px;background:#eee;font-weight:bold;'"/>
+            <div class="page" style="font-size:12px;">
+                <h3 class="text-center mb-3" style="font-weight:bold;">Ficha de cotización de estampados</h3>
+
+                <!-- Datos generales -->
+                <table style="width:100%;border-collapse:collapse;margin-bottom:10px;">
+                    <tr>
+                        <td t-attf-style="{{head}}width:20%;">Arte</td>
+                        <td t-attf-style="{{cell}}width:35%;"><span t-field="d.file_desc"/></td>
+                        <td t-attf-style="{{head}}width:18%;">Fecha</td>
+                        <td t-att-style="cell"><span t-field="d.printing_date"/></td>
+                    </tr>
+                    <tr>
+                        <td t-att-style="head">Cantidad de colores</td>
+                        <td t-att-style="cell"><span t-esc="d.cylinder_qty or ''"/></td>
+                        <td t-att-style="head">Código de arte</td>
+                        <td t-att-style="cell"><span t-field="d.code"/></td>
+                    </tr>
+                    <tr>
+                        <td t-att-style="head">Cliente</td>
+                        <td t-att-style="cell"><span t-field="d.partner_id"/></td>
+                        <td t-att-style="head">Cotización</td>
+                        <td t-att-style="cell"><span t-esc="d.quotation_id.name or ''"/></td>
+                    </tr>
+                    <tr>
+                        <td t-att-style="head">Tipo de tela</td>
+                        <td t-att-style="cell"><span t-field="d.fabric_base"/></td>
+                        <td t-att-style="head">Vendedor</td>
+                        <td t-att-style="cell"><span t-esc="d.salesperson_id.name or ''"/></td>
+                    </tr>
+                    <tr>
+                        <td t-att-style="head">Ancho</td>
+                        <td t-att-style="cell"><t t-if="d.width"><span t-esc="'%.2f' % d.width"/> cm</t></td>
+                        <td t-att-style="cell" colspan="2" rowspan="3" class="text-center">
+                            <img t-if="d.preview_image" t-att-src="image_data_uri(d.preview_image)" style="max-height:3.2cm;max-width:6cm;"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td t-att-style="head">Densidad</td>
+                        <td t-att-style="cell"><t t-if="d.density"><span t-esc="'%.2f' % d.density"/> gr/m²</t></td>
+                    </tr>
+                    <tr>
+                        <td t-att-style="head">Rendimiento</td>
+                        <td t-att-style="cell"><t t-if="d.yield_meter"><span t-esc="'%.2f' % d.yield_meter"/> m/kg</t></td>
+                    </tr>
+                </table>
+
+                <!-- Tipo de estampado -->
+                <t t-set="dig" t-value="d.printing_type == 'digital'"/>
+                <t t-set="rot" t-value="d.printing_type == 'rotary'"/>
+                <table style="width:100%;border-collapse:collapse;margin-bottom:10px;">
+                    <tr><td t-att-style="head" colspan="5" class="text-center">Tipo de estampado</td></tr>
+                    <tr>
+                        <td t-att-style="head" colspan="2" class="text-center">Estampado digital</td>
+                        <td t-att-style="head" colspan="3" class="text-center">Estampado rotativo</td>
+                    </tr>
+                    <tr>
+                        <td t-att-style="cell"><span t-att-style="box_on if dig and d.process_type_digital == 'reactive' else box_off"/>Digital reactivo</td>
+                        <td t-att-style="cell"><span t-att-style="box_on if dig and d.process_type_digital == 'pigment' else box_off"/>Digital pigmento</td>
+                        <td t-att-style="cell"><span t-att-style="box_on if rot and d.process_type_rotary == 'reactive' else box_off"/>Rotativo reactivo</td>
+                        <td t-att-style="cell"><span t-att-style="box_on if rot and d.process_type_rotary == 'pigment' else box_off"/>Rotativo pigmento</td>
+                        <td t-att-style="cell">
+                            <span t-att-style="box_on if rot and d.process_type_rotary == 'discharge' else box_off"/>Rotativo discharge
+                            <div t-if="rot and d.process_type_rotary == 'devore'"><span t-att-style="box_on"/>Rotativo devoré</div>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Cobertura y color -->
+                <table style="width:100%;border-collapse:collapse;margin-bottom:10px;">
+                    <tr>
+                        <td t-attf-style="{{head}}width:50%;" class="text-center">Porcentaje de cobertura</td>
+                        <td t-att-style="head" colspan="2" class="text-center">Porcentaje de color</td>
+                    </tr>
+                    <tr>
+                        <td t-att-style="cell"><span t-att-style="box_on if d.coverage == 'low' else box_off"/>Cobertura baja</td>
+                        <td t-att-style="cell"><span t-att-style="box_on if d.color_depth == 'light' else box_off"/>Claros</td>
+                        <td t-att-style="cell">10 gr/kilo</td>
+                    </tr>
+                    <tr>
+                        <td t-att-style="cell"><span t-att-style="box_on if d.coverage == 'medium' else box_off"/>Cobertura media</td>
+                        <td t-att-style="cell"><span t-att-style="box_on if d.color_depth == 'medium' else box_off"/>Medios</td>
+                        <td t-att-style="cell">20 gr/kilo</td>
+                    </tr>
+                    <tr>
+                        <td t-att-style="cell"><span t-att-style="box_on if d.coverage == 'high' else box_off"/>Cobertura alta</td>
+                        <td t-att-style="cell"><span t-att-style="box_on if d.color_depth == 'dark' else box_off"/>Oscuros</td>
+                        <td t-att-style="cell">30 gr/kilo a más</td>
+                    </tr>
+                </table>
+
+                <!-- Cuidados base y productos adicionales (Sí / No) -->
+                <t t-set="yesno" t-value="[
+                    ('Cuidados base de la tela', 'Thiotan', d.thiotan),
+                    ('Cuidados base de la tela', 'Preparado para descarga', d.discharge_prepared),
+                    ('Productos adicionales antes de estampar', 'Empastado', d.pasting),
+                    ('Productos adicionales antes de estampar', 'Bondeado rotativo', d.rotary_bonding),
+                    ('Productos adicionales antes de estampar', 'Despeluzado digital', d.digital_defuzzing),
+                    ('Productos adicionales después de estampar', 'Poliuretano', d.polyurethane),
+                ]"/>
+                <table style="width:100%;border-collapse:collapse;margin-bottom:10px;">
+                    <tr>
+                        <td t-attf-style="{{head}}width:40%;">Concepto</td>
+                        <td t-attf-style="{{head}}width:36%;">Detalle</td>
+                        <td t-att-style="head" class="text-center">Sí</td>
+                        <td t-att-style="head" class="text-center">No</td>
+                    </tr>
+                    <tr t-foreach="yesno" t-as="row">
+                        <td t-att-style="cell"><span t-esc="row[0]"/></td>
+                        <td t-att-style="cell"><span t-esc="row[1]"/></td>
+                        <td t-att-style="cell" class="text-center"><span t-att-style="box_on if row[2] else box_off"/></td>
+                        <td t-att-style="cell" class="text-center"><span t-att-style="box_off if row[2] else box_on"/></td>
+                    </tr>
+                </table>
+
+                <!-- Solidez a ofrecer -->
+                <table style="width:60%;border-collapse:collapse;margin-bottom:10px;">
+                    <tr><td t-att-style="head" colspan="2">Solidez a ofrecer</td></tr>
+                    <tr><td t-attf-style="{{cell}}width:60%;">Frote seco</td><td t-att-style="cell" class="text-center"><span t-esc="d.fastness_dry_rub or ''"/></td></tr>
+                    <tr><td t-att-style="cell">Frote húmedo</td><td t-att-style="cell" class="text-center"><span t-esc="d.fastness_wet_rub or ''"/></td></tr>
+                    <tr><td t-att-style="cell">Solidez al lavado</td><td t-att-style="cell" class="text-center"><span t-esc="d.fastness_wash or ''"/></td></tr>
+                </table>
+
+                <!-- Observaciones -->
+                <table style="width:100%;border-collapse:collapse;margin-bottom:10px;">
+                    <tr><td t-att-style="head">Observaciones</td></tr>
+                    <tr><td t-attf-style="{{cell}}height:2.5cm;vertical-align:top;white-space:pre-line;"><span t-esc="d.quote_notes or ''"/></td></tr>
+                </table>
+
+                <!-- Firmas -->
+                <table style="width:100%;margin-top:1.8cm;border-collapse:collapse;">
+                    <tr>
+                        <td style="width:45%;border:none;border-top:1px solid #333;text-align:center;padding-top:4px;">
+                            Firma de responsable<br/><small t-esc="d.salesperson_id.name or ''"/>
+                        </td>
+                        <td style="width:10%;border:none;"/>
+                        <td style="width:45%;border:none;border-top:1px solid #333;text-align:center;padding-top:4px;">
+                            Firma de responsable<br/><small>Desarrollo</small>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_printing_design_quote">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="idtx_sale_order.report_printing_design_quote_document"/>
+            </t>
+        </t>
+    </template>
+
+</odoo>

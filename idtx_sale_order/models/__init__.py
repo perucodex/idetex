@@ -6,6 +6,7 @@ from . import mail_compose_message
 from . import mrp_production
 from . import mrp_routing
 # from . import product_code_system
+from . import product_analysis
 from . import product_color
 from . import product_template
 from . import res_company

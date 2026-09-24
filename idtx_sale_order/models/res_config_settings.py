@@ -9,3 +9,7 @@ class ResConfigSettings(models.TransientModel):
     quotation_admin_approval = fields.Boolean(related='company_id.quotation_admin_approval', readonly=False)
     sale_admin_approval = fields.Boolean(related='company_id.sale_admin_approval', readonly=False)
     sale_finance_approval = fields.Boolean(related='company_id.sale_finance_approval', readonly=False)
+    # Precios de muestra por defecto (JP, 23-sep-2026).
+    sample_currency_id = fields.Many2one(related='company_id.sample_currency_id')
+    sample_price = fields.Monetary(related='company_id.sample_price', readonly=False, currency_field='sample_currency_id')
+    sample_printing_price = fields.Monetary(related='company_id.sample_printing_price', readonly=False, currency_field='sample_currency_id')

@@ -154,7 +154,7 @@ msgstr "<strong>Fecha de Receta:</strong>"
 #. module: idtx_laboratory
 #: model_terms:ir.ui.view,arch_db:idtx_laboratory.report_lab_dev_document
 msgid "<strong>Testing</strong>"
-msgstr "<strong>Ensayos</strong>"
+msgstr "<strong>Testing</strong>"
 
 #. module: idtx_laboratory
 #: model:ir.model.fields.selection,name:idtx_laboratory.selection__lab_dev__light_others__a
@@ -6735,7 +6735,7 @@ msgstr "Prueba"
 #. module: idtx_laboratory
 #: model:ir.model.fields,field_description:idtx_laboratory.field_lab_dev__testing
 msgid "Testing"
-msgstr "Ensayos"
+msgstr "Testing"
 
 #. module: idtx_laboratory
 #: model:ir.model.fields,field_description:idtx_laboratory.field_base_process__time

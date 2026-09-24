@@ -38,6 +38,11 @@ class PriceItemsPopover extends Component {
                     // (readonly). El price = cost_per_kilo * consumption_pct.
                     cost_per_kilo: Number(v.cost_per_kilo) || 0,
                     consumption_pct: Number(v.consumption_pct) || 0,
+                    // Texto de los inputs: siempre a 2 decimales (JP, 23-sep-2026).
+                    // Se separa del número para no pisar lo que el usuario
+                    // escribe; se reformatea al salir del campo (formatItem).
+                    price_input: round2(Number(v.price) || 0).toFixed(2),
+                    cost_input: round2(Number(v.cost_per_kilo) || 0).toFixed(2),
                     meta: v, // ← guarda todo
                 }))
             );
@@ -88,6 +93,9 @@ class PriceItemsPopover extends Component {
         val = val.replace(/,/g, "");
         val = val.replace(/[^0-9.]/g, "");
         val = val.replace(/^([^.]*\.)|\./g, (m, g1) => g1 || "");
+        if (val !== ev.target.value) {
+            item.price_input = val; // descarta caracteres no numéricos
+        }
         item.price = round2(parseFloat(val) || 0);
         await this.recalculateDerivedItems();
     }
@@ -97,6 +105,9 @@ class PriceItemsPopover extends Component {
         val = val.replace(/,/g, "");
         val = val.replace(/[^0-9.]/g, "");
         val = val.replace(/^([^.]*\.)|\./g, (m, g1) => g1 || "");
+        if (val !== ev.target.value) {
+            item.cost_input = val; // descarta caracteres no numéricos
+        }
         const newCost = parseFloat(val) || 0;
         item.cost_per_kilo = round2(newCost);
         // Recalcular el precio del hilo: cost_per_kilo * % consumo.
@@ -109,13 +120,20 @@ class PriceItemsPopover extends Component {
         await this.recalculateDerivedItems();
     }
 
+    /** Al salir del input: muestra el valor con 2 decimales. */
+    formatItem(item) {
+        item.price_input = round2(item.price).toFixed(2);
+        item.cost_input = round2(item.cost_per_kilo).toFixed(2);
+    }
+
     async recalculateDerivedItems() {
         const WEAV_LOSS_KEY = "Weaving Loss";
         const PROD_LOSS_KEY = "Production Loss";
         const FINANCIAL_KEY = "Financial Percentage";
         const INCOTERM_KEY  = "Incoterm";
+        const SAMPLE_KEY    = "Sample";
         const baseItems = this.items.filter(it =>
-            ![WEAV_LOSS_KEY, PROD_LOSS_KEY, FINANCIAL_KEY, INCOTERM_KEY].includes(it.key)
+            ![WEAV_LOSS_KEY, PROD_LOSS_KEY, FINANCIAL_KEY, INCOTERM_KEY, SAMPLE_KEY].includes(it.key)
         );
         const sum = (arr) => arr.reduce((a, it) => a + (Number(it.price) || 0), 0);
         const lineId = this.props.record.resId;
@@ -131,6 +149,8 @@ class PriceItemsPopover extends Component {
                 "printing_design_id",
                 "product_uom_qty",
                 "min_qty",
+                "sample_surcharge",
+                "is_printing",
             ]
         );
         const scrap = Number(line?.weaving_loss) || 0;
@@ -185,6 +205,18 @@ class PriceItemsPopover extends Component {
                 key: PROD_LOSS_KEY,
                 price: loss,
                 label: _t("Production Loss: %s %", [(prod_scrap * 100).toFixed(2)]),
+                meta: {},
+            });
+        }
+        // Recargo de muestra (pedido marcado como Muestra): mismo orden que el
+        // servidor (_apply_order_price_adjustments), antes del % financiero.
+        const sample = round2(Number(line?.sample_surcharge) || 0);
+        if (sample) {
+            total = round2(total + sample);
+            derived.push({
+                key: SAMPLE_KEY,
+                price: sample,
+                label: (line?.is_printing || line?.printing_design_id) ? _t("Muestra de estampado") : _t("Muestra"),
                 meta: {},
             });
         }

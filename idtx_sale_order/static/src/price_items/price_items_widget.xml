@@ -33,9 +33,10 @@
                                         inputmode="decimal"
                                         pattern="^[0-9]*\.?[0-9]+$"
                                         title="Costo por kilo"
-                                        t-model="item.cost_per_kilo"
+                                        t-model="item.cost_input"
                                         t-att-readonly="ui.readonly"
-                                        t-on-input="!ui.readonly and ((ev) => this.onCostPerKiloInput(ev, item))"/>
+                                        t-on-input="!ui.readonly and ((ev) => this.onCostPerKiloInput(ev, item))"
+                                        t-on-change="() => this.formatItem(item)"/>
                                 </td>
                                 <td class="text-end text-muted">
                                     <t t-esc="(item.consumption_pct * 100).toFixed(2)"/>%
@@ -44,7 +45,7 @@
                                     <t t-esc="item.price.toFixed(2)"/>
                                 </td>
                             </t>
-                            <t t-elif="['Weaving Loss', 'Production Loss', 'Financial Percentage', 'Incoterm'].includes(item.key)">
+                            <t t-elif="['Weaving Loss', 'Production Loss', 'Financial Percentage', 'Incoterm', 'Sample'].includes(item.key)">
                                 <td colspan="3" class="text-end">
                                     <t t-esc="item.price.toFixed(2)"/>
                                 </td>
@@ -55,9 +56,10 @@
                                         class="form-control form-control-sm w-auto text-end"
                                         inputmode="decimal"
                                         pattern="^[0-9]*\.?[0-9]+$"
-                                        t-model="item.price"
+                                        t-model="item.price_input"
                                         t-att-readonly="ui.readonly"
-                                        t-on-input="!ui.readonly and ((ev) => this.onNumberInput(ev, item))"/>
+                                        t-on-input="!ui.readonly and ((ev) => this.onNumberInput(ev, item))"
+                                        t-on-change="() => this.formatItem(item)"/>
                                 </td>
                             </t>
                         </tr>

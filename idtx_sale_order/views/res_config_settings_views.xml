@@ -34,6 +34,19 @@
                                 </div>
                             </div>
                         </setting>
+                        <setting id="idtx_sample_prices" string="Precios de muestra" company_dependent="1" help="Recargo por unidad que se suma al precio de las líneas de tejido de una cotización o pedido marcado como Muestra, cuando el cliente no tiene sus propios precios de muestra (ficha del cliente > Ventas y compras > Muestras).">
+                            <div class="content-group">
+                                <field name="sample_currency_id" invisible="1"/>
+                                <div class="row mt16">
+                                    <label string="Precio muestra" for="sample_price" class="col-lg-5 o_light_label"/>
+                                    <field name="sample_price" class="col-lg-5"/>
+                                </div>
+                                <div class="row">
+                                    <label string="Precio muestra estampado" for="sample_printing_price" class="col-lg-5 o_light_label"/>
+                                    <field name="sample_printing_price" class="col-lg-5"/>
+                                </div>
+                            </div>
+                        </setting>
                         <setting id="idtx_quotation_admin_approval" string="Cotizaciones: validación administrativa" company_dependent="1" help="Las cotizaciones de tejido requieren aprobación de un Aprobador Administrativo antes de enviarse al cliente. Desactívalo para enviar sin validación.">
                             <field name="quotation_admin_approval"/>
                         </setting>

@@ -39,6 +39,16 @@ class SaleOrder(models.Model):
     production_count = fields.Integer(string="Production Count", compute='_compute_production_count')
     sale_count = fields.Integer('Sales Count', compute='_compute_sale_count')
     is_quote = fields.Boolean('is_quote', default=True)
+    # Muestra (JP, 23-sep-2026): toggle en Otra información > Ventas. Al
+    # activarlo el precio unitario de las líneas de tejido suma el recargo de
+    # muestra (precio muestra / precio muestra estampado) del cliente o, si el
+    # cliente no lo tiene, el de Ajustes > Ventas. Ver
+    # sale.order.line._get_sample_surcharge. Se hereda al pasar a pedido (copy).
+    is_sample = fields.Boolean(
+        'Muestra', default=False, tracking=True,
+        help='Cotización o pedido de muestra: el precio unitario de las líneas de tejido '
+             'suma el precio de muestra (o de muestra estampado) del cliente; si el '
+             'cliente no lo tiene configurado, el de Ajustes > Ventas.')
     # is_manual_lab_dev = fields.Boolean('is_manual_lab_dev', default=False)
     lab_dev_count = fields.Integer(string="Technical Sheet Count", compute='_compute_lab_dev_count')
     has_order_lab_dev = fields.Boolean('Has Order LabDip', compute='_compute_has_order_lab_dev')
@@ -475,7 +485,8 @@ class SaleOrder(models.Model):
             self._ensure_original_lab_devs()
         if 'lab_dev_ids' in vals:
             self._cleanup_orphan_lab_dev_lines()
-        if 'payment_term_id' in vals or 'incoterm' in vals:
+        if 'payment_term_id' in vals or 'incoterm' in vals or 'is_sample' in vals \
+                or ('partner_id' in vals and any(self.mapped('is_sample'))):
             self._recompute_order_line_prices_from_terms()
         return res
 
@@ -552,9 +563,15 @@ class SaleOrder(models.Model):
             if rec.process_type_id and rec.process_type_id.order_kind not in allowed:
                 rec.process_type_id = False
 
-    @api.onchange('payment_term_id','incoterm')
+    @api.onchange('payment_term_id', 'incoterm', 'is_sample')
     def _onchange_payment_term_id(self):
         self._recompute_order_line_prices_from_terms()
+
+    @api.onchange('partner_id')
+    def _onchange_partner_id_sample_prices(self):
+        # El recargo de muestra depende del cliente (sus precios de muestra).
+        for order in self.filtered('is_sample'):
+            order._recompute_order_line_prices_from_terms()
 
     @api.onchange('order_line')
     def _onchange_order_line_lab_dev_line_id(self):
@@ -595,6 +612,8 @@ class SaleOrder(models.Model):
             'sale_order_id': self.id,
             'partner_id': self.partner_id.id,
             'company_id': production_company.id,
+            # Vendedor del Lab Dip = vendedor del pedido (JP, 24-sep-2026).
+            'user_id': self.user_id.id,
         })
         self.lab_dev_ids = self.lab_dev_ids | lab_dev
 

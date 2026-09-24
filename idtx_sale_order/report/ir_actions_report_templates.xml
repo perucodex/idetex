@@ -12,6 +12,13 @@
             </t>
         </xpath>
 
+        <!-- Muestra (JP, 23-sep-2026): tras el número de cotización/pedido la
+             palabra MUESTRA en verde cuando el documento está marcado así. -->
+        <xpath expr="//t[@t-set='layout_document_title']/span[@t-field='doc.name']" position="after">
+            <span t-if="doc.is_sample" name="idtx_sample_badge" class="ms-2 fw-bold"
+                  style="color: #198754;">MUESTRA</span>
+        </xpath>
+
         <!-- Inserta color -->
         <xpath expr="//th[@name='th_description']" position="after">
             <th name="th_color" class="text-start">Color</th>

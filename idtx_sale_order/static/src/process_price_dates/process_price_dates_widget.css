@@ -1,0 +1,12 @@
+/* Fechas de precio de los procesos (línea de la cotización, vendedor). */
+.o_process_price_dates {
+    cursor: pointer;
+    user-select: none;
+}
+
+.o_process_price_dates_popover {
+    min-width: 320px;
+    max-width: 560px;
+    max-height: 60vh;
+    overflow: auto;
+}

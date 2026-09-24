@@ -33,6 +33,9 @@ class LabDev(models.Model):
     sub_partner_id = fields.Many2one('res.partner', 'Sub-Cliente', ondelete='restrict')
     user_id = fields.Many2one(
         'res.users', string='Vendedor',
+        # Por defecto quien crea el Lab Dip, si es vendedor (JP, 24-sep-2026);
+        # desde el pedido se toma el vendedor del pedido (create_labdev).
+        default=lambda self: self.env.user if self.env.user.has_group('sales_team.group_sale_salesman') else False,
         # Mismo dominio que sale.order.user_id
         domain=lambda self: "[('all_group_ids', 'in', {}), ('share', '=', False), ('company_ids', '=', company_id)]".format(
             self.env.ref("sales_team.group_sale_salesman").ids
@@ -156,7 +159,9 @@ class LabDevLine(models.Model):
     product_ids = fields.Many2many(
         'product.template', 'lab_dev_line_product_template_rel',
         'lab_dev_line_id', 'product_template_id', string='Products')
-    color_name = fields.Char('Color Name')
+    # Nombre de color obligatorio (JP, 24-sep-2026); el artículo (product_ids)
+    # es obligatorio en las vistas (un Many2many no admite NOT NULL).
+    color_name = fields.Char('Color Name', required=True)
     color_code = fields.Char('Color Code')
     color = fields.Char('Color')
     color_process_type_id = fields.Many2one('color.process.type','Color Process Type', ondelete='restrict')

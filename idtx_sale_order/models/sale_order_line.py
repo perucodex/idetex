@@ -12,6 +12,7 @@ WEAV_LOSS_KEY = "Weaving Loss"
 PROD_LOSS_KEY = "Production Loss"
 FINANCIAL_KEY = "Financial Percentage"
 INCOTERM_KEY = "Incoterm"
+SAMPLE_KEY = "Sample"
 
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
@@ -87,6 +88,15 @@ class SaleOrderLine(models.Model):
     lab_dev_line_id = fields.Many2one('lab.dev.line', string='Lab Dip Line')
     diff_days = fields.Float('diff_days')
     is_salesman = fields.Boolean('is_salesman?', compute='_compute_is_salesman')
+    # Fechas de precio de los procesos cotizados (JSON) para el widget del
+    # VENDEDOR process_price_dates_widget, que ocupa el lugar del "Editar
+    # precios" (solo admin de ventas): procesos y fecha de última actualización
+    # de su precio, sin importes, sin hilado y sin mermas (JP, 23-sep-2026).
+    process_price_info = fields.Text(compute='_compute_process_price_info')
+    # Recargo de muestra de la línea en la moneda del pedido (0 si el pedido no
+    # es Muestra). Lo lee el popover "Editar precios" para pintar la fila
+    # Muestra; el precio se aplica en _apply_order_price_adjustments.
+    sample_surcharge = fields.Float(compute='_compute_sample_surcharge', digits='Product Price')
     # Detalle de producto en cotización ingresado por comercial y Alex
     min_qty = fields.Float('Minimum Qty', default=1000.00)
     # Lo comentamos y usamos el campo customer_lead del estandar
@@ -201,6 +211,82 @@ class SaleOrderLine(models.Model):
             self.dis_app = False
         else:
             self.dis_app = True
+
+    # ------------------------------------------------------------------
+    # Fechas de precio de los procesos (widget del vendedor)
+    # ------------------------------------------------------------------
+    def _process_price_row(self, name, date, has_price, missing):
+        if date:
+            date_display = fields.Datetime.context_timestamp(self, date).strftime('%d/%m/%Y %H:%M')
+        elif has_price:
+            date_display = _('Sin fecha registrada')
+        else:
+            date_display = missing
+        return {
+            'name': name,
+            'date': fields.Datetime.to_string(date) if date else False,
+            'date_display': date_display,
+            'has_price': has_price,
+        }
+
+    def _get_process_price_rows(self):
+        """Procesos cotizados de la línea (mismo orden que el popover de
+        precios) con la fecha de última actualización de su precio: tejido =
+        precio de tejido del análisis; por color (y título) = la fila de
+        precio del color/título; por proceso = la fase; estampado = la ficha
+        del diseño, fusionada en la fase que estampa (una fila por proceso).
+        Sin hilado ni mermas: es la vista del vendedor, que no ve importes.
+        Lectura con sudo: ventas no tiene permisos de Fabricación."""
+        self.ensure_one()
+        line = self.sudo()
+        analysis = line.product_template_id.analysis_id
+        design = line.printing_design_id
+        design_date = design and (design.price_date or (design.write_date if design.has_price else False))
+        rows, printing_merged = [], False
+        for op in self._get_quoted_operations().sudo():
+            if op.operation_type == 'weaving':
+                has_price = analysis.weaving_price > 0
+                date = analysis.weaving_price_date or (analysis.write_date if has_price else False)
+                missing = _('Sin precio de tejido en el análisis')
+            elif op.type_prices == 'col':
+                rec = op.product_color_price_ids.filtered(
+                    lambda p: p.product_color_id == line.product_color_id)[:1]
+                if op.per_title:
+                    rec = rec.color_title_price_ids.filtered(
+                        lambda t: analysis.product_title_id in t.title_ids)[:1]
+                has_price = bool(rec) and rec.unit_price > 0
+                date = rec.write_date if has_price else False
+                missing = _('Sin precio para el color') if not line.product_color_id or not op.per_title \
+                    else _('Sin precio para el color y título')
+            else:
+                has_price = op.unit_price > 0
+                date = (op.price_date or op.write_date) if has_price else False
+                missing = _('Sin precio')
+            if op.prints_product and design:
+                # La fase que estampa cobra con la ficha del diseño: una sola fila.
+                printing_merged = True
+                has_price = has_price or design.has_price
+                dates = [d for d in (date, design_date) if d]
+                date = max(dates) if dates else False
+                missing = _('Ficha de estampado sin precio')
+            rows.append(self._process_price_row(op.name, date, has_price, missing))
+        if design and not printing_merged:
+            rows.append(self._process_price_row(
+                _('PRINTING'), design_date, design.has_price, _('Ficha de estampado sin precio')))
+        return rows
+
+    @api.depends('operation_ids', 'product_template_id', 'product_color_id', 'printing_design_id',
+                 'display_type',
+                 'product_template_id.analysis_id.weaving_price',
+                 'product_template_id.analysis_id.weaving_price_date',
+                 'product_template_id.analysis_id.routing_ids.operation_id',
+                 'printing_design_id.price_date', 'printing_design_id.has_price')
+    def _compute_process_price_info(self):
+        for line in self:
+            rows = []
+            if line.product_template_id and not line.display_type:
+                rows = line._get_process_price_rows()
+            line.process_price_info = json.dumps(rows)
 
     @api.depends_context("uid")
     def _compute_is_salesman(self):
@@ -436,6 +522,7 @@ class SaleOrderLine(models.Model):
                  'operation_ids',
                  'order_id.payment_term_id',
                  'order_id.incoterm',
+                 'order_id.is_sample',
                  'printing_design_id',
                  'min_qty',
                  'order_id.sale_type')
@@ -536,15 +623,76 @@ class SaleOrderLine(models.Model):
             converted_dict[key] = new_value
         return converted_dict
 
+    # ------------------------------------------------------------------
+    # Recargo de muestra (pedido marcado como Muestra)
+    # ------------------------------------------------------------------
+    def _get_sample_label(self):
+        self.ensure_one()
+        return _('Muestra de estampado') if self._is_printing_sample() else _('Muestra')
+
+    def _is_printing_sample(self):
+        """Línea de estampado para el recargo de muestra: su ruta estampa el
+        producto (is_printing) o ya tiene diseño de estampado elegido."""
+        self.ensure_one()
+        return bool(self.is_printing or self.printing_design_id)
+
+    def _get_sample_surcharge(self, currency, conversion_date=None):
+        """Recargo de muestra de la línea en `currency`; 0 si el pedido no está
+        marcado como Muestra. La línea CON diseño de estampado usa el precio de
+        muestra estampado, el resto el precio de muestra. Manda el precio del
+        cliente (o de su empresa comercial) si es mayor a 0; si no, el de la
+        configuración de la compañía del pedido. Ambos están en la moneda de
+        muestras de la compañía (sample_currency_id)."""
+        self.ensure_one()
+        order = self.order_id
+        if not order.is_sample:
+            return 0.0
+        field = 'sample_printing_price' if self._is_printing_sample() else 'sample_price'
+        company = order.company_id or self.env.company
+        partner = order.partner_id.sudo()
+        amount = 0.0
+        for candidate in (partner, partner.commercial_partner_id):
+            if candidate and candidate[field] > 0:
+                amount = candidate[field]
+                break
+        else:
+            amount = company[field]
+        if not amount:
+            return 0.0
+        return float_round(self._convert_amount(
+            amount, company.sample_currency_id, currency,
+            conversion_date or self._get_order_date() or fields.Date.context_today(self)), 2)
+
+    @api.depends('order_id.is_sample', 'order_id.partner_id', 'order_id.pricelist_id',
+                 'order_id.company_id', 'printing_design_id', 'is_printing')
+    def _compute_sample_surcharge(self):
+        for line in self:
+            if not line.order_id.is_sample:
+                line.sample_surcharge = 0.0
+                continue
+            pricelist = line.order_id.pricelist_id or line._get_pricing_pricelist()
+            currency = pricelist.currency_id or line.currency_id
+            line.sample_surcharge = line._get_sample_surcharge(currency)
+
     def _apply_order_price_adjustments(self, price_dict, currency, conversion_date):
         self.ensure_one()
         adjusted_dict = {}
         for key, value in (price_dict or {}).items():
-            if key in (FINANCIAL_KEY, INCOTERM_KEY):
+            if key in (SAMPLE_KEY, FINANCIAL_KEY, INCOTERM_KEY):
                 continue
             adjusted_dict[key] = value
 
         total = self._sum_price_items(adjusted_dict)
+
+        # Recargo de muestra (JP, 23-sep-2026): se suma al precio del producto
+        # antes del % financiero (que financia el total) y del incoterm.
+        sample = self._get_sample_surcharge(currency, conversion_date)
+        if sample:
+            adjusted_dict[SAMPLE_KEY] = {
+                'price': sample,
+                'label': self._get_sample_label(),
+            }
+            total = float_round(total + sample, 2)
 
         if self.order_id.payment_term_id and self.order_id.payment_term_id.financial_percentage:
             financial = float_round(total * self.order_id.payment_term_id.financial_percentage, 2)
@@ -589,9 +737,11 @@ class SaleOrderLine(models.Model):
         if self.order_id.is_quote:
             price_dict = self._load_price_items_dict(self.price_items)
 
-            # 2) Elimina previos por clave FIJA (sin traducción)
+            # 2) Elimina previos por clave FIJA (sin traducción). SAMPLE_KEY
+            # también: si quedara, la merma de producción se calcularía sobre
+            # base + muestra; el recargo de muestra va DESPUÉS de las mermas.
             for key in list(price_dict.keys()):
-                if key in (WEAV_LOSS_KEY, PROD_LOSS_KEY, FINANCIAL_KEY, INCOTERM_KEY):
+                if key in (WEAV_LOSS_KEY, PROD_LOSS_KEY, SAMPLE_KEY, FINANCIAL_KEY, INCOTERM_KEY):
                     price_dict.pop(key, None)
 
             # 3) Calcula insumos y operaciones (tu lógica sin cambios)
@@ -921,8 +1071,11 @@ class SaleOrderLine(models.Model):
             quote = self.order_id.quotation_id
             line = self.env['sale.order.line']
             # Solo se toma la cotización vinculada si es del mismo tipo de
-            # venta; si difiere, se cae al fallback que ya filtra por tipo.
-            if quote.sale_type == self.order_id.sale_type:
+            # venta y de la misma condición de Muestra (JP, 23-sep-2026): un
+            # pedido de muestra toma el precio de una cotización de muestra y
+            # uno normal de una normal. Si difiere, se cae al fallback, que
+            # filtra por ambos criterios.
+            if quote.sale_type == self.order_id.sale_type and quote.is_sample == self.order_id.is_sample:
                 line = quote.order_line.filtered(lambda l: l.product_id == product and l.product_color_id == color)
             if not line:
                 today = fields.Date.context_today(self)
@@ -931,8 +1084,15 @@ class SaleOrderLine(models.Model):
                     if line.order_id.validity_date <= today:
                         self.diff_days = (today - line.order_id.validity_date ).days
                     return line
+                elif self.order_id.is_sample:
+                    raise UserError(_(
+                        'El producto %s con color %s no está en ninguna cotización de MUESTRA firmada '
+                        'de este cliente. Un pedido de muestra toma el precio de una cotización de muestra: '
+                        'cotízalo primero como muestra.', product.name, color.name))
                 else:
-                    raise UserError(_('Product %s with color %s can\'t be found in any quotation or sale order. Please quotate first.') %(product.name, color.name))
+                    raise UserError(_(
+                        'El producto %s con color %s no está en ninguna cotización firmada de este cliente '
+                        '(sin contar las de muestra). Cotízalo primero.', product.name, color.name))
             return line
         else:
             return self.env['sale.order.line']
@@ -945,6 +1105,8 @@ class SaleOrderLine(models.Model):
             ('printing_design_id', '=', self.printing_design_id.id),
             ('order_id.is_quote', '=', True),
             ('order_id.sale_type', '=', self.order_id.sale_type),
+            # Misma condición de Muestra que el pedido (JP, 23-sep-2026).
+            ('order_id.is_sample', '=', self.order_id.is_sample),
             ('operation_ids','=', self.operation_ids.ids),
             ('order_id.state', '=', 'sent'),
             ('order_id.signed_on', '!=', False),

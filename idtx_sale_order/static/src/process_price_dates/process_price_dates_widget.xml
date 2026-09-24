@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="idtx_sale_order.ProcessPriceDatesWidget">
+        <a t-if="rows.length" role="button" tabindex="0"
+           t-att-class="'o_process_price_dates fa fa-calendar-check-o ml-1 ' + (hasMissing ? 'text-danger' : 'text-muted')"
+           t-att-title="title" t-on-click.stop.prevent="onClick"/>
+    </t>
+
+    <t t-name="idtx_sale_order.ProcessPriceDatesPopover">
+        <div class="o_process_price_dates_popover p-2">
+            <div class="fw-bold mb-2">Fechas de precio de los procesos</div>
+            <table class="table table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th class="text-start">Proceso</th>
+                        <th class="text-start">Última actualización</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="props.rows" t-as="row" t-key="row_index"
+                        t-att-class="row.has_price ? '' : 'text-danger'">
+                        <td t-esc="row.name"/>
+                        <td class="text-nowrap" t-esc="row.date_display"/>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </t>
+
+</templates>
