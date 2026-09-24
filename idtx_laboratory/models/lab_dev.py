@@ -248,11 +248,17 @@ class LabDevLine(models.Model):
     
     @api.depends('sale_order_id')
     def _compute_available_products(self):
+        """Productos elegibles de la línea. Con pedido: los de tejido del
+        pedido. Sin pedido: VACÍO y la vista aplica el dominio is_weaving
+        directamente. Antes devolvía los ~15 mil artículos de tejido en cada
+        onchange y el cliente web se congelaba ~40 s al agregar una línea
+        (JP, 24-sep-2026)."""
         for record in self:
-            products = self.env['product.template'].search([('is_weaving','=', True)])
             if record.sale_order_id:
-                products = record.sale_order_id.order_line.mapped('product_template_id').filtered(lambda p: p.is_weaving).ids
-            record.available_product_ids = products
+                record.available_product_ids = record.sale_order_id.order_line.mapped(
+                    'product_template_id').filtered(lambda p: p.is_weaving)
+            else:
+                record.available_product_ids = False
     
     @api.onchange('color_process_type_id','color_range_id','color_intensity_id')
     def _onchange_color_code(self):

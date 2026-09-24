@@ -68,7 +68,10 @@
                                          búsqueda por variante/código. no_create: los productos no se crean
                                          desde el Lab Dip. -->
                                         <field name="available_product_ids" column_invisible="1"/>
-                                        <field name="product_ids" widget="lab_products_approval_tags" required="1" domain="[('id', 'in', available_product_ids)]" context="{'search_product_product': True}" options="{'no_create': True}"/>
+                                        <field name="sale_order_id" column_invisible="1"/>
+                                        <!-- Sin pedido available_product_ids va vacío (no cargar 15 mil ids
+                                             en cada onchange): el dominio filtra por tejido directamente. -->
+                                        <field name="product_ids" widget="lab_products_approval_tags" required="1" domain="[('id', 'in', available_product_ids)] if sale_order_id else [('is_weaving', '=', True)]" context="{'search_product_product': True}" options="{'no_create': True}"/>
                                         <field name="color_name" required="1"/>
                                         <field name="color_code" readonly="1"/>
                                         <field name="color_recipe_ids"/>
@@ -198,7 +201,7 @@
                                 <field name="available_product_ids" invisible="1"/>
                                 <field name="approved_product_ids" invisible="1"/>
                                 <field name="sale_order_id" invisible="1"/>
-                                <field name="product_ids" widget="lab_products_approval_tags" required="1" readonly="sale_order_id or color_recipe_ids" domain="[('id', 'in', available_product_ids)]" context="{'search_product_product': True}" options="{'no_create': True}" force_save="1"/>
+                                <field name="product_ids" widget="lab_products_approval_tags" required="1" readonly="sale_order_id or color_recipe_ids" domain="[('id', 'in', available_product_ids)] if sale_order_id else [('is_weaving', '=', True)]" context="{'search_product_product': True}" options="{'no_create': True}" force_save="1"/>
                                 <field name="color_name" required="1" readonly="sale_order_id or color_recipe_ids" force_save="1"/>
                                 <field name="color_code" readonly="1" force_save="1"/>
                             </group>   
